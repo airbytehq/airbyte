@@ -109,6 +109,7 @@ class AsyncStreamConsumerTest {
     private lateinit var flushFailure: FlushFailure
 
     @BeforeEach
+    @Suppress("UNCHECKED_CAST")
     internal fun setup() {
         onStart =
             Mockito.mock(
