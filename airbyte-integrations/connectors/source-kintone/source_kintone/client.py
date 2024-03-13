@@ -177,7 +177,7 @@ class Client:
             default_cursor_field=["updated_at"],
         )
 
-    def update_url(url, params):
+    def update_url(self, url, params):
         url_parts = urllib.parse.urlparse(url)
         query = dict(urllib.parse.parse_qsl(url_parts.query))
         query.update(params)
