@@ -73,17 +73,28 @@ definitions:
   group_streams_retriever:
     $ref: "#/definitions/retriever"
     partition_router:
-      - type: CustomPartitionRouter
-        class_name: source_gitlab.components.partition_routers.GroupStreamsPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: "id"
-            stream: "#/definitions/groups_list_stream"
-            partition_field: "id"
-          - type: ParentStreamConfig
-            parent_key: "id"
-            stream: "#/definitions/include_descendant_groups_stream"
-            partition_field: "id"
+      type: CustomPartitionRouter
+      class_name: source_gitlab.components.partition_routers.GroupStreamsPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_list_stream"
+          partition_field: "id"
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/include_descendant_groups_stream"
+          partition_field: "id"
+
+  projects_streams_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: CustomPartitionRouter
+      class_name: source_gitlab.components.partition_routers.ProjectStreamsPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/groups_stream"
+          partition_field: "id"
 
   # Service streams
   base_full_refresh_stream:
@@ -118,6 +129,10 @@ definitions:
           {{ slices }}
     $parameters:
       path: "{{ stream_slice.slice.path }}"
+
+  base_projects_stream:
+    $ref: "#/definitions/base_full_refresh_stream"
+    retriever: "#/definitions/projects_streams_retriever"
 
   # Full refresh streams
   ## Groups-based streams
@@ -189,19 +204,62 @@ definitions:
   ## Projects-based streams
   projects_stream:
     name: "projects"
-    $ref: "#/definitions/base_full_refresh_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: "id"
-            # TODO: replace
-            stream: "#/definitions/groups_list_stream"
-            partition_field: "id"
+    $ref: "#/definitions/base_projects_stream"
     $parameters:
-      path: "projects/{{ stream_slice.id|replace('/', '%2F') }}"
+      path: "projects/{{ stream_slice.id }}"
+
+  project_milestones_stream:
+    name: "project_milestones"
+    $ref: "#/definitions/base_projects_stream"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/milestones"
+
+  project_members_stream:
+    name: "project_members"
+    $ref: "#/definitions/base_projects_stream"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/members"
+
+  project_labels_stream:
+    name: "project_labels"
+    $ref: "#/definitions/base_projects_stream"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/labels"
+
+  branches_stream:
+    name: "branches"
+    $ref: "#/definitions/base_projects_stream"
+    primary_key: "name"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/repository/branches"
+
+  releases_stream:
+    name: "releases"
+    $ref: "#/definitions/base_projects_stream"
+    primary_key: "name"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/releases"
+
+  tags_stream:
+    name: "tags"
+    $ref: "#/definitions/base_projects_stream"
+    primary_key: "name"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/repository/tags"
+
+  users_stream:
+    name: "users"
+    $ref: "#/definitions/base_projects_stream"
+    primary_key: "name"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/users"
+
+  deployments_stream:
+    name: "deployments"
+    $ref: "#/definitions/base_projects_stream"
+    primary_key: "name"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/deployments"
 
 streams:
   # Groups-based streams
@@ -215,6 +273,14 @@ streams:
 
   # Projects-based streams
   - "#/definitions/projects_stream"
+  - "#/definitions/project_milestones_stream"
+  - "#/definitions/project_members_stream"
+  - "#/definitions/project_labels_stream"
+  - "#/definitions/branches_stream"
+  - "#/definitions/releases_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/deployments_stream"
 
 check:
   # TODO: does not match the reality
