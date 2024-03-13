@@ -112,6 +112,21 @@ definitions:
           stream: "#/definitions/projects_stream"
           partition_field: "id"
 
+  # Transformations
+  add_project_id_field:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["project_id"]
+        value: "{{ stream_slice.id }}"
+
+  add_group_id_field:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["group_id"]
+        value: "{{ stream_slice.id }}"
+
   # Service streams
   base_full_refresh_stream:
     type: DeclarativeStream
@@ -180,24 +195,36 @@ definitions:
   group_members_stream:
     name: "group_members"
     $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - "#/definitions/add_group_id_field"
     $parameters:
       path: "groups/{{ stream_slice.id }}/members"
 
   group_labels_stream:
     name: "group_labels"
     $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - "#/definitions/add_group_id_field"
     $parameters:
       path: "groups/{{ stream_slice.id }}/labels"
 
   group_issue_boards_stream:
     name: "group_issue_boards"
     $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - "#/definitions/add_group_id_field"
     $parameters:
       path: "groups/{{ stream_slice.id }}/boards"
 
   epics_stream:
     name: "epics"
     $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ record.get('author', {}).get('id') }}"
     primary_key: "iid"
     $parameters:
       path: "groups/{{ stream_slice.id }}/epics"
@@ -205,6 +232,26 @@ definitions:
   epic_issues_stream:
     name: "epic_issues"
     $ref: "#/definitions/base_groups_child_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["milestone_id"]
+            value: "{{ record.get('milestone', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignee_id"]
+            value: "{{ record.get('assignee', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["author_id"]
+            value: "{{ record.get('author', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["assignees"]
+            value: >-
+              {% set ids = [] %}
+              {% for data in record.get('assignees', []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
     primary_key: "iid"
     retriever:
       $ref: "#/definitions/retriever"
@@ -235,18 +282,29 @@ definitions:
   project_members_stream:
     name: "project_members"
     $ref: "#/definitions/base_projects_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
     $parameters:
       path: "projects/{{ stream_slice.id }}/members"
 
   project_labels_stream:
     name: "project_labels"
     $ref: "#/definitions/base_projects_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
     $parameters:
       path: "projects/{{ stream_slice.id }}/labels"
 
   branches_stream:
     name: "branches"
     $ref: "#/definitions/base_projects_child_stream"
+    transformations:
+      - "#/definitions/add_project_id_field"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ record.get('commit', {}).get('id') }}"
     primary_key: "name"
     $parameters:
       path: "projects/{{ stream_slice.id }}/repository/branches"
@@ -256,11 +314,23 @@ definitions:
     $ref: "#/definitions/base_projects_child_stream"
     primary_key: "name"
     transformations:
+      - "#/definitions/add_project_id_field"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
-            path: ["project_id"]
-            value: "{{ stream_slice.id }}"
+            path: ["author_id"]
+            value: "{{ record.get('author', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ record.get('commit', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["milestones"]
+            value: >-
+              {% set ids = [] %}
+              {% for data in record.get('milestones', []) %}
+              {% set _ = ids.append(data.get('id')) %}
+              {% endfor %}
+              {{ ids }}
     $parameters:
       path: "projects/{{ stream_slice.id }}/releases"
 
@@ -269,11 +339,12 @@ definitions:
     $ref: "#/definitions/base_projects_child_stream"
     primary_key: "name"
     transformations:
+      - "#/definitions/add_project_id_field"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
-            path: ["project_id"]
-            value: "{{ stream_slice.id }}"
+            path: ["commit_id"]
+            value: "{{ record.get('commit', {}).get('id') }}"
     $parameters:
       path: "projects/{{ stream_slice.id }}/repository/tags"
 
@@ -289,6 +360,7 @@ definitions:
     $ref: "#/definitions/base_projects_child_stream"
     primary_key: "name"
     transformations:
+      - "#/definitions/add_project_id_field"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -301,8 +373,11 @@ definitions:
             path: ["environment_name"]
             value: "{{ record.get('environment', {}).get('name') }}"
           - type: AddedFieldDefinition
-            path: ["project_id"]
-            value: "{{ stream_slice.id }}"
+            path: ["user_id"]
+            value: "{{ record.get('user', {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["environment_id"]
+            value: "{{ record.get('environment', {}).get('id') }}"
     $parameters:
       path: "projects/{{ stream_slice.id }}/deployments"
 
