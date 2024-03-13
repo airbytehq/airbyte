@@ -112,7 +112,9 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
                 parent_state_value = parent_record.get(self.parent_key)
 
                 partition = {self.stream_slice_field: parent_state_value}
-                cursor_slice = {self.request_cursor_field: self._state.get(str(parent_state_value), {}).get(self.cursor_field, self.START_DATETIME)}
+                cursor_slice = {
+                    self.request_cursor_field: self._state.get(str(parent_state_value), {}).get(self.cursor_field, self.START_DATETIME)
+                }
 
                 yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
