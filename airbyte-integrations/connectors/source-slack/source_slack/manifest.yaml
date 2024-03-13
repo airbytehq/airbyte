@@ -182,9 +182,11 @@ definitions:
     request_parameters: { }
     request_headers: { }
     authenticator:
-      class_name: source_slack.components.SlackAuthenticator
-      api_token_auth: "#/definitions/api_token_auth"
-      access_token_auth: "#/definitions/access_token_auth"
+      type: SelectiveAuthenticator
+      authenticator_selection_path: [ "credentials", "option_title" ]
+      authenticators:
+        Default OAuth2.0 authorization: "#/definitions/access_token_auth"
+        API Token Credentials: "#/definitions/api_token_auth"
     request_body_json: { }
 
   retriever:

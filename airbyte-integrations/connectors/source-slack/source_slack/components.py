@@ -3,23 +3,12 @@ from typing import Optional
 from typing import List, Mapping, Any, Iterable
 import requests
 
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type, FailureType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation, AddFields
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
-@dataclass
-class SlackAuthenticator(DeclarativeAuthenticator):
-    config: Mapping[str, Any]
-    api_token_auth: BearerAuthenticator
-    access_token_auth: BearerAuthenticator
-
-    def __new__(cls, api_token_auth, access_token_auth, config, *args, **kwargs):
-        return api_token_auth if config["credentials"]["option_title"] == "API Token Credentials" else access_token_auth
 
 
 @dataclass
