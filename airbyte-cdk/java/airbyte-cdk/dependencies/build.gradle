@@ -169,6 +169,8 @@ dependencies {
     implementation 'me.andrz.jackson:jackson-json-reference-core:0.3.2' // needed so that we can follow $ref when parsing json
     implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
 
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
+
     testFixturesImplementation 'io.swagger:swagger-annotations:1.6.2'
     testFixturesImplementation 'org.apache.ant:ant:1.10.11'
 
