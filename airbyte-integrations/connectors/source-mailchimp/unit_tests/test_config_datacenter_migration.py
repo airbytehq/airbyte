@@ -13,6 +13,7 @@ from sources import Source
 # BASE ARGS
 SOURCE: Source = SourceMailchimp()
 
+
 # HELPERS
 def load_config(config_path: str) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
