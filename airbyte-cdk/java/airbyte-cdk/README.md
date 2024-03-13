@@ -166,6 +166,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.23.20 | 2024-03-12 | [\#36011](https://github.com/airbytehq/airbyte/pull/36011) | Debezium configuration for conversion of null value on a column with default value.                                                                            |
 | 0.23.19 | 2024-03-11 | [\#35904](https://github.com/airbytehq/airbyte/pull/35904) | Add retries to the debezium engine.                                                                                                                            |
 | 0.23.18 | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Null check when retrieving destination state                                                                                                                   |
 | 0.23.16 | 2024-03-06 | [\#35842](https://github.com/airbytehq/airbyte/pull/35842) | Improve logging in debezium processing.                                                                                                                        |
