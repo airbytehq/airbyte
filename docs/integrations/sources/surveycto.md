@@ -9,6 +9,10 @@ This page guides you through the process of setting up the SurveyCTO source conn
 - Your SurveyCTO `Password`
 - Form ID `Unique Identifier for one of your forms`
 - Start Date `Start Date default`
+- ### Optional Fields
+  - Dataset Id - Dataset ids for survey cto. It is required when getting data from dataset instead of a form
+  - Key - SurveyCTo enryption key. This is required if you're pulling data from an encrypted form/dataset
+  - Media Files - This is where the urls for the form mediafiles are stored. It can be stored in S3 or locally. If stored in S3, the `bucket`, `access_key_id`, `secret_access_key`, `region_name`, `file_key` and `url_column` are required. If stored locally, the `path`, `file_name` and `url_column` are required.
 
 ## How to setup a SurveyCTO Account
 
@@ -37,13 +41,17 @@ The SurveyCTO source connector supports the following [sync modes](https://docs.
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
 The SurveyCTO source connector supports the following streams:
 
-- Surveycto
+- Form Data
+- Form Dataset
+- Mediafiles - Currently, the stream is set up to accept a CSV file containing three columns: `file_name`, `file_type`, and `url_column`. This CSV is retrieved from an S3 bucket by the stream. While additional destinations are slated for future integration, the immediate output of the stream is a binary string encoding of the media files, such as images or audio. To revert these files to their original formats, a separate connector has been developed with the specific task of decoding the binary strings and then storing the media back into an S3 bucket in their original format. This division in the process ensures that media files are both easily accessible and maintain their integrity throughout the handling process.
+- Form Data Definition
+- Form Repeat Groups
 
 ## Changelog
 
