@@ -1,6 +1,3 @@
 {
-  "credentials": {
-    "auth_type": "apikey",
-    "apikey": "random_api_key-us10"
-  }
+  "credentials": { "auth_type": "apikey", "apikey": "random_api_key-us10" }
 }
