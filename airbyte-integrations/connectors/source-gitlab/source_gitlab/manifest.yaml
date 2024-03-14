@@ -12,11 +12,10 @@ definitions:
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     token_refresh_endpoint: "https://{{ config.get('api_url', 'gitlab.com') }}/oauth/token"
-    # TODO: update CDK to pass refresh_token_error_* values
-    refresh_token_error_status_codes: [400]
-    refresh_token_error_key: "error"
-    refresh_token_error_values: "invalid_grant"
-    refresh_token_updater: {}
+    refresh_token_updater:
+      refresh_token_error_status_codes: [400]
+      refresh_token_error_key: "error"
+      refresh_token_error_values: ["invalid_grant"]
   authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
