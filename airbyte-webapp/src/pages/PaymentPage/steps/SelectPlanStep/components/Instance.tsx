@@ -34,23 +34,20 @@ interface IProps {
 const Title = styled.div`
   font-weight: 500;
   font-size: 18px;
-  line-height: 30px;
   color: ${({ theme }) => theme.black300};
-  user-select: none;
 `;
 const TitleB = styled.div`
   font-weight: 400;
   font-size: 16px;
-  line-height: 30px;
+  line-height: 20px;
   color: #999999;
-  user-select: none;
 `;
 // const DeployContainer = styled.div`
 //   padding: 50px;
 // `;
 
 const CardContainer = styled.div`
-  padding: 20px 20px;
+  padding: 20px 20px 50px;
   background: #ffffff;
   border-radius: 16px;
 `;
@@ -77,15 +74,17 @@ const Instance: React.FC<IProps> = ({
     <CardContainer ref={regionScrollRef}>
       <Grid container spacing={2}>
         <Grid item lg={12} md={12} sm={12} xs={12}>
-          <Box pl={1}>
+          <Box pl={4} pt={4}>
             <Title>
               <FormattedMessage id="plan.instanceSize" />
             </Title>
           </Box>
-          <Box pl={1}>
-            <TitleB>
-              <FormattedMessage id="plan.instancedesc" />
-            </TitleB>
+          <Box pl={4} pt={2}>
+            <Box padding="0px 5px 0px">
+              <TitleB>
+                <FormattedMessage id="plan.instancedesc" />
+              </TitleB>
+            </Box>
           </Box>
         </Grid>
 
@@ -94,7 +93,7 @@ const Instance: React.FC<IProps> = ({
             {instance?.map((inst: any) => {
               return (
                 <Grid item lg={3} md={3} sm={6} xs={12} key={inst?.instanceItemId} className="col-span-1">
-                  <Box pt={2} pl={{ lg: 1 }}>
+                  <Box pt={2} pl={5}>
                     <FormControl>
                       <RadioGroup
                         row
