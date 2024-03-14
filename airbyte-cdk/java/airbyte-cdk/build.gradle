@@ -1,8 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
-}
 
 final var cdkVersion = {
     var props = new Properties()
@@ -10,13 +5,9 @@ final var cdkVersion = {
     return props.getProperty('version', 'undefined')
 }()
 
-
-
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'java-test-fixtures'
-    apply plugin: 'org.jetbrains.kotlin.jvm'
 
     group 'io.airbyte.cdk'
 
@@ -51,19 +42,6 @@ allprojects {
                     username System.getenv('CLOUDREPO_USER')
                     password System.getenv('CLOUDREPO_PASSWORD')
                 }
-            }
-        }
-
-        compileKotlin {
-            compilerOptions {
-                jvmTarget = JvmTarget.JVM_21
-                languageVersion = KotlinVersion.KOTLIN_1_9
-            }
-        }
-        compileTestKotlin {
-            compilerOptions {
-                jvmTarget = JvmTarget.JVM_21
-                languageVersion = KotlinVersion.KOTLIN_1_9
             }
         }
     }

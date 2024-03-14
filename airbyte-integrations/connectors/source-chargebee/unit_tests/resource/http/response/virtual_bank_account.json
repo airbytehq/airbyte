@@ -1,0 +1,24 @@
+{
+  "list": [
+    {
+      "virtual_bank_account": {
+        "account_number": "test_5a576cb69dc2",
+        "bank_name": "TEST BANK",
+        "created_at": 1517501396,
+        "customer_id": "__test__KyVnHhSBWSvsr5M",
+        "deleted": false,
+        "email": "Duncan@ac.com",
+        "gateway": "stripe",
+        "gateway_account_id": "gw___test__KyVnGlSBWSv3GHt",
+        "id": "vba___test__KyVnHhSBWSw7J5O",
+        "object": "virtual_bank_account",
+        "reference_id": "cus_I57FLcFhampr4H/src_1HUx16Jv9j0DyntJh6X59egJ",
+        "resource_version": 1517501396000,
+        "routing_number": "110000000",
+        "scheme": "ach_credit",
+        "swift_code": "TSTEZ122",
+        "updated_at": 1705697624
+      }
+    }
+  ]
+}

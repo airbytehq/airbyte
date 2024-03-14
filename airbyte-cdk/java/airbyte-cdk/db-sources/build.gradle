@@ -26,6 +26,10 @@ jsonSchema2Pojo {
     includeSetters = true
 }
 
+tasks.register('generate').configure {
+    dependsOn tasks.named('generateJsonSchema2Pojo')
+}
+
 dependencies {
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
