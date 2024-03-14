@@ -99,6 +99,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 0.4.1   | 2024-03-03 | [35509](https://github.com/airbytehq/airbyte/pull/35509) | Updates CDK version to latest (0.67.1), updates `site_migration_detail` record filtering                                                   |
 | 0.4.0   | 2024-02-12 | [34053](https://github.com/airbytehq/airbyte/pull/34053) | Add missing fields to and cleans up schemas, adds incremental support for `gift`, `site_migration_detail`, and `unbilled_charge` streams.` |
 | 0.3.1   | 2024-02-12 | [35169](https://github.com/airbytehq/airbyte/pull/35169) | Manage dependencies with Poetry.                                                                    |
 | 0.3.0   | 2023-12-26 | [33696](https://github.com/airbytehq/airbyte/pull/33696) | Add new stream, add fields to existing streams                                                      |

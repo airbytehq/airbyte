@@ -135,7 +135,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 
 :::info
 
-For Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `_pivot` to handle the data normalization correctly and avoid name conflicts with certain destinations.
+For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `pivotValue` to handle the data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). Please refer to the [LinkedIn documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for the format of the URN value for the Ad Analytics streams.
 
 :::
 

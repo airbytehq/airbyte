@@ -1179,9 +1179,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DestinationState extends M
     final Sql updateTable = generator.updateTable(incrementalDedupStream, "", Optional.empty(), true);
     destinationHandler.execute(updateTable);
     verifyRecords(
-        "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
+        "sqlgenerator/alltypes_v1v2_expectedrecords_raw.jsonl",
         dumpRawTableRecords(streamId),
-        "sqlgenerator/alltypes_expectedrecords_final.jsonl",
+        "sqlgenerator/alltypes_v1v2_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
   }
 
