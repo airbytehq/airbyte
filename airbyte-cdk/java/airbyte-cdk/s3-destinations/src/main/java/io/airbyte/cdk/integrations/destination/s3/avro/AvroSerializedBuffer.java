@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.s3.avro;
 import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -50,6 +51,12 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
   @Override
   protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));
+  }
+
+  @Override
+  protected void writeRecord(String recordString, String airbyteMetaString, long emittedAt) throws IOException {
+    // TODO Remove this double deserialization when S3 Destinations moves to Async.
+    writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
   }
 
   @Override
