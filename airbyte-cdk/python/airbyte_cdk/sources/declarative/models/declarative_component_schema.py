@@ -208,6 +208,20 @@ class CustomPartitionRouter(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CustomSchemaLoader(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomSchemaLoader']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom schema loader. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomSchemaLoader'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class CustomTransformation(BaseModel):
     class Config:
         extra = Extra.allow
@@ -1161,7 +1175,9 @@ class DeclarativeStream(BaseModel):
     primary_key: Optional[PrimaryKey] = Field(
         '', description='The primary key of the stream.', title='Primary Key'
     )
-    schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = Field(
+    schema_loader: Optional[
+        Union[InlineSchemaLoader, JsonFileSchemaLoader, CustomSchemaLoader]
+    ] = Field(
         None,
         description='Component used to retrieve the schema for the current stream.',
         title='Schema Loader',
