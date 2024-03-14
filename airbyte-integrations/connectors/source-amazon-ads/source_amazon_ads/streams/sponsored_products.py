@@ -6,7 +6,7 @@ from abc import ABC
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-import requests as requests
+from requests import Response
 from airbyte_protocol.models import SyncMode
 from source_amazon_ads.schemas import (
     Keywords,
@@ -16,10 +16,67 @@ from source_amazon_ads.schemas import (
     ProductAdGroups,
     ProductAdGroupSuggestedKeywords,
     ProductCampaign,
+    ProductCampaignV3,
     ProductTargeting,
 )
 from source_amazon_ads.streams.common import AmazonAdsStream, SubProfilesStream
 
+class SponsoredProductCampaignsV3(SubProfilesStream):
+    """
+    This stream corresponds to Amazon Ads API - Sponsored Products Campaigns
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Campaigns/operation/ListSponsoredProductsCampaigns
+    """
+
+    primary_key = "campaignId"
+    data_field = "campaigns"
+    state_filter = None
+    model = ProductCampaignV3
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state_filter = kwargs.get("config", {}).get("state_filter")
+
+    def path(self, **kwargs) -> str:
+        return "sp/campaigns/list"
+
+    @property
+    def http_method(self, **kwargs) -> str:
+        return "POST"
+
+    def request_headers(self, profile_id: str = None, *args, **kwargs) -> MutableMapping[str, Any]:
+        headers = super().request_headers(*args, **kwargs)
+        headers["Accept"] = "application/vnd.spCampaign.v3+json"
+        headers["Content-Type"] = "application/vnd.spCampaign.v3+json"
+        return headers
+
+    def next_page_token(self, response: Response) -> str:
+        if not response:
+            return None
+        return response.json().get("nextToken", None)
+
+    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        request_body = {}
+        if self.state_filter:
+            request_body["stateFilter"] = {
+                "include": self.state_filter
+            }
+        request_body["maxResults"] = self.page_size
+        request_body["nextToken"] = next_page_token
+
+        # tbd if included
+        # request_body["campaignIdFilter"] = {
+        #     "include": []
+        # }
+        # request_body["portfolioIdFilter"] = {
+        #     "include": []
+        # }
+        # request_body["includeExtendedDataFields"] = True
+        # request_body["nameFilter"] = {
+        #     "queryTermMatchType": "EXACT_MATCH",
+        #     "include": []
+        # }
+
+        return request_body
 
 class SponsoredProductCampaigns(SubProfilesStream):
     """
@@ -35,7 +92,7 @@ class SponsoredProductCampaigns(SubProfilesStream):
     state_filter = None
     model = ProductCampaign
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/sp/campaigns"
 
     def request_params(self, *args, **kwargs):
@@ -54,7 +111,7 @@ class SponsoredProductAdGroups(SubProfilesStream):
     primary_key = "adGroupId"
     model = ProductAdGroups
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/sp/adGroups"
 
 
@@ -77,9 +134,9 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
         self.__kwargs = kwargs
         super().__init__(*args, **kwargs)
 
-    def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
-        headers = super().request_headers(*args, **kvargs)
-        headers["Amazon-Advertising-API-Scope"] = str(kvargs["stream_slice"]["profileId"])
+    def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:
+        headers = super().request_headers(*args, **kwargs)
+        headers["Amazon-Advertising-API-Scope"] = str(kwargs["stream_slice"]["profileId"])
         return headers
 
     def stream_slices(
@@ -89,7 +146,7 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=None, stream_state=stream_state
         )
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: Response, **kwargs) -> Iterable[Mapping]:
 
         resp = response.json()
         if response.status_code == HTTPStatus.OK:
@@ -161,7 +218,7 @@ class SponsoredProductKeywords(SubProfilesStream):
     primary_key = "keywordId"
     model = Keywords
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/sp/keywords"
 
 
@@ -174,7 +231,7 @@ class SponsoredProductNegativeKeywords(SubProfilesStream):
     primary_key = "keywordId"
     model = NegativeKeywords
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/sp/negativeKeywords"
 
 
@@ -184,7 +241,7 @@ class SponsoredProductCampaignNegativeKeywords(SponsoredProductNegativeKeywords)
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords
     """
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/sp/campaignNegativeKeywords"
 
 
@@ -197,7 +254,7 @@ class SponsoredProductAds(SubProfilesStream):
     primary_key = "adId"
     model = ProductAd
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/sp/productAds"
 
 
@@ -210,5 +267,5 @@ class SponsoredProductTargetings(SubProfilesStream):
     primary_key = "targetId"
     model = ProductTargeting
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/sp/targets"

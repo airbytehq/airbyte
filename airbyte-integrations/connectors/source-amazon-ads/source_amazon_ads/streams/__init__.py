@@ -16,7 +16,12 @@ from .report_streams import (
     SponsoredDisplayReportStream,
     SponsoredProductsReportStream,
 )
-from .sponsored_brands import SponsoredBrandsAdGroups, SponsoredBrandsCampaigns, SponsoredBrandsKeywords
+from .sponsored_brands import (
+    SponsoredBrandsAdGroups,
+    SponsoredBrandsCampaigns,
+    SponsoredBrandsCampaignsV4,
+    SponsoredBrandsKeywords
+)
 from .sponsored_display import (
     SponsoredDisplayAdGroups,
     SponsoredDisplayBudgetRules,
@@ -32,6 +37,7 @@ from .sponsored_products import (
     SponsoredProductAds,
     SponsoredProductCampaignNegativeKeywords,
     SponsoredProductCampaigns,
+    SponsoredProductCampaignsV3,
     SponsoredProductKeywords,
     SponsoredProductNegativeKeywords,
     SponsoredProductTargetings,
@@ -51,11 +57,13 @@ __all__ = [
     "SponsoredProductAdGroupSuggestedKeywords",
     "SponsoredProductAds",
     "SponsoredProductCampaigns",
+    "SponsoredProductCampaignsV3",
     "SponsoredProductKeywords",
     "SponsoredProductNegativeKeywords",
     "SponsoredProductCampaignNegativeKeywords",
     "SponsoredProductTargetings",
     "SponsoredBrandsCampaigns",
+    "SponsoredBrandsCampaignsV4",
     "SponsoredBrandsAdGroups",
     "SponsoredBrandsKeywords",
     "SponsoredDisplayReportStream",
