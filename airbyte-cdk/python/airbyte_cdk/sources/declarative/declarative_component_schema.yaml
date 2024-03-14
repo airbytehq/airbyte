@@ -911,7 +911,7 @@ definitions:
               type: integer
             default: []
             examples:
-              - [ 400, 500 ]
+              - [400, 500]
           refresh_token_error_key:
             title: Refresh Token Error Key
             description: Key to Identify refresh token error in response.
@@ -925,9 +925,9 @@ definitions:
             type: array
             items:
               type: string
-            default: [ ]
+            default: []
             examples:
-              - [ "invalid_grant", "invalid_permissions" ]
+              - ["invalid_grant", "invalid_permissions"]
       $parameters:
         type: object
         additionalProperties: true
