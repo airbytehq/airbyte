@@ -62,6 +62,12 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
+  protected void writeRecord(String recordString, String airbyteMetaString, long emittedAt) {
+    // TODO Remove this double deserialization when S3 Destinations moves to Async.
+    writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
+  }
+
+  @Override
   protected void flushWriter() {
     printWriter.flush();
   }

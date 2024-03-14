@@ -136,7 +136,7 @@ public class MssqlInitialReadUtil {
       final MssqlInitialLoadStateManager initialLoadStateManager =
           new MssqlInitialLoadGlobalStateManager(initialLoadStreams,
               initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-              stateToBeUsed, catalog);
+              stateToBeUsed, catalog, namespacePair -> Jsons.emptyObject());
 
       final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
       final MssqlInitialLoadSourceOperations sourceOperations =
@@ -144,7 +144,6 @@ public class MssqlInitialReadUtil {
 
       final MssqlInitialLoadHandler initialLoadHandler = new MssqlInitialLoadHandler(sourceConfig, database,
           sourceOperations, quoteString, initialLoadStateManager,
-          namespacePair -> Jsons.emptyObject(),
           getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
