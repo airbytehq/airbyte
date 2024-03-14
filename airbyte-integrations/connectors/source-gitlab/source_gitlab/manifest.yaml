@@ -31,6 +31,7 @@ definitions:
       {{ parts[0] if parts|length > 1 else 'https' }}://{{ parts[1] if parts[1] else parts[0] }}/api/v4/
     http_method: GET
     authenticator: "#/definitions/authenticator"
+    use_cache: true
     error_handler:
       type: DefaultErrorHandler
       response_filters:
@@ -161,6 +162,7 @@ definitions:
       start_datetime: "{{ config.get('start_date') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: "PT1S"
@@ -189,7 +191,7 @@ definitions:
       partition_router:
         type: ListPartitionRouter
         cursor_field: "slice"
-        values: >-
+        values: |
           {% set slices = [] %}
           {% for group_id in config.get('groups_list', []) %}
           {% set _ = slices.append({'path': 'groups/' + group_id}) %}
@@ -211,7 +213,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - projects
-            value: >-
+            value: |
               {% set projects = [] %}
               {% for project in (record.get('projects') or []): %}
               {% set _ = projects.append({'id': project['id'], 'path_with_namespace': project['path_with_namespace']}) %}
@@ -281,7 +283,7 @@ definitions:
             value: "{{ (record.get('author') or {}).get('id') }}"
           - type: AddedFieldDefinition
             path: ["assignees"]
-            value: >-
+            value: |
               {% set ids = [] %}
               {% for data in (record.get('assignees') or []) %}
               {% set _ = ids.append(data.get('id')) %}
@@ -359,7 +361,7 @@ definitions:
             value: "{{ (record.get('commit') or {}).get('id') }}"
           - type: AddedFieldDefinition
             path: ["milestones"]
-            value: >-
+            value: |
               {% set ids = [] %}
               {% for data in record.get('milestones', []) %}
               {% set _ = ids.append(data.get('id')) %}
@@ -392,7 +394,6 @@ definitions:
   deployments_stream:
     name: "deployments"
     $ref: "#/definitions/base_projects_child_stream"
-    primary_key: "name"
     transformations:
       - "#/definitions/add_project_id_field"
       - type: AddFields
@@ -447,7 +448,7 @@ definitions:
             value: "{{ (record.get('milestone') or {}).get('id') }}"
           - type: AddedFieldDefinition
             path: ["assignees"]
-            value: >-
+            value: |
               {% set ids = [] %}
               {% for data in record.get('assignees', []) %}
               {% set _ = ids.append(data.get('id')) %}
@@ -479,7 +480,7 @@ definitions:
             value: "{{ (record.get('merged_by') or {}).get('id') }}"
           - type: AddedFieldDefinition
             path: ["assignees"]
-            value: >-
+            value: |
               {% set ids = [] %}
               {% for data in record.get('assignees', []) %}
               {% set _ = ids.append(data.get('id')) %}
