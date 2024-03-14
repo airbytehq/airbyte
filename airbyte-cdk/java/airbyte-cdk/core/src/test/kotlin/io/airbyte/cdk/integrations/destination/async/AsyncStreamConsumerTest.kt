@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
+import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
+import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteRecordMessage
@@ -115,6 +118,8 @@ class AsyncStreamConsumerTest {
     private lateinit var onClose: OnCloseFunction
     private lateinit var outputRecordCollector: Consumer<AirbyteMessage?>
     private lateinit var flushFailure: FlushFailure
+    private lateinit var streamAwareDataTransformer: StreamAwareDataTransformer
+    private lateinit var deserializationUtil: DeserializationUtil
 
     @BeforeEach
     @Suppress("UNCHECKED_CAST")
@@ -127,16 +132,21 @@ class AsyncStreamConsumerTest {
         flushFunction = Mockito.mock(DestinationFlushFunction::class.java)
         outputRecordCollector = Mockito.mock(Consumer::class.java) as Consumer<AirbyteMessage?>
         flushFailure = Mockito.mock(FlushFailure::class.java)
+        deserializationUtil = DeserializationUtil()
+        streamAwareDataTransformer = IdentityDataTransformer()
         consumer =
             AsyncStreamConsumer(
-                outputRecordCollector,
-                onStart,
-                onClose,
-                flushFunction,
-                CATALOG,
-                BufferManager(),
-                flushFailure,
-                "default_ns",
+                outputRecordCollector = outputRecordCollector,
+                onStart = onStart,
+                onClose = onClose,
+                flusher = flushFunction,
+                catalog = CATALOG,
+                bufferManager = BufferManager(),
+                flushFailure = flushFailure,
+                defaultNamespace = "default_ns",
+                dataTransformer = streamAwareDataTransformer,
+                deserializationUtil = deserializationUtil,
+                workerPool = Executors.newFixedThreadPool(5)
             )
 
         Mockito.`when`(flushFunction.optimalBatchSizeBytes).thenReturn(10000L)
@@ -310,7 +320,7 @@ class AsyncStreamConsumerTest {
                 )
         val serializedAirbyteMessage = Jsons.serialize(airbyteMessage)
         val airbyteRecordString = Jsons.serialize(PAYLOAD)
-        val partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage)
+        val partial = deserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, streamAwareDataTransformer)
         Assertions.assertEquals(airbyteRecordString, partial.serialized)
     }
 
@@ -334,7 +344,7 @@ class AsyncStreamConsumerTest {
                 )
         val serializedAirbyteMessage = Jsons.serialize(airbyteMessage)
         val airbyteRecordString = Jsons.serialize(payload)
-        val partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage)
+        val partial = deserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, streamAwareDataTransformer)
         Assertions.assertEquals(airbyteRecordString, partial.serialized)
     }
 
@@ -351,7 +361,7 @@ class AsyncStreamConsumerTest {
                         .withData(Jsons.jsonNode(emptyMap)),
                 )
         val serializedAirbyteMessage = Jsons.serialize(airbyteMessage)
-        val partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage)
+        val partial = deserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, streamAwareDataTransformer)
         Assertions.assertEquals(emptyMap.toString(), partial.serialized)
     }
 
@@ -365,16 +375,14 @@ class AsyncStreamConsumerTest {
         Assertions.assertThrows(
             RuntimeException::class.java,
         ) {
-            AsyncStreamConsumer.deserializeAirbyteMessage(
-                serializedAirbyteMessage,
-            )
+            deserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, streamAwareDataTransformer)
         }
     }
 
     @Test
     internal fun deserializeAirbyteMessageWithAirbyteState() {
         val serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1)
-        val partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage)
+        val partial = deserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, streamAwareDataTransformer)
         Assertions.assertEquals(serializedAirbyteMessage, partial.serialized)
     }
 
@@ -395,9 +403,7 @@ class AsyncStreamConsumerTest {
         Assertions.assertThrows(
             RuntimeException::class.java,
         ) {
-            AsyncStreamConsumer.deserializeAirbyteMessage(
-                serializedAirbyteMessage,
-            )
+            deserializationUtil.deserializeAirbyteMessage(serializedAirbyteMessage, streamAwareDataTransformer)
         }
     }
 

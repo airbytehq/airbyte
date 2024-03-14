@@ -12,13 +12,12 @@ import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
-
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import lombok.extern.slf4j.Slf4j;
 
 /**

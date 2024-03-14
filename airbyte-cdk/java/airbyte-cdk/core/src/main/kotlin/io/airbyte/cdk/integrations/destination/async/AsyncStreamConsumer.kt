@@ -11,6 +11,9 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferEnqueue
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
+import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
+import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
@@ -52,6 +55,8 @@ class AsyncStreamConsumer
         private val flushFailure: FlushFailure,
         private val defaultNamespace: String,
         workerPool: ExecutorService,
+        private val dataTransformer: StreamAwareDataTransformer,
+        private val deserializationUtil: DeserializationUtil,
     ) :
     SerializedAirbyteMessageConsumer {
         private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
@@ -110,6 +115,29 @@ class AsyncStreamConsumer
             catalog: ConfiguredAirbyteCatalog,
             bufferManager: BufferManager,
             defaultNamespace: String,
+            dataTransformer: StreamAwareDataTransformer,
+        ) : this(
+            outputRecordCollector,
+            onStart,
+            onClose,
+            flusher,
+            catalog,
+            bufferManager,
+            FlushFailure(),
+            defaultNamespace,
+            Executors.newFixedThreadPool(5),
+            dataTransformer,
+            DeserializationUtil(),
+        )
+
+        constructor(
+            outputRecordCollector: Consumer<AirbyteMessage?>,
+            onStart: OnStartFunction,
+            onClose: OnCloseFunction,
+            flusher: DestinationFlushFunction,
+            catalog: ConfiguredAirbyteCatalog,
+            bufferManager: BufferManager,
+            defaultNamespace: String,
             workerPool: ExecutorService,
         ) : this(
             outputRecordCollector,
@@ -121,6 +149,8 @@ class AsyncStreamConsumer
             FlushFailure(),
             defaultNamespace,
             workerPool,
+            IdentityDataTransformer(),
+            DeserializationUtil(),
         )
 
         @VisibleForTesting
@@ -143,6 +173,8 @@ class AsyncStreamConsumer
             flushFailure,
             defaultNamespace,
             Executors.newFixedThreadPool(5),
+            IdentityDataTransformer(),
+            DeserializationUtil(),
         )
 
         @Throws(Exception::class)
@@ -168,7 +200,7 @@ class AsyncStreamConsumer
          * to try to use a thread pool to partially deserialize to get record type and stream name, we can
          * do it without touching buffer manager.
          */
-            val message = deserializeAirbyteMessage(messageString)
+            val message = deserializationUtil.deserializeAirbyteMessage(messageString, dataTransformer)
             if (AirbyteMessage.Type.RECORD == message.type) {
                 if (Strings.isNullOrEmpty(message.record?.namespace)) {
                     message.record?.namespace = defaultNamespace
@@ -242,49 +274,6 @@ class AsyncStreamConsumer
 
         companion object {
             private val LOGGER: Logger = LoggerFactory.getLogger(AsyncStreamConsumer::class.java)
-
-            /**
-             * Deserializes to a [PartialAirbyteMessage] which can represent both a Record or a State
-             * Message
-             *
-             * PartialAirbyteMessage holds either:
-             *  * entire serialized message string when message is a valid State Message
-             *  * serialized AirbyteRecordMessage when message is a valid Record Message
-             *
-             * @param messageString the string to deserialize
-             * @return PartialAirbyteMessage if the message is valid, empty otherwise
-             */
-            @VisibleForTesting
-            fun deserializeAirbyteMessage(messageString: String?): PartialAirbyteMessage {
-                // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage code
-                // parity. https://github.com/airbytehq/airbyte/issues/27530 for additional context
-                val partial =
-                    Jsons.tryDeserializeExact(
-                        messageString,
-                        PartialAirbyteMessage::class.java,
-                    )
-                        .orElseThrow {
-                            RuntimeException(
-                                "Unable to deserialize PartialAirbyteMessage.",
-                            )
-                        }
-
-                val msgType = partial.type
-                if (AirbyteMessage.Type.RECORD == msgType && partial.record?.data != null) {
-                    // store serialized json
-                    partial.withSerialized(partial.record?.data.toString())
-                    // The connector doesn't need to be able to access to the record value. We can serialize it here and
-                    // drop the json
-                    // object. Having this data stored as a string is slightly more optimal for the memory usage.
-                    partial.record?.data = null
-                } else if (AirbyteMessage.Type.STATE == msgType) {
-                    partial.withSerialized(messageString)
-                } else {
-                    throw RuntimeException(String.format("Unsupported message type: %s", msgType))
-                }
-
-                return partial
-            }
 
             private fun throwUnrecognizedStream(
                 catalog: ConfiguredAirbyteCatalog?,

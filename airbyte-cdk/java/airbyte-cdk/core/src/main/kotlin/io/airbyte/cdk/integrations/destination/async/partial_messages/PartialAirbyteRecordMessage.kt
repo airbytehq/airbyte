@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.async.partial_messages
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.Objects
 
@@ -35,6 +36,11 @@ class PartialAirbyteRecordMessage {
     @JsonPropertyDescription("when the data was emitted from the source. epoch in millisecond.")
     var emittedAt: Long = 0
 
+    @get:JsonProperty("meta")
+    @set:JsonProperty("meta")
+    @JsonProperty("meta")
+    var meta: AirbyteRecordMessageMeta? = null
+
     fun withNamespace(namespace: String?): PartialAirbyteRecordMessage {
         this.namespace = namespace
         return this
@@ -55,6 +61,11 @@ class PartialAirbyteRecordMessage {
         return this
     }
 
+    fun withMeta(meta: AirbyteRecordMessageMeta?): PartialAirbyteRecordMessage {
+        this.meta = meta
+        return this
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
@@ -63,11 +74,11 @@ class PartialAirbyteRecordMessage {
             return false
         }
         val that = other as PartialAirbyteRecordMessage
-        return namespace == that.namespace && stream == that.stream && emittedAt == that.emittedAt
+        return namespace == that.namespace && stream == that.stream && emittedAt == that.emittedAt && meta == that.meta
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(namespace, stream, emittedAt)
+        return Objects.hash(namespace, stream, emittedAt, meta)
     }
 
     override fun toString(): String {
@@ -75,6 +86,7 @@ class PartialAirbyteRecordMessage {
             "namespace='" + namespace + '\'' +
             ", stream='" + stream + '\'' +
             ", emittedAt='" + emittedAt + '\'' +
+            ", meta='" + meta + '\'' +
             '}'
     }
 

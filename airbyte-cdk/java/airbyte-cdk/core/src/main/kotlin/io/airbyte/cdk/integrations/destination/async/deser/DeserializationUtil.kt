@@ -1,14 +1,13 @@
 /*
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.cdk.integrations.destination_async.deser
+package io.airbyte.cdk.integrations.destination.async.deser
 
-import com.google.common.annotations.VisibleForTesting
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 
-object DeserializationUtil {
+class DeserializationUtil {
     /**
      * Deserializes to a [PartialAirbyteMessage] which can represent both a Record or a State
      * Message
@@ -20,8 +19,6 @@ object DeserializationUtil {
      * @param messageString the string to deserialize
      * @return PartialAirbyteMessage if the message is valid, empty otherwise
      */
-    @JvmStatic
-    @VisibleForTesting
     fun deserializeAirbyteMessage(
         messageString: String?,
         dataTransformer: StreamAwareDataTransformer
@@ -35,23 +32,23 @@ object DeserializationUtil {
                 .orElseThrow { RuntimeException("Unable to deserialize PartialAirbyteMessage.") }
 
         val msgType = partial.type
-        if (AirbyteMessage.Type.RECORD == msgType && partial.record.data != null) {
+        if (AirbyteMessage.Type.RECORD == msgType && partial.record?.data != null) {
             // Transform data provided by destination.
             val transformedData =
                 dataTransformer.transform(
-                    partial.record.streamDescriptor,
-                    partial.record.data,
-                    partial.record.meta
+                    partial.record?.streamDescriptor,
+                    partial.record?.data,
+                    partial.record?.meta
                 )
             // store serialized json & meta
-            partial.withSerialized(Jsons.serialize(transformedData.getLeft()))
-            partial.record.meta = transformedData.getRight()
+            partial.withSerialized(Jsons.serialize(transformedData.first))
+            partial.record?.meta = transformedData.second
             // The connector doesn't need to be able to access to the record value. We can serialize
             // it here and
             // drop the json
             // object. Having this data stored as a string is slightly more optimal for the memory
             // usage.
-            partial.record.data = null
+            partial.record?.data = null
         } else if (AirbyteMessage.Type.STATE == msgType) {
             partial.withSerialized(messageString)
         } else {
