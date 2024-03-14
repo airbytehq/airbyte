@@ -1,0 +1,25 @@
+name: Connector Ops CI - Check contractors review requirements
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+jobs:
+  check-review-requirements:
+    name: "Check if a review is required from Connector teams"
+    runs-on: ubuntu-latest
+
+    if: ${{ github.repository == 'airbytehq/airbyte' && github.event.pull_request.draft == false }}
+    steps:
+      - name: Check if the review requirements are met
+        uses: Automattic/action-required-review@v3
+        with:
+          status: Required review
+          token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
+          request-reviews: true
+          fail: true
+          teams:
+            - @airbytehq/connector-extensibility
