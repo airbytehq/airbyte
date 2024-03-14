@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from airbyte_cdk.utils import is_cloud_environment
 
 import os
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -97,57 +97,17 @@ class SourceGitlab(YamlDeclarativeSource):
     def __init__(self, *args, **kwargs):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
         self.__auth_params: Mapping[str, Any] = {}
-        self.__groups_stream: Optional[GitlabStream] = None
-        self.__projects_stream: Optional[GitlabStream] = None
 
     @staticmethod
     def _ensure_default_values(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config["api_url"] = config.get("api_url") or "gitlab.com"
         return config
 
-    def _groups_stream(self, config: MutableMapping[str, Any]) -> Groups:
-        if not self.__groups_stream:
-            auth_params = self._auth_params(config)
-            group_ids = list(map(lambda x: x["id"], self._get_group_list(config)))
-            self.__groups_stream = Groups(group_ids=group_ids, **auth_params)
-        return self.__groups_stream
-
-    def _projects_stream(self, config: MutableMapping[str, Any]) -> Union[Projects, GroupProjects]:
-        if not self.__projects_stream:
-            auth_params = self._auth_params(config)
-            project_ids = config.get("projects_list", [])
-            groups_stream = self._groups_stream(config)
-            if groups_stream.group_ids:
-                self.__projects_stream = GroupProjects(project_ids=project_ids, parent_stream=groups_stream, **auth_params)
-                return self.__projects_stream
-            self.__projects_stream = Projects(project_ids=project_ids, **auth_params)
-        return self.__projects_stream
-
     def _auth_params(self, config: MutableMapping[str, Any]) -> Mapping[str, Any]:
         if not self.__auth_params:
             auth = get_authenticator(config)
             self.__auth_params = dict(authenticator=auth, api_url=config["api_url"])
         return self.__auth_params
-
-    def _get_group_list(self, config: MutableMapping[str, Any]) -> List[str]:
-        group_ids = config.get("groups_list")
-        # Gitlab exposes different APIs to get a list of groups.
-        # We use https://docs.gitlab.com/ee/api/groups.html#list-groups in case there's no group IDs in the input config.
-        # This API provides full information about all available groups, including subgroups.
-        #
-        # In case there is a definitive list of groups IDs in the input config, the above API can not be used since
-        # it does not support filtering by group ID, so we use
-        # https://docs.gitlab.com/ee/api/groups.html#details-of-a-group and
-        # https: //docs.gitlab.com/ee/api/groups.html#list-a-groups-descendant-groups for each group ID. The latter one does not
-        # provide full group info so can only be used to retrieve  alist of group IDs and pass it further to init a corresponding stream.
-        auth_params = self._auth_params(config)
-        stream = GroupsList(**auth_params) if not group_ids else IncludeDescendantGroups(group_ids=group_ids, **auth_params)
-        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            yield from stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-
-    @staticmethod
-    def _is_http_allowed() -> bool:
-        return os.environ.get("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
     def _try_refresh_access_token(self, logger, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -183,18 +143,10 @@ class SourceGitlab(YamlDeclarativeSource):
         is_valid, scheme, _ = parse_url(config["api_url"])
         if not is_valid:
             return False, "Invalid API resource locator."
-        if scheme == "http" and not self._is_http_allowed():
+        if scheme == "http" and is_cloud_environment():
             return False, "Http scheme is not allowed in this environment. Please use `https` instead."
         try:
-            projects = self._projects_stream(config)
-            for stream_slice in projects.stream_slices(sync_mode=SyncMode.full_refresh):
-                try:
-                    next(projects.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
-                    return True, None
-                except StopIteration:
-                    # in case groups/projects provided and 404 occurs
-                    return False, "Groups and/or projects that you provide are invalid or you don't have permission to view it."
-            return True, None  # in case there's no projects
+            return super().check_connection(logger, config)
         except HTTPError as http_error:
             if config["credentials"]["auth_type"] == "oauth2.0":
                 if http_error.response.status_code == 401:
