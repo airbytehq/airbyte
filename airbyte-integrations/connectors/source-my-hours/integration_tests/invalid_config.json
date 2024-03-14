@@ -1,10 +1,4 @@
 {
   "start_date": "2021-12-01",
-  "credentials": {
-    "email": "wrong",
-    "password": "wrong",
-    "auth_type": "anything",
-    "access_token": "token"
-  },
-  "logs_batch_size": 30
+  "api_key": "wrong_api_key"
 }

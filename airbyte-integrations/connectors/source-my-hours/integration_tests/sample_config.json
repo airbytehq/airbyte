@@ -1,10 +1,4 @@
 {
   "start_date": "2021-12-01",
-  "credentials": {
-    "email": "mail",
-    "password": "pass",
-    "auth_type": "oauth2_access_token",
-    "access_token": "token"
-  },
-  "logs_batch_size": 30
+  "api_key": "api_key"
 }
