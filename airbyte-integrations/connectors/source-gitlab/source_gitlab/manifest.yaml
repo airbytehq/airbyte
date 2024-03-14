@@ -155,8 +155,25 @@ definitions:
     retriever: "#/definitions/projects_child_streams_retriever"
 
   base_projects_incremental_child_stream:
-    $ref: "#/definitions/base_full_refresh_stream"
-    retriever: "#/definitions/projects_child_streams_retriever"
+    $ref: "#/definitions/base_projects_child_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
+      start_datetime: "{{ config.get('start_date') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: "PT1S"
+      step: "P180D"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('lower_bound_filter', 'updated_after') }}"
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('upper_bound_filter', 'updated_before') }}"
+        inject_into: request_parameter
 
   groups_list_stream:
     name: "groups_list"
@@ -407,6 +424,9 @@ definitions:
       - "#/definitions/add_project_id_field"
     $parameters:
       path: "projects/{{ stream_slice.id }}/repository/commits"
+      cursor_field: "created_at"
+      lower_bound_filter: "since"
+      upper_bound_filter: "until"
 
   issues_stream:
     name: "issues"

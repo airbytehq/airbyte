@@ -3,8 +3,6 @@
 #
 
 
-from airbyte_cdk.utils import is_cloud_environment
-
 from typing import Any, Mapping, MutableMapping, Tuple, Union
 
 import pendulum
@@ -12,7 +10,7 @@ from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 from requests.exceptions import HTTPError
 
 from .utils import parse_url
