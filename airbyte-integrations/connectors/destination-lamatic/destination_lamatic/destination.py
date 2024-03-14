@@ -37,9 +37,10 @@ def create_connection(config: Mapping[str, Any]) -> BlockingConnection:
     return BlockingConnection(params)
 
 
-def consume_messages():
+def consume_messages(config):
     # Establish a new connection and channel for each thread
-    connection = pika.BlockingConnection(pika.ConnectionParameters('172.17.0.1')) ##TODO: Have to update the host later
+    host =  config.get('host')
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host)) ##TODO: Have to update the host later
     channel = connection.channel()
     
     # Ensure the queue exists
@@ -75,9 +76,9 @@ def consume_messages():
     connection.close()
 
 
-def start_consumer_thread():
+def start_consumer_thread(config):
     print("Consumer Thread started")
-    consumer_thread = threading.Thread(target=consume_messages)
+    consumer_thread = threading.Thread(target=consume_messages, args=(config,))
     consumer_thread.start()
     return consumer_thread
 
@@ -103,7 +104,7 @@ class DestinationLamatic(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         print("Executing this function")
-        consumer_thread = start_consumer_thread()
+        consumer_thread = start_consumer_thread(config)
         time.sleep(1)
         
         exchange = config.get("exchange")
