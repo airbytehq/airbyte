@@ -1268,9 +1268,9 @@ class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_state_messages(state_messages: List[AirbyteMessage], configured_catalog: ConfiguredAirbyteCatalog):
         # Ensure that at least one state message is emitted for each stream
-        assert len(state_messages) >= len(configured_catalog.streams), (
-            "At least one state message should be emitted for each configured stream."
-        )
+        assert len(state_messages) >= len(
+            configured_catalog.streams
+        ), "At least one state message should be emitted for each configured stream."
 
         for state_message in state_messages:
             state = state_message.state
