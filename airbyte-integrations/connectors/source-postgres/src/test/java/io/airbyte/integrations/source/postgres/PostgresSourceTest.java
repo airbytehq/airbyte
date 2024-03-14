@@ -27,10 +27,10 @@ import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -135,7 +135,7 @@ class PostgresSourceTest {
 
   @BeforeEach
   void setup() {
-    testdb = PostgresTestDatabase.in("postgres:16-bullseye")
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16)
         .with("CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));")
         .with("CREATE INDEX i1 ON id_and_name (id);")
         .with("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
@@ -153,9 +153,7 @@ class PostgresSourceTest {
   }
 
   public PostgresSource source() {
-    var source = new PostgresSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+    return new PostgresSource();
   }
 
   private static DSLContext getDslContextWithSpecifiedUser(final JsonNode config, final String username, final String password) {
@@ -223,7 +221,7 @@ class PostgresSourceTest {
   public void testCanReadUtf8() throws Exception {
     // force the db server to start with sql_ascii encoding to verify the source can read UTF8 even when
     // default settings are in another encoding
-    try (final var asciiTestDB = PostgresTestDatabase.in("postgres:16-alpine", "withASCII")
+    try (final var asciiTestDB = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.ASCII)
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');")) {
       final var config = asciiTestDB.testConfigBuilder().withSchemas(SCHEMA_NAME).withoutSsl().build();
@@ -248,20 +246,19 @@ class PostgresSourceTest {
       return null;
     });
     final JsonNode config = getConfig();
-    try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132")) {
-      final Database database = new Database(dslContext);
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
-            + "SELECT id_and_name_3.id,\n"
-            + "       id_and_name_3.name\n"
-            + "FROM id_and_name_3;\n"
-            + "ALTER TABLE id_and_name_3_view\n"
-            + "    owner TO test_user_3");
-        ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
-        return null;
-      });
-    }
+    final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132");
+    final Database database = new Database(dslContext);
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
+          + "SELECT id_and_name_3.id,\n"
+          + "       id_and_name_3.name\n"
+          + "FROM id_and_name_3;\n"
+          + "ALTER TABLE id_and_name_3_view\n"
+          + "    owner TO test_user_3");
+      ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
+      return null;
+    });
     final JsonNode anotherUserConfig = getConfig("test_user_3", "132");
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
@@ -311,13 +308,12 @@ class PostgresSourceTest {
     });
     final var config = getConfig();
 
-    try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132")) {
-      final Database database = new Database(dslContext);
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
-        return null;
-      });
-    }
+    final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132");
+    final Database database = new Database(dslContext);
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+      return null;
+    });
     AirbyteCatalog actual = source().discover(getConfig("test_user_4", "132"));
     Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
     assertEquals(Sets.newHashSet("id_and_name", "id_and_name_7", "id_and_name_3"), tableNames);
@@ -698,7 +694,7 @@ class PostgresSourceTest {
   @Test
   void testParseJdbcParameters() {
     final String jdbcPropertiesString = "foo=bar&options=-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000&baz=quux";
-    Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
+    final Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
     assertEquals("-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000", parameters.get("options"));
     assertEquals("bar", parameters.get("foo"));
     assertEquals("quux", parameters.get("baz"));

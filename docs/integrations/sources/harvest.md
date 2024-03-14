@@ -80,8 +80,12 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
-| 0.1.20 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| 0.1.24  | 2024-02-26 | [35541](https://github.com/airbytehq/airbyte/pull/35541) | Improve check command to avoid missing alerts                                      |
+| 0.1.23  | 2024-02-19 | [35305](https://github.com/airbytehq/airbyte/pull/35305) | Fix pendulum parsing error                                                         |
+| 0.1.22  | 2024-02-12 | [35154](https://github.com/airbytehq/airbyte/pull/35154) | Manage dependencies with Poetry.                                                   |
+| 0.1.21  | 2023-11-30 | [33003](https://github.com/airbytehq/airbyte/pull/33003) | Update expected records                                                            |
+| 0.1.20  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image    |
 | 0.1.19  | 2023-07-26 | [28755](https://github.com/airbytehq/airbyte/pull/28755) | Changed parameters for Time Reports to use 365 days as opposed to 1 year           |
 | 0.1.18  | 2023-05-29 | [26714](https://github.com/airbytehq/airbyte/pull/26714) | Remove `authSpecification` from spec in favour of `advancedAuth`                   |
 | 0.1.17  | 2023-03-03 | [22983](https://github.com/airbytehq/airbyte/pull/22983) | Specified date formatting in specification                                         |

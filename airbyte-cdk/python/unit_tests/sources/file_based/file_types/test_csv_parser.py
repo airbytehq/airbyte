@@ -447,11 +447,13 @@ class CsvReaderTest(unittest.TestCase):
             .build()
         )
 
+        dialects_before = set(csv.list_dialects())
         data_generator = self._read_data()
         next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" in csv.list_dialects()
+        [new_dialect] = set(csv.list_dialects()) - dialects_before
+        assert self._CONFIG_NAME in new_dialect
         data_generator.close()
-        assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
+        assert new_dialect not in csv.list_dialects()
 
     def test_given_too_many_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
         self._stream_reader.open_file.return_value = (
@@ -466,13 +468,15 @@ class CsvReaderTest(unittest.TestCase):
             .build()
         )
 
+        dialects_before = set(csv.list_dialects())
         data_generator = self._read_data()
         next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" in csv.list_dialects()
+        [new_dialect] = set(csv.list_dialects()) - dialects_before
+        assert self._CONFIG_NAME in new_dialect
 
         with pytest.raises(RecordParseError):
             next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
+        assert new_dialect not in csv.list_dialects()
 
     def test_given_too_few_values_for_columns_when_read_data_then_raise_exception_and_unregister_dialect(self) -> None:
         self._stream_reader.open_file.return_value = (
@@ -487,13 +491,15 @@ class CsvReaderTest(unittest.TestCase):
             .build()
         )
 
+        dialects_before = set(csv.list_dialects())
         data_generator = self._read_data()
         next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" in csv.list_dialects()
+        [new_dialect] = set(csv.list_dialects()) - dialects_before
+        assert self._CONFIG_NAME in new_dialect
 
         with pytest.raises(RecordParseError):
             next(data_generator)
-        assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
+        assert new_dialect not in csv.list_dialects()
 
     def _read_data(self) -> Generator[Dict[str, str], None, None]:
         data_generator = self._csv_reader.read_data(

@@ -72,8 +72,8 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
-    csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), recordString, emittedAt));
+  protected void writeRecord(final String recordString, String airbyteMetaString, final long emittedAt) throws IOException {
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), recordString, emittedAt, airbyteMetaString));
   }
 
   @Override

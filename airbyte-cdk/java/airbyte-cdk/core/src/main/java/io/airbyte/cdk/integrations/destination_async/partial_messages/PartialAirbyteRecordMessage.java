@@ -7,6 +7,8 @@ package io.airbyte.cdk.integrations.destination_async.partial_messages;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Objects;
 
 // TODO: (ryankfu) remove this and test with low memory resources to ensure OOM is still not a
@@ -25,6 +27,9 @@ public class PartialAirbyteRecordMessage {
   @JsonProperty("emitted_at")
   @JsonPropertyDescription("when the data was emitted from the source. epoch in millisecond.")
   private long emittedAt;
+
+  @JsonProperty("meta")
+  private AirbyteRecordMessageMeta meta;
 
   public PartialAirbyteRecordMessage() {}
 
@@ -88,6 +93,14 @@ public class PartialAirbyteRecordMessage {
     return this;
   }
 
+  public AirbyteRecordMessageMeta getMeta() {
+    return meta;
+  }
+
+  public void setMeta(AirbyteRecordMessageMeta meta) {
+    this.meta = meta;
+  }
+
   @Override
   public boolean equals(final Object o) {
     if (this == o) {
@@ -114,6 +127,10 @@ public class PartialAirbyteRecordMessage {
         ", stream='" + stream + '\'' +
         ", emittedAt='" + emittedAt + '\'' +
         '}';
+  }
+
+  public StreamDescriptor getStreamDescriptor() {
+    return new StreamDescriptor().withName(stream).withNamespace(namespace);
   }
 
 }

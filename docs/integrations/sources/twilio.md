@@ -17,7 +17,7 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the <Source/Destination> type dropdown.
+3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the Source/Destination type dropdown.
 4. Enter your `account_sid`.
 5. Enter your `auth_token`.
 6. Enter your `start_date`.
@@ -95,6 +95,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.10.2 | 2024-02-12 | [35153](https://github.com/airbytehq/airbyte/pull/35153) | Manage dependencies with Poetry. |
 | 0.10.1 | 2023-11-21 | [32718](https://github.com/airbytehq/airbyte/pull/32718) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.10.0  | 2023-07-28 | [27323](https://github.com/airbytehq/airbyte/pull/27323)  | Add new stream `Step`                                                                                  |
 | 0.9.0   | 2023-06-27 | [27221](https://github.com/airbytehq/airbyte/pull/27221)  | Add new stream `UserConversations` with parent `Users`                                                  |

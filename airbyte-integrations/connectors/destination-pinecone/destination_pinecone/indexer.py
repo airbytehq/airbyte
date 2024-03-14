@@ -90,7 +90,8 @@ class PineconeIndexer(Indexer):
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             metadata = self._truncate_metadata(chunk.metadata)
-            metadata["text"] = chunk.page_content
+            if chunk.page_content is not None:
+                metadata["text"] = chunk.page_content
             pinecone_docs.append((str(uuid.uuid4()), chunk.embedding, metadata))
         serial_batches = create_chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE * PARALLELISM_LIMIT)
         for batch in serial_batches:

@@ -4,23 +4,21 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import java.time.Instant;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
 
-public interface DestinationHandler<DialectTableDefinition> {
+public interface DestinationHandler<DestinationState> {
 
-  Optional<DialectTableDefinition> findExistingTable(StreamId id) throws Exception;
-
-  boolean isFinalTableEmpty(StreamId id) throws Exception;
+  void execute(final Sql sql) throws Exception;
 
   /**
-   * Returns the highest timestamp such that all records with _airbyte_extracted equal to or earlier
-   * than that timestamp have non-null _airbyte_loaded_at.
-   * <p>
-   * If the raw table is empty or does not exist, return an empty optional.
+   * Fetch the current state of the destination for the given streams. This method MUST create the
+   * airbyte_internal.state table if it does not exist. This method MAY assume the airbyte_internal
+   * schema already exists. (substitute the appropriate raw table schema if the user is overriding
+   * it).
    */
-  Optional<Instant> getMinTimestampForSync(StreamId id) throws Exception;
+  List<DestinationInitialStatus<DestinationState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception;
 
-  void execute(final String sql) throws Exception;
+  void commitDestinationStates(final Map<StreamId, DestinationState> destinationStates) throws Exception;
 
 }

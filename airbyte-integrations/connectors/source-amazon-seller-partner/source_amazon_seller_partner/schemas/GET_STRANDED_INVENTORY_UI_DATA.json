@@ -6,7 +6,10 @@
   "properties": {
     "primary-action": { "type": ["null", "string"] },
     "date-stranded": { "type": ["null", "string"], "format": "date-time" },
-    "Date-to-take-auto-removal": { "type": ["null", "string"], "format": "date-time" },
+    "Date-to-take-auto-removal": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "status-primary": { "type": ["null", "string"] },
     "status-secondary": { "type": ["null", "string"] },
     "error-message": { "type": ["null", "string"] },

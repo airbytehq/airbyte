@@ -314,6 +314,11 @@ def issue_custom_field_contexts_response():
 
 
 @fixture
+def issue_custom_field_options_response():
+    return json.loads(load_file("issue_custom_field_options.json"))
+
+
+@fixture
 def issue_property_keys_response():
     return json.loads(load_file("issue_property_keys.json"))
 
@@ -379,6 +384,17 @@ def mock_projects_responses(config, projects_response):
 
 
 @fixture
+def mock_projects_responses_additional_project(config, projects_response):
+    Projects.use_cache = False
+    projects_response["values"] += [{"id": "3", "key": "Project3"}, {"id": "4", "key": "Project4"}]
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json=projects_response,
+    )
+
+
+@fixture
 def mock_issues_responses(config, issues_response):
     responses.add(
         responses.GET,
@@ -409,6 +425,141 @@ def mock_issues_responses(config, issues_response):
             )
         ],
         json={},
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search",
+        match=[
+            matchers.query_param_matcher(
+                {
+                    "maxResults": 50,
+                    "fields": "*all",
+                    "jql": "project in (3) ORDER BY updated asc",
+                    "expand": "renderedFields,transitions,changelog",
+                }
+            )
+        ],
+        json={"errorMessages": ["The value '3' does not exist for the field 'project'."]},
+        status=400,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search",
+        match=[
+            matchers.query_param_matcher(
+                {
+                    "maxResults": 50,
+                    "fields": "*all",
+                    "jql": "project in (4) ORDER BY updated asc",
+                    "expand": "renderedFields,transitions,changelog",
+                }
+            )
+        ],
+        json={
+            "issues": [
+                {
+                    "key": "TESTKEY13-2",
+                    "fields": {
+                        "project": {
+                            "id": "10016",
+                            "key": "TESTKEY13",
+                        },
+                        "created": "2022-06-09T16:29:31.871-0700",
+                        "updated": "2022-12-08T02:22:18.889-0800",
+                    },
+                }
+            ]
+        },
+    )
+
+
+@fixture
+def mock_project_emails(config, project_email_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/1/email?maxResults=50",
+        json=project_email_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/2/email?maxResults=50",
+        json=project_email_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/3/email?maxResults=50",
+        json={"errorMessages": ["No access to emails for project 3"]},
+        status=403,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/4/email?maxResults=50",
+        json=project_email_response,
+    )
+
+
+@fixture
+def mock_issue_watchers_responses(config, issue_watchers_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers?maxResults=50",
+        json=issue_watchers_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-2/watchers?maxResults=50",
+        json={"errorMessages": ["Not found watchers for issue TESTKEY13-2"]},
+        status=404,
+    )
+
+
+@fixture
+def mock_issue_custom_field_contexts_response(config, issue_custom_field_contexts_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field/issuetype/context?maxResults=50",
+        json=issue_custom_field_contexts_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field/issuetype2/context?maxResults=50",
+        json={},
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field/issuetype3/context?maxResults=50",
+        json={},
+    )
+
+
+@fixture
+def mock_issue_custom_field_contexts_response_error(config, issue_custom_field_contexts_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field/issuetype/context?maxResults=50",
+        json=issue_custom_field_contexts_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field/issuetype2/context?maxResults=50",
+        json={"errorMessages": ["Not found issue custom field context for issue fields issuetype2"]},
+        status=404,
+    )
+    responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/field/issuetype3/context?maxResults=50", json={})
+
+
+@fixture
+def mock_issue_custom_field_options_response(config, issue_custom_field_options_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field/issuetype/context/10130/option?maxResults=50",
+        json=issue_custom_field_options_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field/issuetype/context/10129/option?maxResults=50",
+        json={"errorMessages": ["Not found issue custom field options for issue fields issuetype3"]},
+        status=404,
     )
 
 

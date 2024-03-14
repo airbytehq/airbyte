@@ -27,6 +27,7 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvWriter.Builder;
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
+import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerWithMetadata;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -40,12 +41,16 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.MockedConstruction;
 
+@Timeout(value = 90,
+         unit = TimeUnit.SECONDS)
 class S3CsvWriterTest {
 
   public static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
@@ -80,7 +85,7 @@ class S3CsvWriterTest {
 
   private AmazonS3 s3Client;
 
-  private MockedConstruction<StreamTransferManager> streamTransferManagerMockedConstruction;
+  private MockedConstruction<StreamTransferManagerWithMetadata> streamTransferManagerMockedConstruction;
   private List<StreamTransferManagerArguments> streamTransferManagerConstructorArguments;
   private List<ByteArrayOutputStream> outputStreams;
 
@@ -95,7 +100,7 @@ class S3CsvWriterTest {
     // This is basically RETURNS_SELF, except with getMultiPartOutputStreams configured correctly.
     // Other non-void methods (e.g. toString()) will return null.
     streamTransferManagerMockedConstruction = mockConstruction(
-        StreamTransferManager.class,
+        StreamTransferManagerWithMetadata.class,
         (mock, context) -> {
           // Mockito doesn't seem to provide an easy way to actually retrieve these arguments later on, so
           // manually store them on construction.
@@ -174,7 +179,7 @@ class S3CsvWriterTest {
 
     writer.close(false);
 
-    final List<StreamTransferManager> managers = streamTransferManagerMockedConstruction.constructed();
+    final List<StreamTransferManagerWithMetadata> managers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager manager = managers.get(0);
     verify(manager).complete();
   }
@@ -185,7 +190,7 @@ class S3CsvWriterTest {
 
     writer.close(true);
 
-    final List<StreamTransferManager> managers = streamTransferManagerMockedConstruction.constructed();
+    final List<StreamTransferManagerWithMetadata> managers = streamTransferManagerMockedConstruction.constructed();
     final StreamTransferManager manager = managers.get(0);
     verify(manager).abort();
   }
@@ -283,13 +288,10 @@ class S3CsvWriterTest {
     // carriage returns are required b/c RFC4180 requires it :(
     // Dynamically generate the timestamp because we generate in local time.
     assertEquals(
-        String.format(
-            """
-            f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",%s\r
-            2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",%s\r
-            """,
-            Timestamp.from(Instant.ofEpochMilli(1234)),
-            Timestamp.from(Instant.ofEpochMilli(2345))),
+        """
+        f6767f7d-ce1e-45cc-92db-2ad3dfdd088e,"{""foo"":73}",1970-01-01T00:00:01.234Z\r
+        2b95a13f-d54f-4370-a712-1c7bf2716190,"{""bar"":84}",1970-01-01T00:00:02.345Z\r
+        """,
         outputStreams.get(0).toString(StandardCharsets.UTF_8));
   }
 

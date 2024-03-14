@@ -15,7 +15,6 @@ import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -25,7 +24,7 @@ public class CloudDeploymentMssqlTest {
 
   private MsSQLTestDatabase createTestDatabase(String... containerFactoryMethods) {
     final var container = new MsSQLContainerFactory().shared(
-        "mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04", containerFactoryMethods);
+        "mcr.microsoft.com/mssql/server:2022-latest", containerFactoryMethods);
     final var testdb = new MsSQLTestDatabase(container);
     return testdb
         .withConnectionProperty("encrypt", "true")
@@ -61,7 +60,7 @@ public class CloudDeploymentMssqlTest {
   void testStrictSSLSecuredNoTunnel() throws Exception {
     try (final var testdb = createTestDatabase()) {
       final var config = testdb.testConfigBuilder()
-          .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
+          .withEncrytedTrustServerCertificate()
           .with("tunnel_method", ImmutableMap.builder().put("tunnel_method", "NO_TUNNEL").build())
           .build();
       final AirbyteConnectionStatus actual = source().check(config);
@@ -77,7 +76,7 @@ public class CloudDeploymentMssqlTest {
           .withDatabase()
           .with(JdbcUtils.USERNAME_KEY, testdb.getUserName())
           .with(JdbcUtils.PASSWORD_KEY, "fake")
-          .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
+          .withEncrytedTrustServerCertificate()
           .with("tunnel_method", ImmutableMap.builder().put("tunnel_method", "SSH_KEY_AUTH").build())
           .build();
       final AirbyteConnectionStatus actual = source().check(config);
@@ -94,7 +93,7 @@ public class CloudDeploymentMssqlTest {
           .withDatabase()
           .with(JdbcUtils.USERNAME_KEY, testdb.getUserName())
           .with(JdbcUtils.PASSWORD_KEY, "fake")
-          .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
+          .withEncrytedTrustServerCertificate()
           .with("tunnel_method", ImmutableMap.builder().put("tunnel_method", "SSH_KEY_AUTH").build())
           .build();
       final AirbyteConnectionStatus actual = source().check(config);

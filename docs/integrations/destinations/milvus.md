@@ -109,6 +109,8 @@ vector_store.similarity_search("test")
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.12 | 2023-12-11 | [33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
+| 0.0.11 | 2023-12-01 | [32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
 | 0.0.10 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources |
 | 0.0.9 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.0.8   | 2023-11-08 | [#31563](https://github.com/airbytehq/airbyte/pull/32262) | Auto-create collection if it doesn't exist |

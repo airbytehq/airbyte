@@ -118,7 +118,7 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
 
 class Events(SentryIncremental):
     """
-    Docs: https://docs.sentry.io/api/events/list-a-projects-events/
+    Docs: https://docs.sentry.io/api/events/list-a-projects-error-events/
     """
 
     primary_key = "id"

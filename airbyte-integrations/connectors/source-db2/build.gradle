@@ -1,25 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
 }
-
-//remove once upgrading the CDK version to 0.4.x or later
-java {
-    compileTestJava {
-        options.compilerArgs.remove("-Werror")
-    }
-    compileJava {
-        options.compilerArgs.remove("-Werror")
-    }
-}
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.db2.Db2Source'
@@ -30,7 +17,5 @@ dependencies {
 
     implementation group: 'com.ibm.db2', name: 'jcc', version: '11.5.5.0'
 
-    testImplementation libs.testcontainers.db2
-
-    integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.testcontainers:db2:1.19.4'
 }

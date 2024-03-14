@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -90,13 +91,26 @@ public class SqlOperationsUtils {
 
         try (final PreparedStatement statement = connection.prepareStatement(s1)) {
           // second loop: bind values to the SQL string.
+          // 1-indexed
           int i = 1;
           for (final PartialAirbyteMessage message : partition) {
-            // 1-indexed
+            // Airbyte Raw ID
             statement.setString(i, uuidSupplier.get().toString());
-            statement.setString(i + 1, message.getSerialized());
-            statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getRecord().getEmittedAt())));
-            i += 3;
+            i++;
+
+            // Message Data
+            statement.setString(i, message.getSerialized());
+            i++;
+
+            // Extracted At
+            statement.setTimestamp(i, Timestamp.from(Instant.ofEpochMilli(message.getRecord().getEmittedAt())));
+            i++;
+
+            if (TypingAndDedupingFlag.isDestinationV2()) {
+              // Loaded At
+              statement.setTimestamp(i, null);
+              i++;
+            }
           }
 
           statement.execute();

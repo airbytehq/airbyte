@@ -9,10 +9,10 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -22,7 +22,7 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
-import java.util.stream.Stream;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -33,20 +33,15 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = MySQLTestDatabase.in("mysql:8.0", extraContainerFactoryMethods().toArray(String[]::new))
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, getContainerModifiers())
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
         .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
   }
 
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
-
-  protected Stream<String> extraContainerFactoryMethods() {
-    return Stream.empty();
+  protected ContainerModifier[] getContainerModifiers() {
+    return ArrayUtils.toArray();
   }
 
   @Override
@@ -98,11 +93,6 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

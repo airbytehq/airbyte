@@ -27,7 +27,7 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils import AirbyteTracedException
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
@@ -343,7 +343,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
     source, concurrent_source = _init_sources([stream_slice_to_partition], state, logger)
     config = {}
     catalog = _create_configured_catalog(source._streams)
-    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, RuntimeError)
+    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, AirbyteTracedException)
     messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, RuntimeError)
 
     expected_messages = [
@@ -409,9 +409,8 @@ def _init_sources(stream_slice_to_partitions, state, logger):
 
 
 def _init_source(stream_slice_to_partitions, state, logger, source):
-    cursor = NoopCursor()
     streams = [
-        StreamFacade.create_from_stream(_MockStream(stream_slices, f"stream{i}"), source, logger, state, cursor)
+        StreamFacade.create_from_stream(_MockStream(stream_slices, f"stream{i}"), source, logger, state, FinalStateCursor(stream_name=f"stream{i}", stream_namespace=None, message_repository=InMemoryMessageRepository()))
         for i, stream_slices in enumerate(stream_slice_to_partitions)
     ]
     source.set_streams(streams)

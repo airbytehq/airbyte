@@ -4,14 +4,27 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
+/**
+ * This class should be used while upgrading a destination from V1 to V2. V2 destinations should use
+ * {@link NoOpTyperDeduperWithV1V2Migrations} for disabling T+D, because it correctly handles
+ * various migration operations.
+ */
 public class NoopTyperDeduper implements TyperDeduper {
 
   @Override
-  public void prepareTables() {
+  public void prepareSchemasAndRunMigrations() throws Exception {
+
+  }
+
+  @Override
+  public void prepareFinalTables() {
 
   }
 
@@ -66,7 +79,7 @@ public class NoopTyperDeduper implements TyperDeduper {
   }
 
   @Override
-  public void typeAndDedupe() {
+  public void typeAndDedupe(final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries) {
 
   }
 

@@ -28,7 +28,12 @@
       "credentials": {
         "title": "OAuth2.0",
         "type": "object",
-        "required": ["auth_method", "refresh_token", "client_id", "client_secret"],
+        "required": [
+          "auth_method",
+          "refresh_token",
+          "client_id",
+          "client_secret"
+        ],
         "properties": {
           "auth_method": {
             "type": "string",
@@ -75,7 +80,20 @@
               "title": "Level",
               "description": "Chosen level for API",
               "default": "ADVERTISER",
-              "enum": ["ADVERTISER", "ADVERTISER_TARGETING", "CAMPAIGN", "CAMPAIGN_TARGETING", "AD_GROUP", "AD_GROUP_TARGETING", "PIN_PROMOTION", "PIN_PROMOTION_TARGETING", "KEYWORD", "PRODUCT_GROUP", "PRODUCT_GROUP_TARGETING", "PRODUCT_ITEM"],
+              "enum": [
+                "ADVERTISER",
+                "ADVERTISER_TARGETING",
+                "CAMPAIGN",
+                "CAMPAIGN_TARGETING",
+                "AD_GROUP",
+                "AD_GROUP_TARGETING",
+                "PIN_PROMOTION",
+                "PIN_PROMOTION_TARGETING",
+                "KEYWORD",
+                "PRODUCT_GROUP",
+                "PRODUCT_GROUP_TARGETING",
+                "PRODUCT_ITEM"
+              ],
               "type": "string",
               "order": 1
             },

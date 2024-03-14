@@ -25,9 +25,7 @@ acceptance_tests:
             bypass_reason: "Sandbox account cannot seed the stream"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         fail_on_extra_columns: false
   # TODO: enable incremental test after seeding the connector
   #  incremental:

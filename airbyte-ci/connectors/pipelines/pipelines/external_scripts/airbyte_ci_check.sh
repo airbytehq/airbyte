@@ -1,14 +1,38 @@
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
 
-# Check if airbyte-ci is on the PATH and pointing to the correct location
-EXPECTED_PATH="$HOME/.local/bin/airbyte-ci"
-AIRBYTE_CI_PATH=$(which airbyte-ci 2>/dev/null)
+echo "Checking if airbyte-ci is correctly installed..."
 
+INSTALL_DIR="$HOME/.local/bin"
+HUMAN_READABLE_INSTALL_DIR="\$HOME/.local/bin"
+
+# Check that the target directory is on the PATH
+# If not print an error message and exit
+if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
+    echo "The target directory $INSTALL_DIR is not on the PATH"
+    echo "Check that $HUMAN_READABLE_INSTALL_DIR is part of the PATH"
+    echo ""
+    echo "If not, please add 'export PATH=\"$HUMAN_READABLE_INSTALL_DIR:\$PATH\"' to your shell profile"
+    exit 1
+fi
+
+# Check that airbyte-ci is on the PATH
+# If not print an error message and exit
+if ! which airbyte-ci >/dev/null 2>&1; then
+    echo "airbyte-ci is not installed"
+    echo ""
+    echo "Please run 'make tools.airbyte-ci.install' to install airbyte-ci"
+    exit 1
+fi
+
+EXPECTED_PATH="$INSTALL_DIR/airbyte-ci"
+AIRBYTE_CI_PATH=$(which airbyte-ci 2>/dev/null)
 if [ "$AIRBYTE_CI_PATH" != "$EXPECTED_PATH" ]; then
-    echo "airbyte-ci is either not on the PATH or not pointing to $EXPECTED_PATH"
-    echo "Check that airbyte-ci exists at $HOME/.local/bin and $HOME/.local/bin is part of the PATH"
-    echo "If it does, try running 'make tools.airbyte-ci.clean', then run 'make tools.airbyte-ci.install' again"
+    echo "airbyte-ci is not from the expected install location: $EXPECTED_PATH"
+    echo "airbyte-ci is installed at: $AIRBYTE_CI_PATH"
+    echo "Check that airbyte-ci exists at $HUMAN_READABLE_INSTALL_DIR and $HUMAN_READABLE_INSTALL_DIR is part of the PATH"
+    echo ""
+    echo "If it is, try running 'make tools.airbyte-ci.clean', then run 'make tools.airbyte-ci.install' again"
     exit 1
 fi
 

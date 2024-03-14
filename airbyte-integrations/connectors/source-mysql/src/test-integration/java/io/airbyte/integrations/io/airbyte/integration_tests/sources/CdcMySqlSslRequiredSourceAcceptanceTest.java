@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import java.util.stream.Stream;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class CdcMySqlSslRequiredSourceAcceptanceTest extends CdcMySqlSourceAcceptanceTest {
 
@@ -27,8 +28,8 @@ public class CdcMySqlSslRequiredSourceAcceptanceTest extends CdcMySqlSourceAccep
   }
 
   @Override
-  protected Stream<String> extraContainerFactoryMethods() {
-    return Stream.of("withRootAndServerCertificates", "withClientCertificate");
+  protected ContainerModifier[] getContainerModifiers() {
+    return ArrayUtils.toArray(ContainerModifier.ROOT_AND_SERVER_CERTIFICATES, ContainerModifier.CLIENT_CERTITICATE);
   }
 
 }

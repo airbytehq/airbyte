@@ -41,10 +41,10 @@
     "ad_group_criterion.listing_group.case_value.hotel_state.state_criterion": {
       "type": ["null", "string"]
     },
-    "ad_group_criterion.listing_group.case_value.product_bidding_category.id": {
+    "ad_group_criterion.listing_group.case_value.product_category.category_id": {
       "type": ["null", "integer"]
     },
-    "ad_group_criterion.listing_group.case_value.product_bidding_category.level": {
+    "ad_group_criterion.listing_group.case_value.product_category.level": {
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_brand.value": {

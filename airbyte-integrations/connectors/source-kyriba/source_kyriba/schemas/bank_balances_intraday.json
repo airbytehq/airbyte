@@ -1,54 +1,34 @@
 {
   "type": "object",
-  "required": ["account", "bankBalance"],
   "properties": {
     "account": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "code": {
-          "type": "string",
-          "example": "ACCOUNT001",
-          "description": "Code that represents the account.",
-          "minLength": 1,
-          "maxLength": 12
+          "type": ["string", "null"]
         },
         "statementIdentifier": {
-          "type": ["null", "string"],
-          "example": "Statement identifier",
-          "description": "Account Statement Identifier of the account.",
-          "minLength": 0,
-          "maxLength": 50
+          "type": ["null", "string"]
         },
         "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-          "description": "Unique internal identifier that represents the account."
+          "type": ["string", "null"]
         }
-      },
-      "title": "BK-BankAccountModel"
+      }
     },
     "bankBalance": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "amount": {
-          "type": "number",
-          "format": "double",
-          "example": 1.123,
-          "description": "End of day balance value."
+          "type": ["number", "null"]
         },
         "balanceDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date of the end of day balance."
+          "type": ["string", "null"]
         },
         "currencyCode": {
-          "type": "string",
-          "example": "EUR",
-          "description": "Account currency code.",
-          "minLength": 1,
-          "maxLength": 3
+          "type": ["string", "null"]
+        },
+        "lastKnownBalanceDate": {
+          "type": ["string", "null"]
         }
       },
       "title": "BK-BalanceModel"

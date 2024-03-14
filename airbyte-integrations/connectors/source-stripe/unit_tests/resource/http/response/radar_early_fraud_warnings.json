@@ -1,0 +1,16 @@
+{
+  "object": "list",
+  "url": "/v1/radar/early_fraud_warnings",
+  "has_more": false,
+  "data": [
+    {
+      "id": "issfr_1NnrwHBw2dPENLoi9lnhV3RQ",
+      "object": "radar.early_fraud_warning",
+      "actionable": true,
+      "charge": "ch_1234",
+      "created": 123456789,
+      "fraud_type": "misc",
+      "livemode": false
+    }
+  ]
+}

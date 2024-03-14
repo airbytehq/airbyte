@@ -12,10 +12,10 @@ import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -255,6 +255,14 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues((String) null)
             .build());
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("date")
+            .airbyteType(JsonSchemaType.STRING_DATE)
+            .addInsertValues("0000-00-00")
+            .addExpectedValues((String) null)
+            .build());
+
     for (final String fullSourceType : Set.of("datetime", "datetime not null default now()")) {
       addDataTypeTestData(
           TestDataHolder.builder()
@@ -472,7 +480,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
   private String getFileDataInBase64() {
     final File file = new File(getClass().getClassLoader().getResource("test.png").getFile());
     try {
-      return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
+      return Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(file));
     } catch (final IOException e) {
       LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
     }
