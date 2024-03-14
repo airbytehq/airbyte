@@ -200,7 +200,11 @@ class AsyncStreamConsumer
          * to try to use a thread pool to partially deserialize to get record type and stream name, we can
          * do it without touching buffer manager.
          */
-            val message = deserializationUtil.deserializeAirbyteMessage(messageString, dataTransformer)
+            val message =
+                deserializationUtil.deserializeAirbyteMessage(
+                    messageString,
+                    dataTransformer,
+                )
             if (AirbyteMessage.Type.RECORD == message.type) {
                 if (Strings.isNullOrEmpty(message.record?.namespace)) {
                     message.record?.namespace = defaultNamespace
