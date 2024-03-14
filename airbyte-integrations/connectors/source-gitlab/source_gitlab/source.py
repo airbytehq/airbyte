@@ -81,7 +81,7 @@ class SingleUseRefreshTokenGitlabOAuth2Authenticator(SingleUseRefreshTokenOauth2
         )
 
 
-def get_authenticator(config: MutableMapping) -> AuthBase:
+def get_authenticator(config: MutableMapping) -> Union[SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator]:
     if config["credentials"]["auth_type"] == "access_token":
         return TokenAuthenticator(token=config["credentials"]["access_token"])
     return SingleUseRefreshTokenGitlabOAuth2Authenticator(
@@ -94,20 +94,13 @@ def get_authenticator(config: MutableMapping) -> AuthBase:
 
 
 class SourceGitlab(YamlDeclarativeSource):
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
-        self.__auth_params: Mapping[str, Any] = {}
 
     @staticmethod
     def _ensure_default_values(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config["api_url"] = config.get("api_url") or "gitlab.com"
         return config
-
-    def _auth_params(self, config: MutableMapping[str, Any]) -> Mapping[str, Any]:
-        if not self.__auth_params:
-            auth = get_authenticator(config)
-            self.__auth_params = dict(authenticator=auth, api_url=config["api_url"])
-        return self.__auth_params
 
     def _try_refresh_access_token(self, logger, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -115,7 +108,7 @@ class SourceGitlab(YamlDeclarativeSource):
         In order to obtain the new `refresh_token`, the Customer should `re-auth` in the source settings.
         """
         # get current authenticator
-        authenticator: Union[SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator] = self.__auth_params.get("authenticator")
+        authenticator: Union[SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator] = get_authenticator(config)
         if isinstance(authenticator, SingleUseRefreshTokenOauth2Authenticator):
             try:
                 creds = authenticator.refresh_access_token()
