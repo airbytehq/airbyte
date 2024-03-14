@@ -4,13 +4,13 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-    - graph.facebook.com
+      - graph.facebook.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
-  dockerImageTag: 0.3.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-facebook-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   githubIssueLabel: source-facebook-pages
@@ -28,7 +28,16 @@ data:
       enabled: true
       packageName: airbyte-source-facebook-pages
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          This version updates the API version from v15 to v19. Deprecated fields have been removed and new fields have been added for the stream `page`.
+        upgradeDeadline: 2024-04-30
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["page"]
   tags:
-  - language:python
-  - cdk:low-code
-metadataSpecVersion: '1.0'
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"
