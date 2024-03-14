@@ -1709,9 +1709,9 @@ async def test_all_supported_file_types_present(mocker, file_types_found, should
     ("state_message_params", "should_fail"),
     (
             ({"type": AirbyteStateType.STREAM, "sourceStats": AirbyteStateStats(recordCount=1.0)}, False),
-            ({"type": AirbyteStateType.LEGACY, "sourceStats": AirbyteStateStats(recordCount=1.0)}, True),
             ({"type": AirbyteStateType.STREAM}, True),
             ({"type": AirbyteStateType.LEGACY}, True),
+            ({}, True),  # Case where state was not emitted
 
     ),
 )
@@ -1763,6 +1763,10 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
             ),
         )
     ]
+
+    if not state_message_params:
+        async_stream_output.pop()
+        print(async_stream_output)
     docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(return_value=async_stream_output))
 
     t = test_core.TestBasicRead()
@@ -1776,6 +1780,7 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
                 should_validate_schema=False,
                 should_validate_data_points=False,
                 should_validate_stream_statuses=True,
+                should_validate_state_messages=True,
                 should_fail_on_extra_columns=False,
                 empty_streams=set(),
                 expected_records_by_stream={},
@@ -1792,6 +1797,7 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
             should_validate_schema=False,
             should_validate_data_points=False,
             should_validate_stream_statuses=True,
+            should_validate_state_messages=True,
             should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream={},
