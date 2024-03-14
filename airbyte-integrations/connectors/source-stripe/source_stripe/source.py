@@ -297,21 +297,15 @@ class SourceStripe(ConcurrentSourceAdapter):
             # The Refunds stream does not utilize the Events API as it created issues with data loss during the incremental syncs.
             # Therefore, we're using the regular API with the `created` cursor field. A bug has been filed with Stripe.
             # See more at https://github.com/airbytehq/oncall/issues/3090, https://github.com/airbytehq/oncall/issues/3428
-            #Based on https://app.zenhub.com/workspaces/critical-connectors-659c693d906fcd00178900cf/issues/gh/airbytehq/airbyte-internal-issues/2450
-            #We are commenting this out just in case a rollback is needed. We are putting refunds back as UdatedCursorIncremental
-            #CreatedCursorIncrementalStripeStream(name=_REFUND_STREAM_NAME, path="refunds", **incremental_args),
+            # Based on https://app.zenhub.com/workspaces/critical-connectors-659c693d906fcd00178900cf/issues/gh/airbytehq/airbyte-internal-issues/2450
+            # We are commenting this out just in case a rollback is needed. We are putting refunds back as UdatedCursorIncremental
+            # CreatedCursorIncrementalStripeStream(name=_REFUND_STREAM_NAME, path="refunds", **incremental_args),
             UpdatedCursorIncrementalStripeStream(
                 name="refunds",
                 path="refunds",
-                event_types=[
-                    "refund.created",
-                    "refund.updated",
-                    "charge.refunded",
-                    "charge.refund.updated"
-                ],
+                event_types=["refund.created", "refund.updated", "charge.refunded", "charge.refund.updated"],
                 **args,
             ),
-
             UpdatedCursorIncrementalStripeStream(
                 name="payment_methods",
                 path="payment_methods",
