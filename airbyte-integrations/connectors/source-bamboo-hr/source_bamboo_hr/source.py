@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .exception import AvailableFieldsAccessDeniedError, CustomFieldsAccessDeniedError, NullFieldsError
-from .utils import convert_custom_reports_fields_to_list, validate_custom_fields
+from .utils import convert_custom_reports_fields_to_list, validate_custom_fields, chunk_iterable
 
 
 class BambooHrStream(HttpStream, ABC):
@@ -50,22 +50,30 @@ class MetaFieldsStream(BambooHrStream):
         yield from response.json()
 
 
-class EmployeesDirectoryStream(BambooHrStream):
-    primary_key = "id"
+# class EmployeesDirectoryStream(BambooHrStream):
+#     primary_key = "id"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()["employees"]
+#     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+#         yield from response.json()["employees"]
 
-    def path(self, **kwargs) -> str:
-        return "employees/directory"
+#     def path(self, **kwargs) -> str:
+#         return "employees/directory"
 
 
 class CustomReportsStream(BambooHrStream):
     primary_key = None
 
     def __init__(self, *args, **kwargs):
-        self._schema = None
         super().__init__(*args, **kwargs)
+        self._schema = None
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        count = 0
+        for fields in chunk_iterable(self.config.get("available_fields"), 100):
+            print("Yield Count")
+            print(count)
+            count += 1
+            yield {"fields": fields}
 
     @property
     def schema(self):
@@ -158,6 +166,7 @@ class SourceBambooHr(AbstractSource):
         if denied_fields:
             return False, CustomFieldsAccessDeniedError(denied_fields)
 
+
         try:
             next(available_fields)
             return True, None
@@ -166,6 +175,9 @@ class SourceBambooHr(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = SourceBambooHr.add_authenticator_to_config(config)
+        available_fields = list(MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh))
+        config["available_fields"] = available_fields
         return [
+            MetaFieldsStream(config),
             CustomReportsStream(config),
         ]
