@@ -21,6 +21,7 @@ jobs:
           token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
           request-reviews: true
           fail: true
-          paths: unmatched
-          teams:
-            - "@airbytehq/connector-extensibility"
+          requirements: |
+            - paths: unmatched
+              teams:
+                - "@airbytehq/connector-extensibility"
