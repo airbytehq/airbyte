@@ -25,7 +25,6 @@ import io.airbyte.configoss.JobGetSpecConfig
 import io.airbyte.configoss.OperatorDbt
 import io.airbyte.configoss.StandardCheckConnectionInput
 import io.airbyte.configoss.StandardCheckConnectionOutput
-import io.airbyte.configoss.StandardCheckConnectionOutput.Status
 import io.airbyte.configoss.WorkerDestinationConfig
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
@@ -64,9 +63,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
-import kotlin.Comparator
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -345,7 +341,7 @@ abstract class DestinationAcceptanceTest {
         """This method is moved to the AdvancedTestDataComparator. Please move your destination
                 implementation of the method to your comparator implementation."""
     )
-    protected fun resolveIdentifier(identifier: String?): List<String?> {
+    protected open fun resolveIdentifier(identifier: String?): List<String?> {
         return java.util.List.of(identifier)
     }
 
