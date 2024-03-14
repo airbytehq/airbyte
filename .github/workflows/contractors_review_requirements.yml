@@ -20,7 +20,7 @@ jobs:
         with:
           username: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.PAT }}
-      - if: ${{ (contains(steps.actorTeams.outputs.teams, 'community-contractor') }}
+      - if: ${{ (contains(steps.actorTeams.outputs.teams, 'community-contractor')) }}
         name: Check if the review requirements are met
         uses: Automattic/action-required-review@v3
         with:
