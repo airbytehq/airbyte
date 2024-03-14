@@ -13,19 +13,16 @@ import kotlin.math.max
 /**
  * An interface meant to be used with [FlushWorkers].
  *
- *
- * A destination instructs workers how to write data by specifying
- * [.flush]. This keeps the worker abstraction generic and reusable.
- *
+ * A destination instructs workers how to write data by specifying [.flush]. This keeps the worker
+ * abstraction generic and reusable.
  *
  * e.g. A database destination's flush function likely involves parsing the stream into SQL
  * statements.
  *
- *
  * There are 2 different destination types as of this writing:
  *
- *  * 1. Destinations that upload files. This includes warehouses and databases.
- *  * 2. Destinations that upload data streams. This mostly includes various Cloud storages. This
+ * * 1. Destinations that upload files. This includes warehouses and databases.
+ * * 2. Destinations that upload data streams. This mostly includes various Cloud storages. This
  * will include reverse-ETL in the future
  *
  * In both cases, the simplest way to model the incoming data is as a stream.
@@ -35,8 +32,7 @@ interface DestinationFlushFunction {
      * Flush a batch of data to the destination.
      *
      * @param decs the Airbyte stream the data stream belongs to
-     * @param stream a bounded [AirbyteMessage] stream ideally of
-     * [.getOptimalBatchSizeBytes] size
+     * @param stream a bounded [AirbyteMessage] stream ideally of [.getOptimalBatchSizeBytes] size
      * @throws Exception
      */
     @Throws(Exception::class)
@@ -46,9 +42,8 @@ interface DestinationFlushFunction {
     )
 
     /**
-     * When invoking [.flush], best effort attempt to invoke flush with
-     * a batch of this size. Useful for Destinations that have optimal flush batch sizes.
-     *
+     * When invoking [.flush], best effort attempt to invoke flush with a batch of this size. Useful
+     * for Destinations that have optimal flush batch sizes.
      *
      * If you increase this, make sure that [.getQueueFlushThresholdBytes] is larger than this
      * value. Otherwise we may trigger flushes before reaching the optimal batch size.

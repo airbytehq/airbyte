@@ -29,11 +29,17 @@ class RunningFlushWorkers {
         stream: StreamDescriptor,
         flushWorkerId: UUID,
     ) {
-        streamToFlushWorkerToBatchSize.computeIfAbsent(
-            stream,
-        ) { ConcurrentHashMap() }.computeIfAbsent(
-            flushWorkerId,
-        ) { Optional.empty() }
+        streamToFlushWorkerToBatchSize
+            .computeIfAbsent(
+                stream,
+            ) {
+                ConcurrentHashMap()
+            }
+            .computeIfAbsent(
+                flushWorkerId,
+            ) {
+                Optional.empty()
+            }
     }
 
     /**
@@ -70,18 +76,16 @@ class RunningFlushWorkers {
         batchSize: Long,
     ) {
         Preconditions.checkState(
-            (
-                streamToFlushWorkerToBatchSize.containsKey(stream) &&
-                    streamToFlushWorkerToBatchSize[stream]!!.containsKey(flushWorkerId)
-            ),
+            (streamToFlushWorkerToBatchSize.containsKey(stream) &&
+                streamToFlushWorkerToBatchSize[stream]!!.containsKey(flushWorkerId)),
             "Cannot register a batch size for a flush worker that has not been initialized",
         )
         streamToFlushWorkerToBatchSize[stream]!![flushWorkerId] = Optional.of(batchSize)
     }
 
     /**
-     * For a stream get how many bytes are in each running worker. If the worker doesn't have a batch
-     * yet, return empty optional.
+     * For a stream get how many bytes are in each running worker. If the worker doesn't have a
+     * batch yet, return empty optional.
      *
      * @param stream stream
      * @return bytes in batches currently being processed

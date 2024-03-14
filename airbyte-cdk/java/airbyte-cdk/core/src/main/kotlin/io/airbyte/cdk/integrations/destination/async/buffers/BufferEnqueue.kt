@@ -47,7 +47,9 @@ class BufferEnqueue(
         val queue =
             buffers.computeIfAbsent(
                 streamDescriptor,
-            ) { StreamAwareQueue(memoryManager.requestMemory()) }
+            ) {
+                StreamAwareQueue(memoryManager.requestMemory())
+            }
         val stateId = stateManager.getStateIdAndIncrementCounter(streamDescriptor)
 
         var addedToQueue = queue.offer(message, sizeInBytes.toLong(), stateId)

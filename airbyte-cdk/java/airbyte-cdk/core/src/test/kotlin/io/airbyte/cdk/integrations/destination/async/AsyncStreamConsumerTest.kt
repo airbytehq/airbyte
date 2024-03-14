@@ -56,27 +56,26 @@ class AsyncStreamConsumerTest {
     private val STREAM_NAME = "id_and_name"
     private val STREAM_NAME2 = STREAM_NAME + 2
     private val STREAM1_DESC: StreamDescriptor =
-        StreamDescriptor()
-            .withNamespace(SCHEMA_NAME)
-            .withName(STREAM_NAME)
+        StreamDescriptor().withNamespace(SCHEMA_NAME).withName(STREAM_NAME)
 
     private val CATALOG: ConfiguredAirbyteCatalog =
-        ConfiguredAirbyteCatalog().withStreams(
-            java.util.List.of(
-                CatalogHelpers.createConfiguredAirbyteStream(
-                    STREAM_NAME,
-                    SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING),
+        ConfiguredAirbyteCatalog()
+            .withStreams(
+                java.util.List.of(
+                    CatalogHelpers.createConfiguredAirbyteStream(
+                        STREAM_NAME,
+                        SCHEMA_NAME,
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING),
+                    ),
+                    CatalogHelpers.createConfiguredAirbyteStream(
+                        STREAM_NAME2,
+                        SCHEMA_NAME,
+                        Field.of("id", JsonSchemaType.NUMBER),
+                        Field.of("name", JsonSchemaType.STRING),
+                    ),
                 ),
-                CatalogHelpers.createConfiguredAirbyteStream(
-                    STREAM_NAME2,
-                    SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING),
-                ),
-            ),
-        )
+            )
 
     private val PAYLOAD: JsonNode =
         Jsons.jsonNode(
@@ -95,9 +94,11 @@ class AsyncStreamConsumerTest {
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                     .withStream(
-                        AirbyteStreamState().withStreamDescriptor(
-                            STREAM1_DESC,
-                        ).withStreamState(Jsons.jsonNode(1)),
+                        AirbyteStreamState()
+                            .withStreamDescriptor(
+                                STREAM1_DESC,
+                            )
+                            .withStreamState(Jsons.jsonNode(1)),
                     ),
             )
     private val STATE_MESSAGE2: AirbyteMessage =
@@ -107,9 +108,11 @@ class AsyncStreamConsumerTest {
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                     .withStream(
-                        AirbyteStreamState().withStreamDescriptor(
-                            STREAM1_DESC,
-                        ).withStreamState(Jsons.jsonNode(2)),
+                        AirbyteStreamState()
+                            .withStreamDescriptor(
+                                STREAM1_DESC,
+                            )
+                            .withStreamState(Jsons.jsonNode(2)),
                     ),
             )
 
@@ -175,9 +178,11 @@ class AsyncStreamConsumerTest {
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
-                            AirbyteStreamState().withStreamDescriptor(
-                                STREAM1_DESC,
-                            ).withStreamState(Jsons.jsonNode(1)),
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    STREAM1_DESC,
+                                )
+                                .withStreamState(Jsons.jsonNode(1)),
                         )
                         .withDestinationStats(
                             AirbyteStateStats().withRecordCount(expectedRecords.size.toDouble()),
@@ -209,17 +214,20 @@ class AsyncStreamConsumerTest {
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
-                            AirbyteStreamState().withStreamDescriptor(
-                                STREAM1_DESC,
-                            ).withStreamState(Jsons.jsonNode(2)),
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    STREAM1_DESC,
+                                )
+                                .withStreamState(Jsons.jsonNode(2)),
                         )
                         .withDestinationStats(AirbyteStateStats().withRecordCount(0.0)),
                 )
 
         Mockito.verify(
-            outputRecordCollector,
-            Mockito.times(1),
-        ).accept(stateMessageWithDestinationStatsUpdated)
+                outputRecordCollector,
+                Mockito.times(1),
+            )
+            .accept(stateMessageWithDestinationStatsUpdated)
     }
 
     @Test
@@ -382,9 +390,7 @@ class AsyncStreamConsumerTest {
     @Test
     internal fun deserializeAirbyteMessageWithNoStateOrRecord() {
         val airbyteMessage =
-            AirbyteMessage()
-                .withType(AirbyteMessage.Type.LOG)
-                .withLog(AirbyteLogMessage())
+            AirbyteMessage().withType(AirbyteMessage.Type.LOG).withLog(AirbyteLogMessage())
         val serializedAirbyteMessage = Jsons.serialize(airbyteMessage)
         Assertions.assertThrows(
             RuntimeException::class.java,
@@ -415,9 +421,11 @@ class AsyncStreamConsumerTest {
                     AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
-                            AirbyteStreamState().withStreamDescriptor(
-                                STREAM1_DESC,
-                            ).withStreamState(Jsons.jsonNode(1)),
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    STREAM1_DESC,
+                                )
+                                .withStreamState(Jsons.jsonNode(1)),
                         ),
                 )
         val serializedAirbyteMessage = Jsons.serialize(badState)
@@ -472,7 +480,9 @@ class AsyncStreamConsumerTest {
             consumer.start()
             Assertions.assertThrows(
                 IOException::class.java,
-            ) { consumer.close() }
+            ) {
+                consumer.close()
+            }
         }
     }
 
@@ -543,35 +553,41 @@ class AsyncStreamConsumerTest {
         allRecords: List<AirbyteMessage>,
     ) {
         val argumentCaptor = org.mockito.kotlin.argumentCaptor<Stream<PartialAirbyteMessage?>>()
-        Mockito.verify(flushFunction, Mockito.atLeast(1)).flush(
-            org.mockito.kotlin.eq(StreamDescriptor().withNamespace(namespace).withName(streamName)),
-            argumentCaptor.capture(),
-        )
+        Mockito.verify(flushFunction, Mockito.atLeast(1))
+            .flush(
+                org.mockito.kotlin.eq(
+                    StreamDescriptor().withNamespace(namespace).withName(streamName)
+                ),
+                argumentCaptor.capture(),
+            )
 
         // captures the output of all the workers, since our records could come out in any of them.
         val actualRecords =
-            argumentCaptor
-                .allValues
-                .stream() // flatten those results into a single list for the simplicity of comparison
+            argumentCaptor.allValues
+                .stream() // flatten those results into a single list for the simplicity of
+                // comparison
                 .flatMap { s: Stream<*>? -> s }
                 .toList()
 
         val expRecords =
-            allRecords.stream().map { m: AirbyteMessage ->
-                PartialAirbyteMessage()
-                    .withType(AirbyteMessage.Type.RECORD)
-                    .withRecord(
-                        PartialAirbyteRecordMessage()
-                            .withStream(m.record.stream)
-                            .withNamespace(m.record.namespace)
-                            .withData(m.record.data),
-                    )
-                    .withSerialized(
-                        Jsons.serialize(
-                            m.record.data,
-                        ),
-                    )
-            }.collect(Collectors.toList())
+            allRecords
+                .stream()
+                .map { m: AirbyteMessage ->
+                    PartialAirbyteMessage()
+                        .withType(AirbyteMessage.Type.RECORD)
+                        .withRecord(
+                            PartialAirbyteRecordMessage()
+                                .withStream(m.record.stream)
+                                .withNamespace(m.record.namespace)
+                                .withData(m.record.data),
+                        )
+                        .withSerialized(
+                            Jsons.serialize(
+                                m.record.data,
+                            ),
+                        )
+                }
+                .collect(Collectors.toList())
         Assertions.assertEquals(expRecords, actualRecords)
     }
 }

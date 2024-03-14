@@ -7,8 +7,8 @@ package io.airbyte.cdk.integrations.destination.async
 import java.text.DecimalFormat
 
 /**
- * Replicate the behavior of [org.apache.commons.io.FileUtils] to match the proclivities of
- * Davin and Charles. Courteously written by ChatGPT.
+ * Replicate the behavior of [org.apache.commons.io.FileUtils] to match the proclivities of Davin
+ * and Charles. Courteously written by ChatGPT.
  */
 object AirbyteFileUtils {
     private const val ONE_KB = 1024.0

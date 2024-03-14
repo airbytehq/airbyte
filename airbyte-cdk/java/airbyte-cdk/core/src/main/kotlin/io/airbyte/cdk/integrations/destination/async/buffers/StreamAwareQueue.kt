@@ -75,6 +75,5 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
         return memoryAwareQueue.poll(timeout, unit)
     }
 
-    @JvmRecord
-    data class MessageWithMeta(val message: PartialAirbyteMessage, val stateId: Long)
+    @JvmRecord data class MessageWithMeta(val message: PartialAirbyteMessage, val stateId: Long)
 }

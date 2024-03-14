@@ -25,8 +25,7 @@ class BufferDequeueTest {
         PartialAirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
-                PartialAirbyteRecordMessage()
-                    .withStream(STREAM_NAME),
+                PartialAirbyteRecordMessage().withStream(STREAM_NAME),
             )
 
     @Nested
@@ -42,7 +41,8 @@ class BufferDequeueTest {
             enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
             enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
 
-            // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records
+            // total size of records is 80, so we expect 50 to get us 2 records (prefer to
+            // under-pull records
             // than over-pull).
             try {
                 dequeue.take(STREAM_DESC, 50).use { take ->

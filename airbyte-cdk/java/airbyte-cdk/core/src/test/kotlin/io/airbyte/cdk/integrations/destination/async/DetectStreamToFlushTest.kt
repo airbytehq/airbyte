@@ -86,12 +86,13 @@ class DetectStreamToFlushTest {
                 RunningFlushWorkers::class.java,
             )
         Mockito.`when`(
-            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-        ).thenReturn(
-            listOf(
-                Optional.of(SIZE_10MB),
-            ),
-        )
+                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+            )
+            .thenReturn(
+                listOf(
+                    Optional.of(SIZE_10MB),
+                ),
+            )
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
@@ -112,12 +113,13 @@ class DetectStreamToFlushTest {
                 RunningFlushWorkers::class.java,
             )
         Mockito.`when`(
-            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-        ).thenReturn(
-            listOf(
-                Optional.of(SIZE_10MB),
-            ),
-        )
+                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+            )
+            .thenReturn(
+                listOf(
+                    Optional.of(SIZE_10MB),
+                ),
+            )
         val detect =
             DetectStreamToFlush(
                 bufferDequeue,
@@ -128,14 +130,12 @@ class DetectStreamToFlushTest {
             )
 
         // initialize flush time
-        Mockito.`when`(mockedNowProvider.millis())
-            .thenReturn(NOW.toEpochMilli())
+        Mockito.`when`(mockedNowProvider.millis()).thenReturn(NOW.toEpochMilli())
 
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
 
         // check 5 minutes later
-        Mockito.`when`(mockedNowProvider.millis())
-            .thenReturn(NOW.plus(FIVE_MIN).toEpochMilli())
+        Mockito.`when`(mockedNowProvider.millis()).thenReturn(NOW.plus(FIVE_MIN).toEpochMilli())
 
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
 

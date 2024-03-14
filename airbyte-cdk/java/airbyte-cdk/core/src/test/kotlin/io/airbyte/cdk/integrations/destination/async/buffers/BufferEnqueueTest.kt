@@ -38,8 +38,7 @@ class BufferEnqueueTest {
             PartialAirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
-                    PartialAirbyteRecordMessage()
-                        .withStream(streamName),
+                    PartialAirbyteRecordMessage().withStream(streamName),
                 )
 
         enqueue.addRecord(record, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
@@ -66,8 +65,7 @@ class BufferEnqueueTest {
             PartialAirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
-                    PartialAirbyteRecordMessage()
-                        .withStream(streamName),
+                    PartialAirbyteRecordMessage().withStream(streamName),
                 )
 
         enqueue.addRecord(record, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)

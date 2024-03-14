@@ -33,9 +33,10 @@ class PartialAirbyteMessageTest {
 
         val rec =
             Jsons.tryDeserialize(
-                serializedRec,
-                PartialAirbyteMessage::class.java,
-            ).get()
+                    serializedRec,
+                    PartialAirbyteMessage::class.java,
+                )
+                .get()
         Assertions.assertEquals(AirbyteMessage.Type.RECORD, rec.type)
         Assertions.assertEquals("users", rec.record?.stream)
         Assertions.assertEquals("public", rec.record?.namespace)
@@ -47,24 +48,28 @@ class PartialAirbyteMessageTest {
     internal fun testDeserializeState() {
         val serializedState =
             Jsons.serialize(
-                io.airbyte.protocol.models.AirbyteMessage()
+                io.airbyte.protocol.models
+                    .AirbyteMessage()
                     .withType(io.airbyte.protocol.models.AirbyteMessage.Type.STATE)
                     .withState(
-                        AirbyteStateMessage().withStream(
-                            AirbyteStreamState().withStreamDescriptor(
-                                StreamDescriptor().withName("user").withNamespace("public"),
+                        AirbyteStateMessage()
+                            .withStream(
+                                AirbyteStreamState()
+                                    .withStreamDescriptor(
+                                        StreamDescriptor().withName("user").withNamespace("public"),
+                                    )
+                                    .withStreamState(Jsons.jsonNode("data")),
                             )
-                                .withStreamState(Jsons.jsonNode("data")),
-                        )
                             .withType(AirbyteStateMessage.AirbyteStateType.STREAM),
                     ),
             )
 
         val rec =
             Jsons.tryDeserialize(
-                serializedState,
-                PartialAirbyteMessage::class.java,
-            ).get()
+                    serializedState,
+                    PartialAirbyteMessage::class.java,
+                )
+                .get()
         Assertions.assertEquals(AirbyteMessage.Type.STATE, rec.type)
 
         val streamDesc = rec.state?.stream?.streamDescriptor

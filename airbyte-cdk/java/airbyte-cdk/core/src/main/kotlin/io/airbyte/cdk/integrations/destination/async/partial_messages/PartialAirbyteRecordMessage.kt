@@ -74,7 +74,10 @@ class PartialAirbyteRecordMessage {
             return false
         }
         val that = other as PartialAirbyteRecordMessage
-        return namespace == that.namespace && stream == that.stream && emittedAt == that.emittedAt && meta == that.meta
+        return namespace == that.namespace &&
+            stream == that.stream &&
+            emittedAt == that.emittedAt &&
+            meta == that.meta
     }
 
     override fun hashCode(): Int {
@@ -83,10 +86,18 @@ class PartialAirbyteRecordMessage {
 
     override fun toString(): String {
         return "PartialAirbyteRecordMessage{" +
-            "namespace='" + namespace + '\'' +
-            ", stream='" + stream + '\'' +
-            ", emittedAt='" + emittedAt + '\'' +
-            ", meta='" + meta + '\'' +
+            "namespace='" +
+            namespace +
+            '\'' +
+            ", stream='" +
+            stream +
+            '\'' +
+            ", emittedAt='" +
+            emittedAt +
+            '\'' +
+            ", meta='" +
+            meta +
+            '\'' +
             '}'
     }
 

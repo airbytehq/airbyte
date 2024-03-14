@@ -35,8 +35,6 @@ class PartialAirbyteStreamState {
     }
 
     override fun toString(): String {
-        return "PartialAirbyteStreamState{" +
-            "streamDescriptor=" + streamDescriptor +
-            '}'
+        return "PartialAirbyteStreamState{" + "streamDescriptor=" + streamDescriptor + '}'
     }
 }

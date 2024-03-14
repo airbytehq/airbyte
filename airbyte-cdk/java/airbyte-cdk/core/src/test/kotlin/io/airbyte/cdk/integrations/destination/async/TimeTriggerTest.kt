@@ -30,8 +30,7 @@ class TimeTriggerTest {
             )
 
         val mockedNowProvider = Mockito.mock(Clock::class.java)
-        Mockito.`when`(mockedNowProvider.millis())
-            .thenReturn(NOW_MS)
+        Mockito.`when`(mockedNowProvider.millis()).thenReturn(NOW_MS)
 
         val detect =
             DetectStreamToFlush(

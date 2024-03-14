@@ -45,9 +45,6 @@ class PartialAirbyteStateMessage {
     }
 
     override fun toString(): String {
-        return "PartialAirbyteStateMessage{" +
-            "type=" + type +
-            ", stream=" + stream +
-            '}'
+        return "PartialAirbyteStateMessage{" + "type=" + type + ", stream=" + stream + '}'
     }
 }

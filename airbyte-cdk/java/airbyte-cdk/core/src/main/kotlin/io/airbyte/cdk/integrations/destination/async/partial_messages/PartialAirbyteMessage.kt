@@ -31,7 +31,6 @@ class PartialAirbyteMessage {
      * `Jsons.serialize(message.getRecord().getData())`). For state messages, this stores the
      * _entire_ message (i.e. `Jsons.serialize(message)`).
      *
-     *
      * See
      * [io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer.deserializeAirbyteMessage]
      * for the exact logic of how this field is populated.
@@ -69,7 +68,10 @@ class PartialAirbyteMessage {
             return false
         }
         val that = other as PartialAirbyteMessage
-        return type == that.type && record == that.record && state == that.state && serialized == that.serialized
+        return type == that.type &&
+            record == that.record &&
+            state == that.state &&
+            serialized == that.serialized
     }
 
     override fun hashCode(): Int {
@@ -78,10 +80,15 @@ class PartialAirbyteMessage {
 
     override fun toString(): String {
         return "PartialAirbyteMessage{" +
-            "type=" + type +
-            ", record=" + record +
-            ", state=" + state +
-            ", serialized='" + serialized + '\'' +
+            "type=" +
+            type +
+            ", record=" +
+            record +
+            ", state=" +
+            state +
+            ", serialized='" +
+            serialized +
+            '\'' +
             '}'
     }
 }

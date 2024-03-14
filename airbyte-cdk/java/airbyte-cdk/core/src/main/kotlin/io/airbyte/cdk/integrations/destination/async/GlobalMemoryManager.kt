@@ -16,11 +16,9 @@ private val logger = KotlinLogging.logger {}
  * allocate or free memory in the traditional sense, but rather manages based off memory estimates
  * provided by the callers.
  *
- *
  * The goal is to enable maximum allowed memory bounds for each queue to be dynamically adjusted
  * according to the overall available memory. Memory blocks are managed in chunks of
  * [.BLOCK_SIZE_BYTES], and the total amount of memory managed is configured at creation time.
- *
  *
  * As a destination has no information about incoming per-stream records, having static queue sizes
  * can cause unnecessary backpressure on a per-stream basis. By providing a dynamic, global view of
@@ -28,15 +26,13 @@ private val logger = KotlinLogging.logger {}
  * enabling effective sharing of global memory resources across all the queues, and avoiding
  * accidental stream backpressure.
  *
- *
  * This becomes particularly useful in the following scenarios:
  *
- *  * 1. When the incoming records belong to a single stream. Dynamic allocation ensures this one
+ * * 1. When the incoming records belong to a single stream. Dynamic allocation ensures this one
  * stream can utilise all memory.
- *  * 2. When the incoming records are from multiple streams, such as with Change Data Capture
- * (CDC). Here, dynamic allocation let us create as many queues as possible, allowing all streams to
- * be processed in parallel without accidental backpressure from unnecessary eager flushing.
- *
+ * * 2. When the incoming records are from multiple streams, such as with Change Data Capture (CDC).
+ * Here, dynamic allocation let us create as many queues as possible, allowing all streams to be
+ * processed in parallel without accidental backpressure from unnecessary eager flushing.
  */
 class GlobalMemoryManager(val maxMemoryBytes: Long) {
     val currentMemoryBytes = AtomicLong(0)
@@ -59,8 +55,7 @@ class GlobalMemoryManager(val maxMemoryBytes: Long) {
 
         val freeMem = maxMemoryBytes - currentMemoryBytes.get()
         // Never allocate more than free memory size.
-        val toAllocateBytes =
-            min(freeMem.toDouble(), BLOCK_SIZE_BYTES.toDouble()).toLong()
+        val toAllocateBytes = min(freeMem.toDouble(), BLOCK_SIZE_BYTES.toDouble()).toLong()
         currentMemoryBytes.addAndGet(toAllocateBytes)
 
         logger.debug {
@@ -90,12 +85,14 @@ class GlobalMemoryManager(val maxMemoryBytes: Long) {
     }
 
     companion object {
-        // In cases where a queue is rapidly expanding, a larger block size allows less allocation calls. On
-        // the flip size, a smaller block size allows more granular memory management. Since this overhead
+        // In cases where a queue is rapidly expanding, a larger block size allows less allocation
+        // calls. On
+        // the flip size, a smaller block size allows more granular memory management. Since this
+        // overhead
         // is minimal for now, err on a smaller block sizes.
         const val BLOCK_SIZE_BYTES: Long =
-            (
-                10 * 1024 * 1024 // 10MB
-            ).toLong()
+            (10 * 1024 * 1024 // 10MB
+                )
+                .toLong()
     }
 }

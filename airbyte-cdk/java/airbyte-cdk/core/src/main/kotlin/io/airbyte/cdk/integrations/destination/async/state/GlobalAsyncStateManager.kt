@@ -36,30 +36,23 @@ private val logger = KotlinLogging.logger {}
  * of preceding records. For a state to be emitted, all preceding records have to be written to the
  * destination i.e. the counter is 0.
  *
- *
  * A per-stream state queue is maintained internally, with each state within the queue having a
  * counter. This means we *ALLOW* records succeeding an unemitted state to be written. This
  * decouples record writing from state management at the cost of potentially repeating work if an
  * upstream state is never written.
- *
  *
  * One important detail here is the difference between how PER-STREAM & NON-PER-STREAM is handled.
  * The PER-STREAM case is simple, and is as described above. The NON-PER-STREAM case is slightly
  * tricky. Because we don't know the stream type to begin with, we always assume PER_STREAM until
  * the first state message arrives. If this state message is a GLOBAL state, we alias all existing
  * state ids to a single global state id via a set of alias ids. From then onwards, we use one id -
- * [.SENTINEL_GLOBAL_DESC] regardless of stream. Read
- * [.convertToGlobalIfNeeded] for more detail.
+ * [.SENTINEL_GLOBAL_DESC] regardless of stream. Read [.convertToGlobalIfNeeded] for more detail.
  */
 class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
-    /**
-     * Memory that the manager has allocated to it to use. It can ask for more memory as needed.
-     */
+    /** Memory that the manager has allocated to it to use. It can ask for more memory as needed. */
     private val memoryAllocated: AtomicLong = AtomicLong(memoryManager.requestMemory())
 
-    /**
-     * Memory that the manager is currently using.
-     */
+    /** Memory that the manager is currently using. */
     private val memoryUsed: AtomicLong = AtomicLong()
 
     private var preState: Boolean = true
@@ -67,18 +60,18 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         ConcurrentHashMap()
 
     /**
-     * Both [stateIdToCounter] and [stateIdToCounterForPopulatingDestinationStats] are used
-     * to maintain a counter for the number of records associated with a give state i.e. before a state
-     * was received, how many records were seen until that point. As records are received the value for
-     * both are incremented. The difference is the purpose of the two attributes.
-     * [stateIdToCounter] is used to determine whether a state is safe to emit or not. This is
-     * done by decrementing the value as records are committed to the destination. If the value hits 0,
-     * it means all the records associated with a given state have been committed to the destination, it
-     * is safe to emit the state back to platform. But because of this we can't use it to determine the
-     * actual number of records that are associated with a state to update the value of
-     * [AirbyteStateMessage.destinationStats] at the time of emitting the state message. That's
-     * where we need [stateIdToCounterForPopulatingDestinationStats], which is only reset when a
-     * state message has been emitted.
+     * Both [stateIdToCounter] and [stateIdToCounterForPopulatingDestinationStats] are used to
+     * maintain a counter for the number of records associated with a give state i.e. before a state
+     * was received, how many records were seen until that point. As records are received the value
+     * for both are incremented. The difference is the purpose of the two attributes.
+     * [stateIdToCounter] is used to determine whether a state is safe to emit or not. This is done
+     * by decrementing the value as records are committed to the destination. If the value hits 0,
+     * it means all the records associated with a given state have been committed to the
+     * destination, it is safe to emit the state back to platform. But because of this we can't use
+     * it to determine the actual number of records that are associated with a state to update the
+     * value of [AirbyteStateMessage.destinationStats] at the time of emitting the state message.
+     * That's where we need [stateIdToCounterForPopulatingDestinationStats], which is only reset
+     * when a state message has been emitted.
      */
     private val stateIdToCounter: ConcurrentMap<Long, AtomicLong> = ConcurrentHashMap()
     private val stateIdToCounterForPopulatingDestinationStats: ConcurrentMap<Long, AtomicLong> =
@@ -87,7 +80,8 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         ConcurrentMap<Long, ImmutablePair<StateMessageWithArrivalNumber, Long>> =
         ConcurrentHashMap()
 
-    // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to one
+    // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to
+    // one
     // single global id.
     // This only happens once.
     private val aliasIds: MutableSet<Long> = ConcurrentHashSet()
@@ -99,18 +93,17 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private val lock: Any = Any()
 
     // Always assume STREAM to begin, and convert only if needed. Most state is per stream anyway.
-    private var stateType: AirbyteStateMessage.AirbyteStateType = AirbyteStateMessage.AirbyteStateType.STREAM
+    private var stateType: AirbyteStateMessage.AirbyteStateType =
+        AirbyteStateMessage.AirbyteStateType.STREAM
 
     /**
      * Main method to process state messages.
      *
+     * The first incoming state message tells us the type of state we are dealing with. We then
+     * convert internal data structures if needed.
      *
-     * The first incoming state message tells us the type of state we are dealing with. We then convert
-     * internal data structures if needed.
-     *
-     *
-     * Because state messages are a watermark, all preceding records need to be flushed before the state
-     * message can be processed.
+     * Because state messages are a watermark, all preceding records need to be flushed before the
+     * state message can be processed.
      */
     fun trackState(
         message: PartialAirbyteMessage,
@@ -128,10 +121,11 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     }
 
     /**
-     * Identical to [.getStateId] except this increments the associated counter
-     * by 1. Intended to be called whenever a record is ingested.
+     * Identical to [.getStateId] except this increments the associated counter by 1. Intended to be
+     * called whenever a record is ingested.
      *
-     * @param streamDescriptor - stream to get stateId for.
+     * @param streamDescriptor
+     * - stream to get stateId for.
      * @return state id
      */
     fun getStateIdAndIncrementCounter(streamDescriptor: StreamDescriptor): Long {
@@ -139,8 +133,8 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     }
 
     /**
-     * Each decrement represent one written record for a state. A zero counter means there are no more
-     * inflight records associated with a state and the state can be flushed.
+     * Each decrement represent one written record for a state. A zero counter means there are no
+     * more inflight records associated with a state and the state can be flushed.
      *
      * @param stateId reference to a state.
      * @param count to decrement.
@@ -157,17 +151,17 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
 
     /**
      * Flushes state messages with no more inflight records i.e. counter = 0 across all streams.
-     * Intended to be called by [io.airbyte.cdk.integrations.destination.async.FlushWorkers] after
-     * a worker has finished flushing its record batch.
-     *
-     *
+     * Intended to be called by [io.airbyte.cdk.integrations.destination.async.FlushWorkers] after a
+     * worker has finished flushing its record batch.
      */
     fun flushStates(outputRecordCollector: Consumer<AirbyteMessage?>) {
         var bytesFlushed: Long = 0L
         synchronized(lock) {
-            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in descToStateIdQ.entries) {
+            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in
+                descToStateIdQ.entries) {
                 // Remove all states with 0 counters.
-                // Per-stream synchronized is required to make sure the state (at the head of the queue)
+                // Per-stream synchronized is required to make sure the state (at the head of the
+                // queue)
                 // logic is applied to is the state actually removed.
 
                 val stateIdQueue: LinkedBlockingDeque<Long>? = entry.value
@@ -177,8 +171,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
 
                     // technically possible this map hasn't been updated yet.
                     // This can be if you call the flush method if there are 0 records/states
-                    val oldestStateCounter: AtomicLong =
-                        stateIdToCounter[oldestStateId] ?: break
+                    val oldestStateCounter: AtomicLong = stateIdToCounter[oldestStateId] ?: break
 
                     val oldestState: ImmutablePair<StateMessageWithArrivalNumber, Long> =
                         stateIdToState[oldestStateId] ?: break
@@ -200,8 +193,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                                 AirbyteMessage::class.java,
                             )
                         message.state.destinationStats =
-                            AirbyteStateStats()
-                                .withRecordCount(flushedRecordsAssociatedWithState)
+                            AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState)
                         outputRecordCollector.accept(message)
 
                         bytesFlushed += oldestState.getRight()
@@ -226,8 +218,10 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         increment: Long,
     ): Long {
         val resolvedDescriptor: StreamDescriptor =
-            if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) streamDescriptor else SENTINEL_GLOBAL_DESC
-        // As concurrent collections do not guarantee data consistency when iterating, use `get` instead of
+            if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) streamDescriptor
+            else SENTINEL_GLOBAL_DESC
+        // As concurrent collections do not guarantee data consistency when iterating, use `get`
+        // instead of
         // `containsKey`.
         if (descToStateIdQ[resolvedDescriptor] == null) {
             registerNewStreamDescriptor(resolvedDescriptor)
@@ -247,7 +241,8 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * Return the internal id of a state message. This is the id that should be used to reference a
      * state when interacting with all methods in this class.
      *
-     * @param streamDescriptor - stream to get stateId for.
+     * @param streamDescriptor
+     * - stream to get stateId for.
      * @return state id
      */
     private fun getStateId(streamDescriptor: StreamDescriptor): Long {
@@ -256,8 +251,8 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
 
     /**
      * Pass this the number of bytes that were flushed. It will track those internally and if the
-     * memoryUsed gets signficantly lower than what is allocated, then it will return it to the memory
-     * manager. We don't always return to the memory manager to avoid needlessly allocating /
+     * memoryUsed gets signficantly lower than what is allocated, then it will return it to the
+     * memory manager. We don't always return to the memory manager to avoid needlessly allocating /
      * de-allocating memory rapidly over a few bytes.
      *
      * @param bytesFlushed bytes that were flushed (and should be removed from memory used).
@@ -283,12 +278,15 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private fun convertToGlobalIfNeeded(message: PartialAirbyteMessage) {
         // instead of checking for global or legacy, check for the inverse of stream.
         stateType = extractStateType(message)
-        if (stateType != AirbyteStateMessage.AirbyteStateType.STREAM) { // alias old stream-level state ids to single global state id
+        if (
+            stateType != AirbyteStateMessage.AirbyteStateType.STREAM
+        ) { // alias old stream-level state ids to single global state id
             // upon conversion, all previous tracking data structures need to be cleared as we move
             // into the non-STREAM world for correctness.
             synchronized(lock) {
                 aliasIds.addAll(
-                    descToStateIdQ.values.stream()
+                    descToStateIdQ.values
+                        .stream()
                         .flatMap { obj: LinkedBlockingDeque<Long> -> obj.stream() }
                         .toList(),
                 )
@@ -296,8 +294,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                 retroactiveGlobalStateId = StateIdProvider.nextId
 
                 descToStateIdQ[SENTINEL_GLOBAL_DESC] = LinkedBlockingDeque()
-                descToStateIdQ[SENTINEL_GLOBAL_DESC]!!
-                    .add(retroactiveGlobalStateId)
+                descToStateIdQ[SENTINEL_GLOBAL_DESC]!!.add(retroactiveGlobalStateId)
 
                 val combinedCounter: Long =
                     stateIdToCounter.values
@@ -333,9 +330,9 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     }
 
     /**
-     * When a state message is received, 'close' the previous state to associate the existing state id
-     * to the newly arrived state message. We also increment the state id in preparation for the next
-     * state message.
+     * When a state message is received, 'close' the previous state to associate the existing state
+     * id to the newly arrived state message. We also increment the state id in preparation for the
+     * next state message.
      */
     private fun closeState(
         message: PartialAirbyteMessage,
@@ -343,9 +340,10 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         defaultNamespace: String,
     ) {
         val resolvedDescriptor: StreamDescriptor =
-            extractStream(message, defaultNamespace).orElse(
-                SENTINEL_GLOBAL_DESC,
-            )
+            extractStream(message, defaultNamespace)
+                .orElse(
+                    SENTINEL_GLOBAL_DESC,
+                )
         synchronized(lock) {
             logger.info { "State with arrival number $arrivalNumber received" }
             stateIdToState[getStateId(resolvedDescriptor)] =
@@ -409,9 +407,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     }
 
     private fun registerNewStreamDescriptor(resolvedDescriptor: StreamDescriptor) {
-        synchronized(lock) {
-            descToStateIdQ.put(resolvedDescriptor, LinkedBlockingDeque())
-        }
+        synchronized(lock) { descToStateIdQ.put(resolvedDescriptor, LinkedBlockingDeque()) }
         registerNewStateId(resolvedDescriptor)
     }
 
@@ -424,9 +420,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         }
     }
 
-    /**
-     * Simplify internal tracking by providing a global always increasing counter for state ids.
-     */
+    /** Simplify internal tracking by providing a global always increasing counter for state ids. */
     private object StateIdProvider {
         private val pk: AtomicLong = AtomicLong(0)
 
@@ -446,35 +440,41 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         private val LOGGER: Logger = LoggerFactory.getLogger(GlobalAsyncStateManager::class.java)
 
         private val SENTINEL_GLOBAL_DESC: StreamDescriptor =
-            StreamDescriptor().withName(
-                UUID.randomUUID().toString(),
-            )
+            StreamDescriptor()
+                .withName(
+                    UUID.randomUUID().toString(),
+                )
 
         /**
-         * If the user has selected the Destination Namespace as the Destination default while setting up
-         * the connector, the platform sets the namespace as null in the StreamDescriptor in the
-         * AirbyteMessages (both record and state messages). The destination checks that if the namespace is
-         * empty or null, if yes then re-populates it with the defaultNamespace. See
-         * [io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer.accept]
-         * But destination only does this for the record messages. So when state messages arrive without a
-         * namespace and since the destination doesn't repopulate it with the default namespace, there is a
-         * mismatch between the StreamDescriptor from record messages and state messages. That breaks the
-         * logic of the state management class as [descToStateIdQ] needs to have consistent
-         * StreamDescriptor. This is why while trying to extract the StreamDescriptor from state messages,
-         * we check if the namespace is null, if yes then replace it with defaultNamespace to keep it
-         * consistent with the record messages.
+         * If the user has selected the Destination Namespace as the Destination default while
+         * setting up the connector, the platform sets the namespace as null in the StreamDescriptor
+         * in the AirbyteMessages (both record and state messages). The destination checks that if
+         * the namespace is empty or null, if yes then re-populates it with the defaultNamespace.
+         * See [io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer.accept] But
+         * destination only does this for the record messages. So when state messages arrive without
+         * a namespace and since the destination doesn't repopulate it with the default namespace,
+         * there is a mismatch between the StreamDescriptor from record messages and state messages.
+         * That breaks the logic of the state management class as [descToStateIdQ] needs to have
+         * consistent StreamDescriptor. This is why while trying to extract the StreamDescriptor
+         * from state messages, we check if the namespace is null, if yes then replace it with
+         * defaultNamespace to keep it consistent with the record messages.
          */
         private fun extractStream(
             message: PartialAirbyteMessage,
             defaultNamespace: String,
         ): Optional<StreamDescriptor> {
-            if (message.state?.type != null && message.state?.type == AirbyteStateMessage.AirbyteStateType.STREAM) {
+            if (
+                message.state?.type != null &&
+                    message.state?.type == AirbyteStateMessage.AirbyteStateType.STREAM
+            ) {
                 val streamDescriptor: StreamDescriptor? = message.state?.stream?.streamDescriptor
                 if (Strings.isNullOrEmpty(streamDescriptor?.namespace)) {
                     return Optional.of(
-                        StreamDescriptor().withName(
-                            streamDescriptor?.name,
-                        ).withNamespace(defaultNamespace),
+                        StreamDescriptor()
+                            .withName(
+                                streamDescriptor?.name,
+                            )
+                            .withNamespace(defaultNamespace),
                     )
                 }
                 return streamDescriptor?.let { Optional.of(it) } ?: Optional.empty()

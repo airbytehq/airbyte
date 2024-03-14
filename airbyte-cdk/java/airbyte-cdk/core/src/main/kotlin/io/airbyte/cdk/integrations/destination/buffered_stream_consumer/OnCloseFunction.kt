@@ -12,7 +12,6 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
  * Interface allowing destination to specify clean up logic that must be executed after all
  * record-related logic has finished.
  *
- *
  * The map of StreamSyncSummaries MUST be non-null, but MAY be empty. Streams not present in the map
  * will be treated as equivalent to [StreamSyncSummary.DEFAULT].
  */

@@ -10,9 +10,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.StreamDescriptor
 
-/**
- * Helper functions to extract [StreamDescriptor] from other POJOs.
- */
+/** Helper functions to extract [StreamDescriptor] from other POJOs. */
 object StreamDescriptorUtils {
     fun fromRecordMessage(msg: AirbyteRecordMessage): StreamDescriptor {
         return StreamDescriptor().withName(msg.stream).withNamespace(msg.namespace)

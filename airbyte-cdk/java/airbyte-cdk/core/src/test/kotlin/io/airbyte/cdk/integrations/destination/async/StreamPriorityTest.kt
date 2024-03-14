@@ -33,11 +33,15 @@ class StreamPriorityTest {
         val flusher = Mockito.mock(DestinationFlushFunction::class.java)
         val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
         Mockito.`when`(
-            bufferDequeue.getQueueSizeBytes(DESC1),
-        ).thenReturn(Optional.of(1L)).thenReturn(Optional.of(0L))
+                bufferDequeue.getQueueSizeBytes(DESC1),
+            )
+            .thenReturn(Optional.of(1L))
+            .thenReturn(Optional.of(0L))
         Mockito.`when`(
-            bufferDequeue.getQueueSizeBytes(DESC2),
-        ).thenReturn(Optional.of(0L)).thenReturn(Optional.of(1L))
+                bufferDequeue.getQueueSizeBytes(DESC2),
+            )
+            .thenReturn(Optional.of(0L))
+            .thenReturn(Optional.of(1L))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
 
@@ -54,13 +58,16 @@ class StreamPriorityTest {
         val flusher = Mockito.mock(DestinationFlushFunction::class.java)
         val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
         Mockito.`when`(
-            bufferDequeue.getQueueSizeBytes(org.mockito.kotlin.any()),
-        ).thenReturn(Optional.of(0L))
+                bufferDequeue.getQueueSizeBytes(org.mockito.kotlin.any()),
+            )
+            .thenReturn(Optional.of(0L))
         Mockito.`when`(
-            bufferDequeue.getTimeOfLastRecord(DESC1),
-        ).thenReturn(Optional.of(FIVE_MIN_AGO))
+                bufferDequeue.getTimeOfLastRecord(DESC1),
+            )
+            .thenReturn(Optional.of(FIVE_MIN_AGO))
             .thenReturn(Optional.of(NOW))
-        Mockito.`when`(bufferDequeue.getTimeOfLastRecord(DESC2)).thenReturn(Optional.of(NOW))
+        Mockito.`when`(bufferDequeue.getTimeOfLastRecord(DESC2))
+            .thenReturn(Optional.of(NOW))
             .thenReturn(Optional.of(FIVE_MIN_AGO))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
@@ -77,11 +84,13 @@ class StreamPriorityTest {
         val flusher = Mockito.mock(DestinationFlushFunction::class.java)
         val runningFlushWorkers = Mockito.mock(RunningFlushWorkers::class.java)
         Mockito.`when`(
-            bufferDequeue.getQueueSizeBytes(org.mockito.kotlin.any()),
-        ).thenReturn(Optional.of(0L))
+                bufferDequeue.getQueueSizeBytes(org.mockito.kotlin.any()),
+            )
+            .thenReturn(Optional.of(0L))
         Mockito.`when`(
-            bufferDequeue.getTimeOfLastRecord(org.mockito.kotlin.any()),
-        ).thenReturn(Optional.of(NOW))
+                bufferDequeue.getTimeOfLastRecord(org.mockito.kotlin.any()),
+            )
+            .thenReturn(Optional.of(NOW))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         val descs = listOf(Jsons.clone(DESC1), Jsons.clone(DESC2))
