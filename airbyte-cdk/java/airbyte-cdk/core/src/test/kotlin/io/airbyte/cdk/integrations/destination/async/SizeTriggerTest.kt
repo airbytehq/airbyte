@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.async
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
+@SuppressFBWarnings(value = ["BC_IMPOSSIBLE_CAST"])
 class SizeTriggerTest {
     private val SIZE_10MB = (10 * 1024 * 1024).toLong()
     private val SIZE_200MB = (200 * 1024 * 1024).toLong()

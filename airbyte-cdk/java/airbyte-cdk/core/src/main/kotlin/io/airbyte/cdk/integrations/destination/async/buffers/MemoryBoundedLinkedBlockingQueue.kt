@@ -65,9 +65,9 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
     @Throws(InterruptedException::class)
     fun poll(
         timeout: Long,
-        unit: TimeUnit?,
+        unit: TimeUnit,
     ): MemoryItem<E?>? {
-        return hiddenQueue.poll(timeout, unit!!)
+        return hiddenQueue.poll(timeout, unit)
     }
 
     val maxMemoryUsage: Long

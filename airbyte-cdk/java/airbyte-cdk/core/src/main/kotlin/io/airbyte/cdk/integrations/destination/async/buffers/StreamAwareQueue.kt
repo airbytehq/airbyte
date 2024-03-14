@@ -46,7 +46,7 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
     }
 
     fun offer(
-        message: PartialAirbyteMessage?,
+        message: PartialAirbyteMessage,
         messageSizeInBytes: Long,
         stateId: Long,
     ): Boolean {
@@ -70,11 +70,11 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
     @Throws(InterruptedException::class)
     fun poll(
         timeout: Long,
-        unit: TimeUnit?,
+        unit: TimeUnit,
     ): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?>? {
         return memoryAwareQueue.poll(timeout, unit)
     }
 
     @JvmRecord
-    data class MessageWithMeta(val message: PartialAirbyteMessage?, val stateId: Long)
+    data class MessageWithMeta(val message: PartialAirbyteMessage, val stateId: Long)
 }

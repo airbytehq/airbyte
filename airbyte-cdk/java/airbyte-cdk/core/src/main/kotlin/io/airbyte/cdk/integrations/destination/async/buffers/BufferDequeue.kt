@@ -114,23 +114,23 @@ class BufferDequeue(
                 .sum()
 
     fun getQueueSizeInRecords(streamDescriptor: StreamDescriptor): Optional<Long> {
-        return getBuffer(streamDescriptor).map { buf: StreamAwareQueue? ->
-            buf!!.size()
+        return getBuffer(streamDescriptor).map { buf: StreamAwareQueue ->
+            buf.size()
                 .toLong()
         }
     }
 
     fun getQueueSizeBytes(streamDescriptor: StreamDescriptor): Optional<Long> {
         return getBuffer(streamDescriptor).map {
-                obj: StreamAwareQueue? ->
-            obj!!.currentMemoryUsage
+                obj: StreamAwareQueue ->
+            obj.currentMemoryUsage
         }
     }
 
     fun getTimeOfLastRecord(streamDescriptor: StreamDescriptor): Optional<Instant> {
         return getBuffer(streamDescriptor).flatMap {
-                obj: StreamAwareQueue? ->
-            obj!!.getTimeOfLastMessage()
+                obj: StreamAwareQueue ->
+            obj.getTimeOfLastMessage()
         }
     }
 

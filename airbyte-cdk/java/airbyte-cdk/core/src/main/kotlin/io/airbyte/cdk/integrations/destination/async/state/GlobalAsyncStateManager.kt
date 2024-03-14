@@ -63,7 +63,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private val memoryUsed: AtomicLong = AtomicLong()
 
     private var preState: Boolean = true
-    private val descToStateIdQ: ConcurrentMap<StreamDescriptor, LinkedBlockingDeque<Long>?> =
+    private val descToStateIdQ: ConcurrentMap<StreamDescriptor, LinkedBlockingDeque<Long>> =
         ConcurrentHashMap()
 
     /**
@@ -289,7 +289,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             synchronized(lock) {
                 aliasIds.addAll(
                     descToStateIdQ.values.stream()
-                        .flatMap { obj: LinkedBlockingDeque<Long>? -> obj!!.stream() }
+                        .flatMap { obj: LinkedBlockingDeque<Long> -> obj.stream() }
                         .toList(),
                 )
                 descToStateIdQ.clear()
