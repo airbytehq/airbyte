@@ -20,23 +20,15 @@ from source_amazon_ads.schemas import (
 )
 from source_amazon_ads.streams.common import AmazonAdsStream, SubProfilesStream
 
-class SponsoredProductCampaignsV3(SubProfilesStream):
+class SponsoredProductsV3(SubProfilesStream):
     """
-    This stream corresponds to Amazon Ads API - Sponsored Products Campaigns
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Campaigns/operation/ListSponsoredProductsCampaigns
+    This Stream supports the Sponsored Products V3 API, which requires POST methods
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod
     """
-
-    primary_key = "campaignId"
-    data_field = "campaigns"
-    state_filter = None
-    model = ProductCampaign
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.state_filter = kwargs.get("config", {}).get("state_filter")
-
-    def path(self, **kwargs) -> str:
-        return "sp/campaigns/list"
 
     @property
     def http_method(self, **kwargs) -> str:
@@ -44,8 +36,8 @@ class SponsoredProductCampaignsV3(SubProfilesStream):
 
     def request_headers(self, profile_id: str = None, *args, **kwargs) -> MutableMapping[str, Any]:
         headers = super().request_headers(*args, **kwargs)
-        headers["Accept"] = "application/vnd.spCampaign.v3+json"
-        headers["Content-Type"] = "application/vnd.spCampaign.v3+json"
+        headers["Accept"] = self.content_type
+        headers["Content-Type"] = self.content_type
         return headers
 
     def next_page_token(self, response: Response) -> str:
@@ -63,29 +55,20 @@ class SponsoredProductCampaignsV3(SubProfilesStream):
         request_body["nextToken"] = next_page_token
         return request_body
 
-class SponsoredProductCampaigns(SubProfilesStream):
+class SponsoredProductCampaigns(SponsoredProductsV3):
     """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Campaigns
-    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns
+    This stream corresponds to Amazon Ads API - Sponsored Products Campaigns
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Campaigns/operation/ListSponsoredProductsCampaigns
     """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.state_filter = kwargs.get("config", {}).get("state_filter")
 
     primary_key = "campaignId"
+    data_field = "campaigns"
     state_filter = None
     model = ProductCampaign
+    content_type = "application/vnd.spCampaign.v3+json"
 
     def path(self, **kwargs) -> str:
-        return "v2/sp/campaigns"
-
-    def request_params(self, *args, **kwargs):
-        params = super().request_params(*args, **kwargs)
-        if self.state_filter:
-            params["stateFilter"] = ",".join(self.state_filter)
-        return params
-
+        return "sp/campaigns/list"
 
 class SponsoredProductAdGroups(SubProfilesStream):
     """

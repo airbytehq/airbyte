@@ -10,11 +10,9 @@ from source_amazon_ads.streams.common import SubProfilesStream
 
 class SponsoredBrandsV4(SubProfilesStream):
     """
-    This Stream supports the SponsoredBrands V4 API, which requires POST methods
+    This Stream supports the Sponsored Brands V4 API, which requires POST methods
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi/prod
     """
-
-    content_type = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
