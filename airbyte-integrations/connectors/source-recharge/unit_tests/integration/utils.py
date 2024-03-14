@@ -3,6 +3,7 @@
 #
 
 
+from lib2to3.pgen2.literals import test
 from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -67,7 +68,6 @@ def read_incremental(
 
 def get_cursor_value_from_state_message(
     test_output: Mapping[str, Any],
-    stream_name: str,
     cursor_field: Optional[str] = None,
 ) -> str:
-    return test_output.most_recent_state.get(stream_name, {}).get(cursor_field)
+    return dict(test_output.most_recent_state.stream_state).get(cursor_field)

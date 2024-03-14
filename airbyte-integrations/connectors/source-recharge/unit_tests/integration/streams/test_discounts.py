@@ -60,7 +60,7 @@ class TestIncremental(TestCase):
         )
 
         output = read_incremental(config(), _STREAM_NAME)
-        test_cursor_value = get_cursor_value_from_state_message(output, _STREAM_NAME, _CURSOR_FIELD)
+        test_cursor_value = get_cursor_value_from_state_message(output, _CURSOR_FIELD)
         assert test_cursor_value == max_cursor_value
 
     @HttpMocker()

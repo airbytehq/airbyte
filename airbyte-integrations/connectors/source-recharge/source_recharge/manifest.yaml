@@ -1,4 +1,4 @@
-version: 0.65.0
+version: 0.70.1
 
 definitions:
   # COMMON PARTS
@@ -143,7 +143,9 @@ definitions:
       cursor_field: "updated_at"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      emit_state_from: "most_recent_record"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -189,6 +191,8 @@ definitions:
     $ref: "#/definitions/base_deprecated_api_stream"
     retriever:
       $ref: "#/definitions/retriever_api_deprecated"
+      paginator:
+        type: NoPagination
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
