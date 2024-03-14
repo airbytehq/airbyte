@@ -11,6 +11,7 @@ data class YellowbrickState(val needsSoftReset: Boolean) : MinimumDestinationSta
         return needsSoftReset
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T : MinimumDestinationState> withSoftReset(needsSoftReset: Boolean): T {
         return copy(needsSoftReset = needsSoftReset) as T
     }
