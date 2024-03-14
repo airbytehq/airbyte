@@ -24,6 +24,8 @@ public class DaspireOauthHttpUtil {
   private final static String WRITE_DASPIRE_OAUTH_CONFIG = "/oauth/config/save";
 
   public static String post(String uri, Map<String, Object> param) {
+    log.error("post function URL ----> {}", uri);
+    log.error("post function param ----> {}", param);
     CloseableHttpClient client = HttpClients.createDefault();
     try (client) {
       URIBuilder uriBuilder = new URIBuilder(uri);
@@ -51,6 +53,15 @@ public class DaspireOauthHttpUtil {
           "actorDefinitionId", actorDefinitionId,
           "token", token); 
       String jsonString = post(configs.getDaspireUrl() + GET_DASPIRE_OAUTH_CONFIG, param);
+      log.error("static URL call :: start");
+      String staticCallResponse = post("https://api-staging.daspire.com/daspire" + GET_DASPIRE_OAUTH_CONFIG, param);
+      log.error("static URL call :: response -> {}", staticCallResponse);
+      log.error("static URL call :: END");
+      log.error("---------------------------------");
+      log.error("static URL call with http :: start");
+      String staticCallResponseHTTP = post("https://api-staging.daspire.com/daspire" + GET_DASPIRE_OAUTH_CONFIG, param);
+      log.error("static URL call with http :: response -> {}", staticCallResponseHTTP);
+      log.error("static URL call with http :: END");
       if (ObjectUtils.isNotEmpty(jsonString)) {
         JsonNode responseObject = new ObjectMapper().readTree(jsonString);
         if ("200".equals(responseObject.get("code").toString())) {
