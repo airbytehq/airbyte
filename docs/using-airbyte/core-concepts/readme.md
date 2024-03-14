@@ -26,11 +26,11 @@ A connection is an automated data pipeline that replicates data from a source to
 
 | Concept                                                                                                         | Description                                                        |
 |-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
-| [Replication Frequency](/using-airbyte/core-concepts/sync-schedules.md)                                         | When should a data sync be triggered?                              | 
-| [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                           | Where should the replicated data be written?                       | 
-| [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                  | How should the streams be replicated (read and written)?           | 
-| [Schema Propagation](/cloud/managing-airbyte-cloud/manage-schema-changes.md)                                    | How should Airbyte handle schema drift in sources?                 | 
-| [Catalog Selection](/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? | 
+| [Replication Frequency](/using-airbyte/core-concepts/sync-schedules.md)                                         | When should a data sync be triggered?                              |
+| [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                           | Where should the replicated data be written?                       |
+| [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                  | How should the streams be replicated (read and written)?           |
+| [Schema Propagation](/cloud/managing-airbyte-cloud/manage-schema-changes.md)                                    | How should Airbyte handle schema drift in sources?                 |
+| [Catalog Selection](/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? |
 
 ## Stream
 
@@ -53,7 +53,8 @@ Examples of fields:
 
 ## Sync Schedules
 
-There are three options for scheduling a sync to run: 
+There are three options for scheduling a sync to run:
+
 - Scheduled (ie. every 24 hours, every 2 hours)
 - [CRON schedule](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
 - Manual \(i.e: clicking the "Sync Now" button in the UI or through the API\)
@@ -70,7 +71,7 @@ For more details, see our [Namespace documentation](namespaces.md).
 
 A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides different sync modes depending on what you want to accomplish.
 
-Read more about each [sync mode](using-airbyte/core-concepts/sync-modes) and how they differ. 
+Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
 
 ## Typing and Deduping
 

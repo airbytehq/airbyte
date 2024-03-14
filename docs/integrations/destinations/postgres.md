@@ -193,6 +193,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.0.4   | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.23.18; Null safety check in state parsing                                               |
 | 2.0.3   | 2024-03-01 | [\#35528](https://github.com/airbytehq/airbyte/pull/35528) | Adopt CDK 0.23.11; Use Migration framework                                                          |
 | 2.0.2   | 2024-03-01 | [\#35760](https://github.com/airbytehq/airbyte/pull/35760) | Mark as certified, add PSQL exception to deinterpolator                                             |
 | 2.0.1   | 2024-02-22 | [\#35385](https://github.com/airbytehq/airbyte/pull/35385) | Upgrade CDK to 0.23.0; Gathering required initial state upfront                                     |

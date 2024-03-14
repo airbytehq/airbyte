@@ -190,7 +190,12 @@ Expand to see details about Google Search Console connector limitations and trou
 ### Connector limitations
 
 #### Rate limiting
+
 This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
+
+#### Data retention
+
+Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. [Please see this article for more information](https://seotesting.com/google-search-console/how-long-does-gsc-keep-my-data/#:~:text=Google%20Search%20Console%20holds%20relevant,October%2C%202022%2C%20until%20today.).
 
 ### Troubleshooting
 
