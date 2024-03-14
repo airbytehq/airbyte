@@ -6,11 +6,10 @@ import datetime
 import re
 from dataclasses import dataclass
 from operator import attrgetter
-from pathlib import Path
+from typing import Set, Tuple
 
 import semver
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO
-from typing_extensions import Set
 
 
 class ChangelogParsingException(Exception):
@@ -24,7 +23,7 @@ class ChangelogEntry:
     pr_number: int
     comment: str
 
-    def to_markdown(self, github_repo=AIRBYTE_GITHUB_REPO) -> str:
+    def to_markdown(self, github_repo: str = AIRBYTE_GITHUB_REPO) -> str:
         return f'| {self.version} | {self.date.strftime("%Y-%m-%d")} | [{self.pr_number}](https://github.com/{github_repo}/pull/{self.pr_number}) | {self.comment} |'
 
     def __str__(self) -> str:
@@ -51,7 +50,7 @@ class ChangelogEntry:
         return self.__str__().__hash__()
 
 
-def parse_markdown(markdown_lines: list[str], github_repo: str) -> [int, set[ChangelogEntry]]:
+def parse_markdown(markdown_lines: list[str], github_repo: str) -> Tuple[int, Set[ChangelogEntry]]:
     """This parses the markdown to find the changelog table, and then populates entries with the existing entries"""
     changelog_entry_re = (
         "^\\| *(?P<version>[0-9]+\\.[0-9+]+\\.[0-9]+?) *\\| *"
@@ -94,7 +93,7 @@ def parse_markdown(markdown_lines: list[str], github_repo: str) -> [int, set[Cha
 
 
 class Changelog:
-    def __init__(self, markdown: str, github_repo=AIRBYTE_GITHUB_REPO) -> None:
+    def __init__(self, markdown: str, github_repo: str = AIRBYTE_GITHUB_REPO) -> None:
         self.original_markdown_lines = markdown.splitlines()
         self.changelog_entries_start_line_index, self.original_entries = parse_markdown(self.original_markdown_lines, github_repo)
         self.new_entries: Set[ChangelogEntry] = set()
