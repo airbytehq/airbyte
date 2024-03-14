@@ -36,9 +36,10 @@ def test_get_json_schema():
             "d": Obj(data_type=Obj(name="MESSAGE"), is_repeated=True),
             "e": Obj(data_type=Obj(name="STRING"), is_repeated=False),
             "f": Obj(data_type=Obj(name="DATE"), is_repeated=False),
+            "segments.month": Obj(data_type=Obj(name="DATE"), is_repeated=False),
         }
     )
-    instance = CustomQueryMixin(config={"query": Obj(fields=["a", "b", "c", "d", "e", "f"])})
+    instance = CustomQueryMixin(config={"query": Obj(fields=["a", "b", "c", "d", "e", "f", "segments.month"])})
     instance.cursor_field = None
     instance.google_ads_client = Obj(get_fields_metadata=query_object)
     schema = instance.get_json_schema()
@@ -53,6 +54,7 @@ def test_get_json_schema():
             "c": {"type": ["string", "null"]},
             "d": {"type": ["null", "array"], "items": {"type": ["string", "null"]}},
             "e": {"type": ["string", "null"]},
-            "f": {"type": ["string", "null"], "format": "date"},
+            "f": {"type": ["string", "null"]},
+            "segments.month": {"type": ["string", "null"], "format": "date"},
         },
     }

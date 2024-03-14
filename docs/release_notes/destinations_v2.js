@@ -148,6 +148,43 @@ INSERT INTO "${raw_schema}".${v2RawTableName} (
   );
 };
 
+export const PostgresMigrationGenerator = () => {
+  // StandardNameTransformer + identifier should start with a letter or an underscore
+  function postgresConvertStreamName(str) {
+    str = convertStreamName(str);
+    if (str.charAt(0).match(/[A-Za-z_]/)) {
+      return str;
+    } else {
+      return "_" + str;
+    }
+  }
+  function generateSql(og_namespace, new_namespace, name, raw_schema) {
+    let v2RawTableName =
+        concatenateRawTableName(new_namespace, name).toLowerCase();
+    let v1namespace = postgresConvertStreamName(og_namespace);
+    let v1name = postgresConvertStreamName("_airbyte_raw_" + name).toLowerCase();
+    return `CREATE SCHEMA IF NOT EXISTS "${raw_schema}";
+DROP TABLE IF EXISTS "${raw_schema}".${v2RawTableName};
+CREATE TABLE "${raw_schema}".${v2RawTableName} (
+  "_airbyte_raw_id" VARCHAR(36) NOT NULL PRIMARY KEY
+  , "_airbyte_extracted_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  , "_airbyte_loaded_at" TIMESTAMP WITH TIME ZONE DEFAULT NULL
+  , "_airbyte_data" JSONB
+);
+INSERT INTO "${raw_schema}".${v2RawTableName} (
+    SELECT
+        _airbyte_ab_id AS "_airbyte_raw_id",
+        _airbyte_emitted_at AS "_airbyte_extracted_at",
+        CAST(NULL AS TIMESTAMP WITH TIME ZONE) AS "_airbyte_loaded_at",
+        _airbyte_data AS "_airbyte_data"
+    FROM ${v1namespace}.${v1name}
+);`;
+  }
+  return (
+      <MigrationGenerator destination="postgres" generateSql={generateSql} />
+  );
+};
+
 export const MigrationGenerator = ({ destination, generateSql }) => {
   const defaultMessage = `Enter your stream's name and namespace to see the SQL output.
 If your stream has no namespace, take the default value from the destination connector's settings.`;

@@ -11,6 +11,10 @@ data:
   icon: polygon.svg
   license: MIT
   name: Polygon Stock API
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-polygon-stock-api
   registries:
     cloud:
       enabled: true
@@ -19,8 +23,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

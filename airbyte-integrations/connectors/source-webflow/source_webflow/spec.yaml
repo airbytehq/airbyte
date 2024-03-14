@@ -6,7 +6,7 @@ connectionSpecification:
   required:
     - api_key
     - site_id
-  additionalProperties: false
+  additionalProperties: true
   properties:
     site_id:
       title: Site id
@@ -21,3 +21,9 @@ connectionSpecification:
       example: "a very long hex sequence"
       order: 1
       airbyte_secret: true
+    accept_version:
+      title: Accept Version
+      type: string
+      description: "The version of the Webflow API to use. See https://developers.webflow.com/#versioning"
+      example: "1.0.0"
+      order: 2

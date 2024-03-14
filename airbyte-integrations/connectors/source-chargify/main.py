@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_chargify import SourceChargify
+from source_chargify.run import run
 
 if __name__ == "__main__":
-    source = SourceChargify()
-    launch(source, sys.argv[1:])
+    run()

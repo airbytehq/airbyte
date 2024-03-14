@@ -26,15 +26,8 @@ Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorOptions], Validati
 # TODO: Remove these when each of these connectors ship any new version
 ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
     ("airbyte/source-prestashop", "1.0.0"),
-    ("airbyte/source-onesignal", "1.0.0"),
     ("airbyte/source-yandex-metrica", "1.0.0"),
-    ("airbyte/destination-meilisearch", "1.0.0"),
     ("airbyte/destination-csv", "1.0.0"),
-    ("airbyte/source-metabase", "1.0.0"),
-    ("airbyte/source-typeform", "1.0.0"),
-    ("airbyte/source-recharge", "1.0.0"),
-    ("airbyte/source-pipedrive", "1.0.0"),
-    ("airbyte/source-paypal-transaction", "2.0.0"),
 ]
 
 

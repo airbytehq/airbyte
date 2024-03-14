@@ -29,7 +29,10 @@ public abstract class BaseSheetGenerator implements CsvSheetGenerator {
     return new LinkedList<>(getRecordColumns(formattedData));
   }
 
-  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
+  @Override
+  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt, final String airbyteMetaString) {
+    // TODO: Make this abstract or default if No-op is intended in NoFlatteningSheetGenerator or
+    // RootLevelFlatteningSheetGenerator
     throw new UnsupportedOperationException("Not implemented in BaseSheetGenerator");
   }
 

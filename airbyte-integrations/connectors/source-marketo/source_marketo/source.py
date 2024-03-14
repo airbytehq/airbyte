@@ -5,6 +5,7 @@
 import csv
 import datetime
 import json
+import re
 from abc import ABC
 from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -17,6 +18,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 from .utils import STRING_TYPES, clean_string, format_value, to_datetime_str
 
@@ -300,8 +303,12 @@ class MarketoExportCreate(MarketoStream):
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 429 or 500 <= response.status_code < 600:
             return True
-        record = next(self.parse_response(response, {}), {})
-        status, export_id = record.get("status", "").lower(), record.get("exportId")
+        if errors := response.json().get("errors"):
+            if errors[0].get("code") == "1029" and re.match("Export daily quota \d+MB exceeded", errors[0].get("message")):
+                message = "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
+                raise AirbyteTracedException(internal_message=response.text, message=message, failure_type=FailureType.config_error)
+        result = response.json().get("result")[0]
+        status, export_id = result.get("status", "").lower(), result.get("exportId")
         if status != "created" or not export_id:
             self.logger.warning(f"Failed to create export job! Status is {status}!")
             return True

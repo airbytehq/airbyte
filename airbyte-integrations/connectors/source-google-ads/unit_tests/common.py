@@ -44,8 +44,11 @@ class MockGoogleAdsClient:
     def load_from_dict(config, version=None):
         return MockGoogleAdsClient(config)
 
-    def send_request(self, query, customer_id):
+    def send_request(self, query, customer_id, login_customer_id="none"):
         yield from ()
+
+    def get_accessible_accounts(self):
+        yield from ["fake_customer_id", "fake_customer_id_2"]
 
 
 class MockGoogleAdsFieldService:
