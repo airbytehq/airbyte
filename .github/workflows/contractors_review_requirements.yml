@@ -19,7 +19,7 @@ jobs:
         id: actorTeams
         with:
           username: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
       - if: ${{ (contains(steps.actorTeams.outputs.teams, 'community-contractor')) }}
         name: Check if the review requirements are met
         uses: Automattic/action-required-review@v3
