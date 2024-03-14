@@ -128,6 +128,8 @@ public class MongoDbSource extends BaseConnector implements Source {
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
     final var stateManager = MongoDbStateManager.createStateManager(state, sourceConfig);
 
+    InitialSnapshotHandler.validateStateSyncMode(stateManager, catalog.getStreams());
+
     if (catalog != null) {
       MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
           stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
@@ -148,7 +150,7 @@ public class MongoDbSource extends BaseConnector implements Source {
 
         if (!incrementalStreams.isEmpty()) {
           LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
-          iterators.addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, catalog, stateManager, emittedAt, sourceConfig));
+          iterators.addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
         }
         return AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
       } catch (final Exception e) {
