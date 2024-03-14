@@ -14,7 +14,14 @@ jobs:
 
     if: ${{ github.repository == 'airbytehq/airbyte' }}
     steps:
-      - name: Check if the review requirements are met
+      - name: Check contributor team membership
+        uses: tspascoal/get-user-teams-membership@v3
+        id: actorTeams
+        with:
+          username: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+      - if: ${{ (contains(steps.actorTeams.outputs.teams, 'community-contractor') }}
+        name: Check if the review requirements are met
         uses: Automattic/action-required-review@v3
         with:
           status: Required review
