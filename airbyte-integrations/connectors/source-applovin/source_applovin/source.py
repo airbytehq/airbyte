@@ -62,4 +62,5 @@ class SourceApplovin(AbstractSource):
             "authenticator": auth,
             "config": config
         }
-        return [Campaigns(**args), Creatives(**args), Targets(**args), PublisherReports(**args), AdvertiserReports(**args)]
+        return [Campaigns(**args), Creatives(**args), Targets(**args), PublisherReports(**args), AdvertiserReports(**args),
+                ProbabilisticPublisherReports(**args), ProbabilisticAdvertiserReports(**args)]

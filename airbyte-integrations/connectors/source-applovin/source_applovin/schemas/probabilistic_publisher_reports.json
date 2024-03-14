@@ -13,12 +13,6 @@
     "ctr": {
       "type": ["null", "number"]
     },
-    "revenue": {
-      "type": ["null", "number"]
-    },
-    "ecpm": {
-      "type": ["null", "number"]
-    },
     "country": {
       "type": ["null", "string"]
     },
@@ -35,27 +29,6 @@
       "type": ["null", "string"]
     },
     "application": {
-      "type": ["null", "string"]
-    },
-    "package_name": {
-      "type": ["null", "string"]
-    },
-    "store_id": {
-      "type": ["null", "string"]
-    },
-    "placement": {
-      "type": ["null", "string"]
-    },
-    "application_is_hidden": {
-      "type": ["null", "string"]
-    },
-    "zone": {
-      "type": ["null", "string"]
-    },
-    "zone_id": {
-      "type": ["null", "string"]
-    },
-    "bidding_integration": {
       "type": ["null", "string"]
     },
     "day": {

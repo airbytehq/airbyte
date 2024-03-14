@@ -239,7 +239,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
 
 class PublisherReports(ApplovinIncrementalMetricsStream):
     report_type = "publisher"
-    primary_key = ["application","package_name", "store_id"]
+    primary_key = []
 
     def path(self, **kwargs) -> str:
         return "report"
@@ -247,7 +247,7 @@ class PublisherReports(ApplovinIncrementalMetricsStream):
 
 class AdvertiserReports(ApplovinIncrementalMetricsStream):
     report_type = "advertiser"
-    primary_key = ["ad_id"]
+    primary_key = []
     page_size = 100000
 
     def path(self, **kwargs) -> str:
@@ -256,7 +256,7 @@ class AdvertiserReports(ApplovinIncrementalMetricsStream):
 
 class ProbabilisticPublisherReports(ApplovinIncrementalMetricsStream):
     report_type = "publisher"
-    primary_key = ["application","package_name", "store_id"]
+    primary_key = []
 
     def path(self, **kwargs) -> str:
         return "probabilisticReport"
@@ -264,7 +264,7 @@ class ProbabilisticPublisherReports(ApplovinIncrementalMetricsStream):
 
 class ProbabilisticAdvertiserReports(ApplovinIncrementalMetricsStream):
     report_type = "advertiser"
-    primary_key = ["ad_id"]
+    primary_key = []
 
     def path(self, **kwargs) -> str:
         return "probabilisticReport"
