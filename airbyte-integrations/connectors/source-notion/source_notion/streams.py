@@ -8,15 +8,33 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import pendulum
 import pydantic
 import requests
+from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from requests import HTTPError
 
-from .components import transform_properties
+from .utils import transform_properties
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
+
+
+class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
+    """
+    Inherit from HttpAvailabilityStrategy with slight modification to 403 error message.
+    """
+
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
+
+        reasons_for_codes: Dict[int, str] = {
+            requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
+            "Please make sure your integration has read access for the resources you are trying to sync"
+        }
+        return reasons_for_codes
 
 
 class NotionStream(HttpStream, ABC):
@@ -37,6 +55,10 @@ class NotionStream(HttpStream, ABC):
         if not self.start_date:
             self.start_date = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
             config["start_date"] = self.start_date
+
+    @property
+    def availability_strategy(self) -> HttpAvailabilityStrategy:
+        return NotionAvailabilityStrategy()
 
     @property
     def retry_factor(self) -> int:

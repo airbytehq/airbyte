@@ -113,3 +113,5 @@ def test_block_record_transformer():
     }
     assert NotionBlocksTransformation().transform(
         response_record) == expected_record
+
+# TODO: Add tests for CustomRecordFilter and CustomRetriever

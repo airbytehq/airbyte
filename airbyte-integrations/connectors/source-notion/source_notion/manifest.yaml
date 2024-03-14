@@ -12,6 +12,8 @@ definitions:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['token'] }}"
 
+  # TODO: Only token authenticator currently works.
+  # TODO: Figure out how advanced_auth fits into all this
   oauth_authenticator:
     type: OAuthAuthenticator
     client_id: "{{ config['credentials']['client_id'] }}"
@@ -408,8 +410,10 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
+    #TODO: Debug why CustomRetriever is causing subcomponents to fail validations
     retriever:
-      type: SimpleRetriever
+      type: CustomRetriever
+      class_name: source_notion.components.CustomRecursiveRetriever
       requester:
         type: HttpRequester
         url_base: https://api.notion.com/v1/
@@ -550,17 +554,6 @@ streams:
                       cursor_value: '{{ response.get("next_cursor", {}) }}'
                       stop_condition: '{{ not response.get("next_cursor", {}) }}'
                   partition_router: []
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: last_edited_time
-                  cursor_datetime_formats:
-                    - '%Y-%m-%dT%H:%M:%S.%fZ'
-                  datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: '{{ config[''start_date''] }}'
-                    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
-                  is_data_feed: true
     transformations:
       - type: CustomTransformation
         class_name: source_notion.components.NotionBlocksTransformation
