@@ -32,3 +32,4 @@ jobs:
             - paths: unmatched
               teams:
                 - connector-extensibility
+                - gl-python
