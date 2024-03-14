@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -58,13 +58,20 @@ const PaymentPage: React.FC = () => {
   const [updatePlanLoading, setUpdatePlanLoading] = useState<boolean>(false);
   const [deploymentMode, setDeploymentMode] = useState("");
   const [cloudProvider, setCloudProvider] = useState(selectedProduct?.cloudProviderName ?? "");
+  const [regionSelected, setRegionSelected] = useState(selectedProduct?.regionItemId !== null ? true : false);
   const [jobs, setJobs] = useState(selectedProduct?.noOfJobs ?? null);
   const [cloudItemId, setCloudItemId] = useState(selectedProduct?.cloudItemId ?? "");
   const [selectedRegion, setSelectedRegion] = useState(selectedProduct?.regionItemId ?? "");
-  const [selectedInstance, setSelectedInstance] = useState(selectedProduct?.instanceItemId ?? "");
-  const [instance, setInstance] = useState<any>(null);
-  const [instanceSelected, setInstanceSelected] = useState(true);
 
+  const [selectedInstance, setSelectedInstance] = useState(selectedProduct?.instanceItemId ?? "");
+
+  const [instance, setInstance] = useState<any>(null);
+  const [instanceSelected, setInstanceSelected] = useState(selectedProduct?.instanceItemId !== null ? true : false);
+  const cloudRef = useRef(null);
+  const regionScrollRef = useRef(null);
+  const instanceRef = useRef(null);
+
+  const [isCloud, setIsCloud] = useState(selectedProduct?.cloudItemId !== null ? true : false);
   const [mode, setMode] = useState(false);
   const authService = useAuthenticationService();
   const { onCreateSubscriptionURL, onGetUpgradeSubscription, onUpgradeSubscription, onInstanceSelect } =
@@ -169,7 +176,26 @@ const PaymentPage: React.FC = () => {
       setCurrentStep(PaymentSteps.SELECT_PLAN);
     }
   };
-
+  useEffect(() => {
+    if (isCloud && cloudRef.current) {
+      (cloudRef.current as HTMLDivElement).scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isCloud]);
+  useEffect(() => {
+    if (regionSelected && regionScrollRef.current) {
+      (regionScrollRef.current as HTMLDivElement).scrollIntoView({ behavior: "smooth" });
+    }
+  }, [regionSelected]);
+  useEffect(() => {
+    if (instanceSelected && instanceRef.current) {
+      (instanceRef.current as HTMLDivElement).scrollIntoView({ behavior: "smooth" });
+    }
+  }, [instanceSelected]);
+  useEffect(() => {
+    if (userPlanDetail?.name === "Professional") {
+      window.scrollBy(0, -500);
+    }
+  }, []);
   return (
     <MainPageWithScroll headTitle={<HeadTitle titles={[{ id: "payment.tabTitle" }]} />}>
       <PaymentNav steps={Object.values(PaymentSteps)} currentStep={currentStep} />
@@ -208,6 +234,13 @@ const PaymentPage: React.FC = () => {
               planDetail={userPlanDetail?.planDetail}
               setInstanceSelected={setInstanceSelected}
               instanceSelected={instanceSelected}
+              setIsCloud={setIsCloud}
+              cloudRef={cloudRef}
+              setRegionSelected={setRegionSelected}
+              regionScrollRef={regionScrollRef}
+              instanceRef={instanceRef}
+              isCloud={isCloud}
+              regionSelected={regionSelected}
             />
           )}
           {currentStep === PaymentSteps.BILLING_PAYMENT && (

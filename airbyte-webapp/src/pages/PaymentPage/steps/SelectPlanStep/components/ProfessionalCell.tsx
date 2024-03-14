@@ -112,7 +112,7 @@ const ProfessionalCell: React.FC<IProps> = ({
           disabled={
             ((remainingDaysForFreeTrial(expiresTime) <= 0 ? false : selectPlanBtnDisability) &&
               getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription) ||
-            selectedProduct?.price === Number(price)
+            (remainingDaysForFreeTrial(expiresTime) > 0 && selectedProduct?.price === Number(price))
           }
           isLoading={paymentLoading}
         >

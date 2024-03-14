@@ -19,14 +19,14 @@ interface IProps {
   setCloudItemId?: any;
   setSelectedRegion?: any;
   setSelectedInstance?: any;
+  setIsCloud?: any;
 }
 
 const Title = styled.div`
   font-weight: 500;
   font-size: 18px;
-  line-height: 30px;
+  line-height: 20px;
   color: ${({ theme }) => theme.black300};
-  user-select: none;
 `;
 
 // const DeployContainer = styled.div`
@@ -34,7 +34,7 @@ const Title = styled.div`
 // `;
 
 const CardContainer = styled.div`
-  padding: 20px 20px;
+  padding: 20px 20px 50px;
   background: #ffffff;
   border-radius: 16px;
 `;
@@ -47,12 +47,14 @@ const CloudProvider: React.FC<IProps> = ({
   setCloudItemId,
   setSelectedRegion,
   setSelectedInstance,
+  cloudItemId,
+  setIsCloud,
 }) => {
   return (
     <CardContainer>
       <Grid container spacing={2}>
         <Grid item lg={12} md={12} sm={12} xs={12}>
-          <Box pl={1}>
+          <Box pl={4} pt={4}>
             <Title>
               <FormattedMessage id="plan.cloudProvider" />
             </Title>
@@ -60,7 +62,7 @@ const CloudProvider: React.FC<IProps> = ({
         </Grid>
 
         <Grid item lg={6} md={6} sm={6} xs={6}>
-          <Box pt={2} pl={1}>
+          <Box pt={2} pl={5}>
             <FormControl>
               <RadioGroup row aria-labelledby="demo-row-radio-buttons-group-label" name="AWS">
                 <FormControlLabel
@@ -68,7 +70,7 @@ const CloudProvider: React.FC<IProps> = ({
                   control={
                     <Radio
                       onChange={(e) => {
-                        // setIsCloud(true);
+                        setIsCloud(true);
                         setCloudProvider(e.target.value);
                         setCloudItemId(regions[0]?.cloudItemId);
                         handleInstanceSelect(regions[0]?.cloudItemId);
@@ -78,7 +80,7 @@ const CloudProvider: React.FC<IProps> = ({
                           color: "#4F46E5",
                         },
                       }}
-                      checked={cloudProvider === "AWS"}
+                      checked={cloudProvider === "AWS" && cloudItemId === regions[0]?.cloudItemId}
                     />
                   }
                   label={
@@ -103,7 +105,7 @@ const CloudProvider: React.FC<IProps> = ({
           {regions?.find(
             (region: any) =>
               region?.cloudProviderName === "GOOGLE CLOUD" && (
-                <Box pt={2} pl={1}>
+                <Box pt={3} pl={4}>
                   <FormControl>
                     <RadioGroup row aria-labelledby="demo-row-radio-buttons-group-label" name="GOOGLE CLOUD">
                       <FormControlLabel
