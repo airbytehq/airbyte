@@ -12,7 +12,7 @@ jobs:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
 
-    if: ${{ github.repository == 'airbytehq/airbyte' && github.event.pull_request.draft == false }}
+    if: ${{ github.repository == 'airbytehq/airbyte' }}
     steps:
       - name: Check if the review requirements are met
         uses: Automattic/action-required-review@v3
@@ -21,5 +21,6 @@ jobs:
           token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
           request-reviews: true
           fail: true
+          paths: unmatched
           teams:
             - @airbytehq/connector-extensibility
