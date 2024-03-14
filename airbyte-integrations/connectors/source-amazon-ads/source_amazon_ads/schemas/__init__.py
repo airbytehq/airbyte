@@ -7,7 +7,6 @@ from .profile import Profile
 from .sponsored_brands import (
     BrandsAdGroup,
     BrandsCampaign,
-    BrandsCampaignV4,
 )
 from .sponsored_display import DisplayAdGroup, DisplayBudgetRules, DisplayCampaign, DisplayCreatives, DisplayProductAds, DisplayTargeting
 from .sponsored_products import (
@@ -16,14 +15,12 @@ from .sponsored_products import (
     ProductAdGroups,
     ProductAdGroupSuggestedKeywords,
     ProductCampaign,
-    ProductCampaignV3,
     ProductTargeting,
 )
 
 __all__ = [
     "BrandsAdGroup",
     "BrandsCampaign",
-    "BrandsCampaignV4",
     "CatalogModel",
     "DisplayAdGroup",
     "DisplayCampaign",
@@ -40,7 +37,6 @@ __all__ = [
     "ProductAdGroupBidRecommendations",
     "ProductAdGroupSuggestedKeywords",
     "ProductCampaign",
-    "ProductCampaignV3",
     "ProductTargeting",
     "Profile",
     "AttributionReportModel",

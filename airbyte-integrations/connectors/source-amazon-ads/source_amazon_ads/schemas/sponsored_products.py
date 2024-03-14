@@ -17,7 +17,7 @@ class Bidding(CatalogModel):
     strategy: str
     adjustments: List[Adjustments]
 
-class ProductCampaignV3(CatalogModel):
+class ProductCampaign(CatalogModel):
     portfolioId: str
     campaignId: str
     name: str
@@ -29,22 +29,6 @@ class ProductCampaignV3(CatalogModel):
     endDate: str
     budget: dict
     extendedData: dict
-
-class ProductCampaign(CatalogModel):
-    portfolioId: int
-    campaignId: Decimal
-    name: str
-    tags: Dict[str, str]
-    campaignType: str
-    targetingType: str
-    state: str
-    dailyBudget: Decimal
-    ruleBasedBudget: Dict[str, str]
-    startDate: str
-    endDate: str = None
-    premiumBidAdjustment: bool
-    bidding: Bidding
-    networks: str
 
 # Needs to be updated
 class ProductAdGroups(CatalogModel):

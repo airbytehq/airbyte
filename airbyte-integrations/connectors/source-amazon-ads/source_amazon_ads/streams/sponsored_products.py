@@ -16,7 +16,6 @@ from source_amazon_ads.schemas import (
     ProductAdGroups,
     ProductAdGroupSuggestedKeywords,
     ProductCampaign,
-    ProductCampaignV3,
     ProductTargeting,
 )
 from source_amazon_ads.streams.common import AmazonAdsStream, SubProfilesStream
@@ -30,7 +29,7 @@ class SponsoredProductCampaignsV3(SubProfilesStream):
     primary_key = "campaignId"
     data_field = "campaigns"
     state_filter = None
-    model = ProductCampaignV3
+    model = ProductCampaign
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -62,20 +61,6 @@ class SponsoredProductCampaignsV3(SubProfilesStream):
             }
         request_body["maxResults"] = self.page_size
         request_body["nextToken"] = next_page_token
-
-        # tbd if included
-        # request_body["campaignIdFilter"] = {
-        #     "include": []
-        # }
-        # request_body["portfolioIdFilter"] = {
-        #     "include": []
-        # }
-        # request_body["includeExtendedDataFields"] = True
-        # request_body["nameFilter"] = {
-        #     "queryTermMatchType": "EXACT_MATCH",
-        #     "include": []
-        # }
-
         return request_body
 
 class SponsoredProductCampaigns(SubProfilesStream):

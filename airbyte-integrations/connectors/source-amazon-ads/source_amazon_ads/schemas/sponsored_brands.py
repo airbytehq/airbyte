@@ -7,16 +7,13 @@ from typing import Dict, List, Optional
 
 from .common import CatalogModel
 
-
 class LandingPage(CatalogModel):
     pageType: str
     url: str
 
-
 class BidAdjustment(CatalogModel):
     bidAdjustmentPredicate: str
     bidAdjustmentPercent: int
-
 
 class Creative(CatalogModel):
     brandName: str
@@ -25,7 +22,7 @@ class Creative(CatalogModel):
     asins: List[str]
     shouldOptimizeAsins: bool
 
-class BrandsCampaignV4(CatalogModel):
+class BrandsCampaign(CatalogModel):
     campaignId: str
     name: str
     tags: Dict[str, str]
@@ -43,34 +40,9 @@ class BrandsCampaignV4(CatalogModel):
     smartDefault: Optional[List[str]]
     extendedData: Optional[dict]
 
-class BrandsCampaign(CatalogModel):
-    campaignId: Decimal
-    name: str
-    tags: Dict[str, str]
-    budget: Decimal
-    budgetType: str
-    startDate: str
-    endDate: str
-    state: str
-    servingStatus: str
-    brandEntityId: str
-    portfolioId: int
-    bidOptimization: bool = None
-    bidMultiplier: Decimal = None
-    adFormat: str
-    bidAdjustments: Optional[List[BidAdjustment]]
-    creative: Optional[Creative]
-    landingPage: Optional[LandingPage]
-    supplySource: Optional[str]
-
-
 class BrandsAdGroup(CatalogModel):
-    campaignId: Decimal
-    adGroupId: Decimal
+    campaignId: str
+    adGroupId: str
     name: str
-    bid: Decimal
-    keywordId: Decimal
-    keywordText: str
-    nativeLanguageKeyword: str
-    matchType: str
     state: str
+    extendedData: dict
