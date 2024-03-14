@@ -1,0 +1,2 @@
+{"type": "RECORD", "record": {"stream": "test", "emitted_at": 1664705198575, "data": { "id": 12, "name": "Vansh"}}}
+{"type": "RECORD", "record": {"stream": "test", "emitted_at": 1664705198575, "data": { "id": 16, "name": "Mehul"}}}
