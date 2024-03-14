@@ -406,4 +406,4 @@ check:
   # TODO: does not match the reality
   type: CheckStream
   stream_names:
-    - groups
+    - projects
