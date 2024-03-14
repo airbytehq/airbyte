@@ -93,13 +93,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   }
 
   @Override
-  protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
-    AtomicLong count = new AtomicLong(0L);
-    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
-    assertEquals(totalCount, count.get());
-  }
-
-  @Override
   protected MsSQLTestDatabase createTestDatabase() {
     return MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT)
         .withWaitUntilAgentRunning()
