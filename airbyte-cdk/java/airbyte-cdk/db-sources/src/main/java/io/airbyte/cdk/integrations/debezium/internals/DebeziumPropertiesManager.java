@@ -76,7 +76,11 @@ public abstract class DebeziumPropertiesManager {
     // WARNING : Never change the value of this otherwise all the connectors would start syncing from
     // scratch.
     props.setProperty(TOPIC_PREFIX_KEY, sanitizeTopicPrefix(getName(config)));
-
+    // https://issues.redhat.com/browse/DBZ-7635
+    // https://cwiki.apache.org/confluence/display/KAFKA/KIP-581%3A+Value+of+optional+null+field+which+has+default+value
+    // A null value in a column with default value won't be generated correctly in CDC unless we set the
+    // following
+    props.setProperty("value.converter.replace.null.with.default", "false");
     // includes
     props.putAll(getIncludeConfiguration(catalog, config));
 

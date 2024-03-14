@@ -102,7 +102,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final String recordString, final long emittedAt) throws Exception {
+  public long accept(final String recordString, final String airbyteMetaString, final long emittedAt) throws Exception {
     throw new UnsupportedOperationException("This method is not supported for ParquetSerializedBuffer");
   }
 

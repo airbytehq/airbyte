@@ -3,11 +3,12 @@
 #
 
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
+from airbyte_cdk.utils import AirbyteTracedException
 from source_shopify.auth import ShopifyAuthenticator
-from source_shopify.source import SourceShopify
+from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import (
     AbandonedCheckouts,
     Articles,
@@ -226,3 +227,21 @@ def test_select_transactions_stream(config, expected_stream_class):
     actual = source.select_transactions_stream(config)
     assert type(actual) == expected_stream_class
 
+
+@pytest.mark.parametrize(
+    "read_records, expected_shop_id, expected_error",
+    [
+        pytest.param([{"id": "12345"}], "12345", None, id="test_shop_name_exists"),
+        pytest.param([], None, AirbyteTracedException, id="test_shop_name_does_not_exist"),
+     ],
+)
+def test_get_shop_id(config, read_records, expected_shop_id, expected_error):
+    check_test = ConnectionCheckTest(config)
+
+    with patch.object(Shop, "read_records", return_value=read_records):
+        if expected_error:
+            with pytest.raises(expected_error):
+                check_test.get_shop_id()
+        else:
+            actual_shop_id = check_test.get_shop_id()
+            assert actual_shop_id == expected_shop_id
