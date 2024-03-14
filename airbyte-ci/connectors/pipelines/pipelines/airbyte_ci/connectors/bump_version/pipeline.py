@@ -10,6 +10,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
 from pipelines.helpers import git
+from pipelines.helpers.changelog import Changelog
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 
@@ -39,14 +40,14 @@ class AddChangelogEntry(Step):
         context: ConnectorContext,
         repo_dir: Container,
         new_version: str,
-        changelog_entry: str,
+        comment: str,
         pull_request_number: str,
     ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
-        self.new_version = new_version
-        self.changelog_entry = changelog_entry
-        self.pull_request_number = pull_request_number
+        self.new_version = semver.VersionInfo.parse(new_version)
+        self.comment = comment
+        self.pull_request_number = int(pull_request_number)
 
     async def _run(self) -> StepResult:
         doc_path = self.context.connector.documentation_file_path
@@ -58,13 +59,13 @@ class AddChangelogEntry(Step):
                 output=self.repo_dir,
             )
         try:
-            updated_doc = self.add_changelog_entry(doc_path.read_text())
+            original_markdown = doc_path.read_text()
+            changelog = Changelog(original_markdown)
+            changelog.add_entry(self.new_version, datetime.date.today(), self.pull_request_number, self.comment)
+            updated_doc = changelog.to_markdown()
         except Exception as e:
             return StepResult(
-                step=self,
-                status=StepStatus.FAILURE,
-                stdout=f"Could not add changelog entry: {e}",
-                output=self.repo_dir,
+                step=self, status=StepStatus.FAILURE, stderr=f"Could not add changelog entry: {e}", output=self.repo_dir, exc_info=e
             )
         updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), contents=updated_doc)
         return StepResult(
@@ -73,21 +74,6 @@ class AddChangelogEntry(Step):
             stdout=f"Added changelog entry to {doc_path}",
             output=updated_repo_dir,
         )
-
-    def find_line_index_for_new_entry(self, markdown_text: str) -> int:
-        lines = markdown_text.splitlines()
-        for line_index, line in enumerate(lines):
-            if "version" in line.lower() and "date" in line.lower() and "pull request" in line.lower() and "subject" in line.lower():
-                return line_index + 2
-        raise Exception("Could not find the changelog section table in the documentation file.")
-
-    def add_changelog_entry(self, og_doc_content: str) -> str:
-        today = datetime.date.today().strftime("%Y-%m-%d")
-        lines = og_doc_content.splitlines()
-        line_index_for_new_entry = self.find_line_index_for_new_entry(og_doc_content)
-        new_entry = f"| {self.new_version} | {today} | [{self.pull_request_number}](https://github.com/airbytehq/airbyte/pull/{self.pull_request_number}) | {self.changelog_entry} |"
-        lines.insert(line_index_for_new_entry, new_entry)
-        return "\n".join(lines) + "\n"
 
 
 class BumpDockerImageTagInMetadata(Step):
