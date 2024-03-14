@@ -24,4 +24,4 @@ jobs:
           requirements: |
             - paths: unmatched
               teams:
-                - "@airbytehq/connector-extensibility"
+                - connector-extensibility
