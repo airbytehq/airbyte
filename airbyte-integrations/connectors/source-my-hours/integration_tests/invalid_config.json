@@ -1,6 +1,10 @@
 {
-  "email": "john@doe.com",
-  "password": "pw1234",
-  "start_date": "2016-01-01",
+  "start_date": "2021-12-01",
+  "credentials": {
+    "email": "wrong",
+    "password": "wrong",
+    "auth_type": "anything",
+    "access_token": "token"
+  },
   "logs_batch_size": 30
 }
