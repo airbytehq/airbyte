@@ -10,6 +10,12 @@ This page contains the setup guide and reference information for the [Stripe](ht
 
 - Access to the Stripe account containing the data you wish to replicate
 
+:::info 
+
+If you use the **Create Charges endpoint** (`POST /v1/charges`) to create payments, you may find some missing events as this endpoint has been **deprecated**.  As suggested by [Stripe](https://docs.stripe.com/api/charges/create), you should migrate to the [Payment Intents API](https://docs.stripe.com/api/payment_intents) to create your payments. This will generate events for both Aitbyte streams: `charges` and `payment_intents`
+
+:::
+
 ## Setup Guide
 
 :::note
