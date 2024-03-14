@@ -216,8 +216,8 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         logging.info(f"request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, start {start_date}, offset {self.offset}, limit {self.page_size}")
         return {
             "api_key": self.config["reporting_api_key"],
-            "start": start_date,
-            "end": "now",
+            "start": '2024-03-13',
+            "end": '2024-03-13',
             "format": "json",
             "report_type": self.report_type,
             "columns": self.columns,
