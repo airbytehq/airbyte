@@ -1,51 +1,20 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+
+
 from airbyte_cdk.utils import is_cloud_environment
 
-import os
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Mapping, MutableMapping, Tuple, Union
 
 import pendulum
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from requests.auth import AuthBase
 from requests.exceptions import HTTPError
 
-from .streams import (
-    Branches,
-    Commits,
-    Deployments,
-    EpicIssues,
-    Epics,
-    GitlabStream,
-    GroupIssueBoards,
-    GroupLabels,
-    GroupMembers,
-    GroupMilestones,
-    GroupProjects,
-    Groups,
-    GroupsList,
-    IncludeDescendantGroups,
-    Issues,
-    Jobs,
-    MergeRequestCommits,
-    MergeRequests,
-    Pipelines,
-    PipelinesExtended,
-    ProjectLabels,
-    ProjectMembers,
-    ProjectMilestones,
-    Projects,
-    Releases,
-    Tags,
-    Users,
-)
 from .utils import parse_url
 
 
@@ -150,41 +119,3 @@ class SourceGitlab(YamlDeclarativeSource):
                 return False, f"Unable to connect to Gitlab API with the provided Private Access Token - {repr(http_error)}"
         except Exception as error:
             return False, f"Unknown error occurred while checking the connection - {repr(error)}"
-
-    def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
-        config = self._ensure_default_values(config)
-        auth_params = self._auth_params(config)
-        start_date = config.get("start_date")
-
-        groups, projects = self._groups_stream(config), self._projects_stream(config)
-        pipelines = Pipelines(parent_stream=projects, start_date=start_date, **auth_params)
-        merge_requests = MergeRequests(parent_stream=projects, start_date=start_date, **auth_params)
-        epics = Epics(parent_stream=groups, **auth_params)
-
-        streams = [
-            groups,
-            projects,
-            Branches(parent_stream=projects, repository_part=True, **auth_params),
-            Commits(parent_stream=projects, repository_part=True, start_date=start_date, **auth_params),
-            epics,
-            Deployments(parent_stream=projects, **auth_params),
-            EpicIssues(parent_stream=epics, **auth_params),
-            GroupIssueBoards(parent_stream=groups, **auth_params),
-            Issues(parent_stream=projects, start_date=start_date, **auth_params),
-            Jobs(parent_stream=pipelines, **auth_params),
-            ProjectMilestones(parent_stream=projects, **auth_params),
-            GroupMilestones(parent_stream=groups, **auth_params),
-            ProjectMembers(parent_stream=projects, **auth_params),
-            GroupMembers(parent_stream=groups, **auth_params),
-            ProjectLabels(parent_stream=projects, **auth_params),
-            GroupLabels(parent_stream=groups, **auth_params),
-            merge_requests,
-            MergeRequestCommits(parent_stream=merge_requests, **auth_params),
-            Releases(parent_stream=projects, **auth_params),
-            Tags(parent_stream=projects, repository_part=True, **auth_params),
-            pipelines,
-            PipelinesExtended(parent_stream=pipelines, **auth_params),
-            Users(parent_stream=projects, **auth_params),
-        ]
-
-        return streams
