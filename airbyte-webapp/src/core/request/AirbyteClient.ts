@@ -708,6 +708,8 @@ export const JobStatus = {
   failed: "failed",
   succeeded: "succeeded",
   cancelled: "cancelled",
+  notstarted:"notstarted",
+  waiting:'waiting'
 } as const;
 
 export interface StreamDescriptor {
