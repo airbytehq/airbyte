@@ -25,6 +25,23 @@ class Creative(CatalogModel):
     asins: List[str]
     shouldOptimizeAsins: bool
 
+class BrandsCampaignV4(CatalogModel):
+    campaignId: str
+    name: str
+    tags: Dict[str, str]
+    budget: Decimal
+    budgetType: str
+    startDate: str
+    endDate: str
+    state: str
+    brandEntityId: str
+    portfolioId: str
+    ruleBasedBudget: Optional[dict]
+    bidding: Optional[dict]
+    productLocation: Optional[str]
+    costType: Optional[str]
+    smartDefault: Optional[List[str]]
+    extendedData: Optional[dict]
 
 class BrandsCampaign(CatalogModel):
     campaignId: Decimal
