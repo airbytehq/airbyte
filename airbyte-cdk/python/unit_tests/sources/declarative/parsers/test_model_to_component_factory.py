@@ -1825,10 +1825,12 @@ def test_create_offset_increment():
     assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
     assert strategy.config == input_config
 
+
 class MyCustomSchemaLoader(SchemaLoader):
     def get_json_schema(self) -> Mapping[str, Any]:
         """Returns a mapping describing the stream's schema"""
         return {}
+
 
 def test_create_custom_schema_loader():
 
@@ -1838,4 +1840,3 @@ def test_create_custom_schema_loader():
     }
     component = factory.create_component(CustomSchemaLoaderModel, definition, {})
     assert isinstance(component, MyCustomSchemaLoader)
-
