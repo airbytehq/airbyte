@@ -41,16 +41,19 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   public JsonNode getSourceOAuthParamConfig(final UUID workspaceId, final UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
+    log.error("inside getSourceOAuthParamConfig function ");
     try {
       final Optional<SourceOAuthParameter> param = MoreOAuthParameters.getSourceOAuthParameter(
-          configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
+              configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
       if (param.isPresent()) {
+        log.error("getSourceOAuthParamConfig :: param is present ");
         // TODO: if we write a flyway migration to flatten persisted configs in db, we don't need to flatten
         // here see https://github.com/airbytehq/airbyte/issues/7624
 
         StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(workspaceId, Boolean.FALSE);
         JsonNode config = DaspireOauthHttpUtil.getDaspireOauthConfig(String.valueOf(workspaceId), String.valueOf(param.get().getSourceDefinitionId()),
             standardWorkspace.getToken());
+        log.error("getSourceOAuthParamConfig :: config -> {}", config);
         if (ObjectUtils.isNotEmpty(config)) {
           return MoreOAuthParameters.flattenOAuthConfig(config);
         }
@@ -58,6 +61,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     } catch (final JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);
     }
+    log.error("getSourceOAuthParamConfig :: before throw statement");
     throw new ConfigNotFoundException(ConfigSchema.SOURCE_OAUTH_PARAM, "Undefined OAuth Parameter.");
   }
 
