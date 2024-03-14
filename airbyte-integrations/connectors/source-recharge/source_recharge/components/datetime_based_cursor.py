@@ -18,11 +18,10 @@ class RechargeDateTimeBasedCursor(DatetimeBasedCursor):
     Override for the default `DatetimeBasedCursor` to make self.close_slice() to produce `min` value instead of `max` value.
 
     1) Override for the `close_slice()` - to make the SOURCE STATE proccessed correctly:
-        emit_state_from: str - `most_recent_record` or `stream_slice`,
-            determines what value to emit when it comes to the STATE value.
+        emit_state_from: str - `most_recent_record` or `stream_slice`, determines what value to emit when it comes to the STATE value.
 
-            `most_recent_record` == the actual value from the RECORD
-            `stream_slice` == the upper boundary value of the SLICER's `stream_slice_end_value`, where the sync must be STOPPED.
+           @: `most_recent_record` == the actual value from the RECORD
+           @: `stream_slice` == the upper boundary value of the SLICER's `stream_slice_end_value`, where the sync must be STOPPED.
 
     2) Override for the `get_request_params()` - to guarantee the records are returned in `ASC` order.
     """
