@@ -9,9 +9,6 @@ streams:
     name: users
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema: {}
     retriever:
       type: SimpleRetriever
       requester:
@@ -36,9 +33,6 @@ streams:
     name: time_logs
     primary_key:
       - logId
-    schema_loader:
-      type: InlineSchemaLoader
-      schema: {}
     retriever:
       type: SimpleRetriever
       requester:
@@ -65,9 +59,6 @@ streams:
     name: tags
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema: {}
     retriever:
       type: SimpleRetriever
       requester:
@@ -92,9 +83,6 @@ streams:
     name: projects
     primary_key:
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema: {}
     retriever:
       type: SimpleRetriever
       requester:
@@ -119,9 +107,6 @@ streams:
     name: clients
     primary_key: 
       - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema: {}
     retriever:
       type: SimpleRetriever
       requester:
@@ -153,15 +138,23 @@ spec:
       api_key:
         type: string
         title: access_token
+        description:
+          My Hours Access Token. See the <a href="https://docs.airbyte.com/integrations/sources/my-hours">docs</a>
+          for more information on how to generate this key.
         airbyte_secret: true
         order: 0
       start_date:
         title: start_date
         default: '2021-12-01'
+        description: Start date for collecting time logs
+        examples:
+        - "%Y-%m-%d"
+        - '2016-01-01'
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         type: string
         order: 1
     additionalProperties: true
-  documentation_url: https://example.org
+  documentation_url: https://docs.airbyte.com/integrations/sources/my-hours
   type: Spec
 metadata:
   autoImportSchema:

@@ -4,7 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "logId": {
-      "type": ["number"]
+      "type": ["null", "number"]
     },
     "userId": {
       "type": ["null", "number"]
