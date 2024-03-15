@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.70.2
+low-code: remove superfluous sleep
+
 ## 0.70.1
 File-based CDK: Fix tab delimiter configuration in CSV file type
 
