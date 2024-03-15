@@ -7,12 +7,7 @@ import io.airbyte.commons.functional.CheckedBiFunction
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 
-fun interface BufferCreateFunction :
-    CheckedBiFunction<
-        AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> {
+interface BufferCreateFunction : CheckedBiFunction<AirbyteStreamNameNamespacePair?, ConfiguredAirbyteCatalog?, SerializableBuffer?, Exception?> {
     @Throws(Exception::class)
-    override fun apply(
-        stream: AirbyteStreamNameNamespacePair,
-        configuredCatalog: ConfiguredAirbyteCatalog
-    ): SerializableBuffer?
+    override fun apply(stream: AirbyteStreamNameNamespacePair, configuredCatalog: ConfiguredAirbyteCatalog): SerializableBuffer
 }

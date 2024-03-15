@@ -10,12 +10,15 @@ import java.util.*
 import java.util.List
 
 /**
- * This [DestStateLifecycleManager] handles any state where there is a guarantee that any single
- * state message represents the state for the ENTIRE connection. At the time of writing, GLOBAL and
- * LEGACY state types are the state type that match this pattern.
+ * This [DestStateLifecycleManager] handles any state where there is a guarantee that any
+ * single state message represents the state for the ENTIRE connection. At the time of writing,
+ * GLOBAL and LEGACY state types are the state type that match this pattern.
+ *
+ *
  *
  * Does NOT store duplicates. Because each state message represents the entire state for the
  * connection, it only stores (and emits) the LAST state it received at each phase.
+ *
  */
 class DestSingleStateLifecycleManager : DestStateLifecycleManager {
     private var lastPendingState: AirbyteMessage? = null
@@ -27,7 +30,7 @@ class DestSingleStateLifecycleManager : DestStateLifecycleManager {
     }
 
     @VisibleForTesting
-    fun listPending(): Queue<AirbyteMessage> {
+    fun listPending(): Queue<AirbyteMessage?> {
         return stateMessageToQueue(lastPendingState)
     }
 
@@ -38,7 +41,7 @@ class DestSingleStateLifecycleManager : DestStateLifecycleManager {
         }
     }
 
-    override fun listFlushed(): Queue<AirbyteMessage> {
+    override fun listFlushed(): Queue<AirbyteMessage?>? {
         return stateMessageToQueue(lastFlushedState)
     }
 
@@ -62,12 +65,10 @@ class DestSingleStateLifecycleManager : DestStateLifecycleManager {
 
     override fun markPendingAsCommitted(stream: AirbyteStreamNameNamespacePair) {
         // We declare supportsPerStreamFlush as false, so this method should never be called.
-        throw IllegalStateException(
-            "Committing a single stream state is not supported for this state type."
-        )
+        throw IllegalStateException("Committing a single stream state is not supported for this state type.")
     }
 
-    override fun listCommitted(): Queue<AirbyteMessage>? {
+    override fun listCommitted(): Queue<AirbyteMessage?>? {
         return stateMessageToQueue(lastCommittedState)
     }
 
@@ -76,10 +77,8 @@ class DestSingleStateLifecycleManager : DestStateLifecycleManager {
     }
 
     companion object {
-        private fun stateMessageToQueue(stateMessage: AirbyteMessage?): Queue<AirbyteMessage> {
-            return LinkedList(
-                if (stateMessage == null) emptyList<AirbyteMessage>() else List.of(stateMessage)
-            )
+        private fun stateMessageToQueue(stateMessage: AirbyteMessage?): Queue<AirbyteMessage?> {
+            return LinkedList(if (stateMessage == null) emptyList<AirbyteMessage>() else List.of(stateMessage))
         }
     }
 }

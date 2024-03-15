@@ -5,7 +5,9 @@ package io.airbyte.cdk.integrations.destination.buffered_stream_consumer
 
 import io.airbyte.protocol.models.v0.AirbyteMessage
 
-/** Allows specifying transformation logic from Airbyte Json to String. */
+/**
+ * Allows specifying transformation logic from Airbyte Json to String.
+ */
 interface StreamDateFormatter {
     fun getFormattedDate(message: AirbyteMessage?): String?
 }

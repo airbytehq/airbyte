@@ -7,7 +7,10 @@ import java.sql.*
 
 class NoOpStreamingQueryConfig : JdbcStreamingQueryConfig {
     @Throws(SQLException::class)
-    override fun initialize(connection: Connection, preparedStatement: Statement) {}
+    override fun initialize(connection: Connection, preparedStatement: Statement) {
+    }
 
-    @Throws(SQLException::class) override fun accept(resultSet: ResultSet, o: Any) {}
+    @Throws(SQLException::class)
+    override fun accept(resultSet: ResultSet, o: Any) {
+    }
 }
