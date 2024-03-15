@@ -179,6 +179,7 @@ _ANY_VALUE = "any value"
 _IS_PK = True
 _IS_CURSOR_FIELD = True
 
+
 def _create_inferrer_with_required_field(is_pk: bool, field: List[List[str]]) -> SchemaInferrer:
     if is_pk:
         return SchemaInferrer(field)
