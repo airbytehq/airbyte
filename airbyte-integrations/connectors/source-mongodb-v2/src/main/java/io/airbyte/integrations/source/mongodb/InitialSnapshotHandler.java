@@ -96,15 +96,6 @@ public class InitialSnapshotHandler {
           final Optional<MongoDbStreamState> existingState =
                   stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
 
-          final Map<SyncMode, List<InitialSnapshotStatus>> syncModeStatus = Map.of(
-                  SyncMode.INCREMENTAL, List.of(InitialSnapshotStatus.IN_PROGRESS, InitialSnapshotStatus.COMPLETE),
-                  SyncMode.FULL_REFRESH, List.of(InitialSnapshotStatus.FULL_REFRESH));
-          existingState.ifPresent(state -> {
-            if (syncModeStatus.get(airbyteStream.getSyncMode()).contains(state.status())) {
-              LOGGER.info("Stream {}'s is {} but the saved status {} doesn't match. Please restart this stream", collectionName, airbyteStream.getSyncMode(), state.status());
-              // Todo: throw exception here
-            }
-          });
             // The filter determines the starting point of this iterator based on the state of this collection.
             // If a state exists, it will use that state to create a query akin to
             // "where _id > [last saved state] order by _id ASC".

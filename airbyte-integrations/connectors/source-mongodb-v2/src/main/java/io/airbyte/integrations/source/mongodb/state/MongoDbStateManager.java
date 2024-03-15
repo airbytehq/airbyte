@@ -275,7 +275,8 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
             .withStream(stream.getStream().getName())
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
-            .withData(injectMetadata(jsonNode)));
+            .withData((stream.getSyncMode() == INCREMENTAL) ?
+                    injectMetadata(jsonNode) : jsonNode));
   }
 
   private JsonNode injectMetadata(final JsonNode jsonNode) {
