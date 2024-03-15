@@ -159,7 +159,7 @@ helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 
 ### External Logs with S3
 
-::info
+:::info
 
 S3 logging was tested on
 [Airbyte Helm Chart Version 0.50.13](https://artifacthub.io/packages/helm/airbyte/airbyte/0.50.13)
