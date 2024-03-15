@@ -261,7 +261,7 @@ class RefreshTokenUpdater(BaseModel):
     )
     refresh_token_error_values: Optional[List[str]] = Field(
         [],
-        description='List of values to check for refresh token error in response.',
+        description='List of values to check for exception during token refresh process. Used to check if the error found in the response matches the key from the Refresh Token Error Key field (e.g. response={"error": "invalid_grant"}). Raised AirbyteTracedException configuration error.',
         examples=[['invalid_grant', 'invalid_permissions']],
         title='Refresh Token Error Values',
     )

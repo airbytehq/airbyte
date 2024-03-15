@@ -921,7 +921,7 @@ definitions:
               - "error"
           refresh_token_error_values:
             title: Refresh Token Error Values
-            description: List of values to check for refresh token error in response.
+            description: 'List of values to check for exception during token refresh process. Used to check if the error found in the response matches the key from the Refresh Token Error Key field (e.g. response={"error": "invalid_grant"}). Raised AirbyteTracedException configuration error.'
             type: array
             items:
               type: string
