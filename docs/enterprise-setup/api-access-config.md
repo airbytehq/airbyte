@@ -25,7 +25,7 @@ While logged into the Airbyte UI, go to the `settings/applications` page, then c
 With your `client_id` and `client_secret` in hand, make the following API request, replacing `<YOUR_WEBAPP_URL>` with the URL you use to access the Airbyte UI:
 
 ```yml
-GET <YOUR_WEBAPP_URL>/api/v1/applications/token
+POST <YOUR_WEBAPP_URL>/api/v1/applications/token
 ```
 
 Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:
@@ -41,7 +41,7 @@ The API response should provide an `access_token` which is a Bearer Token valid 
 
 ## Step 3: Operate Airbyte via API
 
-You may now make requests to any endpoint documented in our [Airbyte API Reference](https://reference.airbyte.com). For example, you may use the `/list/workspaces` [endpoint](https://reference.airbyte.com/reference/listworkspaces) to verify the list of workspaces in your organization. Ensure to include your `access_token` as a `Bearer Token` in your request.:
+You may now make requests to any endpoint documented in our [Airbyte API Reference](https://reference.airbyte.com). For example, you may use the [List workspaces endpoint](https://reference.airbyte.com/reference/listworkspaces) to verify the list of workspaces in your organization. Ensure to include your `access_token` as a `Bearer Token` in your request.:
 
 ```yaml
 GET <YOUR_WEBAPP_URL>/v1/workspaces
@@ -66,5 +66,5 @@ Expect a response like the following:
 }
 ```
 
-To go further, you may use our Python and Node SDKs to make API requests directly in code, or our [Terraform Provider](https://registry.terraform.io/providers/airbytehq/airbyte/latest) (which uses the Airbyte API) to declare your Airbyte configuration as infrastructure.
+To go further, you may use our [Python](https://github.com/airbytehq/airbyte-api-python-sdk) and [Java](https://github.com/airbytehq/airbyte-api-java-sdk) SDKs to make API requests directly in code, or our [Terraform Provider](https://registry.terraform.io/providers/airbytehq/airbyte/latest) (which uses the Airbyte API) to declare your Airbyte configuration as infrastructure.
 
