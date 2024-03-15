@@ -171,6 +171,9 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             authenticator=authenticator,
         )
 
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return 1000000
+
     @property
     def state(self):
         return self._state
@@ -181,7 +184,8 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_count = response.json()["count"]
-        if response_count < self.page_size:
+        # REMOVE THIS AFTER TESTS!
+        if response_count < self.page_size or self.offset >= 1000000:
             return None
         else:
             self.offset += response_count
@@ -239,7 +243,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
 
 class PublisherReports(ApplovinIncrementalMetricsStream):
     report_type = "publisher"
-    primary_key = []
+    primary_key = ["zone_id", "country", "ad_type", "device_type", "platform", "day", "hour", "application", "placement", "size", "package_name", "bidding_integration"]
 
     def path(self, **kwargs) -> str:
         return "report"
@@ -247,7 +251,7 @@ class PublisherReports(ApplovinIncrementalMetricsStream):
 
 class AdvertiserReports(ApplovinIncrementalMetricsStream):
     report_type = "advertiser"
-    primary_key = []
+    primary_key = ["ad_id", "country", "ad_type", "device_type", "platform", "day", "application", "external_placement_id"]
     page_size = 100000
 
     def path(self, **kwargs) -> str:
@@ -256,7 +260,7 @@ class AdvertiserReports(ApplovinIncrementalMetricsStream):
 
 class ProbabilisticPublisherReports(ApplovinIncrementalMetricsStream):
     report_type = "publisher"
-    primary_key = []
+    primary_key = ["country", "ad_type", "device_type", "platform", "day", "hour", "application", "size"]
 
     def path(self, **kwargs) -> str:
         return "probabilisticReport"
@@ -264,7 +268,8 @@ class ProbabilisticPublisherReports(ApplovinIncrementalMetricsStream):
 
 class ProbabilisticAdvertiserReports(ApplovinIncrementalMetricsStream):
     report_type = "advertiser"
-    primary_key = []
+    primary_key = ["ad_id", "country", "ad_type", "device_type", "platform", "day", "application", "external_placement_id"]
+    page_size = 100000
 
     def path(self, **kwargs) -> str:
         return "probabilisticReport"
