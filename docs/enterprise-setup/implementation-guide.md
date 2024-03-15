@@ -557,7 +557,7 @@ Install Airbyte Self-Managed Enterprise on helm using the following command:
 helm install \
 --namespace airbyte \
 --values ./values.yml \
---set-file airbyteYml="./airbyte.yml"
+--set-file airbyteYml="./airbyte.yml" \
 airbyte-enterprise \
 airbyte/airbyte
 ```
@@ -575,7 +575,7 @@ Upgrade Airbyte Self-Managed Enterprise by:
 helm upgrade \
 --namespace airbyte \
 --values ./values.yml \
---set-file airbyteYml="./airbyte.yml"
+--set-file airbyteYml="./airbyte.yml" \
 --install airbyte-enterprise \
 airbyte/airbyte
 ```
@@ -591,7 +591,7 @@ helm upgrade \
 --namespace airbyte \
 --values path/to/values.yaml
 --values ./values.yml \
---set-file airbyteYml="./airbyte.yml"
+--set-file airbyteYml="./airbyte.yml" \
 --install airbyte-enterprise \
 airbyte/airbyte
 ```
