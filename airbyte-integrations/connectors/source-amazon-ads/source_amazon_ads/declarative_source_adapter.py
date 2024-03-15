@@ -30,7 +30,11 @@ class DeclarativeSourceAdapter(YamlDeclarativeSource):
         return self._source.check(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return self._source.streams(config)
+        declarative_streams = super().streams(config)
+        profiles_stream = [stream for stream in declarative_streams if stream.name == "profiles"][0]
+        self._source.profile_streams = profiles_stream
+        all_streams = self._source.streams(config)
+        return all_streams
 
     def _validate_source(self) -> None:
         """Skipping manifest validation as it can be incomplete when use adapter"""
@@ -42,7 +46,7 @@ class DeclarativeSourceAdapter(YamlDeclarativeSource):
         this method determines whether each of methods `spec`, `check`, and `streams` was declared in the manifest file
         and if yes, makes the source use it, otherwise the method defined in the source will be used
         """
-        adapted_methods = ("spec", "check", "streams")
+        adapted_methods = ("spec", "check")
         for method in adapted_methods:
             if method in self.resolved_manifest:
                 self._source.__setattr__(method, getattr(super(), method))

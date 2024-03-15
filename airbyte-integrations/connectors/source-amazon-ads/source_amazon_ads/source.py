@@ -50,6 +50,8 @@ CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class SourceAmazonAds(AbstractSource):
+
+    profiles_stream = None
     def _validate_and_transform(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         start_date = config.get("start_date")
         if start_date:
@@ -100,7 +102,7 @@ class SourceAmazonAds(AbstractSource):
         # parameter passed over "Amazon-Advertising-API-Scope" http header and
         # should contain profile id. So every stream is dependent on Profiles
         # stream and should have information about all profiles.
-        profiles_stream = Profiles(**stream_args)
+        profiles_stream = self.profiles_stream or Profiles(**stream_args)
         profiles_list = profiles_stream.get_all_profiles()
         stream_args["profiles"] = self._choose_profiles(config, profiles_list)
         non_profile_stream_classes = [
