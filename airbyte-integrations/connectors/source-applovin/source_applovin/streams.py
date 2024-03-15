@@ -171,6 +171,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             authenticator=authenticator,
         )
 
+    @property
     def state_checkpoint_interval(self) -> Optional[int]:
         return 1000000
 
