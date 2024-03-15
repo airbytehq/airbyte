@@ -148,8 +148,8 @@ class DefaultJdbcSourceAcceptanceTest
           String.format("ALTER USER %s WITH SUPERUSER", getUserName()));
       return Stream.of(Stream.concat(
           Stream.of("psql",
-              "-d", container.getDatabaseName(),
-              "-U", container.getUsername(),
+              "-d", getContainer().getDatabaseName(),
+              "-U", getContainer().getUsername() ,
               "-v", "ON_ERROR_STOP=1",
               "-a"),
           sql.flatMap(stmt -> Stream.of("-c", stmt))));
