@@ -2,7 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_trustpilot.run import run
+import sys
+
+from airbyte_cdk.entrypoint import launch
+from source_trustpilot import SourceTrustpilot
 
 if __name__ == "__main__":
-    run()
+    source = SourceTrustpilot()
+    launch(source, sys.argv[1:])
