@@ -36,6 +36,7 @@ This page contains the setup guide and reference information for the destination
 | Incremental - Append + Deduped | Yes                  |       |
 
 ## Changelog
+
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
 | 0.1.1   | 2024-01-26 |                                                          | DS Branding Update          |
