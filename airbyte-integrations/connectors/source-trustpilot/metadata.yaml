@@ -17,7 +17,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        upgradeDeadline: "2024-01-15"
+        upgradeDeadline: "2024-04-01"
         message: "The verison migrates the TrustPilot connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `private_reviews` stream. If you are using the incremental sync mode for this stream, you will need to reset the affected connection after upgrading to prevent sync failures. Additionally, authentication has been streamlined to only support API keys and secrets."
   registries:
     cloud:
