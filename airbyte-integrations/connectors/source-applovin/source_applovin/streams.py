@@ -185,7 +185,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_count = response.json()["count"]
         # REMOVE THIS AFTER TESTS!
-        if response_count < self.page_size or self.offset >= 1000000:
+        if response_count < self.page_size:
             return None
         else:
             self.offset += response_count
