@@ -14,13 +14,14 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
+import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
-import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
-import io.airbyte.cdk.integrations.destination_async.OnCloseFunction;
-import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
@@ -31,6 +32,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -214,10 +216,11 @@ public class JdbcBufferedConsumerFactory {
   /**
    * Tear down functionality
    */
+  @SuppressWarnings("unchecked")
   private static OnCloseFunction onCloseFunction(final TyperDeduper typerDeduper) {
     return (hasFailed, streamSyncSummaries) -> {
       try {
-        typerDeduper.typeAndDedupe(streamSyncSummaries);
+        typerDeduper.typeAndDedupe((Map<StreamDescriptor, StreamSyncSummary>) streamSyncSummaries);
         typerDeduper.commitFinalTables();
         typerDeduper.cleanup();
       } catch (final Exception e) {
