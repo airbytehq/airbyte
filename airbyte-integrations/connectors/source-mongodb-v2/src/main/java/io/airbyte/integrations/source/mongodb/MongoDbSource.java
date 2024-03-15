@@ -29,6 +29,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitialSnapshotUtils.validateStateSyncMode;
+
 public class MongoDbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
@@ -129,7 +131,7 @@ public class MongoDbSource extends BaseConnector implements Source {
     final var stateManager = MongoDbStateManager.createStateManager(state, sourceConfig);
 
     if (catalog != null) {
-      InitialSnapshotHandler.validateStateSyncMode(stateManager, catalog.getStreams());
+      validateStateSyncMode(stateManager, catalog.getStreams());
       MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
           stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
     }

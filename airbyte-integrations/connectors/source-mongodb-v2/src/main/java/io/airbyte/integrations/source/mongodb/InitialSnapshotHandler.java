@@ -45,23 +45,7 @@ import org.slf4j.LoggerFactory;
 public class InitialSnapshotHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSnapshotHandler.class);
-  public static final Map<SyncMode, List<InitialSnapshotStatus>> syncModeToStatusMap = Map.of(
-            SyncMode.INCREMENTAL, List.of(InitialSnapshotStatus.IN_PROGRESS, InitialSnapshotStatus.COMPLETE),
-            SyncMode.FULL_REFRESH, List.of(InitialSnapshotStatus.FULL_REFRESH));
 
-
-  public static boolean isInitialSnapshotStatus(final SyncMode syncMode, final MongoDbStreamState state) {
-    return syncModeToStatusMap.get(syncMode).contains(state.status());
-  }
-
-  public static void validateStateSyncMode(final MongoDbStateManager stateManager, final List<ConfiguredAirbyteStream> streams) {
-    streams.forEach(stream -> {
-      final var existingState = stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
-      if (existingState.isPresent() && !isInitialSnapshotStatus(stream.getSyncMode(), existingState.get())) {
-        throw new ConfigErrorException("Stream " + stream.getStream().getName() + " is " + stream.getSyncMode() + " but the saved status " + existingState.get().status() + " doesn't match. Please reset this stream");
-      }
-    });
-  }
   /**
    * For each given stream configured as incremental sync it will output an iterator that will
    * retrieve documents from the given database. Each iterator will start after the last checkpointed
