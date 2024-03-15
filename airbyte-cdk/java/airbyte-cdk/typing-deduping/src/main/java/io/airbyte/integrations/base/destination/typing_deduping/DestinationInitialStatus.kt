@@ -10,5 +10,5 @@ data class DestinationInitialStatus<DestinationState>(
     val initialRawTableStatus: InitialRawTableStatus,
     val isSchemaMismatch: Boolean,
     val isFinalTableEmpty: Boolean,
-    val destinationState: DestinationState
+    val destinationState: DestinationState,
 )

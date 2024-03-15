@@ -507,6 +507,7 @@ module.exports = {
       },
       items: [
         "enterprise-setup/implementation-guide",
+        "enterprise-setup/api-access-config",
         "enterprise-setup/upgrading-from-community",
       ]
     },
@@ -602,6 +603,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/february_2024",
         "release_notes/january_2024",
         "release_notes/december_2023",
         "release_notes/november_2023",
