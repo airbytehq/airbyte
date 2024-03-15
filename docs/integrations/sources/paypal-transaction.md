@@ -279,6 +279,7 @@ ___
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 2.5.0   | 2024-03-15 | [36173](https://github.com/airbytehq/airbyte/pull/36173) | Extended `Disputes` stream schema with missing properties                                                                    |
 | 2.4.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                     |
 | 2.3.0   | 2024-02-14 | [34510](https://github.com/airbytehq/airbyte/pull/34510) | Silver certified. New Streams Added                                                                                          |
 | 2.2.2   | 2024-02-09 | [35075](https://github.com/airbytehq/airbyte/pull/35075) | Manage dependencies with Poetry.                                                                                             |
