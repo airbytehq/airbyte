@@ -132,19 +132,19 @@ internal class TestDefaultJdbcDatabase {
                 Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash"))
             )
 
-        private var PSQL_DB: PostgreSQLContainer<*>? = null
+        private lateinit var PSQL_DB: PostgreSQLContainer<Nothing>
 
         @JvmStatic
         @BeforeAll
         fun init(): Unit {
             PSQL_DB = PostgreSQLContainer<Nothing>("postgres:13-alpine")
-            PSQL_DB!!.start()
+            PSQL_DB.start()
         }
 
         @JvmStatic
         @AfterAll
         fun cleanUp(): Unit {
-            PSQL_DB!!.close()
+            PSQL_DB.close()
         }
     }
 }

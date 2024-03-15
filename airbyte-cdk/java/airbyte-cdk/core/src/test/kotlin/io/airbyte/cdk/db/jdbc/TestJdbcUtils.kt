@@ -334,7 +334,7 @@ internal class TestJdbcUtils {
                 Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash"))
             )
 
-        private var PSQL_DB: PostgreSQLContainer<*>? = null
+        private lateinit var PSQL_DB: PostgreSQLContainer<Nothing>
 
         private val sourceOperations: JdbcSourceOperations = JdbcUtils.defaultSourceOperations
 

@@ -162,7 +162,7 @@ internal class TestStreamingJdbcDatabase {
     }
 
     companion object {
-        private var PSQL_DB: PostgreSQLContainer<*>? = null
+        private lateinit var PSQL_DB: PostgreSQLContainer<Nothing>
 
         @JvmStatic
         @BeforeAll
