@@ -2,7 +2,7 @@
 
 from typing import List, Union, overload
 
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode, ConfiguredAirbyteStream
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 
 
 class ConfiguredAirbyteStreamBuilder:

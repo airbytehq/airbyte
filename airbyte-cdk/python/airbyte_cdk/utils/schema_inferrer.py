@@ -42,7 +42,6 @@ InferredSchema = Dict[str, Any]
 
 
 class SchemaValidationException(Exception):
-
     @classmethod
     def merge_exceptions(cls, exceptions: List["SchemaValidationException"]) -> "SchemaValidationException":
         # We assume the schema is the same for all SchemaValidationException
@@ -157,7 +156,9 @@ class SchemaInferrer:
 
         if "properties" not in node:
             # This validation is only relevant when `traveled_path` is empty oskdfoskfo
-            raise ValueError(f"Path {traveled_path} does not refer to an object but is `{node}` and hence {path} can't be marked as required.")
+            raise ValueError(
+                f"Path {traveled_path} does not refer to an object but is `{node}` and hence {path} can't be marked as required."
+            )
 
         next_node = path[0]
         if next_node not in node["properties"]:
@@ -165,7 +166,9 @@ class SchemaInferrer:
 
         if "type" not in node:
             # We do not expect this case to happen but we added a specific error message just in case
-            raise ValueError(f"Unknown schema error: {traveled_path} is expected to have a type but did not. Schema inferrence is probably broken")
+            raise ValueError(
+                f"Unknown schema error: {traveled_path} is expected to have a type but did not. Schema inferrence is probably broken"
+            )
 
         if node["type"] not in ["object", ["null", "object"]]:
             raise ValueError(f"Path {traveled_path} is expected to be an object but was of type `{node['properties'][next_node]['type']}`")
@@ -185,4 +188,8 @@ class SchemaInferrer:
         """
         Returns the inferred JSON schema for the specified stream. Might be `None` if there were no records for the given stream name.
         """
-        return self._add_required_properties(self._clean(self.stream_to_builder[stream_name].to_schema())) if stream_name in self.stream_to_builder else None
+        return (
+            self._add_required_properties(self._clean(self.stream_to_builder[stream_name].to_schema()))
+            if stream_name in self.stream_to_builder
+            else None
+        )
