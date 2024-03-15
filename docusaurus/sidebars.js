@@ -507,6 +507,7 @@ module.exports = {
       },
       items: [
         "enterprise-setup/implementation-guide",
+        "enterprise-setup/api-access-config",
         "enterprise-setup/upgrading-from-community",
       ]
     },
