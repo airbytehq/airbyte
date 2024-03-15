@@ -4,29 +4,11 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.*;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.ChangeStreamIterable;
-import com.mongodb.client.MongoChangeStreamCursor;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
+import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
@@ -38,18 +20,21 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.Answer;
+
+import java.io.IOException;
+import java.util.*;
+
+import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.*;
 
 class MongoDbSourceTest {
 
@@ -63,7 +48,7 @@ class MongoDbSourceTest {
 
   @BeforeEach
   void setup() {
-    airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty(), true);
+    airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty(), false);
     sourceConfig = new MongoDbSourceConfig(airbyteSourceConfig);
     mongoClient = mock(MongoClient.class);
     cdcInitializer = mock(MongoDbCdcInitializer.class);
@@ -292,16 +277,13 @@ class MongoDbSourceTest {
   }
 
   @Test
-  @Disabled
   void testReadKeepsMongoClientOpen() {
     final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor mongoChangeStreamCursor = mock(MongoChangeStreamCursor.class);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
-//    mockStatic(MongoUtil.class).when(() -> MongoUtil.checkSchemaModeMismatch(any(), anyBoolean(), any())).thenAnswer((Answer<Void>) invocation -> null);
-
-    source.read(airbyteSourceConfig, null, null);
+    source.read(airbyteSourceConfig, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
   }
 
@@ -318,5 +300,4 @@ class MongoDbSourceTest {
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config)));
   }
-
 }
