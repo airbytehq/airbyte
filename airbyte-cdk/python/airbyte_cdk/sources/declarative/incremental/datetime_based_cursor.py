@@ -133,7 +133,7 @@ class DatetimeBasedCursor(Cursor):
             record_cursor_value
         ) > self.parse_date(self._highest_observed_cursor_field_value)
         if (
-            self._is_within_daterange_boundaries(record, stream_slice.get(start_field), stream_slice.get(end_field))
+            self._is_within_daterange_boundaries(record, stream_slice.get(start_field), stream_slice.get(end_field))  # type: ignore # we know that stream_slices for these cursors will use a string representing an unparsed date
             and is_highest_observed_cursor_value
         ):
             self._highest_observed_cursor_field_value = record_cursor_value
@@ -145,7 +145,7 @@ class DatetimeBasedCursor(Cursor):
             map(
                 # we need to ensure the cursor value is preserved as is in the state else the CATs might complain of something like
                 # 2023-01-04T17:30:19.000Z' <= '2023-01-04T17:30:19.000000Z'
-                lambda datetime_str: (self.parse_date(datetime_str), datetime_str),
+                lambda datetime_str: (self.parse_date(datetime_str), datetime_str),  # type: ignore # because of the filter on the next line, this will only be called with a str
                 filter(lambda item: item, [self._cursor, self._highest_observed_cursor_field_value]),
             )
         )
@@ -308,10 +308,16 @@ class DatetimeBasedCursor(Cursor):
         return self._is_within_daterange_boundaries(record, earliest_possible_cursor_value, latest_possible_cursor_value)
 
     def _is_within_daterange_boundaries(
-        self, record: Record, start_datetime_boundary: Union[MinMaxDatetime, str], end_datetime_boundary: Union[MinMaxDatetime, str]
+        self, record: Record, start_datetime_boundary: Union[datetime.datetime, str], end_datetime_boundary: Union[datetime.datetime, str]
     ) -> bool:
         cursor_field = self._cursor_field.eval(self.config)
         record_cursor_value = record.get(cursor_field)
+        if not record_cursor_value:
+            self._send_log(
+                Level.WARN,
+                f"Could not find cursor field `{cursor_field}` in record. The record will not be considered when emitting sync state",
+            )
+            return False
         if isinstance(start_datetime_boundary, str):
             start_datetime_boundary = self.parse_date(start_datetime_boundary)
         if isinstance(end_datetime_boundary, str):
