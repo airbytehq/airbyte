@@ -13,7 +13,7 @@ definitions:
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     token_refresh_endpoint: "https://{{ config.get('api_url', 'gitlab.com') }}/oauth/token"
     refresh_token_updater:
-      refresh_token_error_status_codes: [400]
+      refresh_token_error_status_codes: [400, 401]
       refresh_token_error_key: "error"
       refresh_token_error_values: ["invalid_grant"]
   authenticator:
@@ -38,6 +38,14 @@ definitions:
         - type: HttpResponseFilter
           action: IGNORE
           http_codes: [403, 404]
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401]
+          error_message: Unable to refresh the `access_token`, please re-authenticate in Sources > Settings.
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [500]
+          error_message: Unable to connect to Gitlab API with the provided credentials
     request_parameters: "{{ parameters.get('request_parameters', {}) }}"
 
   # Selector

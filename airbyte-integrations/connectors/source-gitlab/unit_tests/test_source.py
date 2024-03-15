@@ -6,7 +6,6 @@ import logging
 
 import pytest
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-
 from source_gitlab import SourceGitlab
 
 
