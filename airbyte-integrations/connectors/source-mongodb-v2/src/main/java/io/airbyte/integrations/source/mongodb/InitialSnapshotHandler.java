@@ -73,6 +73,7 @@ public class InitialSnapshotHandler {
                                                                   final MongoDatabase database,
                                                                   final MongoDbSourceConfig config) {
     final boolean isEnforceSchema = config.getEnforceSchema();
+    final var checkpointInterval = config.getCheckpointInterval();
     return streams
         .stream()
         .map(airbyteStream -> {
@@ -127,10 +128,8 @@ public class InitialSnapshotHandler {
                   .allowDiskUse(true)
                   .cursor();
           final var stateIterator =
-              new SourceStateIterator<>(cursor, airbyteStream, stateManager,
-                      new StateEmitFrequency(
-                              config.getCheckpointInterval(),
-                              MongoConstants.CHECKPOINT_DURATION));
+              new SourceStateIterator<>(cursor, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
+                      MongoConstants.CHECKPOINT_DURATION));
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
