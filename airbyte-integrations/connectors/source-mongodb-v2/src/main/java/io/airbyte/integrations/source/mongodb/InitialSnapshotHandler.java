@@ -129,7 +129,7 @@ public class InitialSnapshotHandler {
                   .cursor();
           final var stateIterator =
               new SourceStateIterator<>(cursor, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
-                      MongoConstants.CHECKPOINT_DURATION));
+                MongoConstants.CHECKPOINT_DURATION));
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
