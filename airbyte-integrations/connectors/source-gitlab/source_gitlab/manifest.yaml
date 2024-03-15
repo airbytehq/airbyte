@@ -38,6 +38,7 @@ definitions:
         - type: HttpResponseFilter
           action: IGNORE
           http_codes: [403, 404]
+    request_parameters: "{{ parameters.get('request_parameters', {}) }}"
 
   # Selector
   selector:
@@ -309,6 +310,8 @@ definitions:
     retriever: "#/definitions/projects_streams_retriever"
     $parameters:
       path: "projects/{{ stream_slice.id }}"
+      request_parameters:
+        statistics: 1
 
   project_milestones_stream:
     name: "project_milestones"
@@ -428,6 +431,8 @@ definitions:
       cursor_field: "created_at"
       lower_bound_filter: "since"
       upper_bound_filter: "until"
+      request_parameters:
+        with_stats: "true"
 
   issues_stream:
     name: "issues"
@@ -457,6 +462,8 @@ definitions:
               {{ ids }}
     $parameters:
       path: "projects/{{ stream_slice.id }}/issues"
+      request_parameters:
+        scope: "all"
 
   merge_requests_stream:
     name: "merge_requests"
@@ -489,6 +496,8 @@ definitions:
               {{ ids }}
     $parameters:
       path: "projects/{{ stream_slice.id }}/merge_requests"
+      request_parameters:
+        scope: "all"
 
   merge_request_commits_stream:
     name: "merge_request_commits"
