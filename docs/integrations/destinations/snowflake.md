@@ -162,7 +162,7 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 
     Alternatively, use this command to generate an encrypted private key file:
 
-      `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v1 PBE-SHA1-RC4-128 -out rsa_key.p8`
+      `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v2 aes-256-cbc -out rsa_key.p8`
 
     Once you have your private key, you need to generate a matching public key.
     You can do so with the following command:
