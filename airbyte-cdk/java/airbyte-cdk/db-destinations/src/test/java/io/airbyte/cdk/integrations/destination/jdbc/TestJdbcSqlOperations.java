@@ -5,7 +5,7 @@
 package io.airbyte.cdk.integrations.destination.jdbc;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
 import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;

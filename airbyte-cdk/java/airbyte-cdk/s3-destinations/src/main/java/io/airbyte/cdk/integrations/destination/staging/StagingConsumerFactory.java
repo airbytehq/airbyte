@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.staging;
 
-import static io.airbyte.cdk.integrations.destination_async.buffers.BufferManager.MEMORY_LIMIT_RATIO;
+import static io.airbyte.cdk.integrations.destination.async.buffers.BufferManager.MEMORY_LIMIT_RATIO;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -13,9 +13,9 @@ import com.google.common.base.Preconditions;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
-import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
-import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
