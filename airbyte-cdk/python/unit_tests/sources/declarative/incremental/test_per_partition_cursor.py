@@ -215,9 +215,9 @@ def test_close_slice(mocked_cursor_factory, mocked_partition_router):
     last_record = Mock()
     list(cursor.stream_slices())  # generate internal state
 
-    cursor.close_slice(stream_slice, last_record)
+    cursor.close_slice(stream_slice)
 
-    underlying_cursor.close_slice.assert_called_once_with(stream_slice.cursor_slice, Record(last_record.data, stream_slice.cursor_slice))
+    underlying_cursor.close_slice.assert_called_once_with(stream_slice.cursor_slice)
 
 
 def test_given_no_last_record_when_close_slice_then_do_not_raise_error(mocked_cursor_factory, mocked_partition_router):
@@ -228,9 +228,9 @@ def test_given_no_last_record_when_close_slice_then_do_not_raise_error(mocked_cu
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
     list(cursor.stream_slices())  # generate internal state
 
-    cursor.close_slice(stream_slice, None)
+    cursor.close_slice(stream_slice)
 
-    underlying_cursor.close_slice.assert_called_once_with(stream_slice.cursor_slice, None)
+    underlying_cursor.close_slice.assert_called_once_with(stream_slice.cursor_slice)
 
 
 def test_given_unknown_partition_when_close_slice_then_raise_error():
@@ -239,7 +239,7 @@ def test_given_unknown_partition_when_close_slice_then_raise_error():
     cursor = PerPartitionCursor(any_cursor_factory, any_partition_router)
     stream_slice = StreamSlice(partition={"unknown_partition": "unknown"}, cursor_slice={})
     with pytest.raises(ValueError):
-        cursor.close_slice(stream_slice, Record({}, stream_slice))
+        cursor.close_slice(stream_slice)
 
 
 def test_given_unknown_partition_when_should_be_synced_then_raise_error():
