@@ -24,7 +24,7 @@ import org.testcontainers.utility.MountableFile
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 internal class TestStreamingJdbcDatabase {
-    private val sourceOperations: JdbcSourceOperations = JdbcUtils.getDefaultSourceOperations()
+    private val sourceOperations: JdbcSourceOperations = JdbcUtils.defaultSourceOperations
     private var defaultJdbcDatabase: JdbcDatabase? = null
     private var streamingJdbcDatabase: JdbcDatabase? = null
 
