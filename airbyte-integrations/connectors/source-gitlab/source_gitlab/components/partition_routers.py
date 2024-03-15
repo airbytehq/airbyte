@@ -20,7 +20,7 @@ class GroupStreamsPartitionRouter(SubstreamPartitionRouter):
 
         for stream_slice in selected_parent.stream_slices(sync_mode=SyncMode.full_refresh):
             for record in selected_parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield StreamSlice(partition={"id": record["id"]}, cursor_slice={})
+                yield {"id": record["id"]}
 
 
 @dataclass
@@ -37,7 +37,7 @@ class ProjectStreamsPartitionRouter(SubstreamPartitionRouter):
         if group_project_ids:
             for project_id in group_project_ids:
                 if not projects_list or projects_list and project_id in projects_list:
-                    yield StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
+                    yield {"id": project_id.replace("/", "%2F")}
         else:
             for project_id in projects_list:
-                yield StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
+                yield {"id": project_id.replace("/", "%2F")}
