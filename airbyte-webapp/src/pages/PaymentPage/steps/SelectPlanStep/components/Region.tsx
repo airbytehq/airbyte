@@ -23,14 +23,15 @@ interface IProps {
   instance?: any;
   setInstanceSelected?: any;
   setPrice?: any;
+  cloudRef?: any;
+  setRegionSelected?: any;
 }
 
 const Title = styled.div`
   font-weight: 500;
   font-size: 18px;
-  line-height: 30px;
+  line-height: 20px;
   color: ${({ theme }) => theme.black300};
-  user-select: none;
 `;
 
 // const DeployContainer = styled.div`
@@ -38,7 +39,7 @@ const Title = styled.div`
 // `;
 
 const CardContainer = styled.div`
-  padding: 20px 20px;
+  padding: 20px 20px 50px;
   background: #ffffff;
   border-radius: 16px;
 `;
@@ -52,12 +53,14 @@ const Region: React.FC<IProps> = ({
   selectedProduct,
   setPrice,
   setInstanceSelected,
+  cloudRef,
+  setRegionSelected,
 }) => {
   return (
-    <CardContainer>
+    <CardContainer ref={cloudRef}>
       <Grid container spacing={2}>
         <Grid item lg={12} md={12} sm={12} xs={12}>
-          <Box pl={1}>
+          <Box pt={4} pl={4}>
             <Title>
               <FormattedMessage id="plan.cloudRegion" />
             </Title>
@@ -69,7 +72,7 @@ const Region: React.FC<IProps> = ({
           regions[0]?.regionList.map((region: any) => {
             return (
               <Grid item lg={3} md={3} sm={6} xs={12} key={region?.regionItemId}>
-                <Box pt={2} pl={{ lg: 1 }}>
+                <Box pt={2} pl={5}>
                   <FormControl>
                     <RadioGroup row aria-labelledby="demo-row-radio-buttons-group-label" name={region?.region}>
                       <FormControlLabel
@@ -79,7 +82,7 @@ const Region: React.FC<IProps> = ({
                             onChange={(e) => {
                               setSelectedRegion(e.target.value);
                               setSelectedInstance("");
-                              // setRegionSelected(true);
+                              setRegionSelected(true);
                               setPrice("");
                             }}
                             sx={{
@@ -91,10 +94,10 @@ const Region: React.FC<IProps> = ({
                               },
                             }}
                             checked={selectedRegion === region?.regionItemId}
-                            disabled={
-                              selectedProduct?.regionItemId === region?.regionItemId &&
-                              selectedProduct?.regionItemId === selectedRegion
-                            }
+                            // disabled={
+                            //   selectedProduct?.regionItemId === region?.regionItemId &&
+                            //   selectedProduct?.regionItemId === selectedRegion
+                            // }
                           />
                         }
                         label={

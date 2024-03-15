@@ -7,7 +7,6 @@ import { ProcessedPackageMap, ProductItem, ProductOptionItem } from "core/domain
 
 import CloudProvider from "./components/CloudProvider";
 import DeploymentMode from "./components/DeploymentMode";
-import FeatureNot from "./components/FeatureNot";
 import FeaturesCard from "./components/FeaturesCard";
 import Instance from "./components/Instance";
 import Region from "./components/Region";
@@ -45,6 +44,13 @@ interface IProps {
   instanceSelected?: boolean;
   jobs?: any;
   setJobs?: any;
+  setIsCloud?: any;
+  cloudRef?: any;
+  setRegionSelected?: any;
+  regionScrollRef?: any;
+  instanceRef?: any;
+  isCloud?: boolean;
+  regionSelected?: boolean;
 }
 
 const SelectPlanStep: React.FC<IProps> = ({
@@ -57,6 +63,7 @@ const SelectPlanStep: React.FC<IProps> = ({
   setMode,
   mode,
   setCloudProvider,
+  setIsCloud,
   cloudProvider,
   regions,
   onSelectPlan,
@@ -77,6 +84,12 @@ const SelectPlanStep: React.FC<IProps> = ({
   instanceSelected,
   jobs,
   setJobs,
+  cloudRef,
+  regionScrollRef,
+  setRegionSelected,
+  instanceRef,
+  isCloud,
+  regionSelected,
 }) => {
   return (
     <>
@@ -97,40 +110,50 @@ const SelectPlanStep: React.FC<IProps> = ({
         setCloudItemId={setCloudItemId}
         setSelectedInstance={setSelectedInstance}
         setSelectedRegion={setSelectedRegion}
+        setIsCloud={setIsCloud}
       />
       <Separator height="30px" />
-      <Region
-        instance={instance}
-        regions={regions}
-        setSelectedRegion={setSelectedRegion}
-        setSelectedInstance={setSelectedInstance}
-        selectedRegion={selectedRegion}
-        cloudProvider={cloudProvider}
-        setPrice={setPrice}
-        selectedProduct={selectedProduct}
-        setInstanceSelected={setInstanceSelected}
-        cloudItemId={cloudItemId}
-      />
-      <Separator height="30px" />
+      {isCloud && (
+        <Region
+          instance={instance}
+          regions={regions}
+          setSelectedRegion={setSelectedRegion}
+          setSelectedInstance={setSelectedInstance}
+          selectedRegion={selectedRegion}
+          cloudProvider={cloudProvider}
+          setPrice={setPrice}
+          selectedProduct={selectedProduct}
+          setInstanceSelected={setInstanceSelected}
+          cloudItemId={cloudItemId}
+          cloudRef={cloudRef}
+          setRegionSelected={setRegionSelected}
+        />
+      )}
 
-      <Instance
-        packages={packages}
-        selectedInstance={selectedInstance}
-        instance={instance}
-        cloudItemId={cloudItemId}
-        setCloudPackageId={setCloudPackageId}
-        setPrice={setPrice}
-        selectedProduct={selectedProduct}
-        setSelectedInstance={setSelectedInstance}
-        selectedRegion={selectedRegion}
-        // instanceSelected={instanceSelected}
-        setInstanceSelected={setInstanceSelected}
-        setJobs={setJobs}
-      />
       <Separator height="30px" />
-      {instanceSelected ? (
+      {regionSelected && (
+        <Instance
+          packages={packages}
+          selectedInstance={selectedInstance}
+          instance={instance}
+          cloudItemId={cloudItemId}
+          setCloudPackageId={setCloudPackageId}
+          setPrice={setPrice}
+          // selectedProduct={selectedProduct}
+          setSelectedInstance={setSelectedInstance}
+          selectedRegion={selectedRegion}
+          instanceSelected={instanceSelected}
+          regionScrollRef={regionScrollRef}
+          setInstanceSelected={setInstanceSelected}
+          setJobs={setJobs}
+        />
+      )}
+
+      <Separator height="30px" />
+      {instanceSelected && price !== "" ? (
         <FeaturesCard
           product={product}
+          instanceRef={instanceRef}
           selectPlanBtnDisability={_.isEqual(product?.id, selectedProduct?.id)}
           onSelectPlan={onSelectPlan}
           paymentLoading={paymentLoading}
@@ -140,9 +163,7 @@ const SelectPlanStep: React.FC<IProps> = ({
           selectedProduct={selectedProduct}
           jobs={jobs}
         />
-      ) : (
-        <FeatureNot />
-      )}
+      ) : null}
     </>
   );
 };

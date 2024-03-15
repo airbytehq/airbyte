@@ -23,6 +23,7 @@ interface IProps {
   planDetail?: any;
   selectedProduct?: any;
   jobs?: any;
+  instanceRef?: any;
 }
 
 const CardContainer = styled.div`
@@ -72,10 +73,11 @@ const FeaturesCard: React.FC<IProps> = ({
   price,
   selectedProduct,
   jobs,
+  instanceRef,
 }) => {
   console.log(packagesMap, "Packages");
   return (
-    <CardContainer>
+    <CardContainer ref={instanceRef}>
       <Row borderBottom="1px solid #E5E7EB">
         <HeaderCell>
           <FormattedMessage id="feature.header.plan" />
@@ -130,7 +132,11 @@ const FeaturesCard: React.FC<IProps> = ({
               ? jobs
               : item.professional?.itemScopeLang}
           </FeatureBodyCell>
-          <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
+          <FeatureBodyCell>
+            {item?.enterprise?.itemName === "No. of concurrent Jobs" && jobs !== null
+              ? jobs
+              : item.enterprise?.itemScopeLang}
+          </FeatureBodyCell>
         </FeatureBodyRow>
       ))}
       <HighlightedRow borderBottom="1px solid #E5E7EB">

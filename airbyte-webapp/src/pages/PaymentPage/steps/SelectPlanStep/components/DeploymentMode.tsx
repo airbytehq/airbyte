@@ -18,20 +18,18 @@ interface IProps {
 const TitleB = styled.div`
   font-weight: 400;
   font-size: 16px;
-  line-height: 30px;
+  line-height: 20px;
   color: #999999;
-  user-select: none;
 `;
 const Title = styled.div`
   font-weight: 500;
   font-size: 18px;
-  line-height: 30px;
+  line-height: 20px;
   color: ${({ theme }) => theme.black300};
-  user-select: none;
 `;
 
 const CardContainer = styled.div`
-  padding: 20px 20px;
+  padding: 20px 20px 50px;
   background: #ffffff;
   border-radius: 16px;
 `;
@@ -52,54 +50,55 @@ const DeploymentMode: React.FC<IProps> = ({ selectedProduct, setDeploymentMode, 
     <CardContainer>
       <Grid container spacing={2}>
         <Grid item lg={12} md={12} sm={12} xs={12}>
-          <Box pl={1}>
+          <Box pl={4} pt={4}>
             <Title>
               <FormattedMessage id="plan.preferredMode" />
             </Title>
           </Box>
-
-          <Box pt={2} pl={1}>
-            <FormControl>
-              <RadioGroup row aria-labelledby="demo-row-radio-buttons-group-label" name="fully-managed">
-                <FormControlLabel
-                  value="fully"
-                  control={
-                    <Radio
-                      onChange={(e) => {
-                        setDeploymentMode(e.target.value);
-                        setMode(true);
-                      }}
-                      sx={{
-                        "&.Mui-checked": {
-                          color: "#4F46E5",
-                        },
-                      }}
-                      checked={deploymentMode === "fully" || selectedProduct?.cloudProviderName === "AWS"}
-                    />
-                  }
-                  label={
-                    <span
-                      style={{
-                        fontSize: "14px",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      <FormattedMessage id="plan.fullyManaged" />
-                    </span>
-                  }
-                />
-              </RadioGroup>
-            </FormControl>
-            <Box pl={4}>
-              <TitleB>
-                {}
-                <FormattedMessage id="plan.fullmanage" />
-                <br /> <FormattedMessage id="plan.fullnext" />
-              </TitleB>
+          <Grid item lg={12} md={12} sm={12} xs={12}>
+            <Box pt={3} pl={5}>
+              <FormControl>
+                <RadioGroup row aria-labelledby="demo-row-radio-buttons-group-label" name="fully-managed">
+                  <FormControlLabel
+                    value="fully"
+                    control={
+                      <Radio
+                        onChange={(e) => {
+                          setDeploymentMode(e.target.value);
+                          setMode(true);
+                        }}
+                        sx={{
+                          "&.Mui-checked": {
+                            color: "#4F46E5",
+                          },
+                        }}
+                        checked={deploymentMode === "fully" || selectedProduct?.cloudProviderName === "AWS"}
+                      />
+                    }
+                    label={
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        <FormattedMessage id="plan.fullyManaged" />
+                      </span>
+                    }
+                  />
+                </RadioGroup>
+              </FormControl>
+              <Box pl={4}>
+                <TitleB>
+                  {}
+                  <FormattedMessage id="plan.fullmanage" />
+                  <br /> <FormattedMessage id="plan.fullnext" />
+                </TitleB>
+              </Box>
             </Box>
-          </Box>
+          </Grid>
         </Grid>
       </Grid>
     </CardContainer>

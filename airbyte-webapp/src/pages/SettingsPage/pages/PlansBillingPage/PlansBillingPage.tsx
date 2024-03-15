@@ -218,7 +218,7 @@ const PlansBillingPage: React.FC = () => {
             </div>
           </Box>
 
-          <Separator height="40px" />
+          <Separator height="30px" />
           <Box display="flex" justifyContent="space-around">
             <div className={styles.rowContainer}>
               <div className={styles.planTitle}>
@@ -236,7 +236,7 @@ const PlansBillingPage: React.FC = () => {
               <div className={styles.planValue}>{userPlanDetail?.selectedProduct?.instanceSizeName}</div>
             </div>
           </Box>
-          <Separator height="40px" />
+          <Separator height="30px" />
           <div className={styles.planDetailContainer}>
             <div className={styles.planTitle}>
               <FormattedMessage id="plan.details.heading" />

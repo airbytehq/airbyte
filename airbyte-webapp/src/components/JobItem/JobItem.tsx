@@ -29,8 +29,32 @@ interface JobItemProps {
 const didJobSucceed = (job: SynchronousJobRead | JobsWithJobs): boolean =>
   "status" in job ? (job?.status === JobStatus?.succeeded ? true : false) : getJobStatus(job) !== "failed";
 
-export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
-  "status" in job && job?.status === JobStatus?.succeeded ? JobStatus?.succeeded : JobStatus?.failed;
+export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) => {
+  if ("status" in job) {
+    switch (
+      job.status // Removed optional chaining here
+    ) {
+      case JobStatus.succeeded:
+        return JobStatus.succeeded;
+      case JobStatus.failed:
+        return JobStatus.failed;
+      case JobStatus.running:
+        return JobStatus.running;
+      case JobStatus.cancelled:
+        return JobStatus.cancelled;
+      case JobStatus.waiting:
+        return JobStatus.waiting;
+      default:
+        // Handle unknown job statuses (optional)
+        return JobStatus.notstarted; // Or throw an error if unknown status is critical
+    }
+  } else {
+    // Handle missing "status" property (optional)
+    throw new Error("Required 'status' property is missing in job object"); // Throwing an error for explicit handling
+  }
+};
+// export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
+// "status" in job && job?.status === JobStatus?.succeeded ? JobStatus?.succeeded : JobStatus?.failed;
 
 export const getJobAttemps: (job: SynchronousJobRead | JobsWithJobs) => AttemptRead[] | undefined = (job) =>
   "attempts" in job ? job?.attempts : undefined;
@@ -44,7 +68,7 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   const [isOpen, setIsOpen] = useState(() => linkedJobId === String(getJobId(job)));
   const scrollAnchor = useRef<HTMLDivElement>(null);
 
-  const didSucceed = didJobSucceed(job);
+  const didSucceed = didJobSucceed(job.job);
 
   const onExpand = () => {
     setIsOpen(!isOpen);
@@ -61,8 +85,8 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   }, [job, linkedJobId]);
 
   return (
-    <Item isFailed={!didSucceed} ref={scrollAnchor}>
-      <MainInfo isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} attempts={getJobAttemps(job)} />
+    <Item isFailed={didSucceed} ref={scrollAnchor}>
+      <MainInfo isOpen={isOpen} isFailed={didSucceed} onExpand={onExpand} job={job} attempts={getJobAttemps(job)} />
       <ContentWrapper isOpen={isOpen} onToggled={onDetailsToggled}>
         <div>
           <Suspense
