@@ -5,6 +5,8 @@ import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
 import { StatusIcon } from "components";
+import { NotStartedIcon } from "components/icons/NotStartedIcon";
+import { WaitingIcon } from "components/icons/WaitingIcon";
 import { Cell, Row } from "components/SimpleTableComponents";
 
 import { useUser } from "core/AuthContext";
@@ -39,7 +41,8 @@ interface MainInfoProps {
 
 const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed }) => {
   const { user } = useUser();
-  const jobStatus = getJobStatus(job);
+  const jobStatus = getJobStatus(job.job);
+
   const isPartialSuccess = partialSuccessCheck(attempts);
   const statusIcon = () => {
     switch (true) {
@@ -49,12 +52,16 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         return <StatusIcon status="loading" />;
       case jobStatus === JobStatus.succeeded:
         return <StatusIcon status="success" />;
+      case jobStatus === JobStatus.failed:
+        return <StatusIcon status="error" />;
+      case jobStatus === JobStatus.waiting:
+        return <WaitingIcon />;
       case isPartialSuccess:
         return <StatusIcon status="warning" />;
       case !isPartialSuccess && isFailed:
         return <StatusIcon status="error" />;
       default:
-        return null;
+        return <NotStartedIcon />;
     }
   };
 
@@ -69,7 +76,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
           {isPartialSuccess ? (
             <FormattedMessage id="sources.partialSuccess" />
           ) : (
-            <FormattedMessage id={`sources.${getJobStatus(job)}`} />
+            <FormattedMessage id={`sources.${getJobStatus(job.job)}`} />
           )}
           {attempts?.length > 0 && (
             <>
