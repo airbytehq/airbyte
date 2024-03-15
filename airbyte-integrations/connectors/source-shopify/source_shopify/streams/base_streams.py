@@ -179,9 +179,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 
 class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the check point interval to the limit of the records output
-    @property
-    def state_checkpoint_interval(self) -> int:
-        return super().limit
+    state_checkpoint_interval = 250
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
@@ -491,6 +489,11 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_state = stream_state.get(self.parent_stream.name) if stream_state else {}
+        # `sub record buffer` tunes the STATE frequency, to `checkpoint_interval`
+        # for the `nested streams` with List[object], but doesn't handle List[{}] (list of one) case,
+        # thus sometimes, we've got duplicated STATE with 0 records,
+        # since we emit the STATE for every slice.
+        sub_records_buffer = []
         for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
             # updating the `stream_state` with the state of it's parent stream
             # to have the child stream sync independently from the parent stream
@@ -501,8 +504,20 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
             if self.nested_entity in record.keys():
                 # add parent_id key, value from mutation_map, if passed.
                 self.add_parent_id(record)
-                # yield nested sub-rcords
-                yield from [{self.nested_entity: sub_record} for sub_record in record.get(self.nested_entity, [])]
+                # unpack the nested list to the sub_set buffer
+                nested_records = [sub_record for sub_record in record.get(self.nested_entity, [])]
+                # add nested_records to the buffer, with no summarization.
+                sub_records_buffer += nested_records
+                # emit slice when there is a resonable amount of data collected,
+                # to reduce the amount of STATE messages after each slice.
+                if len(sub_records_buffer) >= self.state_checkpoint_interval:
+                    yield {self.nested_entity: sub_records_buffer}
+                    # clean the buffer for the next records batch
+                    sub_records_buffer.clear()
+
+        # emit leftovers
+        if len(sub_records_buffer) > 0:
+            yield {self.nested_entity: sub_records_buffer}
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
