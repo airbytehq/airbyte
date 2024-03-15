@@ -53,9 +53,9 @@ class MessageGrouper:
             return [[field]]
 
         if isinstance(field[0], str):
-            return [field]
+            return [field]  # type: ignore  # the type of field is expected to be List[str] here
 
-        return field
+        return field  # type: ignore  # the type of field is expected to be List[List[str]] here
 
     def get_message_groups(
         self,
