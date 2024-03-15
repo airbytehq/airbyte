@@ -1,7 +1,7 @@
 # Connector Development
 
 There are two types of connectors in Airbyte: Sources and Destinations. Connectors can be built in any programming
-language,as long as they're built into docker images that impoement the
+language, as long as they're built into docker images that implement the
 [Airbyte specification](../understanding-airbyte/airbyte-protocol.md).
 
 Most database sources and destinations are written in Java, and most API sources and destinations are written in Python
