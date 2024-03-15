@@ -1,0 +1,26 @@
+name: CLI Issue
+about: Use this when you're using the Octavia CLI.
+title: "Octavia CLI Issue: "
+labels: [type/bug, area/octavia-cli, needs-triage]
+body:
+  - type: input
+    id: cli-version
+    attributes:
+      label: Octavia CLI Version
+      description: Give the Octavia CLI version you're using.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Revelant information
+      description: Please give any aditional information you have your steps to reproduce the problem.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: |
+        Please copy and paste any relevant log output. 
+        This will be automatically formatted into code, so no need for backticks.
+        We strongly recommend to upload the log file to further debugging.
+      render: shell

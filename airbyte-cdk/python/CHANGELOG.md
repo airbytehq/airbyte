@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.70.2
+low-code: remove superfluous sleep
+
+## 0.70.1
+File-based CDK: Fix tab delimiter configuration in CSV file type
+
+## 0.70.0
+testing
+
+## 0.69.2
+low-code: improve error message when a custom component cannot be found
+
+## 0.69.1
+Update mock server test entrypoint wrapper to use per-stream state
+
+## 0.69.0
+Include recordCount in stream state messages and final state message for full refresh syncs
+
 ## 0.68.4
 low-code: update cartesian stream slice to emit typed StreamSlice
 
