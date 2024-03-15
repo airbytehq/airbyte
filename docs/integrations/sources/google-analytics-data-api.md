@@ -263,7 +263,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
-|:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | 2.4.1   | 2024-02-09 | [35073](https://github.com/airbytehq/airbyte/pull/35073) | Manage dependencies with Poetry.                                                       |
 | 2.4.0   | 2024-02-07 | [34951](https://github.com/airbytehq/airbyte/pull/34951) | Replace the spec parameter from previous version to convert all `conversions:*` fields |
 | 2.3.0   | 2024-02-06 | [34907](https://github.com/airbytehq/airbyte/pull/34907) | Add new parameter to spec to convert `conversions:purchase` field to float             |
