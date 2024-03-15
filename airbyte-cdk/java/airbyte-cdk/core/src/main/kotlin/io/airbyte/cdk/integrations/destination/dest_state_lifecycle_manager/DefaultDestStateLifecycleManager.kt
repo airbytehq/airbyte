@@ -18,26 +18,23 @@ import java.util.function.Supplier
  * during a sync, so a single instance of this manager is sufficient for a destination to track
  * state during a sync.
  *
+ *
+ *
  * Strategy: Delegates state messages of each type to a StateManager that is appropriate to that
  * state type.
  *
+ *
+ *
+ *
  * Per the protocol, if state type is not set, assumes the LEGACY state type.
+ *
  */
-class DefaultDestStateLifecycleManager
-@VisibleForTesting
-internal constructor(
-    singleStateManager: DestStateLifecycleManager,
-    streamStateManager: DestStateLifecycleManager
-) : DestStateLifecycleManager {
+class DefaultDestStateLifecycleManager @VisibleForTesting internal constructor(singleStateManager: DestStateLifecycleManager, streamStateManager: DestStateLifecycleManager) : DestStateLifecycleManager {
     private var stateType: AirbyteStateMessage.AirbyteStateType? = null
 
     // allows us to delegate calls to the appropriate underlying state manager.
     private val internalStateManagerSupplier = Supplier {
-        if (
-            stateType == AirbyteStateMessage.AirbyteStateType.GLOBAL ||
-                stateType == AirbyteStateMessage.AirbyteStateType.LEGACY ||
-                stateType == null
-        ) {
+        if (stateType == AirbyteStateMessage.AirbyteStateType.GLOBAL || stateType == AirbyteStateMessage.AirbyteStateType.LEGACY || stateType == null) {
             return@Supplier singleStateManager
         } else if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) {
             return@Supplier streamStateManager
@@ -46,15 +43,10 @@ internal constructor(
         }
     }
 
-    constructor(
-        defaultNamespace: String?
-    ) : this(DestSingleStateLifecycleManager(), DestStreamStateLifecycleManager(defaultNamespace))
+    constructor(defaultNamespace: String?) : this(DestSingleStateLifecycleManager(), DestStreamStateLifecycleManager(defaultNamespace))
 
     override fun addState(message: AirbyteMessage) {
-        Preconditions.checkArgument(
-            message.type == AirbyteMessage.Type.STATE,
-            "Messages passed to State Manager must be of type STATE."
-        )
+        Preconditions.checkArgument(message.type == AirbyteMessage.Type.STATE, "Messages passed to State Manager must be of type STATE.")
         Preconditions.checkArgument(isStateTypeCompatible(stateType, message.state.type))
 
         setManagerStateTypeIfNotSet(message)
@@ -63,22 +55,20 @@ internal constructor(
     }
 
     /**
-     * If the state type for the manager is not set, sets it using the state type from the message.
-     * If the type on the message is null, we assume it is LEGACY. After the first, state message is
-     * added to the manager, the state type is set and is immutable.
+     * If the state type for the manager is not set, sets it using the state type from the message. If
+     * the type on the message is null, we assume it is LEGACY. After the first, state message is added
+     * to the manager, the state type is set and is immutable.
      *
-     * @param message
-     * - state message whose state will be used if internal state type is not set
+     * @param message - state message whose state will be used if internal state type is not set
      */
     private fun setManagerStateTypeIfNotSet(message: AirbyteMessage) {
         // detect and set state type.
         if (stateType == null) {
-            stateType =
-                if (message.state.type == null) {
-                    AirbyteStateMessage.AirbyteStateType.LEGACY
-                } else {
-                    message.state.type
-                }
+            stateType = if (message.state.type == null) {
+                AirbyteStateMessage.AirbyteStateType.LEGACY
+            } else {
+                message.state.type
+            }
         }
     }
 
@@ -86,7 +76,7 @@ internal constructor(
         internalStateManagerSupplier.get().markPendingAsFlushed()
     }
 
-    override fun listFlushed(): Queue<AirbyteMessage> {
+    override fun listFlushed(): Queue<AirbyteMessage?>? {
         return internalStateManagerSupplier.get().listFlushed()
     }
 
@@ -106,7 +96,7 @@ internal constructor(
         internalStateManagerSupplier.get().clearCommitted()
     }
 
-    override fun listCommitted(): Queue<AirbyteMessage>? {
+    override fun listCommitted(): Queue<AirbyteMessage?>? {
         return internalStateManagerSupplier.get().listCommitted()
     }
 
@@ -116,27 +106,18 @@ internal constructor(
 
     companion object {
         /**
-         * Given the type of previously recorded state by the state manager, determines if a newly
-         * added state message's type is compatible. Based on the previously set state type,
-         * determines if a new one is compatible. If the previous state is null, any new state is
-         * compatible. If new state type is null, it should be treated as LEGACY. Thus,
-         * previousStateType == LEGACY and newStateType == null IS compatible. All other state types
-         * are compatible based on equality.
+         * Given the type of previously recorded state by the state manager, determines if a newly added
+         * state message's type is compatible. Based on the previously set state type, determines if a new
+         * one is compatible. If the previous state is null, any new state is compatible. If new state type
+         * is null, it should be treated as LEGACY. Thus, previousStateType == LEGACY and newStateType ==
+         * null IS compatible. All other state types are compatible based on equality.
          *
-         * @param previousStateType
-         * - state type previously recorded by the state manager
-         * @param newStateType
-         * - state message of a newly added message
+         * @param previousStateType - state type previously recorded by the state manager
+         * @param newStateType - state message of a newly added message
          * @return true if compatible, otherwise false
          */
-        private fun isStateTypeCompatible(
-            previousStateType: AirbyteStateMessage.AirbyteStateType?,
-            newStateType: AirbyteStateMessage.AirbyteStateType?
-        ): Boolean {
-            return previousStateType == null ||
-                previousStateType == AirbyteStateMessage.AirbyteStateType.LEGACY &&
-                    newStateType == null ||
-                previousStateType == newStateType
+        private fun isStateTypeCompatible(previousStateType: AirbyteStateMessage.AirbyteStateType?, newStateType: AirbyteStateMessage.AirbyteStateType?): Boolean {
+            return previousStateType == null || previousStateType == AirbyteStateMessage.AirbyteStateType.LEGACY && newStateType == null || previousStateType == newStateType
         }
     }
 }

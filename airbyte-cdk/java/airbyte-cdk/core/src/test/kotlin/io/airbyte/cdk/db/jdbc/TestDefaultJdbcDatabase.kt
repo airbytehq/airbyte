@@ -23,7 +23,7 @@ import org.testcontainers.utility.MountableFile
 
 internal class TestDefaultJdbcDatabase {
     private val sourceOperations: JdbcSourceOperations = JdbcUtils.defaultSourceOperations
-    private lateinit var dataSource: DataSource
+    private var dataSource: DataSource? = null
     private lateinit var database: JdbcDatabase
 
     @BeforeEach

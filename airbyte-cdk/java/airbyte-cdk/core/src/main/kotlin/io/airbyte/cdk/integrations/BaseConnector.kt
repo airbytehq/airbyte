@@ -14,8 +14,7 @@ abstract class BaseConnector : Integration {
      * spec.json.
      *
      * @return specification.
-     * @throws Exception
-     * - any exception.
+     * @throws Exception - any exception.
      */
     @Throws(Exception::class)
     override fun spec(): ConnectorSpecification? {

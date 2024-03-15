@@ -7,13 +7,7 @@ import com.google.common.base.Preconditions
 import java.nio.file.Path
 import java.util.*
 
-class IntegrationConfig
-private constructor(
-    val command: Command,
-    private val configPath: Path?,
-    private val catalogPath: Path?,
-    private val statePath: Path?
-) {
+class IntegrationConfig private constructor(val command: Command, private val configPath: Path?, private val catalogPath: Path?, private val statePath: Path?) {
     fun getConfigPath(): Path? {
         Preconditions.checkState(command != Command.SPEC)
         return configPath
@@ -24,25 +18,18 @@ private constructor(
         return catalogPath
     }
 
-    fun getStatePath(): Optional<Path> {
+    fun getStatePath(): Optional<Path?> {
         Preconditions.checkState(command == Command.READ)
         return Optional.ofNullable(statePath)
     }
 
     override fun toString(): String {
         return "IntegrationConfig{" +
-            "command=" +
-            command +
-            ", configPath='" +
-            configPath +
-            '\'' +
-            ", catalogPath='" +
-            catalogPath +
-            '\'' +
-            ", statePath='" +
-            statePath +
-            '\'' +
-            '}'
+                "command=" + command +
+                ", configPath='" + configPath + '\'' +
+                ", catalogPath='" + catalogPath + '\'' +
+                ", statePath='" + statePath + '\'' +
+                '}'
     }
 
     override fun equals(o: Any?): Boolean {
@@ -53,10 +40,7 @@ private constructor(
             return false
         }
         val that = o as IntegrationConfig
-        return command == that.command &&
-            configPath == that.configPath &&
-            catalogPath == that.catalogPath &&
-            statePath == that.statePath
+        return command == that.command && configPath == that.configPath && catalogPath == that.catalogPath && statePath == that.statePath
     }
 
     override fun hashCode(): Int {

@@ -6,18 +6,14 @@ package io.airbyte.cdk.db.jdbc.streaming
 import java.util.*
 
 /**
- * This class estimates the max row byte size by measuring the first consecutive `initialSampleSize`
- * rows.
+ * This class estimates the max row byte size by measuring the first consecutive
+ * `initialSampleSize` rows.
  */
-class InitialSizeEstimator(
-    bufferByteSize: Long,
-    private val sampleSize: Int,
-    minFetchSize: Int,
-    defaultFetchSize: Int,
-    maxFetchSize: Int
-) :
-    BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize),
-    FetchSizeEstimator {
+class InitialSizeEstimator(bufferByteSize: Long,
+                           private val sampleSize: Int,
+                           minFetchSize: Int,
+                           defaultFetchSize: Int,
+                           maxFetchSize: Int) : BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize), FetchSizeEstimator {
     private var counter = 0
 
     override fun accept(row: Any) {
@@ -28,7 +24,7 @@ class InitialSizeEstimator(
         counter++
     }
 
-    override val fetchSize: Optional<Int>
+    override val fetchSize: Optional<Int?>?
         get() {
             if (counter < sampleSize) {
                 return Optional.empty()
