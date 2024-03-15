@@ -45,7 +45,7 @@ class SchemaValidationException(Exception):
     @classmethod
     def merge_exceptions(cls, exceptions: List["SchemaValidationException"]) -> "SchemaValidationException":
         # We assume the schema is the same for all SchemaValidationException
-        return SchemaValidationException(exceptions[0].schema, [x for exception in exceptions for x in exception.validation_errors])
+        return SchemaValidationException(exceptions[0].schema, [x for exception in exceptions for x in exception._validation_errors])
 
     def __init__(self, schema: InferredSchema, validation_errors: List[Exception]):
         self._schema = schema
@@ -72,10 +72,10 @@ class SchemaInferrer:
 
     stream_to_builder: Dict[str, SchemaBuilder]
 
-    def __init__(self, pk: List[List[str]] = None, cursor_field: List[List[str]] = None) -> None:
+    def __init__(self, pk: Optional[List[List[str]]] = None, cursor_field: Optional[List[List[str]]] = None) -> None:
         self.stream_to_builder = defaultdict(NoRequiredSchemaBuilder)
-        self._pk = pk
-        self._cursor_field = cursor_field
+        self._pk = [] if pk is None else pk
+        self._cursor_field = [] if cursor_field is None else cursor_field
 
     def accumulate(self, record: AirbyteRecordMessage) -> None:
         """Uses the input record to add to the inferred schemas maintained by this object"""
@@ -146,7 +146,7 @@ class SchemaInferrer:
             if len(node["type"]) == 1:
                 node["type"] = node["type"][0]
 
-    def _add_field_as_required(self, node: InferredSchema, path: List[str], traveled_path: List[str] = None) -> None:
+    def _add_field_as_required(self, node: InferredSchema, path: List[str], traveled_path: Optional[List[str]] = None) -> None:
         if self._is_leaf(path):
             self._remove_null_from_type(node)
             return
