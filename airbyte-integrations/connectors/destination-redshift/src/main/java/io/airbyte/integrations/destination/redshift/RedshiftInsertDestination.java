@@ -19,18 +19,23 @@ import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 
-public class RedshiftInsertDestination extends AbstractJdbcDestination {
+public class RedshiftInsertDestination extends AbstractJdbcDestination<RedshiftState> {
 
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
@@ -120,6 +125,14 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
                                                                         final JdbcDatabase database,
                                                                         String rawTableSchema) {
     return new RedshiftDestinationHandler(databaseName, database, rawTableSchema);
+  }
+
+  @Override
+  protected List<Migration<RedshiftState>> getMigrations(JdbcDatabase database,
+                                                         String databaseName,
+                                                         SqlGenerator sqlGenerator,
+                                                         DestinationHandler<RedshiftState> destinationHandler) {
+    return List.of(new RedshiftRawTableAirbyteMetaMigration(database, databaseName));
   }
 
 }

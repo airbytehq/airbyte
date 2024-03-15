@@ -11,6 +11,7 @@ data class PostgresState(val needsSoftReset: Boolean) : MinimumDestinationState 
         return needsSoftReset
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T : MinimumDestinationState> withSoftReset(needsSoftReset: Boolean): T {
         return copy(needsSoftReset = needsSoftReset) as T
     }
