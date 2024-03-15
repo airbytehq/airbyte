@@ -215,8 +215,9 @@ class MongoDbCdcInitializerTest {
         .thenReturn(mongoChangeStreamCursor);
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
-    assertThrows(ConfigErrorException.class, () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS,
-        stateManager, EMITTED_AT, CONFIG));
+    assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS,
+            stateManager, EMITTED_AT, CONFIG));
   }
 
   @Test
@@ -227,8 +228,9 @@ class MongoDbCdcInitializerTest {
         .thenReturn(mongoChangeStreamCursor);
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
-    assertThrows(ConfigErrorException.class, () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS,
-        stateManager, EMITTED_AT, CONFIG));
+    assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS,
+            stateManager, EMITTED_AT, CONFIG));
   }
 
   @Test
@@ -264,7 +266,8 @@ class MongoDbCdcInitializerTest {
         MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
     doReturn(Optional.empty()).when(mongoDbDebeziumStateUtil).savedOffset(any(), any(), any(), any(), any());
     assertThrows(RuntimeException.class,
-        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG));
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            CONFIG));
   }
 
   @Test

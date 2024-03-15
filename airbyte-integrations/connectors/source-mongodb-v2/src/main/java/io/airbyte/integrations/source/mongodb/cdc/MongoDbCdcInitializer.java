@@ -94,15 +94,17 @@ public class MongoDbCdcInitializer {
     final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     logOplogInfo(mongoClient);
-    final BsonDocument initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, incrementalOnlyStreamsCatalog);
+    final BsonDocument initialResumeToken =
+        MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, incrementalOnlyStreamsCatalog);
     final JsonNode initialDebeziumState =
         mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, mongoClient, databaseName);
-    final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
-        ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
-        : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
+    final MongoDbCdcState cdcState =
+        (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
+            ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
+            : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
     final Optional<BsonDocument> optSavedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
-            incrementalOnlyStreamsCatalog,
+        incrementalOnlyStreamsCatalog,
         cdcState.state(),
         config.getDatabaseConfig(),
         mongoClient);
@@ -132,9 +134,10 @@ public class MongoDbCdcInitializer {
     }
 
     final MongoDbCdcState stateToBeUsed =
-        (!savedOffsetIsValid || stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
-            ? new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema())
-            : stateManager.getCdcState();
+        (!savedOffsetIsValid || stateManager.getCdcState() == null || stateManager.getCdcState().state() == null
+            || stateManager.getCdcState().state().isNull())
+                ? new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema())
+                : stateManager.getCdcState();
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
         MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, incrementalOnlyStreamsCatalog, savedOffsetIsValid);
@@ -147,8 +150,10 @@ public class MongoDbCdcInitializer {
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
-    final var propertiesManager = new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog);
-    final var eventConverter = new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
+    final var propertiesManager =
+        new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog);
+    final var eventConverter =
+        new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);

@@ -33,7 +33,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
@@ -392,7 +391,7 @@ class MongoDbStateManagerTest {
     final var stream = catalogFullRefresh().getStreams().stream().findFirst().orElseThrow();
 
     final var iter = new SourceStateIterator<Document>(mongoCursor, stream, stateManager, new StateEmitFrequency(CHECKPOINT_INTERVAL,
-            MongoConstants.CHECKPOINT_DURATION));
+        MongoConstants.CHECKPOINT_DURATION));
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -417,13 +416,13 @@ class MongoDbStateManagerTest {
     message = iter.next();
     assertEquals(Type.STATE, message.getType());
     assertEquals(
-            docs.get(1).get("_id").toString(),
-            message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
-            "state id should match last record id");
+        docs.get(1).get("_id").toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
+        "state id should match last record id");
     Assertions.assertEquals(
-            InitialSnapshotStatus.FULL_REFRESH.toString(),
-            message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
-            "state status should remain full_refresh");
+        InitialSnapshotStatus.FULL_REFRESH.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should remain full_refresh");
 
     assertTrue(iter.hasNext(), "alizarin crimson should be next");
     message = iter.next();
@@ -434,13 +433,13 @@ class MongoDbStateManagerTest {
     message = iter.next();
     assertEquals(Type.STATE, message.getType());
     assertEquals(
-            "null",
-            message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
-            "state id should be null upon completion");
+        "null",
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
+        "state id should be null upon completion");
     assertEquals(
-            InitialSnapshotStatus.FULL_REFRESH.toString(),
-            message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
-            "state status should remain full_refresh upon completion");
+        InitialSnapshotStatus.FULL_REFRESH.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should remain full_refresh upon completion");
 
     assertFalse(iter.hasNext(), "should have no more records");
   }
@@ -457,21 +456,22 @@ class MongoDbStateManagerTest {
 
   private static ConfiguredAirbyteCatalog catalogFullRefresh() {
     return new ConfiguredAirbyteCatalog().withStreams(List.of(
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.FULL_REFRESH)
-                    .withCursorField(List.of("_id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withCursorField(List.of("_id"))
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    "test.unit",
-                                    Field.of("_id", JsonSchemaType.STRING),
-                                    Field.of("name", JsonSchemaType.STRING),
-                                    Field.of("hex", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
-                            .withDefaultCursorField(List.of("_id")))));
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withCursorField(List.of("_id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withCursorField(List.of("_id"))
+            .withStream(CatalogHelpers.createAirbyteStream(
+                "test.unit",
+                Field.of("_id", JsonSchemaType.STRING),
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("hex", JsonSchemaType.STRING))
+                .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
+                .withDefaultCursorField(List.of("_id")))));
   }
 
   private static Stream<ConfiguredAirbyteCatalog> provideCatalogArguments() {
     return Stream.of(catalog(), catalogFullRefresh());
   }
+
 }

@@ -13,7 +13,8 @@ public enum InitialSnapshotStatus {
 
   IN_PROGRESS,
   COMPLETE,
-  // A Full Refresh stream state behaves like In Progress, but is deleted when collection is fully read
+  // A Full Refresh stream state behaves like In Progress, but is deleted when collection is fully
+  // read
   // Rather than turning into Complete
   FULL_REFRESH
 }

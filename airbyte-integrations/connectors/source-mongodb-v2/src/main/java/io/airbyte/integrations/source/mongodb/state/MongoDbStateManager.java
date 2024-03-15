@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.source.mongodb.state;
 
+import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.FULL_REFRESH;
+import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
+import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,7 +22,6 @@ import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcEventUtils;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -29,10 +32,6 @@ import java.util.stream.Collectors;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.FULL_REFRESH;
-import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
-import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
 
 /**
  * A state manager for MongoDB CDC syncs.
@@ -249,8 +248,8 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
       final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
           .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
       final var state = new MongoDbStreamState(lastId.toString(),
-              syncMode == INCREMENTAL ? IN_PROGRESS : FULL_REFRESH,
-              idType);
+          syncMode == INCREMENTAL ? IN_PROGRESS : FULL_REFRESH,
+          idType);
       updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
     }
     return toState();
@@ -275,8 +274,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
             .withStream(stream.getStream().getName())
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
-            .withData((stream.getSyncMode() == INCREMENTAL) ?
-                    injectMetadata(jsonNode) : jsonNode));
+            .withData((stream.getSyncMode() == INCREMENTAL) ? injectMetadata(jsonNode) : jsonNode));
   }
 
   private JsonNode injectMetadata(final JsonNode jsonNode) {
@@ -303,19 +301,19 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
         LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
         final var finalStateStatus = InitialSnapshotStatus.COMPLETE;
         final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-                .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+            .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
         final var state = new MongoDbStreamState(lastId.toString(), finalStateStatus, idType);
 
         updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
     } else {
-//      deleteStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
+      // deleteStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       var lastId = streamPairToLastIdMap.get(pair);
       final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-              .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+          .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
       updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
-              new MongoDbStreamState(null, FULL_REFRESH, idType));
+          new MongoDbStreamState(null, FULL_REFRESH, idType));
     }
     return toState();
   }

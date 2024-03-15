@@ -41,8 +41,8 @@ public class MongoDbCdcInitialSnapshotUtils {
 
   private static final Predicate<ConfiguredAirbyteStream> SYNC_MODE_FILTER = c -> SyncMode.INCREMENTAL.equals(c.getSyncMode());
   public static final Map<SyncMode, List<InitialSnapshotStatus>> syncModeToStatusMap = Map.of(
-          SyncMode.INCREMENTAL, List.of(InitialSnapshotStatus.IN_PROGRESS, InitialSnapshotStatus.COMPLETE),
-          SyncMode.FULL_REFRESH, List.of(InitialSnapshotStatus.FULL_REFRESH));
+      SyncMode.INCREMENTAL, List.of(InitialSnapshotStatus.IN_PROGRESS, InitialSnapshotStatus.COMPLETE),
+      SyncMode.FULL_REFRESH, List.of(InitialSnapshotStatus.FULL_REFRESH));
 
   /**
    * Returns the list of configured Airbyte streams that need to perform the initial snapshot portion
@@ -143,8 +143,10 @@ public class MongoDbCdcInitialSnapshotUtils {
     streams.forEach(stream -> {
       final var existingState = stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
       if (existingState.isPresent() && !isInitialSnapshotStatus(stream.getSyncMode(), existingState.get())) {
-        throw new ConfigErrorException("Stream " + stream.getStream().getName() + " is " + stream.getSyncMode() + " but the saved status " + existingState.get().status() + " doesn't match. Please reset this stream");
+        throw new ConfigErrorException("Stream " + stream.getStream().getName() + " is " + stream.getSyncMode() + " but the saved status "
+            + existingState.get().status() + " doesn't match. Please reset this stream");
       }
     });
   }
+
 }
