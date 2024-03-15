@@ -4,6 +4,10 @@ for more details](../config-based/advanced-topics.md#custom-components).
 
 Custom components cannot be directly edited in the builder, but the OSS docker-compose deployment of the builder application can load them dynamically from your local filesystem.
 
+:::warning 
+Connectors using custom components cannot be directly exported to your workspace. You'll need to create a custom connector, build a docker image, and upload it to the platform by [following these instructions](https://docs.airbyte.com/integrations/custom-connectors#adding-your-connectors-in-the-ui).
+
+
 Here's how you can do it:
 
 1. Run the OSS platform locally with builder docker-compose extension
