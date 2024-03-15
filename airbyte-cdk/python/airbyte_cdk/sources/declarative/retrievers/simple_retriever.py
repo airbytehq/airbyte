@@ -322,7 +322,13 @@ class SimpleRetriever(Retriever):
             records_schema=records_schema,
         )
         for stream_data in self._read_pages(record_generator, self.state, _slice):
-            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, stream_data, _slice)
+            current_record = self._extract_record(stream_data, _slice)
+            if self.cursor and current_record:
+                self.cursor.observe(_slice, current_record)
+
+            # TODO this is just the most recent record *read*, not necessarily the most recent record *within slice boundaries*; once all
+            # cursors implement a meaningful `observe` method, it can be removed, both from here and the `Cursor.close_slice` method args
+            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, current_record, _slice)
             yield stream_data
 
         if self.cursor:
@@ -330,13 +336,13 @@ class SimpleRetriever(Retriever):
         return
 
     def _get_most_recent_record(
-        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice
+        self, current_most_recent: Optional[Record], current_record: Optional[Record], stream_slice: StreamSlice
     ) -> Optional[Record]:
-        if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
+        if self.cursor and current_record:
             if not current_most_recent:
-                return record
+                return current_record
             else:
-                return current_most_recent if self.cursor.is_greater_than_or_equal(current_most_recent, record) else record
+                return current_most_recent if self.cursor.is_greater_than_or_equal(current_most_recent, current_record) else current_record
         else:
             return None
 
