@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.Optional
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -36,10 +37,26 @@ class BufferDequeueTest {
             val enqueue = bufferManager.bufferEnqueue
             val dequeue = bufferManager.bufferDequeue
 
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
 
             // total size of records is 80, so we expect 50 to get us 2 records (prefer to
             // under-pull records
@@ -64,9 +81,21 @@ class BufferDequeueTest {
             val enqueue = bufferManager.bufferEnqueue
             val dequeue = bufferManager.bufferDequeue
 
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
 
             try {
                 dequeue.take(STREAM_DESC, 60).use { take ->
@@ -83,8 +112,16 @@ class BufferDequeueTest {
             val enqueue = bufferManager.bufferEnqueue
             val dequeue = bufferManager.bufferDequeue
 
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-            enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
+            enqueue.addRecord(
+                RECORD_MSG_20_BYTES,
+                RECORD_SIZE_20_BYTES,
+                Optional.of(DEFAULT_NAMESPACE)
+            )
 
             try {
                 dequeue.take(STREAM_DESC, Long.MAX_VALUE).use { take ->
@@ -102,13 +139,17 @@ class BufferDequeueTest {
         val enqueue = bufferManager.bufferEnqueue
         val dequeue = bufferManager.bufferDequeue
 
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
+        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
+        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
 
         val secondStream = StreamDescriptor().withName("stream_2")
         val recordFromSecondStream = Jsons.clone(RECORD_MSG_20_BYTES)
         recordFromSecondStream.record?.withStream(secondStream.name)
-        enqueue.addRecord(recordFromSecondStream, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
+        enqueue.addRecord(
+            recordFromSecondStream,
+            RECORD_SIZE_20_BYTES,
+            Optional.of(DEFAULT_NAMESPACE)
+        )
 
         Assertions.assertEquals(60, dequeue.totalGlobalQueueSizeBytes)
 
@@ -157,15 +198,15 @@ class BufferDequeueTest {
         )
 
         // allocate a block for new stream
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
+        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
         Assertions.assertEquals(
             2 * GlobalMemoryManager.BLOCK_SIZE_BYTES,
             memoryManager.getCurrentMemoryBytes(),
         )
 
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
-        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, DEFAULT_NAMESPACE)
+        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
+        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
+        enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
 
         // no re-allocates as we haven't breached block size
         Assertions.assertEquals(
