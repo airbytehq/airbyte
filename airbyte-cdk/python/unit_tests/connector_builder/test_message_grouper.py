@@ -21,6 +21,9 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 from unit_tests.connector_builder.utils import create_configured_catalog
 
+_NO_PK = [[]]
+_NO_CURSOR_FIELD = [[]]
+
 MAX_PAGES_PER_SLICE = 4
 MAX_SLICES = 3
 
@@ -96,7 +99,7 @@ def test_get_grouped_messages(mock_entrypoint_read: Mock) -> None:
     response = {"status_code": 200, "headers": {"field": "value"}, "body": {"content": '{"name": "field"}'}}
     expected_schema = {
         "$schema": "http://json-schema.org/schema#",
-        "properties": {"name": {"type": "string"}, "date": {"type": "string"}},
+        "properties": {"name": {"type": ["null", "string"]}, "date": {"type": ["null", "string"]}},
         "type": "object",
     }
     expected_datetime_fields = {"date": "%Y-%m-%d"}
@@ -634,6 +637,44 @@ def test_given_no_slices_then_return_empty_slices(mock_entrypoint_read: Mock) ->
     )
 
     assert len(stream_read.slices) == 0
+
+
+@patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")
+def test_given_pk_then_ensure_pk_is_pass_to_schema_inferrence(mock_entrypoint_read: Mock) -> None:
+    mock_source = make_mock_source(mock_entrypoint_read, iter([
+        request_response_log_message({"request": 1}, {"response": 2}, "http://any_url.com"),
+        record_message("hashiras", {"id": "Shinobu Kocho", "date": "2023-03-03"}),
+        record_message("hashiras", {"id": "Muichiro Tokito", "date": "2023-03-04"}),
+    ]))
+    mock_source.streams.return_value = [Mock()]
+    mock_source.streams.return_value[0].primary_key = [["id"]]
+    mock_source.streams.return_value[0].cursor_field = _NO_CURSOR_FIELD
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    stream_read: StreamRead = connector_builder_handler.get_message_groups(
+        source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
+    )
+
+    assert stream_read.inferred_schema["required"] == ["id"]
+
+
+@patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")
+def test_given_cursor_field_then_ensure_cursor_field_is_pass_to_schema_inferrence(mock_entrypoint_read: Mock) -> None:
+    mock_source = make_mock_source(mock_entrypoint_read, iter([
+        request_response_log_message({"request": 1}, {"response": 2}, "http://any_url.com"),
+        record_message("hashiras", {"id": "Shinobu Kocho", "date": "2023-03-03"}),
+        record_message("hashiras", {"id": "Muichiro Tokito", "date": "2023-03-04"}),
+    ]))
+    mock_source.streams.return_value = [Mock()]
+    mock_source.streams.return_value[0].primary_key = _NO_PK
+    mock_source.streams.return_value[0].cursor_field = [["date"]]
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    stream_read: StreamRead = connector_builder_handler.get_message_groups(
+        source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
+    )
+
+    assert stream_read.inferred_schema["required"] == ["date"]
 
 
 def make_mock_source(mock_entrypoint_read: Mock, return_value: Iterator[AirbyteMessage]) -> MagicMock:
