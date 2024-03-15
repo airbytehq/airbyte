@@ -3,7 +3,7 @@
 #
 
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from .common import CatalogModel, Targeting
 
@@ -30,24 +30,23 @@ class ProductCampaign(CatalogModel):
     budget: dict
     extendedData: dict
 
-# Needs to be updated
 class ProductAdGroups(CatalogModel):
-    adGroupId: Decimal
+    adGroupId: str
     name: str
-    campaignId: Decimal
+    campaignId: str
     defaultBid: Decimal
     state: str
+    extendedData: dict
 
-# Needs to be updated
-class SuggestedBid(CatalogModel):
-    suggested: Decimal
-    rangeStart: Decimal
-    rangeEnd: Decimal
+class BidRecommendations(CatalogModel):
+    bidValues: List[dict[str, str]]
+    targetingExpression: dict[str, str]
 
-# Needs to be updated
 class ProductAdGroupBidRecommendations(CatalogModel):
-    adGroupId: Decimal
-    suggestedBid: Optional[SuggestedBid] = None
+    adGroupId: str
+    campaignId: str
+    theme: str
+    bidRecommendationsForTargetingExpressions: List[BidRecommendations]
 
 # Needs to be updated
 class SuggestedKeyword(CatalogModel):
@@ -59,17 +58,23 @@ class ProductAdGroupSuggestedKeywords(CatalogModel):
     adGroupId: Decimal
     suggestedKeywords: List[SuggestedKeyword] = None
 
-# Needs to be updated
 class ProductAd(CatalogModel):
-    adId: Decimal
-    campaignId: Decimal
-    adGroupId: Decimal
-    sku: str
+    adId: str
+    campaignId: str
+    customText: str
     asin: str
     state: str
+    sku: str
+    adGroupId: str
+    extendedData: dict
 
-# Needs to be updated
-class ProductTargeting(Targeting):
-    campaignId: Decimal
-    expression: List[Dict[str, str]]
-    resolvedExpression: List[Dict[str, str]]
+class ProductTargeting(CatalogModel):
+    expression: list
+    targetId: str
+    resolvedExpression: list
+    campaignId: str
+    expressionType: str
+    state: str
+    bid: float
+    adGroupId: str
+    extendedData: dict

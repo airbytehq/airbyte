@@ -11,6 +11,7 @@ from airbyte_protocol.models import SyncMode
 from source_amazon_ads.schemas import (
     Keywords,
     NegativeKeywords,
+    CampaignNegativeKeywords,
     ProductAd,
     ProductAdGroupBidRecommendations,
     ProductAdGroups,
@@ -22,7 +23,7 @@ from source_amazon_ads.streams.common import AmazonAdsStream, SubProfilesStream
 
 class SponsoredProductsV3(SubProfilesStream):
     """
-    This Stream supports the Sponsored Products V3 API, which requires POST methods
+    This Stream supports the Sponsored Products v3 API, which requires POST methods
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod
     """
 
@@ -57,7 +58,7 @@ class SponsoredProductsV3(SubProfilesStream):
 
 class SponsoredProductCampaigns(SponsoredProductsV3):
     """
-    This stream corresponds to Amazon Ads API - Sponsored Products Campaigns
+    This stream corresponds to Amazon Ads API - Sponsored Products (v3) Campaigns
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Campaigns/operation/ListSponsoredProductsCampaigns
     """
 
@@ -70,17 +71,19 @@ class SponsoredProductCampaigns(SponsoredProductsV3):
     def path(self, **kwargs) -> str:
         return "sp/campaigns/list"
 
-class SponsoredProductAdGroups(SubProfilesStream):
+class SponsoredProductAdGroups(SponsoredProductsV3):
     """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Ad groups
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Ad%20groups
+    This stream corresponds to Amazon Ads API - Sponsored Products (v3) Ad groups
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Ad-groups/operation/ListSponsoredProductsAdGroups
     """
 
     primary_key = "adGroupId"
+    data_field = "adGroups"
+    content_type = "application/vnd.spAdGroup.v3+json"
     model = ProductAdGroups
 
     def path(self, **kwargs) -> str:
-        return "v2/sp/adGroups"
+        return "/sp/adGroups/list"
 
 
 class SponsoredProductAdGroupsWithProfileId(SponsoredProductAdGroups):
@@ -101,11 +104,6 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
         self.__args = args
         self.__kwargs = kwargs
         super().__init__(*args, **kwargs)
-
-    def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:
-        headers = super().request_headers(*args, **kwargs)
-        headers["Amazon-Advertising-API-Scope"] = str(kwargs["stream_slice"]["profileId"])
-        return headers
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -140,23 +138,35 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
         else:
             response.raise_for_status()
 
-
 class SponsoredProductAdGroupBidRecommendations(SponsoredProductAdGroupWithSlicesABC):
-    """Docs:
-    Latest API:
-        https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Bid%20Recommendations/getTargetBidRecommendations
-        POST /sd/targets/bid/recommendations
-        Note: does not work, always get "403 Forbidden"
-
-    V2 API:
-        https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Bid%20recommendations/getAdGroupBidRecommendations
-        GET /v2/sp/adGroups/{adGroupId}/bidRecommendations
     """
-
+    This stream corresponds to Amazon Ads API - Sponsored Products (v3) Ad group bid recommendations, now referred to as "Target Bid Recommendations" by Amazon Ads
+    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#tag/Bid-Recommendations/operation/getTargetBidRecommendations
+    """
+    primary_key = None
+    data_field = "bidRecommendations"
+    content_type = "application/vnd.spthemebasedbidrecommendations.v4+json"
     model = ProductAdGroupBidRecommendations
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"v2/sp/adGroups/{stream_slice['adGroupId']}/bidRecommendations"
+        return f"/sp/targets/bid/recommendations"
+
+    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        request_body = {}
+        request_body["targetingExpressions"] = [{
+            "type": "KEYWORD_BROAD_MATCH",
+            "value": "hello"
+        }]
+        request_body["adGroupId"] = stream_slice["adGroupId"]
+        request_body["campaignId"] = stream_slice["campaignId"]
+        request_body["recommendationType"] = "BIDS_FOR_EXISTING_AD_GROUP"
+        return request_body
+
+    # def parse_response(self, *args, **kwargs) -> Iterable[Mapping]:
+    #     for record in super().parse_response(*args, **kwargs):
+    #         record["profileId"] = self._current_profile_id
+    #         yield record
+
 
 
 class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlicesABC):
@@ -177,63 +187,75 @@ class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlices
         return f"v2/sp/adGroups/{stream_slice['adGroupId']}/suggested/keywords"
 
 
-class SponsoredProductKeywords(SubProfilesStream):
+class SponsoredProductKeywords(SponsoredProductsV3):
     """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Keywords
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Keywords
+    This stream corresponds to Amazon Ads Sponsored Products v3 API - Sponsored Products Keywords
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Keywords/operation/ListSponsoredProductsKeywords
     """
 
     primary_key = "keywordId"
+    data_field = "keywords"
+    content_type = "application/vnd.spKeyword.v3+json"
     model = Keywords
 
     def path(self, **kwargs) -> str:
-        return "v2/sp/keywords"
+        return "sp/keywords/list"
 
 
-class SponsoredProductNegativeKeywords(SubProfilesStream):
+class SponsoredProductNegativeKeywords(SponsoredProductsV3):
     """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords
+    This stream corresponds to Amazon Ads Sponsored Products v3 API - Sponsored Products Negative Keywords
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Negative-keywords/operation/ListSponsoredProductsNegativeKeywords
     """
 
     primary_key = "keywordId"
+    data_field = "negativeKeywords"
+    content_type = "application/vnd.spNegativeKeyword.v3+json"
     model = NegativeKeywords
 
     def path(self, **kwargs) -> str:
-        return "v2/sp/negativeKeywords"
+        return "sp/negativeKeywords/list"
 
 
-class SponsoredProductCampaignNegativeKeywords(SponsoredProductNegativeKeywords):
+class SponsoredProductCampaignNegativeKeywords(SponsoredProductsV3):
     """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords
+    This stream corresponds to Amazon Ads Sponsored Products v3 API - Sponsored Products Negative Keywords
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Campaign-negative-keywords/operation/ListSponsoredProductsCampaignNegativeKeywords
     """
+
+    primary_key = "keywordId"
+    data_field = "campaignNegativeKeywords"
+    content_type = "application/vnd.spCampaignNegativeKeyword.v3+json"
+    model = CampaignNegativeKeywords
 
     def path(self, **kwargs) -> str:
-        return "v2/sp/campaignNegativeKeywords"
+        return "sp/campaignNegativeKeywords/list"
 
 
-class SponsoredProductAds(SubProfilesStream):
+class SponsoredProductAds(SponsoredProductsV3):
     """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Ads
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads
+    This stream corresponds to Amazon Ads v3 API - Sponsored Products Ads
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Product-ads/operation/ListSponsoredProductsProductAds
     """
 
     primary_key = "adId"
+    data_field = "productAds"
+    content_type = "application/vnd.spProductAd.v3+json"
     model = ProductAd
 
     def path(self, **kwargs) -> str:
-        return "v2/sp/productAds"
+        return "sp/productAds/list"
 
 
-class SponsoredProductTargetings(SubProfilesStream):
+class SponsoredProductTargetings(SponsoredProductsV3):
     """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Targetings
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting
+    This stream corresponds to Amazon Ads Sponsored Products v3 API - Sponsored Products Targeting Clauses
     """
 
     primary_key = "targetId"
+    data_field = "targetingClauses"
+    content_type = "application/vnd.spTargetingClause.v3+json"
     model = ProductTargeting
 
     def path(self, **kwargs) -> str:
-        return "v2/sp/targets"
+        return "sp/targets/list"

@@ -74,13 +74,35 @@ class KeywordsBase(CatalogModel):
 
 
 class Keywords(KeywordsBase):
+    keywordId: str
     nativeLanguageKeyword: str
+    nativeLanguageLocale: str
+    campaignId: str
     matchType: str
+    state: str
     bid: Decimal
-
+    adGroupId: str
+    keywordText: str
+    extendedData: dict
 
 class NegativeKeywords(KeywordsBase):
+    keywordId: str
+    nativeLanguageKeyword: str
+    nativeLanguageLocale: str
+    campaignId: str
     matchType: str
+    state: str
+    adGroupId: str
+    keywordText: str
+    extendedData: dict
+
+class CampaignNegativeKeywords(KeywordsBase):
+    keywordId: str
+    campaignId: str
+    matchType: str
+    state: str
+    keywordText: str
+    extendedData: dict
 
 
 class Budget(CatalogModel):
