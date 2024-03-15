@@ -179,9 +179,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 
 class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the check point interval to the limit of the records output
-    @property
-    def state_checkpoint_interval(self) -> int:
-        return super().limit
+    state_checkpoint_interval = 250
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
