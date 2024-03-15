@@ -169,7 +169,7 @@ public abstract class AbstractJdbcDestination<DestinationState extends MinimumDe
     // then dropping that table
     try {
       // Get metadata from the database to see whether connection is possible
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.defaultSourceOperations::rowToJson);
 
       // verify we have write permissions on the target schema by creating a table with a random name,
       // then dropping that table

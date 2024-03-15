@@ -52,8 +52,8 @@ class PostgresUtilsTest {
     dataSource = DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        DatabaseDriver.POSTGRESQL.driverClassName,
+        String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));

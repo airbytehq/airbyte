@@ -17,7 +17,7 @@ public class PostgresUtils {
     // pg version >= 10. For versions < 10 use query select * from pg_current_xlog_location()
     final List<JsonNode> jsonNodes = database
         .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("select * from pg_current_wal_lsn()"),
-            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+            resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
 
     Preconditions.checkState(jsonNodes.size() == 1);
     return PgLsn.fromPgString(jsonNodes.get(0).get("pg_current_wal_lsn").asText());

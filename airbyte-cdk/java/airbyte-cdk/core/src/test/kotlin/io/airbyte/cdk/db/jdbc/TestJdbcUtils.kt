@@ -336,7 +336,7 @@ internal class TestJdbcUtils {
 
         private var PSQL_DB: PostgreSQLContainer<*>? = null
 
-        private val sourceOperations: JdbcSourceOperations = JdbcUtils.getDefaultSourceOperations()
+        private val sourceOperations: JdbcSourceOperations = JdbcUtils.defaultSourceOperations
 
         @JvmStatic
         @BeforeAll

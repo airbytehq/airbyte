@@ -174,7 +174,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   private String getCatalog(final SqlDatabase database) {
-    return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
+    return (database.sourceConfig.has(JdbcUtils.DATABASE_KEY) ? database.sourceConfig.get(JdbcUtils.DATABASE_KEY).asText() : null);
   }
 
   @Override
@@ -462,9 +462,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         sourceOperations,
         streamingQueryConfigProvider);
 
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    database.setSourceConfig(sourceConfig);
-    database.setDatabaseConfig(jdbcConfig);
+    quoteString = (quoteString == null ? database.metaData.getIdentifierQuoteString() : quoteString);
+    database.sourceConfig = sourceConfig;
+    database.databaseConfig = jdbcConfig;
     return database;
   }
 
@@ -479,8 +479,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
       throws SQLException {
     LOGGER.info("Data source product recognized as {}:{}",
-        database.getMetaData().getDatabaseProductName(),
-        database.getMetaData().getDatabaseProductVersion());
+        database.metaData.getDatabaseProductName(),
+        database.metaData.getDatabaseProductVersion());
   }
 
   @Override

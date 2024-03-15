@@ -22,7 +22,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.MountableFile
 
 internal class TestDefaultJdbcDatabase {
-    private val sourceOperations: JdbcSourceOperations = JdbcUtils.getDefaultSourceOperations()
+    private val sourceOperations: JdbcSourceOperations = JdbcUtils.defaultSourceOperations
     private var dataSource: DataSource? = null
     private lateinit var database: JdbcDatabase
 
