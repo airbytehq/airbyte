@@ -10,6 +10,7 @@ import pendulum
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_protocol.models import SyncMode
 
 from .schemas import Profile
 from .streams import (
@@ -18,7 +19,6 @@ from .streams import (
     AttributionReportPerformanceCreative,
     AttributionReportProducts,
     Portfolios,
-    Profiles,
     SponsoredBrandsAdGroups,
     SponsoredBrandsCampaigns,
     SponsoredBrandsKeywords,
@@ -67,7 +67,7 @@ class SourceAmazonAds(AbstractSource):
         config["report_record_types"] = config.get("report_record_types", [])
         return config
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any], profiles_stream = None) -> Tuple[bool, Optional[Any]]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -83,13 +83,13 @@ class SourceAmazonAds(AbstractSource):
         # in response body.
         # It doesn't support pagination so there is no sense of reading single
         # record, it would fetch all the data anyway.
-        profiles_list = Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
+        profiles_list = self.get_all_profiles(self.profiles_stream)
         filtered_profiles = self._choose_profiles(config, profiles_list)
         if not filtered_profiles:
             return False, "No profiles found after filtering by Profile ID and Marketplace ID"
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any], profiles_stream = None) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return: list of streams for current source
@@ -102,8 +102,7 @@ class SourceAmazonAds(AbstractSource):
         # parameter passed over "Amazon-Advertising-API-Scope" http header and
         # should contain profile id. So every stream is dependent on Profiles
         # stream and should have information about all profiles.
-        profiles_stream = self.profiles_stream or Profiles(**stream_args)
-        profiles_list = profiles_stream.get_all_profiles()
+        profiles_list = self.get_all_profiles(profiles_stream)
         stream_args["profiles"] = self._choose_profiles(config, profiles_list)
         non_profile_stream_classes = [
             SponsoredDisplayCampaigns,
@@ -157,3 +156,12 @@ class SourceAmazonAds(AbstractSource):
                 if profile.profileId in requested_profiles or profile.accountInfo.marketplaceStringId in requested_marketplace_ids
             ]
         return available_profiles
+
+    def get_all_profiles(self, profiles_stream) -> List[Profile]:
+        """
+        Fetch all profiles and return it as list. We need this to set
+        dependecies for other streams since all of the Amazon Ads API calls
+        require profile id to be passed.
+        :return List of profile object
+        """
+        return [Profile.parse_obj(profile) for profile in profiles_stream.read_records(SyncMode.full_refresh)]
