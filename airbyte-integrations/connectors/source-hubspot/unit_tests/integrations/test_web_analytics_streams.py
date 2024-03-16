@@ -1,27 +1,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import copy
 import http
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import freezegun
 import mock
 import pytest
 import pytz
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, RecordBuilder, create_record_builder, find_template
+from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
-from source_hubspot import SourceHubspot
 
-from .config_builder import ConfigBuilder
-from .request_builders.other import CustomObjectsRequestBuilder, OAuthRequestBuilder, PropertiesRequestBuilder, ScopesRequestBuilder
-from .request_builders.web_analytics import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
-from .response_builder.helpers import RootHttpResponseBuilder
-from .response_builder.other import ScopesAbstractResponseBuilder
-from .response_builder.web_analytics import GenericAbstractResponseBuilder, WebAnalyticsResponseBuilder
+from . import HubspotTestCase
+from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
+from .response_builder.streams import HubspotStreamResponseBuilder
 
 CRM_STREAMS = (
     ("tickets_web_analytics", "tickets", "ticket", ["contacts", "deals", "companies"]),
@@ -42,118 +35,8 @@ CRM_INCREMENTAL_STREAMS = (
 )
 
 
-@freezegun.freeze_time("2024-03-03T14:42:00Z")
-class WebAnalytics:
-    DT_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
-
-    @classmethod
-    def now(cls):
-        return datetime.now(pytz.utc)
-
-    @classmethod
-    def start_date(cls):
-        return cls.now() - timedelta(days=30)
-
-    @classmethod
-    def updated_at(cls):
-        return cls.now() - timedelta(days=1)
-
-    @classmethod
-    def dt_str(cls, dt: datetime.date) -> str:
-        return dt.strftime(cls.DT_FORMAT)
-
-    @classmethod
-    def oauth_config(cls, start_date: Optional[str] = None) -> Dict[str, Any]:
-        start_date = start_date or cls.dt_str(cls.start_date())
-        return ConfigBuilder().with_start_date(start_date).with_auth(
-            {
-                "credentials_title": "OAuth Credentials",
-                "redirect_uri": "https://airbyte.io",
-                "client_id": "client_id",
-                "client_secret": "client_secret",
-                "refresh_token": "refresh_token",
-            }
-        ).build()
-
-    @classmethod
-    def private_token_config(cls, token: str, start_date: Optional[str] = None) -> Dict[str, Any]:
-        start_date = start_date or cls.dt_str(cls.start_date())
-        return ConfigBuilder().with_start_date(start_date).with_auth(
-            {
-                "credentials_title": "Private App Credentials",
-                "access_token": token,
-            }
-        ).build()
-
-    @classmethod
-    def mock_oauth(cls, http_mocker: HttpMocker, token: str):
-        creds = cls.oauth_config()["credentials"]
-        req = OAuthRequestBuilder().with_client_id(
-            creds["client_id"]
-        ).with_client_secret(
-            creds["client_secret"]
-        ).with_refresh_token(
-            creds["refresh_token"]
-        ).build()
-        response = GenericAbstractResponseBuilder().with_value("access_token", token).with_value("expires_in", 7200).build()
-        http_mocker.post(req, response)
-
-    @classmethod
-    def mock_scopes(cls, http_mocker: HttpMocker, token: str, scopes: List[str]):
-        http_mocker.get(ScopesRequestBuilder().with_access_token(token).build(), ScopesAbstractResponseBuilder(scopes).build())
-
-    @classmethod
-    def mock_custom_objects(cls, http_mocker: HttpMocker):
-        http_mocker.get(
-            CustomObjectsRequestBuilder().build(),
-            HttpResponseBuilder({}, records_path=FieldPath("results"), pagination_strategy=None).build()
-        )
-
-    @classmethod
-    def mock_properties(cls, http_mocker: HttpMocker, object_type: str, properties: Dict[str, str]):
-        templates = find_template("properties", __file__)
-        record_builder = lambda: RecordBuilder(copy.deepcopy(templates[0]), id_path=None, cursor_path=None)
-
-        response_builder = RootHttpResponseBuilder(templates)
-        for name, type in properties.items():
-            record = record_builder().with_field(FieldPath("name"), name).with_field(FieldPath("type"), type)
-            response_builder = response_builder.with_record(record)
-
-        http_mocker.get(
-            PropertiesRequestBuilder().for_entity(object_type).build(),
-            response_builder.build()
-        )
-
-    @classmethod
-    def mock_parent_object(
-        cls,
-        http_mocker: HttpMocker,
-        object_ids: List[str],
-        object_type: str,
-        stream_name: str,
-        associations: List[str],
-        properties: List[str],
-        date_range: Optional[Tuple[str, ...]] = None,
-    ):
-        response_builder = WebAnalyticsResponseBuilder.for_stream(stream_name)
-        for object_id in object_ids:
-            record = cls.record_builder(stream_name, FieldPath("updatedAt")).with_field(
-                FieldPath("updatedAt"), cls.dt_str(cls.updated_at())
-            ).with_field(
-                FieldPath("id"), object_id
-            )
-            response_builder = response_builder.with_record(record)
-
-        http_mocker.get(
-            CRMStreamRequestBuilder().for_entity(object_type).with_associations(associations).with_properties(properties).build(),
-            response_builder.build()
-        )
-
-    @classmethod
-    def mock_response(cls, http_mocker: HttpMocker, request, responses):
-        if not isinstance(responses, (list, tuple)):
-            responses = [responses]
-        http_mocker.get(request, responses)
+class WebAnalyticsTestCase(HubspotTestCase):
+    PARENT_CURSOR_FIELD = "updatedAt"
 
     @classmethod
     def web_analytics_request(
@@ -177,7 +60,7 @@ class WebAnalytics:
         }
 
         if not first_page:
-            response_builder = WebAnalyticsResponseBuilder.for_stream(stream)
+            response_builder = HubspotStreamResponseBuilder.for_stream(stream)
             query.update(response_builder.pagination_strategy.NEXT_PAGE_TOKEN)
         return WebAnalyticsRequestBuilder().with_token(token).with_query(query).build()
 
@@ -186,42 +69,44 @@ class WebAnalytics:
         cls, stream: str, with_pagination: bool = False, updated_on: Optional[str] = None, id: Optional[str] = None
     ) -> HttpResponse:
         updated_on = updated_on or cls.dt_str(cls.updated_at())
-        record = cls.record_builder(stream, FieldPath("occurredAt")).with_field(FieldPath("occurredAt"), updated_on)
+        record = cls.record_builder(stream, FieldPath(cls.CURSOR_FIELD)).with_field(FieldPath(cls.CURSOR_FIELD), updated_on)
         if id:
             record = record.with_field(FieldPath("objectId"), id)
-        response_builder = WebAnalyticsResponseBuilder.for_stream(stream)
+        response_builder = HubspotStreamResponseBuilder.for_stream(stream)
         response = response_builder.with_record(record)
         if with_pagination:
             response = response.with_pagination()
         return response.build()
 
     @classmethod
-    def record_builder(cls, stream: str, record_cursor_path):
-        return create_record_builder(
-            find_template(stream, __file__), records_path=FieldPath("results"), record_id_path=None, record_cursor_path=record_cursor_path
+    def mock_parent_object(
+        cls,
+        http_mocker: HttpMocker,
+        object_ids: List[str],
+        object_type: str,
+        stream_name: str,
+        associations: List[str],
+        properties: List[str],
+        date_range: Optional[Tuple[str, ...]] = None,
+    ):
+        response_builder = HubspotStreamResponseBuilder.for_stream(stream_name)
+        for object_id in object_ids:
+            record = cls.record_builder(stream_name, FieldPath(cls.PARENT_CURSOR_FIELD)).with_field(
+                FieldPath(cls.PARENT_CURSOR_FIELD), cls.dt_str(cls.updated_at())
+            ).with_field(
+                FieldPath("id"), object_id
+            )
+            response_builder = response_builder.with_record(record)
+
+        http_mocker.get(
+            CRMStreamRequestBuilder().for_entity(object_type).with_associations(associations).with_properties(properties).build(),
+            response_builder.build()
         )
-
-    @classmethod
-    def catalog(cls, stream: str, sync_mode: SyncMode):
-        return CatalogBuilder().with_stream(stream, sync_mode).build()
-
-    @classmethod
-    def read_from_stream(
-        cls, cfg, stream: str, sync_mode: SyncMode, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
-    ) -> EntrypointOutput:
-        return read(SourceHubspot(), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)
 
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
-class TestCRMWebAnalyticsStream(WebAnalytics):
+class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     SCOPES = ["tickets", "crm.objects.contacts.read", "crm.objects.companies.read", "contacts", "crm.objects.deals.read", "oauth"]
-    OBJECT_ID = "testID"
-    ACCESS_TOKEN = "new_access_token"
-    CURSOR_FIELD = "occurredAt"
-    PROPERTIES = {
-        "closed_date": "datetime",
-        "createdate": "datetime",
-    }
 
     @classmethod
     def extended_dt_ranges(cls) -> Tuple[Tuple[str, ...], ...]:
@@ -559,10 +444,10 @@ class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStream)
         date_range: Optional[Tuple[str]] = None,
     ):
         date_range = date_range or (cls.dt_str(cls.start_date()), cls.dt_str(cls.now()))
-        response_builder = WebAnalyticsResponseBuilder.for_stream(stream_name)
+        response_builder = HubspotStreamResponseBuilder.for_stream(stream_name)
         for object_id in object_ids:
-            record = cls.record_builder(stream_name, FieldPath("updatedAt")).with_field(
-                FieldPath("updatedAt"), cls.dt_str(cls.updated_at())
+            record = cls.record_builder(stream_name, FieldPath(cls.PARENT_CURSOR_FIELD)).with_field(
+                FieldPath(cls.PARENT_CURSOR_FIELD), cls.dt_str(cls.updated_at())
             ).with_field(
                 FieldPath("id"), object_id
             )

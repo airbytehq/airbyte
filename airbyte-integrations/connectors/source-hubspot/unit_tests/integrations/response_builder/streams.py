@@ -6,17 +6,17 @@ from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, find_template
 
 from . import AbstractResponseBuilder
-from .pagination import WebAnalyticsPaginationStrategy
+from .pagination import HubspotPaginationStrategy
 
 
-class WebAnalyticsResponseBuilder(HttpResponseBuilder):
+class HubspotStreamResponseBuilder(HttpResponseBuilder):
     @property
     def pagination_strategy(self):
         return self._pagination_strategy
 
     @classmethod
     def for_stream(cls, stream: str):
-        return cls(find_template(stream, __file__), FieldPath("results"), WebAnalyticsPaginationStrategy())
+        return cls(find_template(stream, __file__), FieldPath("results"), HubspotPaginationStrategy())
 
 
 class GenericAbstractResponseBuilder(AbstractResponseBuilder):

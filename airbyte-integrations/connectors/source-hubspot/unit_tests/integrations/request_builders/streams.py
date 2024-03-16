@@ -45,6 +45,8 @@ class CRMStreamRequestBuilder(AbstractRequestBuilder):
         self._associations = ""
         self._dt_range = ""
         self._properties = ""
+        self._after = None
+        self._search = False
 
     def for_entity(self, entity):
         self._resource = entity
@@ -52,6 +54,10 @@ class CRMStreamRequestBuilder(AbstractRequestBuilder):
 
     def with_dt_range(self, start_date: Tuple, end_date: Tuple):
         self._dt_range = "&".join(["{}={}".format(*start_date), "{}={}".format(*end_date)])
+        return self
+
+    def with_page_token(self, next_page_token: Dict):
+        self._after = "&".join([f"{str(key)}={str(val)}" for key, val in next_page_token.items()])
         return self
 
     def with_associations(self, associations: Iterable[str]):
@@ -76,13 +82,15 @@ class CRMStreamRequestBuilder(AbstractRequestBuilder):
             self._archived,
             self._associations,
             self._limit,
+            self._after,
             self._dt_range,
             self._properties
         ]
 
     def build(self):
         q = "&".join(filter(None, self._query_params))
-        return HttpRequest(url=self.URL.format(resource=self._resource), query_params=q)
+        url = self.URL.format(resource=self._resource)
+        return HttpRequest(url, query_params=q)
 
 
 class IncrementalCRMStreamRequestBuilder(CRMStreamRequestBuilder):
