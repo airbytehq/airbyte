@@ -8,7 +8,7 @@ from airbyte_cdk.test.mock_http import HttpResponse
 from . import AbstractResponseBuilder
 
 
-class ScopesAbstractResponseBuilder(AbstractResponseBuilder):
+class ScopesResponseBuilder(AbstractResponseBuilder):
     def __init__(self, scopes: List[str]):
         self._scopes = scopes
 

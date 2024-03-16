@@ -19,7 +19,7 @@ class HubspotStreamResponseBuilder(HttpResponseBuilder):
         return cls(find_template(stream, __file__), FieldPath("results"), HubspotPaginationStrategy())
 
 
-class GenericAbstractResponseBuilder(AbstractResponseBuilder):
+class GenericResponseBuilder(AbstractResponseBuilder):
     def __init__(self):
         self._body = {}
 

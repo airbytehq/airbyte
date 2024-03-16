@@ -17,8 +17,8 @@ from .config_builder import ConfigBuilder
 from .request_builders.api import CustomObjectsRequestBuilder, OAuthRequestBuilder, PropertiesRequestBuilder, ScopesRequestBuilder
 from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
 from .response_builder.helpers import RootHttpResponseBuilder
-from .response_builder.api import ScopesAbstractResponseBuilder
-from .response_builder.streams import GenericAbstractResponseBuilder, HubspotStreamResponseBuilder
+from .response_builder.api import ScopesResponseBuilder
+from .response_builder.streams import GenericResponseBuilder, HubspotStreamResponseBuilder
 
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
@@ -81,12 +81,12 @@ class HubspotTestCase:
         ).with_refresh_token(
             creds["refresh_token"]
         ).build()
-        response = GenericAbstractResponseBuilder().with_value("access_token", token).with_value("expires_in", 7200).build()
+        response = GenericResponseBuilder().with_value("access_token", token).with_value("expires_in", 7200).build()
         http_mocker.post(req, response)
 
     @classmethod
     def mock_scopes(cls, http_mocker: HttpMocker, token: str, scopes: List[str]):
-        http_mocker.get(ScopesRequestBuilder().with_access_token(token).build(), ScopesAbstractResponseBuilder(scopes).build())
+        http_mocker.get(ScopesRequestBuilder().with_access_token(token).build(), ScopesResponseBuilder(scopes).build())
 
     @classmethod
     def mock_custom_objects(cls, http_mocker: HttpMocker):

@@ -103,3 +103,26 @@ class IncrementalCRMStreamRequestBuilder(CRMStreamRequestBuilder):
             self._associations,
             self._properties
         ]
+
+
+class OwnersArchivedStreamRequestBuilder(AbstractRequestBuilder):
+    URL = "https://api.hubapi.com/crm/v3/owners"
+
+    @property
+    def _limit(self):
+        return "limit=100"
+
+    @property
+    def _archived(self):
+        return "archived=true"
+
+    @property
+    def _query_params(self):
+        return [
+            self._limit,
+            self._archived,
+        ]
+
+    def build(self):
+        q = "&".join(filter(None, self._query_params))
+        return HttpRequest(self.URL, query_params=q)

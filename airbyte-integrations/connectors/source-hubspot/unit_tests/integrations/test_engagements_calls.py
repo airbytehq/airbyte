@@ -39,7 +39,7 @@ class TestEngagementCallsStream(HubspotTestCase):
         record = self.record_builder(self.STREAM_NAME, FieldPath(self.CURSOR_FIELD)).with_field(
             FieldPath(self.CURSOR_FIELD), self.dt_str(self.updated_at())
         ).with_field(
-            FieldPath("id"), self.OBJECT_TYPE
+            FieldPath("id"), self.OBJECT_ID
         )
         response = response_builder.with_record(record)
         if with_pagination:
