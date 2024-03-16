@@ -16,30 +16,40 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
+    AccessibleBiddingStrategy,
     AccountPerformanceReport,
     AdGroup,
     AdGroupAd,
     AdGroupAdLabel,
     AdGroupAdLegacy,
+    AdGroupAdPerformanceReport,
+    AdGroupAudiencePerformanceReport,
     AdGroupBiddingStrategy,
     AdGroupCriterion,
     AdGroupCriterionLabel,
     AdGroupLabel,
+    AdGroupPerformanceReport,
     AdListingGroupCriterion,
     Audience,
+    BiddingStrategy,
     Campaign,
     CampaignBiddingStrategy,
     CampaignBudget,
     CampaignCriterion,
     CampaignLabel,
+    CampaignPerformanceReport,
     ClickView,
     Customer,
     CustomerClient,
     CustomerLabel,
     DisplayKeywordView,
+    GeographicPerformanceReport,
     GeographicView,
+    KeywordsPerformanceReport,
     KeywordView,
     Label,
+    LeadFormSubmissionData,
+    ServiceAccounts,
     ShoppingPerformanceView,
     TopicView,
     UserInterest,
@@ -222,16 +232,23 @@ class SourceGoogleAds(AbstractSource):
         default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
+
+
         streams = [
+            AccessibleBiddingStrategy(**default_config),
             AdGroup(**incremental_config),
             AdGroupAd(**incremental_config),
             AdGroupAdLabel(**default_config),
+            AdGroupAdPerformanceReport(**incremental_config),
+            AdGroupAudiencePerformanceReport(**incremental_config),
             AdGroupBiddingStrategy(**incremental_config),
             AdGroupCriterion(**default_config),
             AdGroupCriterionLabel(**default_config),
             AdGroupLabel(**default_config),
+            AdGroupPerformanceReport(**incremental_config),
             AdListingGroupCriterion(**default_config),
             Audience(**default_config),
+            BiddingStrategy(**default_config),
             CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
             CampaignLabel(google_api, customers=customers),
@@ -239,6 +256,7 @@ class SourceGoogleAds(AbstractSource):
             Customer(**incremental_config),
             CustomerLabel(**default_config),
             Label(**default_config),
+            LeadFormSubmissionData(**incremental_config),
             UserInterest(**default_config),
         ]
         # Metrics streams cannot be requested for a manager account.
@@ -247,6 +265,7 @@ class SourceGoogleAds(AbstractSource):
                 [
                     Campaign(**non_manager_incremental_config),
                     CampaignBudget(**non_manager_incremental_config),
+                    CampaignPerformanceReport(**non_manager_incremental_config),
                     UserLocationView(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
                     TopicView(**non_manager_incremental_config),
@@ -254,7 +273,9 @@ class SourceGoogleAds(AbstractSource):
                     ShoppingPerformanceView(**non_manager_incremental_config),
                     AdGroupAdLegacy(**non_manager_incremental_config),
                     GeographicView(**non_manager_incremental_config),
+                    GeographicPerformanceReport(**non_manager_incremental_config),
                     KeywordView(**non_manager_incremental_config),
+                    KeywordsPerformanceReport(**non_manager_incremental_config),
                 ]
             )
 

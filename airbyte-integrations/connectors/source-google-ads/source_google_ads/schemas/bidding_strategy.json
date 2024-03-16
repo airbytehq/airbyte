@@ -1,0 +1,78 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "customer.id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bidding_strategy.resource_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bidding_strategy.type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bidding_strategy.status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bidding_strategy.id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "bidding_strategy.name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bidding_strategy.campaign_count": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "bidding_strategy.non_removed_campaign_count": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "bidding_strategy.effective_currency_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bidding_strategy.target_cpa.target_cpa_micros": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "bidding_strategy.maximize_conversions.target_cpa_micros": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "bidding_strategy.maximize_conversions.cpc_bid_ceiling_micros": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

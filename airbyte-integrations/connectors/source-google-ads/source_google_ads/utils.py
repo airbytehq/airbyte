@@ -31,12 +31,18 @@ def get_resource_name(stream_name: str) -> str:
 # maps stream name to name of resource in Google Ads
 REPORT_MAPPING = {
     "account_performance_report": "customer",
+    "ad_group_audience_performance_report": "ad_group_audience_view",
     "ad_group_ad_legacy": "ad_group_ad",
+    "ad_group_ad_performance_report": "ad_group_ad",
     "ad_group_bidding_strategy": "ad_group",
+    "ad_group_performance_report": "ad_group",
     "ad_listing_group_criterion": "ad_group_criterion",
     "campaign_real_time_bidding_settings": "campaign",
     "campaign_bidding_strategy": "campaign",
+    "campaign_performance_report": "campaign",
     "service_accounts": "customer",
+    "geographic_performance_report": "geographic_view",
+    "keywords_performance_report": "keyword_view",
 }
 
 
