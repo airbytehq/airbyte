@@ -312,9 +312,9 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
       var lastId = streamPairToLastIdMap.get(pair);
       if (lastId != null) {
         final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-                .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+            .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
         updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
-                new MongoDbStreamState(null, FULL_REFRESH, idType));
+            new MongoDbStreamState(null, FULL_REFRESH, idType));
       }
     }
     return toState();

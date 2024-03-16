@@ -235,7 +235,6 @@ class InitialSnapshotHandlerTest {
     final AirbyteMessage collection3SateMessage = collection3.next();
     assertEquals(Type.STATE, collection3SateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
-
   }
 
   @Test
@@ -254,13 +253,12 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME3))));
 
     insertDocuments(COLLECTION3, List.of(
-            new Document(Map.of(
-                    CURSOR_FIELD, OBJECT_ID4,
-                    NAME_FIELD, NAME4)),
-            new Document(Map.of(
-                    CURSOR_FIELD, OBJECT_ID5,
-                    NAME_FIELD, NAME5))));
-
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID4,
+            NAME_FIELD, NAME4)),
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID5,
+            NAME_FIELD, NAME5))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
@@ -268,7 +266,7 @@ class InitialSnapshotHandlerTest {
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
         .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.OBJECT_ID)));
     when(stateManager.getStreamState(COLLECTION3, NAMESPACE))
-            .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID4_STRING, InitialSnapshotStatus.FULL_REFRESH, IdType.OBJECT_ID)));
+        .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID4_STRING, InitialSnapshotStatus.FULL_REFRESH, IdType.OBJECT_ID)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG);
 
@@ -425,9 +423,9 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME3))));
 
     insertDocuments(COLLECTION3, List.of(
-            new Document(Map.of(
-                    CURSOR_FIELD, OBJECT_ID4_STRING,
-                    NAME_FIELD, NAME4))));
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID4_STRING,
+            NAME_FIELD, NAME4))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);

@@ -13,7 +13,6 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.client.*;
@@ -32,7 +31,6 @@ import java.io.IOException;
 import java.util.*;
 import org.bson.BsonDocument;
 import org.bson.Document;
-import org.bson.json.JsonObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
