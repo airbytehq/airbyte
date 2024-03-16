@@ -30,7 +30,8 @@ class DeclarativeSourceAdapter(YamlDeclarativeSource):
         return self._source.check(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        all_streams = self._source.streams(config, self._get_profiles_stream(config))
+        self._source.profiles_stream = self._get_profiles_stream(config)
+        all_streams = self._source.streams(config)
         return all_streams
 
     def _validate_source(self) -> None:

@@ -67,7 +67,7 @@ class SourceAmazonAds(AbstractSource):
         config["report_record_types"] = config.get("report_record_types", [])
         return config
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any], profiles_stream = None) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -89,11 +89,12 @@ class SourceAmazonAds(AbstractSource):
             return False, "No profiles found after filtering by Profile ID and Marketplace ID"
         return True, None
 
-    def streams(self, config: Mapping[str, Any], profiles_stream = None) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return: list of streams for current source
         """
+        print(f"profiles stream inside: {type(self.profiles_stream)}")
         config = self._validate_and_transform(config)
         auth = self._make_authenticator(config)
         stream_args = {"config": config, "authenticator": auth}
@@ -102,7 +103,7 @@ class SourceAmazonAds(AbstractSource):
         # parameter passed over "Amazon-Advertising-API-Scope" http header and
         # should contain profile id. So every stream is dependent on Profiles
         # stream and should have information about all profiles.
-        profiles_list = self.get_all_profiles(profiles_stream)
+        profiles_list = self.get_all_profiles(self.profiles_stream)
         stream_args["profiles"] = self._choose_profiles(config, profiles_list)
         non_profile_stream_classes = [
             SponsoredDisplayCampaigns,
@@ -134,7 +135,7 @@ class SourceAmazonAds(AbstractSource):
             AttributionReportProducts,
         ]
         portfolios_stream = Portfolios(**stream_args)
-        return [profiles_stream, portfolios_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
+        return [self.profiles_stream, portfolios_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
 
     @staticmethod
     def _make_authenticator(config: Mapping[str, Any]):
