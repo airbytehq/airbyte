@@ -7,20 +7,30 @@ package io.airbyte.integrations.destination.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.NoOpJdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.RawOnlySqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +38,6 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleDestination.class);
   public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
-
-  public static final String COLUMN_NAME_AB_ID =
-      "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase() + "\"";
-  public static final String COLUMN_NAME_DATA =
-      "\"" + JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase() + "\"";
-  public static final String COLUMN_NAME_EMITTED_AT =
-      "\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT.toUpperCase() + "\"";
 
   protected static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
@@ -132,6 +135,36 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
+  @Override
+  protected boolean shouldAlwaysDisableTypeDedupe() {
+    return true;
+  }
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new RawOnlySqlGenerator(new OracleNameTransformer());
+  }
+
+  @Override
+  protected JdbcDestinationHandler<? extends MinimumDestinationState> getDestinationHandler(final String databaseName,
+                                                                                            final JdbcDatabase database,
+                                                                                            final String rawTableSchema) {
+    return new NoOpJdbcDestinationHandler<>(databaseName, database, rawTableSchema, SQLDialect.DEFAULT);
+  }
+
+  @Override
+  protected List<Migration> getMigrations(final JdbcDatabase database,
+                                          final String databaseName,
+                                          final SqlGenerator sqlGenerator,
+                                          final DestinationHandler destinationHandler) {
+    return List.of();
   }
 
   private static void convertAndImportCertificate(final String certificate)

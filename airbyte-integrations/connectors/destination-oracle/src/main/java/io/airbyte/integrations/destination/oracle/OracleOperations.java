@@ -4,15 +4,18 @@
 
 package io.airbyte.integrations.destination.oracle;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.upperQuoted;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -58,18 +61,25 @@ public class OracleOperations implements SqlOperations {
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
-        "CREATE TABLE %s.%s ( \n"
-            + "%s VARCHAR(64) PRIMARY KEY,\n"
-            + "%s NCLOB,\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
-            + ")",
+        """
+          CREATE TABLE %s.%s (
+          %s VARCHAR(64) PRIMARY KEY,
+          %s JSON,
+          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          %s TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+          %s JSON
+          )
+        """,
         schemaName, tableName,
-        OracleDestination.COLUMN_NAME_AB_ID, OracleDestination.COLUMN_NAME_DATA, OracleDestination.COLUMN_NAME_EMITTED_AT,
-        OracleDestination.COLUMN_NAME_DATA);
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_DATA),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_META));
   }
 
   private boolean tableExists(final JdbcDatabase database, final String schemaName, final String tableName) throws Exception {
-    final Integer count = database.queryInt("select count(*) \n from all_tables\n where upper(owner) = upper(?) and upper(table_name) = upper(?)",
+    final int count = database.queryInt("select count(*) \n from all_tables\n where upper(owner) = upper(?) and upper(table_name) = upper(?)",
         schemaName, tableName);
     return count == 1;
   }
@@ -94,23 +104,25 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public void insertRecords(final JdbcDatabase database,
-                            final List<AirbyteRecordMessage> records,
+                            final List<PartialAirbyteMessage> records,
                             final String schemaName,
                             final String tempTableName)
       throws Exception {
     final String tableName = String.format("%s.%s", schemaName, tempTableName);
-    final String columns = String.format("(%s, %s, %s)",
-        OracleDestination.COLUMN_NAME_AB_ID, OracleDestination.COLUMN_NAME_DATA, OracleDestination.COLUMN_NAME_EMITTED_AT);
-    final String recordQueryComponent = "(?, ?, ?)\n";
-    insertRawRecordsInSingleQuery(tableName, columns, recordQueryComponent, database, records, UUID::randomUUID);
+    final String columns = String.format("(%s, %s, %s, %s, %s)",
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_DATA),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
+        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_META));
+    insertRawRecordsInSingleQuery(tableName, columns, database, records, UUID::randomUUID);
   }
 
   // Adapted from SqlUtils.insertRawRecordsInSingleQuery to meet some needs specific to Oracle syntax
   private static void insertRawRecordsInSingleQuery(final String tableName,
                                                     final String columns,
-                                                    final String recordQueryComponent,
                                                     final JdbcDatabase jdbcDatabase,
-                                                    final List<AirbyteRecordMessage> records,
+                                                    final List<PartialAirbyteMessage> records,
                                                     final Supplier<UUID> uuidSupplier)
       throws SQLException {
     if (records.isEmpty()) {
@@ -129,20 +141,22 @@ public class OracleOperations implements SqlOperations {
       // The "SELECT 1 FROM DUAL" at the end is a formality to satisfy the needs of the Oracle syntax.
       // (see https://stackoverflow.com/a/93724 for details)
       final StringBuilder sql = new StringBuilder("INSERT ALL ");
-      records.forEach(r -> sql.append(String.format("INTO %s %s VALUES %s", tableName, columns, recordQueryComponent)));
+      records.forEach(r -> sql.append(String.format("INTO %s %s VALUES %s", tableName, columns, "(?, ?, ?, ?)\n")));
       sql.append(" SELECT 1 FROM DUAL");
       final String query = sql.toString();
 
       try (final PreparedStatement statement = connection.prepareStatement(query)) {
         // second loop: bind values to the SQL string.
         int i = 1;
-        for (final AirbyteRecordMessage message : records) {
+        for (final PartialAirbyteMessage message : records) {
           // 1-indexed
-          final JsonNode formattedData = StandardNameTransformer.formatJsonPath(message.getData());
-          statement.setString(i, uuidSupplier.get().toString());
-          statement.setString(i + 1, Jsons.serialize(formattedData));
-          statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
-          i += 3;
+          final JsonNode formattedData = StandardNameTransformer.formatJsonPath(message.getRecord().getData());
+          statement.setString(i++, uuidSupplier.get().toString());
+          statement.setObject(i++, formattedData);
+          // statement.setString(i++, Jsons.serialize(formattedData));
+          statement.setTimestamp(i++, Timestamp.from(Instant.ofEpochMilli(message.getRecord().getEmittedAt())));
+          statement.setNull(i++, Types.TIMESTAMP);
+          statement.setObject(i++, "");
         }
 
         statement.execute();

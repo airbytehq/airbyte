@@ -17,11 +17,11 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.destination.oracle.OracleDestination;
 import io.airbyte.integrations.destination.oracle.OracleNameTransformer;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -73,7 +73,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(r -> Jsons.deserialize(
-            r.get(OracleDestination.COLUMN_NAME_DATA.replace("\"", "")).asText()))
+            r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
@@ -113,16 +113,15 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT);
-
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final List<org.jooq.Record> result = getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
-      return result
-          .stream()
-          .map(r -> r.formatJSON(JSON_FORMAT))
-          .map(Jsons::deserialize)
-          .collect(Collectors.toList());
-    }
+    final String query =
+        String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase());
+    final DSLContext dslContext = getDslContext(config);
+    final List<org.jooq.Record> result = getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
+    return result
+        .stream()
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
   }
 
   private static Database getDatabase(final DSLContext dslContext) {
@@ -151,15 +150,13 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
     db.start();
 
     config = getConfig(db);
+    final DSLContext dslContext = getDslContext(config);
+    final Database database = getDatabase(dslContext);
+    database.query(
+        ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
+    database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final Database database = getDatabase(dslContext);
-      database.query(
-          ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
-      database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
-
-      ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
-    }
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
   }
 
   @Override
