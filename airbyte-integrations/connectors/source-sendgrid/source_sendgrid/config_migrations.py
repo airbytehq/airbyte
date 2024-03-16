@@ -46,7 +46,11 @@ class MigrateToLowcodeConfig:
             config["api_key"] = config["apikey"]
 
         if "start_time" in config:
-            config["start_date"] = pendulum.parse(config["start_time"]).to_iso8601_string()
+            epoch_time = parse_config_int(config["start_time"])
+            if epoch_time:
+                config["start_date"] = pendulum.from_timestamp(epoch_time, tz="UTC").to_iso8601_string()
+            else:
+                config["start_date"] = pendulum.parse(config["start_time"]).to_iso8601_string()
 
         if "start_date" not in config:
             config["start_date"] = "2009-08-01T00:00:00Z"
@@ -87,3 +91,14 @@ class MigrateToLowcodeConfig:
                 cls.emit_control_message(
                     cls.modify_and_save(config_path, source, config),
                 )
+
+
+def parse_config_int(value):
+    if isinstance(value, int):
+        return value
+    try:
+        if float(value) == int(float(value)):
+            return int(value)
+    except (ValueError, TypeError):
+        return None
+    return None

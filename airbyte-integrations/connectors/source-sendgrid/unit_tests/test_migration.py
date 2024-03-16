@@ -11,12 +11,18 @@ from source_sendgrid.source import SourceSendgrid
 
 # Test data for parametrized test
 test_data = [
+    ({"apikey": "secret_value1"}, {"apikey": "secret_value1", "api_key": "secret_value1", "start_date": "2009-08-01T00:00:00Z"}),
     # Test when only apikey is present
     ({"apikey": "secret_value1"}, {"apikey": "secret_value1", "api_key": "secret_value1", "start_date": "2009-08-01T00:00:00Z"}),
     # Test having a time
     (
         {"apikey": "secret_value2", "start_time": "2019-05-20T13:43:57Z"},
         {"apikey": "secret_value2", "start_time": "2019-05-20T13:43:57Z", "api_key": "secret_value2", "start_date": "2019-05-20T13:43:57Z"},
+    ),
+    # Really old format
+    (
+        {"apikey": "secret_value2", "start_time": "1558359837"},
+        {"apikey": "secret_value2", "start_time": "1558359837", "api_key": "secret_value2", "start_date": "2019-05-20T13:43:57Z"},
     ),
     # Test when the time has milliseconds
     (
