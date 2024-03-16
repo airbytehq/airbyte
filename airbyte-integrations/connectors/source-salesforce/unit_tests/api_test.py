@@ -14,7 +14,16 @@ import freezegun
 import pendulum
 import pytest
 import requests_mock
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
+from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    StreamDescriptor,
+    SyncMode,
+    Type,
+)
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -440,7 +449,8 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
         assert len(records) == 6  # stream page size: 6
 
         state_record = result.state_messages[0]
-        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00+00:00"  # state checkpoint interval is 5.
+        assert state_record.state.stream.stream_descriptor == StreamDescriptor(name="Account")
+        assert state_record.state.stream.stream_state == AirbyteStateBlob(LastModifiedDate="2021-10-05T00:00:00+00:00")
 
 
 def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
@@ -508,7 +518,8 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
         assert len(records) == 5
 
         state_record = result.state_messages[0]
-        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00+00:00"
+        assert state_record.state.stream.stream_descriptor == StreamDescriptor(name="KnowledgeArticle")
+        assert state_record.state.stream.stream_state == AirbyteStateBlob(LastModifiedDate="2021-11-17T00:00:00+00:00")
 
 
 def test_pagination_rest(stream_config, stream_api):
@@ -955,7 +966,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     with patch("source_salesforce.streams.LOOKBACK_SECONDS", 0):
         result = [i for i in source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state)]
 
-    actual_state_values = [item.state.data.get("Account").get(stream.cursor_field) for item in result if item.type == Type.STATE]
+    actual_state_values = [item.state.stream.stream_state.dict().get(stream.cursor_field) for item in result if item.type == Type.STATE]
     # assert request params
     assert (
         "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00"
