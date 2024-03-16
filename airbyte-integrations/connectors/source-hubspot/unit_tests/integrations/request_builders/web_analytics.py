@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from typing import Any, Dict, Iterable, Tuple
 
 from airbyte_cdk.test.mock_http import HttpRequest
