@@ -5,8 +5,7 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -14,6 +13,7 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.client.*;
@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.*;
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.json.JsonObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +41,7 @@ class MongoDbSourceTest {
   private static final String DB_NAME = "airbyte_test";
 
   private JsonNode airbyteSourceConfig;
+  private JsonNode airbyteSourceConfigWithoutSchema;
   private MongoDbSourceConfig sourceConfig;
   private MongoClient mongoClient;
   private MongoDbCdcInitializer cdcInitializer;
@@ -47,7 +49,9 @@ class MongoDbSourceTest {
 
   @BeforeEach
   void setup() {
-    airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty(), false);
+    airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty(), true);
+    airbyteSourceConfigWithoutSchema = createConfiguration(Optional.empty(), Optional.empty(), false);
+
     sourceConfig = new MongoDbSourceConfig(airbyteSourceConfig);
     mongoClient = mock(MongoClient.class);
     cdcInitializer = mock(MongoDbCdcInitializer.class);
@@ -282,7 +286,7 @@ class MongoDbSourceTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
-    source.read(airbyteSourceConfig, new ConfiguredAirbyteCatalog(), null);
+    source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
   }
 
@@ -292,7 +296,7 @@ class MongoDbSourceTest {
         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
         MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
         MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE,
-        MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
+        SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));
