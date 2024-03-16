@@ -26,7 +26,7 @@ from .response_builder.other import ScopesAbstractResponseBuilder
 from .response_builder.web_analytics import WebAnalyticsResponseBuilder, GenericAbstractResponseBuilder
 from .request_builders.web_analytics import WebAnalyticsRequestBuilder, IncrementalCRMStreamRequestBuilder, CRMStreamRequestBuilder
 from .request_builders.other import OAuthRequestBuilder, CustomObjectsRequestBuilder, ScopesRequestBuilder, PropertiesRequestBuilder
-from airbyte_protocol.models import AirbyteStateMessage, FailureType, SyncMode
+from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateType, AirbyteStateMessage, AirbyteStreamState, FailureType, StreamDescriptor, SyncMode
 from source_hubspot import SourceHubspot
 
 
@@ -189,9 +189,13 @@ class WebAnalytics:
         return WebAnalyticsRequestBuilder().with_token(token).with_query(query).build()
 
     @classmethod
-    def web_analytics_response(cls, stream: str, with_pagination: bool = False, updated_on: Optional[str] = None) -> HttpResponse:
+    def web_analytics_response(
+        cls, stream: str, with_pagination: bool = False, updated_on: Optional[str] = None, id: Optional[str] = None
+    ) -> HttpResponse:
         updated_on = updated_on or cls.dt_str(cls.updated_at())
-        record = cls.record_builder(stream, FieldPath("occurredAt")).with_field(FieldPath("updatedAt"), updated_on)
+        record = cls.record_builder(stream, FieldPath("occurredAt")).with_field(FieldPath("occurredAt"), updated_on)
+        if id:
+            record = record.with_field(FieldPath("objectId"), id)
         response_builder = WebAnalyticsResponseBuilder.for_stream(stream)
         response = response_builder.with_record(record)
         if with_pagination:
@@ -216,10 +220,11 @@ class WebAnalytics:
 
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
-class TestCRMWebAnalyticsStreamFullRefresh(WebAnalytics):
+class TestCRMWebAnalyticsStream(WebAnalytics):
     SCOPES = ["tickets", "crm.objects.contacts.read", "crm.objects.companies.read", "contacts", "crm.objects.deals.read", "oauth"]
     OBJECT_ID = "testID"
     ACCESS_TOKEN = "new_access_token"
+    CURSOR_FIELD = "occurredAt"
     PROPERTIES = {
         "closed_date": "datetime",
         "createdate": "datetime",
@@ -458,9 +463,91 @@ class TestCRMWebAnalyticsStreamFullRefresh(WebAnalytics):
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 1
 
+    @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
+    @HttpMocker()
+    def test_given_incremental_sync_when_read_then_state_message_produced_and_state_match_latest_record(
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
+    ):
+        self.mock_custom_objects(http_mocker)
+        self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_parent_object(
+            http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
+        )
+        self.mock_response(
+            http_mocker,
+            self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
+            self.web_analytics_response(stream_name, id=self.OBJECT_ID)
+        )
+        output = self.read_from_stream(
+            self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental
+        )
+        assert len(output.state_messages) == 1
+
+        cursor_value_from_state_message = output.most_recent_state.get(stream_name, {}).get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD)
+        cursor_value_from_latest_record = output.records[-1].record.data.get(self.CURSOR_FIELD)
+        assert cursor_value_from_state_message == cursor_value_from_latest_record
+
+    @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
+    @HttpMocker()
+    def test_given_state_with_no_current_slice_when_read_then_current_slice_in_state(
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
+    ):
+        self.mock_custom_objects(http_mocker)
+        self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_parent_object(
+            http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
+        )
+        self.mock_response(
+            http_mocker,
+            self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
+            self.web_analytics_response(stream_name, id=self.OBJECT_ID)
+        )
+        another_object_id = "another_object_id"
+        current_state = AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name=stream_name),
+                stream_state=AirbyteStateBlob(**{another_object_id: {self.CURSOR_FIELD: self.dt_str(self.now())}})
+            )
+        )
+        output = self.read_from_stream(
+            self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental, state=[current_state]
+        )
+        assert len(output.state_messages) == 1
+        assert output.most_recent_state.get(stream_name, {}).get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD)
+        assert output.most_recent_state.get(stream_name, {}).get(another_object_id, {}).get(self.CURSOR_FIELD)
+
+    @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
+    @HttpMocker()
+    def test_given_state_with_current_slice_when_read_then_state_is_updated(
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
+    ):
+        self.mock_custom_objects(http_mocker)
+        self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_parent_object(
+            http_mocker, [self.OBJECT_ID], object_type, parent_stream_name, parent_stream_associations, list(self.PROPERTIES.keys())
+        )
+        self.mock_response(
+            http_mocker,
+            self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
+            self.web_analytics_response(stream_name, id=self.OBJECT_ID)
+        )
+        current_state = AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name=stream_name),
+                stream_state=AirbyteStateBlob(**{self.OBJECT_ID: {self.CURSOR_FIELD: self.dt_str(self.start_date() - timedelta(days=30))}})
+            )
+        )
+        output = self.read_from_stream(
+            self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental, state=[current_state]
+        )
+        assert len(output.state_messages) == 1
+        assert output.most_recent_state.get(stream_name, {}).get(self.OBJECT_ID, {}).get(self.CURSOR_FIELD) == self.dt_str(self.updated_at())
+
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
-class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStreamFullRefresh):
+class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStream):
     SCOPES = ["e-commerce", "oauth", "crm.objects.feedback_submissions.read", "crm.objects.goals.read"]
 
     @classmethod
@@ -574,5 +661,29 @@ class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStreamF
         self, stream_name, parent_stream_name, object_type, parent_stream_associations
     ):
         super().test_given_one_page_when_read_then_get_no_records_filtered(
+            stream_name, parent_stream_name, object_type, parent_stream_associations
+        )
+
+    @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
+    def test_given_incremental_sync_when_read_then_state_message_produced_and_state_match_latest_record(
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations
+    ):
+        super().test_given_incremental_sync_when_read_then_state_message_produced_and_state_match_latest_record(
+            stream_name, parent_stream_name, object_type, parent_stream_associations
+        )
+
+    @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
+    def test_given_state_with_no_current_slice_when_read_then_current_slice_in_state(
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations
+    ):
+        super().test_given_state_with_no_current_slice_when_read_then_current_slice_in_state(
+            stream_name, parent_stream_name, object_type, parent_stream_associations
+        )
+
+    @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
+    def test_given_state_with_current_slice_when_read_then_state_is_updated(
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations
+    ):
+        super().test_given_state_with_current_slice_when_read_then_state_is_updated(
             stream_name, parent_stream_name, object_type, parent_stream_associations
         )
