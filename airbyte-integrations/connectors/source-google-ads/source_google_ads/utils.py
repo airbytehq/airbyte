@@ -3,6 +3,7 @@
 #
 
 import functools
+import logging
 import queue
 import re
 import threading
@@ -12,17 +13,15 @@ from datetime import datetime
 from typing import Any, Callable, Generator, Iterable, MutableMapping, Optional, Tuple, Type, Union
 
 import pendulum
-import logging
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v15.errors.types.authentication_error import AuthenticationErrorEnum
 from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
 from google.ads.googleads.v15.errors.types.query_error import QueryErrorEnum
+from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
 from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import Unauthenticated
-
 
 logger = logging.getLogger("airbyte")
 
@@ -59,8 +58,8 @@ def is_error_type(error_value, target_enum_value):
 
 
 def traced_exception(
-    ga_exception: Union[GoogleAdsException, Unauthenticated], 
-    customer_id: str, 
+    ga_exception: Union[GoogleAdsException, Unauthenticated],
+    customer_id: str,
     catch_disabled_customer_error: bool,
     query_name: Optional[str] = None,
 ) -> None:

@@ -206,8 +206,8 @@ class SourceGoogleAds(AbstractSource):
                 query = query.set_limit(1)
                 try:
                     response = google_api.send_request(
-                        str(query), 
-                        customer_id=customer.id, 
+                        str(query),
+                        customer_id=customer.id,
                         login_customer_id=customer.login_customer_id,
                     )
                 except Exception as exc:

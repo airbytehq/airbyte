@@ -14,8 +14,8 @@ from google.ads.googleads.v15.services.types.google_ads_service import GoogleAds
 from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
-from .utils import logger
 
+from .utils import logger
 
 API_VERSION = "v15"
 
@@ -75,9 +75,9 @@ class GoogleAds:
         max_tries=5,
     )
     def send_request(
-        self, 
-        query: str, 
-        customer_id: str, 
+        self,
+        query: str,
+        customer_id: str,
         login_customer_id: str = "default",
     ) -> Iterator[SearchGoogleAdsResponse]:
         client = self.get_client(login_customer_id)
