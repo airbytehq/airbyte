@@ -1,34 +1,25 @@
 import copy
 import http
-from typing import Any, List, Dict, Optional, Tuple
-
-import mock
-import pytz
-import pytest
-import freezegun
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
+
+import freezegun
+import mock
+import pytest
+import pytz
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from airbyte_cdk.test.mock_http.response_builder import (
-    FieldPath,
-    HttpResponseBuilder,
-    NestedPath,
-    RecordBuilder,
-    create_record_builder,
-    create_response_builder,
-    find_template,
-    PaginationStrategy
-)
-from .config_builder import ConfigBuilder
-from .response_builder.helpers import RootHttpResponseBuilder
-from .response_builder.other import ScopesAbstractResponseBuilder
-from .response_builder.web_analytics import WebAnalyticsResponseBuilder, GenericAbstractResponseBuilder
-from .request_builders.web_analytics import WebAnalyticsRequestBuilder, IncrementalCRMStreamRequestBuilder, CRMStreamRequestBuilder
-from .request_builders.other import OAuthRequestBuilder, CustomObjectsRequestBuilder, ScopesRequestBuilder, PropertiesRequestBuilder
-from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateType, AirbyteStateMessage, AirbyteStreamState, FailureType, StreamDescriptor, SyncMode
+from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, RecordBuilder, create_record_builder, find_template
+from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
 from source_hubspot import SourceHubspot
 
+from .config_builder import ConfigBuilder
+from .request_builders.other import CustomObjectsRequestBuilder, OAuthRequestBuilder, PropertiesRequestBuilder, ScopesRequestBuilder
+from .request_builders.web_analytics import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
+from .response_builder.helpers import RootHttpResponseBuilder
+from .response_builder.other import ScopesAbstractResponseBuilder
+from .response_builder.web_analytics import GenericAbstractResponseBuilder, WebAnalyticsResponseBuilder
 
 CRM_STREAMS = (
     ("tickets_web_analytics", "tickets", "ticket", ["contacts", "deals", "companies"]),
@@ -118,7 +109,7 @@ class WebAnalytics:
 
     @classmethod
     def mock_properties(cls, http_mocker: HttpMocker, object_type: str, properties: Dict[str, str]):
-        templates = find_template(f"properties", __file__)
+        templates = find_template("properties", __file__)
         record_builder = lambda: RecordBuilder(copy.deepcopy(templates[0]), id_path=None, cursor_path=None)
 
         response_builder = RootHttpResponseBuilder(templates)
@@ -140,7 +131,7 @@ class WebAnalytics:
         stream_name: str,
         associations: List[str],
         properties: List[str],
-        date_range: Optional[Tuple[str,...]] = None,
+        date_range: Optional[Tuple[str, ...]] = None,
     ):
         response_builder = WebAnalyticsResponseBuilder.for_stream(stream_name)
         for object_id in object_ids:

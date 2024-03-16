@@ -1,5 +1,7 @@
 from typing import Any, Dict, Iterable, Tuple
+
 from airbyte_cdk.test.mock_http import HttpRequest
+
 from . import AbstractRequestBuilder
 
 

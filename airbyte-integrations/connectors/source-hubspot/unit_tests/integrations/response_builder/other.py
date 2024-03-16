@@ -2,6 +2,7 @@ import json
 from typing import List
 
 from airbyte_cdk.test.mock_http import HttpResponse
+
 from . import AbstractResponseBuilder
 
 
