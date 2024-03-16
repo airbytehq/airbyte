@@ -27,6 +27,36 @@
           "method": { "type": ["null", "string"] }
         }
       }
+    },
+    "disputed_transactions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "buyer_transaction_id": {
+            "type": ["null", "string"]
+          },
+          "seller": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "merchant_id": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "outcome": {
+      "type": ["null", "string"]
+    },
+    "dispute_life_cycle_stage": {
+      "type": ["null", "string"]
+    },
+    "dispute_channel": {
+      "type": ["null", "string"]
     }
   }
 }

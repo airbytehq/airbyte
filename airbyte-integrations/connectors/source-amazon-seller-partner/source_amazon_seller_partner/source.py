@@ -3,7 +3,6 @@
 #
 
 
-import traceback
 from os import getenv
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -63,6 +62,8 @@ from source_amazon_seller_partner.streams import (
     SellerFeedbackReports,
     StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
+    VendorForecastingFreshReport,
+    VendorForecastingRetailReport,
     VendorInventoryReports,
     VendorOrders,
     VendorSalesReports,
@@ -184,6 +185,8 @@ class SourceAmazonSellerPartner(AbstractSource):
             LedgerSummaryViewReport,
             FbaReimbursementsReports,
             VendorOrders,
+            VendorForecastingFreshReport,
+            VendorForecastingRetailReport,
         ]
 
         # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353

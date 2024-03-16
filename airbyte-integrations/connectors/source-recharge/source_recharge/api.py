@@ -113,6 +113,7 @@ class RechargeStreamModernAPI(RechargeStream):
         else:
             params.update(
                 {
+                    "sort_by": "updated_at-asc",
                     "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
                     "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
                 }
@@ -134,6 +135,7 @@ class RechargeStreamDeprecatedAPI(RechargeStream):
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.limit,
+            "sort_by": "updated_at-asc",
             "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
             "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
         }
