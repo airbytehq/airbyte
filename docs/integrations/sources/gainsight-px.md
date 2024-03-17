@@ -81,8 +81,7 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.2 | 2024-03-16 | [35797](https://github.com/airbytehq/airbyte/pull/35797) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.1.1   | 2024-03-04 | [Init](https://github.com/airbytehq/airbyte/pull/35797)| Adds missing streams     |
-| 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/26998)| Initial PR     |
+| Version | Date       | Pull Request                                             | Subject        |
+| :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.2.0   | 2024-03-18 | [35797](https://github.com/airbytehq/airbyte/pull/35797) | Add missing streams, switch to Airbyte connector base image, and use Poetry |
+| 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/26998)  | Initial PR     |
