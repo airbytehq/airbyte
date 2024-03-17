@@ -185,7 +185,6 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_count = response.json()["count"]
-        # REMOVE THIS AFTER TESTS!
         if response_count < self.page_size:
             return None
         else:
@@ -205,11 +204,13 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         if stream_state is None:
             return self.generate_dummy_record()
 
-        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            record_date = record[self.cursor_field]
-            state_date = self.state.get(self.cursor_field)
-            self.state = {self.cursor_field: max(record_date, state_date or default_start_date)}
-            yield record
+        records = list(super().read_records(sync_mode, cursor_field, stream_slice, stream_state))
+        return [records[0]]
+        # for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+        #     record_date = record[self.cursor_field]
+        #     state_date = self.state.get(self.cursor_field)
+        #     self.state = {self.cursor_field: max(record_date, state_date or default_start_date)}
+        #     yield record
 
     def request_params(
             self,
@@ -219,6 +220,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     ) -> MutableMapping[str, Any]:
         start_date = self.state[self.cursor_field] if stream_state.get(self.cursor_field) else self.config["start_date"]
         logging.info(f"request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, start {start_date}, offset {self.offset}, limit {self.page_size}")
+        print(f"request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, start {start_date}, offset {self.offset}, limit {self.page_size}")
         return {
             "api_key": self.config["reporting_api_key"],
             "start": '2024-03-13',
