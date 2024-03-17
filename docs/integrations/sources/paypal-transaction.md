@@ -279,6 +279,7 @@ ___
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 2.5.1   | 2024-03-15 | [36165](https://github.com/airbytehq/airbyte/pull/36165) | Unpin CDK Version                                                                                                            |
 | 2.5.0   | 2024-03-15 | [36173](https://github.com/airbytehq/airbyte/pull/36173) | Extended `Disputes` stream schema with missing properties                                                                    |
 | 2.4.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                     |
 | 2.3.0   | 2024-02-14 | [34510](https://github.com/airbytehq/airbyte/pull/34510) | Silver certified. New Streams Added                                                                                          |
