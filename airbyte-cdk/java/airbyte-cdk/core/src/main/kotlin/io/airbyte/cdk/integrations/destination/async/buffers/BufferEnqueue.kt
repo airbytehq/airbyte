@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAir
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.Optional
 import java.util.concurrent.ConcurrentMap
 
 /**
@@ -30,12 +31,12 @@ class BufferEnqueue(
     fun addRecord(
         message: PartialAirbyteMessage,
         sizeInBytes: Int,
-        defaultNamespace: String,
+        defaultNamespace: Optional<String>,
     ) {
         if (message.type == AirbyteMessage.Type.RECORD) {
             handleRecord(message, sizeInBytes)
         } else if (message.type == AirbyteMessage.Type.STATE) {
-            stateManager.trackState(message, sizeInBytes.toLong(), defaultNamespace)
+            stateManager.trackState(message, sizeInBytes.toLong(), defaultNamespace.orElse(""))
         }
     }
 

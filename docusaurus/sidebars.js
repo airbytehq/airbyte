@@ -249,7 +249,6 @@ const buildAConnector = {
         },
         "connector-development/tutorials/building-a-python-source",
         "connector-development/tutorials/building-a-java-destination",
-        "connector-development/tutorials/profile-java-connector-memory",
       ],
     },
     "connector-development/connector-specification-reference",
@@ -310,7 +309,6 @@ const contributeToAirbyte = {
       label: "Resources",
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/code-style",
         "contributing-to-airbyte/resources/code-formatting",
         "contributing-to-airbyte/resources/qa-checks",
         "contributing-to-airbyte/resources/developing-locally",
