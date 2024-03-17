@@ -204,13 +204,11 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         if stream_state is None:
             return self.generate_dummy_record()
 
-        records = list(super().read_records(sync_mode, cursor_field, stream_slice, stream_state))
-        return [records[0]]
-        # for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-        #     record_date = record[self.cursor_field]
-        #     state_date = self.state.get(self.cursor_field)
-        #     self.state = {self.cursor_field: max(record_date, state_date or default_start_date)}
-        #     yield record
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            record_date = record[self.cursor_field]
+            state_date = self.state.get(self.cursor_field)
+            self.state = {self.cursor_field: max(record_date, state_date or default_start_date)}
+            yield record
 
     def request_params(
             self,
@@ -236,7 +234,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         if response.text == "":
             return '{}'
         response_json = response.json()
-        yield from response_json["results"]
+        yield from [response_json["results"][0]]
 
     @property
     def columns(self):
