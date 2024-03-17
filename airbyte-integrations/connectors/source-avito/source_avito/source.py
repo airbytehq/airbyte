@@ -101,7 +101,7 @@ class SourceAvito(AbstractSource):
         if date_range_type == "custom_date":
             time_from = pendulum.parse(date_range["date_from"])
             time_to = pendulum.parse(date_range["date_to"])
-        elif date_range_type == "from_date_from_to_today":
+        elif date_range_type == "from_start_date_to_today":
             time_from = pendulum.parse(date_range["date_from"])
             if date_range.get("should_load_today"):
                 time_to = today_date
