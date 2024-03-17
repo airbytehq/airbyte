@@ -1,6 +1,6 @@
-# Microsoft Teams Source
+# Trustpilot Source
 
-This is the repository for the Microsoft Teams configuration based source connector.
+This is the repository for the Trustpilot configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/trustpilot).
 
 ## Local development
