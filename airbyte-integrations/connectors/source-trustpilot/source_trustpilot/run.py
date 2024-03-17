@@ -6,7 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from .source import SourceTrustpilot
+from source_trustpilot import SourceTrustpilot
 
 
 def run():
