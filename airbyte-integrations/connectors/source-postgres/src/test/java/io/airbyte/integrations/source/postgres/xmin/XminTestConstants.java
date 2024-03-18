@@ -74,7 +74,7 @@ public class XminTestConstants {
   }
 
   public static AirbyteMessage createStateMessage1WithCount(final double count) {
-    return       new AirbyteMessage()
+    return new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
