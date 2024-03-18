@@ -31,9 +31,11 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          This update migrates the `source-zendesk-chat` to `YamlDeclarativeSource (Low-code)`.
-          More info in this PR: https://github.com/airbytehq/airbyte/pull/35867
-        upgradeDeadline: "2024-04-10"
+          The source `Zendesk Chat` connector is being migrated from the Python CDK to our declarative low-code CDK.
+          Due to changes in State format, this migration constitutes a breaking change. 
+          After updating, please reset your source before resuming syncs. 
+          For more information, see our migration documentation for source `Zendesk Chat`.
+        upgradeDeadline: "2024-04-15"
   supportLevel: certified
   tags:
     - language:python
