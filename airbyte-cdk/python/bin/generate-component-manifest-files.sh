@@ -2,7 +2,7 @@
 
 set -e
 
-[ -z "$ROOT_DIR" ] && exit 1
+ROOT_DIR=$(cd ../../ && pwd)
 
 YAML_DIR=airbyte-cdk/python/airbyte_cdk/sources/declarative
 OUTPUT_DIR=airbyte-cdk/python/airbyte_cdk/sources/declarative/models
