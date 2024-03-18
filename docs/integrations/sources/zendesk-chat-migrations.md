@@ -8,6 +8,20 @@ This change will affect the [`agents`, `bans`, `agents timelines`, `chats`] stre
 
 ## Migration Steps
 
+### For Airbyte Open Source: Update the local connector image
+
+Airbyte Open Source users must manually update the connector image in their local registry before proceeding with the migration. To do so:
+
+1. Select **Settings** in the main navbar.
+    1. Select **Sources**.
+2. Find `zendesk-chat` in the list of connectors. 
+
+:::note
+You will see two versions listed, the current in-use version and the latest version available.
+::: 
+
+3. Select **Change** to update your OSS version to the latest available version.
+
 ### Refresh affected schemas and reset data
 
 1. Select **Connections** in the main nav bar.
