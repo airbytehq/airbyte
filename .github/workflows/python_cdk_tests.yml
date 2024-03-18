@@ -57,7 +57,7 @@ jobs:
         uses: tj-actions/changed-files@v43
         with:
           path: "airbyte-cdk/python"
-          files: "airbyte-cdk/python/airbyte_cdk/**/*.py"
+          files: "airbyte_cdk/**/*.py"
           diff_relative: true
       - name: Run MyPy on modified files
         working-directory: airbyte-cdk/python
