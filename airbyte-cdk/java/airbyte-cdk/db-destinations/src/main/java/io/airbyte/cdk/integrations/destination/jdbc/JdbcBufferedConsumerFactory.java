@@ -17,7 +17,11 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil;
+import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.async.state.FlushFailure;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
@@ -70,7 +74,8 @@ public class JdbcBufferedConsumerFactory {
                                                              final JsonNode config,
                                                              final ConfiguredAirbyteCatalog catalog,
                                                              final String defaultNamespace,
-                                                             final TyperDeduper typerDeduper) {
+                                                             final TyperDeduper typerDeduper,
+                                                             final StreamAwareDataTransformer dataTransformer) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
     return new AsyncStreamConsumer(
         outputRecordCollector,
@@ -79,8 +84,23 @@ public class JdbcBufferedConsumerFactory {
         new JdbcInsertFlushFunction(recordWriterFunction(database, sqlOperations, writeConfigs, catalog)),
         catalog,
         new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.2)),
+        new FlushFailure(),
         Optional.ofNullable(defaultNamespace),
-        Executors.newFixedThreadPool(2));
+        Executors.newFixedThreadPool(2),
+        dataTransformer,
+        new DeserializationUtil());
+  }
+
+  public static SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                             final JdbcDatabase database,
+                                                             final SqlOperations sqlOperations,
+                                                             final NamingConventionTransformer namingResolver,
+                                                             final JsonNode config,
+                                                             final ConfiguredAirbyteCatalog catalog,
+                                                             final String defaultNamespace,
+                                                             final TyperDeduper typerDeduper) {
+    return createAsync(outputRecordCollector, database, sqlOperations, namingResolver, config, catalog, defaultNamespace, typerDeduper,
+        new IdentityDataTransformer());
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
