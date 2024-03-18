@@ -5,6 +5,7 @@
 from abc import ABC
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+import json
 
 from requests import Response
 from airbyte_protocol.models import SyncMode
@@ -20,6 +21,7 @@ from source_amazon_ads.schemas import (
     ProductTargeting,
 )
 from source_amazon_ads.streams.common import AmazonAdsStream, SubProfilesStream
+from airbyte_cdk.sources.streams.http import HttpSubStream
 
 class SponsoredProductsV3(SubProfilesStream):
     """
@@ -85,17 +87,7 @@ class SponsoredProductAdGroups(SponsoredProductsV3):
     def path(self, **kwargs) -> str:
         return "/sp/adGroups/list"
 
-
-class SponsoredProductAdGroupsWithProfileId(SponsoredProductAdGroups):
-    """Add profileId attr for each records in SponsoredProductAdGroups stream"""
-
-    def parse_response(self, *args, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(*args, **kwargs):
-            record["profileId"] = self._current_profile_id
-            yield record
-
-
-class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
+class SponsoredProductAdGroupWithSlicesABC(SponsoredProductsV3, ABC):
     """ABC Class for extraction of additional information for each known sp ad group"""
 
     primary_key = "adGroupId"
@@ -108,7 +100,7 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from SponsoredProductAdGroupsWithProfileId(*self.__args, **self.__kwargs).read_records(
+        yield from SponsoredProductAdGroups(*self.__args, **self.__kwargs).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=None, stream_state=stream_state
         )
 
@@ -126,6 +118,12 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
             self.logger.warning(
                 f"Skip current AdGroup because it does not support request {response.request.url} for "
                 f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}"
+            )
+        elif response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
+            # 422 error message for bids recommendation:
+            # No recommendations can be provided as the input ad group does not have any asins.
+            self.logger.warning(
+                f"Skip current AdGroup because the ad group {json.loads(response.request.body)['adGroupId']} does not have any asins {response.request.url}"
             )
         elif response.status_code == HTTPStatus.NOT_FOUND:
             # 404 Either the specified ad group identifier was not found,
@@ -145,11 +143,11 @@ class SponsoredProductAdGroupBidRecommendations(SponsoredProductAdGroupWithSlice
     """
     primary_key = None
     data_field = "bidRecommendations"
-    content_type = "application/vnd.spthemebasedbidrecommendations.v4+json"
+    content_type = "application/vnd.spthemebasedbidrecommendation.v4+json"
     model = ProductAdGroupBidRecommendations
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"/sp/targets/bid/recommendations"
+        return "/sp/targets/bid/recommendations"
 
     def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
         request_body = {}
@@ -161,11 +159,6 @@ class SponsoredProductAdGroupBidRecommendations(SponsoredProductAdGroupWithSlice
         request_body["campaignId"] = stream_slice["campaignId"]
         request_body["recommendationType"] = "BIDS_FOR_EXISTING_AD_GROUP"
         return request_body
-
-    # def parse_response(self, *args, **kwargs) -> Iterable[Mapping]:
-    #     for record in super().parse_response(*args, **kwargs):
-    #         record["profileId"] = self._current_profile_id
-    #         yield record
 
 
 
