@@ -167,6 +167,7 @@ class BasicReadTestConfig(BaseConfig):
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
     validate_stream_statuses: bool = Field(None, description="Ensure that all streams emit status messages")
+    validate_state_messages: bool = Field(True, description="Ensure that state messages emitted as expected")
     fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
