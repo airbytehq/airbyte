@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.72.0
+low-code: Allow defining custom schema loaders
+
 ## 0.71.0
 Declarative datetime-based cursors now only derive state values from records that were read
 
