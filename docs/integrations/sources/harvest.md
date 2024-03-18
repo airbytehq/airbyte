@@ -73,7 +73,7 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 - [Expense Projects Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#projects-report) \(Incremental\)
 - [Expense Categories Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#expense-categories-report) \(Incremental\)
 - [Expense Team Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#team-report) \(Incremental\)
-- [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/)
+- [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/) \(Incremental\)
 - [Time Clients Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#clients-report) \(Incremental\)
 - [Time Projects Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#projects-report) \(Incremental\)
 - [Time Tasks Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#tasks-report) \(Incremental\)
