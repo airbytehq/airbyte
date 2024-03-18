@@ -101,6 +101,7 @@ generate-component-manifest-files = "bin/generate-component-manifest-files.sh"
 build = ["build-code-generator-image", "generate-component-manifest-files"]
 
 flake-check = "pflake8 --config ../../pyproject.toml ./"
-mypy-changed-files = "bin/run-mypy-on-modified-files.sh"
+mypy-changed-files.cmd = "bin/run-mypy-on-modified-files.sh ${files}"
+mypy-changed-files.args = [{ name = "files", positional = true, multiple = true }]
 unit-test-with-cov = "coverage run --data-file=unit_tests/.coverage.testPython --rcfile=../../pyproject.toml -m pytest -s unit_tests -c pytest.ini"
-check = ["flake-check", "mypy-changed-files", "unit-test-with-cov"]
+check = ["flake-check", "unit-test-with-cov"]

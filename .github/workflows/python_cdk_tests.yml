@@ -52,6 +52,14 @@ jobs:
       - name: Build CDK Package
         working-directory: airbyte-cdk/python
         run: poetry run poe build
+      - name: Get Python changed files
+        id: changed-py-files
+        uses: tj-actions/changed-files@v43
+        with:
+          files: "airbyte-cdk/python/airbyte_cdk/**/*.py"
+      - name: Run MyPy on modified files
+        working-directory: airbyte-cdk/python
+        run: poetry run mypy-modified-files ${{ steps.changed-py-files.outputs.all_changed_files }}
       - name: Check Python CDK
         working-directory: airbyte-cdk/python
         run: poetry run poe check
