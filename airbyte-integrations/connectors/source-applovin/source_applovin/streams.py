@@ -180,6 +180,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         self._state[self.cursor_field] = value[self.cursor_field]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
         response_count = response.json()["count"]
         if response_count < self.page_size:
             return None
@@ -196,7 +197,6 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             stream_slice: Optional[Mapping[str, Any]] = None,
             stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        return None
         default_start_date = self.config["start_date"]
         if stream_state is None:
             return self.generate_dummy_record()
