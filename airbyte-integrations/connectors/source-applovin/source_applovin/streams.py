@@ -172,10 +172,6 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         )
 
     @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        return 1000000
-
-    @property
     def state(self):
         return self._state
 
