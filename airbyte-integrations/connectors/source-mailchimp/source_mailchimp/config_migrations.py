@@ -10,7 +10,6 @@ import requests
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 
@@ -22,8 +21,6 @@ class MigrateDataCenter:
     This class stands for migrating the config at runtime,
     Set data_center property in config based on credential type.
     """
-
-    message_repository: MessageRepository = InMemoryMessageRepository()
 
     @classmethod
     def get_data_center_location(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -78,9 +75,7 @@ class MigrateDataCenter:
         Args:
         - migrated_config (Mapping[str, Any]): The migrated configuration.
         """
-        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
-        for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+        print(create_connector_config_control_message(migrated_config).json(exclude_unset=True))
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
