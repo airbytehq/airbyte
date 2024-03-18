@@ -59,7 +59,7 @@ jobs:
           files: "airbyte-cdk/python/airbyte_cdk/**/*.py"
       - name: Run MyPy on modified files
         working-directory: airbyte-cdk/python
-        run: poetry run mypy-modified-files ${{ steps.changed-py-files.outputs.all_changed_files }}
+        run: poetry run poe mypy-changed-files ${{ steps.changed-py-files.outputs.all_changed_files }}
       - name: Check Python CDK
         working-directory: airbyte-cdk/python
         run: poetry run poe check
