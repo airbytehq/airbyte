@@ -32,8 +32,8 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          This version updates the API version from v15 to v19. Deprecated fields have been removed and new fields have been added for the stream `page`.
-        upgradeDeadline: 2024-04-30
+          This version updates the API version from v15 to v19. Deprecated fields have been removed and new fields have been added for the stream `Page`.
+        upgradeDeadline: 2024-04-18
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["page"]

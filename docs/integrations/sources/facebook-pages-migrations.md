@@ -3,10 +3,10 @@
 ## Upgrading to 1.0.0
 
 :::note
-This change is only breaking if you are syncing stream `page`.
+This change is only breaking if you are syncing stream `Page`.
 :::
 
-This update brings extended schema with data type changes for the `Page` stream.
+This version brings an updated schema for the `v19.0` API version of the `Page` stream. The `messenger_ads_default_page_welcome_message` field has been deleted, and a few new fields have been added.
 
 Users should:
  - Refresh the source schema for the `Page` stream.
