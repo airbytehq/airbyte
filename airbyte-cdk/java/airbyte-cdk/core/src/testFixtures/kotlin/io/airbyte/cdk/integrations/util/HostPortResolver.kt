@@ -3,8 +3,8 @@
  */
 package io.airbyte.cdk.integrations.util
 
-import org.testcontainers.containers.GenericContainer
 import java.util.*
+import org.testcontainers.containers.GenericContainer
 
 object HostPortResolver {
     @JvmStatic
@@ -22,11 +22,17 @@ object HostPortResolver {
     }
 
     private fun getIpAddress(container: GenericContainer<*>?): String? {
-        return Objects.requireNonNull(container!!.containerInfo
+        return Objects.requireNonNull(
+            container!!
+                .containerInfo
                 .networkSettings
                 .networks
-                .entries.stream()
+                .entries
+                .stream()
                 .findFirst()
-                .get().value.ipAddress)
+                .get()
+                .value
+                .ipAddress
+        )
     }
 }
