@@ -40,7 +40,7 @@ public class MongoDbCdcInitialSnapshotUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitialSnapshotUtils.class);
 
   private static final Predicate<ConfiguredAirbyteStream> SYNC_MODE_FILTER = c -> SyncMode.INCREMENTAL.equals(c.getSyncMode());
-  public static final Map<SyncMode, List<InitialSnapshotStatus>> syncModeToStatusMap = Map.of(
+  private static final Map<SyncMode, List<InitialSnapshotStatus>> syncModeToStatusValidationMap = Map.of(
       SyncMode.INCREMENTAL, List.of(InitialSnapshotStatus.IN_PROGRESS, InitialSnapshotStatus.COMPLETE),
       SyncMode.FULL_REFRESH, List.of(InitialSnapshotStatus.FULL_REFRESH));
 
@@ -136,7 +136,7 @@ public class MongoDbCdcInitialSnapshotUtils {
   }
 
   private static boolean isValidInitialSnapshotStatus(final SyncMode syncMode, final MongoDbStreamState state) {
-    return syncModeToStatusMap.get(syncMode).contains(state.status());
+    return syncModeToStatusValidationMap.get(syncMode).contains(state.status());
   }
 
   public static void validateStateSyncMode(final MongoDbStateManager stateManager, final List<ConfiguredAirbyteStream> streams) {
