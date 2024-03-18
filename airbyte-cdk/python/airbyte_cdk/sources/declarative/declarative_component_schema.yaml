@@ -905,7 +905,7 @@ definitions:
               - ["credentials", "token_expiry_date"]
           refresh_token_error_status_codes:
             title: Refresh Token Error Status Codes
-            description: Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified).
+            description: Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified). Responses with one of the error status code and containing an error value will be flagged as a config error
             type: array
             items:
               type: integer
