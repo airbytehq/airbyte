@@ -75,44 +75,11 @@ file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfmi
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
-[tool.coverage.report]
-fail_under = 0
-skip_empty = true
-sort = "-cover"
-omit = [
-    ".venv/*",
-    "main.py",
-    "unit_tests/*",
-    "integration_tests/*",
-    "**/generated/*",
-]
-
-[tool.flake8]
-extend-exclude = [
-    "*/lib/*/site-packages",
-    ".venv",
-    "build",
-    "models",
-    ".eggs",
-    "**/generated/*",
-    ".tox",
-]
-max-complexity = 20
-max-line-length = 140
-extend-ignore = [
-    "E203",
-    "E231",
-    "E501",
-    "W503",
-    "E721", # TODO: ella fix after pflake8 version update
-    "F811", # TODO: ella fix after pflake8 version update
-]
-
 [tool.poe.tasks]
 build-code-generator-image = "bin/build_code_generator_image.sh"
 generate-component-manifest-files = "bin/generate-component-manifest-files.sh"
 build = ["build-code-generator-image", "generate-component-manifest-files"]
 
-flake-check = "pflake8 --config pyproject.toml ./"
+flake-check = "pflake8 --config ../../pyproject.toml ./"
 unit-test-with-cov = "coverage run --data-file=unit_tests/.coverage.testPython --rcfile=pyproject.toml -m pytest -s unit_tests -c pytest.ini"
 check = ["flake-check", "unit-test-with-cov"]
