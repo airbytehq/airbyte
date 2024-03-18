@@ -160,7 +160,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     url_base = "https://r.applovin.com/"
     report_type = ""
     cursor_field = "day"
-    page_size = 1500000
+    page_size = 15
 
     def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
         self.config = config
@@ -230,7 +230,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         if response.text == "":
             return '{}'
         response_json = response.json()
-        yield from [response_json["results"][0]]
+        yield from response_json["results"]
 
     @property
     def columns(self):
