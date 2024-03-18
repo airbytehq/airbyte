@@ -138,7 +138,7 @@ const PaymentPage: React.FC = () => {
           setPaymentLoading(false);
         });
     } else {
-      onCreateSubscriptionURL(product?.id as string)
+      onCreateSubscriptionURL({ cloudPackageId })
         .then((res: CreateSunscriptionUrl) => {
           setPaymentLoading(false);
           window.open(res.data, "_self");

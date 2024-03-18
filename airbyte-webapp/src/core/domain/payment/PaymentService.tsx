@@ -27,8 +27,8 @@ export class PaymentService extends AirbyteRequestService {
     return instanceSelected(cloudItemId, this.requestOptions);
   }
 
-  public createSubscriptionUrl(productItemId: string) {
-    return createSubscription(productItemId, this.requestOptions);
+  public createSubscriptionUrl(params: GetUpgradeSubscriptionParams) {
+    return createSubscription(params, this.requestOptions);
   }
 
   public getUpgradeSubscription(params: GetUpgradeSubscriptionParams) {
