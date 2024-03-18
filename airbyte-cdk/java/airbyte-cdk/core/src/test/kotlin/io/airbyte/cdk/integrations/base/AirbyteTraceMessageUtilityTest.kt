@@ -6,14 +6,14 @@ package io.airbyte.cdk.integrations.base
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
+import java.nio.charset.StandardCharsets
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
-import java.nio.charset.StandardCharsets
 
 class AirbyteTraceMessageUtilityTest {
     var originalOut: PrintStream = System.out
@@ -33,7 +33,10 @@ class AirbyteTraceMessageUtilityTest {
 
     @Test
     fun testEmitSystemErrorTrace() {
-        AirbyteTraceMessageUtility.emitSystemErrorTrace(Mockito.mock(RuntimeException::class.java), "this is a system error")
+        AirbyteTraceMessageUtility.emitSystemErrorTrace(
+            Mockito.mock(RuntimeException::class.java),
+            "this is a system error"
+        )
         val outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8))
         assertJsonNodeIsTraceMessage(outJson)
         Assertions.assertEquals("system_error", outJson["trace"]["error"]["failure_type"].asText())
@@ -41,7 +44,10 @@ class AirbyteTraceMessageUtilityTest {
 
     @Test
     fun testEmitConfigErrorTrace() {
-        AirbyteTraceMessageUtility.emitConfigErrorTrace(Mockito.mock(RuntimeException::class.java), "this is a config error")
+        AirbyteTraceMessageUtility.emitConfigErrorTrace(
+            Mockito.mock(RuntimeException::class.java),
+            "this is a config error"
+        )
         val outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8))
         assertJsonNodeIsTraceMessage(outJson)
         Assertions.assertEquals("config_error", outJson["trace"]["error"]["failure_type"].asText())
@@ -49,7 +55,11 @@ class AirbyteTraceMessageUtilityTest {
 
     @Test
     fun testEmitErrorTrace() {
-        AirbyteTraceMessageUtility.emitErrorTrace(Mockito.mock(RuntimeException::class.java), "this is an error", AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
+        AirbyteTraceMessageUtility.emitErrorTrace(
+            Mockito.mock(RuntimeException::class.java),
+            "this is an error",
+            AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR
+        )
         assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8)))
     }
 

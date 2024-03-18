@@ -16,8 +16,10 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 
 class SerializedBufferingStrategyTest {
-    private val catalog: ConfiguredAirbyteCatalog = Mockito.mock(ConfiguredAirbyteCatalog::class.java)
-    private val perStreamFlushHook: FlushBufferFunction = Mockito.mock(FlushBufferFunction::class.java)
+    private val catalog: ConfiguredAirbyteCatalog =
+        Mockito.mock(ConfiguredAirbyteCatalog::class.java)
+    private val perStreamFlushHook: FlushBufferFunction =
+        Mockito.mock(FlushBufferFunction::class.java)
 
     private val recordWriter1: SerializableBuffer = Mockito.mock(SerializableBuffer::class.java)
     private val recordWriter2: SerializableBuffer = Mockito.mock(SerializableBuffer::class.java)
@@ -38,14 +40,16 @@ class SerializedBufferingStrategyTest {
         Mockito.`when`(mockObject.accept(ArgumentMatchers.any())).thenReturn(10L)
         Mockito.`when`(mockObject.byteCount).thenReturn(10L)
         Mockito.`when`(mockObject.maxTotalBufferSizeInBytes).thenReturn(MAX_TOTAL_BUFFER_SIZE_BYTES)
-        Mockito.`when`(mockObject.maxPerStreamBufferSizeInBytes).thenReturn(MAX_PER_STREAM_BUFFER_SIZE_BYTES)
+        Mockito.`when`(mockObject.maxPerStreamBufferSizeInBytes)
+            .thenReturn(MAX_PER_STREAM_BUFFER_SIZE_BYTES)
         Mockito.`when`(mockObject.maxConcurrentStreamsInBuffer).thenReturn(4)
     }
 
     @Test
     @Throws(Exception::class)
     fun testPerStreamThresholdFlush() {
-        val buffering = SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook)
+        val buffering =
+            SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook)
         val stream1 = AirbyteStreamNameNamespacePair(STREAM_1, "namespace")
         val stream2 = AirbyteStreamNameNamespacePair(STREAM_2, null)
         // To test per stream threshold, we are sending multiple test messages on a single stream
@@ -68,7 +72,8 @@ class SerializedBufferingStrategyTest {
         Assertions.assertFalse(buffering.addRecord(stream2, message3).isPresent)
         Mockito.`when`(recordWriter2.byteCount).thenReturn(30L) // third record in recordWriter2
 
-        // Buffer reaches limit so a buffer flush occurs returning a buffer flush type of single stream
+        // Buffer reaches limit so a buffer flush occurs returning a buffer flush type of single
+        // stream
         val flushType = buffering.addRecord(stream2, message4)
         Assertions.assertTrue(flushType.isPresent)
         Assertions.assertEquals(flushType.get(), BufferFlushType.FLUSH_SINGLE_STREAM)
@@ -77,7 +82,8 @@ class SerializedBufferingStrategyTest {
         Mockito.verify(perStreamFlushHook, Mockito.times(0)).accept(stream1, recordWriter1)
         Mockito.verify(perStreamFlushHook, Mockito.times(1)).accept(stream2, recordWriter2)
 
-        Mockito.`when`(recordWriter2.byteCount).thenReturn(10L) // back to one record in recordWriter2
+        Mockito.`when`(recordWriter2.byteCount)
+            .thenReturn(10L) // back to one record in recordWriter2
         Assertions.assertFalse(buffering.addRecord(stream2, message5).isPresent)
 
         // force flush to terminate test
@@ -89,11 +95,13 @@ class SerializedBufferingStrategyTest {
     @Test
     @Throws(Exception::class)
     fun testTotalStreamThresholdFlush() {
-        val buffering = SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook)
+        val buffering =
+            SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook)
         val stream1 = AirbyteStreamNameNamespacePair(STREAM_1, "namespace")
         val stream2 = AirbyteStreamNameNamespacePair(STREAM_2, "namespace")
         val stream3 = AirbyteStreamNameNamespacePair(STREAM_3, "namespace")
-        // To test total stream threshold, we are sending test messages to multiple streams without reaching
+        // To test total stream threshold, we are sending test messages to multiple streams without
+        // reaching
         // per stream limits
         val message1 = generateMessage(stream1)
         val message2 = generateMessage(stream2)
@@ -114,7 +122,8 @@ class SerializedBufferingStrategyTest {
         Assertions.assertFalse(buffering.addRecord(stream1, message4).isPresent)
         Mockito.`when`(recordWriter2.byteCount).thenReturn(20L) // second record in recordWriter2
 
-        // In response to checkpointing, will need to know what type of buffer flush occurred to mark
+        // In response to checkpointing, will need to know what type of buffer flush occurred to
+        // mark
         // AirbyteStateMessage as committed depending on DestDefaultStateLifecycleManager
         val flushType = buffering.addRecord(stream2, message5)
         Assertions.assertTrue(flushType.isPresent)
@@ -136,7 +145,8 @@ class SerializedBufferingStrategyTest {
     @Test
     @Throws(Exception::class)
     fun testConcurrentStreamThresholdFlush() {
-        val buffering = SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook)
+        val buffering =
+            SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook)
         val stream1 = AirbyteStreamNameNamespacePair(STREAM_1, "namespace1")
         val stream2 = AirbyteStreamNameNamespacePair(STREAM_2, "namespace2")
         val stream3 = AirbyteStreamNameNamespacePair(STREAM_3, null)
@@ -178,13 +188,18 @@ class SerializedBufferingStrategyTest {
 
     @Test
     fun testCreateBufferFailure() {
-        val buffering = SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook)
+        val buffering =
+            SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook)
         val stream = AirbyteStreamNameNamespacePair("unknown_stream", "namespace1")
-        Assertions.assertThrows(RuntimeException::class.java) { buffering.addRecord(stream, generateMessage(stream)) }
+        Assertions.assertThrows(RuntimeException::class.java) {
+            buffering.addRecord(stream, generateMessage(stream))
+        }
     }
 
     private fun onCreateBufferFunction(): BufferCreateFunction {
-        return BufferCreateFunction { stream: AirbyteStreamNameNamespacePair, catalog: ConfiguredAirbyteCatalog? ->
+        return BufferCreateFunction {
+            stream: AirbyteStreamNameNamespacePair,
+            catalog: ConfiguredAirbyteCatalog? ->
             when (stream.name) {
                 STREAM_1 -> recordWriter1
                 STREAM_2 -> recordWriter2
@@ -209,10 +224,13 @@ class SerializedBufferingStrategyTest {
         private const val MAX_PER_STREAM_BUFFER_SIZE_BYTES = 21L
 
         private fun generateMessage(stream: AirbyteStreamNameNamespacePair): AirbyteMessage {
-            return AirbyteMessage().withRecord(AirbyteRecordMessage()
-                    .withStream(stream.name)
-                    .withNamespace(stream.namespace)
-                    .withData(MESSAGE_DATA))
+            return AirbyteMessage()
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withStream(stream.name)
+                        .withNamespace(stream.namespace)
+                        .withData(MESSAGE_DATA)
+                )
         }
     }
 }

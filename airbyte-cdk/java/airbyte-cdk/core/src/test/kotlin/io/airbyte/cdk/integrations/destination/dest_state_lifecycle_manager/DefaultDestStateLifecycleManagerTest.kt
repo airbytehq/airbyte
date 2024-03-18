@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
 internal class DefaultDestStateLifecycleManagerTest {
-    private var mgr1: DestStateLifecycleManager? = null
-    private var singleStateMgr: DestStateLifecycleManager? = null
-    private var streamMgr: DestStateLifecycleManager? = null
+    private lateinit var mgr1: DestStateLifecycleManager
+    private lateinit var singleStateMgr: DestStateLifecycleManager
+    private lateinit var streamMgr: DestStateLifecycleManager
 
     @BeforeEach
     fun setup() {
@@ -30,29 +30,49 @@ internal class DefaultDestStateLifecycleManagerTest {
         manager1.addState(UNSET_TYPE_MESSAGE)
         manager1.addState(UNSET_TYPE_MESSAGE)
         manager1.addState(LEGACY_MESSAGE)
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager1.addState(GLOBAL_MESSAGE) }
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager1.addState(STREAM_MESSAGE) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager1.addState(GLOBAL_MESSAGE)
+        }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager1.addState(STREAM_MESSAGE)
+        }
 
         val manager2 = DefaultDestStateLifecycleManager(singleStateMgr, streamMgr)
         manager2.addState(LEGACY_MESSAGE)
         manager2.addState(LEGACY_MESSAGE)
         manager2.addState(UNSET_TYPE_MESSAGE)
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager2.addState(GLOBAL_MESSAGE) }
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager2.addState(STREAM_MESSAGE) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager2.addState(GLOBAL_MESSAGE)
+        }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager2.addState(STREAM_MESSAGE)
+        }
 
         val manager3 = DefaultDestStateLifecycleManager(singleStateMgr, streamMgr)
         manager3.addState(GLOBAL_MESSAGE)
         manager3.addState(GLOBAL_MESSAGE)
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager3.addState(UNSET_TYPE_MESSAGE) }
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager3.addState(LEGACY_MESSAGE) }
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager3.addState(STREAM_MESSAGE) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager3.addState(UNSET_TYPE_MESSAGE)
+        }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager3.addState(LEGACY_MESSAGE)
+        }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager3.addState(STREAM_MESSAGE)
+        }
 
         val manager4 = DefaultDestStateLifecycleManager(singleStateMgr, streamMgr)
         manager4.addState(STREAM_MESSAGE)
         manager4.addState(STREAM_MESSAGE)
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager4.addState(UNSET_TYPE_MESSAGE) }
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager4.addState(LEGACY_MESSAGE) }
-        Assertions.assertThrows(IllegalArgumentException::class.java) { manager4.addState(GLOBAL_MESSAGE) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager4.addState(UNSET_TYPE_MESSAGE)
+        }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager4.addState(LEGACY_MESSAGE)
+        }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            manager4.addState(GLOBAL_MESSAGE)
+        }
     }
 
     @Test
@@ -101,19 +121,30 @@ internal class DefaultDestStateLifecycleManagerTest {
     }
 
     companion object {
-        private val UNSET_TYPE_MESSAGE: AirbyteMessage = AirbyteMessage()
+        private val UNSET_TYPE_MESSAGE: AirbyteMessage =
+            AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(AirbyteStateMessage())
+        private val LEGACY_MESSAGE: AirbyteMessage =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage())
-        private val LEGACY_MESSAGE: AirbyteMessage = AirbyteMessage()
+                .withState(
+                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
+                )
+        private val GLOBAL_MESSAGE: AirbyteMessage =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY))
-        private val GLOBAL_MESSAGE: AirbyteMessage = AirbyteMessage()
+                .withState(
+                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                )
+        private val STREAM_MESSAGE: AirbyteMessage =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL))
-        private val STREAM_MESSAGE: AirbyteMessage = AirbyteMessage()
-                .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage()
+                .withState(
+                    AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(AirbyteStreamState().withStreamDescriptor(StreamDescriptor().withName("users"))))
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(StreamDescriptor().withName("users"))
+                        )
+                )
     }
 }

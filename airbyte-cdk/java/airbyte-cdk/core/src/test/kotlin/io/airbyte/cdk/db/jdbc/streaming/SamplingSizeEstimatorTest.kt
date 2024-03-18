@@ -15,13 +15,15 @@ internal class SamplingSizeEstimatorTest {
         val minFetchSize = 1
         val defaultFetchSize = 20
         val maxFetchSize = 120
-        val sizeEstimator = SamplingSizeEstimator(
+        val sizeEstimator =
+            SamplingSizeEstimator(
                 bufferByteSize,
                 sampleFrequency,
                 initialByteSize.toDouble(),
                 minFetchSize,
                 defaultFetchSize,
-                maxFetchSize)
+                maxFetchSize
+            )
 
         var maxByteSize = initialByteSize.toDouble()
 

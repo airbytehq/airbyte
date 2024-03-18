@@ -6,8 +6,9 @@ package io.airbyte.cdk.integrations.base
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 
 internal class FailureTrackingAirbyteMessageConsumerTest {
     @Test
@@ -49,9 +50,9 @@ internal class FailureTrackingAirbyteMessageConsumerTest {
     @Throws(Exception::class)
     fun testAcceptWithFailure() {
         val consumer = Mockito.spy(TestConsumer())
-        val msg = Mockito.mock(AirbyteMessage::class.java)
+        val msg: AirbyteMessage = mock()
         Mockito.`when`(msg.type).thenReturn(AirbyteMessage.Type.RECORD)
-        Mockito.doThrow(RuntimeException()).`when`(consumer).acceptTracked(ArgumentMatchers.any())
+        Mockito.doThrow(RuntimeException()).`when`(consumer).acceptTracked(any())
 
         // verify the exception still gets thrown.
         Assertions.assertThrows(RuntimeException::class.java) { consumer.accept(msg) }
@@ -61,13 +62,10 @@ internal class FailureTrackingAirbyteMessageConsumerTest {
     }
 
     internal class TestConsumer : FailureTrackingAirbyteMessageConsumer() {
-        public override fun startTracked() {
-        }
+        public override fun startTracked() {}
 
-        public override fun acceptTracked(s: AirbyteMessage) {
-        }
+        public override fun acceptTracked(s: AirbyteMessage) {}
 
-        public override fun close(hasFailed: Boolean) {
-        }
+        public override fun close(hasFailed: Boolean) {}
     }
 }

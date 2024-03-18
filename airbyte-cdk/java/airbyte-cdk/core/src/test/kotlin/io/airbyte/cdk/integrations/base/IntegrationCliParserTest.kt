@@ -3,9 +3,9 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import java.nio.file.Path
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
 internal class IntegrationCliParserTest {
     @Test
@@ -33,27 +33,51 @@ internal class IntegrationCliParserTest {
     fun testWrite() {
         val args = arrayOf("--write", "--config", CONFIG_FILENAME, "--catalog", CATALOG_FILENAME)
         val actual = IntegrationCliParser().parse(args)
-        Assertions.assertEquals(IntegrationConfig.write(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME)), actual)
+        Assertions.assertEquals(
+            IntegrationConfig.write(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME)),
+            actual
+        )
     }
 
     @Test
     fun testReadWithoutState() {
         val args = arrayOf("--read", "--config", CONFIG_FILENAME, "--catalog", CATALOG_FILENAME)
         val actual = IntegrationCliParser().parse(args)
-        Assertions.assertEquals(IntegrationConfig.read(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME), null), actual)
+        Assertions.assertEquals(
+            IntegrationConfig.read(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME), null),
+            actual
+        )
     }
 
     @Test
     fun testReadWithState() {
-        val args = arrayOf("--read", "--config", CONFIG_FILENAME, "--catalog", CATALOG_FILENAME, "--state", STATE_FILENAME)
+        val args =
+            arrayOf(
+                "--read",
+                "--config",
+                CONFIG_FILENAME,
+                "--catalog",
+                CATALOG_FILENAME,
+                "--state",
+                STATE_FILENAME
+            )
         val actual = IntegrationCliParser().parse(args)
-        Assertions.assertEquals(IntegrationConfig.read(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME), Path.of(STATE_FILENAME)), actual)
+        Assertions.assertEquals(
+            IntegrationConfig.read(
+                Path.of(CONFIG_FILENAME),
+                Path.of(CATALOG_FILENAME),
+                Path.of(STATE_FILENAME)
+            ),
+            actual
+        )
     }
 
     @Test
     fun testFailsOnUnknownArg() {
         val args = arrayOf("--check", "--config", CONFIG_FILENAME, "--random", "garbage")
-        Assertions.assertThrows(IllegalArgumentException::class.java) { IntegrationCliParser().parse(args) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            IntegrationCliParser().parse(args)
+        }
     }
 
     companion object {

@@ -12,12 +12,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
-import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -25,30 +19,39 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import org.apache.commons.lang3.RandomStringUtils
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito
+import org.mockito.kotlin.mock
 
 class BufferedStreamConsumerTest {
-    private var consumer: BufferedStreamConsumer? = null
-    private var onStart: OnStartFunction? = null
-    private var recordWriter: RecordWriter<AirbyteRecordMessage>? = null
-    private var onClose: OnCloseFunction? = null
-    private var isValidRecord: CheckedFunction<JsonNode, Boolean, Exception>? = null
-    private var outputRecordCollector: Consumer<AirbyteMessage>? = null
+    private lateinit var consumer: BufferedStreamConsumer
+    private lateinit var onStart: OnStartFunction
+    private lateinit var recordWriter: RecordWriter<AirbyteRecordMessage>
+    private lateinit var onClose: OnCloseFunction
+    private lateinit var isValidRecord: CheckedFunction<JsonNode, Boolean, Exception>
+    private lateinit var outputRecordCollector: Consumer<AirbyteMessage>
 
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {
-        onStart = Mockito.mock(OnStartFunction::class.java)
-        recordWriter = Mockito.mock(RecordWriter::class.java)
-        onClose = Mockito.mock(OnCloseFunction::class.java)
-        isValidRecord = Mockito.mock(CheckedFunction::class.java)
-        outputRecordCollector = Mockito.mock(Consumer::class.java)
-        consumer = BufferedStreamConsumer(
+        onStart = mock()
+        recordWriter = mock()
+        onClose = mock()
+        isValidRecord = mock()
+        outputRecordCollector = mock()
+        consumer =
+            BufferedStreamConsumer(
                 outputRecordCollector,
                 onStart,
                 InMemoryRecordBufferingStrategy(recordWriter, 1000),
                 onClose,
                 CATALOG,
-                isValidRecord)
+                isValidRecord
+            )
 
         Mockito.`when`(isValidRecord.apply(ArgumentMatchers.any<JsonNode>())).thenReturn(true)
     }
@@ -129,13 +132,15 @@ class BufferedStreamConsumerTest {
         val expectedRecordsBatch2 = generateRecords(1000)
 
         // consumer with big enough buffered that we see both batches are flushed in one go.
-        val consumer = BufferedStreamConsumer(
+        val consumer =
+            BufferedStreamConsumer(
                 outputRecordCollector,
                 onStart,
                 InMemoryRecordBufferingStrategy(recordWriter, 10000),
                 onClose,
                 CATALOG,
-                isValidRecord)
+                isValidRecord
+            )
 
         consumer.start()
         consumeRecords(consumer, expectedRecordsBatch1)
@@ -145,7 +150,8 @@ class BufferedStreamConsumerTest {
 
         verifyStartAndClose()
 
-        val expectedRecords = Lists.newArrayList(expectedRecordsBatch1, expectedRecordsBatch2)
+        val expectedRecords =
+            Lists.newArrayList(expectedRecordsBatch1, expectedRecordsBatch2)
                 .stream()
                 .flatMap { obj: List<AirbyteMessage> -> obj.stream() }
                 .collect(Collectors.toList())
@@ -165,8 +171,11 @@ class BufferedStreamConsumerTest {
         consumeRecords(consumer, expectedRecordsBatch1)
         consumer!!.accept(STATE_MESSAGE1)
         consumeRecords(consumer, expectedRecordsBatch2)
-        Mockito.`when`(isValidRecord!!.apply(ArgumentMatchers.any())).thenThrow(IllegalStateException("induced exception"))
-        Assertions.assertThrows(IllegalStateException::class.java) { consumer!!.accept(expectedRecordsBatch3[0]) }
+        Mockito.`when`(isValidRecord!!.apply(ArgumentMatchers.any()))
+            .thenThrow(IllegalStateException("induced exception"))
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            consumer!!.accept(expectedRecordsBatch3[0])
+        }
         consumer!!.close()
 
         verifyStartAndCloseFailure()
@@ -186,8 +195,11 @@ class BufferedStreamConsumerTest {
         consumer!!.start()
         consumeRecords(consumer, expectedRecordsBatch1)
         consumeRecords(consumer, expectedRecordsBatch2)
-        Mockito.`when`(isValidRecord!!.apply(ArgumentMatchers.any())).thenThrow(IllegalStateException("induced exception"))
-        Assertions.assertThrows(IllegalStateException::class.java) { consumer!!.accept(expectedRecordsBatch3[0]) }
+        Mockito.`when`(isValidRecord!!.apply(ArgumentMatchers.any()))
+            .thenThrow(IllegalStateException("induced exception"))
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            consumer!!.accept(expectedRecordsBatch3[0])
+        }
         consumer!!.close()
 
         verifyStartAndCloseFailure()
@@ -200,7 +212,9 @@ class BufferedStreamConsumerTest {
     @Test
     @Throws(Exception::class)
     fun testExceptionDuringOnClose() {
-        Mockito.doThrow(IllegalStateException("induced exception")).`when`(onClose).accept(false, HashMap())
+        Mockito.doThrow(IllegalStateException("induced exception"))
+            .`when`(onClose)
+            .accept(false, HashMap())
 
         val expectedRecordsBatch1 = generateRecords(1000)
         val expectedRecordsBatch2 = generateRecords(1000)
@@ -209,7 +223,11 @@ class BufferedStreamConsumerTest {
         consumeRecords(consumer, expectedRecordsBatch1)
         consumer!!.accept(STATE_MESSAGE1)
         consumeRecords(consumer, expectedRecordsBatch2)
-        Assertions.assertThrows(IllegalStateException::class.java, { consumer!!.close() }, "Expected an error to be thrown on close")
+        Assertions.assertThrows(
+            IllegalStateException::class.java,
+            { consumer!!.close() },
+            "Expected an error to be thrown on close"
+        )
 
         verifyStartAndClose()
 
@@ -222,9 +240,10 @@ class BufferedStreamConsumerTest {
     @Throws(Exception::class)
     fun test2StreamWith1State() {
         val expectedRecordsStream1 = generateRecords(1000)
-        val expectedRecordsStream2 = expectedRecordsStream1
+        val expectedRecordsStream2 =
+            expectedRecordsStream1
                 .stream()
-                .map { `object`: AirbyteMessage? -> Jsons.clone(`object`) }
+                .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
                 .peek { m: AirbyteMessage -> m.record.withStream(STREAM_NAME2) }
                 .collect(Collectors.toList())
 
@@ -246,9 +265,10 @@ class BufferedStreamConsumerTest {
     @Throws(Exception::class)
     fun test2StreamWith2State() {
         val expectedRecordsStream1 = generateRecords(1000)
-        val expectedRecordsStream2 = expectedRecordsStream1
+        val expectedRecordsStream2 =
+            expectedRecordsStream1
                 .stream()
-                .map { `object`: AirbyteMessage? -> Jsons.clone(`object`) }
+                .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
                 .peek { m: AirbyteMessage -> m.record.withStream(STREAM_NAME2) }
                 .collect(Collectors.toList())
 
@@ -271,7 +291,8 @@ class BufferedStreamConsumerTest {
     @Test
     @Throws(Exception::class)
     fun testSlowStreamReturnsState() {
-        // generate records less than the default maxQueueSizeInBytes to confirm periodic flushing occurs
+        // generate records less than the default maxQueueSizeInBytes to confirm periodic flushing
+        // occurs
         val expectedRecordsStream1 = generateRecords(500L)
         val expectedRecordsStream1Batch2 = generateRecords(200L)
 
@@ -280,22 +301,29 @@ class BufferedStreamConsumerTest {
         flushConsumer.start()
         consumeRecords(flushConsumer, expectedRecordsStream1)
         flushConsumer.accept(STATE_MESSAGE1)
-        // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
+        // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce
+        // slowdowns
         TimeUnit.SECONDS.sleep(PERIODIC_BUFFER_FREQUENCY.toLong())
         consumeRecords(flushConsumer, expectedRecordsStream1Batch2)
         flushConsumer.close()
 
         verifyStartAndClose()
-        // expects the records to be grouped because periodicBufferFlush occurs at the end of acceptTracked
-        verifyRecords(STREAM_NAME, SCHEMA_NAME,
-                Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()))
+        // expects the records to be grouped because periodicBufferFlush occurs at the end of
+        // acceptTracked
+        verifyRecords(
+            STREAM_NAME,
+            SCHEMA_NAME,
+            Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream())
+                .collect(Collectors.toList())
+        )
         Mockito.verify(outputRecordCollector).accept(STATE_MESSAGE1)
     }
 
     @Test
     @Throws(Exception::class)
     fun testSlowStreamReturnsMultipleStates() {
-        // generate records less than the default maxQueueSizeInBytes to confirm periodic flushing occurs
+        // generate records less than the default maxQueueSizeInBytes to confirm periodic flushing
+        // occurs
         val expectedRecordsStream1 = generateRecords(500L)
         val expectedRecordsStream1Batch2 = generateRecords(200L)
         // creates records equal to size that triggers buffer flush
@@ -306,7 +334,8 @@ class BufferedStreamConsumerTest {
         flushConsumer.start()
         consumeRecords(flushConsumer, expectedRecordsStream1)
         flushConsumer.accept(STATE_MESSAGE1)
-        // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
+        // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce
+        // slowdowns
         TimeUnit.SECONDS.sleep(PERIODIC_BUFFER_FREQUENCY.toLong())
         consumeRecords(flushConsumer, expectedRecordsStream1Batch2)
         consumeRecords(flushConsumer, expectedRecordsStream1Batch3)
@@ -314,65 +343,105 @@ class BufferedStreamConsumerTest {
         flushConsumer.close()
 
         verifyStartAndClose()
-        // expects the records to be grouped because periodicBufferFlush occurs at the end of acceptTracked
-        verifyRecords(STREAM_NAME, SCHEMA_NAME,
-                Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()))
+        // expects the records to be grouped because periodicBufferFlush occurs at the end of
+        // acceptTracked
+        verifyRecords(
+            STREAM_NAME,
+            SCHEMA_NAME,
+            Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream())
+                .collect(Collectors.toList())
+        )
         verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1Batch3)
-        // expects two STATE messages returned since one will be flushed after periodic flushing occurs
+        // expects two STATE messages returned since one will be flushed after periodic flushing
+        // occurs
         // and the other after buffer has been filled
         Mockito.verify(outputRecordCollector).accept(STATE_MESSAGE1)
         Mockito.verify(outputRecordCollector).accept(STATE_MESSAGE2)
     }
 
     /**
-     * Verify that if we ack a state message for stream2 while stream1 has unflushed records+state, that
-     * we do _not_ ack stream1's state message.
+     * Verify that if we ack a state message for stream2 while stream1 has unflushed records+state,
+     * that we do _not_ ack stream1's state message.
      */
     @Test
     @Throws(Exception::class)
     fun testStreamTail() {
-        // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
+        // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy
+        // here
         val strategy = Mockito.mock(BufferingStrategy::class.java)
-        // The first two records that we push will not trigger any flushes, but the third record _will_
+        // The first two records that we push will not trigger any flushes, but the third record
+        // _will_
         // trigger a flush
-        Mockito.`when`(strategy.addRecord(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(
+        Mockito.`when`(strategy.addRecord(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(
                 Optional.empty(),
                 Optional.empty(),
-                Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM))
-        consumer = BufferedStreamConsumer(
+                Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM)
+            )
+        consumer =
+            BufferedStreamConsumer(
                 outputRecordCollector,
                 onStart,
                 strategy,
                 onClose,
                 CATALOG,
-                isValidRecord,  // Never periodic flush
+                isValidRecord, // Never periodic flush
                 Duration.ofHours(24),
-                null)
-        val expectedRecordsStream1 = java.util.List.of(AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(AirbyteRecordMessage()
-                        .withStream(STREAM_NAME)
-                        .withNamespace(SCHEMA_NAME)))
-        val expectedRecordsStream2 = java.util.List.of(AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(AirbyteRecordMessage()
-                        .withStream(STREAM_NAME2)
-                        .withNamespace(SCHEMA_NAME)))
+                null
+            )
+        val expectedRecordsStream1 =
+            java.util.List.of(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage().withStream(STREAM_NAME).withNamespace(SCHEMA_NAME)
+                    )
+            )
+        val expectedRecordsStream2 =
+            java.util.List.of(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage().withStream(STREAM_NAME2).withNamespace(SCHEMA_NAME)
+                    )
+            )
 
-        val state1 = AirbyteMessage()
+        val state1 =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage()
+                .withState(
+                    AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(AirbyteStreamState()
-                                .withStreamDescriptor(StreamDescriptor().withName(STREAM_NAME).withNamespace(SCHEMA_NAME))
-                                .withStreamState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1)))))
-        val state2 = AirbyteMessage()
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    StreamDescriptor()
+                                        .withName(STREAM_NAME)
+                                        .withNamespace(SCHEMA_NAME)
+                                )
+                                .withStreamState(
+                                    Jsons.jsonNode(ImmutableMap.of("state_message_id", 1))
+                                )
+                        )
+                )
+        val state2 =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage()
+                .withState(
+                    AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(AirbyteStreamState()
-                                .withStreamDescriptor(StreamDescriptor().withName(STREAM_NAME2).withNamespace(SCHEMA_NAME))
-                                .withStreamState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2)))))
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    StreamDescriptor()
+                                        .withName(STREAM_NAME2)
+                                        .withNamespace(SCHEMA_NAME)
+                                )
+                                .withStreamState(
+                                    Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))
+                                )
+                        )
+                )
 
         consumer!!.start()
         consumeRecords(consumer, expectedRecordsStream1)
@@ -393,52 +462,78 @@ class BufferedStreamConsumerTest {
     }
 
     /**
-     * Same idea as [.testStreamTail] but with global state. We shouldn't emit any state
-     * messages until we close the consumer.
+     * Same idea as [.testStreamTail] but with global state. We shouldn't emit any state messages
+     * until we close the consumer.
      */
     @Test
     @Throws(Exception::class)
     fun testStreamTailGlobalState() {
-        // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy here
+        // InMemoryRecordBufferingStrategy always returns FLUSH_ALL, so just mock a new strategy
+        // here
         val strategy = Mockito.mock(BufferingStrategy::class.java)
-        // The first two records that we push will not trigger any flushes, but the third record _will_
+        // The first two records that we push will not trigger any flushes, but the third record
+        // _will_
         // trigger a flush
-        Mockito.`when`(strategy.addRecord(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(
+        Mockito.`when`(strategy.addRecord(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenReturn(
                 Optional.empty(),
                 Optional.empty(),
-                Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM))
-        consumer = BufferedStreamConsumer(
+                Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM)
+            )
+        consumer =
+            BufferedStreamConsumer(
                 outputRecordCollector,
                 onStart,
                 strategy,
                 onClose,
                 CATALOG,
-                isValidRecord,  // Never periodic flush
+                isValidRecord, // Never periodic flush
                 Duration.ofHours(24),
-                null)
-        val expectedRecordsStream1 = java.util.List.of(AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(AirbyteRecordMessage()
-                        .withStream(STREAM_NAME)
-                        .withNamespace(SCHEMA_NAME)))
-        val expectedRecordsStream2 = java.util.List.of(AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(AirbyteRecordMessage()
-                        .withStream(STREAM_NAME2)
-                        .withNamespace(SCHEMA_NAME)))
+                null
+            )
+        val expectedRecordsStream1 =
+            java.util.List.of(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage().withStream(STREAM_NAME).withNamespace(SCHEMA_NAME)
+                    )
+            )
+        val expectedRecordsStream2 =
+            java.util.List.of(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage().withStream(STREAM_NAME2).withNamespace(SCHEMA_NAME)
+                    )
+            )
 
-        val state1 = AirbyteMessage()
+        val state1 =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage()
+                .withState(
+                    AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                        .withGlobal(AirbyteGlobalState()
-                                .withSharedState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1)))))
-        val state2 = AirbyteMessage()
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(
+                                    Jsons.jsonNode(ImmutableMap.of("state_message_id", 1))
+                                )
+                        )
+                )
+        val state2 =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage()
+                .withState(
+                    AirbyteStateMessage()
                         .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                        .withGlobal(AirbyteGlobalState()
-                                .withSharedState(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2)))))
+                        .withGlobal(
+                            AirbyteGlobalState()
+                                .withSharedState(
+                                    Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))
+                                )
+                        )
+                )
 
         consumer!!.start()
         consumeRecords(consumer, expectedRecordsStream1)
@@ -454,14 +549,16 @@ class BufferedStreamConsumerTest {
         consumer!!.close()
         // Now we've closed the consumer, which flushes everything.
         // Verify that we ack the final state.
-        // Note that we discard state1 entirely - this is OK. As long as we ack the last state message,
+        // Note that we discard state1 entirely - this is OK. As long as we ack the last state
+        // message,
         // the source can correctly resume from that point.
         Mockito.verify(outputRecordCollector).accept(state2)
     }
 
     private val consumerWithFlushFrequency: BufferedStreamConsumer
         get() {
-            val flushFrequencyConsumer = BufferedStreamConsumer(
+            val flushFrequencyConsumer =
+                BufferedStreamConsumer(
                     outputRecordCollector,
                     onStart,
                     InMemoryRecordBufferingStrategy(recordWriter, 10000),
@@ -469,7 +566,8 @@ class BufferedStreamConsumerTest {
                     CATALOG,
                     isValidRecord,
                     Duration.ofSeconds(PERIODIC_BUFFER_FREQUENCY.toLong()),
-                    null)
+                    null
+                )
             return flushFrequencyConsumer
         }
 
@@ -479,7 +577,7 @@ class BufferedStreamConsumerTest {
         Mockito.verify(onClose).accept(false, HashMap())
     }
 
-    /** Indicates that a failure occurred while consuming AirbyteMessages  */
+    /** Indicates that a failure occurred while consuming AirbyteMessages */
     @Throws(Exception::class)
     private fun verifyStartAndCloseFailure() {
         Mockito.verify(onStart).call()
@@ -487,10 +585,19 @@ class BufferedStreamConsumerTest {
     }
 
     @Throws(Exception::class)
-    private fun verifyRecords(streamName: String, namespace: String, expectedRecords: Collection<AirbyteMessage>) {
-        Mockito.verify(recordWriter).accept(
+    private fun verifyRecords(
+        streamName: String,
+        namespace: String,
+        expectedRecords: Collection<AirbyteMessage>
+    ) {
+        Mockito.verify(recordWriter)
+            .accept(
                 AirbyteStreamNameNamespacePair(streamName, namespace),
-                expectedRecords.stream().map { obj: AirbyteMessage -> obj.record }.collect(Collectors.toList()))
+                expectedRecords
+                    .stream()
+                    .map { obj: AirbyteMessage -> obj.record }
+                    .collect(Collectors.toList())
+            )
     }
 
     companion object {
@@ -498,33 +605,53 @@ class BufferedStreamConsumerTest {
         private const val STREAM_NAME = "id_and_name"
         private const val STREAM_NAME2 = STREAM_NAME + 2
         private const val PERIODIC_BUFFER_FREQUENCY = 5
-        private val CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog().withStreams(java.util.List.of(
-                CatalogHelpers.createConfiguredAirbyteStream(
-                        STREAM_NAME,
-                        SCHEMA_NAME,
-                        Field.of("id", JsonSchemaType.NUMBER),
-                        Field.of("name", JsonSchemaType.STRING)),
-                CatalogHelpers.createConfiguredAirbyteStream(
-                        STREAM_NAME2,
-                        SCHEMA_NAME,
-                        Field.of("id", JsonSchemaType.NUMBER),
-                        Field.of("name", JsonSchemaType.STRING))))
+        private val CATALOG: ConfiguredAirbyteCatalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        CatalogHelpers.createConfiguredAirbyteStream(
+                            STREAM_NAME,
+                            SCHEMA_NAME,
+                            Field.of("id", JsonSchemaType.NUMBER),
+                            Field.of("name", JsonSchemaType.STRING)
+                        ),
+                        CatalogHelpers.createConfiguredAirbyteStream(
+                            STREAM_NAME2,
+                            SCHEMA_NAME,
+                            Field.of("id", JsonSchemaType.NUMBER),
+                            Field.of("name", JsonSchemaType.STRING)
+                        )
+                    )
+                )
 
-        private val STATE_MESSAGE1: AirbyteMessage = AirbyteMessage()
+        private val STATE_MESSAGE1: AirbyteMessage =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1))))
-        private val STATE_MESSAGE2: AirbyteMessage = AirbyteMessage()
+                .withState(
+                    AirbyteStateMessage()
+                        .withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 1)))
+                )
+        private val STATE_MESSAGE2: AirbyteMessage =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))))
+                .withState(
+                    AirbyteStateMessage()
+                        .withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2)))
+                )
 
-        private fun consumeRecords(consumer: BufferedStreamConsumer?, records: Collection<AirbyteMessage>) {
-            records.forEach(Consumer { m: AirbyteMessage? ->
-                try {
-                    consumer!!.accept(m)
-                } catch (e: Exception) {
-                    throw RuntimeException(e)
+        private fun consumeRecords(
+            consumer: BufferedStreamConsumer?,
+            records: Collection<AirbyteMessage>
+        ) {
+            records.forEach(
+                Consumer { m: AirbyteMessage? ->
+                    try {
+                        consumer!!.accept(m)
+                    } catch (e: Exception) {
+                        throw RuntimeException(e)
+                    }
                 }
-            })
+            )
         }
 
         // NOTE: Generates records at chunks of 160 bytes
@@ -534,16 +661,26 @@ class BufferedStreamConsumerTest {
             var i = 0
             while (true) {
                 val payload =
-                        Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)))
+                    Jsons.jsonNode(
+                        ImmutableMap.of(
+                            "id",
+                            RandomStringUtils.randomAlphabetic(7),
+                            "name",
+                            "human " + String.format("%8d", i)
+                        )
+                    )
                 val sizeInBytes = RecordSizeEstimator.getStringByteSize(payload)
                 bytesCounter += sizeInBytes
-                val airbyteMessage = AirbyteMessage()
+                val airbyteMessage =
+                    AirbyteMessage()
                         .withType(AirbyteMessage.Type.RECORD)
-                        .withRecord(AirbyteRecordMessage()
+                        .withRecord(
+                            AirbyteRecordMessage()
                                 .withStream(STREAM_NAME)
                                 .withNamespace(SCHEMA_NAME)
                                 .withEmittedAt(Instant.now().toEpochMilli())
-                                .withData(payload))
+                                .withData(payload)
+                        )
                 if (bytesCounter > targetSizeInBytes) {
                     break
                 } else {

@@ -23,11 +23,19 @@ internal class TwoStageSizeEstimatorTest {
 
     @Test
     fun testGetTargetBufferByteSize() {
-        Assertions.assertEquals(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
-                TwoStageSizeEstimator.getTargetBufferByteSize(null))
-        Assertions.assertEquals(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
-                TwoStageSizeEstimator.getTargetBufferByteSize(Long.MAX_VALUE))
-        Assertions.assertEquals(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
-                TwoStageSizeEstimator.getTargetBufferByteSize(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE - 10L))
+        Assertions.assertEquals(
+            FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
+            TwoStageSizeEstimator.getTargetBufferByteSize(null)
+        )
+        Assertions.assertEquals(
+            FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
+            TwoStageSizeEstimator.getTargetBufferByteSize(Long.MAX_VALUE)
+        )
+        Assertions.assertEquals(
+            FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
+            TwoStageSizeEstimator.getTargetBufferByteSize(
+                FetchSizeConstants.MIN_BUFFER_BYTE_SIZE - 10L
+            )
+        )
     }
 }

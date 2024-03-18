@@ -14,12 +14,14 @@ internal class InitialSizeEstimatorTest {
         val minFetchSize = 1
         val defaultFetchSize = 20
         val maxFetchSize = 120
-        val sizeEstimator = InitialSizeEstimator(
+        val sizeEstimator =
+            InitialSizeEstimator(
                 bufferByteSize,
                 initialSampleSize,
                 minFetchSize,
                 defaultFetchSize,
-                maxFetchSize)
+                maxFetchSize
+            )
 
         // size: 3 * 4 = 12
         sizeEstimator.accept("1")
@@ -39,6 +41,9 @@ internal class InitialSizeEstimatorTest {
         Assertions.assertTrue(fetchSize.isPresent)
         val expectedMaxByteSize = 21L
         Assertions.assertEquals(expectedMaxByteSize, Math.round(sizeEstimator.getMaxRowByteSize()))
-        Assertions.assertEquals((bufferByteSize / expectedMaxByteSize) + 1, fetchSize.get().toLong()) // + 1 needed for int remainder rounding
+        Assertions.assertEquals(
+            (bufferByteSize / expectedMaxByteSize) + 1,
+            fetchSize.get().toLong()
+        ) // + 1 needed for int remainder rounding
     }
 }

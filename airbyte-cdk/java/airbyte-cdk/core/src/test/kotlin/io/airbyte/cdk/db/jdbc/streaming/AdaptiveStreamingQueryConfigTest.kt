@@ -3,12 +3,12 @@
  */
 package io.airbyte.cdk.db.jdbc.streaming
 
+import java.sql.ResultSet
+import java.sql.SQLException
 import joptsimple.internal.Strings
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import java.sql.ResultSet
-import java.sql.SQLException
 
 internal class AdaptiveStreamingQueryConfigTest {
     @Test

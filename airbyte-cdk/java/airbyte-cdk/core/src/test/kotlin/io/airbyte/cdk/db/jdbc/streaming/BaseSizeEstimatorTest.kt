@@ -4,20 +4,28 @@
 package io.airbyte.cdk.db.jdbc.streaming
 
 import io.airbyte.commons.json.Jsons
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.Map
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 internal class BaseSizeEstimatorTest {
     @Test
     fun testGetEstimatedByteSize() {
         Assertions.assertEquals(0L, BaseSizeEstimator.getEstimatedByteSize(null))
         Assertions.assertEquals(21L, BaseSizeEstimator.getEstimatedByteSize("12345"))
-        Assertions.assertEquals(45L, BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value"))))
+        Assertions.assertEquals(
+            45L,
+            BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value")))
+        )
     }
 
-    class TestSizeEstimator(bufferByteSize: Long, minFetchSize: Int, defaultFetchSize: Int, maxFetchSize: Int) : BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize) {
+    class TestSizeEstimator(
+        bufferByteSize: Long,
+        minFetchSize: Int,
+        defaultFetchSize: Int,
+        maxFetchSize: Int
+    ) : BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize) {
         override fun getFetchSize(): Optional<Int> {
             return Optional.empty()
         }
@@ -35,7 +43,8 @@ internal class BaseSizeEstimatorTest {
         val minFetchSize = 10
         val defaultFetchSize = 20
         val maxFetchSize = 40
-        val sizeEstimator = TestSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize)
+        val sizeEstimator =
+            TestSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize)
 
         sizeEstimator.setMeanByteSize(-1.0)
         Assertions.assertEquals(defaultFetchSize, sizeEstimator.boundedFetchSize)
