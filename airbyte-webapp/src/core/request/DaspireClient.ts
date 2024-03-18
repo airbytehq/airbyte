@@ -157,11 +157,14 @@ export const userPlan = (options?: SecondParameter<typeof apiOverride>) => {
   );
 };
 
-export const createSubscription = (productItemId: string, options?: SecondParameter<typeof apiOverride>) => {
+export const createSubscription = (
+  params: GetUpgradeSubscriptionParams,
+  options?: SecondParameter<typeof apiOverride>
+) => {
   return apiOverride<CreateSunscriptionUrl>(
     {
-      url: `/sub/create?productItemId=${productItemId}`,
-      method: "get",
+      url: `/sub/create?cloudPackageId=${params.cloudPackageId}`,
+      method: "post",
       headers: { "Content-Type": "application/json" },
     },
     options

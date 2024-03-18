@@ -45,7 +45,7 @@ export const useCloudRegions = (): any => {
 };
 export const useCreateSubscription = () => {
   const service = usePaymentService();
-  return useMutation((productItemId: string) => service.createSubscriptionUrl(productItemId));
+  return useMutation((params: GetUpgradeSubscriptionParams) => service.createSubscriptionUrl(params));
 };
 
 export const useGetUpgradeSubscription = () => {
@@ -77,7 +77,7 @@ export const useInstanceSelect = () => {
   return useMutation((cloudItemId: string) => service.instanceSelect(cloudItemId));
 };
 export const useAsyncAction = (): {
-  onCreateSubscriptionURL: (productItemId: string) => Promise<any>;
+  onCreateSubscriptionURL: (params: GetUpgradeSubscriptionParams) => Promise<any>;
   onGetUpgradeSubscription: (params: GetUpgradeSubscriptionParams) => Promise<any>;
   onUpgradeSubscription: () => Promise<any>;
   onPauseSubscription: () => Promise<any>;
@@ -93,8 +93,8 @@ export const useAsyncAction = (): {
   const { mutateAsync: updatePaymentMethodURL } = useUpdatePaymentMethodURL();
   const { mutateAsync: instanceSelect } = useInstanceSelect();
 
-  const onCreateSubscriptionURL = async (productItemId: string) => {
-    return await createSubscription(productItemId);
+  const onCreateSubscriptionURL = async (params: GetUpgradeSubscriptionParams) => {
+    return await createSubscription(params);
   };
 
   const onGetUpgradeSubscription = async (params: GetUpgradeSubscriptionParams) => {
