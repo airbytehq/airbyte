@@ -1,0 +1,24 @@
+{
+  "type": ["array"],
+  "items": {
+    "type": ["object"],
+    "required": ["id", "name", "type"],
+    "properties": {
+      "id": {
+        "type": ["string"]
+      },
+      "name": {
+        "type": ["string"]
+      },
+      "type": {
+        "type": ["string"]
+      },
+      "alias": {
+        "type": ["string"]
+      },
+      "deprecated": {
+        "type": ["boolean"]
+      }
+    }
+  }
+}
