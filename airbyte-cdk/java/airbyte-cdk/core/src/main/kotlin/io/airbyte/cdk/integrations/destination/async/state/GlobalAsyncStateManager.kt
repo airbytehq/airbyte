@@ -156,7 +156,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      */
     fun flushStates(outputRecordCollector: Consumer<AirbyteMessage?>) {
         var bytesFlushed: Long = 0L
-        LOGGER.info("Flushing states")
+        logger.info { "Flushing states" }
         synchronized(lock) {
             for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in
                 descToStateIdQ.entries) {
@@ -210,7 +210,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                 }
             }
         }
-        LOGGER.info("Flushing states complete")
+        logger.info { "Flushing states complete" }
         freeBytes(bytesFlushed)
     }
 
