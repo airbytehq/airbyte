@@ -48,10 +48,9 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     try {
       iteratorHasNextValue = messageIterator.hasNext();
     } catch (final Exception ex) {
-      // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This
-      // will ensure the platform retry logic
-      // kicks in and keeps retrying the sync until the initial snapshot is complete.
-      throw new RuntimeException(ex);
+      // If the underlying iterator throws an exception, we want to fail the sync, expecting sync/attempt will be restarted and
+      // sync will resume from the last state message.
+      throw new FailedRecordIteratorException(ex);
     }
     if (iteratorHasNextValue) {
       if (shouldEmitStateMessage() && sourceStateMessageProducer.shouldEmitStateMessage(stream)) {

@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -40,7 +41,6 @@ class CursorStateMessageProducerTest {
 
   private static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "shoes";
-  private static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR = new AirbyteStreamNameNamespacePair(STREAM_NAME, NAMESPACE);
   private static final String UUID_FIELD_NAME = "ascending_inventory_uuid";
 
   private static final ConfiguredAirbyteStream STREAM = CatalogHelpers.createConfiguredAirbyteStream(
@@ -136,7 +136,7 @@ class CursorStateMessageProducerTest {
       }
 
     };
-  };
+  }
 
   private static Iterator<AirbyteMessage> messageIterator;
   private StateManager stateManager;
@@ -177,7 +177,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        RECORD_VALUE_5);
+        Optional.of(RECORD_VALUE_5));
 
     final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
@@ -195,7 +195,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        null);
+        Optional.empty());
 
     final SourceStateIterator iterator = new SourceStateIterator(messageStream, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
@@ -211,7 +211,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        RECORD_VALUE_1);
+        Optional.of(RECORD_VALUE_1));
 
     final SourceStateIterator iterator = new SourceStateIterator(exceptionIterator, STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
 
@@ -225,7 +225,7 @@ class CursorStateMessageProducerTest {
     // frequency minimum of 1 record
     assertEquals(createStateMessage(RECORD_VALUE_2, 2, 4.0), iterator.next());
     // no further records to read since Exception was caught above and marked iterator as endOfData()
-    assertThrows(RuntimeException.class, () -> iterator.hasNext());
+    assertThrows(FailedRecordIteratorException.class, () -> iterator.hasNext());
   }
 
   @Test
@@ -234,7 +234,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        RECORD_VALUE_1);
+        Optional.of(RECORD_VALUE_1));
 
     final SourceStateIterator iterator = new SourceStateIterator(exceptionIterator, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
@@ -340,7 +340,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        RECORD_VALUE_1);
+        Optional.of(RECORD_VALUE_1));
 
     final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
 
@@ -393,7 +393,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        RECORD_VALUE_1);
+        Optional.of(RECORD_VALUE_1));
 
     final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
 
@@ -425,7 +425,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        RECORD_VALUE_1);
+        Optional.of(RECORD_VALUE_1));
 
     final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(10, Duration.ZERO));
 

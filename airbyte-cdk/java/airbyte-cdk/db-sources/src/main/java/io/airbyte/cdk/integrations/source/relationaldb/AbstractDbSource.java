@@ -405,7 +405,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
       CursorStateMessageProducer messageProducer = new CursorStateMessageProducer(
           stateManager,
-          cursorInfo.map(CursorInfo::getCursor).orElse(null));
+          cursorInfo.map(CursorInfo::getCursor));
 
       iterator = AutoCloseableIterators.transform(
           autoCloseableIterator -> new SourceStateIterator(autoCloseableIterator, airbyteStream, messageProducer,
@@ -675,6 +675,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * When larger than 0, the incremental iterator will emit intermediate state for every N records.
    * Please note that if intermediate state emission is enabled, the incremental query must be ordered
    * by the cursor field.
+   *
+   * TODO: Return an optional value instead of 0 to make it easier to understand.
    */
   protected int getStateEmissionFrequency() {
     return 0;

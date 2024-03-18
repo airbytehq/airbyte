@@ -19,20 +19,20 @@ import org.slf4j.LoggerFactory;
 public class CursorStateMessageProducer implements SourceStateMessageProducer<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CursorStateMessageProducer.class);
+  private static final int LOG_FREQUENCY = 100;
 
   private final StateManager stateManager;
-  private final String initialCursor;
-  private String currentMaxCursor;
-  private long currentMaxCursorRecordCount = 0L;
+  private final Optional<String> initialCursor;
+  private Optional<String> currentMaxCursor;
 
   // We keep this field just to control logging frequency.
   private int totalRecordCount = 0;
   private AirbyteStateMessage intermediateStateMessage = null;
 
-  private boolean cursorOutOrOrderDetected = false;
+  private boolean cursorOutOfOrderDetected = false;
 
   public CursorStateMessageProducer(final StateManager stateManager,
-                                    final String initialCursor) {
+                                    final Optional<String> initialCursor) {
     this.stateManager = stateManager;
     this.initialCursor = initialCursor;
     this.currentMaxCursor = initialCursor;
@@ -47,7 +47,7 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
     // blocked by shouldEmitStateMessage check.
     final AirbyteStateMessage message = intermediateStateMessage;
     intermediateStateMessage = null;
-    if (cursorOutOrOrderDetected) {
+    if (cursorOutOfOrderDetected) {
       LOGGER.warn("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
           + "data loss can occur.");
     }
@@ -70,19 +70,16 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
       final String cursorCandidate = getCursorCandidate(cursorField, message);
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(stream,
           cursorField);
-      final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
+      final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor.orElse(null), cursorCandidate, cursorType);
       if (cursorComparison < 0) {
         // Update the current max cursor only when current max cursor < cursor candidate from the message
         if (!Objects.equals(currentMaxCursor, initialCursor)) {
           // Only create an intermediate state when it is not the first record.
           intermediateStateMessage = createStateMessage(stream, totalRecordCount);
         }
-        currentMaxCursor = cursorCandidate;
-        currentMaxCursorRecordCount = 1L;
-      } else if (cursorComparison == 0) {
-        currentMaxCursorRecordCount++;
+        currentMaxCursor = Optional.of(cursorCandidate);
       } else if (cursorComparison > 0) {
-        cursorOutOrOrderDetected = true;
+        cursorOutOfOrderDetected = true;
       }
     }
     return message;
@@ -111,19 +108,12 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
    */
   private AirbyteStateMessage createStateMessage(final ConfiguredAirbyteStream stream, final int recordCount) {
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
+    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor.orElse(null));
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
 
     // logging once every 100 messages to reduce log verbosity
-    if (recordCount % 100 == 0) {
-      LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
-          pair,
-          cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
-          cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
-          cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
-          cursorInfo.map(CursorInfo::getCursorField).orElse(null),
-          cursorInfo.map(CursorInfo::getCursor).orElse(null),
-          cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
+    if (recordCount % LOG_FREQUENCY == 0) {
+      LOGGER.info("State report for stream {}: {}", pair, cursorInfo);
     }
 
     return stateMessage;
