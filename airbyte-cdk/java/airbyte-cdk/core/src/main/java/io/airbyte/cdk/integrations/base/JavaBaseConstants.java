@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.base;
 
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 
 public final class JavaBaseConstants {
 
@@ -52,5 +53,9 @@ public final class JavaBaseConstants {
       COLUMN_NAME_AB_META);
 
   public static final String DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal";
+
+  public static String upperQuoted(final String column) {
+    return StringUtils.wrap(column.toUpperCase(), "\"");
+  }
 
 }
