@@ -9,6 +9,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, NamedTuple, Union
 
 import requests
+from requests.exceptions import HTTPError
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -58,15 +59,6 @@ class MetaTablesStream(BambooHrStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
 
-# class EmployeesDirectoryStream(BambooHrStream):
-#     primary_key = "id"
-
-#     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-#         yield from response.json()["employees"]
-
-#     def path(self, **kwargs) -> str:
-#         return "employees/directory"
-
 
 class BambooMetaField(NamedTuple):
     """Immutable typed representation of what is returned from the meta/fields
@@ -77,6 +69,53 @@ class BambooMetaField(NamedTuple):
     alias: Optional[str] = None
     deprecated: Optional[bool] = None
 
+class TablesStream(BambooHrStream):
+    primary_key = None
+    raise_on_http_errors = False
+    skip_http_status_codes = [
+        requests.codes.NOT_FOUND,
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._schema = None
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        # Each table has an 'alias' field that we use to grab
+        # all values.  See `path` method for how it's used in the URL.
+        for meta_table in self.config.get('available_tables'):
+            table = meta_table.get('alias')
+            yield {"table": table}
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        target_table = stream_slice["table"]
+        return f"employees/all/tables/{target_table}"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        try :
+            # This will raise an exception if the response is not 2xx
+            response.raise_for_status()
+            yield from response.json()
+        except HTTPError as e:
+            # If it's one of the status codes we're skipping, log a warning.
+            # Otherwise, raise the exception.
+            if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
+                raise e
+            self.logger.warning(f"Stream `{self.name}`. An error occurred, details: {e}. Skipping for now.")
+            yield {}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        table_name = stream_slice["table"]
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            # Augment the record with the table name.
+            record["knoetic_table_name"] = table_name
+            yield record
 class CustomReportsStream(BambooHrStream):
     primary_key = None
 
@@ -89,47 +128,47 @@ class CustomReportsStream(BambooHrStream):
             fields = map(lambda field: BambooMetaField(**field), raw_fields)
             yield {"fields": fields}
 
-    @property
-    def schema(self):
-        if not self._schema:
-            self._schema = self.get_json_schema()
-        return self._schema
+    # @property
+    # def schema(self):
+    #     if not self._schema:
+    #         self._schema = self.get_json_schema()
+    #     return self._schema
 
-    def _get_json_schema_from_config(self):
-        if self.config.get("custom_reports_fields"):
-            properties = {
-                field.strip(): {"type": ["null", "string"]}
-                for field in convert_custom_reports_fields_to_list(self.config.get("custom_reports_fields", ""))
-            }
-        else:
-            properties = {}
-        return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": properties,
-        }
+    # def _get_json_schema_from_config(self):
+    #     if self.config.get("custom_reports_fields"):
+    #         properties = {
+    #             field.strip(): {"type": ["null", "string"]}
+    #             for field in convert_custom_reports_fields_to_list(self.config.get("custom_reports_fields", ""))
+    #         }
+    #     else:
+    #         properties = {}
+    #     return {
+    #         "$schema": "http://json-schema.org/draft-07/schema#",
+    #         "type": "object",
+    #         "properties": properties,
+    #     }
 
-    def _get_json_schema_from_file(self):
-        return super().get_json_schema()
+    # def _get_json_schema_from_file(self):
+    #     return super().get_json_schema()
 
-    @staticmethod
-    def _union_schemas(schema1, schema2):
-        schema1["properties"] = {**schema1["properties"], **schema2["properties"]}
-        return schema1
+    # @staticmethod
+    # def _union_schemas(schema1, schema2):
+    #     schema1["properties"] = {**schema1["properties"], **schema2["properties"]}
+    #     return schema1
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Returns the JSON schema.
+    # def get_json_schema(self) -> Mapping[str, Any]:
+    #     """
+    #     Returns the JSON schema.
 
-        The final schema is constructed by first generating a schema for the fields
-        in the config and, if default fields should be included, adding these to the
-        schema.
-        """
-        schema = self._get_json_schema_from_config()
-        if self.config.get("custom_reports_include_default_fields"):
-            default_schema = self._get_json_schema_from_file()
-            schema = self._union_schemas(default_schema, schema)
-        return schema
+    #     The final schema is constructed by first generating a schema for the fields
+    #     in the config and, if default fields should be included, adding these to the
+    #     schema.
+    #     """
+    #     schema = self._get_json_schema_from_config()
+    #     if self.config.get("custom_reports_include_default_fields"):
+    #         default_schema = self._get_json_schema_from_file()
+    #         schema = self._union_schemas(default_schema, schema)
+    #     return schema
 
     def path(self, **kwargs) -> str:
         return "reports/custom"
@@ -200,9 +239,18 @@ class SourceBambooHr(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = SourceBambooHr.add_authenticator_to_config(config)
+
+        # Grabbing these early on and sending them through the config seemed
+        # simpler than passing them along as parent streams.
         available_fields = list(MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh))
+        available_tables = list(MetaTablesStream(config).read_records(sync_mode=SyncMode.full_refresh))
+
         config["available_fields"] = available_fields
+        config["available_tables"] = available_tables
+
         return [
+            MetaTablesStream(config),
+            TablesStream(config),
             MetaFieldsStream(config),
             CustomReportsStream(config),
         ]
