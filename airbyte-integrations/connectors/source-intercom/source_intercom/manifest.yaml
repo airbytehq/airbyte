@@ -21,7 +21,7 @@ definitions:
       api_token: "{{ config['access_token'] }}"
     request_headers:
       # API version header
-      Intercom-Version: "2.10"
+      Intercom-Version: "'2.10'"
       Accept: "application/json"
     error_handler:
       type: "DefaultErrorHandler"

@@ -39,7 +39,7 @@ class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransfo
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): List<Field<*>>? {
         throw NotImplementedError("This Destination does not support final tables")
     }
@@ -54,7 +54,7 @@ class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransfo
 
     override fun getRowNumber(
         primaryKey: List<ColumnId>,
-        cursorField: Optional<ColumnId>
+        cursorField: Optional<ColumnId>,
     ): Field<Int>? {
         throw NotImplementedError("This Destination does not support final tables")
     }

@@ -17,5 +17,5 @@ dependencies {
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
 }
