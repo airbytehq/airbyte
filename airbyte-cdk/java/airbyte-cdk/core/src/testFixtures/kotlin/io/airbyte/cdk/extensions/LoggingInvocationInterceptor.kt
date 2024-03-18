@@ -37,7 +37,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
             if (LoggingInvocationInterceptor::class.java.getDeclaredMethod(method!!.name, InvocationInterceptor.Invocation::class.java, ReflectiveInvocationContext::class.java,
                             ExtensionContext::class.java) == null) {
                 LOGGER!!.error("Junit LoggingInvocationInterceptor executing unknown interception point {}", method.name)
-                return method.invoke(proxy, *args)
+                return method.invoke(proxy, *(args!!))
             }
             val invocation = args!![0] as InvocationInterceptor.Invocation<*>?
             val invocationContext = args[1] as ReflectiveInvocationContext<Method?>?
@@ -72,20 +72,22 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 val elapsedMs = Duration.between(start, Instant.now()).toMillis()
                 LOGGER.info("Junit completed {} in {}", logLineSuffix, DurationFormatUtils.formatDurationWords(elapsedMs, true, true))
                 return retVal
-            } catch (t: Throwable) {
+            } catch (throwable: Throwable) {
                 timeoutTask.cancel()
                 val elapsedMs = Duration.between(start, Instant.now()).toMillis()
+                var t1: Throwable
                 if (timeoutTask.wasTriggered) {
-                    val t1 = t
-                    t = TimeoutException(
+                    t1 = TimeoutException(
                             "Execution was cancelled after %s. If you think your test should be given more time to complete, you can use the @Timeout annotation. If all the test of a connector are slow, "
                                     + " you can override the property 'JunitMethodExecutionTimeout' in your gradle.properties."
                                     .formatted(DurationFormatUtils.formatDurationWords(elapsedMs, true, true)))
-                    t.initCause(t1)
+                    t1.initCause(throwable)
+                } else {
+                    t1 = throwable
                 }
                 var belowCurrentCall = false
                 val stackToDisplay: MutableList<String?> = LinkedList()
-                for (stackString in ExceptionUtils.getStackFrames(t)) {
+                for (stackString in ExceptionUtils.getStackFrames(throwable)) {
                     if (stackString!!.startsWith("\tat ")) {
                         if (!belowCurrentCall && stackString.contains(LoggingInvocationInterceptor::class.java.canonicalName)) {
                             belowCurrentCall = true
@@ -100,7 +102,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 val stackTrace = StringUtils.join(stackToDisplay, "\n    ")
                 LOGGER!!.error("Junit exception throw during {} after {}:\n{}", logLineSuffix, DurationFormatUtils.formatDurationWords(elapsedMs, true, true),
                         stackTrace)
-                throw t
+                throw t1
             } finally {
                 timeoutTask.cancel()
             }
@@ -154,7 +156,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
             private fun getTimeout(invocationContext: ReflectiveInvocationContext<Method?>?): Duration? {
                 var timeout: Duration? = null
-                if (invocationContext!!.executable is Method) {
+                var m = invocationContext!!.executable
+                if (m is Method) {
                     var timeoutAnnotation: Timeout? = m.getAnnotation<Timeout?>(Timeout::class.java)
                     if (timeoutAnnotation == null) {
                         timeoutAnnotation = invocationContext.targetClass.getAnnotation(Timeout::class.java)

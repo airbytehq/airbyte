@@ -20,16 +20,16 @@ import java.util.*
 import java.util.function.Consumer
 
 class SshBastionContainer : AutoCloseable {
-    class SshBastionContainerFactory : ContainerFactory<GenericContainer<*>?>() {
+    class SshBastionContainerFactory : ContainerFactory<GenericContainer<*>>() {
         override fun createNewContainer(imageName: DockerImageName?): GenericContainer<*>? {
-            val container: GenericContainer<*> = GenericContainer<Any?>(ImageFromDockerfile("bastion-test")
+            val container: GenericContainer<*> = GenericContainer<Nothing>(ImageFromDockerfile("bastion-test")
                     .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
                     .withExposedPorts(22)
             return container
         }
 
-        fun exclusive(network: Network?): GenericContainer<*>? {
-            val imageModifier = Consumer { c: GenericContainer<*>? ->
+        fun exclusive(network: Network): GenericContainer<*>? {
+            val imageModifier = Consumer { c: GenericContainer<*> ->
                 c!!.withNetwork(network)
             }
             val container = super.exclusive("bastion-test", NamedContainerModifierImpl("withNetwork", imageModifier))
@@ -40,7 +40,7 @@ class SshBastionContainer : AutoCloseable {
     var container: GenericContainer<*>? = null
         private set
 
-    fun initAndStartBastion(network: Network?) {
+    fun initAndStartBastion(network: Network) {
         container = factory!!.exclusive(network)
         container!!.start()
     }
@@ -64,7 +64,7 @@ class SshBastionContainer : AutoCloseable {
     fun getTunnelConfig(tunnelMethod: SshTunnel.TunnelMethod?,
                         builderWithSchema: ImmutableMap.Builder<Any?, Any?>?,
                         innerAddress: Boolean): JsonNode? {
-        return Jsons.jsonNode(builderWithSchema
+        return Jsons.jsonNode(builderWithSchema!!
                 .put("tunnel_method", getTunnelMethod(tunnelMethod, innerAddress))
                 .build())
     }
