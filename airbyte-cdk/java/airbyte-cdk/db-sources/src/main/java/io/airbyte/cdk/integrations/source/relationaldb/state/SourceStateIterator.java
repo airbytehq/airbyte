@@ -48,7 +48,8 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     try {
       iteratorHasNextValue = messageIterator.hasNext();
     } catch (final Exception ex) {
-      // If the underlying iterator throws an exception, we want to fail the sync, expecting sync/attempt will be restarted and
+      // If the underlying iterator throws an exception, we want to fail the sync, expecting sync/attempt
+      // will be restarted and
       // sync will resume from the last state message.
       throw new FailedRecordIteratorException(ex);
     }

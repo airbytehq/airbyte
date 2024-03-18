@@ -25,8 +25,8 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
   private final Optional<String> initialCursor;
   private Optional<String> currentMaxCursor;
 
-  // We keep this field just to control logging frequency.
-  private int totalRecordCount = 0;
+  // We keep this field to mark `cursor_record_count` and also to control logging frequency.
+  private int currentCursorRecordCount = 0;
   private AirbyteStateMessage intermediateStateMessage = null;
 
   private boolean cursorOutOfOrderDetected = false;
@@ -64,7 +64,6 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
    */
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, AirbyteMessage message) {
-    totalRecordCount++;
     final String cursorField = IncrementalUtils.getCursorField(stream);
     if (message.getRecord().getData().hasNonNull(cursorField)) {
       final String cursorCandidate = getCursorCandidate(cursorField, message);
@@ -72,23 +71,25 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
           cursorField);
       final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor.orElse(null), cursorCandidate, cursorType);
       if (cursorComparison < 0) {
+        currentCursorRecordCount = 0;
         // Update the current max cursor only when current max cursor < cursor candidate from the message
         if (!Objects.equals(currentMaxCursor, initialCursor)) {
           // Only create an intermediate state when it is not the first record.
-          intermediateStateMessage = createStateMessage(stream, totalRecordCount);
+          intermediateStateMessage = createStateMessage(stream);
         }
         currentMaxCursor = Optional.of(cursorCandidate);
       } else if (cursorComparison > 0) {
         cursorOutOfOrderDetected = true;
       }
     }
+    currentCursorRecordCount++;
     return message;
 
   }
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
-    return createStateMessage(stream, totalRecordCount);
+    return createStateMessage(stream);
   }
 
   /**
@@ -103,16 +104,16 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
    * Creates AirbyteStateMessage while updating the cursor used to checkpoint the state of records
    * read up so far
    *
-   * @param recordCount count of total read messages. Used to determine log frequency.
    * @return AirbyteMessage which includes information on state of records read so far
    */
-  private AirbyteStateMessage createStateMessage(final ConfiguredAirbyteStream stream, final int recordCount) {
+  private AirbyteStateMessage createStateMessage(final ConfiguredAirbyteStream stream) {
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor.orElse(null));
+    System.out.println("state message creation: " + pair + " " + currentMaxCursor.orElse(null) + " " + currentCursorRecordCount);
+    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor.orElse(null), currentCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
 
     // logging once every 100 messages to reduce log verbosity
-    if (recordCount % LOG_FREQUENCY == 0) {
+    if (currentCursorRecordCount % LOG_FREQUENCY == 0) {
       LOGGER.info("State report for stream {}: {}", pair, cursorInfo);
     }
 
