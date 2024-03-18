@@ -808,7 +808,7 @@ class ModelToComponentFactory:
 
     def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
-            # ignore type error beause fixing it would have a lot of dependencies, revisit later
+            # ignore type error because fixing it would have a lot of dependencies, revisit later
             return DeclarativeSingleUseRefreshTokenOauth2Authenticator(  # type: ignore
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
@@ -829,6 +829,9 @@ class ModelToComponentFactory:
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
+                refresh_token_error_status_codes=model.refresh_token_updater.refresh_token_error_status_codes,
+                refresh_token_error_key=model.refresh_token_updater.refresh_token_error_key,
+                refresh_token_error_values=model.refresh_token_updater.refresh_token_error_values,
             )
         # ignore type error because fixing it would have a lot of dependencies, revisit later
         return DeclarativeOauth2Authenticator(  # type: ignore

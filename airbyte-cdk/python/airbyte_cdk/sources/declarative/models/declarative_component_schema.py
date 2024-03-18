@@ -261,6 +261,24 @@ class RefreshTokenUpdater(BaseModel):
         examples=[['credentials', 'token_expiry_date']],
         title='Config Path To Expiry Date',
     )
+    refresh_token_error_status_codes: Optional[List[int]] = Field(
+        [],
+        description='Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified). Responses with one of the error status code and containing an error value will be flagged as a config error',
+        examples=[[400, 500]],
+        title='Refresh Token Error Status Codes',
+    )
+    refresh_token_error_key: Optional[str] = Field(
+        '',
+        description='Key to Identify refresh token error in response (Refresh Token Error Status Codes and Refresh Token Error Values should be also specified).',
+        examples=['error'],
+        title='Refresh Token Error Key',
+    )
+    refresh_token_error_values: Optional[List[str]] = Field(
+        [],
+        description='List of values to check for exception during token refresh process. Used to check if the error found in the response matches the key from the Refresh Token Error Key field (e.g. response={"error": "invalid_grant"}). Only responses with one of the error status code and containing an error value will be flagged as a config error',
+        examples=[['invalid_grant', 'invalid_permissions']],
+        title='Refresh Token Error Values',
+    )
 
 
 class OAuthAuthenticator(BaseModel):
