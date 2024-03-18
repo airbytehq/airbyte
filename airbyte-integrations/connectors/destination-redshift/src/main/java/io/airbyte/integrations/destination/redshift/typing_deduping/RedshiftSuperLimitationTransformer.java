@@ -77,7 +77,7 @@ public class RedshiftSuperLimitationTransformer implements StreamAwareDataTransf
    * 3. Verify if replacing the varchars with NULLs brought the record size down to < 16MB. This
    * includes verifying the original bytes and transformed bytes are below the record size limit.
    *
-   * 4. If 3 is true, this is the worst case scenarios where we try to resurrect PKs and cursors and
+   * 4. If 3 is false, this is the worst case scenarios where we try to resurrect PKs and cursors and
    * trash the rest of the record.
    *
    */
