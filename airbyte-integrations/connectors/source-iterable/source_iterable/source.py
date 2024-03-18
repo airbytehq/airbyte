@@ -103,7 +103,7 @@ class SourceIterable(YamlDeclarativeSource):
                 SmsUsageInfo(authenticator=authenticator, **date_range),
                 Purchase(authenticator=authenticator, **date_range),
                 CustomEvent(authenticator=authenticator, **date_range),
-                HostedUnsubscribeClick(authenticator=authenticator, **date_range)
+                HostedUnsubscribeClick(authenticator=authenticator, **date_range),
             ]
         )
         return streams
