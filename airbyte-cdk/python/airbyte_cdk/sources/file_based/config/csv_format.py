@@ -147,6 +147,11 @@ class CsvFormat(BaseModel):
         description="How to infer the types of the columns. If none, inference default to strings.",
         airbyte_hidden=True,
     )
+    skip_wrong_number_of_fields_error: bool = Field(
+        title="Skip Wrong Number of Fields Error",
+        default=False,
+        description="Whether to skip the error when the number of fields in the CSV does not match the number of columns in the schema.",
+    )
 
     @validator("delimiter")
     def validate_delimiter(cls, v: str) -> str:

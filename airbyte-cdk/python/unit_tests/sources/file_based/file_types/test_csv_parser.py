@@ -501,6 +501,55 @@ class CsvReaderTest(unittest.TestCase):
             next(data_generator)
         assert new_dialect not in csv.list_dialects()
 
+    def test_given_too_many_values_for_columns(self) -> None:
+        for skip_wrong_number_of_fields_error in [True, False]:
+            self._config_format.skip_wrong_number_of_fields_error = skip_wrong_number_of_fields_error
+            self._stream_reader.open_file.return_value = (
+                CsvFileBuilder()
+                .with_data(
+                    [
+                        "header",
+                        "too many values,value,value,value",
+                    ]
+                )
+                .build()
+            )
+
+            data_generator = self._read_data()
+            # Check if exception is raised only when skip_wrong_number_of_fields_error is False
+            if not skip_wrong_number_of_fields_error:
+                with pytest.raises(RecordParseError):
+                    print(list(data_generator))
+            else:
+                # Expect no exception when skip_wrong_number_of_fields_error is True
+                list(data_generator)
+                self._logger.error.assert_called_with('Skipping record in line 2 of file a uri due to mismatched columns.')
+
+    def test_given_too_few_values_for_columns(self) -> None:
+        for skip_wrong_number_of_fields_error in [True, False]:
+            self._config_format.skip_wrong_number_of_fields_error = skip_wrong_number_of_fields_error
+            self._stream_reader.open_file.return_value = (
+                CsvFileBuilder()
+                .with_data(
+                    [
+                        "header1,header2,header3",
+                        "a value",
+                        "value1,value2,value3",
+                    ]
+                )
+                .build()
+            )
+
+            data_generator = self._read_data()
+            # Check if exception is raised only when skip_wrong_number_of_fields_error is False
+            if not skip_wrong_number_of_fields_error:
+                with pytest.raises(RecordParseError):
+                    list(data_generator)
+            else:
+                # Expect no exception when skip_wrong_number_of_fields_error is True
+                list(data_generator)
+                self._logger.error.assert_called_with('Skipping record in line 2 of file a uri due to mismatched rows.')
+
     def _read_data(self) -> Generator[Dict[str, str], None, None]:
         data_generator = self._csv_reader.read_data(
             self._config,

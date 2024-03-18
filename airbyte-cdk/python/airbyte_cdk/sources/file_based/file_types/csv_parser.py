@@ -70,13 +70,21 @@ class _CsvReader:
                     # The row was not properly parsed if any of the values are None. This will most likely occur if there are more columns
                     # than headers or more headers dans columns
                     if None in row:
-                        raise RecordParseError(
-                            FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_COLUMNS,
-                            filename=file.uri,
-                            lineno=lineno,
-                        )
+                        if config_format.skip_wrong_number_of_fields_error:
+                            logger.error(f"Skipping record in line {lineno} of file {file.uri} due to mismatched columns.")
+                        else:
+                            raise RecordParseError(
+                                FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_COLUMNS,
+                                filename=file.uri,
+                                lineno=lineno,
+                            )
                     if None in row.values():
-                        raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_ROWS, filename=file.uri, lineno=lineno)
+                        if config_format.skip_wrong_number_of_fields_error:
+                            logger.error(f"Skipping record in line {lineno} of file {file.uri} due to mismatched rows.")
+                        else:
+                            raise RecordParseError(
+                                FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_ROWS, filename=file.uri, lineno=lineno
+                            )
                     yield row
             finally:
                 # due to RecordParseError or GeneratorExit
