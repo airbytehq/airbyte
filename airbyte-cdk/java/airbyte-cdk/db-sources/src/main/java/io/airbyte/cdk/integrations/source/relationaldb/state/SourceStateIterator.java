@@ -71,7 +71,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
         recordCount++;
         return processedMessage;
       } catch (final Exception e) {
-        throw new RuntimeException(e);
+        throw new FailedRecordIteratorException(e);
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;

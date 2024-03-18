@@ -157,7 +157,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        null);
+        Optional.empty());
 
     final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
@@ -250,7 +250,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        null);
+        Optional.empty());
 
     final SourceStateIterator iterator =
         new SourceStateIterator(Collections.emptyIterator(), STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
@@ -270,7 +270,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        null);
+        Optional.empty());
 
     final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(0, Duration.ZERO));
 
@@ -286,7 +286,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        null);
+        Optional.empty());
 
     final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(1, Duration.ZERO));
 
@@ -315,7 +315,7 @@ class CursorStateMessageProducerTest {
 
     final CursorStateMessageProducer producer = new CursorStateMessageProducer(
         stateManager,
-        null);
+        Optional.empty());
 
     final SourceStateIterator iterator = new SourceStateIterator(messageIterator, STREAM, producer, new StateEmitFrequency(2, Duration.ZERO));
 

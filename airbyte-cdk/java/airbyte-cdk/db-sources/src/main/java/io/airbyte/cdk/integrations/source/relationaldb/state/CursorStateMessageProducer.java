@@ -71,18 +71,21 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
           cursorField);
       final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor.orElse(null), cursorCandidate, cursorType);
       if (cursorComparison < 0) {
-        currentCursorRecordCount = 0;
+        // Reset cursor but include current record message. This value will be used to create state message.
         // Update the current max cursor only when current max cursor < cursor candidate from the message
         if (!Objects.equals(currentMaxCursor, initialCursor)) {
           // Only create an intermediate state when it is not the first record.
           intermediateStateMessage = createStateMessage(stream);
         }
         currentMaxCursor = Optional.of(cursorCandidate);
+        currentCursorRecordCount = 1;
       } else if (cursorComparison > 0) {
         cursorOutOfOrderDetected = true;
+      } else {
+        currentCursorRecordCount++;
       }
     }
-    currentCursorRecordCount++;
+    System.out.println("processed a record message. count: " + currentCursorRecordCount);
     return message;
 
   }
