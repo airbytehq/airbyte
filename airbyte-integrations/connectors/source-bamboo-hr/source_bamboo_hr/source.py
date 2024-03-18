@@ -6,7 +6,7 @@
 import base64
 import logging
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, NamedTuple, Union
 
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -49,7 +49,6 @@ class MetaFieldsStream(BambooHrStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
 
-
 # class EmployeesDirectoryStream(BambooHrStream):
 #     primary_key = "id"
 
@@ -60,6 +59,15 @@ class MetaFieldsStream(BambooHrStream):
 #         return "employees/directory"
 
 
+class BambooMetaField(NamedTuple):
+    """Immutable typed representation of what is returned from the meta/fields
+    endpoint."""
+    id: Union[int, str]
+    name: str
+    type: str
+    alias: Optional[str] = None
+    deprecated: Optional[bool] = None
+
 class CustomReportsStream(BambooHrStream):
     primary_key = None
 
@@ -68,11 +76,8 @@ class CustomReportsStream(BambooHrStream):
         self._schema = None
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        count = 0
-        for fields in chunk_iterable(self.config.get("available_fields"), 100):
-            print("Yield Count")
-            print(count)
-            count += 1
+        for raw_fields in chunk_iterable(self.config.get('available_fields'), 100):
+            fields = map(lambda field: BambooMetaField(**field), raw_fields)
             yield {"fields": fields}
 
     @property
@@ -124,8 +129,19 @@ class CustomReportsStream(BambooHrStream):
     def http_method(self) -> str:
         return "POST"
 
-    def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        return {"title": "Airbyte", "fields": list(self.schema["properties"].keys())}
+    @staticmethod
+    def _convert_field_to_id(field:BambooMetaField) -> str:
+        """Converts a BambooMetaField to an id for the custom report endpoint."""
+        if field.alias is None:
+            return str(id)
+        else:
+            return field.alias
+
+
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        fields = stream_slice["fields"]
+        field_ids = tuple(map(CustomReportsStream._convert_field_to_id, fields))
+        return {"title": "Airbyte", "fields": field_ids}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()["employees"]

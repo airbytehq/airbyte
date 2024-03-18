@@ -1,7 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from typing import Iterable, Iterator, TypeVar, Tuple
 import itertools
+
+# T is a generic type variable that can be used to represent any type.
+T = TypeVar('T')
 
 def convert_custom_reports_fields_to_list(custom_reports_fields: str) -> list:
     return custom_reports_fields.split(",") if custom_reports_fields else []
@@ -16,7 +20,7 @@ def validate_custom_fields(custom_fields, available_fields):
 
     return denied_fields
 
-def chunk_iterable(iterable, chunk_size):
+def chunk_iterable(iterable: Iterable[T], chunk_size: int) -> Iterator[Tuple[T, ...]]:
     """
     Generates chunks of the given iterable with the specified size.
 
