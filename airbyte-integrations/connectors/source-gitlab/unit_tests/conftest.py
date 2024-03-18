@@ -1,6 +1,7 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+
 
 import pytest
 
@@ -12,12 +13,6 @@ def config(request):
         "api_url": request.param,
         "credentials": {"auth_type": "access_token", "access_token": "token"},
     }
-
-
-@pytest.fixture(autouse=True)
-def disable_cache(mocker):
-    mocker.patch("source_gitlab.streams.Projects.use_cache", new_callable=mocker.PropertyMock, return_value=False)
-    mocker.patch("source_gitlab.streams.Groups.use_cache", new_callable=mocker.PropertyMock, return_value=False)
 
 
 @pytest.fixture

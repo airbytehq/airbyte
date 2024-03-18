@@ -37,7 +37,7 @@ definitions:
       response_filters:
         - type: HttpResponseFilter
           action: IGNORE
-          http_codes: [403, 404]
+          http_codes: [403]
         - type: HttpResponseFilter
           action: FAIL
           http_codes: [401]
@@ -46,6 +46,10 @@ definitions:
           action: FAIL
           http_codes: [500]
           error_message: Unable to connect to Gitlab API with the provided credentials
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [404]
+          error_message: Groups and/or projects that you provide are invalid or you don't have permission to view it.
     request_parameters: "{{ parameters.get('request_parameters', {}) }}"
 
   # Selector
