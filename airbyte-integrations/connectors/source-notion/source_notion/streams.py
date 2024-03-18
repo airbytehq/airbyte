@@ -17,7 +17,6 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from requests import HTTPError
 
-from .utils import transform_properties
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
@@ -140,7 +139,9 @@ class NotionStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # sometimes notion api returns response without results object
+        print(f"Response: {response.json()}")
         data = response.json().get("results", [])
+        print(f"Data: {data}")
         yield from data
 
 
@@ -221,7 +222,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
             if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
-                yield from transform_properties(record)
+                yield record
 
     def get_updated_state(
         self,
