@@ -21,8 +21,8 @@ This page contains the setup guide and reference information for the Microsoft O
 3. On the Set up the source page, select **Microsoft OneDrive** from the Source type dropdown.
 4. Enter the name for the Microsoft OneDrive connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
-6. Enter **Folder Path**. 
-7. Toggle the **Include Shared Items** button to search within shared items for files matching the defined stream pattern. Note that drive name and folder path are only relevant for your personal OneDrive and won't affect shared items.
+6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' to search in the selected OneDrive drive, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 8. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft OneDrive account**. Log in and authorize your Microsoft account. 
 9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
 10. Add a stream:
@@ -81,8 +81,8 @@ This source requires **Application permissions**. Follow these [instructions](ht
 3. On the **Set up** the source page, select **Microsoft OneDrive** from the Source type dropdown.
 4. Enter the name for the Microsoft OneDrive connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
-6. Enter **Folder Path**.
-7. Toggle the **Include Shared Items** button to search within shared items for files matching the defined stream pattern. Note that drive name and folder path are only relevant for your personal OneDrive and won't affect shared items.
+6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' to search in the selected OneDrive drive, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 8. Switch to **Service Key Authentication**
 9. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. 
 10. Enter **Tenant ID**, **Client ID** and **Client secret**. 
