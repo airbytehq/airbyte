@@ -3,10 +3,12 @@
 #
 
 
+import math
 from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException
+from conftest import records_per_slice
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import (
@@ -123,6 +125,54 @@ def test_path_with_stream_slice_param(stream, stream_slice, expected_path, confi
     else:
         result = stream.path()
     assert result == expected_path
+    
+    
+@pytest.mark.parametrize(
+    "stream, parent_records, state_checkpoint_interval",
+    [
+        (
+            ProductImages, 
+            [
+                {"id": 1, "images": [{"updated_at": "2021-01-01T00:00:00+00:00"}]},
+                {"id": 2, "images": [{"updated_at": "2021-02-01T00:00:00+00:00"}]},
+                {"id": 3, "images": [{"updated_at": "2021-03-01T00:00:00+00:00"}]},
+                {"id": 4, "images": [{"updated_at": "2021-04-01T00:00:00+00:00"}]},
+                {"id": 5, "images": [{"updated_at": "2021-05-01T00:00:00+00:00"}]},
+            ],
+            2,
+        ),
+    ],
+)
+def test_stream_slice_nested_substream_buffering(
+    mocker, 
+    config, 
+    stream, 
+    parent_records, 
+    state_checkpoint_interval,
+) -> None:
+    # making the stream instance
+    stream = stream(config)
+    stream.state_checkpoint_interval = state_checkpoint_interval
+    # simulating `read_records` for the `parent_stream`
+    mocker.patch(
+        "source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records", 
+        return_value=parent_records,
+    )
+    # count how many slices we expect, based on the number of parent_records
+    total_slices_expected = math.ceil(len(parent_records) / state_checkpoint_interval)
+    # define the how many records each individual slice should have, based on the number of parent_records
+    expected_records_per_slice = records_per_slice(parent_records, state_checkpoint_interval)
+    # slices counter
+    total_slices: int = 0
+    for slice in enumerate(stream.stream_slices()):
+        slice_index = slice[0]
+        nested_records = slice[1].get(stream.nested_entity)
+        # check the number of records / slice
+        assert len(nested_records) == expected_records_per_slice[slice_index]
+        # count total slices
+        total_slices += 1
+    # check we have emitted complete number of slices
+    assert total_slices ==  total_slices_expected    
 
 
 def test_check_connection(config, mocker) -> None:

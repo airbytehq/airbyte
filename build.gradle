@@ -98,7 +98,7 @@ allprojects {
 
     spotbugs {
         ignoreFailures = false
-        effort = Effort.valueOf(System.getProperty('skipSlowTests', 'false') == 'false' ? 'MAX' : 'MIN')
+        effort = Effort.valueOf('MAX')
         excludeFilter.set rootProject.file('spotbugs-exclude-filter-file.xml')
         reportLevel = Confidence.valueOf('HIGH')
         showProgress = false
@@ -187,7 +187,6 @@ allprojects {
         def vJUnit = "5.10.2"
         def vJUnitJupiter = "5.11.0"
 
-
         testFixturesImplementation platform("org.junit:junit-bom:${vJUnit}")
         testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
         testFixturesImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
@@ -209,6 +208,9 @@ allprojects {
     }
 
     tasks.withType(SpotBugsTask).configureEach {
+        if (name != "spotbugsMain" && System.getProperty('skipSlowTests', 'false') != 'false') {
+            enabled = false
+        }
         // Reports can be found under each subproject in build/spotbugs/
         reports {
             xml.required = false
@@ -216,5 +218,7 @@ allprojects {
         }
     }
 
-    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+    javadoc {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
 }
