@@ -119,7 +119,7 @@ public class RedshiftSuperLimitationTransformerTest {
   @Test
   public void testRedshiftSuperLimit_ShouldRemoveWholeRecord() {
     final Map<String, String> testData = new HashMap<>();
-    // Add 16Kb strings from column 1 to 1024 in testData -> total > 16MB
+    // Add 16Kb strings from column 1 to 1024 in testData where total > 16MB
     IntStream.range(1, 1025).forEach(i -> testData.put("column" + i, getLargeString(16)));
 
     AirbyteRecordMessageMeta upstreamMeta = new AirbyteRecordMessageMeta()

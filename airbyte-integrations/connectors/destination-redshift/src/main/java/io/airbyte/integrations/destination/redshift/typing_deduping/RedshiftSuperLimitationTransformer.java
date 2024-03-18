@@ -127,6 +127,7 @@ public class RedshiftSuperLimitationTransformer implements StreamAwareDataTransf
       bytes = originalBytes;
     } else if (node.isNumber()) {
       // Serialize exactly for numbers to account for Scientific notation converted to full value.
+      // This is what we send over wire for persistence.
       bytes = getByteSize(Jsons.serialize(node));
     } else if (node.isBoolean()) {
       bytes = getByteSize(node.toString());
@@ -136,7 +137,7 @@ public class RedshiftSuperLimitationTransformer implements StreamAwareDataTransf
       bytes = 0;
     }
     return new ScalarNodeModification(bytes, // For all other types, just return bytes
-        0, // account 4 bytes for null string
+        0,
         false);
   }
 

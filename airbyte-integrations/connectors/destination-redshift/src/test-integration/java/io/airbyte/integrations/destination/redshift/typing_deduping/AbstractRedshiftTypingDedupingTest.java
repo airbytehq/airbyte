@@ -171,7 +171,6 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   private String generateBigString(final int additionalChars) {
-    // Generate exactly 2 chars over the limit
     final int length = RedshiftSuperLimitationTransformer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE + additionalChars;
     return RANDOM
         .ints('a', 'z' + 1)
