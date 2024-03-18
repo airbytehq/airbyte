@@ -88,7 +88,7 @@ public class S3CsvFormatConfigTest {
         + "}"));
     final S3DestinationConfig s3ConfigWithoutGzipCompression = S3DestinationConfig.getS3DestinationConfig(configWithoutGzipCompression);
     assertEquals(
-        S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
+        S3DestinationConstants.getDEFAULT_COMPRESSION_TYPE(),
         ((S3CsvFormatConfig) s3ConfigWithoutGzipCompression.getFormatConfig()).getCompressionType());
 
     // with gzip compression config

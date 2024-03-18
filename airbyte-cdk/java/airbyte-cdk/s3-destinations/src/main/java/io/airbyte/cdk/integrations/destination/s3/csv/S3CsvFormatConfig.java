@@ -5,7 +5,7 @@
 package io.airbyte.cdk.integrations.destination.s3.csv;
 
 import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
-import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
+import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants.getDEFAULT_COMPRESSION_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
@@ -27,7 +27,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
         Flattening.fromValue(formatConfig.has("flattening") ? formatConfig.get("flattening").asText() : Flattening.NO.getValue()),
         formatConfig.has(COMPRESSION_ARG_NAME)
             ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
-            : DEFAULT_COMPRESSION_TYPE);
+            : getDEFAULT_COMPRESSION_TYPE());
   }
 
   public S3CsvFormatConfig(final Flattening flattening, final CompressionType compressionType) {

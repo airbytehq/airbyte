@@ -65,7 +65,7 @@ public abstract class S3BaseParquetDestinationAcceptanceTest extends S3AvroParqu
         final ObjectReader jsonReader = MAPPER.reader();
         GenericData.Record record;
         while ((record = parquetReader.read()) != null) {
-          final byte[] jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record);
+          final byte[] jsonBytes = AvroConstants.getJSON_CONVERTER().convertToJson(record);
           JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
           jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
           jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));

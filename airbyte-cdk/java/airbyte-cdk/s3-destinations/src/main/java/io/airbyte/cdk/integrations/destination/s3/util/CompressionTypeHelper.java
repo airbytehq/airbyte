@@ -5,7 +5,7 @@
 package io.airbyte.cdk.integrations.destination.s3.util;
 
 import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants.COMPRESSION_TYPE_ARG_NAME;
-import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
+import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants.getDEFAULT_COMPRESSION_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -18,7 +18,7 @@ public class CompressionTypeHelper {
    */
   public static CompressionType parseCompressionType(final JsonNode compressionConfig) {
     if (compressionConfig == null || compressionConfig.isNull()) {
-      return DEFAULT_COMPRESSION_TYPE;
+      return getDEFAULT_COMPRESSION_TYPE();
     }
     final String compressionType = compressionConfig.get(COMPRESSION_TYPE_ARG_NAME).asText();
     if (compressionType.toUpperCase().equals(CompressionType.GZIP.name())) {

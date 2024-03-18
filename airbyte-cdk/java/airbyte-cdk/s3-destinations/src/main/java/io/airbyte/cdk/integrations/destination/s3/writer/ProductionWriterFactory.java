@@ -42,9 +42,9 @@ public class ProductionWriterFactory implements S3WriterFactory {
       LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
 
       if (format == S3Format.AVRO) {
-        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER);
+        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.getJSON_CONVERTER());
       } else {
-        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER);
+        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.getJSON_CONVERTER());
       }
     }
 

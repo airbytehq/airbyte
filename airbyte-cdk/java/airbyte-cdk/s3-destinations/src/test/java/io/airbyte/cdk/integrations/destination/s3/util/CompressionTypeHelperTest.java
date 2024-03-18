@@ -16,7 +16,7 @@ class CompressionTypeHelperTest {
   @Test
   public void testGetCompressionType() {
     assertEquals(
-        S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
+        S3DestinationConstants.getDEFAULT_COMPRESSION_TYPE(),
         CompressionTypeHelper.parseCompressionType(null));
 
     assertEquals(
