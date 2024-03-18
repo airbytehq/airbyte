@@ -3,18 +3,31 @@
     {
       "stream": {
         "name": "members",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_token": {
-              "type": "string"
-            },
-            "workspace": {
-              "type": "string"
-            }
-          }
-        },
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["last_activity_occurred_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "activities",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "workspace",
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -22,19 +35,8 @@
     },
     {
       "stream": {
-        "name": "workspace",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "api_token": {
-              "type": "string"
-            },
-            "workspace": {
-              "type": "string"
-            }
-          }
-        },
+        "name": "activity_types",
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",

@@ -12,6 +12,9 @@
     "type": {
       "type": ["null", "string"]
     },
+    "last_activity_occurred_at": {
+      "type": ["null", "string"]
+    },
     "attributes": {
       "type": ["null", "object"],
       "additionalProperties": true,

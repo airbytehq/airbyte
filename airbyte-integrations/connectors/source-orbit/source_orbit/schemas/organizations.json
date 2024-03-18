@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "website": {
+          "type": ["null", "string"]
+        },
+        "logo_url": {
+          "type": ["null", "string"]
+        },
+        "members_count": {
+          "type": ["null", "integer"]
+        },
+        "employeers_count": {
+          "type": ["null", "integer"]
+        },
+        "last_active": {
+          "type": ["null", "string"]
+        },
+        "active_since": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type": ["null", "string"]
+        },
+        "updated_at": {
+          "type": ["null", "string"]
+        },
+        "lifecycle_stage": {
+          "type": ["null", "string"]
+        },
+        "source": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}
