@@ -50,7 +50,7 @@ fastavro = "~1.8.0"
 freezegun = "*"
 langchain = "0.0.271"
 markdown = "*"
-mypy = "*"
+mypy = "1.6.0"
 openai = { version = "0.27.9", extras = ["embeddings"] }
 pandas = "2.0.3"
 pdf2image = "1.16.3"
@@ -75,11 +75,32 @@ file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfmi
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
+[tool.mypy]
+warn_unused_configs = true
+warn_redundant_casts = true
+ignore_missing_imports = true
+strict_equality = true
+check_untyped_defs = true
+disallow_untyped_decorators = false
+disallow_any_generics = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+warn_return_any = true
+follow_imports = "silent"
+no_implicit_reexport = false
+#plugins = ["pydantic.mypy", "pendulum", "pytest-mypy-plugins"]
+
+[[tool.mypy.overrides]]
+module = "airbyte_cdk.models"
+ignore_errors = true
+
 [tool.poe.tasks]
 build-code-generator-image = "bin/build_code_generator_image.sh"
 generate-component-manifest-files = "bin/generate-component-manifest-files.sh"
 build = ["build-code-generator-image", "generate-component-manifest-files"]
 
 flake-check = "pflake8 --config ../../pyproject.toml ./"
+mypy-changed-files = "bin/run-mypy-on-modified-files.sh"
 unit-test-with-cov = "coverage run --data-file=unit_tests/.coverage.testPython --rcfile=../../pyproject.toml -m pytest -s unit_tests -c pytest.ini"
-check = ["flake-check", "unit-test-with-cov"]
+check = ["flake-check", "mypy-changed-files", "unit-test-with-cov"]
