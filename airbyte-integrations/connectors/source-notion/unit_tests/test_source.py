@@ -4,7 +4,7 @@
 
 from source_notion.source import SourceNotion
 from source_notion.components import *
-
+import pytest
 
 def test_streams():
     source = SourceNotion()
@@ -88,30 +88,26 @@ def test_notion_properties_transformation():
     assert NotionPropertiesTransformation().transform(input_record) == output_record
 
 
-def test_block_record_transformer():
-    response_record = {
-        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
-        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
-        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False,
-                                                                                                             "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
-                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False,
-                                                                                                                "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "mention", "mention": {"type": "page", "page": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"},
-                                     "plain_text": "test", "href": "https://www.notion.so/id"}], "color": "default"}
-    }
-    expected_record = {
-        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
-        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
-        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False,
-                                                                                                             "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
-                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False,
-                                                                                                                "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "mention", "mention": {"type": "page", "info": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": "https://www.notion.so/id"}],
-                      "color": "default"}
-    }
-    assert NotionBlocksTransformation().transform(
-        response_record) == expected_record
+@pytest.fixture
+def config_start_date():
+    return NotionSemiIncrementalFilter(parameters={}, config={"start_date": "2021-01-01T00:00:00.000Z"})
 
-# TODO: Add tests for CustomRecordFilter and CustomRetriever
+@pytest.mark.parametrize(
+    "state_value, expected_return",
+    [
+        (
+            [{"cursor": {"last_edited_time": "2021-02-01T00:00:00Z"}}], "2021-02-01T00:00:00Z"
+        ),
+        (
+            [{"cursor": {"last_edited_time": "2020-01-01T00:00:00Z"}}], "2021-01-01T00:00:00Z"
+        ),
+        (
+            [], "2021-01-01T00:00:00Z"
+        )       
+    ]
+)
+def test_get_filter_date_with_later_state_date(config_start_date, state_value, expected_return):
+    start_date = config_start_date.config["start_date"]
+    
+    result = config_start_date.get_filter_date(start_date, state_value)
+    assert result == expected_return, f"Expected {expected_return}, but got {result}."

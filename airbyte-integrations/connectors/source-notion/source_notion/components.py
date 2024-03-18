@@ -1,14 +1,39 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from dataclasses import dataclass, InitVar
+from dataclasses import dataclass, field
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
 
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
+
+@dataclass
+class NotionAuthenticator(DeclarativeAuthenticator):
+    """
+    Custom authenticator designed to handle all existing Notion authenticator configurations, being:
+    token_auth: Private integration token
+    legacy_token_auth: Legacy config for private tokens
+    oauth: Public integration token (static oauth-derived token using advanced auth protocol)
+    """
+    config: Mapping[str, Any]
+    token_auth: BearerAuthenticator
+    legacy_token_auth: BearerAuthenticator
+    oauth: BearerAuthenticator
+
+    def __new__(cls, token_auth, legacy_token_auth, oauth, config, *args, **kwargs) -> BearerAuthenticator:
+        credentials = config.get("credentials", {})
+
+        if config.get("access_token", {}):
+            return legacy_token_auth
+        elif credentials["auth_type"] == "token":
+            return token_auth
+        elif credentials["auth_type"] == "OAuth2.0":
+            return oauth
 
 @dataclass
 class NotionUserTransformation(RecordTransformation):
@@ -53,11 +78,6 @@ class NotionSemiIncrementalFilter(RecordFilter):
     This filter emulates incremental behavior by filtering out records based on the comparison of the cursor value with current value in state,
     ensuring only records updated after the cutoff timestamp are synced.
     """
-
-    parameters: InitVar[Mapping[str, Any]]
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self.parameters = parameters
 
     def filter_records(
         self,
