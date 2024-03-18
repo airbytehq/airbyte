@@ -5,6 +5,7 @@
 # mypy: ignore-errors
 
 import datetime
+from typing import Any, Mapping
 
 import pytest
 from airbyte_cdk.models import Level
@@ -27,6 +28,7 @@ from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamMod
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
+from airbyte_cdk.sources.declarative.models import CustomSchemaLoader as CustomSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
@@ -66,6 +68,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
@@ -1820,3 +1823,19 @@ def test_create_offset_increment():
     assert strategy.page_size == expected_strategy.page_size
     assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
     assert strategy.config == input_config
+
+
+class MyCustomSchemaLoader(SchemaLoader):
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Returns a mapping describing the stream's schema"""
+        return {}
+
+
+def test_create_custom_schema_loader():
+
+    definition = {
+        "type": "CustomSchemaLoader",
+        "class_name": "unit_tests.sources.declarative.parsers.test_model_to_component_factory.MyCustomSchemaLoader"
+    }
+    component = factory.create_component(CustomSchemaLoaderModel, definition, {})
+    assert isinstance(component, MyCustomSchemaLoader)
