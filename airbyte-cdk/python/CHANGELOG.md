@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.72.1
+low code: add refresh_token_error handler to DeclarativeOauth2Authenticator
+
 ## 0.72.0
 low-code: Allow defining custom schema loaders
 
