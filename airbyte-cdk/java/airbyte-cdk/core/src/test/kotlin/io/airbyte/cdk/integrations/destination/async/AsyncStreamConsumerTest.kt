@@ -34,6 +34,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.io.IOException
 import java.math.BigDecimal
 import java.time.Instant
+import java.util.Optional
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -148,7 +149,7 @@ class AsyncStreamConsumerTest {
                 catalog = CATALOG,
                 bufferManager = BufferManager(),
                 flushFailure = flushFailure,
-                defaultNamespace = "default_ns",
+                defaultNamespace = Optional.of("default_ns"),
                 dataTransformer = streamAwareDataTransformer,
                 deserializationUtil = deserializationUtil,
                 workerPool = Executors.newFixedThreadPool(5),
@@ -268,7 +269,7 @@ class AsyncStreamConsumerTest {
                 CATALOG,
                 BufferManager((1024 * 10).toLong()),
                 flushFailure,
-                "default_ns",
+                Optional.of("default_ns"),
             )
         Mockito.`when`(flushFunction.optimalBatchSizeBytes).thenReturn(0L)
 

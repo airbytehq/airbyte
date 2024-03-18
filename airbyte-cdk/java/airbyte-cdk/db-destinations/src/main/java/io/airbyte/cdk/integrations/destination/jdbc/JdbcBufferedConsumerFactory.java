@@ -79,7 +79,7 @@ public class JdbcBufferedConsumerFactory {
         new JdbcInsertFlushFunction(recordWriterFunction(database, sqlOperations, writeConfigs, catalog)),
         catalog,
         new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.2)),
-        defaultNamespace,
+        Optional.ofNullable(defaultNamespace),
         Executors.newFixedThreadPool(2));
   }
 

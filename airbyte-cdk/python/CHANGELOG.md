@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.71.0
+Declarative datetime-based cursors now only derive state values from records that were read
+
 ## 0.70.2
 low-code: remove superfluous sleep
 
