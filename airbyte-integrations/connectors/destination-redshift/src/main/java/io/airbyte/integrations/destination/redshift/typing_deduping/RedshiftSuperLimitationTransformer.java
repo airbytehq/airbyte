@@ -47,8 +47,8 @@ public class RedshiftSuperLimitationTransformer implements StreamAwareDataTransf
   public static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
   public static final int REDSHIFT_SUPER_MAX_BYTE_SIZE = 16 * 1024 * 1024;
 
-  static final Predicate<String> DEFAULT_VARCHAR_GT_THAN_64K_PREDICATE = text -> getByteSize(text) > REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
-  static final Predicate<Integer> DEFAULT_RECORD_SIZE_GT_THAN_16M_PREDICATE = size -> size > REDSHIFT_SUPER_MAX_BYTE_SIZE;
+  static final Predicate<String> DEFAULT_PREDICATE_VARCHAR_GREATER_THAN_64K = text -> getByteSize(text) > REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+  static final Predicate<Integer> DEFAULT_PREDICATE_RECORD_SIZE_GT_THAN_16M = size -> size > REDSHIFT_SUPER_MAX_BYTE_SIZE;
 
   private static final int CURLY_BRACES_BYTE_SIZE = getByteSize("{}");
   private static final int SQUARE_BRACKETS_BYTE_SIZE = getByteSize("[]");
@@ -65,6 +65,22 @@ public class RedshiftSuperLimitationTransformer implements StreamAwareDataTransf
 
   }
 
+  /*
+   * This method walks the Json tree nodes and does the following
+   *
+   * 1. Collect the original bytes using UTF-8 charset. This is to avoid double walking the tree if
+   * the total size > 16MB This is to optimize for best case (see worst case as 4 below) that most of
+   * the data will be < 16MB and only few offending varchars > 64KB.
+   *
+   * 2. Replace all TextNodes with Null nodes if they are greater than 64K.
+   *
+   * 3. Verify if replacing the varchars with NULLs brought the record size down to < 16MB. This
+   * includes verifying the original bytes and transformed bytes are below the record size limit.
+   *
+   * 4. If 3 is true, this is the worst case scenarios where we try to resurrect PKs and cursors and
+   * trash the rest of the record.
+   *
+   */
   @NotNull
   @Override
   public Pair<JsonNode, AirbyteRecordMessageMeta> transform(final StreamDescriptor streamDescriptor,
@@ -79,13 +95,13 @@ public class RedshiftSuperLimitationTransformer implements StreamAwareDataTransf
     // convert List<ColumnId> to Set<ColumnId> for faster lookup
     final Set<String> primaryKeys = streamConfig.primaryKey().stream().map(ColumnId::originalName).collect(Collectors.toSet());
     final DestinationSyncMode syncMode = streamConfig.destinationSyncMode();
-    final TransformationInfo transformationInfo = transformNodes(jsonNode, DEFAULT_VARCHAR_GT_THAN_64K_PREDICATE);
+    final TransformationInfo transformationInfo = transformNodes(jsonNode, DEFAULT_PREDICATE_VARCHAR_GREATER_THAN_64K);
     final int originalBytes = transformationInfo.originalBytes;
     final int transformedBytes = transformationInfo.originalBytes - transformationInfo.removedBytes;
     // We check if the transformedBytes has solved the record limit.
     log.debug("Traversal complete in {} ms", System.currentTimeMillis() - startTime);
-    if (DEFAULT_RECORD_SIZE_GT_THAN_16M_PREDICATE.test(originalBytes)
-        && DEFAULT_RECORD_SIZE_GT_THAN_16M_PREDICATE.test(transformedBytes)) {
+    if (DEFAULT_PREDICATE_RECORD_SIZE_GT_THAN_16M.test(originalBytes)
+        && DEFAULT_PREDICATE_RECORD_SIZE_GT_THAN_16M.test(transformedBytes)) {
       // If we have reached here with a bunch of small varchars constituted to becoming a large record,
       // person using Redshift for this data should re-evaluate life choices.
       log.warn("Record size before transformation {}, after transformation {} bytes exceeds 16MB limit", originalBytes, transformedBytes);
