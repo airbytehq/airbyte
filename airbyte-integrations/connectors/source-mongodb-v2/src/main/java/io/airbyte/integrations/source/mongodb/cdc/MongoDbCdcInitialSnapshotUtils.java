@@ -135,14 +135,14 @@ public class MongoDbCdcInitialSnapshotUtils {
     });
   }
 
-  private static boolean isInitialSnapshotStatus(final SyncMode syncMode, final MongoDbStreamState state) {
+  private static boolean isValidInitialSnapshotStatus(final SyncMode syncMode, final MongoDbStreamState state) {
     return syncModeToStatusMap.get(syncMode).contains(state.status());
   }
 
   public static void validateStateSyncMode(final MongoDbStateManager stateManager, final List<ConfiguredAirbyteStream> streams) {
     streams.forEach(stream -> {
       final var existingState = stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
-      if (existingState.isPresent() && !isInitialSnapshotStatus(stream.getSyncMode(), existingState.get())) {
+      if (existingState.isPresent() && !isValidInitialSnapshotStatus(stream.getSyncMode(), existingState.get())) {
         throw new ConfigErrorException("Stream " + stream.getStream().getName() + " is " + stream.getSyncMode() + " but the saved status "
             + existingState.get().status() + " doesn't match. Please reset this stream");
       }

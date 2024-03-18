@@ -83,7 +83,10 @@ public class InitialSnapshotHandler {
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
           }))
               // if nothing was found, return a new BsonDocument
-              .orElseGet(BsonDocument::new);
+                  .orElseGet(BsonDocument::new);
+
+          // When schema is enforced we query for the selected fields
+          // Otherwise we retreive the entire set of fields
           final var cursor = isEnforceSchema ? collection.find()
               .filter(filter)
               .projection(fields)
