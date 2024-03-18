@@ -29,6 +29,7 @@ const CopyDestinationPage: React.FC = () => {
     name: "",
     serviceType: "",
     connectionConfiguration: {},
+    workspaceId: "",
   });
 
   const destination = useGetDestination(query.id);

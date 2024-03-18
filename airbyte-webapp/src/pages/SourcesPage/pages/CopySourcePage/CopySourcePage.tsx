@@ -28,6 +28,7 @@ const CopySourcePage: React.FC = () => {
     name: "",
     serviceType: "",
     connectionConfiguration: {},
+    workspaceId: "",
   });
 
   const source = useGetSource(query.id);

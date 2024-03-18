@@ -33,6 +33,7 @@ export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinati
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
+    workspaceId?: any;
   }) => {
     const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === values.serviceType);
     const result = await createDestination({

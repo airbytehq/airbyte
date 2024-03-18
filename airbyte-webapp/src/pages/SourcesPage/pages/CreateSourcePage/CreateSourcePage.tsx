@@ -30,6 +30,7 @@ const CreateSourcePage: React.FC = () => {
     name: "",
     serviceType: "",
     connectionConfiguration: {},
+    workspaceId: "",
   });
 
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -39,6 +40,7 @@ const CreateSourcePage: React.FC = () => {
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
+    workspaceId?: any;
   }) => {
     const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
     if (!connector) {

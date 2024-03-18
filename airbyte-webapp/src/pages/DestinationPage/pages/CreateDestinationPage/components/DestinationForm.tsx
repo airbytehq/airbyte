@@ -15,6 +15,7 @@ interface DestinationFormProps {
     serviceType: string;
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
+    workspaceId?: any;
   }) => void;
   afterSelectConnector?: () => void;
   destinationDefinitions: DestinationDefinitionRead[];
