@@ -249,7 +249,7 @@ class RefreshTokenUpdater(BaseModel):
     )
     refresh_token_error_status_codes: Optional[List[int]] = Field(
         [],
-        description='Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified).',
+        description='Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified). Responses with one of the error status code and containing an error value will be flagged as a config error',
         examples=[[400, 500]],
         title='Refresh Token Error Status Codes',
     )
