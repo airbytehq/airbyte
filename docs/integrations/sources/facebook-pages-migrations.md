@@ -6,7 +6,8 @@
 This change is only breaking if you are syncing stream `Page`.
 :::
 
-This version brings an updated schema for the `v19.0` API version of the `Page` stream. The `messenger_ads_default_page_welcome_message` field has been deleted, and a few new fields have been added.
+This version brings an updated schema for the `v19.0` API version of the `Page` stream. 
+The `messenger_ads_default_page_welcome_message` field has been deleted, and `call_to_actions`, `posts`, `published_posts`, `ratings`, `tabs` and `tagged` fields have been added.
 
 Users should:
  - Refresh the source schema for the `Page` stream.
