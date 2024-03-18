@@ -174,7 +174,6 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                                          final List<ConfiguredAirbyteStream> streams,
                                                                          final MongoDbStateManager stateManager,
                                                                          final Instant emmitedAt) {
-    // final FullRefreshHandler fullRefreshHandler = new FullRefreshHandler();
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     if (stateManager.getCdcState() == null) {
       stateManager.updateCdcState(new MongoDbCdcState(null, sourceConfig.getEnforceSchema()));
