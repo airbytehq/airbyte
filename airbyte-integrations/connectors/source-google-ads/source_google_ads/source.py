@@ -45,9 +45,7 @@ from .streams import (
     UserInterest,
     UserLocationView,
 )
-from .utils import GAQL
-
-logger = logging.getLogger("airbyte")
+from .utils import GAQL, logger, traced_exception
 
 
 class SourceGoogleAds(AbstractSource):
@@ -191,6 +189,7 @@ class SourceGoogleAds(AbstractSource):
         # Check custom query request validity by sending metric request with non-existent time window
         for customer in customers:
             for query in config.get("custom_queries_array", []):
+                table_name = query["table_name"]
                 query = query["query"]
                 if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                     logger.warning(
@@ -205,7 +204,14 @@ class SourceGoogleAds(AbstractSource):
                     query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
 
                 query = query.set_limit(1)
-                response = google_api.send_request(str(query), customer_id=customer.id, login_customer_id=customer.login_customer_id)
+                try:
+                    response = google_api.send_request(
+                        str(query),
+                        customer_id=customer.id,
+                        login_customer_id=customer.login_customer_id,
+                    )
+                except Exception as exc:
+                    traced_exception(exc, customer.id, False, table_name)
                 # iterate over the response otherwise exceptions will not be raised!
                 for _ in response:
                     pass
