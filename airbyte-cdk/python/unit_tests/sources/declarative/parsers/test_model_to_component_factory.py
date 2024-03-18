@@ -359,6 +359,9 @@ def test_single_use_oauth_branch():
         interpolated_body_field: "{{ config['apikey'] }}"
       refresh_token_updater:
         refresh_token_name: "the_refresh_token"
+        refresh_token_error_status_codes: [400]
+        refresh_token_error_key: "error"
+        refresh_token_error_values: ["invalid_grant"]
         refresh_token_config_path:
           - apikey
     """
@@ -381,6 +384,9 @@ def test_single_use_oauth_branch():
     # default values
     assert authenticator._access_token_config_path == ["credentials", "access_token"]
     assert authenticator._token_expiry_date_config_path == ["credentials", "token_expiry_date"]
+    assert authenticator._refresh_token_error_status_codes == [400]
+    assert authenticator._refresh_token_error_key == "error"
+    assert authenticator._refresh_token_error_values == ["invalid_grant"]
 
 
 def test_list_based_stream_slicer_with_values_refd():
