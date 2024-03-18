@@ -6,6 +6,9 @@ package io.airbyte.cdk.integrations.base
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteLogMessage
 import io.airbyte.protocol.models.AirbyteMessage
+import java.io.*
+import java.nio.charset.StandardCharsets
+import java.util.regex.Pattern
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.appender.OutputStreamAppender
@@ -18,21 +21,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.junit.platform.commons.util.StringUtils
-import java.io.*
-import java.nio.charset.StandardCharsets
-import java.util.regex.Pattern
 
 class AirbyteLogMessageTemplateTest {
-    private var loggerContext: LoggerContext? = null
-    private var rootLoggerConfig: LoggerConfig? = null
-    private var logger: ExtendedLogger? = null
-    private var outputStreamAppender: OutputStreamAppender? = null
-    private var outputContent: ByteArrayOutputStream? = null
+    private lateinit var loggerContext: LoggerContext
+    private lateinit var rootLoggerConfig: LoggerConfig
+    private lateinit var logger: ExtendedLogger
+    private lateinit var outputStreamAppender: OutputStreamAppender
+    private lateinit var outputContent: ByteArrayOutputStream
 
     fun getLogger() {
         // We are creating a log appender with the same output pattern
         // as the console json appender defined in this project's log4j2.xml file.
-        // We then attach this log appender with the LOGGER instance so that we can validate the logs
+        // We then attach this log appender with the LOGGER instance so that we can validate the
+        // logs
         // produced by code and assert that it matches the expected format.
         loggerContext = Configurator.initialize(null, "log4j2.xml")
 
@@ -40,9 +41,15 @@ class AirbyteLogMessageTemplateTest {
         rootLoggerConfig = configuration.getLoggerConfig("")
 
         outputContent = ByteArrayOutputStream()
-        outputStreamAppender = OutputStreamAppender.createAppender(
+        outputStreamAppender =
+            OutputStreamAppender.createAppender(
                 rootLoggerConfig.getAppenders()[CONSOLE_JSON_APPENDER]!!.layout,
-                null, outputContent, OUTPUT_STREAM_APPENDER, false, true)
+                null,
+                outputContent,
+                OUTPUT_STREAM_APPENDER,
+                false,
+                true
+            )
         outputStreamAppender.start()
 
         rootLoggerConfig.addAppender(outputStreamAppender, Level.ALL, null)
@@ -70,8 +77,11 @@ class AirbyteLogMessageTemplateTest {
         val connectorLogMessage = airbyteLogMessage.message
         // validate that the message inside AirbyteLogMessage matches the pattern.
         // pattern to check for is: LOG_LEVEL className(methodName):LineNumber logMessage
-        val connectorLogMessageRegex = String.format("^INFO %s [\\w+.]*.AirbyteLogMessageTemplateTest\\(testAirbyteLogMessageFormat\\):\\d+ hello$",
-                Pattern.compile(Thread.currentThread().name))
+        val connectorLogMessageRegex =
+            String.format(
+                "^INFO %s [\\w+.]*.AirbyteLogMessageTemplateTest\\(testAirbyteLogMessageFormat\\):\\d+ hello$",
+                Pattern.compile(Thread.currentThread().name)
+            )
         val pattern = Pattern.compile(connectorLogMessageRegex)
 
         val matcher = pattern.matcher(connectorLogMessage)

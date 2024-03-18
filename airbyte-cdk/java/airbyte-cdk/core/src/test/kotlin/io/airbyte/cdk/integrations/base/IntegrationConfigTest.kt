@@ -3,10 +3,10 @@
  */
 package io.airbyte.cdk.integrations.base
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 internal class IntegrationConfigTest {
     @Test
@@ -31,7 +31,9 @@ internal class IntegrationConfigTest {
 
     @Test
     fun testDiscover() {
-        Assertions.assertThrows(NullPointerException::class.java) { IntegrationConfig.discover(null) }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            IntegrationConfig.discover(null)
+        }
 
         val config = IntegrationConfig.discover(CONFIG_PATH)
         Assertions.assertEquals(Command.DISCOVER, config.command)
@@ -42,8 +44,12 @@ internal class IntegrationConfigTest {
 
     @Test
     fun testWrite() {
-        Assertions.assertThrows(NullPointerException::class.java) { IntegrationConfig.write(null, CATALOG_PATH) }
-        Assertions.assertThrows(NullPointerException::class.java) { IntegrationConfig.write(CONFIG_PATH, null) }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            IntegrationConfig.write(null, CATALOG_PATH)
+        }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            IntegrationConfig.write(CONFIG_PATH, null)
+        }
 
         val config = IntegrationConfig.write(CONFIG_PATH, CATALOG_PATH)
         Assertions.assertEquals(Command.WRITE, config.command)
@@ -54,8 +60,12 @@ internal class IntegrationConfigTest {
 
     @Test
     fun testReadWithState() {
-        Assertions.assertThrows(NullPointerException::class.java) { IntegrationConfig.read(null, CATALOG_PATH, STATE_PATH) }
-        Assertions.assertThrows(NullPointerException::class.java) { IntegrationConfig.read(CONFIG_PATH, null, STATE_PATH) }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            IntegrationConfig.read(null, CATALOG_PATH, STATE_PATH)
+        }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            IntegrationConfig.read(CONFIG_PATH, null, STATE_PATH)
+        }
 
         val config = IntegrationConfig.read(CONFIG_PATH, CATALOG_PATH, STATE_PATH)
         Assertions.assertEquals(Command.READ, config.command)
@@ -66,8 +76,12 @@ internal class IntegrationConfigTest {
 
     @Test
     fun testReadWithoutState() {
-        Assertions.assertThrows(NullPointerException::class.java) { IntegrationConfig.read(null, CATALOG_PATH, null) }
-        Assertions.assertThrows(NullPointerException::class.java) { IntegrationConfig.read(CONFIG_PATH, null, null) }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            IntegrationConfig.read(null, CATALOG_PATH, null)
+        }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            IntegrationConfig.read(CONFIG_PATH, null, null)
+        }
 
         val config = IntegrationConfig.read(CONFIG_PATH, CATALOG_PATH, null)
         Assertions.assertEquals(Command.READ, config.command)

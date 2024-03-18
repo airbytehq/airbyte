@@ -5,10 +5,10 @@ package io.airbyte.cdk.integrations.util
 
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.sql.SQLException
 import java.sql.SQLSyntaxErrorException
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 internal class ConnectorExceptionUtilTest {
     @get:Test
@@ -35,8 +35,11 @@ internal class ConnectorExceptionUtilTest {
     @get:Test
     val isConfigErrorForUnknownColumnSQLSyntaxErrorException: Unit
         get() {
-            val unknownColumnSQLSyntaxErrorException = SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE)
-            Assertions.assertTrue(ConnectorExceptionUtil.isConfigError(unknownColumnSQLSyntaxErrorException))
+            val unknownColumnSQLSyntaxErrorException =
+                SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE)
+            Assertions.assertTrue(
+                ConnectorExceptionUtil.isConfigError(unknownColumnSQLSyntaxErrorException)
+            )
         }
 
     @get:Test
@@ -56,7 +59,8 @@ internal class ConnectorExceptionUtilTest {
     val displayMessageForConfigException: Unit
         get() {
             val configErrorException = ConfigErrorException(CONFIG_EXCEPTION_MESSAGE)
-            val actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(configErrorException)
+            val actualDisplayMessage =
+                ConnectorExceptionUtil.getDisplayMessage(configErrorException)
             Assertions.assertEquals(CONFIG_EXCEPTION_MESSAGE, actualDisplayMessage)
         }
 
@@ -65,9 +69,19 @@ internal class ConnectorExceptionUtilTest {
         get() {
             val testCode = "test code"
             val errorCode = -1
-            val connectionErrorException = ConnectionErrorException(testCode, errorCode, CONFIG_EXCEPTION_MESSAGE, Exception())
-            val actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(connectionErrorException)
-            Assertions.assertEquals(String.format(CONNECTION_ERROR_MESSAGE_TEMPLATE, testCode, errorCode, CONFIG_EXCEPTION_MESSAGE), actualDisplayMessage)
+            val connectionErrorException =
+                ConnectionErrorException(testCode, errorCode, CONFIG_EXCEPTION_MESSAGE, Exception())
+            val actualDisplayMessage =
+                ConnectorExceptionUtil.getDisplayMessage(connectionErrorException)
+            Assertions.assertEquals(
+                String.format(
+                    CONNECTION_ERROR_MESSAGE_TEMPLATE,
+                    testCode,
+                    errorCode,
+                    CONFIG_EXCEPTION_MESSAGE
+                ),
+                actualDisplayMessage
+            )
         }
 
     @get:Test
@@ -75,14 +89,19 @@ internal class ConnectorExceptionUtilTest {
         get() {
             val recoveryException = SQLException(RECOVERY_EXCEPTION_MESSAGE)
             val actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(recoveryException)
-            Assertions.assertEquals(ConnectorExceptionUtil.RECOVERY_CONNECTION_ERROR_MESSAGE, actualDisplayMessage)
+            Assertions.assertEquals(
+                ConnectorExceptionUtil.RECOVERY_CONNECTION_ERROR_MESSAGE,
+                actualDisplayMessage
+            )
         }
 
     @get:Test
     val displayMessageForUnknownSQLErrorException: Unit
         get() {
-            val unknownColumnSQLSyntaxErrorException = SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE)
-            val actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(unknownColumnSQLSyntaxErrorException)
+            val unknownColumnSQLSyntaxErrorException =
+                SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE)
+            val actualDisplayMessage =
+                ConnectorExceptionUtil.getDisplayMessage(unknownColumnSQLSyntaxErrorException)
             Assertions.assertEquals(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE, actualDisplayMessage)
         }
 
@@ -91,7 +110,13 @@ internal class ConnectorExceptionUtilTest {
         get() {
             val exception: Exception = SQLException(COMMON_EXCEPTION_MESSAGE)
             val actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(exception)
-            Assertions.assertEquals(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE, COMMON_EXCEPTION_MESSAGE), actualDisplayMessage)
+            Assertions.assertEquals(
+                String.format(
+                    ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
+                    COMMON_EXCEPTION_MESSAGE
+                ),
+                actualDisplayMessage
+            )
         }
 
     @get:Test
@@ -118,8 +143,10 @@ internal class ConnectorExceptionUtilTest {
     @get:Test
     val rootConfigErrorFromUnknownSQLErrorException: Unit
         get() {
-            val unknownSQLErrorException: SQLException = SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE)
-            val runtimeException = RuntimeException(COMMON_EXCEPTION_MESSAGE, unknownSQLErrorException)
+            val unknownSQLErrorException: SQLException =
+                SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE)
+            val runtimeException =
+                RuntimeException(COMMON_EXCEPTION_MESSAGE, unknownSQLErrorException)
             val exception = Exception(runtimeException)
 
             val actualRootConfigError = ConnectorExceptionUtil.getRootConfigError(exception)
@@ -138,9 +165,12 @@ internal class ConnectorExceptionUtilTest {
 
     companion object {
         const val CONFIG_EXCEPTION_MESSAGE: String = "test message"
-        const val RECOVERY_EXCEPTION_MESSAGE: String = "FATAL: terminating connection due to conflict with recovery"
+        const val RECOVERY_EXCEPTION_MESSAGE: String =
+            "FATAL: terminating connection due to conflict with recovery"
         const val COMMON_EXCEPTION_MESSAGE: String = "something happens with connection"
-        const val CONNECTION_ERROR_MESSAGE_TEMPLATE: String = "State code: %s; Error code: %s; Message: %s"
-        const val UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE: String = "Unknown column 'table.column' in 'field list'"
+        const val CONNECTION_ERROR_MESSAGE_TEMPLATE: String =
+            "State code: %s; Error code: %s; Message: %s"
+        const val UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE: String =
+            "Unknown column 'table.column' in 'field list'"
     }
 }

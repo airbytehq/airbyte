@@ -13,18 +13,18 @@ import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
-import org.junit.jupiter.api.*
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.utility.MountableFile
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import javax.sql.DataSource
+import org.junit.jupiter.api.*
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.utility.MountableFile
 
 internal class TestDefaultJdbcDatabase {
     private val sourceOperations: JdbcSourceOperations = JdbcUtils.getDefaultSourceOperations()
     private var dataSource: DataSource? = null
-    private var database: JdbcDatabase? = null
+    private lateinit var database: JdbcDatabase
 
     @BeforeEach
     @Throws(Exception::class)
@@ -38,10 +38,18 @@ internal class TestDefaultJdbcDatabase {
 
         dataSource = getDataSourceFromConfig(config)
         database = DefaultJdbcDatabase(dataSource)
-        database.execute(CheckedConsumer { connection: Connection ->
-            connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
-            connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
-        })
+        database.execute(
+            CheckedConsumer { connection: Connection ->
+                connection
+                    .createStatement()
+                    .execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+                connection
+                    .createStatement()
+                    .execute(
+                        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                    )
+            }
+        )
     }
 
     @AfterEach
@@ -53,9 +61,13 @@ internal class TestDefaultJdbcDatabase {
     @Test
     @Throws(SQLException::class)
     fun testBufferedResultQuery() {
-        val actual = database!!.bufferedResultSetQuery(
-                { connection: Connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;") },
-                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) })
+        val actual =
+            database!!.bufferedResultSetQuery(
+                { connection: Connection ->
+                    connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
+                },
+                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) }
+            )
 
         Assertions.assertEquals(RECORDS_AS_JSON, actual)
     }
@@ -63,58 +75,75 @@ internal class TestDefaultJdbcDatabase {
     @Test
     @Throws(SQLException::class)
     fun testResultSetQuery() {
-        database!!.unsafeResultSetQuery(
-                { connection: Connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;") },
-                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) }).use { actual ->
-            Assertions.assertEquals(RECORDS_AS_JSON, actual.toList())
-        }
+        database!!
+            .unsafeResultSetQuery(
+                { connection: Connection ->
+                    connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
+                },
+                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) }
+            )
+            .use { actual -> Assertions.assertEquals(RECORDS_AS_JSON, actual.toList()) }
     }
 
     @Test
     @Throws(SQLException::class)
     fun testQuery() {
-        val actual = database!!.queryJsons(
-                { connection: Connection -> connection.prepareStatement("SELECT * FROM id_and_name;") },
-                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) })
+        val actual =
+            database!!.queryJsons(
+                { connection: Connection ->
+                    connection.prepareStatement("SELECT * FROM id_and_name;")
+                },
+                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) }
+            )
         Assertions.assertEquals(RECORDS_AS_JSON, actual)
     }
 
     private fun getDataSourceFromConfig(config: JsonNode): DataSource {
         return DataSourceFactory.create(
-                config[JdbcUtils.USERNAME_KEY].asText(),
-                config[JdbcUtils.PASSWORD_KEY].asText(),
-                DatabaseDriver.POSTGRESQL.driverClassName,
-                String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
-                        config[JdbcUtils.HOST_KEY].asText(),
-                        config[JdbcUtils.PORT_KEY].asInt(),
-                        config[JdbcUtils.DATABASE_KEY].asText()))
+            config[JdbcUtils.USERNAME_KEY].asText(),
+            config[JdbcUtils.PASSWORD_KEY].asText(),
+            DatabaseDriver.POSTGRESQL.driverClassName,
+            String.format(
+                DatabaseDriver.POSTGRESQL.urlFormatString,
+                config[JdbcUtils.HOST_KEY].asText(),
+                config[JdbcUtils.PORT_KEY].asInt(),
+                config[JdbcUtils.DATABASE_KEY].asText()
+            )
+        )
     }
 
     private fun getConfig(psqlDb: PostgreSQLContainer<*>?, dbName: String): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.builder<Any, Any>()
+        return Jsons.jsonNode(
+            ImmutableMap.builder<Any, Any>()
                 .put(JdbcUtils.HOST_KEY, psqlDb!!.host)
                 .put(JdbcUtils.PORT_KEY, psqlDb.firstMappedPort)
                 .put(JdbcUtils.DATABASE_KEY, dbName)
                 .put(JdbcUtils.USERNAME_KEY, psqlDb.username)
                 .put(JdbcUtils.PASSWORD_KEY, psqlDb.password)
-                .build())
+                .build()
+        )
     }
 
     companion object {
-        private val RECORDS_AS_JSON: List<JsonNode> = Lists.newArrayList(
+        private val RECORDS_AS_JSON: List<JsonNode> =
+            Lists.newArrayList(
                 Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
                 Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")),
-                Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))
+                Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash"))
+            )
 
         private var PSQL_DB: PostgreSQLContainer<*>? = null
+
+        @JvmStatic
         @BeforeAll
-        fun init() {
-            PSQL_DB = PostgreSQLContainer<SELF>("postgres:13-alpine")
+        fun init(): Unit {
+            PSQL_DB = PostgreSQLContainer<Nothing>("postgres:13-alpine")
             PSQL_DB!!.start()
         }
 
+        @JvmStatic
         @AfterAll
-        fun cleanUp() {
+        fun cleanUp(): Unit {
             PSQL_DB!!.close()
         }
     }

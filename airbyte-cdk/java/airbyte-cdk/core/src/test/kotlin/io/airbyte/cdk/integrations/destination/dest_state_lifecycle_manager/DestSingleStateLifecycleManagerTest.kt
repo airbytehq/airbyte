@@ -19,8 +19,8 @@ internal class DestSingleStateLifecycleManagerTest {
     }
 
     /**
-     * Demonstrates expected lifecycle of a state object for documentation purposes. Subsequent test get
-     * into the details.
+     * Demonstrates expected lifecycle of a state object for documentation purposes. Subsequent test
+     * get into the details.
      */
     @Test
     fun testBasicLifeCycle() {
@@ -107,13 +107,13 @@ internal class DestSingleStateLifecycleManagerTest {
     }
 
     /*
-   * This change follows the same changes in DestStreamStateLifecycleManager where the goal is to
-   * confirm that `markPendingAsCommitted` combines what was previous `markPendingAsFlushed` and
-   * `markFlushedAsCommitted`
-   *
-   * The reason for this method is due to destination checkpointing will no longer hold into a state
-   * as "Flushed" but immediately commit records to the destination's final table
-   */
+     * This change follows the same changes in DestStreamStateLifecycleManager where the goal is to
+     * confirm that `markPendingAsCommitted` combines what was previous `markPendingAsFlushed` and
+     * `markFlushedAsCommitted`
+     *
+     * The reason for this method is due to destination checkpointing will no longer hold into a state
+     * as "Flushed" but immediately commit records to the destination's final table
+     */
     @Test
     fun testMarkPendingAsCommitted() {
         mgr!!.addState(MESSAGE1)
@@ -126,11 +126,21 @@ internal class DestSingleStateLifecycleManagerTest {
     }
 
     companion object {
-        private val MESSAGE1: AirbyteMessage = AirbyteMessage()
+        private val MESSAGE1: AirbyteMessage =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL).withData(Jsons.jsonNode("a")))
-        private val MESSAGE2: AirbyteMessage = AirbyteMessage()
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                        .withData(Jsons.jsonNode("a"))
+                )
+        private val MESSAGE2: AirbyteMessage =
+            AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL).withData(Jsons.jsonNode("b")))
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                        .withData(Jsons.jsonNode("b"))
+                )
     }
 }

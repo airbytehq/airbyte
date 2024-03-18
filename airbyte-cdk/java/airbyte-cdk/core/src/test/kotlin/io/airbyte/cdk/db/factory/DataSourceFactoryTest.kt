@@ -5,115 +5,145 @@ package io.airbyte.cdk.db.factory
 
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.integrations.JdbcConnector
+import java.util.Map
+import javax.sql.DataSource
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.testcontainers.containers.MySQLContainer
-import java.util.Map
-import javax.sql.DataSource
 
-/**
- * Test suite for the [DataSourceFactory] class.
- */
+/** Test suite for the [DataSourceFactory] class. */
 internal class DataSourceFactoryTest : CommonFactoryTest() {
     @Test
     fun testCreatingDataSourceWithConnectionTimeoutSetAboveDefault() {
-        val connectionProperties = Map.of(
-                CONNECT_TIMEOUT, "61")
-        val dataSource = DataSourceFactory.create(
+        val connectionProperties = Map.of(CONNECT_TIMEOUT, "61")
+        val dataSource =
+            DataSourceFactory.create(
                 username,
                 password,
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName))
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+            )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(61000, (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout)
+        Assertions.assertEquals(
+            61000,
+            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+        )
     }
 
     @Test
     fun testCreatingPostgresDataSourceWithConnectionTimeoutSetBelowDefault() {
-        val connectionProperties = Map.of(
-                CONNECT_TIMEOUT, "30")
-        val dataSource = DataSourceFactory.create(
+        val connectionProperties = Map.of(CONNECT_TIMEOUT, "30")
+        val dataSource =
+            DataSourceFactory.create(
                 username,
                 password,
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName))
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+            )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(30000, (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout)
+        Assertions.assertEquals(
+            30000,
+            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+        )
     }
 
     @Test
     fun testCreatingMySQLDataSourceWithConnectionTimeoutSetBelowDefault() {
-        MySQLContainer<SELF>("mysql:8.0").use { mySQLContainer ->
+        MySQLContainer<Nothing>("mysql:8.0").use { mySQLContainer ->
             mySQLContainer.start()
-            val connectionProperties = Map.of(
-                    CONNECT_TIMEOUT, "5000")
-            val dataSource = DataSourceFactory.create(
+            val connectionProperties = Map.of(CONNECT_TIMEOUT, "5000")
+            val dataSource =
+                DataSourceFactory.create(
                     mySQLContainer.getUsername(),
                     mySQLContainer.getPassword(),
                     mySQLContainer.getDriverClassName(),
                     mySQLContainer.getJdbcUrl(),
                     connectionProperties,
-                    JdbcConnector.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()))
+                    JdbcConnector.getConnectionTimeout(
+                        connectionProperties,
+                        mySQLContainer.getDriverClassName()
+                    )
+                )
             Assertions.assertNotNull(dataSource)
             Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-            Assertions.assertEquals(5000, (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout)
+            Assertions.assertEquals(
+                5000,
+                (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+            )
         }
     }
 
     @Test
     fun testCreatingDataSourceWithConnectionTimeoutSetWithZero() {
-        val connectionProperties = Map.of(
-                CONNECT_TIMEOUT, "0")
-        val dataSource = DataSourceFactory.create(
+        val connectionProperties = Map.of(CONNECT_TIMEOUT, "0")
+        val dataSource =
+            DataSourceFactory.create(
                 username,
                 password,
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName))
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+            )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(Int.MAX_VALUE, (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout)
+        Assertions.assertEquals(
+            Int.MAX_VALUE.toLong(),
+            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+        )
     }
 
     @Test
     fun testCreatingPostgresDataSourceWithConnectionTimeoutNotSet() {
         val connectionProperties = Map.of<String, String>()
-        val dataSource = DataSourceFactory.create(
+        val dataSource =
+            DataSourceFactory.create(
                 username,
                 password,
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName))
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+            )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(10000, (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout)
+        Assertions.assertEquals(
+            10000,
+            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+        )
     }
 
     @Test
     fun testCreatingMySQLDataSourceWithConnectionTimeoutNotSet() {
-        MySQLContainer<SELF>("mysql:8.0").use { mySQLContainer ->
+        MySQLContainer<Nothing>("mysql:8.0").use { mySQLContainer ->
             mySQLContainer.start()
             val connectionProperties = Map.of<String, String>()
-            val dataSource = DataSourceFactory.create(
+            val dataSource =
+                DataSourceFactory.create(
                     mySQLContainer.getUsername(),
                     mySQLContainer.getPassword(),
                     mySQLContainer.getDriverClassName(),
                     mySQLContainer.getJdbcUrl(),
                     connectionProperties,
-                    JdbcConnector.getConnectionTimeout(connectionProperties, mySQLContainer.getDriverClassName()))
+                    JdbcConnector.getConnectionTimeout(
+                        connectionProperties,
+                        mySQLContainer.getDriverClassName()
+                    )
+                )
             Assertions.assertNotNull(dataSource)
             Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-            Assertions.assertEquals(60000, (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout)
+            Assertions.assertEquals(
+                60000,
+                (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+            )
         }
     }
 
@@ -122,41 +152,65 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
         val dataSource = DataSourceFactory.create(username, password, driverClassName, jdbcUrl)
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(10, (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize)
+        Assertions.assertEquals(
+            10,
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+        )
     }
 
     @Test
     fun testCreatingADataSourceWithJdbcUrlAndConnectionProperties() {
         val connectionProperties = Map.of("foo", "bar")
 
-        val dataSource = DataSourceFactory.create(
+        val dataSource =
+            DataSourceFactory.create(
                 username,
                 password,
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName))
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+            )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(10, (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize)
+        Assertions.assertEquals(
+            10,
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+        )
     }
 
     @Test
     fun testCreatingADataSourceWithHostAndPort() {
-        val dataSource = DataSourceFactory.create(username, password, host, port!!, database, driverClassName)
+        val dataSource =
+            DataSourceFactory.create(username, password, host, port!!, database, driverClassName)
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(10, (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize)
+        Assertions.assertEquals(
+            10,
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+        )
     }
 
     @Test
     fun testCreatingADataSourceWithHostPortAndConnectionProperties() {
         val connectionProperties = Map.of("foo", "bar")
 
-        val dataSource = DataSourceFactory.create(username, password, host, port!!, database, driverClassName, connectionProperties)
+        val dataSource =
+            DataSourceFactory.create(
+                username,
+                password,
+                host,
+                port!!,
+                database,
+                driverClassName,
+                connectionProperties
+            )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(10, (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize)
+        Assertions.assertEquals(
+            10,
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+        )
     }
 
     @Test
@@ -170,10 +224,14 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
 
     @Test
     fun testCreatingAPostgresqlDataSource() {
-        val dataSource = DataSourceFactory.createPostgres(username, password, host, port!!, database)
+        val dataSource =
+            DataSourceFactory.createPostgres(username, password, host, port!!, database)
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
-        Assertions.assertEquals(10, (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize)
+        Assertions.assertEquals(
+            10,
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+        )
     }
 
     @Test
@@ -199,15 +257,16 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
         var port: Int? = null
         var username: String? = null
 
+        @JvmStatic
         @BeforeAll
-        fun setup() {
-            host = CommonFactoryTest.Companion.container!!.getHost()
-            port = CommonFactoryTest.Companion.container!!.getFirstMappedPort()
-            database = CommonFactoryTest.Companion.container!!.getDatabaseName()
-            username = CommonFactoryTest.Companion.container!!.getUsername()
-            password = CommonFactoryTest.Companion.container!!.getPassword()
-            driverClassName = CommonFactoryTest.Companion.container!!.getDriverClassName()
-            jdbcUrl = CommonFactoryTest.Companion.container!!.getJdbcUrl()
+        fun setup(): Unit {
+            host = container!!.getHost()
+            port = container!!.getFirstMappedPort()
+            database = container!!.getDatabaseName()
+            username = container!!.getUsername()
+            password = container!!.getPassword()
+            driverClassName = container!!.getDriverClassName()
+            jdbcUrl = container!!.getJdbcUrl()
         }
     }
 }

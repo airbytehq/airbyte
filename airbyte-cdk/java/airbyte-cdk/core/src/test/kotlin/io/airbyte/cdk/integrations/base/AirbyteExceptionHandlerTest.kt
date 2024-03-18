@@ -7,6 +7,9 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.AirbyteMessage
 import io.airbyte.protocol.models.AirbyteTraceMessage
+import java.io.*
+import java.nio.charset.StandardCharsets
+import java.util.*
 import lombok.SneakyThrows
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -14,14 +17,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 import org.mockito.Mockito
-import java.io.*
-import java.nio.charset.StandardCharsets
-import java.util.*
 
 class AirbyteExceptionHandlerTest {
     var originalOut: PrintStream = System.out
     private val outContent = ByteArrayOutputStream()
-    private var airbyteExceptionHandler: AirbyteExceptionHandler? = null
+    private lateinit var airbyteExceptionHandler: AirbyteExceptionHandler
 
     @BeforeEach
     fun setup() {
@@ -41,9 +41,22 @@ class AirbyteExceptionHandlerTest {
 
         val traceMessage = findFirstTraceMessage()
         Assertions.assertAll(
-                Executable { Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.trace.type) },
-                Executable { Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.trace.error.message) },
-                Executable { Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.trace.error.failureType) })
+            Executable {
+                Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.trace.type)
+            },
+            Executable {
+                Assertions.assertEquals(
+                    AirbyteExceptionHandler.logMessage,
+                    traceMessage.trace.error.message
+                )
+            },
+            Executable {
+                Assertions.assertEquals(
+                    AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
+                    traceMessage.trace.error.failureType
+                )
+            }
+        )
     }
 
     @Test
@@ -60,14 +73,34 @@ class AirbyteExceptionHandlerTest {
 
         val traceMessage = findFirstTraceMessage()
         Assertions.assertAll(
-                Executable { Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.trace.type) },
-                Executable { Assertions.assertEquals("Error happened in arst_FOO_bar_zxcv (name: description)", traceMessage.trace.error.message) },
-                Executable { Assertions.assertEquals("Error happened in arst_?_?_zxcv (?: ?)", traceMessage.trace.error.internalMessage) },
-                Executable { Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.trace.error.failureType) },
-                Executable {
-                    Assertions.assertNull(traceMessage.trace.error.stackTrace,
-                            "Stacktrace should be null if deinterpolating the error message")
-                })
+            Executable {
+                Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.trace.type)
+            },
+            Executable {
+                Assertions.assertEquals(
+                    "Error happened in arst_FOO_bar_zxcv (name: description)",
+                    traceMessage.trace.error.message
+                )
+            },
+            Executable {
+                Assertions.assertEquals(
+                    "Error happened in arst_?_?_zxcv (?: ?)",
+                    traceMessage.trace.error.internalMessage
+                )
+            },
+            Executable {
+                Assertions.assertEquals(
+                    AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
+                    traceMessage.trace.error.failureType
+                )
+            },
+            Executable {
+                Assertions.assertNull(
+                    traceMessage.trace.error.stackTrace,
+                    "Stacktrace should be null if deinterpolating the error message"
+                )
+            }
+        )
     }
 
     /**
@@ -86,12 +119,19 @@ class AirbyteExceptionHandlerTest {
         // We shouldn't deinterpolate at all in this case, so we will get the default trace message
         // behavior.
         Assertions.assertAll(
-                Executable { Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.trace.error.message) },
-                Executable {
-                    Assertions.assertEquals(
-                            "java.lang.RuntimeException: Error happened in foobar",
-                            traceMessage.trace.error.internalMessage)
-                })
+            Executable {
+                Assertions.assertEquals(
+                    AirbyteExceptionHandler.logMessage,
+                    traceMessage.trace.error.message
+                )
+            },
+            Executable {
+                Assertions.assertEquals(
+                    "java.lang.RuntimeException: Error happened in foobar",
+                    traceMessage.trace.error.internalMessage
+                )
+            }
+        )
     }
 
     /**
@@ -110,9 +150,7 @@ class AirbyteExceptionHandlerTest {
         Assertions.assertEquals("Error happened in ?.foo", traceMessage.trace.error.internalMessage)
     }
 
-    /**
-     * We should only deinterpolate specific exception classes.
-     */
+    /** We should only deinterpolate specific exception classes. */
     @Test
     @Throws(Exception::class)
     fun testClassDeinterpolation() {
@@ -124,17 +162,22 @@ class AirbyteExceptionHandlerTest {
         // We shouldn't deinterpolate at all in this case, so we will get the default trace message
         // behavior.
         Assertions.assertAll(
-                Executable { Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.trace.error.message) },
-                Executable {
-                    Assertions.assertEquals(
-                            "java.io.IOException: Error happened in foo",
-                            traceMessage.trace.error.internalMessage)
-                })
+            Executable {
+                Assertions.assertEquals(
+                    AirbyteExceptionHandler.logMessage,
+                    traceMessage.trace.error.message
+                )
+            },
+            Executable {
+                Assertions.assertEquals(
+                    "java.io.IOException: Error happened in foo",
+                    traceMessage.trace.error.internalMessage
+                )
+            }
+        )
     }
 
-    /**
-     * We should check the classes of the entire exception chain, not just the root exception.
-     */
+    /** We should check the classes of the entire exception chain, not just the root exception. */
     @Test
     @Throws(Exception::class)
     fun testNestedThrowableClassDeinterpolation() {
@@ -157,14 +200,15 @@ class AirbyteExceptionHandlerTest {
     private fun runTestWithMessage(throwable: Throwable) {
         // have to spawn a new thread to test the uncaught exception handling,
         // because junit catches any exceptions in main thread, i.e. they're not 'uncaught'
-        val thread: Thread = object : Thread() {
-            @SneakyThrows
-            override fun run() {
-                val runner = Mockito.mock(IntegrationRunner::class.java)
-                Mockito.doThrow(throwable).`when`(runner).run(arrayOf("write"))
-                runner.run(arrayOf("write"))
+        val thread: Thread =
+            object : Thread() {
+                @SneakyThrows
+                override fun run() {
+                    val runner = Mockito.mock(IntegrationRunner::class.java)
+                    Mockito.doThrow(throwable).`when`(runner).run(arrayOf("write"))
+                    runner.run(arrayOf("write"))
+                }
             }
-        }
         thread.uncaughtExceptionHandler = airbyteExceptionHandler
         thread.start()
         thread.join()
@@ -182,19 +226,34 @@ class AirbyteExceptionHandlerTest {
     }
 
     private fun findFirstTraceMessage(): AirbyteMessage {
-        val maybeTraceMessage = Arrays.stream(outContent.toString(StandardCharsets.UTF_8).split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+        val maybeTraceMessage =
+            Arrays.stream(
+                    outContent
+                        .toString(StandardCharsets.UTF_8)
+                        .split("\n".toRegex())
+                        .dropLastWhile { it.isEmpty() }
+                        .toTypedArray()
+                )
                 .map { line: String? ->
                     // these tests sometimes emit non-json stdout (e.g. log4j warnings)
                     // so we try-catch to handle those malformed lines.
                     try {
-                        return@map Jsons.deserialize<AirbyteMessage>(line, AirbyteMessage::class.java)
+                        return@map Jsons.deserialize<AirbyteMessage>(
+                            line,
+                            AirbyteMessage::class.java
+                        )
                     } catch (e: Exception) {
                         return@map null
                     }
                 }
-                .filter { message: AirbyteMessage? -> message != null && message.type == AirbyteMessage.Type.TRACE }
+                .filter { message: AirbyteMessage? ->
+                    message != null && message.type == AirbyteMessage.Type.TRACE
+                }
                 .findFirst()
-        Assertions.assertTrue(maybeTraceMessage.isPresent, "Expected to find a trace message in stdout")
+        Assertions.assertTrue(
+            maybeTraceMessage.isPresent,
+            "Expected to find a trace message in stdout"
+        )
         return maybeTraceMessage.get()
     }
 }

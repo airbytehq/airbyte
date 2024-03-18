@@ -12,8 +12,12 @@ class DestinationConfigTest {
     @Test
     fun testInitialization() {
         // bad initialization
-        Assertions.assertThrows(IllegalArgumentException::class.java) { DestinationConfig.initialize(null) }
-        Assertions.assertThrows(IllegalStateException::class.java) { DestinationConfig.getInstance() }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            DestinationConfig.initialize(null)
+        }
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            DestinationConfig.getInstance()
+        }
 
         // good initialization
         DestinationConfig.initialize(NODE, true)
@@ -43,15 +47,22 @@ class DestinationConfigTest {
         Assertions.assertEquals("", DestinationConfig.getInstance().getTextValue("blah"))
         Assertions.assertFalse(DestinationConfig.getInstance().getBooleanValue("blah"))
 
-        Assertions.assertEquals(Jsons.deserialize("\"bar\""), DestinationConfig.getInstance().getNodeValue("foo"))
-        Assertions.assertEquals(Jsons.deserialize("true"), DestinationConfig.getInstance().getNodeValue("baz"))
+        Assertions.assertEquals(
+            Jsons.deserialize("\"bar\""),
+            DestinationConfig.getInstance().getNodeValue("foo")
+        )
+        Assertions.assertEquals(
+            Jsons.deserialize("true"),
+            DestinationConfig.getInstance().getNodeValue("baz")
+        )
         Assertions.assertNull(DestinationConfig.getInstance().getNodeValue("blah"))
 
         Assertions.assertEquals(false, DestinationConfig.getInstance().isV2Destination)
     }
 
     companion object {
-        private val JSON = """
+        private val JSON =
+            """
                                      {
                                        "foo": "bar",
                                        "baz": true
