@@ -6,11 +6,8 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.2",
-    "paramiko==2.11.0",
-    "backoff==1.8.0",
-    "terminaltables==3.1.0",
-    "pandas==1.5.0",
+    "airbyte-cdk~=0.72",
+    "paramiko==3.4.0",
 ]
 
 TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "docker==5.0.3"]
