@@ -31,10 +31,8 @@ data:
     breakingChanges:
       2.0.0:
         message:
-          Version 2.0.0 introduces state changes to some incremental streams and new primary key for stream `Segment Members`.
-          A full schema refresh and data reset are required to upgrade to this version.
-          For more details, see our <a href='https://docs.airbyte.io/integrations/sources/mailchimp-migrations'>migration guide</a>.
-        upgradeDeadline: "2024-03-25"
+          The source Mailchimp connector is being migrated from the Python CDK to our declarative low-code CDK. Due to changes in the handling of state format for incremental substreams and primary key for stream `Segment Members`, this migration constitutes a breaking change. After updating, please reset your source before resuming syncs. For more information, see our migration documentation for source Mailchimp.
+        upgradeDeadline: "2024-04-10"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
