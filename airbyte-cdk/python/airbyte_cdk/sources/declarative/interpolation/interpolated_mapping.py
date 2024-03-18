@@ -46,7 +46,7 @@ class InterpolatedMapping:
     def _eval(self, value, config, **kwargs):
         # The values in self._mapping can be of Any type
         # We only want to interpolate them if they are strings
-        if type(value) == str:
+        if isinstance(value, str):
             return self._interpolation.eval(value, config, parameters=self._parameters, **kwargs)
         else:
             return value
