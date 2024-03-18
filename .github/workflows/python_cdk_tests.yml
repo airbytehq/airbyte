@@ -10,7 +10,6 @@ on:
   push:
     branches:
       - master
-#      - ella/gut-gradle
   pull_request:
     types:
       - opened
@@ -44,12 +43,18 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-      - name: Install Pip
-        run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv --user
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install Dependencies
+        id: install_dependencies
+        working-directory: airbyte-cdk/python
+        run: poetry install
+      - name: Build CDK Package
+        working-directory: airbyte-cdk/python
+        run: poetry run poe build
       - name: Check Python CDK
-        run: (cd airbyte-cdk/python && ./assemble.sh && ./check.sh)
+        working-directory: airbyte-cdk/python
+        run: poetry run poe check
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure

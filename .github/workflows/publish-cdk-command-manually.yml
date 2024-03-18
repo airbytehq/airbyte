@@ -60,16 +60,25 @@ jobs:
   build-cdk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v4
+      - name: Install Python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+      - name: Install Poetry
+        id: install_poetry
+        uses: snok/install-poetry@v1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+      - name: Install Dependencies
+        id: install_dependencies
+        working-directory: airbyte-cdk/python
+        run: poetry install
       - name: Build CDK Package
-        run: (cd airbyte-cdk/python; ./assemble.sh)
+        working-directory: airbyte-cdk/python
+        run: poetry run poe build
 #      - name: Post failure to Slack channel dev-connectors-extensibility
 #        if: ${{ failure() }}
 #        uses: slackapi/slack-github-action@v1.23.0
