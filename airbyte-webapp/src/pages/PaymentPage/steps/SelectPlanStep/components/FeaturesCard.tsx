@@ -75,7 +75,6 @@ const FeaturesCard: React.FC<IProps> = ({
   jobs,
   instanceRef,
 }) => {
-  console.log(packagesMap, "Packages");
   return (
     <CardContainer ref={instanceRef}>
       <Row borderBottom="1px solid #E5E7EB">
