@@ -56,7 +56,9 @@ jobs:
         id: changed-py-files
         uses: tj-actions/changed-files@v43
         with:
+          path: "airbyte-cdk/python"
           files: "airbyte-cdk/python/airbyte_cdk/**/*.py"
+          diff_relative: true
       - name: Run MyPy on modified files
         working-directory: airbyte-cdk/python
         run: poetry run poe mypy-changed-files ${{ steps.changed-py-files.outputs.all_changed_files }}
