@@ -49,6 +49,15 @@ class MetaFieldsStream(BambooHrStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
 
+class MetaTablesStream(BambooHrStream):
+    primary_key = None
+
+    def path(self, **kwargs) -> str:
+        return "meta/tables"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()
+
 # class EmployeesDirectoryStream(BambooHrStream):
 #     primary_key = "id"
 
