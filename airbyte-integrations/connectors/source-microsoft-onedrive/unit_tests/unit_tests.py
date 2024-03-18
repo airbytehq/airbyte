@@ -109,18 +109,20 @@ def test_get_files_by_drive_name(mock_list_directories_and_files):
 
 
 @pytest.mark.parametrize(
-    "drive_ids, shared_drive_item_dicts, expected_result, expected_calls",
+    "selected_drive_id, drive_ids, shared_drive_item_dicts, expected_result, expected_calls",
     [
-        ([1, 2, 3], [], [], []),
-        ([1, 2, 3], [{"drive_id": 1, "id": 4, "web_url": "test_url4"}], [], []),
-        ([1, 2, 3], [{"drive_id": 4, "id": 4, "web_url": "test_url4"}], [4], [call(4, 4, "test_url4")]),
+        (None, [1, 2, 3], [], [], []),
+        (1, [1, 2, 3], [{"drive_id": 1, "id": 4, "web_url": "test_url4"}], [], []),
+        (1, [1, 2, 3], [{"drive_id": 4, "id": 4, "web_url": "test_url4"}], [4], [call(4, 4, "test_url4")]),
         (
+            2,
             [1, 2, 3],
             [{"drive_id": 4, "id": 4, "web_url": "test_url4"}, {"drive_id": 5, "id": 5, "web_url": "test_url5"}],
             [4, 5],
             [call(4, 4, "test_url4"), call(5, 5, "test_url5")],
         ),
         (
+            3,
             [1, 2, 3],
             [
                 {"drive_id": 4, "id": 4, "web_url": "test_url4"},
@@ -132,7 +134,7 @@ def test_get_files_by_drive_name(mock_list_directories_and_files):
         ),
     ],
 )
-def test_get_shared_files_from_all_drives(drive_ids, shared_drive_item_dicts, expected_result, expected_calls):
+def test_get_shared_files_from_all_drives(selected_drive_id, drive_ids, shared_drive_item_dicts, expected_result, expected_calls):
     stream_reader = SourceMicrosoftOneDriveStreamReader()
     stream_reader._config = Mock()
 
@@ -153,7 +155,7 @@ def test_get_shared_files_from_all_drives(drive_ids, shared_drive_item_dicts, ex
                 mock_drives.return_value = [Mock(id=drive_id) for drive_id in drive_ids]
 
                 # Execute the method under test
-                list(stream_reader._get_shared_files_from_all_drives())
+                list(stream_reader._get_shared_files_from_all_drives(selected_drive_id))
 
                 # Assert _get_shared_drive_object was called correctly
                 mock_get_shared_drive_object.assert_has_calls(expected_calls, any_order=True)

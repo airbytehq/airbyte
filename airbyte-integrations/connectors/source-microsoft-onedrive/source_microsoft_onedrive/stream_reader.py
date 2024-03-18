@@ -210,21 +210,29 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
                 folder = drive.root if folder_path in self.ROOT_PATH else drive.root.get_by_path(folder_path).get().execute_query()
                 yield from self.list_directories_and_files(folder)
 
-    def _get_shared_files_from_all_drives(self):
-        drive_ids = [drive.id for drive in self.drives]
-
+    def _get_shared_files_from_all_drives(self, parsed_drive_id: str):
         shared_drive_items = self.one_drive_client.me.drive.shared_with_me().execute_query()
         for drive_item in shared_drive_items:
             parent_reference = drive_item.remote_item.parentReference
 
             # check if drive is already parsed
-            if parent_reference and parent_reference["driveId"] not in drive_ids:
+            if parent_reference and parent_reference["driveId"] != parsed_drive_id:
                 yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id, drive_item.web_url)
 
     def get_all_files(self):
-        yield from self.get_files_by_drive_name(self.config.drive_name, self.config.folder_path)
-        if self.config.include_shared_items:
-            yield from self._get_shared_files_from_all_drives()
+        if self.config.search_scope in ("ACCESSIBLE_DRIVES", "ALL"):
+            # Get files from accessible drives
+            yield from self.get_files_by_drive_name(self.config.drive_name, self.config.folder_path)
+
+        if self.config.search_scope in ("SHARED_ITEMS", "ALL"):
+            selected_drive = list(filter(lambda drive: drive.name == self.config.drive_name, self.drives))
+            selected_drive_id = selected_drive[0].id if selected_drive else None
+
+            if self.config.search_scope == "SHARED_ITEMS":
+                selected_drive_id = None
+
+            # Get files from shared items
+            yield from self._get_shared_files_from_all_drives(selected_drive_id)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """

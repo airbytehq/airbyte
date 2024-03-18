@@ -89,15 +89,20 @@ class SourceMicrosoftOneDriveSpec(AbstractFileBasedSpec, BaseModel):
     drive_name: Optional[str] = Field(
         title="Drive Name", description="Name of the Microsoft OneDrive drive where the file(s) exist.", default="OneDrive", order=2
     )
-    folder_path: str = Field(
-        title="Folder Path", description="Path to folder of the Microsoft OneDrive drive where the file(s) exist.", order=3
+
+    search_scope: str = Field(
+        title="Search Scope",
+        description="Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' to search in the selected OneDrive drive, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both.",
+        default="ALL",
+        enum=["ACCESSIBLE_DRIVES", "SHARED_ITEMS", "ALL"],
+        order=3,
     )
-    include_shared_items: bool = Field(
-        title="Include Shared Items",
-        description="Whether to search within shared items for files matching the defined stream pattern. Drive name and folder path are "
-        "only relevant for your personal OneDrive and won't affect shared items.",
-        default=False,
+
+    folder_path: str = Field(
+        title="Folder Path",
+        description="Path to a specific folder within the drives to search for files. Leave empty to search all folders of the drives. This does not apply to shared items.",
         order=4,
+        default=".",
     )
 
     @classmethod
