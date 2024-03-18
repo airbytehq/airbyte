@@ -857,9 +857,6 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams, expectedRecordMessages.size()));
 
-    System.out.println("expected -" + expectedMessages);
-    System.out.println("actual - " + actualMessages);
-
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertTrue(expectedMessages.containsAll(actualMessages));
     assertTrue(actualMessages.containsAll(expectedMessages));
