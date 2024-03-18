@@ -1249,5 +1249,5 @@ contributor now ;\)
 
 ## Additional guides
 
-- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source.md)
+- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun)
 - [Building a Java Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination)

@@ -156,35 +156,7 @@ If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` fro
 
 ### Connector
 
-To format an individual connector in python, run the following command in your local `airbyte` repository:
-
-```
- ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
-```
-
-For instance:
-
-```
-./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
-```
-
-To format connectors in java, run `./gradlew format`
-
-### Connector Infrastructure
-
-Finally, if you are working in any module in `:airbyte-integrations:bases` or `:airbyte-cdk:python`, run the following command in your local `airbyte` repository:
-
-```bash
-SUB_BUILD=CONNECTORS_BASE ./gradlew format
-```
-
-Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
-
-```python
-"""
-[FILENAME] includes [INSERT DESCRIPTION OF CONTENTS HERE]
-"""
-```
+To format your local `airbyte` repository, run `airbyte-ci format fix all`.
 
 ### Develop on `airbyte-webapp`
 

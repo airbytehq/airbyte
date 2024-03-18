@@ -1239,6 +1239,20 @@ def test_create_default_paginator():
             ValueError,
             id="test_create_custom_component_missing_required_field_emits_error",
         ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.NonExistingClass",
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
+                },
+            },
+            "paginator",
+            None,
+            ValueError,
+            id="test_create_custom_component_non_existing_class_raises_value_error",
+        ),
     ],
 )
 def test_create_custom_components(manifest, field_name, expected_value, expected_error):

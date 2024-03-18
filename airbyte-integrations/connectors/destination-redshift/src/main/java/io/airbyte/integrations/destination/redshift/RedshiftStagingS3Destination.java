@@ -42,14 +42,18 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
@@ -69,7 +73,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftStagingS3Destination extends AbstractJdbcDestination implements Destination {
+public class RedshiftStagingS3Destination extends AbstractJdbcDestination<RedshiftState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3Destination.class);
 
@@ -186,6 +190,14 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
+  protected List<Migration<RedshiftState>> getMigrations(JdbcDatabase database,
+                                                         String databaseName,
+                                                         SqlGenerator sqlGenerator,
+                                                         DestinationHandler<RedshiftState> destinationHandler) {
+    return List.of(new RedshiftRawTableAirbyteMetaMigration(database, databaseName));
+  }
+
+  @Override
   @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -236,12 +248,14 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final JdbcV1V2Migrator migrator = new JdbcV1V2Migrator(getNamingResolver(), database, databaseName);
     final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
+    List<Migration<RedshiftState>> redshiftMigrations = getMigrations(database, databaseName, sqlGenerator, redshiftDestinationHandler);
     if (disableTypeDedupe) {
       typerDeduper =
-          new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
+          new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog,
+              migrator, v2TableMigrator, redshiftMigrations);
     } else {
       typerDeduper =
-          new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, List.of());
+          new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, redshiftMigrations);
     }
     return StagingConsumerFactory.builder(
         outputRecordCollector,

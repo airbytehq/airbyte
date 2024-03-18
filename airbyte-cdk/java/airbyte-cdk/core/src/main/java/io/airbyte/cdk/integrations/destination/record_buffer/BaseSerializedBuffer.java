@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destination.record_buffer;
 
 import com.google.common.io.CountingOutputStream;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -66,12 +65,11 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * AirbyteRecord
    *
    * @param recordString serialized record
+   * @param airbyteMetaString
    * @param emittedAt timestamp of the record in milliseconds
    * @throws IOException
    */
-  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
-    writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
-  }
+  protected abstract void writeRecord(final String recordString, String airbyteMetaString, final long emittedAt) throws IOException;
 
   /**
    * Stops the writer from receiving new data and prepares it for being finalized and converted into
@@ -111,7 +109,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final String recordString, final long emittedAt) throws Exception {
+  public long accept(final String recordString, final String airbyteMetaString, final long emittedAt) throws Exception {
     if (!isStarted) {
       if (useCompression) {
         compressedBuffer = new GzipCompressorOutputStream(byteCounter);
@@ -123,7 +121,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
-      writeRecord(recordString, emittedAt);
+      writeRecord(recordString, airbyteMetaString, emittedAt);
       return byteCounter.getCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
