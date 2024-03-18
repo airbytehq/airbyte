@@ -85,7 +85,7 @@ def _key_is_unset_or_identical(key: str, value: Any, mapping: Mapping[str, Any])
 def _create_inner_objects(keywords, kwargs):
     fully_created = dict()
     for k, v in keywords.items():
-        if type(v) == type(create):
+        if type(v) is type(create):
             fully_created[k] = v(kwargs=kwargs)
         else:
             fully_created[k] = v
