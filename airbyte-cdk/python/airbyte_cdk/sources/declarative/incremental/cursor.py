@@ -3,7 +3,6 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState

@@ -212,7 +212,6 @@ def test_close_slice(mocked_cursor_factory, mocked_partition_router):
     stream_slice = StreamSlice(partition={"partition key": "first partition"}, cursor_slice={})
     mocked_partition_router.stream_slices.return_value = [stream_slice]
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
-    last_record = Mock()
     list(cursor.stream_slices())  # generate internal state
 
     cursor.close_slice(stream_slice)
