@@ -95,7 +95,7 @@ class IncrementalSingleSliceCursor(Cursor):
             self._state[cursor_field] = latest_record[cursor_field]
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
-        yield {}
+        yield StreamSlice(partition={}, cursor_slice={})
 
     def should_be_synced(self, record: Record) -> bool:
         """
@@ -154,7 +154,7 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         parent_state = (self._state or {}).get(self.parent_stream_name, {})
-        slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
+        slices_generator: Iterable[StreamSlice] = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
         yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator
 
     def read_parent_stream(
@@ -175,13 +175,17 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
                 substream_slice_value = parent_record.get(self.parent_field)
                 if substream_slice_value:
                     cursor_field = self.cursor_field.eval(self.config)
-                    yield {
-                        self.substream_slice_field: substream_slice_value,
-                        cursor_field: self._state.get(cursor_field),
-                        self.parent_stream_name: {
-                            self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
+                    yield StreamSlice(
+                        partition={
+                            self.substream_slice_field: substream_slice_value,
                         },
-                    }
+                        cursor_slice={
+                            cursor_field: self._state.get(cursor_field),
+                            self.parent_stream_name: {
+                                self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
+                            },
+                        },
+                    )
 
 
 @dataclass
