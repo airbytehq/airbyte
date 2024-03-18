@@ -19,9 +19,11 @@ class Client:
         with open(os.path.join(base_dir, "app_name_mapping", "app_name.yaml")) as f:
             self.app_name_mappings = yaml.full_load(f)
         self.field_code_mappings = {}
+        self.reversed_field_code_mappings = {}
         for app_id in config.get("app_ids"):
             with open(os.path.join(base_dir, "field_code_mapping", f"field_code_{app_id}.yaml")) as f:
                 self.field_code_mappings[app_id] = yaml.full_load(f)
+                self.reversed_field_code_mappings[app_id] = {v: k for k, v in self.field_code_mappings[app_id].items()}
         self.logger = logger
         self.config = config
 
@@ -105,13 +107,18 @@ class Client:
 
     # ref. https://kintone.dev/en/docs/kintone/rest-api/records/add-cursor/
     def create_cursor(self, app_id: str, cursor_field: str = None, cursor_value: str = None):
+        # https://cybozu.dev/ja/kintone/docs/overview/query/
+        cursor_field = self.reversed_field_code_mappings[app_id].get(cursor_field, cursor_field)
+        query = f"order by {cursor_field} asc"
+        if cursor_field and cursor_value:
+            query = f"{cursor_field} > \"{cursor_value}\" {query}"
+
         params = {
             "app": app_id,
             "size": 500,
+            "query": query,
         }
-        # https://cybozu.dev/ja/kintone/docs/overview/query/
-        if cursor_field and cursor_value:
-            params["query"] = f"{cursor_field} > \"{cursor_value}\""
+
         url = self._get_base_url() + "/k/v1/records/cursor.json"
         return self._post_data(url, params)
 
