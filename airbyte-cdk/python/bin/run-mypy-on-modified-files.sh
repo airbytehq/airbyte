@@ -7,7 +7,7 @@ cd "$(dirname "${0}")/.." || exit 1
 
 if [ "$#" -gt 0 ]; then
   # Usually CI: if files are provided as arguments, run mypy directly on those files.
-  mypy -- "$@" --config-file pyproject.toml --install-types --non-interactive
+  mypy --config-file pyproject.toml --install-types --non-interactive -- "$@"
 else
   # Usually local: if no files are provided, calculate the diff and run mypy on the result.
   {
