@@ -5,10 +5,10 @@ package io.airbyte.cdk.testutils
 
 import io.airbyte.cdk.db.factory.DSLContextFactory
 import io.airbyte.cdk.db.factory.DataSourceFactory
+import javax.sql.DataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.testcontainers.containers.JdbcDatabaseContainer
-import javax.sql.DataSource
 
 /**
  * Helper class that facilitates the creation of database connection objects for testing purposes.
@@ -22,10 +22,12 @@ object DatabaseConnectionHelper {
      */
     @JvmStatic
     fun createDataSource(container: JdbcDatabaseContainer<*>?): DataSource? {
-        return DataSourceFactory.create(container!!.username,
-                container.password,
-                container.driverClassName,
-                container.jdbcUrl)
+        return DataSourceFactory.create(
+            container!!.username,
+            container.password,
+            container.driverClassName,
+            container.jdbcUrl
+        )
     }
 
     /**
@@ -38,10 +40,11 @@ object DatabaseConnectionHelper {
     @JvmStatic
     fun createDslContext(container: JdbcDatabaseContainer<*>?, dialect: SQLDialect?): DSLContext? {
         return DSLContextFactory.create(
-                container!!.username,
-                container.password,
-                container.driverClassName,
-                container.jdbcUrl,
-                dialect)
+            container!!.username,
+            container.password,
+            container.driverClassName,
+            container.jdbcUrl,
+            dialect
+        )
     }
 }

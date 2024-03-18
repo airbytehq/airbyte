@@ -175,7 +175,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     if (supportsSchemas()) {
       createSchemas();
     }
-    if (testdb.databaseDriver.equals(DatabaseDriver.ORACLE)) {
+    if (testdb.getDatabaseDriver().equals(DatabaseDriver.ORACLE)) {
       testdb.with("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'");
     }
     testdb
@@ -290,7 +290,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   @Test
   protected void testDiscoverWithMultipleSchemas() throws Exception {
     // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
-    switch (testdb.databaseDriver) {
+    switch (testdb.getDatabaseDriver()) {
       case MYSQL, CLICKHOUSE, TERADATA:
         return;
     }
@@ -750,7 +750,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
     // some databases don't make insertion order guarantee when equal ordering value
-    if (testdb.databaseDriver.equals(DatabaseDriver.TERADATA) || testdb.databaseDriver.equals(DatabaseDriver.ORACLE)) {
+    if (testdb.getDatabaseDriver().equals(DatabaseDriver.TERADATA) || testdb.getDatabaseDriver().equals(DatabaseDriver.ORACLE)) {
       assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
     } else {
       assertEquals(List.of("a", "b"), firstSyncNames);
@@ -802,7 +802,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
         .toList();
 
     // teradata doesn't make insertion order guarantee when equal ordering value
-    if (testdb.databaseDriver.equals(DatabaseDriver.TERADATA)) {
+    if (testdb.getDatabaseDriver().equals(DatabaseDriver.TERADATA)) {
       assertThat(List.of("c", "d", "e", "f"), Matchers.containsInAnyOrder(thirdSyncExpectedNames.toArray()));
     } else {
       assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
@@ -1009,7 +1009,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   private JsonNode convertIdBasedOnDatabase(final int idValue) {
-    return switch (testdb.databaseDriver) {
+    return switch (testdb.getDatabaseDriver()) {
       case ORACLE, SNOWFLAKE -> Jsons.jsonNode(BigDecimal.valueOf(idValue));
       default -> Jsons.jsonNode(idValue);
     };
@@ -1020,7 +1020,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   protected String getDefaultNamespace() {
-    return switch (testdb.databaseDriver) {
+    return switch (testdb.getDatabaseDriver()) {
       // mysql does not support schemas, it namespaces using database names instead.
       case MYSQL, CLICKHOUSE, TERADATA -> testdb.getDatabaseName();
       default -> SCHEMA_NAME;

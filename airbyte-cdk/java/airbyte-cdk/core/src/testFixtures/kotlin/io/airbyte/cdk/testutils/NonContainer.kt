@@ -9,11 +9,13 @@ import org.testcontainers.containers.JdbcDatabaseContainer
  * This is used when a source (such as Snowflake) relies on an always-on resource and therefore
  * doesn't need an actual container. compatible
  */
-class NonContainer(private val username: String?,
-                   private val password: String?,
-                   private val jdbcUrl: String?,
-                   private val driverClassName: String?,
-                   dockerImageName: String?) : JdbcDatabaseContainer<NonContainer?>(dockerImageName!!) {
+class NonContainer(
+    private val username: String?,
+    private val password: String?,
+    private val jdbcUrl: String?,
+    private val driverClassName: String?,
+    dockerImageName: String?
+) : JdbcDatabaseContainer<NonContainer?>(dockerImageName!!) {
     override fun getDriverClassName(): String? {
         return driverClassName
     }
