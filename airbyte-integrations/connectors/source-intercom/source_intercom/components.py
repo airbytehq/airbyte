@@ -184,7 +184,7 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
                             self.parent_stream_name: {
                                 self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
                             },
-                        }
+                        },
                     )
 
 
