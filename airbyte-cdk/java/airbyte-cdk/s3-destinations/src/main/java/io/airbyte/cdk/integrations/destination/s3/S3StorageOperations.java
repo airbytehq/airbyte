@@ -120,7 +120,6 @@ public class S3StorageOperations extends BlobStorageOperations {
   @Override
   public String uploadRecordsToBucket(final SerializableBuffer recordsData,
                                       final String namespace,
-                                      final String streamName,
                                       final String objectPath) {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {

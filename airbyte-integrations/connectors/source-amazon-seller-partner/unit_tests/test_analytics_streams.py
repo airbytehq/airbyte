@@ -55,7 +55,7 @@ class TestAnalyticsStream:
         report_options = {"reportPeriod": "DAYS123"}
         with pytest.raises(Exception) as e:
             stream._augmented_data(report_options)
-        assert e.value.args[0] == [{'message': 'This reportPeriod is not implemented.'}]
+        assert e.value.args[0] == [{"message": "This reportPeriod is not implemented."}]
 
     @pytest.mark.parametrize(
         ("report_options", "report_option_dates"),
@@ -90,9 +90,10 @@ class TestIncrementalAnalyticsStream:
         stream = SomeIncrementalAnalyticsStream(**report_init_kwargs)
         expected_data = {"reportType": stream.name, "marketplaceIds": [report_init_kwargs["marketplace_id"]]}
         expected_data.update(stream_slice)
-        assert stream._report_data(
-            sync_mode=SyncMode.incremental, cursor_field=[stream.cursor_field], stream_slice=stream_slice
-        ) == expected_data
+        assert (
+            stream._report_data(sync_mode=SyncMode.incremental, cursor_field=[stream.cursor_field], stream_slice=stream_slice)
+            == expected_data
+        )
 
     @pytest.mark.parametrize(
         ("current_stream_state", "latest_record", "expected_date"),
@@ -126,13 +127,13 @@ class TestIncrementalAnalyticsStream:
                 [{"dataStartTime": "2023-09-06T00:00:00Z", "dataEndTime": "2023-09-06T23:59:59Z"}],
             ),
             (
-                "2023-05-01T00:00:00Z",
-                "2023-09-07T00:00:00Z",
+                "2022-05-01T00:00:00Z",
+                "2023-09-05T00:00:00Z",
                 None,
                 0,
                 [
-                    {"dataStartTime": "2023-05-01T00:00:00Z", "dataEndTime": "2023-07-29T23:59:59Z"},
-                    {"dataStartTime": "2023-07-30T00:00:00Z", "dataEndTime": "2023-09-07T00:00:00Z"},
+                    {"dataStartTime": "2022-05-01T00:00:00Z", "dataEndTime": "2023-04-30T23:59:59Z"},
+                    {"dataStartTime": "2023-05-01T00:00:00Z", "dataEndTime": "2023-09-05T00:00:00Z"},
                 ],
             ),
         ),
@@ -143,6 +144,7 @@ class TestIncrementalAnalyticsStream:
         stream = SomeIncrementalAnalyticsStream(**report_init_kwargs)
         stream.fixed_period_in_days = fixed_period_in_days
         with patch("pendulum.now", return_value=pendulum.parse("2023-09-09T00:00:00Z")):
-            assert list(
-                stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=[stream.cursor_field], stream_state=stream_state)
-            ) == expected_slices
+            assert (
+                list(stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=[stream.cursor_field], stream_state=stream_state))
+                == expected_slices
+            )

@@ -52,7 +52,7 @@ class Helpers(object):
         """
         fields, duplicate_fields = Helpers.get_valid_headers_and_duplicates(header_row_values)
         if duplicate_fields:
-            logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
+            logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them: {duplicate_fields}")
 
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -85,8 +85,8 @@ class Helpers(object):
     @staticmethod
     def get_formatted_row_values(row_data: RowData) -> List[str]:
         """
-        Gets the formatted values of all cell data in this row. A formatted value is the final value a user sees in a spreadsheet. It can be a raw
-        string input by the user, or the result of a sheets function call.
+        Gets the formatted values of all cell data in this row. A formatted value is the final value a user sees in a spreadsheet.
+        It can be a raw string input by the user, or the result of a sheets function call.
         """
         return [value.formattedValue for value in row_data.values]
 
@@ -151,6 +151,9 @@ class Helpers(object):
                 first_row = Helpers.get_first_row(client, spreadsheet_id, sheet)
                 if names_conversion:
                     first_row = [safe_name_conversion(h) for h in first_row]
+                    # When performing names conversion, they won't match what is listed in catalog for the majority of cases,
+                    # so they should be cast here in order to have them in records
+                    columns = {safe_name_conversion(c) for c in columns}
                 # Find the column index of each header value
                 idx = 0
                 for cell_value in first_row:

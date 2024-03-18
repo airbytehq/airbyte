@@ -188,6 +188,10 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   protected final Optional<AirbyteMessage> getIntermediateMessage() {
     if (emitIntermediateState && intermediateStateMessage != null) {
       final AirbyteMessage message = intermediateStateMessage;
+      if (message.getState() != null) {
+        message.getState().setSourceStats(new AirbyteStateStats().withRecordCount((double) recordCountInStateMessage));
+      }
+
       intermediateStateMessage = null;
       recordCountInStateMessage = 0;
       emitIntermediateState = false;

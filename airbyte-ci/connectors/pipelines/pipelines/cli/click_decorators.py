@@ -5,9 +5,14 @@
 import functools
 import inspect
 from functools import wraps
-from typing import Any, Callable, Type
+from typing import Any, Callable, Type, TypeVar
 
 import asyncclick as click
+from pipelines.models.ci_requirements import CIRequirements
+
+_AnyCallable = Callable[..., Any]
+FC = TypeVar("FC", bound="_AnyCallable | click.core.Command")
+CI_REQUIREMENTS_OPTION_NAME = "--ci-requirements"
 
 
 def _contains_var_kwarg(f: Callable) -> bool:
@@ -121,3 +126,27 @@ class LazyPassDecorator:
             return f(*args, **kwargs)
 
         return decorated_function
+
+
+def click_ci_requirements_option() -> Callable[[FC], FC]:
+    """Add a --ci-requirements option to the command.
+
+    Returns:
+        Callable[[FC], FC]: The decorated command.
+    """
+
+    def callback(ctx: click.Context, param: click.Parameter, value: bool) -> None:
+        if value:
+            ci_requirements = CIRequirements()
+            click.echo(ci_requirements.to_json())
+            ctx.exit()
+
+    return click.decorators.option(
+        CI_REQUIREMENTS_OPTION_NAME,
+        is_flag=True,
+        expose_value=False,
+        is_eager=True,
+        flag_value=True,
+        help="Show the CI requirements and exit. It used to make airbyte-ci client define the CI runners it will run on.",
+        callback=callback,
+    )

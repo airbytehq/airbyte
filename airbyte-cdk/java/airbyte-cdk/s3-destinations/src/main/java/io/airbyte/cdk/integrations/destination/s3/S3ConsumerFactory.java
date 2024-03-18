@@ -128,7 +128,6 @@ public class S3ConsumerFactory {
         writeConfig.addStoredFile(storageOperations.uploadRecordsToBucket(
             writer,
             writeConfig.getNamespace(),
-            writeConfig.getStreamName(),
             writeConfig.getFullOutputPath()));
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and upload buffer to storage:", e);

@@ -5,9 +5,12 @@
 import os
 
 import pytest
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.test.state_builder import StateBuilder
 
 os.environ["CACHE_DISABLED"] = "true"
+os.environ["DEPLOYMENT_MODE"] = "testing"
 
 
 @pytest.fixture(name="config")
@@ -39,10 +42,14 @@ def stream_by_name(config):
     from source_stripe.source import SourceStripe
 
     def mocker(stream_name, source_config=config):
-        source = SourceStripe(None, source_config)
+        source = SourceStripe(None, source_config, StateBuilder().build())
         streams = source.streams(source_config)
         for stream in streams:
             if stream.name == stream_name:
+                if isinstance(stream, StreamFacade):
+                    # to avoid breaking changes for tests, we will return the legacy test. Tests that would be affected by not having this
+                    # would probably need to be moved to integration tests or unit tests
+                    return stream._legacy_stream
                 return stream
 
     return mocker

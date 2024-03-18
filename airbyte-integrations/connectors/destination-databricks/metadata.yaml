@@ -11,8 +11,10 @@ data:
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 1.1.0 # pinning due to CDK incompatibility, see https://github.com/airbytehq/alpha-beta-issues/issues/2596
     oss:
       enabled: true
+      dockerImageTag: 1.1.0 # pinning due to CDK incompatibility, see https://github.com/airbytehq/alpha-beta-issues/issues/2596
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   tags:

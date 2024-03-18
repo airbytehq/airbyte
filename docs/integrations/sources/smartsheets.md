@@ -110,6 +110,7 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 1.1.2   | 2024-01-08 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib                                                        |
 | 1.1.1   | 2023-06-06 | [27096](https://github.com/airbytehq/airbyte/pull/27096) | Fix error when optional metadata fields are not set       |
 | 1.1.0   | 2023-06-02 | [22382](https://github.com/airbytehq/airbyte/pull/22382) | Add support for ingesting metadata fields                 |
 | 1.0.2   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Fix dependencies conflict                                 |

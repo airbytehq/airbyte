@@ -10,9 +10,9 @@ data:
   name: MQTT
   registries:
     cloud:
-      enabled: false # hide MQTT Destination https://github.com/airbytehq/airbyte-cloud/issues/2613
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mqtt
   tags:
@@ -20,5 +20,5 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"

@@ -1,5 +1,134 @@
 # Changelog
 
+## 0.72.1
+low code: add refresh_token_error handler to DeclarativeOauth2Authenticator
+
+## 0.72.0
+low-code: Allow defining custom schema loaders
+
+## 0.71.0
+Declarative datetime-based cursors now only derive state values from records that were read
+
+## 0.70.2
+low-code: remove superfluous sleep
+
+## 0.70.1
+File-based CDK: Fix tab delimiter configuration in CSV file type
+
+## 0.70.0
+testing
+
+## 0.69.2
+low-code: improve error message when a custom component cannot be found
+
+## 0.69.1
+Update mock server test entrypoint wrapper to use per-stream state
+
+## 0.69.0
+Include recordCount in stream state messages and final state message for full refresh syncs
+
+## 0.68.4
+low-code: update cartesian stream slice to emit typed StreamSlice
+
+## 0.68.3
+Low-code: adding a default value if a stream slice is None during read_records
+
+## 0.68.2
+low-code: remove parent cursor compoent from incremental substreams' state message
+
+## 0.68.1
+no-op republish of 0.68.0
+
+## 0.68.0
+low-code: Allow page size to be defined with string interpolation
+
+## 0.67.3
+CDK: upgrade pyarrow
+
+## 0.67.2
+File CDK: Update parquet parser to handle values that resolve to None
+
+## 0.67.1
+Fix handling of tab-separated CSVs
+
+## 0.67.0
+Low-code: Add CustomRecordFilter
+
+## 0.66.0
+Low-code: Add interpolation for request options
+
+## 0.65.0
+low-code: Allow connectors to ignore stream slicer request options on paginated requests
+
+## 0.64.1
+
+
+## 0.64.0
+Low-code: Add filter to RemoveFields
+
+## 0.63.2
+Correct handling of custom max_records limits in connector_builder
+
+## 0.63.1
+File-based CDK:  fix record enqueuing
+
+## 0.63.0
+Per-stream error reporting and continue syncing on error by default
+
+## 0.62.2
+mask access key when logging refresh response
+
+## 0.62.1
+[ISSUE #34910] add headers to HttpResponse for test framework
+
+## 0.62.0
+File-based CDK: functionality to make incremental syncs concurrent
+
+## 0.61.2
+[ISSUE #34755] do not propagate parameters on JSON schemas
+
+## 0.61.1
+Align version in CDK Dockerfile to be consistent. Before this change, the docker images was mistakenly pinned to version 0.58.5.
+
+## 0.61.0
+File-based CDK: log warning on no sync mode instead of raising exception
+
+## 0.60.2
+Improve error messages for concurrent CDK
+
+## 0.60.1
+Emit state when no partitions are generated for ccdk and update StateBuilder
+
+## 0.60.0
+File-based CDK: run full refresh syncs with concurrency
+
+## 0.59.2
+Fix CCDK overlapping message due to print in entrypoint
+
+## 0.59.1
+Fix concurrent CDK deadlock
+
+## 0.59.0
+Fix state message handling when running concurrent syncs
+
+## 0.58.9
+concurrent-cdk: improve resource usage when reading from substreams
+
+## 0.58.8
+CDK: HttpRequester can accept http_method in str format, which is required by custom low code components
+
+## 0.58.7
+
+
+## 0.58.6
+File CDK: Added logic to emit logged `RecordParseError` errors and raise the single `AirbyteTracebackException` in the end of the sync, instead of silent skipping the parsing errors. PR: https://github.com/airbytehq/airbyte/pull/32589
+
+## 0.58.5
+Handle private network exception as config error
+
+## 0.58.4
+Add POST method to HttpMocker
+
 ## 0.58.3
 fix declarative oauth initialization
 

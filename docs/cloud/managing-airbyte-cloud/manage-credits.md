@@ -42,17 +42,17 @@ To purchase credits directly through the UI,
 
     :::
 
-## Automatic reload of credits (Beta)
+## Automatic reload of credits
 
-You can enroll in automatic top-ups of your credit balance. This is a beta feature for those who do not want to manually add credits each time.
+You can enroll in automatic top-ups of your credit balance. Thie feature is for those who do not want to manually add credits each time.
 
 To enroll, [email us](mailto:billing@airbyte.io) with:
 
-1. A link to your workspace that you'd like to enable this feature for.
+1. A link to your workspace or organization that you'd like to enable this feature for.
 2. **Recharge threshold** The number under what credit balance you would like the automatic top up to occur.
 3. **Recharge balance** The amount of credits you would like to refill to.
 
-As an example, if the recharge threshold is 10 credits and recharge balance is 30 credits, anytime your workspace's credit balance dipped below 10 credits, Airbyte will automatically add enough credits to bring the balance back to 30 credits by charging the difference between your credit balance and 30 credits.
+As an example, if the recharge threshold is 10 credits and recharge balance is 30 credits, anytime your credit balance dips below 10 credits, Airbyte will automatically add enough credits to bring the balance back to 30 credits by charging the difference between your credit balance and 30 credits.
 
 To take a real example, if:
 1. The credit balance reached 3 credits.

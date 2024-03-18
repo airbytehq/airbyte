@@ -59,7 +59,7 @@ class HttpRequester(Requester):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     authenticator: Optional[DeclarativeAuthenticator] = None
-    http_method: HttpMethod = HttpMethod.GET
+    http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     error_handler: Optional[ErrorHandler] = None
     disable_retries: bool = False
@@ -80,6 +80,7 @@ class HttpRequester(Requester):
         else:
             self._request_options_provider = self.request_options_provider
         self._authenticator = self.authenticator or NoAuth(parameters=parameters)
+        self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
@@ -138,7 +139,7 @@ class HttpRequester(Requester):
         return path.lstrip("/")
 
     def get_method(self) -> HttpMethod:
-        return self.http_method
+        return self._http_method
 
     def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
         if self.error_handler is None:
@@ -419,7 +420,7 @@ class HttpRequester(Requester):
         data: Any = None,
     ) -> requests.PreparedRequest:
         url = urljoin(self.get_url_base(), path)
-        http_method = str(self.http_method.value)
+        http_method = str(self._http_method.value)
         query_params = self.deduplicate_query_params(url, params)
         args = {"method": http_method, "url": url, "headers": headers, "params": query_params}
         if http_method.upper() in BODY_REQUEST_METHODS:

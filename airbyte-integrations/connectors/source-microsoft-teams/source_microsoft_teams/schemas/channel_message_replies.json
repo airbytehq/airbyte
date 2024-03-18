@@ -6,26 +6,34 @@
     "id": {
       "type": ["null", "string"]
     },
-    "reply_to_id": {
+    "replyToId": {
       "type": ["null", "string"]
     },
     "etag": {
       "type": ["null", "string"]
     },
-    "message_type": {
+    "messageType": {
       "type": ["null", "string"]
     },
-    "created_date_time": {
+    "createdDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
-    "last_modified_date_time": {
+    "lastModifiedDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
-    "deleted_date_time": {
+    "lastEditedDateTime": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "deletedDateTime": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "subject": {
       "type": ["null", "string"]
@@ -33,7 +41,7 @@
     "summary": {
       "type": ["null", "string"]
     },
-    "chat_id": {
+    "chatId": {
       "type": ["null", "string"]
     },
     "importance": {
@@ -42,10 +50,10 @@
     "locale": {
       "type": ["null", "string"]
     },
-    "web_url": {
+    "webUrl": {
       "type": ["null", "string"]
     },
-    "policy_violation": {
+    "policyViolation": {
       "type": ["null", "string"]
     },
     "from": {
@@ -68,10 +76,13 @@
             "id": {
               "type": ["null", "string"]
             },
-            "display_name": {
+            "displayName": {
               "type": ["null", "string"]
             },
-            "user_identity_type": {
+            "userIdentityType": {
+              "type": ["null", "string"]
+            },
+            "tenantId": {
               "type": ["null", "string"]
             }
           }
@@ -82,7 +93,7 @@
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "content_type": {
+        "contentType": {
           "type": ["null", "string"]
         },
         "content": {
@@ -90,156 +101,136 @@
         }
       }
     },
-    "channel_identity": {
+    "channelIdentity": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "teamId": {
           "type": ["null", "string"]
         },
-        "channel_id": {
+        "channelId": {
           "type": ["null", "string"]
         }
       }
     },
     "attachments": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": ["null", "object"],
-            "additionalProperties": true,
-            "properties": {
-              "id": {
-                "type": ["null", "string"]
-              },
-              "content_type": {
-                "type": ["null", "string"]
-              },
-              "content_url": {
-                "type": ["null", "string"]
-              },
-              "content": {
-                "type": ["null", "string"]
-              },
-              "name": {
-                "type": ["null", "string"]
-              },
-              "thumbnail_url": {
-                "type": ["null", "string"]
-              }
-            }
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "contentType": {
+            "type": ["null", "string"]
+          },
+          "contentUrl": {
+            "type": ["null", "string"]
+          },
+          "content": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "thumbnailUrl": {
+            "type": ["null", "string"]
           }
-        },
-        {
-          "type": "null"
         }
-      ]
+      }
     },
     "mentions": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "mentionText": {
+            "type": ["null", "string"]
+          },
+          "mentioned": {
             "type": ["null", "object"],
             "additionalProperties": true,
             "properties": {
-              "id": {
-                "type": ["null", "integer"]
-              },
-              "mention_text": {
+              "application": {
                 "type": ["null", "string"]
               },
-              "mentioned": {
-                "type": ["null", "object"],
-                "additionalProperties": true,
-                "properties": {
-                  "application": {
-                    "type": ["null", "string"]
-                  },
-                  "device": {
-                    "type": ["null", "string"]
-                  },
-                  "conversation": {
-                    "type": ["null", "string"]
-                  },
-                  "user": {
-                    "type": ["null", "object"],
-                    "additionalProperties": true,
-                    "properties": {
-                      "id": {
-                        "type": ["null", "string"]
-                      },
-                      "display_name": {
-                        "type": ["null", "string"]
-                      },
-                      "user_identity_type": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "reactions": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": ["null", "object"],
-            "additionalProperties": true,
-            "properties": {
-              "reaction_type": {
+              "device": {
                 "type": ["null", "string"]
               },
-              "created_date_time": {
-                "type": ["null", "string"],
-                "format": "date-time"
+              "conversation": {
+                "type": ["null", "string"]
               },
               "user": {
                 "type": ["null", "object"],
                 "additionalProperties": true,
                 "properties": {
-                  "application": {
+                  "id": {
                     "type": ["null", "string"]
                   },
-                  "device": {
+                  "displayName": {
                     "type": ["null", "string"]
                   },
-                  "conversation": {
+                  "userIdentityType": {
                     "type": ["null", "string"]
-                  },
-                  "user": {
-                    "type": ["null", "object"],
-                    "additionalProperties": true,
-                    "properties": {
-                      "id": {
-                        "type": ["null", "string"]
-                      },
-                      "display_name": {
-                        "type": ["null", "string"]
-                      },
-                      "user_identity_type": {
-                        "type": ["null", "string"]
-                      }
-                    }
                   }
                 }
               }
             }
           }
-        },
-        {
-          "type": "null"
         }
-      ]
+      }
+    },
+    "reactions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "reactionType": {
+            "type": ["null", "string"]
+          },
+          "createdDateTime": {
+            "type": ["null", "string"],
+            "format": "date-time",
+            "airbyte_type": "timestamp_without_timezone"
+          },
+          "user": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "application": {
+                "type": ["null", "string"]
+              },
+              "device": {
+                "type": ["null", "string"]
+              },
+              "conversation": {
+                "type": ["null", "string"]
+              },
+              "user": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "displayName": {
+                    "type": ["null", "string"]
+                  },
+                  "userIdentityType": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

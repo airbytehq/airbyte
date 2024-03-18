@@ -38,9 +38,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -393,18 +393,6 @@ public class BigQueryUtils {
         return JobInfo.WriteDisposition.WRITE_APPEND;
       }
       default -> throw new IllegalStateException("Unrecognized destination sync mode: " + syncMode);
-    }
-  }
-
-  public static boolean isUsingJsonCredentials(final JsonNode config) {
-    if (!config.has(BigQueryConsts.CONFIG_CREDS)) {
-      return false;
-    }
-    final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
-    if (json.isTextual()) {
-      return !json.asText().isEmpty();
-    } else {
-      return !Jsons.serialize(json).isEmpty();
     }
   }
 

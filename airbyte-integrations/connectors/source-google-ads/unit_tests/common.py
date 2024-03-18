@@ -44,8 +44,11 @@ class MockGoogleAdsClient:
     def load_from_dict(config, version=None):
         return MockGoogleAdsClient(config)
 
-    def send_request(self, query, customer_id):
+    def send_request(self, query, customer_id, login_customer_id="none"):
         yield from ()
+
+    def get_accessible_accounts(self):
+        yield from ["fake_customer_id", "fake_customer_id_2"]
 
 
 class MockGoogleAdsFieldService:
@@ -87,6 +90,11 @@ ERROR_MAP = {
     "QUERY_ERROR": {
         "failure_code": QueryErrorEnum.QueryError.UNEXPECTED_END_OF_QUERY,
         "failure_msg": "Error in query: unexpected end of query.",
+        "error_type": "queryError",
+    },
+    "UNRECOGNIZED_FIELD": {
+        "failure_code": QueryErrorEnum.QueryError.UNRECOGNIZED_FIELD,
+        "failure_msg": "unrecognized field in the query.",
         "error_type": "queryError",
     },
     "RESOURCE_EXHAUSTED": {"failure_code": QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED, "failure_msg": "msg4", "error_type": "quotaError"},

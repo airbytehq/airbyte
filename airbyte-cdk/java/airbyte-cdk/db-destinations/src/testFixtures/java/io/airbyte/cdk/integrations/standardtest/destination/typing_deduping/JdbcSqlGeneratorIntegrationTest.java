@@ -12,15 +12,17 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.quotedName;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +37,8 @@ import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
-public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<TableDefinition> {
+public abstract class JdbcSqlGeneratorIntegrationTest<DestinationState extends MinimumDestinationState>
+    extends BaseSqlGeneratorIntegrationTest<DestinationState> {
 
   protected abstract JdbcDatabase getDatabase();
 
@@ -68,7 +71,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
       throws SQLException {
     InsertValuesStepN<Record> insert = getDslContext().insertInto(
         DSL.table(tableName),
-        columnNames.stream().map(DSL::field).toList());
+        columnNames.stream().map(columnName -> field(quotedName(columnName))).toList());
     for (final JsonNode record : records) {
       insert = insert.values(
           columnNames.stream()
@@ -107,6 +110,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
         .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
         .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType())
         .column(COLUMN_NAME_DATA, getStructType().nullable(false))
+        .column(COLUMN_NAME_AB_META, getStructType().nullable(true))
         .getSQL(ParamType.INLINED));
   }
 
@@ -125,7 +129,8 @@ public abstract class JdbcSqlGeneratorIntegrationTest extends BaseSqlGeneratorIn
         DSL.name(streamId.rawNamespace(), streamId.rawName()),
         JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
         records,
-        COLUMN_NAME_DATA);
+        COLUMN_NAME_DATA,
+        COLUMN_NAME_AB_META);
   }
 
   @Override

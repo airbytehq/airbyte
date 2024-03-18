@@ -104,8 +104,10 @@ public class RedshiftSqlGeneratorTest {
         .map(String::trim)
         .filter(line -> !line.isEmpty())
         .toList();
-    System.out.println(generatedSql);
-    assertEquals(expectedSqlLines, generatedSqlLines);
+    assertEquals(expectedSqlLines.size(), generatedSqlLines.size());
+    for (int i = 0; i < expectedSqlLines.size(); i++) {
+      assertEquals(expectedSqlLines.get(i), generatedSqlLines.get(i));
+    }
   }
 
   @Test

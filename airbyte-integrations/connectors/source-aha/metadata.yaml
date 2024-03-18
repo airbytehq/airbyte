@@ -12,6 +12,10 @@ data:
   icon: aha.svg
   license: MIT
   name: Aha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-aha
   registries:
     cloud:
       enabled: true
@@ -20,6 +24,6 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

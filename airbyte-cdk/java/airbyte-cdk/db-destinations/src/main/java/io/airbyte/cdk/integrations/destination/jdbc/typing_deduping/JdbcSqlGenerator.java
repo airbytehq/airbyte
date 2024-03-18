@@ -29,7 +29,6 @@ import static org.jooq.impl.DSL.with;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
-import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
@@ -44,10 +43,12 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.jooq.CommonTableExpression;
 import org.jooq.Condition;
 import org.jooq.CreateSchemaFinalStep;
@@ -64,13 +65,13 @@ import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
-public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
+public abstract class JdbcSqlGenerator implements SqlGenerator {
 
   protected static final String ROW_NUMBER_COLUMN_NAME = "row_number";
   private static final String TYPING_CTE_ALIAS = "intermediate_data";
   private static final String NUMBERED_ROWS_CTE_ALIAS = "numbered_rows";
 
-  private final NamingConventionTransformer namingTransformer;
+  protected final NamingConventionTransformer namingTransformer;
   protected final ColumnId cdcDeletedAtColumn;
 
   public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer) {
@@ -259,11 +260,15 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
     final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     if (!force) {
-      return Sql.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
+      return transactionally(Stream.concat(
+          Stream.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+          createIndexSql(stream, suffix).stream()).toList());
     }
-    return transactionally(
-        dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
-        createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns()));
+    return transactionally(Stream.concat(
+        Stream.of(
+            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
+            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+        createIndexSql(stream, suffix).stream()).toList());
   }
 
   @Override
@@ -296,13 +301,15 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         DSL.createTable(rawTableName)
             .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
             .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
-            .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(false))
+            .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType().nullable(true))
             .column(COLUMN_NAME_DATA, getStructType().nullable(false))
+            .column(COLUMN_NAME_AB_META, getStructType().nullable(true))
             .as(select(
                 field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
                 field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
                 cast(null, getTimestampWithTimeZoneType()).as(COLUMN_NAME_AB_LOADED_AT),
-                field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
+                field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA),
+                cast(null, getStructType()).as(COLUMN_NAME_AB_META)).from(table(name(namespace, tableName))))
             .getSQL(ParamType.INLINED));
   }
 
@@ -419,8 +426,16 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     final DSLContext dsl = getDslContext();
     final CreateTableColumnStep createTableSql = dsl
         .createTable(quotedName(namespace, tableName))
-        .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)));;
+        .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)));
     return createTableSql.getSQL();
+  }
+
+  /**
+   * Subclasses may override this method to add additional indexes after their CREATE TABLE statement.
+   * This is useful if the destination's CREATE TABLE statement does not accept an index definition.
+   */
+  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
+    return Collections.emptyList();
   }
 
   protected String beginTransaction() {
@@ -471,22 +486,26 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         .getSQL(ParamType.INLINED);
   }
 
-  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias) {
+  protected Field<?> castedField(
+                                 final Field<?> field,
+                                 final AirbyteType type,
+                                 final String alias,
+                                 final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return castedField(field, airbyteProtocolType).as(quotedName(alias));
-
+      return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
     }
+
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> cast(field, getStructType()).as(quotedName(alias));
       case Array.TYPE -> cast(field, getArrayType()).as(quotedName(alias));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
 
-  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type) {
+  protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type, final boolean useExpensiveSaferCasting) {
     return cast(field, toDialectType(type));
   }
 
