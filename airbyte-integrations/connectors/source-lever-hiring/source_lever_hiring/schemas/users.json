@@ -1,0 +1,81 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "username" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "email" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "accessRole" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "photo" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "createdAt" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "deactivatedAt" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "externalDirectoryId" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "linkedContactIds" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "jobTitle" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "managerId" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

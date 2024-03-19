@@ -1,0 +1,198 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "contact" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "headline" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "stage" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "confidentiality" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "location" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "phones" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "object"
+      }
+    },
+    "emails" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "links" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "archived" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "tags" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "sources" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "stageChanges" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "object"
+      }
+    },
+    "origin" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "sourcedBy" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "owner" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "followers" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "applications" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "createdAt" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "updatedAt" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "lastInteractionAt" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "lastAdvancedAt" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "snoozedUntil" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "urls" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "resume" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "dataProtection" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "isAnonymized" : {
+      "type" : [
+        "null",
+        "boolean"
+      ]
+    }
+  }
+}
