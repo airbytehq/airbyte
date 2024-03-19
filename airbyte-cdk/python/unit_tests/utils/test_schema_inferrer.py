@@ -215,6 +215,7 @@ def test_field_is_nested(is_pk: bool):
     inferrer.accumulate(AirbyteRecordMessage(stream=_STREAM_NAME, data={"property": {"nested_property": _ANY_VALUE}}, emitted_at=NOW))
 
     assert inferrer.get_stream_schema(_STREAM_NAME)["required"] == ["property"]
+    assert inferrer.get_stream_schema(_STREAM_NAME)["properties"]["property"]["type"] == "object"
     assert inferrer.get_stream_schema(_STREAM_NAME)["properties"]["property"]["required"] == ["nested_property"]
 
 
@@ -244,7 +245,10 @@ def test_field_is_composite_and_nested(is_pk: bool):
     inferrer.accumulate(AirbyteRecordMessage(stream=_STREAM_NAME, data={"property 1": {"nested": _ANY_VALUE}, "property 2": _ANY_VALUE}, emitted_at=NOW))
 
     assert inferrer.get_stream_schema(_STREAM_NAME)["required"] == ["property 1", "property 2"]
+    assert inferrer.get_stream_schema(_STREAM_NAME)["properties"]["property 1"]["type"] == "object"
+    assert inferrer.get_stream_schema(_STREAM_NAME)["properties"]["property 2"]["type"] == "string"
     assert inferrer.get_stream_schema(_STREAM_NAME)["properties"]["property 1"]["required"] == ["nested"]
+    assert inferrer.get_stream_schema(_STREAM_NAME)["properties"]["property 1"]["properties"]["nested"]["type"] == "string"
 
 
 def test_given_pk_does_not_exist_when_get_inferred_schemas_then_raise_error():

@@ -157,8 +157,8 @@ class SchemaInferrer:
         """
         Take a nested key and travel the schema to mark every node as required.
         """
+        self._remove_null_from_type(node)
         if self._is_leaf(path):
-            self._remove_null_from_type(node)
             return
 
         if not traveled_path:
