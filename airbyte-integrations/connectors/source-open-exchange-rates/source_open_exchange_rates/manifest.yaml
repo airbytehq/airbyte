@@ -9,13 +9,20 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "https://openexchangerates.org/api/"
+    url_base: "https://openexchangerates.org/api/asdfasfasdfasdfasdf"
     http_method: "GET"
     authenticator:
       type: NoAuth
     request_parameters:
       app_id: "{{ config['app_id'] }}"
       base: "{{ config['base'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      description: "405 is like 404 on source-open-exchange-rates apparently"
+      max_retries: 2
+      response_filters:
+        - http_codes: [405]
+          action: RETRY
 
   retriever:
     type: SimpleRetriever
