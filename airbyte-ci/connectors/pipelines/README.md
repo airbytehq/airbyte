@@ -68,7 +68,8 @@ make tools.airbyte-ci.clean
 
 ## Disabling telemetry
 
-We collect anonymous usage data to help improve the tool. If you would like to disable this, you can set the `AIRBYTE_CI_DISABLE_TELEMETRY` environment variable to `true`.
+We collect anonymous usage data to help improve the tool. If you would like to disable this, you can
+set the `AIRBYTE_CI_DISABLE_TELEMETRY` environment variable to `true`.
 
 ## Installation for development
 
@@ -293,14 +294,14 @@ flowchart TD
 #### Options
 
 | Option                                                  | Multiple | Default value | Description                                                                                                                                                                                              |
-| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `--skip-step/-x`                                        | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
 | `--only-step/-k`                                        | True     |               | Only run specific steps by id e.g. `-k unit -k acceptance`                                                                                                                                               |
 | `--fail-fast`                                           | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 Note:
 
@@ -617,10 +618,13 @@ flowchart TD
 
 ### <a id="tests-command"></a>`tests` command
 
-This command runs the poe tasks declared in the `[tool.airbyte-ci]` section of our internal poetry packages.
-Feel free to checkout this [Pydantic model](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/models.py#L9) to see the list of available options in `[tool.airbyte-ci]` section.
+This command runs the poe tasks declared in the `[tool.airbyte-ci]` section of our internal poetry
+packages. Feel free to checkout this
+[Pydantic model](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/models.py#L9)
+to see the list of available options in `[tool.airbyte-ci]` section.
 
-You can find the list of internal packages [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L1)
+You can find the list of internal packages
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L1)
 
 #### Options
 
@@ -631,6 +635,7 @@ You can find the list of internal packages [here](https://github.com/airbytehq/a
 | `--ci-requirements`        | False    | False    | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 #### Examples
+
 You can pass multiple `--poetry-package-path` options to run poe tasks.
 
 E.G.: running Poe tasks on `airbyte-lib` and `airbyte-ci/connectors/pipelines`:
@@ -639,12 +644,12 @@ E.G.: running Poe tasks on `airbyte-lib` and `airbyte-ci/connectors/pipelines`:
 E.G.: running Poe tasks on the modified internal packages of the current branch:
 `airbyte-ci test --modified`
 
-
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                       |
+| 4.5.4   | [#36220](https://github.com/airbytehq/airbyte/pull/36220)  | Allow using `migrate-to-base-image` without PULL_REQUEST_NUMBER                                                            |
+| 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                          |
 | 4.5.2   | [#35802](https://github.com/airbytehq/airbyte/pull/35802)  | Fix bug with connectors bump_version command                                                                               |
 | 4.5.1   | [#35786](https://github.com/airbytehq/airbyte/pull/35786)  | Declare `live_tests` as an internal poetry package.                                                                        |
 | 4.5.0   | [#35784](https://github.com/airbytehq/airbyte/pull/35784)  | Format command supports kotlin                                                                                             |
