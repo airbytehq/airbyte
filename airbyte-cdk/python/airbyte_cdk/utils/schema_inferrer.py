@@ -10,11 +10,16 @@ from genson import SchemaBuilder, SchemaNode
 from genson.schema.strategies.object import Object
 from genson.schema.strategies.scalar import Number
 
+_NULL_TYPE = "null"
+
 
 class NoRequiredObj(Object):
     """
     This class has Object behaviour, but it does not generate "required[]" fields
-    every time it parses object. So we dont add unnecessary extra field.
+    every time it parses object. So we don't add unnecessary extra field.
+
+    The logic is that even reading all the data from a source, it does not mean that there can be another record added with those fields as
+    optional. Hence, we make everything nullable.
     """
 
     def to_schema(self) -> Mapping[str, Any]:
@@ -89,14 +94,14 @@ class SchemaInferrer:
         """
         if isinstance(node, dict):
             if "anyOf" in node:
-                if len(node["anyOf"]) == 2 and {"type": "null"} in node["anyOf"]:
-                    real_type = node["anyOf"][1] if node["anyOf"][0]["type"] == "null" else node["anyOf"][0]
+                if len(node["anyOf"]) == 2 and {"type": _NULL_TYPE} in node["anyOf"]:
+                    real_type = node["anyOf"][1] if node["anyOf"][0]["type"] == _NULL_TYPE else node["anyOf"][0]
                     node.update(real_type)
-                    node["type"] = ["null", node["type"]]
+                    node["type"] = [node["type"], _NULL_TYPE]
                     node.pop("anyOf")
             if "properties" in node and isinstance(node["properties"], dict):
                 for key, value in list(node["properties"].items()):
-                    if isinstance(value, dict) and value.get("type", None) == "null":
+                    if isinstance(value, dict) and value.get("type", None) == _NULL_TYPE:
                         node["properties"].pop(key)
                     else:
                         self._clean(value)
@@ -105,13 +110,17 @@ class SchemaInferrer:
 
             # this check needs to follow the "anyOf" cleaning as it might populate `type`
             if isinstance(node["type"], list):
-                if "null" not in node["type"]:
-                    node["type"] = ["null"] + node["type"]
+                if _NULL_TYPE not in node["type"]:
+                    node["type"].append(_NULL_TYPE)
             else:
-                node["type"] = ["null", node["type"]]
+                node["type"] = [node["type"], _NULL_TYPE]
         return node
 
     def _add_required_properties(self, node: InferredSchema) -> InferredSchema:
+        """
+        This method takes properties that should be marked as required (self._pk and self._cursor_field) and travel the schema to mark every
+        node as required.
+        """
         # Removing nullable for the root as when we call `_clean`, we make everything nullable
         node["type"] = "object"
 
@@ -127,10 +136,13 @@ class SchemaInferrer:
 
         return node
 
-    def _add_fields_as_required(self, node: InferredSchema, composite_keys: List[List[str]]) -> None:
+    def _add_fields_as_required(self, node: InferredSchema, composite_key: List[List[str]]) -> None:
+        """
+        Take a list of nested keys (this list represents a composite key) and travel the schema to mark every node as required.
+        """
         errors: List[Exception] = []
 
-        for path in composite_keys:
+        for path in composite_key:
             try:
                 self._add_field_as_required(node, path)
             except ValueError as exception:
@@ -139,14 +151,10 @@ class SchemaInferrer:
         if errors:
             raise SchemaValidationException(node, errors)
 
-    def _remove_null_from_type(self, node: InferredSchema) -> None:
-        if isinstance(node["type"], list):
-            if "null" in node["type"]:
-                node["type"].remove("null")
-            if len(node["type"]) == 1:
-                node["type"] = node["type"][0]
-
     def _add_field_as_required(self, node: InferredSchema, path: List[str], traveled_path: Optional[List[str]] = None) -> None:
+        """
+        Take a nested key and travel the schema to mark every node as required.
+        """
         if self._is_leaf(path):
             self._remove_null_from_type(node)
             return
@@ -155,7 +163,7 @@ class SchemaInferrer:
             traveled_path = []
 
         if "properties" not in node:
-            # This validation is only relevant when `traveled_path` is empty oskdfoskfo
+            # This validation is only relevant when `traveled_path` is empty
             raise ValueError(
                 f"Path {traveled_path} does not refer to an object but is `{node}` and hence {path} can't be marked as required."
             )
@@ -183,6 +191,13 @@ class SchemaInferrer:
 
     def _is_leaf(self, path: List[str]) -> bool:
         return len(path) == 0
+
+    def _remove_null_from_type(self, node: InferredSchema) -> None:
+        if isinstance(node["type"], list):
+            if "null" in node["type"]:
+                node["type"].remove("null")
+            if len(node["type"]) == 1:
+                node["type"] = node["type"][0]
 
     def get_stream_schema(self, stream_name: str) -> Optional[InferredSchema]:
         """

@@ -45,17 +45,31 @@ class MessageGrouper:
         self._max_slices = max_slices
         self._max_record_limit = max_record_limit
 
-    def _to_nested_and_composite_field(self, field: Optional[Union[str, List[str], List[List[str]]]]) -> List[List[str]]:
+    def _pk_to_nested_and_composite_field(self, field: Optional[Union[str, List[str], List[List[str]]]]) -> List[List[str]]:
         if not field:
             return [[]]
 
         if isinstance(field, str):
             return [[field]]
 
-        if isinstance(field[0], str):
-            return [field]  # type: ignore  # the type of field is expected to be List[str] here
+        is_composite_key = isinstance(field[0], str)
+        if is_composite_key:
+            return [[i] for i in field]  # type: ignore  # the type of field is expected to be List[str] here
 
         return field  # type: ignore  # the type of field is expected to be List[List[str]] here
+
+    def _cursor_field_to_nested_and_composite_field(self, field: Union[str, List[str]]) -> List[List[str]]:
+        if not field:
+            return [[]]
+
+        if isinstance(field, str):
+            return [[field]]
+
+        is_nested_key = isinstance(field[0], str)
+        if is_nested_key:
+            return [field]  # type: ignore  # the type of field is expected to be List[str] here
+
+        raise ValueError("Unknown type for cursor field")
 
     def get_message_groups(
         self,
@@ -68,8 +82,8 @@ class MessageGrouper:
             raise ValueError(f"Record limit must be between 1 and {self._max_record_limit}. Got {record_limit}")
         stream = source.streams(config)[0]  # The connector builder currently only supports reading from a single stream at a time
         schema_inferrer = SchemaInferrer(
-            self._to_nested_and_composite_field(stream.primary_key),
-            self._to_nested_and_composite_field(stream.cursor_field),
+            self._pk_to_nested_and_composite_field(stream.primary_key),
+            self._cursor_field_to_nested_and_composite_field(stream.cursor_field),
         )
         datetime_format_inferrer = DatetimeFormatInferrer()
 
