@@ -38,9 +38,6 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
     this.currentMaxCursor = initialCursor;
   }
 
-  /**
-   * @return
-   */
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     // At this stage intermediate state message should never be null; otherwise it would have been
@@ -58,9 +55,6 @@ public class CursorStateMessageProducer implements SourceStateMessageProducer<Ai
    * Note: We do not try to catch exception here. If error/exception happens, we should fail the sync,
    * and since we have saved state message before, we should be able to resume it in next sync if we
    * have fixed the underlying issue, of if the issue is transient.
-   *
-   * @param message
-   * @return
    */
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, AirbyteMessage message) {

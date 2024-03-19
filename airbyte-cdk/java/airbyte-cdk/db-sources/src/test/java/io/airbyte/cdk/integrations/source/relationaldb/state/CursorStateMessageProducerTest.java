@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.commons.json.Jsons;
@@ -31,6 +30,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ class CursorStateMessageProducerTest {
       STREAM_NAME,
       NAMESPACE,
       Field.of(UUID_FIELD_NAME, JsonSchemaType.STRING))
-      .withCursorField(Lists.newArrayList(UUID_FIELD_NAME));
+      .withCursorField(List.of(UUID_FIELD_NAME));
 
   private static final AirbyteMessage EMPTY_STATE_MESSAGE = createEmptyStateMessage(0.0);
 
