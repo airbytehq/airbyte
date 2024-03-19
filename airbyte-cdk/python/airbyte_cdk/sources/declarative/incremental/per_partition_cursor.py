@@ -83,7 +83,6 @@ class PerPartitionCursor(Cursor):
         if not stream_state:
             return
 
-        print(f"stream_state: {stream_state}")
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 

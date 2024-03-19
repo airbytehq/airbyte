@@ -88,22 +88,9 @@ class SalesforceStream(HttpStream, ABC):
     def url_base(self) -> str:
         return self.sf_api.instance_url
 
-    class SalesforceErrorHandler(ErrorHandler):
-        def __init__(self):
-            super.__init__({})
-
-        def get_error_type_and_message(self, error):
-            return
-
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return ErrorHandler(
-            {
-                401: [config, "Something something error {{ response.message }}"]
-            }
-        )
-
-        return SalesForceErrorHandler()
+        return SalesforceAvailabilityStrategy()
 
     @property
     def too_many_properties(self):
