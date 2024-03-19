@@ -13,6 +13,8 @@ from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream
 
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+
 
 @dataclass
 class DeclarativeStream(Stream):
@@ -34,6 +36,7 @@ class DeclarativeStream(Stream):
     parameters: InitVar[Mapping[str, Any]]
     name: str
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    state_migrations: List[StateMigration] = field(repr=True, default_factory=list)
     schema_loader: Optional[SchemaLoader] = None
     _name: str = field(init=False, repr=False, default="")
     _primary_key: str = field(init=False, repr=False, default="")
@@ -75,6 +78,10 @@ class DeclarativeStream(Stream):
     @state.setter
     def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
+        if self.state_migrations:
+            for migration in self.state_migrations:
+                if migration.should_migrate(value):
+                    value = migration.migrate(value)
         self.retriever.state = value
 
     def get_updated_state(

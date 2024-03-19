@@ -602,27 +602,16 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  CustomSchemaLoader:
-    title: Custom Schema Loader
-    description: Schema Loader component whose behavior is derived from a custom code implementation of the connector.
+  CustomStateMigration:
+    title: Custom State Migration
     type: object
     additionalProperties: true
     required:
       - type
-      - class_name
     properties:
       type:
         type: string
-        enum: [CustomSchemaLoader]
-      class_name:
-        title: Class Name
-        description: Fully-qualified name of the class that will be implementing the custom schema loader. The format is `source_<name>.<package>.<class_name>`.
-        type: string
-        examples:
-          - "source_railz.components.MyCustomSchemaLoader"
-      $parameters:
-        type: object
-        additionalProperties: true
+        enum: [CustomStateMigration]
   CustomTransformation:
     title: Custom Transformation
     description: Transformation component whose behavior is derived from a custom code implementation of the connector.
@@ -644,6 +633,13 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  LegacyToPerPartitionStateMigration:
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+        enum: [LegacyToPerPartitionStateMigration]
   DatetimeBasedCursor:
     title: Datetime Based Cursor
     description: Cursor to provide incremental capabilities over datetime.
@@ -924,31 +920,6 @@ definitions:
             default: ["credentials", "token_expiry_date"]
             examples:
               - ["credentials", "token_expiry_date"]
-          refresh_token_error_status_codes:
-            title: Refresh Token Error Status Codes
-            description: Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified). Responses with one of the error status code and containing an error value will be flagged as a config error
-            type: array
-            items:
-              type: integer
-            default: []
-            examples:
-              - [400, 500]
-          refresh_token_error_key:
-            title: Refresh Token Error Key
-            description: Key to Identify refresh token error in response (Refresh Token Error Status Codes and Refresh Token Error Values should be also specified).
-            type: string
-            default: ""
-            examples:
-              - "error"
-          refresh_token_error_values:
-            title: Refresh Token Error Values
-            description: 'List of values to check for exception during token refresh process. Used to check if the error found in the response matches the key from the Refresh Token Error Key field (e.g. response={"error": "invalid_grant"}). Only responses with one of the error status code and containing an error value will be flagged as a config error'
-            type: array
-            items:
-              type: string
-            default: []
-            examples:
-              - ["invalid_grant", "invalid_permissions"]
       $parameters:
         type: object
         additionalProperties: true
@@ -994,7 +965,6 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
-          - "$ref": "#/definitions/CustomSchemaLoader"
       # TODO we have move the transformation to the RecordSelector level in the code but kept this here for
       # compatibility reason. We should eventually move this to align with the code.
       transformations:
@@ -1006,6 +976,13 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
+      state_migrations:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/LegacyToPerPartitionStateMigration"
+            - "$ref": "#/definitions/CustomStateMigration"
+        default: []
       $parameters:
         type: object
         additional_properties: true

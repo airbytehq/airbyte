@@ -33,6 +33,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import I
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
@@ -49,7 +50,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordFilter as CustomRecordFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomSchemaLoader as CustomSchemaLoader
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
@@ -123,6 +123,10 @@ from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic import BaseModel
 
+from airbyte_cdk.sources.declarative.models import CustomStateMigration
+
+from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
+
 ComponentDefinition = Mapping[str, Any]
 
 
@@ -166,7 +170,7 @@ class ModelToComponentFactory:
             CustomRecordFilterModel: self.create_custom_component,
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
-            CustomSchemaLoader: self.create_custom_component,
+            CustomStateMigration: self.create_custom_component,
             CustomPaginationStrategyModel: self.create_custom_component,
             CustomPartitionRouterModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
@@ -182,6 +186,8 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
+            LegacySessionTokenAuthenticator: self.create_legacy_session_token_authenticator,
+            LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
             ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
             NoAuthModel: self.create_no_auth,
@@ -306,6 +312,14 @@ class ModelToComponentFactory:
             request_option=request_option,
             config=config,
             parameters=model.parameters or {},
+        )
+
+    def create_legacy_to_per_partition_state_migration(self, model: LegacyToPerPartitionsStateMigrationModel, config, partition_routers, cursor, parameters):
+        return LegacyToPerPartitionStateMigration(
+            partition_routers,
+            cursor,
+            config,
+            parameters
         )
 
     def create_session_token_authenticator(
@@ -586,6 +600,10 @@ class ModelToComponentFactory:
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
+        state_transformations = [self._create_component_from_model(state_migration, config, partition_routers=model.retriever.partition_router, cursor=model.incremental_sync, parameters=model.parameters)
+                                 for state_migration in model.state_migrations]\
+            if model.state_migrations else []
+
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
         else:
@@ -600,6 +618,7 @@ class ModelToComponentFactory:
             retriever=retriever,
             schema_loader=schema_loader,
             stream_cursor_field=cursor_field or "",
+            state_migrations=state_transformations,
             config=config,
             parameters=model.parameters or {},
         )
@@ -808,7 +827,7 @@ class ModelToComponentFactory:
 
     def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
-            # ignore type error because fixing it would have a lot of dependencies, revisit later
+            # ignore type error beause fixing it would have a lot of dependencies, revisit later
             return DeclarativeSingleUseRefreshTokenOauth2Authenticator(  # type: ignore
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
@@ -829,9 +848,6 @@ class ModelToComponentFactory:
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
-                refresh_token_error_status_codes=model.refresh_token_updater.refresh_token_error_status_codes,
-                refresh_token_error_key=model.refresh_token_updater.refresh_token_error_key,
-                refresh_token_error_values=model.refresh_token_updater.refresh_token_error_values,
             )
         # ignore type error because fixing it would have a lot of dependencies, revisit later
         return DeclarativeOauth2Authenticator(  # type: ignore
