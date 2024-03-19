@@ -49,14 +49,14 @@ The SurveyCTO source connector supports the following
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
 The SurveyCTO source connector supports the following streams:
 
 - Form Data
-- Form Dataset - To pull .csv data for a server dataset from a SurveyCTO server.
+- Form Dataset
 - Mediafiles - Currently, the stream is set up to accept a CSV file containing three columns:
   `file_name`, `file_type`, and `url_column`. This CSV is retrieved from an S3 bucket by the stream.
   While additional destinations are slated for future integration, the immediate output of the
@@ -65,15 +65,14 @@ The SurveyCTO source connector supports the following streams:
   decoding the binary strings and then storing the media back into an S3 bucket in their original
   format. This division in the process ensures that media files are both easily accessible and
   maintain their integrity throughout the handling process.
-- Form Data Definition - Fetch form's definition from SurveyCTO in json format
-- Form Repeat Groups - Fetch SurveyCTO form's repeat group data in csv format. The form needs to
-  have repeat groups for it to work.
+- Form Data Definition
+- Form Repeat Groups
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
-| 0.1.3 | 2024-03-18 | [28512](https://github.com/airbytehq/airbyte/pull/28512) | Added New Streams |
-| 0.1.2 | 2023-07-27 | [28512](https://github.com/airbytehq/airbyte/pull/28512) | Added Check Connection |
-| 0.1.1 | 2023-04-25 | [24784](https://github.com/airbytehq/airbyte/pull/24784) | Fix incremental sync |
-| 0.1.0 | 2022-11-16 | [19371](https://github.com/airbytehq/airbyte/pull/19371) | SurveyCTO Source Connector |
+| Version | Date       | Pull Request                                             | Subject                    |
+| ------- | ---------- | -------------------------------------------------------- | -------------------------- |
+| 0.1.3   | 2024-03-18 | [28512](https://github.com/airbytehq/airbyte/pull/28512) | Added New Streams          |
+| 0.1.2   | 2023-07-27 | [28512](https://github.com/airbytehq/airbyte/pull/28512) | Added Check Connection     |
+| 0.1.1   | 2023-04-25 | [24784](https://github.com/airbytehq/airbyte/pull/24784) | Fix incremental sync       |
+| 0.1.0   | 2022-11-16 | [19371](https://github.com/airbytehq/airbyte/pull/19371) | SurveyCTO Source Connector |
