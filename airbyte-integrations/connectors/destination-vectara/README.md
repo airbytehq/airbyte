@@ -118,7 +118,7 @@ airbyte-ci connectors --name=destination-vectara test
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
 ```
-python -m pytest unit_tests
+poetry run pytest -s unit_tests
 ```
 
 ### Integration Tests
@@ -126,7 +126,7 @@ There are two types of integration tests: Acceptance Tests (Airbyte's test suite
 #### Custom Integration tests
 Place custom tests inside `integration_tests/` folder, then, from the connector root, run
 ```
-python -m pytest integration_tests
+poetry run pytest -s integration_tests
 ```
 
 #### Acceptance Tests
