@@ -22,7 +22,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportLevel: community
+  supportLevel: certified
   tags:
     - language:java
   releases:
