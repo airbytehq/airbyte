@@ -28,6 +28,7 @@ export class DestinationService extends AirbyteRequestService {
     params: {
       destinationId?: string;
       connectionConfiguration?: ConnectionConfiguration;
+      workspaceId?: any;
     },
     requestParams?: RequestInit
   ) {

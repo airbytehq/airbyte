@@ -36,6 +36,7 @@ interface ValuesProps {
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
   frequency?: string;
+  workspaceId?: any;
 }
 
 interface ConnectorProps {

@@ -108,6 +108,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConfigs }
     name: "",
     serviceType: "",
     connectionConfiguration: {},
+    workspaceId: "",
   });
 
   // const source = useGetSource(query.id);

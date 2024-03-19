@@ -107,6 +107,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConf
     name: "",
     serviceType: "",
     connectionConfiguration: {},
+    workspaceId: "",
   });
 
   // const { sources } = useSourceList();

@@ -87,12 +87,14 @@ export const CreationFormPage: React.FC<{
     name: "",
     serviceType: "",
     connectionConfiguration: {},
+    workspaceId: "",
   });
 
   const [sourceFormValues, setSourceFormValues] = useState<ServiceFormValues>({
     name: "",
     serviceType: "",
     connectionConfiguration: {},
+    workspaceId: "",
   });
 
   const { source, destination } = usePreloadData();

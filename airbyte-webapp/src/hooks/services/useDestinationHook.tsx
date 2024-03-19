@@ -31,6 +31,7 @@ interface ValuesProps {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
+  workspaceId?: any;
 }
 
 interface ConnectorProps {
@@ -177,6 +178,7 @@ const useUpdateDestination = () => {
         name: updateDestinationPayload.values.name,
         destinationId: updateDestinationPayload.destinationId,
         connectionConfiguration: updateDestinationPayload.values.connectionConfiguration,
+        workspaceId: updateDestinationPayload.values.workspaceId,
       });
     },
     {
