@@ -25,7 +25,7 @@ data:
       packageName: airbyte-destination-vectara
   releaseDate: 2023-12-16
   releaseStage: alpha
-  supportLevel: certified
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vectara
   tags:
     - language:python
