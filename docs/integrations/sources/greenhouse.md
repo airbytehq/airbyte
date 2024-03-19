@@ -70,8 +70,7 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------|
-| 0.5.2   | 2024-03-18 | [36235](https://github.com/airbytehq/airbyte/pull/36235) | Updated documentation with list of all supported streams                                                               |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------|                                     |
 | 0.5.1   | 2024-03-12 | [35988](https://github.com/airbytehq/airbyte/pull/35988) | Unpin CDK version                                                                 |
 | 0.5.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                          |
 | 0.4.5   | 2024-02-09 | [35077](https://github.com/airbytehq/airbyte/pull/35077) | Manage dependencies with Poetry.                                                  |
