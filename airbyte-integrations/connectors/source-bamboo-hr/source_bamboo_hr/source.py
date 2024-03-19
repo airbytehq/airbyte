@@ -111,6 +111,11 @@ class TablesStream(BambooHrStream):
         target_table = stream_slice["table"]
         return f"employees/all/tables/{target_table}"
 
+    # def get_json_schema(self) -> Mapping[str, Any]:
+    #     _schema = super().get_json_schema()
+    #     self.logger.info(f"Stream `{self.name}`. Schema: {_schema}")
+    #     return _schema
+
     def parse_response(
         self,
         response: requests.Response,

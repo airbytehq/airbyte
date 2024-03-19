@@ -65,6 +65,7 @@
           "type": [
             "object"
           ],
+          "additionalProperties": true,
           "required": [],
           "properties": {
             "acaStatus": {
@@ -620,17 +621,18 @@
           "type": [
             "object"
           ],
+          "additionalProperties": true,
           "required": [],
           "properties": {
             "id": {
               "type": [
-                "int",
+                "integer",
                 "string"
               ]
             },
             "employeeId": {
               "type": [
-                "int",
+                "integer",
                 "string"
               ]
             }

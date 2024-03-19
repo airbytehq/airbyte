@@ -1,14 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": [ "object"],
+  "type": [
+    "object"
+  ],
   "additionalProperties": true,
-  "required": ["id","employeeId"],
+  "required": [
+    "id",
+    "employeeId"
+  ],
   "properties": {
     "id": {
-      "type": ["integer", "string"]
+      "type": [ "string", "integer" ]
     },
     "employeeId": {
-      "type": ["integer", "string"]
+      "type": [
+        "string", "integer"
+      ]
     }
   }
 }

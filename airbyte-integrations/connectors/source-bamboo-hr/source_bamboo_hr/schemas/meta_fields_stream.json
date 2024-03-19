@@ -4,7 +4,7 @@
   "required": ["id", "name", "type"],
   "properties": {
     "id": {
-      "type": ["string"]
+      "type": ["string","integer"]
     },
     "name": {
       "type": ["string"]
