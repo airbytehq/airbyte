@@ -160,7 +160,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     url_base = "https://r.applovin.com/"
     report_type = ""
     cursor_field = "day"
-    page_size = 1500000
+    page_size = 150
 
     def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
         self.config = config
@@ -216,8 +216,8 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         print(f"request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, start {start_date}, offset {self.offset}, limit {self.page_size}")
         return {
             "api_key": self.config["reporting_api_key"],
-            "start": '2024-03-13',
-            "end": '2024-03-13',
+            "start": '2024-03-19',
+            "end": '2024-03-19',
             "format": "json",
             "report_type": self.report_type,
             "columns": self.columns,
