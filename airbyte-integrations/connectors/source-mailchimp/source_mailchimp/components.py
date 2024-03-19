@@ -29,7 +29,7 @@ class MailChimpRecordFilter(RecordFilter):
     ) -> List[Mapping[str, Any]]:
         current_state = [x for x in stream_state.get("states", []) if x["partition"]["id"] == stream_slice.partition["id"]]
         cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
-        return [record for record in records if record[self.parameters["cursor_field"]] > cursor_value] if cursor_value else records
+        return [record for record in records if record["timestamp"] > cursor_value] if cursor_value else records
 
     def get_filter_date(self, start_date: str, state_value: list) -> str:
         """
@@ -38,10 +38,12 @@ class MailChimpRecordFilter(RecordFilter):
         If only one value exists, use it by default. Otherwise, return None.
         If no filter_date is provided, the API will fetch all available records.
         """
+        print(f"start_date: {start_date}")
+        print(f"state_value: {state_value}")
 
         start_date_parsed = pendulum.parse(start_date).to_iso8601_string() if start_date else None
         state_date_parsed = (
-            pendulum.parse(state_value[0]["cursor"][self.parameters["cursor_field"]]).to_iso8601_string() if state_value else None
+            pendulum.parse(state_value[0]["cursor"]["timestamp"]).to_iso8601_string() if state_value else None
         )
 
         # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.

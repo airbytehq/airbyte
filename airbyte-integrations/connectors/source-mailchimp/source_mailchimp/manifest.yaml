@@ -273,6 +273,8 @@ definitions:
   unsubscribes_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:

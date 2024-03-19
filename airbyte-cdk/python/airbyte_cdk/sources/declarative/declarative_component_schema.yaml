@@ -602,6 +602,16 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CustomStateMigration:
+    title: Custom State Migration
+    type: object
+    additionalProperties: true
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [CustomStateMigration]
   CustomTransformation:
     title: Custom Transformation
     description: Transformation component whose behavior is derived from a custom code implementation of the connector.
@@ -623,6 +633,13 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  LegacyToPerPartitionStateMigration:
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+        enum: [LegacyToPerPartitionStateMigration]
   DatetimeBasedCursor:
     title: Datetime Based Cursor
     description: Cursor to provide incremental capabilities over datetime.
@@ -959,6 +976,13 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
+      state_migrations:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/LegacyToPerPartitionStateMigration"
+            - "$ref": "#/definitions/CustomStateMigration"
+        default: []
       $parameters:
         type: object
         additional_properties: true

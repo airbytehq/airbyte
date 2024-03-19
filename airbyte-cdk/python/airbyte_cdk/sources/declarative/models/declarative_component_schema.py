@@ -208,6 +208,13 @@ class CustomPartitionRouter(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CustomStateMigration(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomStateMigration']
+
+
 class CustomTransformation(BaseModel):
     class Config:
         extra = Extra.allow
@@ -220,6 +227,13 @@ class CustomTransformation(BaseModel):
         title='Class Name',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class LegacyToPerPartitionStateMigration(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Optional[Literal['LegacyToPerPartitionStateMigration']] = None
 
 
 class RefreshTokenUpdater(BaseModel):
@@ -1173,6 +1187,9 @@ class DeclarativeStream(BaseModel):
         description='A list of transformations to be applied to each output record.',
         title='Transformations',
     )
+    state_migrations: Optional[
+        List[Union[LegacyToPerPartitionStateMigration, CustomStateMigration]]
+    ] = []
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
