@@ -27,7 +27,6 @@
     "custom_page_id": {"type": ["string", "null"]},
     "day": {"type": ["string", "null"], "format": "date"},
     "device_type": {"type": ["string", "null"], "enum": ["phone", "tablet", "other"]},
-    "external_placement_id": {"type": ["string", "null"]},
     "first_purchase": {"type": ["integer", "null"]},
     "impressions": {"type": ["integer", "null"]},
     "optimization_day_target": {"type": ["string", "null"]},
