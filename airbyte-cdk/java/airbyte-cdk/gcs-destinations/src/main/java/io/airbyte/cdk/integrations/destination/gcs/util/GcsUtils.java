@@ -25,8 +25,8 @@ public class GcsUtils {
                                             final boolean appendAirbyteFields,
                                             final boolean useDestinationsV2Columns) {
     LOGGER.info("Default schema.");
-    final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
-    final String stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(namespace);
+    final String stdName = AvroConstants.getNAME_TRANSFORMER().getIdentifier(name);
+    final String stdNamespace = AvroConstants.getNAME_TRANSFORMER().getNamespace(namespace);
     SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
 
     if (stdNamespace != null) {

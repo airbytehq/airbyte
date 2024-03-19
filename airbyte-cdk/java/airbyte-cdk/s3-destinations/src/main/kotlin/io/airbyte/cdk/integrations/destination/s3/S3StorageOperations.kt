@@ -38,7 +38,7 @@ private val logger = KotlinLogging.logger {}
 
 open class S3StorageOperations(
     private val nameTransformer: NamingConventionTransformer,
-    private var s3Client: AmazonS3,
+    var s3Client: AmazonS3,
     private val s3Config: S3DestinationConfig
 ) : BlobStorageOperations() {
     private val s3FilenameTemplateManager: S3FilenameTemplateManager = S3FilenameTemplateManager()

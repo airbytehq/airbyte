@@ -8,7 +8,7 @@ import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import java.text.Normalizer
 import java.util.regex.Pattern
 
-class S3NameTransformer : StandardNameTransformer() {
+open class S3NameTransformer : StandardNameTransformer() {
 
     companion object {
         // see https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html

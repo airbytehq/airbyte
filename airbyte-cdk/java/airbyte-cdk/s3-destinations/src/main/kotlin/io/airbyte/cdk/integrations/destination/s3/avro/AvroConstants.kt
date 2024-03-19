@@ -17,7 +17,8 @@ class AvroConstants {
         // This set must include _ab_additional_col in source_s3/source_files_abstract/stream.py
         val JSON_EXTRA_PROPS_FIELDS: Set<String> =
             setOf("_ab_additional_properties", AVRO_EXTRA_PROPS_FIELD)
-        val NAME_TRANSFORMER: AvroNameTransformer = AvroNameTransformer()
+
+        @JvmStatic val NAME_TRANSFORMER: AvroNameTransformer = AvroNameTransformer()
 
         @JvmStatic
         val JSON_CONVERTER: JsonAvroConverter =
