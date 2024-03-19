@@ -2,8 +2,6 @@
 # # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 # #
 
-# TODO: Decide what tests to keep and what to delete
-
 # import random
 # from http import HTTPStatus
 # from unittest.mock import MagicMock
@@ -12,7 +10,7 @@
 # import pytest
 # import requests
 # from airbyte_cdk.models import SyncMode
-# from source_notion.streams import Blocks, NotionStream, Users
+# from source_notion.streams import Blocks, NotionStream
 
 
 # @pytest.fixture
@@ -145,59 +143,6 @@
 #     assert stream.backoff_time(response_mock) == expected_backoff
 
 
-# def test_users_request_params(patch_base_class):
-#     stream = Users(config=MagicMock())
-
-#     # No next_page_token. First pull
-#     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-#     expected_params = {"page_size": 100}
-#     assert stream.request_params(**inputs) == expected_params
-
-#     # When getting pages after the first pull.
-#     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"next_cursor": "123"}}
-#     expected_params = {"start_cursor": "123", "page_size": 100}
-#     assert stream.request_params(**inputs) == expected_params
-
-
-# def test_user_stream_handles_pagination_correctly(requests_mock):
-#     """
-#     Test shows that Users stream uses pagination as per Notion API docs.
-#     """
-
-#     response_body = {
-#         "object": "list",
-#         "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(100)],
-#         "next_cursor": "bc48234b-77b2-41a6-95a3-6a8abb7887d5",
-#         "has_more": True,
-#         "type": "user",
-#     }
-#     requests_mock.get("https://api.notion.com/v1/users?page_size=100", json=response_body)
-
-#     response_body = {
-#         "object": "list",
-#         "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(100, 200)],
-#         "next_cursor": "67030467-b97b-4729-8fd6-2fb33d012da4",
-#         "has_more": True,
-#         "type": "user",
-#     }
-#     requests_mock.get("https://api.notion.com/v1/users?page_size=100&start_cursor=bc48234b-77b2-41a6-95a3-6a8abb7887d5", json=response_body)
-
-#     response_body = {
-#         "object": "list",
-#         "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(200, 220)],
-#         "next_cursor": None,
-#         "has_more": False,
-#         "type": "user",
-#     }
-#     requests_mock.get("https://api.notion.com/v1/users?page_size=100&start_cursor=67030467-b97b-4729-8fd6-2fb33d012da4", json=response_body)
-
-#     stream = Users(config=MagicMock())
-
-#     records = stream.read_records(sync_mode=SyncMode.full_refresh)
-#     records_length = sum(1 for _ in records)
-#     assert records_length == 220
-
-
 # @pytest.mark.parametrize(
 #     "config, expected_start_date, current_time",
 #     [
@@ -219,41 +164,3 @@
 #     with freezegun.freeze_time(current_time):
 #         stream = NotionStream(config=config)
 #         assert stream.start_date == expected_start_date
-
-
-# def test_users_record_transformer():
-#     stream = Users(config=MagicMock())
-#     response_record = {
-#         "object": "user", "id": "id", "name": "Airbyte", "avatar_url": "some url", "type": "bot",
-#         "bot": {"owner": {"type": "user", "user": {"object": "user", "id": "id", "name": "Test User", "avatar_url": None, "type": "person",
-#                                                    "person": {"email": "email"}}}, "workspace_name": "test"}
-#     }
-#     expected_record = {
-#         "object": "user", "id": "id", "name": "Airbyte", "avatar_url": "some url", "type": "bot",
-#         "bot": {"owner": {"type": "user", "info": {"object": "user", "id": "id", "name": "Test User", "avatar_url": None, "type": "person",
-#                                                     "person": {"email": "email"}}}, "workspace_name": "test"}
-#     }
-#     assert stream.transform(response_record) == expected_record
-
-
-# def test_block_record_transformer():
-#     stream = Blocks(parent=None, config=MagicMock())
-#     response_record = {
-#         "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
-#         "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
-#         "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-#                                     {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
-#                                     {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-#                                     {"type": "mention", "mention": {"type": "page", "page": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"},
-#                                      "plain_text": "test", "href": "https://www.notion.so/id"}], "color": "default"}
-#     }
-#     expected_record = {
-#         "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
-#         "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
-#         "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations":{"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text":"test", "href": None},
-#                                     {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
-#                                     {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-#                                     {"type": "mention", "mention": {"type": "page", "info": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": "https://www.notion.so/id"}],
-#                       "color": "default"}
-#     }
-#     assert stream.transform(response_record) == expected_record

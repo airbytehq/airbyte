@@ -33,6 +33,7 @@ definitions:
     oauth:
       type: BearerAuthenticator
       api_token: "{{ config['credentials']['access_token'] }}"
+
 streams:
   - type: DeclarativeStream
     name: users
@@ -93,8 +94,25 @@ streams:
           stop_condition: '{{ not response.get("next_cursor", {}) }}'
       partition_router: []
     transformations:
-      - type: CustomTransformation
-        class_name: source_notion.components.NotionUserTransformation
+      - type: AddFields
+        fields:
+          - path:
+              - bot
+              - owner
+              - info
+            value: >-
+              {{ record.get('bot', {}).get('owner', {}).get('user') or
+              record.get('bot', {}).get('owner', {}).get('workspace') }}
+      - type: RemoveFields
+        field_pointers:
+          - - bot
+            - owner
+            - user
+      - type: RemoveFields
+        field_pointers:
+          - - bot
+            - owner
+            - workspace
 
   - type: DeclarativeStream
     name: databases

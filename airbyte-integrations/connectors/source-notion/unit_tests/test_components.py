@@ -15,20 +15,6 @@ def test_streams():
     assert len(streams) == expected_streams_number
 
 
-def test_users_stream_transformation():
-    input_record = {
-        "object": "user", "id": "123", "name": "Airbyte", "avatar_url": "some url", "type": "bot",
-        "bot": {"owner": {"type": "user", "user": {"object": "user", "id": "id", "name": "Test User", "avatar_url": None, "type": "person",
-                                                   "person": {"email": "email"}}}, "workspace_name": "test"}
-    }
-    output_record = {
-        "object": "user", "id": "123", "name": "Airbyte", "avatar_url": "some url", "type": "bot",
-        "bot": {"owner": {"type": "user", "info": {"object": "user", "id": "id", "name": "Test User", "avatar_url": None, "type": "person",
-                                                   "person": {"email": "email"}}}, "workspace_name": "test"}
-    }
-    assert NotionUserTransformation().transform(input_record) == output_record
-
-
 def test_notion_properties_transformation():
 
     input_record = {
@@ -106,7 +92,7 @@ def config_start_date():
         )       
     ]
 )
-def test_get_filter_date_with_later_state_date(config_start_date, state_value, expected_return):
+def test_semi_incremental_get_filter_date(config_start_date, state_value, expected_return):
     start_date = config_start_date.config["start_date"]
     
     result = config_start_date.get_filter_date(start_date, state_value)

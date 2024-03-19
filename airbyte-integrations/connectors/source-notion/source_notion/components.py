@@ -35,24 +35,6 @@ class NotionAuthenticator(DeclarativeAuthenticator):
         elif credentials["auth_type"] == "OAuth2.0":
             return oauth
 
-@dataclass
-class NotionUserTransformation(RecordTransformation):
-    """
-    # TODO: Flesh out docstring
-    Custom transformation that conditionally moves the data in owner.{owner_type} 
-    to a new owner.info field when the record contains data for a "bot" type user.
-    """
-
-    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        owner = record.get("bot", {}).get("owner")
-        if owner:
-            owner_type = owner.get("type")
-            owner_info = owner.get(owner_type)
-            if owner_type and owner_info:
-                record["bot"]["owner"]["info"] = owner_info
-                del record["bot"]["owner"][owner_type]
-        return record
-
 
 @dataclass
 class NotionPropertiesTransformation(RecordTransformation):
