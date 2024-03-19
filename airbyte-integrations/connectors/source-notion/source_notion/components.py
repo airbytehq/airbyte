@@ -74,7 +74,7 @@ class NotionSemiIncrementalFilter(RecordFilter):
         current_state = [
             state_value
             for state_value in stream_state.get("states", [])
-            if state_value["partition"]["id"] == stream_slice["partition"]["id"]
+            if state_value.get("partition", {}).get("id") == stream_slice.get("partition", {}).get("id")
         ]
         cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
         if cursor_value:
