@@ -9,7 +9,7 @@
     "properties": {
       "count": {
         "title": "Count",
-        "description": "How many users should be generated in total. By default, one purchase per user will also be created. This setting does not apply to the products stream.",
+        "description": "How many users should be generated in total. The purchases table will be scaled to match, with 10 purchases created per 10 users. This setting does not apply to the products stream.",
         "type": "integer",
         "minimum": 1,
         "default": 1000,
