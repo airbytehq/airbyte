@@ -14,11 +14,6 @@ class SponsoredBrandsV4(SubProfilesStream):
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi/prod
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # state filter?
-        self.state_filter = kwargs.get("config", {}).get("state_filter", None)
-
     @property
     def http_method(self, **kwargs) -> str:
         return "POST"
@@ -31,12 +26,9 @@ class SponsoredBrandsV4(SubProfilesStream):
 
     def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
         request_body = {}
-        if self.state_filter:
-            request_body["stateFilter"] = {
-                "include": self.state_filter
-            }
         request_body["maxResults"] = self.page_size
-        request_body["nextToken"] = next_page_token
+        if next_page_token:
+            request_body["nextToken"] = next_page_token
         return request_body
 
     def next_page_token(self, response: Response) -> str:
@@ -44,11 +36,23 @@ class SponsoredBrandsV4(SubProfilesStream):
             return None
         return response.json().get("nextToken", None)
 
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: int = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
 class SponsoredBrandsCampaigns(SponsoredBrandsV4):
     """
     This stream corresponds to Amazon Ads API - Sponsored Brands Campaigns v4
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi/prod#tag/Campaigns/operation/ListSponsoredBrandsCampaigns
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state_filter = kwargs.get("config", {}).get("state_filter")
 
     primary_key = "campaignId"
     data_field = "campaigns"
@@ -58,6 +62,14 @@ class SponsoredBrandsCampaigns(SponsoredBrandsV4):
 
     def path(self, **kwargs) -> str:
         return "sb/v4/campaigns/list"
+
+    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        request_body = super().request_body_json(stream_state, stream_slice, next_page_token)
+        if self.state_filter:
+            request_body["stateFilter"] = {
+                "include": self.state_filter
+            }
+        return request_body
 
 class SponsoredBrandsAdGroups(SponsoredBrandsV4):
     """
@@ -72,12 +84,6 @@ class SponsoredBrandsAdGroups(SponsoredBrandsV4):
 
     def path(self, **kwargs) -> str:
         return "sb/v4/adGroups/list"
-
-    def request_headers(self, profile_id: str = None, *args, **kwargs) -> MutableMapping[str, Any]:
-        headers = super().request_headers(*args, **kwargs)
-        headers["Accept"] = "application/vnd.sbcampaignresource.v4+json"
-        headers["Content-Type"] = "application/vnd.sbcampaignresource.v4+json"
-        return headers
 
 
 class SponsoredBrandsKeywords(SubProfilesStream):

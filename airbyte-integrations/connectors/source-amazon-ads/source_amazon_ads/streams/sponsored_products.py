@@ -29,10 +29,6 @@ class SponsoredProductsV3(SubProfilesStream):
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.state_filter = kwargs.get("config", {}).get("state_filter")
-
     @property
     def http_method(self, **kwargs) -> str:
         return "POST"
@@ -50,19 +46,28 @@ class SponsoredProductsV3(SubProfilesStream):
 
     def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
         request_body = {}
-        if self.state_filter:
-            request_body["stateFilter"] = {
-                "include": self.state_filter
-            }
         request_body["maxResults"] = self.page_size
-        request_body["nextToken"] = next_page_token
+        if next_page_token:
+            request_body["nextToken"] = next_page_token
         return request_body
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: int = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
 
 class SponsoredProductCampaigns(SponsoredProductsV3):
     """
     This stream corresponds to Amazon Ads API - Sponsored Products (v3) Campaigns
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Campaigns/operation/ListSponsoredProductsCampaigns
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state_filter = kwargs.get("config", {}).get("state_filter")
 
     primary_key = "campaignId"
     data_field = "campaigns"
@@ -72,6 +77,15 @@ class SponsoredProductCampaigns(SponsoredProductsV3):
 
     def path(self, **kwargs) -> str:
         return "sp/campaigns/list"
+
+    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        request_body = super().request_body_json(stream_state, stream_slice, next_page_token)
+        if self.state_filter:
+            request_body["stateFilter"] = {
+                "include": self.state_filter
+            }
+        return request_body
+
 
 class SponsoredProductAdGroups(SponsoredProductsV3):
     """
@@ -150,16 +164,23 @@ class SponsoredProductAdGroupBidRecommendations(SponsoredProductAdGroupWithSlice
         return "/sp/targets/bid/recommendations"
 
     def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        self.current_ad_group_id = stream_slice["adGroupId"]
+        self.current_campaign_id = stream_slice["campaignId"]
+
         request_body = {}
         request_body["targetingExpressions"] = [{
-            "type": "KEYWORD_BROAD_MATCH",
-            "value": "hello"
+            "type": "KEYWORD_BROAD_MATCH"
         }]
         request_body["adGroupId"] = stream_slice["adGroupId"]
         request_body["campaignId"] = stream_slice["campaignId"]
         request_body["recommendationType"] = "BIDS_FOR_EXISTING_AD_GROUP"
         return request_body
 
+    def parse_response(self, response: Response, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            record["adGroupId"] = self.current_ad_group_id
+            record["campaignId"] = self.current_campaign_id
+            yield record
 
 
 class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlicesABC):
@@ -174,10 +195,30 @@ class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlices
         GET /v2/sp/adGroups/{{adGroupId}}>/suggested/keywords
     """
 
+    primary_key = None
+    data_field = ""
     model = ProductAdGroupSuggestedKeywords
+
+    @property
+    def http_method(self, **kwargs) -> str:
+        return "GET"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"v2/sp/adGroups/{stream_slice['adGroupId']}/suggested/keywords"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: int = None) -> MutableMapping[str, Any]:
+        return {
+            "maxNumSuggestions": 1000
+        }
+
+    def request_headers(self, profile_id: str = None, *args, **kwargs) -> MutableMapping[str, Any]:
+        headers = {}
+        headers["Amazon-Advertising-API-Scope"] = str(self._current_profile_id)
+        headers["Amazon-Advertising-API-ClientId"] = self._client_id
+        return headers
+
+    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        return {}
 
 
 class SponsoredProductKeywords(SponsoredProductsV3):

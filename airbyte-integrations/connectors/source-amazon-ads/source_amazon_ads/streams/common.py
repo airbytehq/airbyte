@@ -30,14 +30,16 @@ airbyte_cdk.sources.streams.core.Stream
     │           ├── SponsoredDisplayCampaigns
     │           ├── SponsoredDisplayProductAds
     │           ├── SponsoredDisplayTargetings
-    │           ├── SponsoredProductAdGroups
-    │           ├── SponsoredProductAds
-    │           ├── SponsoredProductCampaigns
-    │           ├── SponsoredProductKeywords
-    │           ├── SponsoredProductNegativeKeywords
-    │           ├── SponsoredProductTargetings
-    │           ├── SponsoredBrandsCampaigns
-    │           ├── SponsoredBrandsAdGroups
+    │           ├── SponsoredProductsV3
+    │           |    ├── SponsoredProductAdGroups
+    │           |    ├── SponsoredProductAds
+    │           |    ├── SponsoredProductCampaigns
+    │           |    ├── SponsoredProductKeywords
+    │           |    ├── SponsoredProductNegativeKeywords
+    │           |    └── SponsoredProductTargetings
+    │           ├── SponsoredBrandsV4
+    │           |    ├── SponsoredBrandsCampaigns
+    │           |    └── SponsoredBrandsAdGroups
     │           └── SponsoredBrandsKeywords
     └── ReportStream
         ├── SponsoredBrandsReportStream
