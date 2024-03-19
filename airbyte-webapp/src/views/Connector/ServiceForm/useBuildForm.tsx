@@ -13,8 +13,8 @@ import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
-import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 import { ServiceFormValues } from "./types";
+import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 
 function upgradeSchemaLegacyAuth(
   connectorSpecification: Required<
@@ -71,6 +71,7 @@ export function useBuildForm(jsonSchema: JSONSchema7, initialValues?: Partial<Se
     () => ({
       name: "",
       serviceType: "",
+      workspaceId: "",
       connectionConfiguration: {},
       ...initialValues,
     }),

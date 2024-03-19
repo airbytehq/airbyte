@@ -31,6 +31,7 @@ export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProp
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
+    workspaceId?: any;
   }) => {
     const sourceConnector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
     if (!sourceConnector) {

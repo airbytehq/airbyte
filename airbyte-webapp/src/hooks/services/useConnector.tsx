@@ -98,15 +98,17 @@ function useGetSourceService(): SourceService {
 }
 
 export type CheckConnectorParams = { signal: AbortSignal } & (
-  | { selectedConnectorId: string }
+  | { selectedConnectorId: string; workspaceId?: any }
   | {
       selectedConnectorId: string;
       name: string;
       connectionConfiguration: ConnectionConfiguration;
+      workspaceId?: any;
     }
   | {
       selectedConnectorDefinitionId: string;
       connectionConfiguration: ConnectionConfiguration;
+      workspaceId?: any;
     }
 );
 
@@ -129,7 +131,9 @@ export const useCheckConnector = (formType: "source" | "destination") => {
       if ("selectedConnectorId" in params) {
         payload.destinationId = params.selectedConnectorId;
       }
-
+      if ("workspaceId" in params) {
+        payload.workspaceId = params.workspaceId;
+      }
       if ("selectedConnectorDefinitionId" in params) {
         payload.destinationDefinitionId = params.selectedConnectorDefinitionId;
       }
@@ -142,7 +146,9 @@ export const useCheckConnector = (formType: "source" | "destination") => {
     if ("selectedConnectorId" in params) {
       payload.sourceId = params.selectedConnectorId;
     }
-
+    if ("workspaceId" in params) {
+      payload.workspaceId = params.workspaceId;
+    }
     if ("selectedConnectorDefinitionId" in params) {
       payload.sourceDefinitionId = params.selectedConnectorDefinitionId;
     }

@@ -36,6 +36,7 @@ export const CreateDestinationPage: React.FC = () => {
     name: "",
     serviceType: "",
     connectionConfiguration: {},
+    workspaceId: "",
   });
 
   const onSubmitDestinationForm = async (values: {
