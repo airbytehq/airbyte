@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.6"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -26,5 +26,5 @@ ruff = "^0.3.2"
 mypy = "^1.9.0"
 
 [tool.poetry.scripts]
-destination-pinecone = "destination_pinecone.run:run"
+destination-vectara = "destination_vectara.run:run"
 
