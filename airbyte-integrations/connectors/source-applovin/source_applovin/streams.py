@@ -160,7 +160,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     url_base = "https://r.applovin.com/"
     report_type = ""
     cursor_field = "day"
-    page_size = 1000000
+    page_size = 500000
 
     def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
         self.config = config
