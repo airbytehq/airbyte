@@ -62,6 +62,14 @@ everything should work as you expect.
 
 > > > > > > > 1291ccf4f3 (QA is failing)
 
+#### Building via Gradle
+You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
+
+To build using Gradle, from the Airbyte repository root, run:
+```
+./gradlew :airbyte-integrations:connectors:source-surveycto:build
+```
+
 #### Create credentials
 
 **If you are a community contributor**, follow the instructions in the
@@ -86,6 +94,7 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 ### Locally running the connector docker image
 
 #### Build
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 
@@ -113,7 +122,19 @@ An image will be built with the tag `airbyte/source-surveycto:dev`.
 
 ```bash
 docker build -t airbyte/source-surveycto:dev .
+=======
+First, make sure you build the latest Docker image:
 ```
+docker build . -t airbyte/source-surveycto:dev
+```
+
+You can also build the connector image via Gradle:
+>>>>>>> c6a45f75c6 (chore: format code)
+```
+./gradlew :airbyte-integrations:connectors:source-surveycto:airbyteDocker
+```
+When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
+the Dockerfile.
 
 #### Run
 
@@ -125,8 +146,8 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-surveycto:dev check --
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-surveycto:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-surveycto:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
-
 ## Testing
+<<<<<<< HEAD
 
 You can run our full test suite locally using
 [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
@@ -141,6 +162,45 @@ Customize `acceptance-test-config.yml` file to configure tests. See
 [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 for more information. If your connector requires to create or destroy resources for use during
 acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+=======
+Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+First install test dependencies into your virtual environment:
+```
+pip install .[tests]
+```
+### Unit Tests
+To run unit tests locally, from the connector directory run:
+```
+python -m pytest unit_tests
+```
+
+### Integration Tests
+There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom integration tests (which are specific to this connector).
+#### Custom Integration tests
+Place custom tests inside `integration_tests/` folder, then, from the connector root, run
+```
+python -m pytest integration_tests
+```
+#### Acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+To run your integration tests with acceptance tests, from the connector root, run
+```
+python -m pytest integration_tests -p integration_tests.acceptance
+```
+To run your integration tests with docker
+
+### Using gradle to run tests
+All commands should be run from airbyte project root.
+To run unit tests:
+```
+./gradlew :airbyte-integrations:connectors:source-surveycto:unitTest
+```
+To run acceptance and custom integration tests:
+```
+./gradlew :airbyte-integrations:connectors:source-surveycto:integrationTest
+```
+>>>>>>> c6a45f75c6 (chore: format code)
 
 ## Dependency Management
 
@@ -151,6 +211,7 @@ dependencies between two groups, dependencies that are:
 - required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
 - required for the testing need to go to `TEST_REQUIREMENTS` list
 
+<<<<<<< HEAD
 ### Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your
@@ -168,3 +229,7 @@ changes with the world. Now what?
    [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+=======
+
+
+>>>>>>> c6a45f75c6 (chore: format code)
