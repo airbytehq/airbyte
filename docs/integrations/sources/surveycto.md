@@ -24,7 +24,6 @@ This page guides you through the process of setting up the SurveyCTO source conn
 - create the account
 - create your form
 - publish your form
-- create a server dataset from the form
 - give your user an API consumer permission to the existing role or create a user with that role and
   permission.
 
@@ -57,7 +56,7 @@ The SurveyCTO source connector supports the following
 The SurveyCTO source connector supports the following streams:
 
 - Form Data
-- Form Dataset
+- Form Dataset - To pull .csv data for a server dataset from a SurveyCTO server.
 - Mediafiles - Currently, the stream is set up to accept a CSV file containing three columns:
   `file_name`, `file_type`, and `url_column`. This CSV is retrieved from an S3 bucket by the stream.
   While additional destinations are slated for future integration, the immediate output of the
@@ -66,8 +65,9 @@ The SurveyCTO source connector supports the following streams:
   decoding the binary strings and then storing the media back into an S3 bucket in their original
   format. This division in the process ensures that media files are both easily accessible and
   maintain their integrity throughout the handling process.
-- Form Data Definition
-- Form Repeat Groups
+- Form Data Definition - Fetch form's definition from SurveyCTO in json format
+- Form Repeat Groups - Fetch SurveyCTO form's repeat group data in csv format. The form needs to
+  have repeat groups for it to work.
 
 ## Changelog
 
