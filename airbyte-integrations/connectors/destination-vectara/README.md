@@ -8,18 +8,12 @@ For information about how to use this connector within Airbyte, see [the documen
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Minimum Python version required `= 3.7.0`
+#### Minimum Python version required `= 3.10.0`
 
 ### Installing the connector
 From this connector directory, run:
 ```bash
 poetry install --with dev
-```
-
-#### Building via Gradle
-From the Airbyte repository root, run:
-```
-./gradlew :airbyte-integrations:connectors:destination-vectara:build
 ```
 
 #### Create credentials
@@ -31,6 +25,7 @@ See `integration_tests/sample_config.json` for a sample config file.
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination vectara test creds`
 and place them into `secrets/config.json`.
 
+
 ### Locally running the connector
 ```
 python main.py spec
@@ -38,20 +33,19 @@ python main.py check --config secrets/config.json
 python main.py write --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
+
 ### Locally running the connector docker image
 
-#### Build
-First, make sure you build the latest Docker image:
-```
-docker build . -t airbyte/destination-vectara:dev
-```
 
-You can also build the connector image via Gradle:
+#### Use `airbyte-ci` to build your connector
+The Airbyte way of building this connector is to use our `airbyte-ci` tool.
+You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
+Then running the following command will build your connector:
+
+```bash
+airbyte-ci connectors --name=destination-vectara build
 ```
-./gradlew :airbyte-integrations:connectors:destination-vectara:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
+Once the command is done, you will find your connector image in your local docker registry: `airbyte/destination-pinecone:dev`.
 
 #### Run
 Then run any of the connector commands as follows:
@@ -80,30 +74,26 @@ Place custom tests inside `integration_tests/` folder, then, from the connector 
 ```
 python -m pytest integration_tests
 ```
+
 #### Acceptance Tests
 Coming soon: 
 
-### Using gradle to run tests
-All commands should be run from airbyte project root.
-To run unit tests:
-```
-./gradlew :airbyte-integrations:connectors:destination-vectara:unitTest
-```
-To run acceptance and custom integration tests:
-```
-./gradlew :airbyte-integrations:connectors:destination-vectara:integrationTest
-```
+
 
 ## Dependency Management
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+All of your dependencies should go in `pyproject.toml`.
+
 We split dependencies between two groups, dependencies that are:
-* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
-* required for the testing need to go to `TEST_REQUIREMENTS` list
+* required for your connector to work need to go to `[tool.poetry.dependencies]` list.
+* required for the testing need to go to `[tool.poetry.group.dev.dependencies]` list
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=destination-vectara test`
+2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/destinations/vectara.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
