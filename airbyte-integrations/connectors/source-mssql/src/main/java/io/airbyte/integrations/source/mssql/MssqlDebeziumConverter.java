@@ -132,7 +132,7 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
 
           if (input instanceof final Long d) {
             // During schema history creation datetime input arrives in the form of nanosecond epoch
-            // This is needed for example for acolumn defined as:
+            // This is needed for example for a column defined as:
             // [TransactionDate] DATETIME2 (7) DEFAULT ('2024-01-01T00:00:00.0000000') NOT NULL
             final Instant instant = Instant.ofEpochMilli(d / 1000 / 1000);
             final LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
