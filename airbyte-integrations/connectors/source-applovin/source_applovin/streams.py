@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Iterable, Mapping, Optional, Any, List, Union, MutableMapping
 
 import requests
@@ -212,12 +212,19 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        start_date = self.state[self.cursor_field] if stream_state.get(self.cursor_field) else self.config["start_date"]
-        print(f"request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, start {start_date}, offset {self.offset}, limit {self.page_size}")
+
+        # start_date = self.state[self.cursor_field] if stream_state.get(self.cursor_field) else self.config["start_date"]
+
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        start_date = yesterday.strftime("%Y-%m-%d")
+        end_date = start_date
+
+        print(f"request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, start {start_date}, end {end_date}, offset {self.offset}, limit {self.page_size}")
         return {
             "api_key": self.config["reporting_api_key"],
-            "start": '2024-03-19',
-            "end": '2024-03-19',
+            "start": start_date,
+            "end": end_date,
             "format": "json",
             "report_type": self.report_type,
             "columns": self.columns,
