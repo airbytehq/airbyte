@@ -17,8 +17,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_vectara"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-airbyte-cdk = "0.57.8"
+python = "^3.9,<3.12"
+airbyte-cdk = ">=0.62.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=6.2,<7.0"
