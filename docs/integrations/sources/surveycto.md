@@ -24,13 +24,9 @@ This page guides you through the process of setting up the SurveyCTO source conn
 - create the account
 - create your form. Make sure the form also contains rep
 - publish your form
-<<<<<<< HEAD
+- create a server dataset from the form
 - give your user an API consumer permission to the existing role or create a user with that role and
   permission.
-=======
-- create a server dataset from the form
-- give your user an API consumer permission to the existing role or create a user with that role and permission.
->>>>>>> 90bec35d14 (made changes to docs)
 
 ## Set up the SurveyCTO source connection
 
