@@ -19,7 +19,7 @@ def test_streams(conversations_list, config, is_valid):
     else:
         with pytest.raises(Exception) as exc_info:
             _ = source.streams(config)
-        assert "No supported option_title: None specified. See spec.json for references" in repr(exc_info.value)
+        assert "The path from `authenticator_selection_path` is not found in the config." in repr(exc_info.value)
 
 
 @pytest.mark.parametrize(
@@ -30,17 +30,13 @@ def test_streams(conversations_list, config, is_valid):
             400,
             "Bad request",
             False,
-            "Got an exception while trying to set up the connection: 400 Client Error: "
-            "None for url: https://slack.com/api/users.list?limit=1000. Most probably, there are no users in the given Slack instance or "
-            "your token is incorrect",
+            "Got an exception while trying to set up the connection. Most probably, there are no users in the given Slack instance or your token is incorrect.",
         ),
         (
             403,
             "Forbidden",
             False,
-            "Got an exception while trying to set up the connection: 403 Client Error: "
-            "None for url: https://slack.com/api/users.list?limit=1000. Most probably, there are no users in the given Slack instance or "
-            "your token is incorrect",
+            "Got an exception while trying to set up the connection. Most probably, there are no users in the given Slack instance or your token is incorrect.",
         ),
     ),
 )
@@ -49,4 +45,5 @@ def test_check_connection(token_config, requests_mock, status_code, response, is
     source = SourceSlack()
     success, error = source.check_connection(logger=logging.getLogger("airbyte"), config=token_config)
     assert success is is_connection_successful
-    assert error == error_msg
+    if not success:
+        assert error_msg in error

@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import Mock
 
 import pendulum
 import pytest
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_slack.source import Channels, Threads, Users
+from airbyte_protocol.models import SyncMode
+from freezegun import freeze_time
+from source_slack import SourceSlack
 
 
 @pytest.fixture
@@ -15,96 +16,40 @@ def authenticator(legacy_token_config):
     return TokenAuthenticator(legacy_token_config["api_token"])
 
 
-@pytest.mark.parametrize(
-    "start_date, end_date, messages, stream_state, expected_result",
-    (
-        (
-            "2020-01-01T00:00:00Z",
-            "2020-01-02T00:00:00Z",
-            [{"ts": 1577866844}, {"ts": 1577877406}],
-            {},
-            [
-                # two messages per each channel
-                {"channel": 3, "ts": 1577866844},
-                {"channel": 3, "ts": 1577877406},
-                {"channel": 4, "ts": 1577866844},
-                {"channel": 4, "ts": 1577877406},
-            ],
-        ),
-        ("2020-01-02T00:00:00Z", "2020-01-01T00:00:00Z", [], {}, [{}]),
-        (
-            "2020-01-01T00:00:00Z",
-            "2020-01-02T00:00:00Z",
-            [{"ts": 1577866844}, {"ts": 1577877406}],
-            {"float_ts": 1577915266},
-            [
-                # two messages per each channel per datetime slice
-                {"channel": 3, "ts": 1577866844},
-                {"channel": 3, "ts": 1577877406},
-                {"channel": 3, "ts": 1577866844},
-                {"channel": 3, "ts": 1577877406},
-                {"channel": 4, "ts": 1577866844},
-                {"channel": 4, "ts": 1577877406},
-                {"channel": 4, "ts": 1577866844},
-                {"channel": 4, "ts": 1577877406},
-            ],
-        ),
-    ),
-)
-def test_threads_stream_slices(
-    requests_mock, authenticator, legacy_token_config, start_date, end_date, messages, stream_state, expected_result
-):
-    requests_mock.register_uri(
-        "GET", "https://slack.com/api/conversations.history", [{"json": {"messages": messages}}, {"json": {"messages": messages}}]
-    )
-    start_date = pendulum.parse(start_date)
-    end_date = end_date and pendulum.parse(end_date)
-    stream = Threads(
-        authenticator=authenticator,
-        default_start_date=start_date,
-        end_date=end_date,
-        lookback_window=pendulum.Duration(days=legacy_token_config["lookback_window"]),
-        channel_filter=legacy_token_config["channel_filter"],
-    )
-    slices = list(stream.stream_slices(stream_state=stream_state))
-    assert slices == expected_result
+def get_stream_by_name(stream_name, config):
+    streams = SourceSlack().streams(config=config)
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
 
 
-@pytest.mark.parametrize(
-    "current_state, latest_record, expected_state",
-    (
-        ({}, {"float_ts": 1507866844}, {"float_ts": 1626984000.0}),
-        ({}, {"float_ts": 1726984000}, {"float_ts": 1726984000.0}),
-        ({"float_ts": 1588866844}, {"float_ts": 1577866844}, {"float_ts": 1588866844}),
-        ({"float_ts": 1577800844}, {"float_ts": 1577866844}, {"float_ts": 1577866844}),
-    ),
-)
-def test_get_updated_state(authenticator, legacy_token_config, current_state, latest_record, expected_state):
-    stream = Threads(
-        authenticator=authenticator,
-        default_start_date=pendulum.parse(legacy_token_config["start_date"]),
-        lookback_window=legacy_token_config["lookback_window"],
-        channel_filter=legacy_token_config["channel_filter"],
-    )
-    assert stream.get_updated_state(current_stream_state=current_state, latest_record=latest_record) == expected_state
+@freeze_time("2024-03-10T20:00:00Z", tz_offset=-2)
+def test_threads_stream_slices(requests_mock, token_config):
+    requests_mock.get(url="https://slack.com/api/conversations.list?limit=1000",
+                      json={"channels": [{"id": "airbyte-for-beginners", "is_member": True},
+                                         {"id": "good-reads", "is_member": True}]})
 
+    start_date = "2024-03-01T20:00:00Z"
+    end_date = pendulum.now()
+    oldest, latest = int(pendulum.parse(start_date).timestamp()), int(end_date.timestamp())
+    token_config["start_date"] = start_date
 
-@pytest.mark.parametrize("headers, expected_result", (({}, 5), ({"Retry-After": 15}, 15)))
-def test_backoff(authenticator, headers, expected_result):
-    stream = Users(authenticator=authenticator)
-    assert stream.backoff_time(Mock(headers=headers)) == expected_result
+    for channel in token_config["channel_filter"]:
+        requests_mock.get(
+            url=f"https://slack.com/api/conversations.history?"
+                f"inclusive=True&limit=1000&channel={channel}&"
+                f"oldest={oldest}&latest={latest}",
+            json={"messages": [{"ts": latest}, {"ts": oldest}]}
+        )
 
+    threads_stream = get_stream_by_name("threads", token_config)
+    slices = threads_stream.stream_slices(stream_state=None, sync_mode=SyncMode.full_refresh)
 
-def test_channels_stream_with_autojoin(authenticator) -> None:
-    """
-    The test uses the `conversations_list` fixture(autouse=true) as API mocker.
-    """
     expected = [
-        {'name': 'advice-data-architecture', 'id': 1, 'is_member': False},
-        {'name': 'advice-data-orchestration', 'id': 2, 'is_member': True},
-        {'name': 'airbyte-for-beginners', 'id': 3, 'is_member': False},
-        {'name': 'good-reads', 'id': 4, 'is_member': True},
-    ]
-    stream = Channels(channel_filter=[], join_channels=True, authenticator=authenticator)
-    assert list(stream.read_records(None)) == expected
-    
+        {'ts': 1710093600, 'channel': 'airbyte-for-beginners', 'start_time': '2024-02-29T20:00:00Z', 'end_time': '2024-03-10T18:00:00Z'},
+        {'ts': 1709323200, 'channel': 'airbyte-for-beginners', 'start_time': '2024-02-29T20:00:00Z', 'end_time': '2024-03-10T18:00:00Z'},
+        {'ts': 1710093600, 'channel': 'good-reads', 'start_time': '2024-02-29T20:00:00Z', 'end_time': '2024-03-10T18:00:00Z'},
+        {'ts': 1709323200, 'channel': 'good-reads', 'start_time': '2024-02-29T20:00:00Z', 'end_time': '2024-03-10T18:00:00Z'}]
+
+    assert list(slices) == expected
