@@ -23,7 +23,7 @@ You can fetch with one source configuration more than one pool simultaneously. Y
 
 ## Changelog
 
-| Version | Date     | Subject                                             |
-| :------ |:---------|:----------------------------------------------------|
-| 0.1.0   | 25-05-23 |  Initial release of KYVE source connector            |
-| 0.2.0   | 10-11-23 | Update KYVE source to support to Mainnet and Testnet|
+| Version | Date     | Pull Request | Subject                                             |
+| :------ |:---------|:-------------|:----------------------------------------------------|
+| 0.2.0   | 2023-11-10 | | Update KYVE source to support to Mainnet and Testnet|
+| 0.1.0   | 2023-05-25 | | Initial release of KYVE source connector            |

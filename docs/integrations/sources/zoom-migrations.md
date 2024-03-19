@@ -1,6 +1,6 @@
 # Zoom Migration Guide
 
-## Upgrading to 1.0.0
+## Upgrading to 1.1.0
 
 ### Authentication
 
