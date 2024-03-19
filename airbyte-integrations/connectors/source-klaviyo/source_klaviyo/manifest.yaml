@@ -1,0 +1,150 @@
+version: 0.71.0
+type: DeclarativeSource
+
+definitions:
+  # Authenticator
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "Klaviyo-API-Key {{ config['api_key'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: "Authorization"
+      inject_into: header
+
+  # Requester
+  requester:
+    type: HttpRequester
+    url_base: "https://a.klaviyo.com/api/"
+    authenticator: "#/definitions/authenticator"
+    http_method: GET
+    request_headers:
+      Accept: "application/json"
+      Revision: "2023-10-15"
+
+  # Selector
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+
+  # Paginator
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('links', {}).get('next') }}"
+
+  # Retrievers
+  base_retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/paginator"
+
+  semi_incremental_retriever:
+    $ref: "#/definitions/base_retriever"
+  #      record_selector:
+  #        $ref: "#/definitions/selector"
+  #        record_filter:
+  #          type: RecordFilter
+  #          condition: "{{  }}"
+
+  # Transformation
+  add_updated_field_transformation:
+    type: AddFields
+    fields:
+      - type: AddedFieldDefinition
+        path: ["updated"]
+        value: "{{ record['attributes']['updated'] }}"
+
+  # Base streams
+  base_stream:
+    type: DeclarativeStream
+    primary_key: "id"
+
+  base_incremental_stream:
+    $ref: "#/definitions/base_stream"
+
+  base_semi_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/semi_incremental_retriever"
+    transformations:
+      - "#/definitions/add_updated_field_transformation"
+
+  # Incremental streams
+  profiles_stream:
+    name: "profiles"
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      path: "profiles"
+      cursor_field: "updated"
+
+  campaigns_stream:
+    name: "campaigns"
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      path: "campaigns"
+      cursor_field: "updated_at"
+
+  global_exclusions_stream:
+    # TODO not ready at all
+    name: "profiles"
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      path: "profiles"
+      cursor_field: "updated"
+
+  events_stream:
+    name: "events"
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      path: "events"
+      cursor_field: "datetime"
+
+  flows_stream:
+    name: "flows"
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      path: "flows"
+      cursor_field: "updated"
+
+  email_templates_stream:
+    name: "email_templates"
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      path: "templates"
+      cursor_field: "updated"
+
+  # Semi-Incremental streams
+  metrics_stream:
+    name: "metrics"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "metrics"
+      cursor_field: "updated"
+
+  lists_stream:
+    name: "lists"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "lists"
+      cursor_field: "updated"
+
+streams:
+  # Incremental streams
+  - "#/definitions/profiles_stream"
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/global_exclusions_stream"
+  - "#/definitions/events_stream"
+  - "#/definitions/flows_stream"
+  - "#/definitions/email_templates_stream"
+
+  # Semi-Incremental streams
+  - "#/definitions/metrics_stream"
+  - "#/definitions/lists_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - metrics

@@ -7,13 +7,16 @@ from http import HTTPStatus
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from requests.exceptions import HTTPError
 from source_klaviyo.streams import Campaigns, EmailTemplates, Events, Flows, GlobalExclusions, Lists, Metrics, Profiles
 
 
-class SourceKlaviyo(AbstractSource):
+class SourceKlaviyo(YamlDeclarativeSource):
+    def __init__(self) -> None:
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
         :param config:  the user-input config object conforming to the connector's spec.json
