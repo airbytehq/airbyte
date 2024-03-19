@@ -130,7 +130,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                             else original_mime_type
                         )
                         remote_file = GoogleDriveRemoteFile(
-                            uri=file_name,
+                            uri="{}::name::{}".format(new_file["id"], file_name),
                             last_modified=last_modified,
                             id=new_file["id"],
                             original_mime_type=original_mime_type,
