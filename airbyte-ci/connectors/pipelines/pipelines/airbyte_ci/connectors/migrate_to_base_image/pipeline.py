@@ -330,13 +330,13 @@ async def run_connector_migration_to_base_image_pipeline(
             steps_results.append(bump_version_in_metadata_result)
 
             # ADD CHANGELOG ENTRY only if the PR number is provided.
-            if pull_request_number != None:
+            if pull_request_number is not None:
                 add_changelog_entry = AddChangelogEntry(
                     context,
                     bump_version_in_metadata_result.output,
                     new_version,
                     "Base image migration: remove Dockerfile and use the python-connector-base image",
-                    pull_request_number if pull_request_number != None else "TODO",
+                    pull_request_number,
                 )
                 add_changelog_entry_result = await add_changelog_entry.run()
                 steps_results.append(add_changelog_entry_result)
