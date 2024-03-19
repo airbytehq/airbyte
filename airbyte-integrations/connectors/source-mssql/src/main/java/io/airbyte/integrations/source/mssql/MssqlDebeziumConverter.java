@@ -12,16 +12,15 @@ import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
-import microsoft.sql.DateTimeOffset;
-import org.apache.kafka.connect.data.SchemaBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import microsoft.sql.DateTimeOffset;
+import org.apache.kafka.connect.data.SchemaBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
 
@@ -113,7 +112,6 @@ public class MssqlDebeziumConverter implements CustomConverter<SchemaBuilder, Re
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
       if (field.typeName().equalsIgnoreCase("DATE")) {
-        LocalDate.ofEpochDay(1);
         return DateTimeConverter.convertToDate(input);
       }
       return DateTimeConverter.convertToTimestamp(input);
