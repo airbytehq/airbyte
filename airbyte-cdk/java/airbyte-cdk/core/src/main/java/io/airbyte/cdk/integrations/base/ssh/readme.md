@@ -8,7 +8,6 @@ Our SSH connector support is designed to be easy to plug into any existing conne
 1. Add SSH Configuration to the Spec - for SSH, we need to take in additional configuration, so we need to inject extra fields into the connector configuration.
 2. Add SSH Logic to the Connector - before the connector code begins to execute we need to start an SSH tunnel. This library provides logic to create that tunnel (and clean it up).
 3. Acceptance Testing - it is a good practice to include acceptance testing for the SSH version of a connector for at least one of the SSH types (password or ssh key). While unit testing for the SSH functionality exists in this package (coming soon), high-level acceptance testing to make sure this feature works with the individual connector belongs in the connector.
-4. Normalization Support for Destinations - if the connector is a destination and supports normalization, there's a small change required in the normalization code to update the config so that dbt uses the right credentials for the SSH tunnel.
 
 ## How To
 
@@ -21,17 +20,6 @@ Our SSH connector support is designed to be easy to plug into any existing conne
 
 ### Acceptance Testing
 1. The only difference between existing acceptance testing and acceptance testing with SSH is that the configuration that is used for testing needs to contain additional fields. You can see the `Postgres Source ssh key creds` in lastpass to see an example of what that might look like. Those credentials leverage an existing bastion host in our test infrastructure. (As future work, we want to get rid of the need to use a static bastion server and instead do it in docker so we can run it all locally.)
-
-### Normalization Support for Destinations
-1. The core functionality for ssh tunnelling with normalization is already in place but you'll need to add a small tweak to `transform_config/transform.py` in the normalization module. Find the function `transform_{connector}()` and add at the start:
-    ```
-    if TransformConfig.is_ssh_tunnelling(config):
-        config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
-    ```
-    Replace port_key and host_key as necessary. Look at `transform_postgres()` to see an example.
-2. To make sure your changes are present in Normalization when running tests on the connector locally, you'll need to change [this version tag](https://github.com/airbytehq/airbyte/blob/6d9ba022646441c7f298ca4dcaa3df59b9a19fbb/airbyte-workers/src/main/java/io/airbyte/workers/normalization/DefaultNormalizationRunner.java#L50) to `dev` so that the new locally built docker image for Normalization is used. Don't push this change with the PR though.
-3. If your `host_key="host"` and `port_key="port"` then this step is not necessary. However if the key names differ for your connector, you will also need to add some logic into `sshtunneling.sh` (within airbyte-workers) to handle this, as currently it assumes that the keys are exactly `host` and `port`.
-4. When making your PR, make sure that you've version bumped Normalization (in `airbyte-workers/src/main/java/io/airbyte/workers/normalization/DefaultNormalizationRunner.java` and `airbyte-integrations/bases/base-normalization/Dockerfile`). You'll need to /legacy-test & /legacy-publish Normalization _first_ so that when you the connector is tested, it can use the new version.
 
 ## Misc
 

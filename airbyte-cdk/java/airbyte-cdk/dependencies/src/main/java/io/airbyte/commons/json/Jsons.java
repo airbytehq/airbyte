@@ -117,6 +117,22 @@ public class Jsons {
     }
   }
 
+  public static JsonNode deserialize(final byte[] jsonBytes) {
+    try {
+      return OBJECT_MAPPER.readTree(jsonBytes);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static JsonNode deserializeExact(final byte[] jsonBytes) {
+    try {
+      return OBJECT_MAPPER_EXACT.readTree(jsonBytes);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
     try {
       return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));

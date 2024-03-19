@@ -1,11 +1,10 @@
 plugins {
     id 'application'
     id 'airbyte-java-connector'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.23.11'
+    cdkVersionRequired = '0.25.0'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }

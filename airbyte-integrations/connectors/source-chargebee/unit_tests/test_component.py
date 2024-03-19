@@ -17,8 +17,6 @@ from source_chargebee.components import CustomFieldTransformation, IncrementalSi
             {
                 "pk": 1,
                 "name": "example",
-                "cf_field1": "val1",
-                "cf_field2": "val2",
                 "custom_fields": [{"name": "cf_field1", "value": "val1"}, {"name": "cf_field2", "value": "val2"}],
             },
         ),

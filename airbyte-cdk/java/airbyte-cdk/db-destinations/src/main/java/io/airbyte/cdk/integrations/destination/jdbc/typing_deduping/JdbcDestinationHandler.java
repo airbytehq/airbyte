@@ -225,7 +225,11 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
                   nameNode != null ? nameNode.asText() : null,
                   namespaceNode != null ? namespaceNode.asText() : null);
             },
-            record -> toDestinationState(Jsons.deserialize(record.get(DESTINATION_STATE_TABLE_COLUMN_STATE).asText()))));
+            record -> {
+              final JsonNode stateNode = record.get(DESTINATION_STATE_TABLE_COLUMN_STATE);
+              JsonNode state = stateNode != null ? Jsons.deserialize(stateNode.asText()) : Jsons.emptyObject();
+              return toDestinationState(state);
+            }));
   }
 
   private CompletionStage<DestinationInitialStatus<DestinationState>> retrieveState(final CompletableFuture<Map<AirbyteStreamNameNamespacePair, DestinationState>> destinationStatesFuture,
