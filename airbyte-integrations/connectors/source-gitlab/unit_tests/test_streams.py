@@ -3,30 +3,11 @@
 #
 
 
-from typing import Any, Mapping
-
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
-from source_gitlab.source import SourceGitlab
+from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
 
-CONFIG = {
-    "api_url": "gitlab.com",
-    "credentials": {
-        "auth_type": "access_token",
-        "access_token": "access_token",
-    },
-    "start_date": "2021-01-01T00:00:00Z",
-    "projects_list": ["p_1"],
-}
-
-
-def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
-    source = SourceGitlab()
-    matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
-    if not matches_by_name:
-        raise ValueError("Please provide a valid stream name.")
-    return matches_by_name[0]
+CONFIG = BASE_CONFIG | {"projects_list": ["p_1"]}
 
 
 @pytest.mark.parametrize(
@@ -43,7 +24,7 @@ def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     ),
 )
 def test_should_retry(requests_mock, stream_name, extra_mocks):
-    requests_mock.get(url="https://gitlab.com/api/v4/groups?per_page=50", status_code=200)
+    requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
     stream = get_stream_by_name(stream_name, CONFIG)
     for extra_mock in extra_mocks:
         requests_mock.get(**extra_mock)
@@ -157,7 +138,7 @@ test_cases = (
 
 @pytest.mark.parametrize(("stream_name", "response_mocks", "expected_record"), test_cases)
 def test_transform(requests_mock, stream_name, response_mocks, expected_record):
-    requests_mock.get(url="https://gitlab.com/api/v4/groups?per_page=50", status_code=200)
+    requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
     stream = get_stream_by_name(stream_name, CONFIG)
     requests_mock.get("/api/v4/projects/p_1", json=[{"id": "p_1"}])
 
@@ -171,7 +152,7 @@ def test_transform(requests_mock, stream_name, response_mocks, expected_record):
 
 def test_stream_slices_child_stream(requests_mock):
     commits = get_stream_by_name("commits", CONFIG)
-    requests_mock.get(url="https://gitlab.com/api/v4/groups?per_page=50", status_code=200)
+    requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
     requests_mock.get(
         url="https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
         json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}],
