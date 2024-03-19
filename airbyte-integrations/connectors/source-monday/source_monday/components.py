@@ -82,7 +82,7 @@ class IncrementalSingleSlice(Cursor):
         self._state[self.cursor_field.eval(self.config)] = latest_record[self.cursor_field.eval(self.config)]
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
-        yield {}
+        yield StreamSlice(partition={}, cursor_slice={})
 
     def should_be_synced(self, record: Record) -> bool:
         """
@@ -214,4 +214,9 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
         parent_state = (self._state or {}).get(self.parent_stream_name, {})
 
         slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
-        yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator
+
+        for slice in slices_generator:
+            if self.parent_complete_fetch:
+                yield StreamSlice(partition=slice, cursor_slice={})
+            else:
+                yield StreamSlice(partition={}, cursor_slice={})
