@@ -46,7 +46,7 @@ def test_sub_slicer(last_record, expected, records):
     parent_stream = Mock(spec=Stream)
     parent_stream.name = "parent_stream_name"
     parent_stream.cursor_field = "parent_cursor_field"
-    parent_stream.stream_slices.return_value = [{"a slice": "value"}]
+    parent_stream.stream_slices.return_value = [StreamSlice(partition={}, )]
     parent_stream.read_records = MagicMock(return_value=records)
 
     parent_config = ParentStreamConfig(

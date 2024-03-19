@@ -87,7 +87,7 @@ class TestTeamsStreamFullRefresh(TestCase):
             for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
             if f'Response Code: 200, Response Text: {json.dumps({"error_code": "ComplexityException", "status_code": 200})}' in error
         ]
-        assert len(error_logs) == 5
+        assert len(error_logs) == 6
 
     @HttpMocker()
     def test_given_retryable_500_error_when_read_teams_then_stop_syncing(self, http_mocker):
@@ -110,7 +110,7 @@ class TestTeamsStreamFullRefresh(TestCase):
             for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
             if f'Response Code: 500, Response Text: {json.dumps({"error_message": "Internal server error", "status_code": 500})}' in error
         ]
-        assert len(error_logs) == 5
+        assert len(error_logs) == 6
 
     @HttpMocker()
     def test_given_403_error_when_read_teams_then_ignore_the_stream(self, http_mocker):
