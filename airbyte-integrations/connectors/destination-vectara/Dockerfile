@@ -4,15 +4,14 @@ FROM python:3.9.11-alpine3.15 as base
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
-# upgrade pip to the latest version
-RUN apk --no-cache upgrade \
-    && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python -
 
+# Copy Poetry dependencies
+COPY pyproject.toml ./
 
-COPY setup.py ./
 # install necessary packages to a temporary folder
-RUN pip install --prefix=/install .
+RUN poetry install .
 
 # build a clean environment
 FROM base
