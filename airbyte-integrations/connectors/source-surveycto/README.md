@@ -49,11 +49,18 @@ pip install '.[tests]'
 
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
-Note that while we are installing dependencies from `requirements.txt`, you should only edit
-`setup.py` for your dependencies. `requirements.txt` is used for editable installs
+<<<<<<< HEAD Note that while we are installing dependencies from `requirements.txt`, you should only
+edit `setup.py` for your dependencies. `requirements.txt` is used for editable installs
 (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`. If
 this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using
-`pip install -r requirements.txt` and everything should work as you expect.
+`pip install -r requirements.txt` and everything should work as you expect. ======= Note that while
+we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your
+dependencies. `requirements.txt` is used for editable installs (`pip install -e`) to pull in Python
+dependencies from the monorepo and will call `setup.py`. If this is mumbo jumbo to you, don't worry
+about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and
+everything should work as you expect.
+
+> > > > > > > 1291ccf4f3 (QA is failing)
 
 #### Create credentials
 
@@ -80,9 +87,17 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 
 #### Build
 
+<<<<<<< HEAD
+
 **Via
 [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 (recommended):**
+
+======= **Via
+[`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+(recommended):**
+
+> > > > > > > 1291ccf4f3 (QA is failing)
 
 ```bash
 airbyte-ci connectors --name=source-surveycto build
@@ -90,7 +105,11 @@ airbyte-ci connectors --name=source-surveycto build
 
 An image will be built with the tag `airbyte/source-surveycto:dev`.
 
-**Via `docker build`:**
+**Via `docker build`:** <<<<<<< HEAD
+
+=======
+
+> > > > > > > 1291ccf4f3 (QA is failing)
 
 ```bash
 docker build -t airbyte/source-surveycto:dev .
