@@ -208,6 +208,20 @@ class CustomPartitionRouter(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CustomSchemaLoader(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomSchemaLoader']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom schema loader. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomSchemaLoader'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class CustomTransformation(BaseModel):
     class Config:
         extra = Extra.allow
@@ -246,6 +260,24 @@ class RefreshTokenUpdater(BaseModel):
         description='Config path to the expiry date. Make sure actually exists in the config.',
         examples=[['credentials', 'token_expiry_date']],
         title='Config Path To Expiry Date',
+    )
+    refresh_token_error_status_codes: Optional[List[int]] = Field(
+        [],
+        description='Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified). Responses with one of the error status code and containing an error value will be flagged as a config error',
+        examples=[[400, 500]],
+        title='Refresh Token Error Status Codes',
+    )
+    refresh_token_error_key: Optional[str] = Field(
+        '',
+        description='Key to Identify refresh token error in response (Refresh Token Error Status Codes and Refresh Token Error Values should be also specified).',
+        examples=['error'],
+        title='Refresh Token Error Key',
+    )
+    refresh_token_error_values: Optional[List[str]] = Field(
+        [],
+        description='List of values to check for exception during token refresh process. Used to check if the error found in the response matches the key from the Refresh Token Error Key field (e.g. response={"error": "invalid_grant"}). Only responses with one of the error status code and containing an error value will be flagged as a config error',
+        examples=[['invalid_grant', 'invalid_permissions']],
+        title='Refresh Token Error Values',
     )
 
 
@@ -1161,7 +1193,9 @@ class DeclarativeStream(BaseModel):
     primary_key: Optional[PrimaryKey] = Field(
         '', description='The primary key of the stream.', title='Primary Key'
     )
-    schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = Field(
+    schema_loader: Optional[
+        Union[InlineSchemaLoader, JsonFileSchemaLoader, CustomSchemaLoader]
+    ] = Field(
         None,
         description='Component used to retrieve the schema for the current stream.',
         title='Schema Loader',

@@ -15,11 +15,13 @@ import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
@@ -27,6 +29,7 @@ import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDest
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import java.time.Duration;
 import java.util.HashMap;
@@ -133,6 +136,11 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination<RedshiftS
                                                          SqlGenerator sqlGenerator,
                                                          DestinationHandler<RedshiftState> destinationHandler) {
     return List.of(new RedshiftRawTableAirbyteMetaMigration(database, databaseName));
+  }
+
+  @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    return new RedshiftSuperLimitationTransformer(parsedCatalog, defaultNamespace);
   }
 
 }
