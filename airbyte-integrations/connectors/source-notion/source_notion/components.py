@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
-
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
@@ -16,10 +15,12 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 class NotionAuthenticator(DeclarativeAuthenticator):
     """
     Custom authenticator designed to handle all existing Notion authenticator configurations, being:
+
     token_auth: Private integration token
     legacy_token_auth: Legacy config for private tokens
     oauth: Public integration token (static oauth-derived token using advanced auth protocol)
     """
+
     config: Mapping[str, Any]
     token_auth: BearerAuthenticator
     legacy_token_auth: BearerAuthenticator
@@ -39,16 +40,19 @@ class NotionAuthenticator(DeclarativeAuthenticator):
 @dataclass
 class NotionPropertiesTransformation(RecordTransformation):
     """
-    # TODO: Flesh out docstring
-    Custom transformation that normalizes nested 'properties' object by moving
-    unique named entities into 'name', 'value' mappings
+    Transforms the nested 'properties' object within a Notion Page/Database record into a more
+    normalized form. In Notion's API response, 'properties' is a dictionary where each key
+    represents the name of a property and its value contains various metadata and the property's
+    actual value.
+
+    The transformed 'properties' will consist of an array where each element is a dictionary
+    with two keys: 'name', holding the original property name, and 'value', containing the
+    property's content.
     """
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         properties = record.get("properties", {})
-        transformed_properties = [
-            {"name": name, "value": value} for name, value in properties.items()
-        ]
+        transformed_properties = [{"name": name, "value": value} for name, value in properties.items()]
         record["properties"] = transformed_properties
         return record
 
@@ -62,22 +66,20 @@ class NotionSemiIncrementalFilter(RecordFilter):
     """
 
     def filter_records(
-        self,
-        records: List[Mapping[str, Any]],
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        **kwargs
+        self, records: List[Mapping[str, Any]], stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, **kwargs
     ) -> List[Mapping[str, Any]]:
-      """
-      Filters a list of records, returning only those with a cursor_value greater than the current value in state.
-      """
-      current_state = [state_value for state_value in stream_state.get(
-            "states", []) if state_value["partition"]["id"] == stream_slice.partition["id"]]
-      cursor_value = self.get_filter_date(
-            self.config.get("start_date"), current_state)
-      if cursor_value:
+        """
+        Filters a list of records, returning only those with a cursor_value greater than the current value in state.
+        """
+        current_state = [
+            state_value
+            for state_value in stream_state.get("states", [])
+            if state_value["partition"]["id"] == stream_slice["partition"]["id"]
+        ]
+        cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
+        if cursor_value:
             return [record for record in records if record["last_edited_time"] > cursor_value]
-      return records
+        return records
 
     def get_filter_date(self, start_date: str, state_value: list) -> str:
         """
@@ -85,12 +87,8 @@ class NotionSemiIncrementalFilter(RecordFilter):
         If only the start_date exists, use it by default.
         """
 
-        start_date_parsed = pendulum.parse(
-            start_date).to_iso8601_string() if start_date else None
-        state_date_parsed = (
-            pendulum.parse(state_value[0]["cursor"]["last_edited_time"]).to_iso8601_string(
-            ) if state_value else None
-        )
+        start_date_parsed = pendulum.parse(start_date).to_iso8601_string() if start_date else None
+        state_date_parsed = pendulum.parse(state_value[0]["cursor"]["last_edited_time"]).to_iso8601_string() if state_value else None
 
         if state_date_parsed:
             return max(filter(None, [start_date_parsed, state_date_parsed]), default=start_date_parsed)

@@ -17,7 +17,6 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from requests import HTTPError
 
-
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
 
@@ -139,9 +138,7 @@ class NotionStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # sometimes notion api returns response without results object
-        print(f"Response: {response.json()}")
         data = response.json().get("results", [])
-        print(f"Data: {data}")
         yield from data
 
 

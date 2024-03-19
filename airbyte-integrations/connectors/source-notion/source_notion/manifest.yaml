@@ -7,7 +7,6 @@ check:
     - pages
 
 definitions:
-
   token_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['token'] }}"
@@ -50,7 +49,7 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Notion-Version: '2022-06-28'
+          Notion-Version: "2022-06-28"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -69,7 +68,7 @@ streams:
                   action: IGNORE
                   http_codes:
                     - 400
-                  error_message_contains: 'The start_cursor provided is invalid:'
+                  error_message_contains: "The start_cursor provided is invalid:"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -127,7 +126,7 @@ streams:
         http_method: POST
         request_parameters: {}
         request_headers:
-          Notion-Version: '2022-06-28'
+          Notion-Version: "2022-06-28"
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
@@ -148,7 +147,7 @@ streams:
                   action: IGNORE
                   http_codes:
                     - 400
-                  error_message_contains: 'The start_cursor provided is invalid:'
+                  error_message_contains: "The start_cursor provided is invalid:"
         request_body_json:
           sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
           filter: '{ "property": "object", "value": "database" }'
@@ -178,11 +177,11 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: last_edited_time
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%S.%fZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
+        datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       is_data_feed: true
     transformations:
@@ -202,7 +201,7 @@ streams:
         http_method: POST
         request_parameters: {}
         request_headers:
-          Notion-Version: '2022-06-28'
+          Notion-Version: "2022-06-28"
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
@@ -223,7 +222,7 @@ streams:
                   action: IGNORE
                   http_codes:
                     - 400
-                  error_message_contains: 'The start_cursor provided is invalid:'
+                  error_message_contains: "The start_cursor provided is invalid:"
         request_body_json:
           sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
           filter: '{ "property": "object", "value": "page" }'
@@ -253,11 +252,11 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: last_edited_time
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%S.%fZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
+        datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       is_data_feed: true
     transformations:
@@ -286,7 +285,7 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          Notion-Version: '2022-06-28'
+          Notion-Version: "2022-06-28"
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
@@ -307,7 +306,7 @@ streams:
                   action: IGNORE
                   http_codes:
                     - 400
-                  error_message_contains: 'The start_cursor provided is invalid:'
+                  error_message_contains: "The start_cursor provided is invalid:"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -357,7 +356,7 @@ streams:
                     http_method: POST
                     request_parameters: {}
                     request_headers:
-                      Notion-Version: '2022-06-28'
+                      Notion-Version: "2022-06-28"
                     authenticator:
                       $ref: "#/definitions/authenticator"
                     error_handler:
@@ -378,7 +377,7 @@ streams:
                               action: IGNORE
                               http_codes:
                                 - 400
-                              error_message_contains: 'The start_cursor provided is invalid:'
+                              error_message_contains: "The start_cursor provided is invalid:"
                     request_body_json:
                       sort: >-
                         { "direction": "descending", "timestamp":
@@ -410,10 +409,10 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: last_edited_time
                   cursor_datetime_formats:
-                    - '%Y-%m-%dT%H:%M:%S.%fZ'
-                  datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+                    - "%Y-%m-%dT%H:%M:%S.%fZ"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: '{{ config[''start_date''] }}'
-                    datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+                    datetime: "{{ config['start_date'] }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
                   is_data_feed: true

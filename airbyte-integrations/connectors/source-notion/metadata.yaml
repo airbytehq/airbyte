@@ -32,9 +32,9 @@ data:
     breakingChanges:
       3.0.0:
         message:
-          The source Notion connector is being migrated from the Python CDK to our declarative low-code CDK. 
+          The source Notion connector is being migrated from the Python CDK to our declarative low-code CDK.
           Due to changes in the handling of state format between these CDKs, this migration constitutes a breaking change.
-          To ensure a smooth migration, please reset your data upon updating. This will facilitate a fresh first sync. 
+          To ensure a smooth migration, please reset your data upon updating. This will facilitate a fresh first sync.
           For more information, see our migration documentation for source Notion.
         # TODO: Set to the actual deadline date
         upgradeDeadline: "2024-12-31"

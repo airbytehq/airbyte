@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_notion.source import SourceNotion
-from source_notion.components import *
 import pytest
+from source_notion.components import *
+from source_notion.source import SourceNotion
+
 
 def test_streams():
     source = SourceNotion()
@@ -16,7 +17,6 @@ def test_streams():
 
 
 def test_notion_properties_transformation():
-
     input_record = {
         "id": "123",
         "properties": {
@@ -97,3 +97,37 @@ def test_semi_incremental_get_filter_date(config_start_date, state_value, expect
     
     result = config_start_date.get_filter_date(start_date, state_value)
     assert result == expected_return, f"Expected {expected_return}, but got {result}."
+
+
+semi_incremental_records = [
+    {"id": "1", "last_edited_time": "2022-01-02T00:00:00Z"},
+    {"id": "2", "last_edited_time": "2022-01-03T00:00:00Z"},
+    {"id": "3", "last_edited_time": "2022-01-04T00:00:00Z"},
+]
+
+@pytest.mark.parametrize("stream_state,stream_slice,expected_records", [
+    (
+        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-01T00:00:00Z"}}]},
+        {"partition": {"id": "some_id"}},
+        semi_incremental_records
+    ),
+    (
+        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-03T00:00:00Z"}}]},
+        {"partition": {"id": "some_id"}},
+        [semi_incremental_records[2]]
+    ),
+    (
+        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-04T00:00:00Z"}}]},
+        {"partition": {"id": "some_id"}},
+        []
+    ),
+    (
+        {},
+        {"partition": {"id": "some_id"}},
+        semi_incremental_records
+    )
+],
+ids=["No records filtered", "Some records filtered", "All records filtered", "Empty state: no records filtered"])
+def test_filter_records(config_start_date, stream_state, stream_slice, expected_records):
+    filtered_records = config_start_date.filter_records(semi_incremental_records, stream_state, stream_slice)
+    assert filtered_records == expected_records, "Filtered records do not match the expected records."
