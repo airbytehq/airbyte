@@ -180,7 +180,6 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         self._state[self.cursor_field] = value[self.cursor_field]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
         response_count = response.json()["count"]
         if response_count < self.page_size:
             return None
