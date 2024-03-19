@@ -196,6 +196,7 @@ definitions:
     retriever: "#/definitions/retriever"
     $parameters:
       path: "groups"
+      request_parameters: {}
 
   include_descendant_groups_stream:
     name: "include_descendant_groups"
@@ -214,6 +215,7 @@ definitions:
           {{ slices }}
     $parameters:
       path: "{{ stream_slice.slice.path }}"
+      request_parameters: {}
 
   # Full refresh streams
   ## Groups-based streams
@@ -235,6 +237,7 @@ definitions:
               {{ projects }}
     $parameters:
       path: "groups/{{ stream_slice.id }}"
+      request_parameters: {}
 
   group_milestones_stream:
     name: "group_milestones"
@@ -432,6 +435,62 @@ definitions:
     $parameters:
       path: "projects/{{ stream_slice.id }}/deployments"
 
+  merge_request_commits_stream:
+    name: "merge_request_commits"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "iid"
+            stream: "#/definitions/merge_requests_stream"
+            partition_field: "iid"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - type: AddedFieldDefinition
+            path: ["merge_request_iid"]
+            value: "{{ stream_slice.iid }}"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/merge_requests/{{ stream_slice.iid }}/commits"
+
+  pipelines_extended_stream:
+    name: "pipelines_extended"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}"
+
+  jobs_stream:
+    name: "jobs"
+    $ref: "#/definitions/base_projects_child_stream"
+    retriever: "#/definitions/pipelines_child_streams_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["project_id"]
+            value: "{{ stream_slice.parent_slice.id }}"
+          - type: AddedFieldDefinition
+            path: ["user_id"]
+            value: "{{ (record.get('user') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["pipeline_id"]
+            value: "{{ (record.get('pipeline') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["runner_id"]
+            value: "{{ (record.get('runner') or {}).get('id') }}"
+          - type: AddedFieldDefinition
+            path: ["commit_id"]
+            value: "{{ (record.get('commit') or {}).get('id') }}"
+    $parameters:
+      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
+
   # Incremental streams
   commits_stream:
     name: "commits"
@@ -511,67 +570,11 @@ definitions:
       request_parameters:
         scope: "all"
 
-  merge_request_commits_stream:
-    name: "merge_request_commits"
-    $ref: "#/definitions/base_projects_child_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: "iid"
-            stream: "#/definitions/merge_requests_stream"
-            partition_field: "iid"
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path: ["project_id"]
-            value: "{{ stream_slice.parent_slice.id }}"
-          - type: AddedFieldDefinition
-            path: ["merge_request_iid"]
-            value: "{{ stream_slice.iid }}"
-    $parameters:
-      path: "projects/{{ stream_slice.parent_slice.id }}/merge_requests/{{ stream_slice.iid }}/commits"
-
   pipelines_stream:
     name: "pipelines"
     $ref: "#/definitions/base_projects_incremental_child_stream"
     $parameters:
       path: "projects/{{ stream_slice.id }}/pipelines"
-
-  pipelines_extended_stream:
-    name: "pipelines_extended"
-    $ref: "#/definitions/base_projects_child_stream"
-    retriever: "#/definitions/pipelines_child_streams_retriever"
-    $parameters:
-      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}"
-
-  jobs_stream:
-    name: "jobs"
-    $ref: "#/definitions/base_projects_child_stream"
-    retriever: "#/definitions/pipelines_child_streams_retriever"
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path: ["project_id"]
-            value: "{{ stream_slice.parent_slice.id }}"
-          - type: AddedFieldDefinition
-            path: ["user_id"]
-            value: "{{ (record.get('user') or {}).get('id') }}"
-          - type: AddedFieldDefinition
-            path: ["pipeline_id"]
-            value: "{{ (record.get('pipeline') or {}).get('id') }}"
-          - type: AddedFieldDefinition
-            path: ["runner_id"]
-            value: "{{ (record.get('runner') or {}).get('id') }}"
-          - type: AddedFieldDefinition
-            path: ["commit_id"]
-            value: "{{ (record.get('commit') or {}).get('id') }}"
-    $parameters:
-      path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
 
 streams:
   # Groups-based streams

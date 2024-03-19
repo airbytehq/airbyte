@@ -40,10 +40,7 @@ data:
               - "commits"
               - "issues"
               - "merge_requests"
-              - "merge_request_commits"
               - "pipelines"
-              - "pipelines_extended"
-              - "jobs"
       3.0.0:
         message:
           In this release, merge_request_commits stream schema has been fixed so that it returns commits for each merge_request.
