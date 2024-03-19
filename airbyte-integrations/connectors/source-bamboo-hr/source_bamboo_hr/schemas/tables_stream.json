@@ -1,6 +1,7 @@
 {
   "type": [ "object"],
-  "required": [],
+  "required": ["id","employeeId"],
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["int", "string"]

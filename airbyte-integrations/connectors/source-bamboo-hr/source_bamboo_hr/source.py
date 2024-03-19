@@ -192,6 +192,10 @@ class CustomReportsStream(BambooHrStream):
 
 
 class EmployeesDirectoryStream(BambooHrStream):
+    """
+        This is not currently in use as per
+        https://documentation.bamboohr.com/reference/get-employees-directory-1
+    """
     primary_key = "id"
 
     def parse_response(
