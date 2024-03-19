@@ -32,8 +32,9 @@ data:
       4.0.0:
         message:
           In this release, a format of stream state has been changed due to migration to low-code.
-          Users will need to reset the affected streams after upgrading.
-        upgradeDeadline: "2024-04-08"
+          Also, the primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`.
+          Users will need to refresh schemas and reset the affected streams after upgrading.
+        upgradeDeadline: "2024-04-15"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
@@ -41,6 +42,12 @@ data:
               - "issues"
               - "merge_requests"
               - "pipelines"
+              - "group_members"
+              - "group_labels"
+              - "project_members"
+              - "project_labels"
+              - "branches"
+              - "tags"
       3.0.0:
         message:
           In this release, merge_request_commits stream schema has been fixed so that it returns commits for each merge_request.

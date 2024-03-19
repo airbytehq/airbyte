@@ -4,6 +4,7 @@
 ## Upgrading to 4.0.0
 
 In this release, a format of stream state has been changed due to migration to low-code.
+Also, the primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`.
 Users will need to reset the affected streams after upgrading.
 
 ## Connector Upgrade Guide

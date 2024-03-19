@@ -43,7 +43,7 @@ def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     ),
 )
 def test_should_retry(requests_mock, stream_name, extra_mocks):
-    requests_mock.get(url="https://gitlab.com/api/v4/groups?statistics=1&per_page=50", status_code=200)
+    requests_mock.get(url="https://gitlab.com/api/v4/groups?per_page=50", status_code=200)
     stream = get_stream_by_name(stream_name, CONFIG)
     for extra_mock in extra_mocks:
         requests_mock.get(**extra_mock)
@@ -157,7 +157,7 @@ test_cases = (
 
 @pytest.mark.parametrize(("stream_name", "response_mocks", "expected_record"), test_cases)
 def test_transform(requests_mock, stream_name, response_mocks, expected_record):
-    requests_mock.get(url="https://gitlab.com/api/v4/groups?statistics=1&per_page=50", status_code=200)
+    requests_mock.get(url="https://gitlab.com/api/v4/groups?per_page=50", status_code=200)
     stream = get_stream_by_name(stream_name, CONFIG)
     requests_mock.get("/api/v4/projects/p_1", json=[{"id": "p_1"}])
 
@@ -171,7 +171,7 @@ def test_transform(requests_mock, stream_name, response_mocks, expected_record):
 
 def test_stream_slices_child_stream(requests_mock):
     commits = get_stream_by_name("commits", CONFIG)
-    requests_mock.get(url="https://gitlab.com/api/v4/groups?statistics=1&per_page=50", status_code=200)
+    requests_mock.get(url="https://gitlab.com/api/v4/groups?per_page=50", status_code=200)
     requests_mock.get(
         url="https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
         json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}],
