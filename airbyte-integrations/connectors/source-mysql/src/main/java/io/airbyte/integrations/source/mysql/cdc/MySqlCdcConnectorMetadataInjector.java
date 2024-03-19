@@ -19,20 +19,22 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MysqlDebeziumStateAttributes> {
 
-  private final long emittedAtConverted;
+  private final Instant emittedAt;
+  final MysqlDebeziumStateAttributes debeziumStateAttributes;
 
   // This now makes this class stateful. Please make sure to use the same instance within a sync
   private final AtomicLong recordCounter = new AtomicLong(1);
   private static final long ONE_HUNDRED_MILLION = 100_000_000;
   private static MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector;
 
-  private MySqlCdcConnectorMetadataInjector(final Instant emittedAt) {
-    this.emittedAtConverted = emittedAt.getEpochSecond() * ONE_HUNDRED_MILLION;
+  private MySqlCdcConnectorMetadataInjector(final Instant emittedAt, final MysqlDebeziumStateAttributes stateAttributes) {
+    this.emittedAt = emittedAt;
+    this.debeziumStateAttributes = stateAttributes;
   }
 
-  public static MySqlCdcConnectorMetadataInjector getInstance(final Instant emittedAt) {
+  public static MySqlCdcConnectorMetadataInjector getInstance(final Instant emittedAt, final MysqlDebeziumStateAttributes stateAttributes) {
     if (mySqlCdcConnectorMetadataInjector == null) {
-      mySqlCdcConnectorMetadataInjector = new MySqlCdcConnectorMetadataInjector(emittedAt);
+      mySqlCdcConnectorMetadataInjector = new MySqlCdcConnectorMetadataInjector(emittedAt, stateAttributes);
     }
 
     return mySqlCdcConnectorMetadataInjector;
@@ -46,10 +48,8 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
   }
 
   @Override
-  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record,
-                                                      final String transactionTimestamp,
-                                                      final MysqlDebeziumStateAttributes debeziumStateAttributes) {
-    record.put(CDC_UPDATED_AT, transactionTimestamp);
+  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record) {
+    record.put(CDC_UPDATED_AT, emittedAt.toString());
     record.put(CDC_LOG_FILE, debeziumStateAttributes.binlogFilename());
     record.put(CDC_LOG_POS, debeziumStateAttributes.binlogPosition());
     record.put(CDC_DELETED_AT, (String) null);
@@ -67,7 +67,7 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
   }
 
   private Long getCdcDefaultCursor() {
-    return this.emittedAtConverted + this.recordCounter.getAndIncrement();
+    return this.emittedAt.getEpochSecond() * ONE_HUNDRED_MILLION + this.recordCounter.getAndIncrement();
   }
 
 }
