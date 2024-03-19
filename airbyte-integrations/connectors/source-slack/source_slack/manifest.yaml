@@ -76,6 +76,8 @@ definitions:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/requester"
+      request_parameters:
+        types: "public_channel"
     record_selector:
       $ref: "#/definitions/selector"
       record_filter:

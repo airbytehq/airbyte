@@ -26,10 +26,6 @@ def get_stream_by_name(stream_name, config):
 
 @freeze_time("2024-03-10T20:00:00Z", tz_offset=-2)
 def test_threads_stream_slices(requests_mock, token_config):
-    requests_mock.get(url="https://slack.com/api/conversations.list?limit=1000",
-                      json={"channels": [{"id": "airbyte-for-beginners", "is_member": True},
-                                         {"id": "good-reads", "is_member": True}]})
-
     start_date = "2024-03-01T20:00:00Z"
     end_date = pendulum.now()
     oldest, latest = int(pendulum.parse(start_date).timestamp()), int(end_date.timestamp())
