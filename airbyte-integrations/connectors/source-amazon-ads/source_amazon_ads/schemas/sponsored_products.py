@@ -48,12 +48,10 @@ class ProductAdGroupBidRecommendations(CatalogModel):
     theme: str
     bidRecommendationsForTargetingExpressions: List[BidRecommendations]
 
-# Needs to be updated
 class SuggestedKeyword(CatalogModel):
     keywordText: str
     matchType: str
 
-# Needs to be updated
 class ProductAdGroupSuggestedKeywords(CatalogModel):
     adGroupId: Decimal
     suggestedKeywords: List[SuggestedKeyword] = None

@@ -208,7 +208,7 @@ class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlices
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: int = None) -> MutableMapping[str, Any]:
         return {
-            "maxNumSuggestions": 1000
+            "maxNumSuggestions": 100
         }
 
     def request_headers(self, profile_id: str = None, *args, **kwargs) -> MutableMapping[str, Any]:
