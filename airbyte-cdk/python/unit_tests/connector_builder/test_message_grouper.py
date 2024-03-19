@@ -22,7 +22,7 @@ from airbyte_cdk.models import Type as MessageType
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _NO_PK = [[]]
-_NO_CURSOR_FIELD = [[]]
+_NO_CURSOR_FIELD = []
 
 MAX_PAGES_PER_SLICE = 4
 MAX_SLICES = 3
@@ -99,7 +99,7 @@ def test_get_grouped_messages(mock_entrypoint_read: Mock) -> None:
     response = {"status_code": 200, "headers": {"field": "value"}, "body": {"content": '{"name": "field"}'}}
     expected_schema = {
         "$schema": "http://json-schema.org/schema#",
-        "properties": {"name": {"type": ["null", "string"]}, "date": {"type": ["null", "string"]}},
+        "properties": {"name": {"type": ["string", "null"]}, "date": {"type": ["string", "null"]}},
         "type": "object",
     }
     expected_datetime_fields = {"date": "%Y-%m-%d"}
@@ -540,6 +540,7 @@ def test_get_grouped_messages_given_maximum_number_of_pages_then_test_read_limit
 def test_read_stream_returns_error_if_stream_does_not_exist() -> None:
     mock_source = MagicMock()
     mock_source.read.side_effect = ValueError("error")
+    mock_source.streams.return_value = [make_mock_stream()]
 
     full_config: Mapping[str, Any] = {**CONFIG, **{"__injected_declarative_manifest": MANIFEST}}
 
@@ -667,7 +668,7 @@ def test_given_cursor_field_then_ensure_cursor_field_is_pass_to_schema_inferrenc
     ]))
     mock_source.streams.return_value = [Mock()]
     mock_source.streams.return_value[0].primary_key = _NO_PK
-    mock_source.streams.return_value[0].cursor_field = [["date"]]
+    mock_source.streams.return_value[0].cursor_field = ["date"]
     connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     stream_read: StreamRead = connector_builder_handler.get_message_groups(
@@ -680,7 +681,15 @@ def test_given_cursor_field_then_ensure_cursor_field_is_pass_to_schema_inferrenc
 def make_mock_source(mock_entrypoint_read: Mock, return_value: Iterator[AirbyteMessage]) -> MagicMock:
     mock_source = MagicMock()
     mock_entrypoint_read.return_value = return_value
+    mock_source.streams.return_value = [make_mock_stream()]
     return mock_source
+
+
+def make_mock_stream():
+    mock_stream = MagicMock()
+    mock_stream.primary_key = []
+    mock_stream.cursor_field = []
+    return mock_stream
 
 
 def request_log_message(request: Mapping[str, Any]) -> AirbyteMessage:

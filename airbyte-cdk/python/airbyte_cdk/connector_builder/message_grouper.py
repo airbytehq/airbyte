@@ -69,7 +69,7 @@ class MessageGrouper:
         if is_nested_key:
             return [field]  # type: ignore  # the type of field is expected to be List[str] here
 
-        raise ValueError("Unknown type for cursor field")
+        raise ValueError(f"Unknown type for cursor field `{field}")
 
     def get_message_groups(
         self,

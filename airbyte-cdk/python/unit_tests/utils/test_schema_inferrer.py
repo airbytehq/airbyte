@@ -19,7 +19,7 @@ NOW = 1234567
                 {"stream": "my_stream", "data": {"field_A": "abc"}},
                 {"stream": "my_stream", "data": {"field_A": "def"}},
             ],
-            {"my_stream": {"field_A": {"type": ["null", "string"]}}},
+            {"my_stream": {"field_A": {"type": ["string", "null"]}}},
             id="test_basic",
         ),
         pytest.param(
@@ -27,7 +27,7 @@ NOW = 1234567
                 {"stream": "my_stream", "data": {"field_A": 1.0}},
                 {"stream": "my_stream", "data": {"field_A": "abc"}},
             ],
-            {"my_stream": {"field_A": {"type": ["null", "number", "string"]}}},
+            {"my_stream": {"field_A": {"type": ["number", "string", "null"]}}},
             id="test_deriving_schema_refine",
         ),
         pytest.param(
@@ -38,10 +38,10 @@ NOW = 1234567
             {
                 "my_stream": {
                     "obj": {
-                        "type": ["null", "object"],
+                        "type": ["object", "null"],
                         "properties": {
-                            "data": {"type": ["null", "array"], "items": {"type": ["null", "number"]}},
-                            "other_key": {"type": ["null", "string"]},
+                            "data": {"type": ["array", "null"], "items": {"type": ["number", "null"]}},
+                            "other_key": {"type": ["string", "null"]},
                         },
                     }
                 }
@@ -53,7 +53,7 @@ NOW = 1234567
                 {"stream": "my_stream", "data": {"field_A": 1}},
                 {"stream": "my_stream", "data": {"field_A": 2}},
             ],
-            {"my_stream": {"field_A": {"type": ["null", "number"]}}},
+            {"my_stream": {"field_A": {"type": ["number", "null"]}}},
             id="test_integer_number",
         ),
         pytest.param(
@@ -68,7 +68,7 @@ NOW = 1234567
                 {"stream": "my_stream", "data": {"field_A": None}},
                 {"stream": "my_stream", "data": {"field_A": "abc"}},
             ],
-            {"my_stream": {"field_A": {"type": ["null", "string"]}}},
+            {"my_stream": {"field_A": {"type": ["string", "null"]}}},
             id="test_null_optional",
         ),
         pytest.param(
@@ -76,7 +76,7 @@ NOW = 1234567
                 {"stream": "my_stream", "data": {"field_A": None}},
                 {"stream": "my_stream", "data": {"field_A": {"nested": "abc"}}},
             ],
-            {"my_stream": {"field_A": {"type": ["null", "object"], "properties": {"nested": {"type": ["null", "string"]}}}}},
+            {"my_stream": {"field_A": {"type": ["object", "null"], "properties": {"nested": {"type": ["string", "null"]}}}}},
             id="test_any_of",
         ),
         pytest.param(
@@ -84,7 +84,7 @@ NOW = 1234567
                 {"stream": "my_stream", "data": {"field_A": None}},
                 {"stream": "my_stream", "data": {"field_A": {"nested": "abc", "nully": None}}},
             ],
-            {"my_stream": {"field_A": {"type": ["null", "object"], "properties": {"nested": {"type": ["null", "string"]}}}}},
+            {"my_stream": {"field_A": {"type": ["object", "null"], "properties": {"nested": {"type": ["string", "null"]}}}}},
             id="test_any_of_with_null",
         ),
         pytest.param(
@@ -96,8 +96,8 @@ NOW = 1234567
             {
                 "my_stream": {
                     "field_A": {
-                        "type": ["null", "object"],
-                        "properties": {"nested": {"type": ["null", "string"]}, "nully": {"type": ["null", "string"]}},
+                        "type": ["object", "null"],
+                        "properties": {"nested": {"type": ["string", "null"]}, "nully": {"type": ["string", "null"]}},
                     }
                 }
             },
@@ -112,8 +112,8 @@ NOW = 1234567
             {
                 "my_stream": {
                     "field_A": {
-                        "type": ["null", "object"],
-                        "properties": {"nested": {"type": ["null", "string"]}, "nully": {"type": ["null", "string"]}},
+                        "type": ["object", "null"],
+                        "properties": {"nested": {"type": ["string", "null"]}, "nully": {"type": ["string", "null"]}},
                     }
                 }
             },
@@ -123,7 +123,7 @@ NOW = 1234567
             [
                 {"stream": "my_stream", "data": {"field_A": "abc", "nested": {"field_B": None}}},
             ],
-            {"my_stream": {"field_A": {"type": ["null", "string"]}, "nested": {"type": ["null", "object"], "properties": {}}}},
+            {"my_stream": {"field_A": {"type": ["string", "null"]}, "nested": {"type": ["object", "null"], "properties": {}}}},
             id="test_nested_null",
         ),
         pytest.param(
@@ -132,8 +132,8 @@ NOW = 1234567
             ],
             {
                 "my_stream": {
-                    "field_A": {"type": ["null", "string"]},
-                    "nested": {"type": ["null", "array"], "items": {"type": ["null", "object"], "properties": {"field_C": {"type": ["null", "string"]}}}},
+                    "field_A": {"type": ["string", "null"]},
+                    "nested": {"type": ["array", "null"], "items": {"type": ["object", "null"], "properties": {"field_C": {"type": ["string", "null"]}}}},
                 }
             },
             id="test_array_nested_null",
@@ -145,8 +145,8 @@ NOW = 1234567
             ],
             {
                 "my_stream": {
-                    "field_A": {"type": ["null", "string"]},
-                    "nested": {"type": ["null", "array"], "items": {"type": ["null", "object"], "properties": {"field_C": {"type": ["null", "string"]}}}},
+                    "field_A": {"type": ["string", "null"]},
+                    "nested": {"type": ["array", "null"], "items": {"type": ["object", "null"], "properties": {"field_C": {"type": ["string", "null"]}}}},
                 }
             },
             id="test_array_top_level_null",
@@ -156,7 +156,7 @@ NOW = 1234567
                 {"stream": "my_stream", "data": {"field_A": None}},
                 {"stream": "my_stream", "data": {"field_A": "abc"}},
             ],
-            {"my_stream": {"field_A": {"type": ["null", "string"]}}},
+            {"my_stream": {"field_A": {"type": ["string", "null"]}}},
             id="test_null_string",
         ),
     ],

@@ -110,8 +110,10 @@ class SchemaInferrer:
 
             # this check needs to follow the "anyOf" cleaning as it might populate `type`
             if isinstance(node["type"], list):
-                if _NULL_TYPE not in node["type"]:
-                    node["type"].append(_NULL_TYPE)
+                if _NULL_TYPE in node["type"]:
+                    # we want to make sure null is always at the end as it makes schemas more readable
+                    node["type"].remove(_NULL_TYPE)
+                node["type"].append(_NULL_TYPE)
             else:
                 node["type"] = [node["type"], _NULL_TYPE]
         return node
@@ -178,7 +180,7 @@ class SchemaInferrer:
                 f"Unknown schema error: {traveled_path} is expected to have a type but did not. Schema inferrence is probably broken"
             )
 
-        if node["type"] not in ["object", ["null", "object"]]:
+        if node["type"] not in ["object", ["null", "object"], ["object", "null"]]:
             raise ValueError(f"Path {traveled_path} is expected to be an object but was of type `{node['properties'][next_node]['type']}`")
 
         if "required" not in node or not node["required"]:
