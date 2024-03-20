@@ -6,7 +6,6 @@ import asyncio
 import csv
 import io
 import logging
-import sys
 import unittest
 from datetime import datetime
 from typing import Any, Dict, Generator, List, Set
