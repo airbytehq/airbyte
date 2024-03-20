@@ -85,6 +85,7 @@ class Keywords(KeywordsBase):
     keywordText: str
     extendedData: dict
 
+
 class NegativeKeywords(KeywordsBase):
     keywordId: str
     nativeLanguageKeyword: str
@@ -95,6 +96,7 @@ class NegativeKeywords(KeywordsBase):
     adGroupId: str
     keywordText: str
     extendedData: dict
+
 
 class CampaignNegativeKeywords(KeywordsBase):
     keywordId: str

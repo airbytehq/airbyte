@@ -3,7 +3,7 @@
 #
 
 from decimal import Decimal
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from .common import CatalogModel, Targeting
 
@@ -16,6 +16,7 @@ class Adjustments(CatalogModel):
 class Bidding(CatalogModel):
     strategy: str
     adjustments: List[Adjustments]
+
 
 class ProductCampaign(CatalogModel):
     portfolioId: str
@@ -30,6 +31,7 @@ class ProductCampaign(CatalogModel):
     budget: dict
     extendedData: dict
 
+
 class ProductAdGroups(CatalogModel):
     adGroupId: str
     name: str
@@ -38,9 +40,11 @@ class ProductAdGroups(CatalogModel):
     state: str
     extendedData: dict
 
+
 class BidRecommendations(CatalogModel):
     bidValues: List[dict[str, str]]
     targetingExpression: dict[str, str]
+
 
 class ProductAdGroupBidRecommendations(CatalogModel):
     adGroupId: str
@@ -48,13 +52,16 @@ class ProductAdGroupBidRecommendations(CatalogModel):
     theme: str
     bidRecommendationsForTargetingExpressions: List[BidRecommendations]
 
+
 class SuggestedKeyword(CatalogModel):
     keywordText: str
     matchType: str
 
+
 class ProductAdGroupSuggestedKeywords(CatalogModel):
     adGroupId: Decimal
     suggestedKeywords: List[SuggestedKeyword] = None
+
 
 class ProductAd(CatalogModel):
     adId: str
@@ -65,6 +72,7 @@ class ProductAd(CatalogModel):
     sku: str
     adGroupId: str
     extendedData: dict
+
 
 class ProductTargeting(CatalogModel):
     expression: list

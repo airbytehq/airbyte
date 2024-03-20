@@ -1,30 +1,33 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 from unittest import TestCase
 from unittest.mock import patch
-import json
 
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_protocol.models import Level as LogLevel
-from airbyte_protocol.models import SyncMode
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
     NestedPath,
+    PaginationStrategy,
     RecordBuilder,
     create_record_builder,
     create_response_builder,
     find_template,
 )
+from airbyte_protocol.models import Level as LogLevel
+from airbyte_protocol.models import SyncMode
 
 from .ad_requests import OAuthRequestBuilder, ProfilesRequestBuilder, SponsoredBrandsRequestBuilder
 from .ad_responses import ErrorResponseBuilder, OAuthResponseBuilder, ProfilesResponseBuilder, SponsoredBrandsResponseBuilder
-from .ad_responses.pagination_strategies import CountBasedPaginationStrategy
+from .ad_responses.pagination_strategies import (
+    CountBasedPaginationStrategy,
+    CursorBasedPaginationStrategy,
+    SponsoredCursorBasedPaginationStrategy,
+)
 from .ad_responses.records import ErrorRecordBuilder, ProfilesRecordBuilder, SponsoredBrandsRecordBuilder
 from .config import ConfigBuilder
 from .utils import get_log_messages_by_log_level, read_stream
-from airbyte_cdk.test.mock_http.response_builder import PaginationStrategy
-from .ad_responses.pagination_strategies import CursorBasedPaginationStrategy, SponsoredCursorBasedPaginationStrategy
 
 _DEFAULT_REQUEST_BODY = json.dumps({
     "maxResults": 100

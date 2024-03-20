@@ -27,7 +27,7 @@ from source_amazon_ads.streams import (
     SponsoredDisplayCampaigns,
     SponsoredDisplayReportStream,
     SponsoredProductCampaigns,
-    SponsoredProductsReportStream
+    SponsoredProductsReportStream,
 )
 from source_amazon_ads.streams.report_streams.display_report import TACTICS
 from source_amazon_ads.streams.report_streams.report_streams import (

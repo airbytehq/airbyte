@@ -1,12 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import Mapping, Any, MutableMapping
+from typing import Any, Mapping, MutableMapping
 
 from requests import Response
-
 from source_amazon_ads.schemas import BrandsAdGroup, BrandsCampaign
 from source_amazon_ads.streams.common import SubProfilesStream
+
 
 class SponsoredBrandsV4(SubProfilesStream):
     """
@@ -24,7 +24,9 @@ class SponsoredBrandsV4(SubProfilesStream):
         headers["Content-Type"] = self.content_type
         return headers
 
-    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
         request_body = {}
         request_body["maxResults"] = self.page_size
         if next_page_token:
@@ -43,6 +45,7 @@ class SponsoredBrandsV4(SubProfilesStream):
         next_page_token: int = None,
     ) -> MutableMapping[str, Any]:
         return {}
+
 
 class SponsoredBrandsCampaigns(SponsoredBrandsV4):
     """
@@ -63,13 +66,14 @@ class SponsoredBrandsCampaigns(SponsoredBrandsV4):
     def path(self, **kwargs) -> str:
         return "sb/v4/campaigns/list"
 
-    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
         request_body = super().request_body_json(stream_state, stream_slice, next_page_token)
         if self.state_filter:
-            request_body["stateFilter"] = {
-                "include": self.state_filter
-            }
+            request_body["stateFilter"] = {"include": self.state_filter}
         return request_body
+
 
 class SponsoredBrandsAdGroups(SponsoredBrandsV4):
     """
