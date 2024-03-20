@@ -1,4 +1,4 @@
-version: 0.68.2
+version: 0.72.1
 
 definitions:
   # COMMON PARTS
@@ -273,6 +273,11 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          # To preserve the non-breaking changes, the additional transformations should be applied
+          # 1) transform the `start_time` - cursor_field to have the old datetime format == %Y-%m-%dT%H:%M:%SZ (2023-01-01T00:00:00)
+          - path: ["start_time"]
+            value: "{{ format_datetime(record.get('start_time', config['start_date']), '%Y-%m-%dT%H:%M:%SZ') }}"
+          # 2) make the composite `id` field
           - path: ["id"]
             value: "{{ record.get('agent_id', '')|string + '|' + record.get('start_time', '')|string }}"
     $parameters:
