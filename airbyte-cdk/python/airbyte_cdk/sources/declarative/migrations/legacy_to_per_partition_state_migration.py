@@ -37,7 +37,7 @@ class LegacyToPerPartitionStateMigration(StateMigration):
                 if isinstance(value, dict):
                     keys = list(value.keys())
                     if len(keys) != 1:
-                        raise ValueError(f"")
+                        raise ValueError(f"The input partitioned state should only have one key. Found {keys}")
                     if keys[0] != cursor_field:
                         raise ValueError(f"Unexpected key. Found {keys[0]}. Expected {self._cursor.cursor_field}")
 

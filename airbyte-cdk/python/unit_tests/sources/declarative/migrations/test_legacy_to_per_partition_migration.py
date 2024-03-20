@@ -12,6 +12,8 @@ from airbyte_cdk.sources.declarative.models import DeclarativeStream
 
 from airbyte_cdk.sources.declarative.models import CustomRetriever
 
+from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
+
 
 def test_migrate_a_valid_legacy_state_to_per_partition():
     input_state = {
@@ -180,6 +182,54 @@ def test_should_not_migrate_state_if_invalid_partition_key():
         migrator.should_migrate(input_state)
 
 
+def test_should_not_migrate_if_the_partitioned_state_has_more_than_one_key():
+    input_state = {
+        "13506132": {
+            "last_changed": "2022-12-27T08:34:39+00:00"
+        },
+        "14351124": {
+            "last_changed": "2022-12-27T08:35:39+00:00",
+            "another_key": "2022-12-27T08:35:39+00:00"
+        },
+    }
+
+    migrator = _migrator()
+
+    with pytest.raises(ValueError):
+        migrator.should_migrate(input_state)
+
+def test_should_not_migrate_if_the_partitioned_state_key_is_not_the_cursor_field():
+    input_state = {
+        "13506132": {
+            "last_changed": "2022-12-27T08:34:39+00:00"
+        },
+        "14351124": {
+            "another_key": "2022-12-27T08:35:39+00:00"
+        },
+    }
+
+    migrator = _migrator()
+
+    with pytest.raises(ValueError):
+        migrator.should_migrate(input_state)
+
+
+def test_should_not_migrate_stream_with_multiple_parent_streams():
+    input_state = {
+        "13506132": {
+            "last_changed": "2022-12-27T08:34:39+00:00"
+        },
+        "14351124": {
+            "last_changed": "2022-12-27T08:35:39+00:00"
+        },
+    }
+
+    migrator = _migrator_with_multiple_parent_streams()
+
+    with pytest.raises(ValueError):
+        migrator.should_migrate(input_state)
+
+
 def _migrator():
     partition_router = SubstreamPartitionRouter(
         type="SubstreamPartitionRouter",
@@ -196,6 +246,47 @@ def _migrator():
                     )
                 )
             )
+        ]
+    )
+    cursor = DatetimeBasedCursor(
+        type="DatetimeBasedCursor",
+        cursor_field="last_changed",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%fZ",
+        start_datetime="1970-01-01T00:00:00.0Z",
+    )
+    config = {}
+    parameters = {}
+    return LegacyToPerPartitionStateMigration(partition_router, cursor, config, parameters)
+
+
+def _migrator_with_multiple_parent_streams():
+    partition_router = SubstreamPartitionRouter(
+        type="SubstreamPartitionRouter",
+        parent_stream_configs=[
+            ParentStreamConfig(
+                type="ParentStreamConfig",
+                parent_key="id",
+                partition_field="parent_id",
+                stream=DeclarativeStream(
+                    type="DeclarativeStream",
+                    retriever=CustomRetriever(
+                        type="CustomRetriever",
+                        class_name="a_class_name"
+                    )
+                )
+            ),
+            ParentStreamConfig(
+                type="ParentStreamConfig",
+                parent_key="id",
+                partition_field="parent_id",
+                stream=DeclarativeStream(
+                    type="DeclarativeStream",
+                    retriever=CustomRetriever(
+                        type="CustomRetriever",
+                        class_name="a_class_name"
+                    )
+                )
+            ),
         ]
     )
     cursor = DatetimeBasedCursor(
