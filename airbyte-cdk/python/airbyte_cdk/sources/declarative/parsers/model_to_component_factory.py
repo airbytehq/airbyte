@@ -604,13 +604,10 @@ class ModelToComponentFactory:
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
         if model.state_migrations:
-            if isinstance(retriever, SimpleRetriever):
-                state_transformations = [
-                    self._create_component_from_model(state_migration, config, partition_routers=model.retriever.partition_router, cursor=model.incremental_sync, parameters=model.parameters)  # type: ignore # there is a type check
-                    for state_migration in model.state_migrations
-                ]
-            else:
-                raise ValueError(f"State migrations for custom retrievers are not supported.")
+            state_transformations = [
+                self._create_component_from_model(state_migration, config, partition_routers=model.retriever.partition_router, cursor=model.incremental_sync, parameters=model.parameters)  # type: ignore # there is a type check
+                for state_migration in model.state_migrations
+            ]
         else:
             state_transformations = []
 
