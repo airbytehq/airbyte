@@ -1,12 +1,17 @@
-from typing import Mapping
+from typing import Any, Mapping
 from urllib import response
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from typing import Any
+
 import requests
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class CredentialsCraftAuthenticator(TokenAuthenticator):
-    def __init__(self, credentials_craft_host: str, credentials_craft_token: str, credentials_craft_token_id: int):
+    def __init__(
+        self,
+        credentials_craft_host: str,
+        credentials_craft_token: str,
+        credentials_craft_token_id: int,
+    ):
         self._cc_host = credentials_craft_host.rstrip("/")
         self._cc_token = credentials_craft_token
         self._cc_token_id = credentials_craft_token_id
@@ -35,7 +40,7 @@ class CredentialsCraftAuthenticator(TokenAuthenticator):
         try:
             token_resp_data = token_resp.json()
             if token_resp_data.get("error"):
-                return False, f"CredentialsCraft error: {token_resp.get('error')}"
+                return False, f"CredentialsCraft error: {token_resp.json().get('error')}"
         except Exception as e:
             return False, f"Check bearer error: {e}; {token_resp}; Body: {token_resp.text}"
         return True, None

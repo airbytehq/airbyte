@@ -170,6 +170,9 @@ CAMPAIGNS_DEFAULT_FIELDS = {
         "StatusClarification",
         "SourceId",
         "Currency",
+        "DailyBudget",
+        "EndDate",
+        "ClientInfo",
     ],
 }
 

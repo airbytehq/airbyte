@@ -61,6 +61,24 @@
         "null",
         "string"
       ]
+    },
+    "DailyBudget": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "EndDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ClientInfo": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   }
 }
