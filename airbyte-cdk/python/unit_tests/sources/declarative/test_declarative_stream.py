@@ -4,7 +4,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.types import StreamSlice
@@ -95,6 +94,60 @@ def test_state_checkpoint_interval():
     )
 
     assert stream.state_checkpoint_interval is None
+
+
+def test_state_migrations():
+    intermediate_state = {"another_key", "another_value"}
+    final_state = {"yet_another_key", "yet_another_value"}
+    first_state_migration = MagicMock()
+    first_state_migration.should_migrate.return_value = True
+    first_state_migration.migrate.return_value = intermediate_state
+    second_state_migration = MagicMock()
+    second_state_migration.should_migrate.return_value = True
+    second_state_migration.migrate.return_value = final_state
+
+    stream = DeclarativeStream(
+        name="any name",
+        primary_key="any primary key",
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=MagicMock(),
+        retriever=MagicMock(),
+        state_migrations=[first_state_migration, second_state_migration],
+        config={},
+        parameters={},
+    )
+
+    input_state = {"a_key": "a_value"}
+
+    stream.state = input_state
+    assert stream.state == final_state
+    first_state_migration.should_migrate.assert_called_once_with(input_state)
+    first_state_migration.migrate.assert_called_once_with(input_state)
+    second_state_migration.should_migrate.assert_called_once_with(intermediate_state)
+    second_state_migration.migrate.assert_called_once_with(intermediate_state)
+
+
+def test_no_state_migration_is_applied_if_the_state_should_not_be_migrated():
+    state_migration = MagicMock()
+    state_migration.should_migrate.return_value = False
+
+    stream = DeclarativeStream(
+        name="any name",
+        primary_key="any primary key",
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=MagicMock(),
+        retriever=MagicMock(),
+        state_migrations=[state_migration],
+        config={},
+        parameters={},
+    )
+
+    input_state = {"a_key": "a_value"}
+
+    stream.state = input_state
+    assert stream.state == input_state
+    state_migration.should_migrate.assert_called_once_with(input_state)
+    assert not state_migration.migrate.called
 
 
 def _schema_loader():

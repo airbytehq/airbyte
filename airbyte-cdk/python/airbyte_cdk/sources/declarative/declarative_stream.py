@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -78,11 +79,12 @@ class DeclarativeStream(Stream):
     @state.setter
     def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
+        state: Mapping[str, Any] = value
         if self.state_migrations:
             for migration in self.state_migrations:
-                if migration.should_migrate(value):
-                    value = migration.migrate(value)
-        self.retriever.state = value
+                if migration.should_migrate(state):
+                    state = migration.migrate(state)
+        self.retriever.state = state
 
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
