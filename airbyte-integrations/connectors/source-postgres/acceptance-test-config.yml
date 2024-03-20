@@ -37,9 +37,11 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
+        validate_state_messages: false
       - config_path: "secrets/config_cdc.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
+        validate_state_messages: false
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

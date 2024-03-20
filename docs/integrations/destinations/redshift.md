@@ -187,10 +187,14 @@ characters.
 ### Data Size Limitations
 
 Redshift specifies a maximum limit of 16MB (and 65535 bytes for any VARCHAR fields within the JSON
-record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift
-destination fails to load such data and currently ignores that record. See docs for
-[SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and
-[SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
+record) to store the raw JSON record data. Thus, when a row is too big to fit, the destination connector will 
+do one of the following. 
+1. Null the value if the varchar size > 65535, The corresponding key information is added to `_airbyte_meta`.
+2. Null the whole record while trying to preserve the Primary Keys and cursor field declared as part of your stream configuration, if the total record size is > 16MB. 
+   * For DEDUPE sync mode, if we do not find Primary key(s), we fail the sync.
+   * For OVERWRITE and APPEND mode, syncs will succeed with empty records emitted, if we fail to find Primary key(s).
+
+See AWS docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
 
 ### Encryption
 
@@ -232,6 +236,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.1   | 2024-03-18 | [\#36255](https://github.com/airbytehq/airbyte/pull/36255) | Mark as Certified-GA                                                                                                                                                                                             |
 | 2.3.0   | 2024-03-18 | [\#36203](https://github.com/airbytehq/airbyte/pull/36203) | CDK 0.25.0; Record nulling for VARCHAR > 64K & record > 16MB (super limit)                                                                                                                                       |
 | 2.2.0   | 2024-03-14 | [\#35981](https://github.com/airbytehq/airbyte/pull/35981) | CDK 0.24.0; `_airbyte_meta` in Raw table for tracking upstream data modifications.                                                                                                                               |
 | 2.1.10  | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.23.18; Null safety check in state parsing                                                                                                                                                            |
