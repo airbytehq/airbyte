@@ -18,6 +18,10 @@ logger = logging.getLogger("airbyte")
 File = Dict[str, Any]
 
 
+def handle_backoff(details):
+    logger.warning("SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(**details))
+
+
 class SFTPClient:
     _connection = None
 
@@ -34,9 +38,6 @@ class SFTPClient:
             raise Exception("Either password or private key must be provided")
 
         self._connect()
-
-    def handle_backoff(details):
-        logger.warning("SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(**details))
 
     # If connection is snapped during connect flow, retry up to a
     # minute for SSH connection to succeed. 2^6 + 2^5 + ...
