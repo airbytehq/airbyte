@@ -679,7 +679,7 @@ definitions:
     {
       \"partition\": {\"id\": \"13506132\"},
       \"cursor\": {\"last_changed\": \"2022-12-27T08:34:39+00:00\"}
-    },
+    }
     "
     type: object
     additionalProperties: true

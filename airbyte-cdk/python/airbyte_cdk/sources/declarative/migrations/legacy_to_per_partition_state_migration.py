@@ -10,6 +10,21 @@ def _is_already_migrated(stream_state: Mapping[str, Any]) -> bool:
 
 
 class LegacyToPerPartitionStateMigration(StateMigration):
+    """
+    Transforms the input state for per-partitioned streams from the legacy format to the low-code format.
+    The cursor field and partition ID fields are automatically extracted from the stream's DatetimebasedCursor and SubstreamPartitionRouter.
+
+    Example input state:
+    {
+    "13506132": {
+      "last_changed": "2022-12-27T08:34:39+00:00"
+    }
+    Example output state:
+    {
+      "partition": {"id": "13506132"},
+      "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
+    }
+    """
     def __init__(
         self,
         partition_router: SubstreamPartitionRouter,
