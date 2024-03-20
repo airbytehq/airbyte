@@ -1,0 +1,90 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "buyerPhone" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "createTime" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "duration" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "groupTitle" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "id" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "isArbitrageAvailable" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "itemId" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "price" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "recordUrl" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "sellerPhone" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "startTime" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "statusId" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "virtualPhone" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "waitingDuration" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    }
+  }
+}
