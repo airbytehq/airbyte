@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from abc import abstractmethod
 from typing import Any, Mapping
 
