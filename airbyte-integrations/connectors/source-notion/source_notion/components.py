@@ -12,32 +12,6 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass
-class NotionAuthenticator(DeclarativeAuthenticator):
-    """
-    Custom authenticator designed to handle all existing Notion authenticator configurations, being:
-
-    token_auth: Private integration token
-    legacy_token_auth: Legacy config for private tokens
-    oauth: Public integration token (static oauth-derived token using advanced auth protocol)
-    """
-
-    config: Mapping[str, Any]
-    token_auth: BearerAuthenticator
-    legacy_token_auth: BearerAuthenticator
-    oauth: BearerAuthenticator
-
-    def __new__(cls, token_auth, legacy_token_auth, oauth, config, *args, **kwargs) -> BearerAuthenticator:
-        credentials = config.get("credentials", {})
-
-        if config.get("access_token", {}):
-            return legacy_token_auth
-        elif credentials["auth_type"] == "token":
-            return token_auth
-        elif credentials["auth_type"] == "OAuth2.0":
-            return oauth
-
-
-@dataclass
 class NotionPropertiesTransformation(RecordTransformation):
     """
     Transforms the nested 'properties' object within a Notion Page/Database record into a more
