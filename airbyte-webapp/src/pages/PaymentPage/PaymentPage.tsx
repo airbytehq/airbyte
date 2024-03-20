@@ -47,6 +47,9 @@ const PaymentPage: React.FC = () => {
   const { updateUserStatus, user } = useUser();
   const userPlanDetail = useUserPlanDetail();
   const { selectedProduct } = userPlanDetail;
+  const userInfoJson = localStorage.getItem("daspire-user");
+  const userInfo = JSON.parse(userInfoJson as string);
+  console.log(userInfo, "userInfo");
   const packages = useCloudPackages();
   const regions = useCloudRegions();
   const [currentStep, setCurrentStep] = useState<string>(PaymentSteps.SELECT_PLAN);
@@ -54,6 +57,7 @@ const PaymentPage: React.FC = () => {
   const [price, setPrice] = useState(selectedProduct?.price ?? "");
   const [cloudPackageId, setCloudPackageId] = useState(selectedProduct?.id ?? "");
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
+  const [User, setUser] = useState(null);
   const [planDetail, setPlanDetail] = useState<GetUpgradeSubscriptionDetail>();
   const [updatePlanLoading, setUpdatePlanLoading] = useState<boolean>(false);
   const [deploymentMode, setDeploymentMode] = useState("");
@@ -80,7 +84,26 @@ const PaymentPage: React.FC = () => {
   const packagesMap = usePackagesMap();
 
   const productOptions = useProductOptions();
+  const getUserInfo = useCallback(() => {
+    if (userInfo?.token) {
+      authService
+        .getUserInfo(userInfo?.token)
+        .then((res: any) => {
+          setUser?.({ ...res.data });
+        })
+        .catch((err) => {
+          if (err.message) {
+            console.log(err?.message);
+          }
+        });
+    }
+  }, [authService, setUser, userInfo.token]);
 
+  useEffect(() => {
+    if (userInfo?.token) {
+      getUserInfo();
+    }
+  }, []);
   useEffect(() => {
     if (!selectedProduct && product === undefined) {
       setProduct(productOptions[1]);
@@ -241,6 +264,7 @@ const PaymentPage: React.FC = () => {
               instanceRef={instanceRef}
               isCloud={isCloud}
               regionSelected={regionSelected}
+              user={User}
             />
           )}
           {currentStep === PaymentSteps.BILLING_PAYMENT && (

@@ -24,6 +24,7 @@ interface IProps {
   selectedProduct?: any;
   jobs?: any;
   instanceRef?: any;
+  user?: any;
 }
 
 const CardContainer = styled.div`
@@ -74,6 +75,7 @@ const FeaturesCard: React.FC<IProps> = ({
   selectedProduct,
   jobs,
   instanceRef,
+  user,
 }) => {
   return (
     <CardContainer ref={instanceRef}>
@@ -99,6 +101,7 @@ const FeaturesCard: React.FC<IProps> = ({
             paymentLoading={paymentLoading}
             onSelectPlan={onSelectPlan}
             selectedProduct={selectedProduct}
+            userInfo={user}
           />
         </BodyCell>
         <BodyCell>
