@@ -54,7 +54,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
         # Python Version Support
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     keywords="airbyte connector-development-kit cdk",
     project_urls={
@@ -84,7 +84,7 @@ setup(
         "cachetools",
         "wcmatch==8.4",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     extras_require={
         "dev": [
             avro_dependency,
