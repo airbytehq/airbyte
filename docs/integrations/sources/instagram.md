@@ -113,6 +113,7 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 3.0.5   | 2024-03-20 | [36314](https://github.com/airbytehq/airbyte/pull/36314) | Unpin CDK version                                                                                                         |
 | 3.0.4   | 2024-03-07 | [35875](https://github.com/airbytehq/airbyte/pull/35875) | Remove `total_interactions` from the `MediaInsights` queries.                                                             |
 | 3.0.3   | 2024-02-12 | [35177](https://github.com/airbytehq/airbyte/pull/35177) | Manage dependencies with Poetry.                                                                                          |
 | 3.0.2   | 2024-01-15 | [34254](https://github.com/airbytehq/airbyte/pull/34254) | prepare for airbyte-lib                                                                                                   |
