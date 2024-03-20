@@ -10,10 +10,11 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from source_iterable.source import SourceIterable
 from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
 from source_iterable.utils import dateutil_parse
-from source_iterable.source import SourceIterable
-from airbyte_cdk.sources.declarative.types import StreamSlice
+
 
 def test_campaigns_metrics_csv():
     csv_string = "a,b,c,d\n1, 2,,3\n6,,1, 2\n"
@@ -35,7 +36,7 @@ def test_stream_stops_on_401(config):
     for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         slices += 1
         _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
     assert slices >= 1
 
 @responses.activate

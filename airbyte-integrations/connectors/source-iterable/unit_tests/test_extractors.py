@@ -2,11 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
-from unittest.mock import Mock
 import json
 from io import StringIO
-from source_iterable.components import ListUsersRecordExtractor, XJsonRecordExtractor, EventsRecordExtractor  # Import your module containing the classes
+from unittest.mock import Mock
+
+import pytest
+from source_iterable.components import (  # Import your module containing the classes
+    EventsRecordExtractor,
+    ListUsersRecordExtractor,
+    XJsonRecordExtractor,
+)
+
 
 @pytest.fixture
 def mock_response():

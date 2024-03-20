@@ -3,10 +3,11 @@
 #
 
 import json
+
+import pendulum
 import pytest
 import requests
 import responses
-import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_iterable.source import SourceIterable
