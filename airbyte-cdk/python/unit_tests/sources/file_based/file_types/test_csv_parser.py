@@ -504,7 +504,7 @@ class CsvReaderTest(unittest.TestCase):
 
     def test_parse_field_size_larger_than_default_python_maximum(self) -> None:
         # The field size for the csv module will be set as a side-effect of initializing the CsvParser class.
-        assert csv.field_size_limit() == sys.maxsize
+        assert csv.field_size_limit() == 2**31
         long_string = 130 * 1024 * "a"
         assert len(long_string.encode("utf-8")) > (128 * 1024)
         self._stream_reader.open_file.return_value = (
