@@ -16,6 +16,9 @@
       "type": [
         "string", "integer"
       ]
+    },
+    "knoetic_table_name": {
+      "type": [ "string"]
     }
   }
 }

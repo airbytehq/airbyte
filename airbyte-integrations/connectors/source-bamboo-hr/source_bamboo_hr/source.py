@@ -53,8 +53,6 @@ class BambooHrStream(HttpStream, ABC):
 
 
 class MetaTablesStream(BambooHrStream):
-    """.bumpversion.cfg"""
-
     primary_key = None
 
     def path(self, **kwargs) -> str:
@@ -76,6 +74,21 @@ class BambooMetaField(NamedTuple):
     alias: Optional[str] = None
     deprecated: Optional[bool] = None
 
+class BambooMetaTableField(NamedTuple):
+    """Immutable typed representation of the field data returned from the meta/tables
+    endpoint."""
+    id: int
+    name: str
+    alias: str
+    type: str
+
+class BambooMetaTable(NamedTuple):
+    """Immutable typed representation of what is returned from the meta/tables
+    endpoint."""
+
+    alias: str
+    fields: List[BambooMetaTableField]
+
 
 class MetaFieldsStream(BambooHrStream):
     primary_key = None
@@ -88,13 +101,59 @@ class MetaFieldsStream(BambooHrStream):
     ) -> Iterable[Mapping]:
         yield from response.json()
 
-
 class TablesStream(BambooHrStream):
     primary_key = None
     raise_on_http_errors = False
     skip_http_status_codes = [
         requests.codes.NOT_FOUND,
     ]
+
+    def _convert_raw_meta_table_to_typed(raw_meta_table: Mapping[str,Any]) -> BambooMetaTable:
+        return BambooMetaTable(
+            alias=raw_meta_table.get("alias"),
+            fields=[
+                BambooMetaTableField(**field) for field in raw_meta_table.get("fields")
+            ],
+        )
+
+    # def get_json_schema(self) -> Mapping[str, Any]:
+    #     """
+    #         1. Get access to the available tables.
+    #         2. Construct the Json Schema from the available tables.
+    #            Essentially, 
+    #     """
+
+    #     available_tables = self.config.get("available_tables")
+    #     typed_available_tables = map(self._convert_raw_meta_table_to_typed, available_tables)
+
+    #     if self._schema is None:
+    #         available_tables = self.config.get("available_tables")
+    #         schema = {
+    #             "type": "object",
+    #             "properties": {
+    #                 "knoetic_table_name": {"type": "string"},
+    #             },
+    #         }
+
+    #         for table in typed_available_tables:
+    #             table_name = table.get("alias")
+    #             fields = table.get("fields")
+    #             schema["properties"][table_name] = {
+    #                 "type": "object",
+    #                 "properties": {
+    #                     "knoetic_table_name": {"type": "string"},
+    #                 },
+    #             }
+    #             for field in fields:
+    #                 field_name = field.get("alias")
+    #                 field_type = field.get("type")
+    #                 schema["properties"][table_name]["properties"][field_name] = {
+    #                     "type": field_type
+    #                 }
+
+    #         self._schema = schema
+
+    #     return self._schema
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -111,22 +170,19 @@ class TablesStream(BambooHrStream):
         target_table = stream_slice["table"]
         return f"employees/all/tables/{target_table}"
 
-    # def get_json_schema(self) -> Mapping[str, Any]:
-    #     _schema = super().get_json_schema()
-    #     self.logger.info(f"Stream `{self.name}`. Schema: {_schema}")
-    #     return _schema
-
     def parse_response(
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
         **kwargs,
     ) -> Iterable[Mapping]:
+        table_name = stream_slice["table"]
         try:
             # This will raise an exception if the response is not 2xx
             response.raise_for_status()
             # If we're here, no issue.
-            yield from response.json()
+            yield from (dict(record, **{"knoetic_table_name": table_name}) for record in response.json())
         except HTTPError as e:
             # If it's one of the status codes we're skipping, log a warning.
             # Otherwise, raise the exception.
@@ -147,12 +203,12 @@ class TablesStream(BambooHrStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        table_name = stream_slice["table"]
+        # table_name = stream_slice["table"]
         for record in super().read_records(
             sync_mode, cursor_field, stream_slice, stream_state
         ):
-            # Augment the record with the table name.
-            record["knoetic_table_name"] = table_name
+            # # Augment the record with the table name.
+            # record["knoetic_table_name"] = table_name
             yield record
 
 
