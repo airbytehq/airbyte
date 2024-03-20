@@ -135,10 +135,11 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Unshipped Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
 - [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
+- [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
-- [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 
 ## Report options
 
@@ -148,6 +149,9 @@ For the full list, refer to Amazon’s report type values [documentation](https:
 Certain report types have required parameters that must be defined.
 For `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL` and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams maximum value for `period_in_days` 30 days and 60 days.
 So, for any value that exceeds the limit, the `period_in_days` will be automatically reduced to the limit for the stream.
+
+For the Vendor Forecasting Report, we have two streams - `GET_VENDOR_FORECASTING_FRESH_REPORT` and `GET_VENDOR_FORECASTING_RETAIL_REPORT` which use the same `GET_VENDOR_FORECASTING_REPORT` Amazon's report,
+but with different options for the `sellingProgram` parameter - `FRESH` and `RETAIL` respectively.
 
 ## Performance considerations
 
@@ -168,6 +172,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version  | Date       | Pull Request                                                | Subject                                                                                                                                                                             |
 |:---------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `4.1.0`  | 2024-03-12 | [\#35954](https://github.com/airbytehq/airbyte/pull/35954)  | Add `GET_VENDOR_FORECASTING_FRESH_REPORT` and `GET_VENDOR_FORECASTING_RETAIL_REPORT` streams                                                                                        |
 | `4.0.0`  | 2024-02-23 | [\#35439](https://github.com/airbytehq/airbyte/pull/35439)  | Update schema for the `GET_FBA_STORAGE_FEE_CHARGES_DATA` stream                                                                                                                     |
 | `3.5.0`  | 2024-02-09 | [\#35331](https://github.com/airbytehq/airbyte/pull/35331)  | Fix check for Vendor accounts. Add failed report result message                                                                                                                     |
 | `3.4.0`  | 2024-02-15 | [\#35273](https://github.com/airbytehq/airbyte/pull/35273)  | Add `VendorOrders` stream                                                                                                                                                           |

@@ -4,8 +4,6 @@ This package has two main purposes:
 * Running QA checks on connectors.
 * Generating the QA checks documentation that are run on connectors.
 
-
-
 ## Usage
 
 ### Install
@@ -16,9 +14,7 @@ pipx install .
 
 This will make `connectors-qa` available in your `PATH`.
 
-
 Feel free to run `connectors-qa --help` to see the available commands and options.
-
 
 ### Examples
 

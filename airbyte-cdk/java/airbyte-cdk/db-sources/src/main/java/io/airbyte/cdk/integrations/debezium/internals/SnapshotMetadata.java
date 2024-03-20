@@ -16,7 +16,8 @@ public enum SnapshotMetadata {
   LAST_IN_DATA_COLLECTION,
   TRUE,
   LAST,
-  FALSE;
+  FALSE,
+  NULL;
 
   private static final Set<SnapshotMetadata> ENTRIES_OF_SNAPSHOT_EVENTS =
       ImmutableSet.of(TRUE, FIRST, FIRST_IN_DATA_COLLECTION, LAST_IN_DATA_COLLECTION);
@@ -35,6 +36,8 @@ public enum SnapshotMetadata {
     STRING_TO_ENUM.put("LAST_IN_DATA_COLLECTION", LAST_IN_DATA_COLLECTION);
     STRING_TO_ENUM.put("first_in_data_collection", FIRST_IN_DATA_COLLECTION);
     STRING_TO_ENUM.put("FIRST_IN_DATA_COLLECTION", FIRST_IN_DATA_COLLECTION);
+    STRING_TO_ENUM.put("NULL", NULL);
+    STRING_TO_ENUM.put("null", NULL);
   }
 
   public static SnapshotMetadata fromString(final String value) {

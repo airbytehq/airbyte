@@ -177,7 +177,9 @@ class EventsTest(TestCase):
             .with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2020-06-09T10:00:00Z"}})
             .build(),
         )
-        assert actual_messages.state_messages[0].state.data == {'events': {'airbytehq/integration-test': {'created_at': '2022-06-09T12:47:28Z'}}}
+        assert actual_messages.state_messages[0].state.stream.stream_state == {
+            "airbytehq/integration-test": {"created_at": "2022-06-09T12:47:28Z"}
+        }
 
     def test_read_handles_expected_error_correctly_and_exits_with_complete_status(self):
         """Ensure read() method does not raise an Exception and log message with error is in output"""
@@ -193,5 +195,5 @@ class EventsTest(TestCase):
 
         assert Level.ERROR in [x.log.level for x in actual_messages.logs]
         events_stream_complete_message = [x for x in actual_messages.trace_messages if x.trace.type == TraceType.STREAM_STATUS][-1]
-        assert events_stream_complete_message.trace.stream_status.stream_descriptor.name == 'events'
+        assert events_stream_complete_message.trace.stream_status.stream_descriptor.name == "events"
         assert events_stream_complete_message.trace.stream_status.status == AirbyteStreamStatus.COMPLETE

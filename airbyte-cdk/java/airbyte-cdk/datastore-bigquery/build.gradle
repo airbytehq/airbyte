@@ -4,4 +4,5 @@ dependencies {
 
     api 'com.google.cloud:google-cloud-bigquery:2.37.0'
 
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
 }
