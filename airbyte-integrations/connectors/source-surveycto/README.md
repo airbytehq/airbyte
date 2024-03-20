@@ -98,7 +98,7 @@ docker build -t airbyte/source-surveycto:dev .
 
 #### Run
 
-Then run any of the connector commands as follows:
+Then run any of the connector commands as follows below:
 
 ```
 docker run --rm airbyte/source-surveycto:dev spec
