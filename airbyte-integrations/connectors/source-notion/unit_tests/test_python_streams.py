@@ -2,22 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import freezegun
-from http import HTTPStatus
 import logging
-import pytest
-from pytest import fixture, mark
 import re
-import requests
 import time
+from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
+import freezegun
+import pytest
+import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
-from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from pytest import fixture, mark
 from source_notion.source import SourceNotion
-
+from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
 
 
 @pytest.fixture
