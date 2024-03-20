@@ -11,17 +11,16 @@ The spec operation is not supported because the config is not known when running
 
 #### Building
 
-You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
-
-To build using Gradle, from the Airbyte repository root, run:
-
-```
-./gradlew airbyte-cdk:python:build
+When running a connector locally, you will need to make sure that the CDK generated artifacts are built. Run
+```bash
+# from airbyte-cdk/python
+poetry run poe build
 ```
 
 ### Locally running the connector
 
-```
+```bash
+# TODO probably wrong
 python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
 python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
@@ -32,11 +31,10 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 
 First, make sure you build the latest Docker image:
+```bash
+# from airbyte-cdk/python
+docker build -t airbyte/source-declarative-manifest:dev .
 ```
-./gradlew airbyte-cdk:python:airbyteDocker
-```
-
-The docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in the Dockerfile.
 
 #### Run
 
