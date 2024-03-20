@@ -185,7 +185,8 @@ class TablesStream(BambooHrStream):
             new_record = (dict(record, **{"knoetic_table_name": table_name}) for record in response.json())
             for record in new_record:
                 print("New record: ", record)
-            yield from new_record
+                yield record
+            # yield from new_record
         except HTTPError as e:
             # If it's one of the status codes we're skipping, log a warning.
             # Otherwise, raise the exception.
@@ -324,7 +325,7 @@ class SourceBambooHr(AbstractSource):
             MetaTablesStream(config).read_records(sync_mode=SyncMode.full_refresh)
         )
 
-        print("Current version: 1")
+        print("Current version: 3")
 
         config["available_fields"] = available_fields
         config["available_tables"] = available_tables
