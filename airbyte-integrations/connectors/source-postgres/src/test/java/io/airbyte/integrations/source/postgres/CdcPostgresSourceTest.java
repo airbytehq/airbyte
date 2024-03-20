@@ -9,6 +9,8 @@ import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYN
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_LSN;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.FAIL_SYNC_OPTION;
+import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.USE_TEST_CHUNK_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,6 +66,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,6 +80,13 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   protected void setBaseImage() {
     this.postgresImage = getServerImage();
+  }
+
+  @Override
+  protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
+    AtomicLong count = new AtomicLong(0L);
+    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    assertEquals(totalCount, count.get());
   }
 
   @Override
@@ -95,7 +105,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     return testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
         .withoutSsl()
-        .withCdcReplication("After loading Data in the destination")
+        .withCdcReplication("After loading Data in the destination", RESYNC_DATA_OPTION)
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .with("heartbeat_action_query", "")
         .build();
@@ -122,7 +132,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final JsonNode invalidDebugConfig = testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
         .withoutSsl()
-        .withCdcReplication("While reading Data")
+        .withCdcReplication("While reading Data", RESYNC_DATA_OPTION)
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .with("debug_mode", true)
         .build();
@@ -605,6 +615,47 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Test
+  void testSyncShouldFailPurgedLogs() throws Exception {
+    final int recordsToCreate = 20;
+
+    final JsonNode config = testdb.testConfigBuilder()
+        .withSchemas(modelsSchema(), modelsSchema() + "_random")
+        .withoutSsl()
+        .withCdcReplication("While reading Data", FAIL_SYNC_OPTION)
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .build();
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
+        .read(config, getConfiguredCatalog(), null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+    assertExpectedStateMessages(stateAfterFirstBatch);
+    // second batch of records again 20 being created
+    bulkInsertRecords(recordsToCreate);
+
+    // Extract the last state message
+    final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source()
+        .read(config, getConfiguredCatalog(), state);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch);
+
+    for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "H-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    // Triggering sync with the first sync's state only which would mimic a scenario that the second
+    // sync failed on destination end, and we didn't save state
+    assertThrows(ConfigErrorException.class, () -> source().read(config, getConfiguredCatalog(), state));
+  }
+
+  @Test
   protected void syncShouldHandlePurgedLogsGracefully() throws Exception {
 
     final int recordsToCreate = 20;
@@ -820,9 +871,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    if (!isOnLegacyPostgres()) {
-      assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    }
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
+    // lsn_commit only increases with a new transaction, we expect only one state message.
+    assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
@@ -861,9 +913,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    if (!isOnLegacyPostgres()) {
-      assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    }
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
+    // lsn_commit only increases with a new transaction, we expect only one state message.
+    assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 

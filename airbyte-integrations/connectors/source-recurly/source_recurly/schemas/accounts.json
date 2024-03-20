@@ -6,6 +6,12 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "hosted_login_token": {
+      "type": ["null", "string"]
+    },
     "code": {
       "type": ["null", "string"],
       "maxLength": 256
@@ -101,11 +107,18 @@
           "title": "Country",
           "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
           "maxLength": 2
+        },
+        "geo_code": {
+          "type": ["null", "string"]
         }
       }
     },
     "custom_fields": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     },
     "has_live_subscription": {
       "type": ["null", "boolean"]
@@ -140,6 +153,30 @@
     "deleted_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "billing_info": {
+      "$ref": "billing_infos.json"
+    },
+    "external_accounts": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "external_accounts.json"
+      }
+    },
+    "invoice_template_id": {
+      "type": ["null", "string"]
+    },
+    "override_business_entity_id": {
+      "type": ["null", "string"]
+    },
+    "preferred_time_zone": {
+      "type": ["null", "string"]
+    },
+    "shipping_addresses": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "shipping_addresses.json"
+      }
     }
   }
 }

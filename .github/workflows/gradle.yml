@@ -20,47 +20,44 @@ on:
       - synchronize
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      java: ${{ steps.changes.outputs.java }}
+
+    steps:
+      - name: Checkout Airbyte
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v3
+      - id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            java:
+              - '**/*.java'
+              - '**/*.gradle'
+              - '**/*.kt'
+              - 'airbyte-cdk/java/**/*'
+
   run-check:
-    # The gradle check task which we will run is embarrassingly parallelizable.
-    # We therefore run this on a machine with a maximum number of cores.
-    # We pay per time and per core, so there should be little difference in total cost.
-    # The latency overhead of setting up gradle prior to running the actual task adds up to about a minute.
-    runs-on: connector-test-xxlarge
+    needs:
+      - changes
+    if: needs.changes.outputs.java == 'true'
+    # As of now, 16 cores seems to be enough.
+    # Any revision upwards should be based on a performance analysis of gradle scans.
+    # See https://github.com/airbytehq/airbyte/pull/36055 for an example of this,
+    # which explains why which we went down from 64 cores to 16.
+    runs-on: connector-test-large
     name: Gradle Check
     timeout-minutes: 30
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-      # IMPORTANT! This is necessary to make sure that a status is reported on the PR
-      # even if the workflow is skipped. If we used github actions filters, the workflow
-      # would not be reported as skipped, but instead would be forever pending.
-      #
-      # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
-      #
-      # Also it gets worse
-      #
-      # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
-      # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
-      - name: Get changed files
-        uses: tj-actions/changed-files@v39
-        id: changes
-        with:
-          files_yaml: |
-            gradlecheck:
-              - '**/*'
-              - '!**/*.md'
-              - '!.github/*'
-
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
           java-version: "21"
-      - name: Install Pip
-        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
-        run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
-      - name: Install Pyenv
-        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
-        run: python3 -m pip install virtualenv --user
       - name: Docker login
         # Some tests use testcontainers which pull images from DockerHub.
         uses: docker/login-action@v1
@@ -68,14 +65,16 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Run Gradle Check
-        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
         with:
+          job-id: gradle-check
           read-only: ${{ github.ref != 'refs/heads/master' }}
+          gradle-distribution-sha-256-sum-warning: false
+          concurrent: true
           # TODO: be able to remove the skipSlowTests property
-          arguments: --scan --no-daemon --no-watch-fs check -DskipSlowTests=true
+          arguments: --scan check -DskipSlowTests=true
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure

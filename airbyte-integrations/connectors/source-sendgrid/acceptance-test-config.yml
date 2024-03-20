@@ -26,9 +26,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         empty_streams:
           - name: spam_reports
             bypass_reason: "can not populate"
@@ -36,12 +34,6 @@ acceptance_tests:
             bypass_reason: "can not populate"
           - name: blocks
             bypass_reason: "can not populate"
-        ignored_fields:
-          segments:
-            - name: sample_updated_at
-              bypass_reason: "depend on current date"
-            - name: next_sample_update
-              bypass_reason: "depend on current date"
         fail_on_extra_columns: false
   incremental:
     tests:

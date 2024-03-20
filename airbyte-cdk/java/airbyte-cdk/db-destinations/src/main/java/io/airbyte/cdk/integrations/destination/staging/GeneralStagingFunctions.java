@@ -5,14 +5,17 @@
 package io.airbyte.cdk.integrations.destination.staging;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +42,10 @@ public class GeneralStagingFunctions {
                                                 final TyperDeduper typerDeduper) {
     return () -> {
       log.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
-      typerDeduper.prepareTables();
+
+      typerDeduper.prepareSchemasAndRunMigrations();
+
+      // Create raw tables
       final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
@@ -69,6 +75,9 @@ public class GeneralStagingFunctions {
 
         log.info("Preparing staging area in destination completed for schema {} stream {}", schema, stream);
       }
+
+      typerDeduper.prepareFinalTables();
+
       log.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
     };
@@ -120,6 +129,7 @@ public class GeneralStagingFunctions {
    * @param purgeStagingData drop staging area if true, keep otherwise
    * @return
    */
+  @SuppressWarnings("unchecked")
   public static OnCloseFunction onCloseFunction(final JdbcDatabase database,
                                                 final StagingOperations stagingOperations,
                                                 final List<WriteConfig> writeConfigs,
@@ -129,7 +139,7 @@ public class GeneralStagingFunctions {
       // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
       log.info("Cleaning up destination started for {} streams", writeConfigs.size());
-      typerDeduper.typeAndDedupe(streamSyncSummaries);
+      typerDeduper.typeAndDedupe((Map<StreamDescriptor, StreamSyncSummary>) streamSyncSummaries);
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {

@@ -67,7 +67,6 @@ Repositories with the wrong name or repositories that do not exist or have the w
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`,  `tags`,  `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
-9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5,000 requests per hour (15,000 for Github Enterprise). You can specify a lower value to limit your use of the API quota. Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
 
 <HideInUI>
 
@@ -207,6 +206,8 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.6.5   | 2024-03-12 | [35986](https://github.com/airbytehq/airbyte/pull/35986)                                                          | Handle rate limit exception as config error                                                                                                                         |
+| 1.6.4   | 2024-03-08 | [35915](https://github.com/airbytehq/airbyte/pull/35915)                                                          | Fix per stream error handler; Make use the latest CDK version                                                                                                       |
 | 1.6.3   | 2024-02-15 | [35271](https://github.com/airbytehq/airbyte/pull/35271)                                                          | Update branches schema                                                                                                                                              |
 | 1.6.2   | 2024-02-12 | [34933](https://github.com/airbytehq/airbyte/pull/34933)                                                          | Update Airbyte CDK for integration tests                                                                                                                            |
 | 1.6.1   | 2024-02-09 | [35087](https://github.com/airbytehq/airbyte/pull/35087)                                                          | Manage dependencies with Poetry.                                                                                                                                    |
