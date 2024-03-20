@@ -520,7 +520,6 @@ class CsvReaderTest(unittest.TestCase):
         data_generator = self._read_data()
         assert list(data_generator) == [{"header1": "1", "header2": long_string}]
 
-
     def _read_data(self) -> Generator[Dict[str, str], None, None]:
         data_generator = self._csv_reader.read_data(
             self._config,
