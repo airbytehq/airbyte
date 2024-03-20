@@ -74,9 +74,15 @@
         ]
       },
       "account_id": {
-        "description": "Adjust Account ID. Optional. Of not specified, all accounts will be queried.",
+        "description": "Adjust Account ID. Optional. If not specified, all accounts will be queried.",
         "order": 1,
         "title": "Account ID",
+        "type": "string"
+      },
+      "app_id": {
+        "description": "Adjust App ID. Optional, used for Cohort reports.",
+        "order": 2,
+        "title": "App ID",
         "type": "string"
       },
       "reports": {
@@ -371,6 +377,99 @@
             }
           }
         ]
+      },
+      "utc_offset": {
+        "title": "UTC Offset",
+        "description": "UTC offset in hours. Used to convert dates to UTC. For example, if your timezone is UTC+3, you should set this parameter to 3.",
+        "type": "integer",
+        "default": 0,
+        "minimum": -12,
+        "maximum": 12,
+        "order": 4
+      },
+      "cohorts_report_attribution_type": {
+        "title": "Cohorts Report Attribution Type",
+        "description": "Attribution type. See <a href=\"https://help.adjust.com/en/article/reports-endpoint#attribution-type\">https://help.adjust.com/en/article/reports-endpoint#attribution-type</a> for more information.",
+        "type": "string",
+        "enum": [
+          "click",
+          "impression",
+          "all"
+        ],
+        "default": "all",
+        "order": 5
+      },
+      "cohorts_report_kpis": {
+        "title": "Cohorts Report KPIs",
+        "description": "Cohorts report KPIs. See <a href=\"https://help.adjust.com/en/article/kpi-glossary-classic#app-metrics\">https://help.adjust.com/en/article/kpi-glossary-classic#app-metrics</a> for more information.",
+        "type": "array",
+        "default": [],
+        "items": {
+          "type": "string"
+        }
+      },
+      "cohorts_report_grouping": {
+        "title": "Cohorts Report Grouping Parameters",
+        "description": "Grouping parameters. See <a href=\"https://help.adjust.com/en/article/result-grouping\">https://help.adjust.com/en/article/result-grouping</a> for more information.",
+        "type": "array",
+        "default": [],
+        "items": {
+          "type": "string"
+        }
+      },
+      "event_metrics_report_attribution_type": {
+        "title": "Event Metrics Report Attribution Type",
+        "description": "Attribution type. See <a href=\"https://help.adjust.com/en/article/reports-endpoint#attribution-type\">https://help.adjust.com/en/article/reports-endpoint#attribution-type</a> for more information.",
+        "type": "string",
+        "enum": [
+          "click",
+          "impression",
+          "all"
+        ],
+        "default": "all",
+        "order": 5
+      },
+      "event_metrics_report_attribution_source": {
+        "title": "Event Metrics Report Attribution Source",
+        "description": "Attribution source. See <a href=\"https://help.adjust.com/ru/article/event-metrics-endpoints\">https://help.adjust.com/ru/article/event-metrics-endpoints</a> for more information.",
+        "type": "string",
+        "enum": [
+          "first",
+          "dynamic"
+        ],
+        "default": "dynamic",
+        "order": 6
+      },
+      "cohorts_report_attribution_source": {
+        "title": "Cohorts Report Attribution Source",
+        "description": "Attribution source. See <a href=\"https://help.adjust.com/ru/article/event-metrics-endpoints\">https://help.adjust.com/ru/article/event-metrics-endpoints</a> for more information.",
+        "type": "string",
+        "enum": [
+          "first",
+          "dynamic"
+        ],
+        "default": "dynamic",
+        "order": 6
+      },
+      "event_metrics_report_kpis": {
+        "title": "Event Metrics Report KPIs",
+        "description": "Event metrics report KPIs. See <a href=\"https://help.adjust.com/en/article/kpi-glossary-classic#event-metrics\">https://help.adjust.com/en/article/kpi-glossary-classic#event-metrics</a> for more information.",
+        "type": "array",
+        "default": [],
+        "items": {
+          "type": "string"
+        },
+        "order": 7
+      },
+      "event_metrics_report_grouping": {
+        "title": "Event Metrics Report Grouping Parameters",
+        "description": "Grouping parameters. See <a href=\"https://help.adjust.com/en/article/result-grouping\">https://help.adjust.com/en/article/result-grouping</a> for more information.",
+        "type": "array",
+        "default": [],
+        "items": {
+          "type": "string"
+        },
+        "order": 8
       }
     },
     "required": [

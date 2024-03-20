@@ -2,21 +2,31 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import csv
 import datetime
 import decimal
 import functools
+import logging
+import re
+from cgitb import reset
+from tracemalloc import start
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from urllib import response
 
 import requests
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .auth import AdjustAuthenticator, CredentialsCraftAuthenticator
 from .model import Report
+
+logger = logging.getLogger("airbyte")
 
 CONFIG_DATE_FORMAT = "%Y-%m-%d"
 
@@ -218,6 +228,257 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         return None
 
 
+class Events(HttpStream):
+    primary_key = "id"
+
+    def __init__(self, authenticator: AdjustAuthenticator):
+        super().__init__(authenticator)
+
+    @property
+    def url_base(self) -> str:
+        return "https://dash.adjust.com/control-center/reports-service/"
+
+    def path(self, *args, **kwargs) -> str:
+        return "events"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        yield from response.json()
+
+
+class Cohorts(HttpStream):
+    primary_key = ["tracker_token", "day"]
+    required_config_keys = ["app_id", "cohorts_report_kpis"]
+
+    def __init__(self, authenticator: AdjustAuthenticator, config: Mapping[str, Any]):
+        super().__init__(authenticator)
+        self.config = config
+        self._authenticator = authenticator
+
+    @property
+    def url_base(self) -> str:
+        return f"https://api.adjust.com/kpis/v1/{self.config.get('app_id')}/"
+
+    def path(self, *args, **kwargs) -> str:
+        return "cohorts"
+
+    def next_page_token(self, response: requests.Response) -> Mapping[str, Any]:
+        return None
+
+    def get_probe_data(self):
+        start_date = self.config["prepared_date_range"]["date_from"].date()
+        end_date = start_date + datetime.timedelta(days=1)
+        params = self.request_params({}, {}, {})
+        params["end_date"] = end_date
+        headers = {**self.request_headers({}, {}, {}), **self.authenticator.get_auth_header()}
+        r = requests.get(
+            url=self.url_base + self.path(),
+            headers=headers,
+            params=params,
+        )
+        r.raise_for_status()
+        yield from self.parse_response(r, stream_state={}, stream_slice={}, next_page_token={})
+
+    def request_headers(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers["Accept"] = "text/csv"
+        return headers
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        start_date = self.config["prepared_date_range"]["date_from"].date()
+        end_date = self.config["prepared_date_range"]["date_to"].date()
+
+        params = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "kpis": ",".join(self.config.get("cohorts_report_kpis")),
+            "period": "day",
+        }
+        if self.config.get("utc_offset"):
+            offset = self.config.get("utc_offset")
+            offset_marker = "+" if offset >= 0 else "-"
+            offset = abs(offset)
+            offset_formatted = f"{offset_marker}{offset:02d}:00"
+            params["utc_offset"] = offset_formatted
+        if self.config.get("cohorts_report_attribution_type"):
+            params["attribution_type"] = self.config["cohorts_report_attribution_type"]
+        if self.config.get("cohorts_report_attribution_source"):
+            params["attribution_source"] = self.config["cohorts_report_attribution_source"]
+        if self.config.get("cohorts_report_grouping"):
+            params["grouping"] = ",".join(self.config["cohorts_report_grouping"])
+        return params
+
+    @functools.lru_cache(maxsize=None)
+    def get_json_schema(self):
+        """
+        Prune the schema to only include selected fields to synchronize.
+        """
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("cohorts")
+        properties = schema["properties"]
+        probe_record = next(self.get_probe_data())
+        for attr in probe_record:
+            if attr not in self.config["cohorts_report_kpis"]:
+                properties[attr] = {"type": ["string", "null"]}
+            else:
+                properties[attr] = {"type": ["number", "null"]}
+
+        return schema
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        response.encoding = "utf-8-sig"
+        resp_data = response.text
+        reader = csv.DictReader(resp_data.splitlines())
+        for row in reader:
+            for key, value in row.items():
+                if key in self.config["cohorts_report_kpis"]:
+                    try:
+                        row[key] = float(value)
+                    except ValueError:
+                        row[key] = None
+            yield row
+
+
+class EventMetrics(HttpStream):
+    primary_key = "id"
+    required_config_keys = ["app_id", "event_metrics_report_kpis"]
+
+    def __init__(self, authenticator: AdjustAuthenticator, config: Mapping[str, Any]):
+        super().__init__(authenticator)
+        self.config = config
+
+    @property
+    def url_base(self) -> str:
+        return f"https://api.adjust.com/kpis/v1/{self.config.get('app_id')}/"
+
+    def path(self, *args, **kwargs) -> str:
+        return "events"
+
+    def next_page_token(self, response: requests.Response) -> Mapping[str, Any]:
+        return None
+
+    def request_headers(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers["Accept"] = "text/csv"
+        return headers
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        start_date = self.config["prepared_date_range"]["date_from"].date()
+        end_date = self.config["prepared_date_range"]["date_to"].date()
+        params = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "kpis": ",".join(self.config.get("event_metrics_report_kpis")),
+            "period": "day",
+        }
+        if self.config.get("utc_offset"):
+            offset = self.config.get("utc_offset")
+            offset_marker = "+" if offset >= 0 else "-"
+            offset = abs(offset)
+            offset_formatted = f"{offset_marker}{offset:02d}:00"
+            params["utc_offset"] = offset_formatted
+        if self.config.get("event_metrics_report_attribution_type"):
+            params["attribution_type"] = self.config["event_metrics_report_attribution_type"]
+        if self.config.get("event_metrics_report_attribution_source"):
+            params["attribution_source"] = self.config["event_metrics_report_attribution_source"]
+        if self.config.get("event_metrics_report_grouping"):
+            params["grouping"] = ",".join(self.config["event_metrics_report_grouping"])
+        return params
+
+    def get_probe_data(self):
+        start_date = self.config["prepared_date_range"]["date_from"].date()
+        end_date = start_date + datetime.timedelta(days=1)
+        params = self.request_params({}, {}, {})
+        params["end_date"] = end_date
+        headers = {**self.request_headers({}, {}, {}), **self.authenticator.get_auth_header()}
+        r = requests.get(
+            url=self.url_base + self.path(),
+            headers=headers,
+            params=params,
+        )
+        r.raise_for_status()
+        r.encoding = "utf-8-sig"
+        yield from self.parse_response(r, stream_state={}, stream_slice={}, next_page_token={})
+
+    @functools.lru_cache(maxsize=None)
+    def get_json_schema(self):
+        """
+        Prune the schema to only include selected fields to synchronize.
+        """
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("cohorts")
+        properties = schema["properties"]
+
+        for attr in self.config["event_metrics_report_kpis"]:
+            properties[attr] = {"type": "number"}
+
+        return schema
+
+    def request_headers(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers["Accept"] = "text/csv"
+        return headers
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        response.encoding = "utf-8-sig"
+        resp_data = response.text
+        reader = csv.DictReader(resp_data.splitlines())
+        for row in reader:
+            for key, value in row.items():
+                if key in self.config["event_metrics_report_kpis"]:
+                    try:
+                        row[key] = float(value)
+                    except ValueError:
+                        row[key] = None
+            yield row
+
+
 class SourceAdjust(AbstractSource):
     check_endpoint = "https://dash.adjust.com/control-center/reports-service/filters_data"
 
@@ -236,6 +497,12 @@ class SourceAdjust(AbstractSource):
             success, message = auth.check_connection()
             if not success:
                 return False, message
+
+        for stream in self.streams(config):
+            try:
+                stream.get_json_schema()
+            except Exception as e:
+                return False, f"Unable to fetch schema for stream {stream.name}: {e}"
 
         requests.get(
             url=self.check_endpoint,
@@ -311,7 +578,29 @@ class SourceAdjust(AbstractSource):
         """
         config = self.prepare_config_datetime(config)
         auth = self.get_authenticator(config)
-        self._streams = []
+        self._streams = [Events(authenticator=auth)]
+
+        cohorts_available = True
+        for field in Cohorts.required_config_keys:
+            if not config.get(field):
+                logger.warning(
+                    "Cohorts stream is not configured properly, missing %s",
+                    field,
+                )
+                cohorts_available = False
+        if cohorts_available:
+            self._streams.append(Cohorts(authenticator=auth, config=config))
+
+        event_metrics_available = True
+        for field in EventMetrics.required_config_keys:
+            if not config.get(field):
+                logger.warning(
+                    "Event Metrics stream is not configured properly, missing %s",
+                    field,
+                )
+                event_metrics_available = False
+        if event_metrics_available:
+            self._streams.append(EventMetrics(authenticator=auth, config=config))
         for report_config in config["reports"]:
             report_config: dict[str, Any] = report_config.copy()
             global_config = config.copy()

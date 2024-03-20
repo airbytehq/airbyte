@@ -4,43 +4,8 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "stream": {
-        "name": "report2",
-        "json_schema": {
-          "title": "Report",
-          "type": "object",
-          "properties": {
-            "clicks": {
-              "title": "Clicks",
-              "description": "Clicks",
-              "type": "integer"
-            },
-            "installs": {
-              "title": "Installs",
-              "description": "Installs",
-              "type": "integer"
-            },
-            "day": {
-              "title": "Day",
-              "description": "Date.",
-              "type": "string",
-              "format": "date"
-            },
-            "app": {
-              "title": "App",
-              "description": "Name of the app.",
-              "type": "string"
-            },
-            "network": {
-              "title": "Network",
-              "description": "The name of the advertising network.",
-              "type": "string"
-            }
-          },
-          "required": [
-            "day"
-          ],
-          "$schema": "http://json-schema.org/draft-07/schema#"
-        },
+        "name": "cohorts",
+        "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
           "incremental"
