@@ -74,6 +74,5 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         return str(cursor_field.eval(self._config))
 
     def _eval_partition_key(self) -> str:
-        # FIXME: maybe needs to be interpolated?
         partition_key = InterpolatedString.create(self._partition_router.parent_stream_configs[0].parent_key, parameters=self._parameters)
         return str(partition_key.eval(self._config))
