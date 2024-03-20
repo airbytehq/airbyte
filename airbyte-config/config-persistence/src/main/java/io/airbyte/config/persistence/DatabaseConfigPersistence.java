@@ -945,33 +945,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private void writeSourceOauthParameter(final List<SourceOAuthParameter> configs, String token, final DSLContext ctx) {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
     configs.forEach((sourceOAuthParameter) -> {
-      final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(ACTOR_OAUTH_PARAMETER)
-          .where(ACTOR_OAUTH_PARAMETER.ID.eq(sourceOAuthParameter.getOauthParameterId())));
-
-      if (isExistingConfig) {
-        ctx.update(ACTOR_OAUTH_PARAMETER)
-            .set(ACTOR_OAUTH_PARAMETER.ID, sourceOAuthParameter.getOauthParameterId())
-            .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, sourceOAuthParameter.getWorkspaceId())
-            .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, sourceOAuthParameter.getSourceDefinitionId())
-            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize("")))
-            .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.source)
-            .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
-            .where(ACTOR_OAUTH_PARAMETER.ID.eq(sourceOAuthParameter.getOauthParameterId()))
-            .execute();
-      } else {
-        ctx.insertInto(ACTOR_OAUTH_PARAMETER)
-            .set(ACTOR_OAUTH_PARAMETER.ID, sourceOAuthParameter.getOauthParameterId())
-            .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, sourceOAuthParameter.getWorkspaceId())
-            .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, sourceOAuthParameter.getSourceDefinitionId())
-            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize("")))
-            .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.source)
-            .set(ACTOR_OAUTH_PARAMETER.CREATED_AT, timestamp)
-            .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
-            .execute();
-      }
+      writeSourceOauthParameter(sourceOAuthParameter, ctx);
       try {
         DaspireOauthHttpUtil.writeDaspireOauthConfig(sourceOAuthParameter.getConfiguration(),
             sourceOAuthParameter.getSourceDefinitionId().toString(), token);
@@ -983,6 +958,34 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
+  private void writeSourceOauthParameter(final SourceOAuthParameter sourceOAuthParameter, final DSLContext ctx) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final boolean isExistingConfig = ctx.fetchExists(select()
+        .from(ACTOR_OAUTH_PARAMETER)
+        .where(ACTOR_OAUTH_PARAMETER.ID.eq(sourceOAuthParameter.getOauthParameterId())));
+    if (isExistingConfig) {
+      ctx.update(ACTOR_OAUTH_PARAMETER)
+          .set(ACTOR_OAUTH_PARAMETER.ID, sourceOAuthParameter.getOauthParameterId())
+          .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, sourceOAuthParameter.getWorkspaceId())
+          .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, sourceOAuthParameter.getSourceDefinitionId())
+          .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, (JSONB) null)
+          .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.source)
+          .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
+          .where(ACTOR_OAUTH_PARAMETER.ID.eq(sourceOAuthParameter.getOauthParameterId()))
+          .execute();
+    } else {
+      ctx.insertInto(ACTOR_OAUTH_PARAMETER)
+          .set(ACTOR_OAUTH_PARAMETER.ID, sourceOAuthParameter.getOauthParameterId())
+          .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, sourceOAuthParameter.getWorkspaceId())
+          .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, sourceOAuthParameter.getSourceDefinitionId())
+          .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, (JSONB) null)
+          .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.source)
+          .set(ACTOR_OAUTH_PARAMETER.CREATED_AT, timestamp)
+          .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
+          .execute();
+    }
+  }
+
   private void writeDestinationOauthParameter(final List<DestinationOAuthParameter> configs, String token) throws IOException {
     database.transaction(ctx -> {
       writeDestinationOauthParameter(configs, token, ctx);
@@ -991,34 +994,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   private void writeDestinationOauthParameter(final List<DestinationOAuthParameter> configs, String token, final DSLContext ctx) {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
     configs.forEach((destinationOAuthParameter) -> {
-      final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(ACTOR_OAUTH_PARAMETER)
-          .where(ACTOR_OAUTH_PARAMETER.ID.eq(destinationOAuthParameter.getOauthParameterId())));
-
-      if (isExistingConfig) {
-        ctx.update(ACTOR_OAUTH_PARAMETER)
-            .set(ACTOR_OAUTH_PARAMETER.ID, destinationOAuthParameter.getOauthParameterId())
-            .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, destinationOAuthParameter.getWorkspaceId())
-            .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, destinationOAuthParameter.getDestinationDefinitionId())
-            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize("")))
-            .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.destination)
-            .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
-            .where(ACTOR_OAUTH_PARAMETER.ID.eq(destinationOAuthParameter.getOauthParameterId()))
-            .execute();
-
-      } else {
-        ctx.insertInto(ACTOR_OAUTH_PARAMETER)
-            .set(ACTOR_OAUTH_PARAMETER.ID, destinationOAuthParameter.getOauthParameterId())
-            .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, destinationOAuthParameter.getWorkspaceId())
-            .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, destinationOAuthParameter.getDestinationDefinitionId())
-            .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, JSONB.valueOf(Jsons.serialize("")))
-            .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.destination)
-            .set(ACTOR_OAUTH_PARAMETER.CREATED_AT, timestamp)
-            .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
-            .execute();
-      }
+      writeDestinationOauthParameter(destinationOAuthParameter, ctx);
       try {
         DaspireOauthHttpUtil.writeDaspireOauthConfig(destinationOAuthParameter.getConfiguration(),
             destinationOAuthParameter.getDestinationDefinitionId().toString(), token);
@@ -1028,6 +1005,35 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .execute();
       }
     });
+  }
+
+  private void writeDestinationOauthParameter(final DestinationOAuthParameter destinationOAuthParameter, final DSLContext ctx) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final boolean isExistingConfig = ctx.fetchExists(select()
+        .from(ACTOR_OAUTH_PARAMETER)
+        .where(ACTOR_OAUTH_PARAMETER.ID.eq(destinationOAuthParameter.getOauthParameterId())));
+
+    if (isExistingConfig) {
+      ctx.update(ACTOR_OAUTH_PARAMETER)
+          .set(ACTOR_OAUTH_PARAMETER.ID, destinationOAuthParameter.getOauthParameterId())
+          .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, destinationOAuthParameter.getWorkspaceId())
+          .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, destinationOAuthParameter.getDestinationDefinitionId())
+          .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, (JSONB) null)
+          .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.destination)
+          .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
+          .where(ACTOR_OAUTH_PARAMETER.ID.eq(destinationOAuthParameter.getOauthParameterId()))
+          .execute();
+    } else {
+      ctx.insertInto(ACTOR_OAUTH_PARAMETER)
+          .set(ACTOR_OAUTH_PARAMETER.ID, destinationOAuthParameter.getOauthParameterId())
+          .set(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID, destinationOAuthParameter.getWorkspaceId())
+          .set(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID, destinationOAuthParameter.getDestinationDefinitionId())
+          .set(ACTOR_OAUTH_PARAMETER.CONFIGURATION, (JSONB) null)
+          .set(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE, ActorType.destination)
+          .set(ACTOR_OAUTH_PARAMETER.CREATED_AT, timestamp)
+          .set(ACTOR_OAUTH_PARAMETER.UPDATED_AT, timestamp)
+          .execute();
+    }
   }
 
   private void writeStandardSyncOperation(final List<StandardSyncOperation> configs) throws IOException {
@@ -1669,6 +1675,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       newConnectorCount += destinationConnectorCounter.newCount;
       updatedConnectorCount += destinationConnectorCounter.updateCount;
 
+      final List<SourceOAuthParameter> latestSourceOAuthParameters = seedConfigPersistence.listConfigs(
+          ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.class);
+      writeOauthParameter(ctx, ConfigSchema.SOURCE_OAUTH_PARAM, latestSourceOAuthParameters);
+
+      final List<DestinationOAuthParameter> latestDestinationOAuthParameter = seedConfigPersistence.listConfigs(
+          ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
+      writeOauthParameter(ctx, ConfigSchema.DESTINATION_OAUTH_PARAM, latestDestinationOAuthParameter);
+
       LOGGER.info("Connector definitions have been updated ({} new connectors, and {} updates)", newConnectorCount, updatedConnectorCount);
     } catch (final IOException | JsonValidationException e) {
       throw new SQLException(e);
@@ -1866,6 +1880,21 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     }
 
     return new ConnectorCounter(newCount, updatedCount);
+  }
+
+  <T> void writeOauthParameter(final DSLContext ctx, final AirbyteConfig configType, final List<T> latestOAuthData) {
+    for (final T data : latestOAuthData) {
+      final JsonNode latestOAuth = Jsons.jsonNode(data);
+      if (configType == ConfigSchema.SOURCE_OAUTH_PARAM) {
+        final SourceOAuthParameter sourceOAuth = Jsons.object(latestOAuth, SourceOAuthParameter.class);
+        writeSourceOauthParameter(sourceOAuth, ctx);
+      } else if (configType == ConfigSchema.DESTINATION_OAUTH_PARAM) {
+        final DestinationOAuthParameter destinationOAuth = Jsons.object(latestOAuth, DestinationOAuthParameter.class);
+        writeDestinationOauthParameter(destinationOAuth, ctx);
+      } else {
+        throw new IllegalArgumentException(UNKNOWN_CONFIG_TYPE + configType);
+      }
+    }
   }
 
   private void writeOrUpdateStandardDefinition(final DSLContext ctx,

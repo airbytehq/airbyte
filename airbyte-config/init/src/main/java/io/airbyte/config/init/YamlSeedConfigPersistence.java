@@ -40,7 +40,9 @@ final public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP = Map.of(
       ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,
-      ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION);
+      ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION,
+      ConfigSchema.SOURCE_OAUTH_PARAM, SeedType.SOURCE_OAUTH_PARAM,
+      ConfigSchema.DESTINATION_OAUTH_PARAM, SeedType.DESTINATION_OAUTH_PARAM);
 
   // A mapping from seed config type to config UUID to config.
   private ImmutableMap<SeedType, Map<String, JsonNode>> allSeedConfigs;
@@ -83,9 +85,16 @@ final public class YamlSeedConfigPersistence implements ConfigPersistence {
           return output;
         }));
 
+    final Map<String, JsonNode> sourceOAuthConfig = getConfigs(this.seedResourceClass, SeedType.SOURCE_OAUTH_PARAM);
+
+    final Map<String, JsonNode> destinationoauthConfig = getConfigs(this.seedResourceClass, SeedType.DESTINATION_OAUTH_PARAM);
+
     this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
         .put(SeedType.STANDARD_SOURCE_DEFINITION, fullSourceDefinitionConfigs)
-        .put(SeedType.STANDARD_DESTINATION_DEFINITION, fullDestinationDefinitionConfigs).build();
+        .put(SeedType.STANDARD_DESTINATION_DEFINITION, fullDestinationDefinitionConfigs)
+        .put(SeedType.SOURCE_OAUTH_PARAM, sourceOAuthConfig)
+        .put(SeedType.DESTINATION_OAUTH_PARAM, destinationoauthConfig).build();
+
   }
 
   /**
