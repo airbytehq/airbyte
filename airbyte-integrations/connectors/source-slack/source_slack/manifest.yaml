@@ -279,7 +279,7 @@ definitions:
       cursor_field: "float_ts"
       cursor_datetime_formats:
         - "%s"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -289,7 +289,7 @@ definitions:
         fields:
           - path:
               - float_ts
-            value: "{{ record['ts'] }}"
+            value: "{{ record['ts']|int }}"
           - path:
               - channel_id
             value: "{{ stream_slice['channel'] }}"
