@@ -21,6 +21,8 @@ import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
@@ -283,6 +285,11 @@ public abstract class AbstractJdbcDestination<DestinationState extends MinimumDe
     return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
+  protected StreamAwareDataTransformer getDataTransformer(final ParsedCatalog parsedCatalog,
+                                                          final String defaultNamespace) {
+    return new IdentityDataTransformer();
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -296,36 +303,29 @@ public abstract class AbstractJdbcDestination<DestinationState extends MinimumDe
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final JdbcDatabase database = getDatabase(getDataSource(config));
-    final String defaultNamespace;
-    final TyperDeduper typerDeduper;
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      defaultNamespace = config.get(getConfigSchemaKey()).asText();
-      addDefaultNamespaceToStreams(catalog, defaultNamespace);
-      typerDeduper = getV2TyperDeduper(config, catalog, database);
-    } else {
-      defaultNamespace = null;
-      typerDeduper = new NoopTyperDeduper();
+    // Short circuit for non-v2 destinations.
+    if (!TypingAndDedupingFlag.isDestinationV2()) {
+      return JdbcBufferedConsumerFactory.createAsync(
+          outputRecordCollector,
+          database,
+          sqlOperations,
+          namingResolver,
+          config,
+          catalog,
+          null,
+          new NoopTyperDeduper());
     }
-    return JdbcBufferedConsumerFactory.createAsync(
-        outputRecordCollector,
-        database,
-        sqlOperations,
-        namingResolver,
-        config,
-        catalog,
-        defaultNamespace,
-        typerDeduper);
+
+    final String defaultNamespace = config.get(getConfigSchemaKey()).asText();
+    addDefaultNamespaceToStreams(catalog, defaultNamespace);
+    return getV2MessageConsumer(config, catalog, outputRecordCollector, database, defaultNamespace);
   }
 
-  /**
-   * Creates the appropriate TyperDeduper class for the jdbc destination and the user's configuration
-   *
-   * @param config the configuration for the connection
-   * @param catalog the catalog for the connection
-   * @param database a database instance
-   * @return the appropriate TyperDeduper instance for this connection.
-   */
-  private TyperDeduper getV2TyperDeduper(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JdbcDatabase database) {
+  private SerializedAirbyteMessageConsumer getV2MessageConsumer(final JsonNode config,
+                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                                                final JdbcDatabase database,
+                                                                final String defaultNamespace) {
     final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
     Optional<String> rawNamespaceOverride = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE);
     final ParsedCatalog parsedCatalog = rawNamespaceOverride
@@ -346,7 +346,17 @@ public abstract class AbstractJdbcDestination<DestinationState extends MinimumDe
       typerDeduper =
           new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, v2TableMigrator, migrations);
     }
-    return typerDeduper;
+
+    return JdbcBufferedConsumerFactory.createAsync(
+        outputRecordCollector,
+        database,
+        sqlOperations,
+        namingResolver,
+        config,
+        catalog,
+        defaultNamespace,
+        typerDeduper,
+        getDataTransformer(parsedCatalog, defaultNamespace));
   }
 
 }
