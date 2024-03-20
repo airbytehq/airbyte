@@ -8,16 +8,13 @@ import com.google.common.annotations.VisibleForTesting
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-/**
- * Singleton of destination config for easy lookup of values.
- */
+/** Singleton of destination config for easy lookup of values. */
 class DestinationConfig private constructor() {
     // whether the destination fully supports Destinations V2
     var isV2Destination: Boolean = false
         private set
 
-    @VisibleForTesting
-    protected var root: JsonNode? = null
+    @VisibleForTesting var root: JsonNode? = null
 
     fun getNodeValue(key: String?): JsonNode? {
         val node = config!!.root!![key]

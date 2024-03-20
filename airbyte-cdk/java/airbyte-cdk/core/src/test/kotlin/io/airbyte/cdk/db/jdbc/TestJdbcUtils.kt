@@ -306,7 +306,7 @@ internal class TestJdbcUtils {
         "'1.79E+3', 1790"
     )
     @Throws(SQLException::class)
-    fun testSetStatementSpecialValues(colValue: String?, value: Long) {
+    fun testSetStatementSpecialValues(colValue: String, value: Long) {
         dataSource!!.connection.use { connection ->
             createTableWithAllTypes(connection)
             val ps = connection.prepareStatement("INSERT INTO data(bigint) VALUES(?);")

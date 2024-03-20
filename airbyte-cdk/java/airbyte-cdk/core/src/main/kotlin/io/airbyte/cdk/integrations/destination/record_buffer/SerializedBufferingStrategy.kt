@@ -7,19 +7,16 @@ import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import java.util.*
 import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 
 /**
  * Buffering Strategy used to convert [io.airbyte.protocol.models.AirbyteRecordMessage] into a
  * stream of bytes to more readily save and transmit information
  *
- *
- *
  * This class is meant to be used in conjunction with [SerializableBuffer]
- *
  */
 class SerializedBufferingStrategy
 /**
@@ -29,10 +26,14 @@ class SerializedBufferingStrategy
  * @param onCreateBuffer type of buffer used upon creation
  * @param catalog collection of [io.airbyte.protocol.models.ConfiguredAirbyteStream]
  * @param onStreamFlush buffer flush logic used throughout the streaming of messages
- */(private val onCreateBuffer: BufferCreateFunction,
+ */
+(
+    private val onCreateBuffer: BufferCreateFunction,
     private val catalog: ConfiguredAirbyteCatalog,
-    private val onStreamFlush: FlushBufferFunction) : BufferingStrategy {
-    private var allBuffers: MutableMap<AirbyteStreamNameNamespacePair, SerializableBuffer> = HashMap()
+    private val onStreamFlush: FlushBufferFunction
+) : BufferingStrategy {
+    private var allBuffers: MutableMap<AirbyteStreamNameNamespacePair, SerializableBuffer> =
+        HashMap()
     private var totalBufferSizeInBytes: Long = 0
 
     /**
@@ -43,36 +44,49 @@ class SerializedBufferingStrategy
      * @return Optional which contains a [BufferFlushType] if a flush occurred, otherwise empty)
      */
     @Throws(Exception::class)
-    override fun addRecord(stream: AirbyteStreamNameNamespacePair, message: AirbyteMessage): Optional<BufferFlushType?> {
-        var flushed: Optional<BufferFlushType?> = Optional.empty()
+    override fun addRecord(
+        stream: AirbyteStreamNameNamespacePair,
+        message: AirbyteMessage
+    ): Optional<BufferFlushType> {
+        var flushed: Optional<BufferFlushType> = Optional.empty()
 
-        val buffer = getOrCreateBuffer(stream)
-                ?: throw RuntimeException(String.format("Failed to create/get buffer for stream %s.%s", stream.namespace, stream.name))
+        val buffer =
+            getOrCreateBuffer(stream)
+                ?: throw RuntimeException(
+                    String.format(
+                        "Failed to create/get buffer for stream %s.%s",
+                        stream.namespace,
+                        stream.name
+                    )
+                )
 
         val actualMessageSizeInBytes = buffer.accept(message.record)
         totalBufferSizeInBytes += actualMessageSizeInBytes
-        // Flushes buffer when either the buffer was completely filled or only a single stream was filled
-        if (totalBufferSizeInBytes >= buffer.maxTotalBufferSizeInBytes
-                || allBuffers.size >= buffer.maxConcurrentStreamsInBuffer) {
+        // Flushes buffer when either the buffer was completely filled or only a single stream was
+        // filled
+        if (
+            totalBufferSizeInBytes >= buffer.maxTotalBufferSizeInBytes ||
+                allBuffers.size >= buffer.maxConcurrentStreamsInBuffer
+        ) {
             flushAllBuffers()
             flushed = Optional.of(BufferFlushType.FLUSH_ALL)
         } else if (buffer.byteCount >= buffer.maxPerStreamBufferSizeInBytes) {
             flushSingleBuffer(stream, buffer)
             /*
-       * Note: This branch is needed to indicate to the {@link DefaultDestStateLifeCycleManager} that an
-       * individual stream was flushed, there is no guarantee that it will flush records in the same order
-       * that state messages were received. The outcome here is that records get flushed but our updating
-       * of which state messages have been flushed falls behind.
-       *
-       * This is not ideal from a checkpoint point of view, because it means in the case where there is a
-       * failure, we will not be able to report that those records that were flushed and committed were
-       * committed because there corresponding state messages weren't marked as flushed. Thus, it weakens
-       * checkpointing, but it does not cause a correctness issue.
-       *
-       * In non-failure cases, using this conditional branch relies on the state messages getting flushed
-       * by some other means. That can be caused by the previous branch in this conditional. It is
-       * guaranteed by the fact that we always flush all state messages at the end of a sync.
-       */
+             * Note: This branch is needed to indicate to the {@link DefaultDestStateLifeCycleManager} that an
+             * individual stream was flushed, there is no guarantee that it will flush records in the same order
+             * that state messages were received. The outcome here is that records get flushed but our updating
+             * of which state messages have been flushed falls behind.
+             *
+             * This is not ideal from a checkpoint point of view, because it means in the case where there is a
+             * failure, we will not be able to report that those records that were flushed and committed were
+             * committed because there corresponding state messages weren't marked as flushed. Thus, it weakens
+             * checkpointing, but it does not cause a correctness issue.
+             *
+             * In non-failure cases, using this conditional branch relies on the state messages getting flushed
+             * by some other means. That can be caused by the previous branch in this conditional. It is
+             * guaranteed by the fact that we always flush all state messages at the end of a sync.
+             */
             flushed = Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM)
         }
         return flushed
@@ -84,12 +98,14 @@ class SerializedBufferingStrategy
      */
     private fun getOrCreateBuffer(stream: AirbyteStreamNameNamespacePair): SerializableBuffer {
         return allBuffers.computeIfAbsent(stream) { k: AirbyteStreamNameNamespacePair? ->
-            LOGGER.info("Starting a new buffer for stream {} (current state: {} in {} buffers)",
-                    stream.name,
-                    FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes),
-                    allBuffers.size)
+            LOGGER.info(
+                "Starting a new buffer for stream {} (current state: {} in {} buffers)",
+                stream.name,
+                FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes),
+                allBuffers.size
+            )
             try {
-                return@computeIfAbsent onCreateBuffer.apply(stream, catalog)
+                return@computeIfAbsent onCreateBuffer.apply(stream, catalog)!!
             } catch (e: Exception) {
                 LOGGER.error("Failed to create a new buffer for stream {}", stream.name, e)
                 throw RuntimeException(e)
@@ -98,8 +114,15 @@ class SerializedBufferingStrategy
     }
 
     @Throws(Exception::class)
-    override fun flushSingleBuffer(stream: AirbyteStreamNameNamespacePair, buffer: SerializableBuffer) {
-        LOGGER.info("Flushing buffer of stream {} ({})", stream.name, FileUtils.byteCountToDisplaySize(buffer.byteCount))
+    override fun flushSingleBuffer(
+        stream: AirbyteStreamNameNamespacePair,
+        buffer: SerializableBuffer
+    ) {
+        LOGGER.info(
+            "Flushing buffer of stream {} ({})",
+            stream.name,
+            FileUtils.byteCountToDisplaySize(buffer.byteCount)
+        )
         onStreamFlush.accept(stream, buffer)
         totalBufferSizeInBytes -= buffer.byteCount
         allBuffers.remove(stream)
@@ -108,9 +131,17 @@ class SerializedBufferingStrategy
 
     @Throws(Exception::class)
     override fun flushAllBuffers() {
-        LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size, FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes))
+        LOGGER.info(
+            "Flushing all {} current buffers ({} in total)",
+            allBuffers.size,
+            FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes)
+        )
         for ((stream, buffer) in allBuffers) {
-            LOGGER.info("Flushing buffer of stream {} ({})", stream.name, FileUtils.byteCountToDisplaySize(buffer.byteCount))
+            LOGGER.info(
+                "Flushing buffer of stream {} ({})",
+                stream.name,
+                FileUtils.byteCountToDisplaySize(buffer.byteCount)
+            )
             onStreamFlush.accept(stream, buffer)
             LOGGER.info("Flushing completed for {}", stream.name)
         }
@@ -138,10 +169,14 @@ class SerializedBufferingStrategy
             }
         }
 
-        ConnectorExceptionUtil.logAllAndThrowFirst("Exceptions thrown while closing buffers: ", exceptionsThrown)
+        ConnectorExceptionUtil.logAllAndThrowFirst(
+            "Exceptions thrown while closing buffers: ",
+            exceptionsThrown
+        )
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(SerializedBufferingStrategy::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(SerializedBufferingStrategy::class.java)
     }
 }

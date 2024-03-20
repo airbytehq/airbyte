@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -614,8 +615,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
                     consumer,
                     invalidNonStateMessage
                 )
-                Mockito.verify(consumer, Mockito.times(0))
-                    .accept(ArgumentMatchers.any(AirbyteMessage::class.java))
+                Mockito.verify(consumer, Mockito.times(0)).accept(any<AirbyteMessage>())
             }
         }
     }

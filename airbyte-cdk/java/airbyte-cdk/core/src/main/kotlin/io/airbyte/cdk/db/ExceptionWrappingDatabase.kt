@@ -6,9 +6,7 @@ package io.airbyte.cdk.db
 import java.io.*
 import java.sql.SQLException
 
-/**
- * Wraps a [Database] object and throwing IOExceptions instead of SQLExceptions.
- */
+/** Wraps a [Database] object and throwing IOExceptions instead of SQLExceptions. */
 class ExceptionWrappingDatabase(private val database: Database) {
     @Throws(IOException::class)
     fun <T> query(transform: ContextQueryFunction<T>): T? {

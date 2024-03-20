@@ -12,7 +12,6 @@ import java.sql.*
  * initializes the fetch size and sets up the estimator. 2. The config then accepts each row and
  * feeds it to the estimator. If the estimator has a new estimate, it updates the fetch size.
  */
-interface JdbcStreamingQueryConfig : CheckedBiConsumer<ResultSet?, Any?, SQLException?> {
-    @Throws(SQLException::class)
-    fun initialize(connection: Connection, statement: Statement)
+interface JdbcStreamingQueryConfig : CheckedBiConsumer<ResultSet, Any, SQLException> {
+    @Throws(SQLException::class) fun initialize(connection: Connection, statement: Statement)
 }

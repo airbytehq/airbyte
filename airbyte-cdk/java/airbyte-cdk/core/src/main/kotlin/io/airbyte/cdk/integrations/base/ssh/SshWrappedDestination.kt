@@ -17,10 +17,10 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.function.Consumer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Decorates a Destination with an SSH Tunnel using the standard configuration that Airbyte uses for
@@ -32,17 +32,14 @@ class SshWrappedDestination : Destination {
     private val portKey: List<String>?
     private val endPointKey: String?
 
-    constructor(delegate: Destination,
-                hostKey: List<String>?,
-                portKey: List<String>?) {
+    constructor(delegate: Destination, hostKey: List<String>?, portKey: List<String>?) {
         this.delegate = delegate
         this.hostKey = hostKey
         this.portKey = portKey
         this.endPointKey = null
     }
 
-    constructor(delegate: Destination,
-                endPointKey: String?) {
+    constructor(delegate: Destination, endPointKey: String?) {
         this.delegate = delegate
         this.endPointKey = endPointKey
         this.portKey = null
@@ -54,71 +51,120 @@ class SshWrappedDestination : Destination {
         // inject the standard ssh configuration into the spec.
         val originalSpec = delegate.spec()
         val propNode = originalSpec!!.connectionSpecification["properties"] as ObjectNode
-        propNode.set<JsonNode>("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")))
+        propNode.set<JsonNode>(
+            "tunnel_method",
+            Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json"))
+        )
         return originalSpec
     }
 
     @Throws(Exception::class)
     override fun check(config: JsonNode?): AirbyteConnectionStatus? {
         try {
-            return if ((endPointKey != null)) SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(config, endPointKey, CheckedFunction<JsonNode?, AirbyteConnectionStatus?, Exception?> { config: JsonNode? -> delegate.check(config) })
-            else SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(config, hostKey, portKey, CheckedFunction<JsonNode?, AirbyteConnectionStatus?, Exception?> { config: JsonNode? -> delegate.check(config) })
+            return if ((endPointKey != null))
+                SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
+                    config,
+                    endPointKey,
+                    CheckedFunction<JsonNode?, AirbyteConnectionStatus?, Exception?> {
+                        config: JsonNode? ->
+                        delegate.check(config)
+                    }
+                )
+            else
+                SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
+                    config,
+                    hostKey,
+                    portKey,
+                    CheckedFunction<JsonNode?, AirbyteConnectionStatus?, Exception?> {
+                        config: JsonNode? ->
+                        delegate.check(config)
+                    }
+                )
         } catch (e: RuntimeException) {
-            val sshErrorMessage = "Could not connect with provided SSH configuration. Error: " + e.message
+            val sshErrorMessage =
+                "Could not connect with provided SSH configuration. Error: " + e.message
             AirbyteTraceMessageUtility.emitConfigErrorTrace(e, sshErrorMessage)
             return AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage(sshErrorMessage)
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(sshErrorMessage)
         }
     }
 
     @Throws(Exception::class)
-    override fun getConsumer(config: JsonNode?,
-                             catalog: ConfiguredAirbyteCatalog?,
-                             outputRecordCollector: Consumer<AirbyteMessage?>?): AirbyteMessageConsumer? {
+    override fun getConsumer(
+        config: JsonNode?,
+        catalog: ConfiguredAirbyteCatalog?,
+        outputRecordCollector: Consumer<AirbyteMessage?>?
+    ): AirbyteMessageConsumer? {
         val tunnel = getTunnelInstance(config)
 
         val delegateConsumer: AirbyteMessageConsumer?
         try {
-            delegateConsumer = delegate.getConsumer(tunnel.configInTunnel, catalog, outputRecordCollector)
+            delegateConsumer =
+                delegate.getConsumer(tunnel.configInTunnel, catalog, outputRecordCollector)
         } catch (e: Exception) {
-            LOGGER.error("Exception occurred while getting the delegate consumer, closing SSH tunnel", e)
+            LOGGER.error(
+                "Exception occurred while getting the delegate consumer, closing SSH tunnel",
+                e
+            )
             tunnel.close()
             throw e
         }
-        return AirbyteMessageConsumer.Companion.appendOnClose(delegateConsumer, VoidCallable { tunnel.close() })
+        return AirbyteMessageConsumer.Companion.appendOnClose(
+            delegateConsumer,
+            VoidCallable { tunnel.close() }
+        )
     }
 
     @Throws(Exception::class)
-    override fun getSerializedMessageConsumer(config: JsonNode?,
-                                              catalog: ConfiguredAirbyteCatalog?,
-                                              outputRecordCollector: Consumer<AirbyteMessage?>?): SerializedAirbyteMessageConsumer? {
+    override fun getSerializedMessageConsumer(
+        config: JsonNode?,
+        catalog: ConfiguredAirbyteCatalog?,
+        outputRecordCollector: Consumer<AirbyteMessage?>?
+    ): SerializedAirbyteMessageConsumer? {
         val clone = Jsons.clone(config)
-        val connectionOptionsConfig: Optional<JsonNode> = Jsons.getOptional(clone, SshTunnel.Companion.CONNECTION_OPTIONS_KEY)
+        val connectionOptionsConfig: Optional<JsonNode> =
+            Jsons.getOptional(clone, SshTunnel.Companion.CONNECTION_OPTIONS_KEY)
         if (connectionOptionsConfig.isEmpty) {
             LOGGER.info("No SSH connection options found, using defaults")
             if (clone is ObjectNode) { // Defensive check, it will always be object node
                 val connectionOptions = clone.putObject(SshTunnel.Companion.CONNECTION_OPTIONS_KEY)
-                connectionOptions.put(SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_KEY, SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS)
-                connectionOptions.put(SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_KEY, SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS)
+                connectionOptions.put(
+                    SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_KEY,
+                    SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS
+                )
+                connectionOptions.put(
+                    SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_KEY,
+                    SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS
+                )
             }
         }
         val tunnel = getTunnelInstance(clone)
         val delegateConsumer: SerializedAirbyteMessageConsumer?
         try {
-            delegateConsumer = delegate.getSerializedMessageConsumer(tunnel.configInTunnel, catalog, outputRecordCollector)
+            delegateConsumer =
+                delegate.getSerializedMessageConsumer(
+                    tunnel.configInTunnel,
+                    catalog,
+                    outputRecordCollector
+                )
         } catch (e: Exception) {
-            LOGGER.error("Exception occurred while getting the delegate consumer, closing SSH tunnel", e)
+            LOGGER.error(
+                "Exception occurred while getting the delegate consumer, closing SSH tunnel",
+                e
+            )
             tunnel.close()
             throw e
         }
-        return SerializedAirbyteMessageConsumer.Companion.appendOnClose(delegateConsumer, VoidCallable { tunnel.close() })
+        return SerializedAirbyteMessageConsumer.Companion.appendOnClose(
+            delegateConsumer,
+            VoidCallable { tunnel.close() }
+        )
     }
 
     @Throws(Exception::class)
     protected fun getTunnelInstance(config: JsonNode?): SshTunnel {
-        return if ((endPointKey != null)
-        ) SshTunnel.Companion.getInstance(config, endPointKey)
+        return if ((endPointKey != null)) SshTunnel.Companion.getInstance(config, endPointKey)
         else SshTunnel.Companion.getInstance(config, hostKey, portKey)
     }
 

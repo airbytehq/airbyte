@@ -20,11 +20,17 @@ import java.util.*
  */
 interface StagingOperations : SqlOperations {
     /**
-     * @param outputTableName The name of the table this staging file will be loaded into (typically a
-     * raw table). Not all destinations use the table name in the staging path (e.g. Snowflake
+     * @param outputTableName The name of the table this staging file will be loaded into (typically
+     * a raw table). Not all destinations use the table name in the staging path (e.g. Snowflake
      * simply uses a timestamp + UUID), but e.g. Redshift does rely on this to ensure uniqueness.
      */
-    fun getStagingPath(connectionId: UUID?, namespace: String?, streamName: String?, outputTableName: String?, writeDatetime: Instant?): String?
+    fun getStagingPath(
+        connectionId: UUID?,
+        namespace: String?,
+        streamName: String?,
+        outputTableName: String?,
+        writeDatetime: Instant?
+    ): String?
 
     /**
      * Returns the staging environment's name
@@ -36,7 +42,8 @@ interface StagingOperations : SqlOperations {
     fun getStageName(namespace: String?, streamName: String?): String?
 
     /**
-     * Create a staging folder where to upload temporary files before loading into the final destination
+     * Create a staging folder where to upload temporary files before loading into the final
+     * destination
      */
     @Throws(Exception::class)
     fun createStageIfNotExists(database: JdbcDatabase?, stageName: String?)
@@ -51,7 +58,13 @@ interface StagingOperations : SqlOperations {
      * @return the name of the file that was uploaded.
      */
     @Throws(Exception::class)
-    fun uploadRecordsToStage(database: JdbcDatabase?, recordsData: SerializableBuffer?, schemaName: String?, stageName: String?, stagingPath: String?): String?
+    fun uploadRecordsToStage(
+        database: JdbcDatabase?,
+        recordsData: SerializableBuffer?,
+        schemaName: String?,
+        stageName: String?,
+        stagingPath: String?
+    ): String?
 
     /**
      * Load the data stored in the stage area into a temporary table in the destination
@@ -63,12 +76,14 @@ interface StagingOperations : SqlOperations {
      * @param schemaName name of schema
      */
     @Throws(Exception::class)
-    fun copyIntoTableFromStage(database: JdbcDatabase?,
-                               stageName: String?,
-                               stagingPath: String?,
-                               stagedFiles: List<String?>?,
-                               tableName: String?,
-                               schemaName: String?)
+    fun copyIntoTableFromStage(
+        database: JdbcDatabase?,
+        stageName: String?,
+        stagingPath: String?,
+        stagedFiles: List<String?>?,
+        tableName: String?,
+        schemaName: String?
+    )
 
     /**
      * Delete the stage area and all staged files that was in it

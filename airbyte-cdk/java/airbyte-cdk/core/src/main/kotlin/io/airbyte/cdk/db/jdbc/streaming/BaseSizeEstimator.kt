@@ -8,18 +8,18 @@ import io.airbyte.commons.json.Jsons
 import kotlin.math.max
 import kotlin.math.min
 
-/**
- * Fetch size (number of rows) = target buffer byte size / max row byte size
- */
-abstract class BaseSizeEstimator protected constructor(// desired buffer size in memory
-        private val targetBufferByteSize: Long,
-        private val minFetchSize: Int,
-        private val defaultFetchSize: Int,
-        private val maxFetchSize: Int) : FetchSizeEstimator {
+/** Fetch size (number of rows) = target buffer byte size / max row byte size */
+abstract class BaseSizeEstimator
+protected constructor( // desired buffer size in memory
+    private val targetBufferByteSize: Long,
+    private val minFetchSize: Int,
+    private val defaultFetchSize: Int,
+    private val maxFetchSize: Int
+) : FetchSizeEstimator {
     var maxRowByteSize: Double = 0.0
         protected set
 
-    protected val boundedFetchSize: Int
+    val boundedFetchSize: Int
         /**
          * This method ensures that the fetch size is between `minFetchSize` and `maxFetchSize`,
          * inclusively.
@@ -32,13 +32,18 @@ abstract class BaseSizeEstimator protected constructor(// desired buffer size in
             if (rawFetchSize > Int.MAX_VALUE) {
                 return maxFetchSize
             }
-            return max(minFetchSize.toDouble(), min(maxFetchSize.toDouble(), rawFetchSize.toInt().toDouble())).toInt()
+            return max(
+                    minFetchSize.toDouble(),
+                    min(maxFetchSize.toDouble(), rawFetchSize.toInt().toDouble())
+                )
+                .toInt()
         }
 
     companion object {
         /**
          * What we really want is to know how much memory each `rowData` takes. However, there is no
-         * easy way to measure that. So we use the byte size of the serialized row to approximate that.
+         * easy way to measure that. So we use the byte size of the serialized row to approximate
+         * that.
          */
         @VisibleForTesting
         fun getEstimatedByteSize(rowData: Any?): Long {
@@ -53,7 +58,8 @@ abstract class BaseSizeEstimator protected constructor(// desired buffer size in
             // the string to byte[] to get the exact length. That conversion is known
             // to introduce a lot of memory overhead.
             //
-            // We are using 3L as the median byte-size of a serialized char here assuming that most chars fit
+            // We are using 3L as the median byte-size of a serialized char here assuming that most
+            // chars fit
             // into the ASCII space (fewer bytes)
             return Jsons.serialize(rowData).length * 3L
         }

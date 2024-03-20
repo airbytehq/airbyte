@@ -14,7 +14,7 @@ interface JdbcCompatibleSourceOperations<SourceType> : SourceOperations<ResultSe
      * @param colIndex 1-based column index.
      */
     @Throws(SQLException::class)
-    fun copyToJsonField(resultSet: ResultSet, colIndex: Int, json: ObjectNode?)
+    fun copyToJsonField(resultSet: ResultSet, colIndex: Int, json: ObjectNode)
 
     /** Set the cursor field in incremental table query. */
     @Throws(SQLException::class)
@@ -22,7 +22,7 @@ interface JdbcCompatibleSourceOperations<SourceType> : SourceOperations<ResultSe
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         cursorFieldType: SourceType?,
-        value: String?
+        value: String
     )
 
     /** Determine the database specific type of the input field based on its column metadata. */

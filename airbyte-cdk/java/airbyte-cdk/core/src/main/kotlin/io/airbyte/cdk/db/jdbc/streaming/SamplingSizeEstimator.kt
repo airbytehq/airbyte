@@ -6,15 +6,19 @@ package io.airbyte.cdk.db.jdbc.streaming
 import java.util.*
 
 /**
- * This class adjusts the max row byte size by measuring one row out of every
- * `sampleFrequency` rows.
+ * This class adjusts the max row byte size by measuring one row out of every `sampleFrequency`
+ * rows.
  */
-class SamplingSizeEstimator(bufferByteSize: Long,
-                            private val sampleFrequency: Int,
-                            initialRowByteSize: Double,
-                            minFetchSize: Int,
-                            defaultFetchSize: Int,
-                            maxFetchSize: Int) : BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize), FetchSizeEstimator {
+class SamplingSizeEstimator(
+    bufferByteSize: Long,
+    private val sampleFrequency: Int,
+    initialRowByteSize: Double,
+    minFetchSize: Int,
+    defaultFetchSize: Int,
+    maxFetchSize: Int
+) :
+    BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize),
+    FetchSizeEstimator {
     private var counter = 0
     private var hasNewEstimation = false
 
@@ -36,7 +40,7 @@ class SamplingSizeEstimator(bufferByteSize: Long,
         }
     }
 
-    override val fetchSize: Optional<Int?>?
+    override val fetchSize: Optional<Int>
         get() {
             if (!hasNewEstimation) {
                 return Optional.empty()
