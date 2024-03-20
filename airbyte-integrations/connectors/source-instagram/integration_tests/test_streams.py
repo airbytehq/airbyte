@@ -39,9 +39,9 @@ class TestInstagramSource:
                                                     state_msg.state.stream.stream_state, 
                                                     len(state_msg.state.stream.stream_state.dict()))
 
-            assert stream_name == "user_insights", f"each state message should be contain user_insights stream, got {stream_name} instead"
+            assert stream_name == "user_insights", f"each state message should reference 'user_insights' stream, got {stream_name} instead"
             assert isinstance(stream_state, AirbyteStateBlob), f"Stream state should be type AirbyteStateBlob, got {type(stream_state)} instead"
-            assert state_keys_count == 2, f"Stream state should contain 2 keys, got {state_keys_count} instead"
+            assert state_keys_count == 2, f"Stream state should contain 2 partition keys, got {state_keys_count} instead"
 
     @staticmethod
     def slice_catalog(catalog: ConfiguredAirbyteCatalog, predicate: Callable[[str], bool]) -> ConfiguredAirbyteCatalog:
