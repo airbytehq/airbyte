@@ -51,6 +51,7 @@ class ApplovinStream(HttpStream):
             logging.warning("Request Method:" + str(response.request.method))
             logging.warning("Request URL:" + str(response.request.url))
             logging.warning("Request Headers:")
+
             for key, value in response.request.headers.items():
                 logging.warning(f"{str(key)}: {str(value)}")
 
