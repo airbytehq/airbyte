@@ -250,7 +250,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
         private const val CONNECT_TIMEOUT = "connectTimeout"
 
         var database: String? = null
-        var driverClassName: String? = null
+        lateinit var driverClassName: String
         var host: String? = null
         var jdbcUrl: String? = null
         var password: String? = null

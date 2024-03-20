@@ -26,9 +26,7 @@ internal class BaseSizeEstimatorTest {
         defaultFetchSize: Int,
         maxFetchSize: Int
     ) : BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize) {
-        override fun getFetchSize(): Optional<Int> {
-            return Optional.empty()
-        }
+        override val fetchSize: Optional<Int> = Optional.empty()
 
         override fun accept(o: Any) {}
 

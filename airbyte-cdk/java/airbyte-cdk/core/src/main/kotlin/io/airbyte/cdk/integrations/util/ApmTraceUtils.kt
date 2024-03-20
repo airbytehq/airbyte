@@ -12,30 +12,24 @@ import io.opentracing.util.GlobalTracer
 import java.io.*
 import java.util.function.Consumer
 
-/**
- * Collection of utility methods to help with performance tracing.
- */
+/** Collection of utility methods to help with performance tracing. */
 object ApmTraceUtils {
-    /**
-     * String format for the name of tags added to spans.
-     */
+    /** String format for the name of tags added to spans. */
     const val TAG_FORMAT: String = "airbyte.%s.%s"
 
-    /**
-     * Standard prefix for tags added to spans.
-     */
+    /** Standard prefix for tags added to spans. */
     const val TAG_PREFIX: String = "metadata"
 
     /**
-     * Adds all provided tags to the currently active span, if one exists, under the provided tag name
-     * namespace.
+     * Adds all provided tags to the currently active span, if one exists, under the provided tag
+     * name namespace.
      *
      * @param tags A map of tags to be added to the currently active span.
      * @param tagPrefix The prefix to be added to each custom tag name.
      */
     /**
-     * Adds all the provided tags to the currently active span, if one exists. <br></br>
-     * All tags added via this method will use the default [.TAG_PREFIX] namespace.
+     * Adds all the provided tags to the currently active span, if one exists. <br></br> All tags
+     * added via this method will use the default [.TAG_PREFIX] namespace.
      *
      * @param tags A map of tags to be added to the currently active span.
      */
@@ -53,9 +47,11 @@ object ApmTraceUtils {
      */
     fun addTagsToTrace(span: Span?, tags: Map<String?, Any>, tagPrefix: String?) {
         if (span != null) {
-            tags.entries.forEach(Consumer { entry: Map.Entry<String?, Any> ->
-                span.setTag(formatTag(entry.key, tagPrefix), entry.value.toString())
-            })
+            tags.entries.forEach(
+                Consumer { entry: Map.Entry<String?, Any> ->
+                    span.setTag(formatTag(entry.key, tagPrefix), entry.value.toString())
+                }
+            )
         }
     }
 
@@ -91,9 +87,11 @@ object ApmTraceUtils {
         val activeSpan = GlobalTracer.get().activeSpan()
         if (activeSpan is MutableSpan) {
             val localRootSpan = (activeSpan as MutableSpan).localRootSpan
-            tags.entries.forEach(Consumer { entry: Map.Entry<String?, Any> ->
-                localRootSpan.setTag(formatTag(entry.key, TAG_PREFIX), entry.value.toString())
-            })
+            tags.entries.forEach(
+                Consumer { entry: Map.Entry<String?, Any> ->
+                    localRootSpan.setTag(formatTag(entry.key, TAG_PREFIX), entry.value.toString())
+                }
+            )
         }
     }
 

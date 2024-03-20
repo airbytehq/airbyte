@@ -4,10 +4,10 @@
 package io.airbyte.cdk.db.jdbc.streaming
 
 import com.google.common.annotations.VisibleForTesting
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.math.max
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * This estimator first uses the [InitialSizeEstimator] to calculate an initial fetch size by
@@ -23,15 +23,17 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
     private var counter = 0
 
     init {
-        this.delegate = InitialSizeEstimator(
+        this.delegate =
+            InitialSizeEstimator(
                 FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
                 initialSampleSize,
                 FetchSizeConstants.MIN_FETCH_SIZE,
                 FetchSizeConstants.DEFAULT_FETCH_SIZE,
-                FetchSizeConstants.MAX_FETCH_SIZE)
+                FetchSizeConstants.MAX_FETCH_SIZE
+            )
     }
 
-    override val fetchSize: Optional<Int?>?
+    override val fetchSize: Optional<Int>
         get() = delegate.fetchSize
 
     override fun accept(rowData: Any) {
@@ -39,13 +41,15 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
             counter++
             // switch to SamplingSizeEstimator after the initial N rows
             if (delegate is InitialSizeEstimator && counter > initialSampleSize) {
-                delegate = SamplingSizeEstimator(
+                delegate =
+                    SamplingSizeEstimator(
                         getTargetBufferByteSize(Runtime.getRuntime().maxMemory()),
                         FetchSizeConstants.SAMPLE_FREQUENCY,
-                        delegate.getMaxRowByteSize(),
+                        delegate.maxRowByteSize,
                         FetchSizeConstants.MIN_FETCH_SIZE,
                         FetchSizeConstants.DEFAULT_FETCH_SIZE,
-                        FetchSizeConstants.MAX_FETCH_SIZE)
+                        FetchSizeConstants.MAX_FETCH_SIZE
+                    )
             }
         }
 
@@ -61,12 +65,25 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
         @VisibleForTesting
         fun getTargetBufferByteSize(maxMemory: Long?): Long {
             if (maxMemory == null || maxMemory == Long.MAX_VALUE) {
-                LOGGER.info("No max memory limit found, use min JDBC buffer size: {}", FetchSizeConstants.MIN_BUFFER_BYTE_SIZE)
+                LOGGER.info(
+                    "No max memory limit found, use min JDBC buffer size: {}",
+                    FetchSizeConstants.MIN_BUFFER_BYTE_SIZE
+                )
                 return FetchSizeConstants.MIN_BUFFER_BYTE_SIZE
             }
-            val targetBufferByteSize = Math.round(maxMemory * FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO)
-            val finalBufferByteSize = max(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE.toDouble(), targetBufferByteSize.toDouble()).toLong()
-            LOGGER.info("Max memory limit: {}, JDBC buffer size: {}", maxMemory, finalBufferByteSize)
+            val targetBufferByteSize =
+                Math.round(maxMemory * FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO)
+            val finalBufferByteSize =
+                max(
+                        FetchSizeConstants.MIN_BUFFER_BYTE_SIZE.toDouble(),
+                        targetBufferByteSize.toDouble()
+                    )
+                    .toLong()
+            LOGGER.info(
+                "Max memory limit: {}, JDBC buffer size: {}",
+                maxMemory,
+                finalBufferByteSize
+            )
             return finalBufferByteSize
         }
     }

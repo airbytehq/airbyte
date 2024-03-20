@@ -6,9 +6,9 @@ package io.airbyte.cdk.integrations.base.adaptive
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.Source
 import io.airbyte.commons.features.EnvVariableFeatureFlags
+import java.util.function.Supplier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.function.Supplier
 
 /**
  * This class launches different variants of a source connector based on where Airbyte is deployed.
@@ -25,20 +25,25 @@ object AdaptiveSourceRunner {
     }
 
     class OssSourceBuilder(private val deploymentMode: String) {
-        fun <OT : Source?> withOssSource(ossSourceSupplier: Supplier<OT>): CloudSourceBuilder<OT> {
+        fun <OT : Source> withOssSource(ossSourceSupplier: Supplier<OT>): CloudSourceBuilder<OT> {
             return CloudSourceBuilder(deploymentMode, ossSourceSupplier)
         }
     }
 
-    class CloudSourceBuilder<OT : Source?>(private val deploymentMode: String, private val ossSourceSupplier: Supplier<OT>) {
-        fun <CT : Source?> withCloudSource(cloudSourceSupplier: Supplier<CT>): Runner<OT, CT> {
+    class CloudSourceBuilder<OT : Source>(
+        private val deploymentMode: String,
+        private val ossSourceSupplier: Supplier<OT>
+    ) {
+        fun <CT : Source> withCloudSource(cloudSourceSupplier: Supplier<CT>): Runner<OT, CT> {
             return Runner(deploymentMode, ossSourceSupplier, cloudSourceSupplier)
         }
     }
 
-    class Runner<OT : Source?, CT : Source?>(private val deploymentMode: String?,
-                                             private val ossSourceSupplier: Supplier<OT>,
-                                             private val cloudSourceSupplier: Supplier<CT>) {
+    class Runner<OT : Source, CT : Source>(
+        private val deploymentMode: String?,
+        private val ossSourceSupplier: Supplier<OT>,
+        private val cloudSourceSupplier: Supplier<CT>
+    ) {
         private val source: Source
             get() {
                 LOGGER.info("Running source under deployment mode: {}", deploymentMode)
@@ -52,7 +57,7 @@ object AdaptiveSourceRunner {
             }
 
         @Throws(Exception::class)
-        fun run(args: Array<String?>?) {
+        fun run(args: Array<String>) {
             val source = source
             LOGGER.info("Starting source: {}", source.javaClass.name)
             IntegrationRunner(source).run(args)

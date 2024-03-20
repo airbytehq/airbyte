@@ -20,15 +20,16 @@ class StagingFilenameGenerator(private val streamName: String, chunkSize: Long) 
     private var currentFileSuffixPartCount = 0
 
     // This variable is responsible to set the size of chunks size (In MB). After chunks created in
-    // S3 or GCS they will be uploaded to Snowflake or Redshift. These service have some limitations for
+    // S3 or GCS they will be uploaded to Snowflake or Redshift. These service have some limitations
+    // for
     // the uploading file.
     // So we make the calculation to determine how many parts we can put to the single chunk file.
     private val iterations: Long = GlobalDataSizeConstants.Companion.MAX_FILE_SIZE / chunkSize
 
     val stagingFilename: String
         /**
-         * This method is assumed to be called whenever one part of a file is going to be created. The
-         * currentFileSuffix increments from 0. The currentFileSuffixPartCount cycles from 1 to
+         * This method is assumed to be called whenever one part of a file is going to be created.
+         * The currentFileSuffix increments from 0. The currentFileSuffixPartCount cycles from 1 to
          * maxPartsPerFile.
          */
         get() {

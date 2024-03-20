@@ -5,13 +5,13 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
-import static io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.getCountOfTypeAndDedupeThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.concurrency.CompletableFutures;
 import io.airbyte.commons.functional.Either;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
@@ -154,7 +154,8 @@ public class DefaultTyperDeduper<DestinationState extends MinimumDestinationStat
 
     final List<Either<? extends Exception, Void>> prepareTablesFutureResult = CompletableFutures.allOf(
         destinationInitialStatuses.stream().map(this::prepareTablesFuture).toList()).toCompletableFuture().join();
-    getResultsOrLogAndThrowFirst("The following exceptions were thrown attempting to prepare tables:\n", prepareTablesFutureResult);
+    ConnectorExceptionUtil.getResultsOrLogAndThrowFirst("The following exceptions were thrown attempting to prepare tables:\n",
+        prepareTablesFutureResult);
 
     destinationHandler.commitDestinationStates(destinationInitialStatuses.stream().collect(toMap(
         state -> state.streamConfig().id(),
@@ -310,7 +311,7 @@ public class DefaultTyperDeduper<DestinationState extends MinimumDestinationStat
           final StreamSyncSummary streamSyncSummary = streamSyncSummaries.getOrDefault(
               streamConfig.id().asStreamDescriptor(),
               StreamSyncSummary.DEFAULT);
-          final boolean nonzeroRecords = streamSyncSummary.recordsWritten()
+          final boolean nonzeroRecords = streamSyncSummary.getRecordsWritten()
               .map(r -> r > 0)
               // If we didn't track record counts during the sync, assume we had nonzero records for this stream
               .orElse(true);

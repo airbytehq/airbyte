@@ -15,21 +15,19 @@ class DestinationConfigTest {
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             DestinationConfig.initialize(null)
         }
-        Assertions.assertThrows(IllegalStateException::class.java) {
-            DestinationConfig.getInstance()
-        }
+        Assertions.assertThrows(IllegalStateException::class.java) { DestinationConfig.instance }
 
         // good initialization
         DestinationConfig.initialize(NODE, true)
-        Assertions.assertNotNull(DestinationConfig.getInstance())
-        Assertions.assertEquals(NODE, DestinationConfig.getInstance().root)
-        Assertions.assertEquals(true, DestinationConfig.getInstance().isV2Destination)
+        Assertions.assertNotNull(DestinationConfig.instance)
+        Assertions.assertEquals(NODE, DestinationConfig.instance!!.root)
+        Assertions.assertEquals(true, DestinationConfig.instance!!.isV2Destination)
 
         // initializing again doesn't change the config
         val nodeUnused = Jsons.deserialize("{}")
         DestinationConfig.initialize(nodeUnused, false)
-        Assertions.assertEquals(NODE, DestinationConfig.getInstance().root)
-        Assertions.assertEquals(true, DestinationConfig.getInstance().isV2Destination)
+        Assertions.assertEquals(NODE, DestinationConfig.instance!!.root)
+        Assertions.assertEquals(true, DestinationConfig.instance!!.isV2Destination)
     }
 
     @Test
@@ -37,27 +35,27 @@ class DestinationConfigTest {
         DestinationConfig.clearInstance()
         DestinationConfig.initialize(NODE)
 
-        Assertions.assertEquals("bar", DestinationConfig.getInstance().getTextValue("foo"))
-        Assertions.assertEquals("", DestinationConfig.getInstance().getTextValue("baz"))
+        Assertions.assertEquals("bar", DestinationConfig.instance!!.getTextValue("foo"))
+        Assertions.assertEquals("", DestinationConfig.instance!!.getTextValue("baz"))
 
-        Assertions.assertFalse(DestinationConfig.getInstance().getBooleanValue("foo"))
-        Assertions.assertTrue(DestinationConfig.getInstance().getBooleanValue("baz"))
+        Assertions.assertFalse(DestinationConfig.instance!!.getBooleanValue("foo"))
+        Assertions.assertTrue(DestinationConfig.instance!!.getBooleanValue("baz"))
 
         // non-existent key
-        Assertions.assertEquals("", DestinationConfig.getInstance().getTextValue("blah"))
-        Assertions.assertFalse(DestinationConfig.getInstance().getBooleanValue("blah"))
+        Assertions.assertEquals("", DestinationConfig.instance!!.getTextValue("blah"))
+        Assertions.assertFalse(DestinationConfig.instance!!.getBooleanValue("blah"))
 
         Assertions.assertEquals(
             Jsons.deserialize("\"bar\""),
-            DestinationConfig.getInstance().getNodeValue("foo")
+            DestinationConfig.instance!!.getNodeValue("foo")
         )
         Assertions.assertEquals(
             Jsons.deserialize("true"),
-            DestinationConfig.getInstance().getNodeValue("baz")
+            DestinationConfig.instance!!.getNodeValue("baz")
         )
-        Assertions.assertNull(DestinationConfig.getInstance().getNodeValue("blah"))
+        Assertions.assertNull(DestinationConfig.instance!!.getNodeValue("blah"))
 
-        Assertions.assertEquals(false, DestinationConfig.getInstance().isV2Destination)
+        Assertions.assertEquals(false, DestinationConfig.instance!!.isV2Destination)
     }
 
     companion object {

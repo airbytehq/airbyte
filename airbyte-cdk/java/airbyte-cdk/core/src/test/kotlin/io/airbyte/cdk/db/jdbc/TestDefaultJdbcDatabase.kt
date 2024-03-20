@@ -23,7 +23,7 @@ import org.testcontainers.utility.MountableFile
 
 internal class TestDefaultJdbcDatabase {
     private val sourceOperations: JdbcSourceOperations = JdbcUtils.defaultSourceOperations
-    private var dataSource: DataSource? = null
+    private lateinit var dataSource: DataSource
     private lateinit var database: JdbcDatabase
 
     @BeforeEach
@@ -66,7 +66,7 @@ internal class TestDefaultJdbcDatabase {
                 { connection: Connection ->
                     connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
                 },
-                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) }
+                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) }
             )
 
         Assertions.assertEquals(RECORDS_AS_JSON, actual)
@@ -80,7 +80,7 @@ internal class TestDefaultJdbcDatabase {
                 { connection: Connection ->
                     connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
                 },
-                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) }
+                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) }
             )
             .use { actual -> Assertions.assertEquals(RECORDS_AS_JSON, actual.toList()) }
     }
@@ -93,7 +93,7 @@ internal class TestDefaultJdbcDatabase {
                 { connection: Connection ->
                     connection.prepareStatement("SELECT * FROM id_and_name;")
                 },
-                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) }
+                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) }
             )
         Assertions.assertEquals(RECORDS_AS_JSON, actual)
     }

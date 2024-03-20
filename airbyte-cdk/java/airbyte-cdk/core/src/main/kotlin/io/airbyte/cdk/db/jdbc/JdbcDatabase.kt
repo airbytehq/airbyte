@@ -16,10 +16,9 @@ import java.util.function.Function
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 
-/**
- * Database object for interacting with a JDBC connection.
- */
-abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSourceOperations<*>?) : SqlDatabase() {
+/** Database object for interacting with a JDBC connection. */
+abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSourceOperations<*>?) :
+    SqlDatabase() {
     protected var streamException: Exception? = null
     protected var isStreamFailed: Boolean = false
 
@@ -50,21 +49,23 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     }
 
     /**
-     * Use a connection to create a [ResultSet] and map it into a list. The entire
-     * [ResultSet] will be buffered in memory before the list is returned. The caller does not
-     * need to worry about closing any database resources.
+     * Use a connection to create a [ResultSet] and map it into a list. The entire [ResultSet] will
+     * be buffered in memory before the list is returned. The caller does not need to worry about
+     * closing any database resources.
      *
      * @param query execute a query using a [Connection] to get a [ResultSet].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if
-     * returned from recordTransform.
+     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
+     * from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a list.
-     * @throws SQLException SQL related exceptions.
-    </T> */
+     * @throws SQLException SQL related exceptions. </T>
+     */
     @Throws(SQLException::class)
-    abstract fun <T> bufferedResultSetQuery(query: CheckedFunction<Connection?, ResultSet, SQLException?>,
-                                            recordTransform: CheckedFunction<ResultSet, T, SQLException?>): List<T>
+    abstract fun <T> bufferedResultSetQuery(
+        query: CheckedFunction<Connection, ResultSet, SQLException?>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+    ): List<T>
 
     /**
      * Use a connection to create a [ResultSet] and map it into a stream. You CANNOT assume that
@@ -75,58 +76,65 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      *
      * @param query execute a query using a [Connection] to get a [ResultSet].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if
-     * returned from recordTransform.
+     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
+     * from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a stream.
-     * @throws SQLException SQL related exceptions.
-    </T> */
+     * @throws SQLException SQL related exceptions. </T>
+     */
     @MustBeClosed
     @Throws(SQLException::class)
-    abstract fun <T> unsafeResultSetQuery(query: CheckedFunction<Connection?, ResultSet, SQLException?>,
-                                          recordTransform: CheckedFunction<ResultSet, T, SQLException?>): Stream<T>
+    abstract fun <T> unsafeResultSetQuery(
+        query: CheckedFunction<Connection, ResultSet, SQLException?>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+    ): Stream<T>
 
     /**
-     * String query is a common use case for [JdbcDatabase.unsafeResultSetQuery]. So this method
-     * is created as syntactic sugar.
+     * String query is a common use case for [JdbcDatabase.unsafeResultSetQuery]. So this method is
+     * created as syntactic sugar.
      */
     @Throws(SQLException::class)
-    fun queryStrings(query: CheckedFunction<Connection?, ResultSet, SQLException?>,
-                     recordTransform: CheckedFunction<ResultSet, String, SQLException?>): List<String> {
+    fun queryStrings(
+        query: CheckedFunction<Connection, ResultSet, SQLException?>,
+        recordTransform: CheckedFunction<ResultSet, String, SQLException?>
+    ): List<String> {
         unsafeResultSetQuery(query, recordTransform).use { stream ->
             return stream.toList()
         }
     }
 
     /**
-     * Use a connection to create a [PreparedStatement] and map it into a stream. You CANNOT
-     * assume that data will be returned from this method before the entire [ResultSet] is
-     * buffered in memory. Review the implementation of the database's JDBC driver or use the
-     * StreamingJdbcDriver if you need this guarantee. It is "unsafe" because the caller should close
-     * the returned stream to release the database connection. Otherwise, there will be a connection
-     * leak.
+     * Use a connection to create a [PreparedStatement] and map it into a stream. You CANNOT assume
+     * that data will be returned from this method before the entire [ResultSet] is buffered in
+     * memory. Review the implementation of the database's JDBC driver or use the
+     * StreamingJdbcDriver if you need this guarantee. It is "unsafe" because the caller should
+     * close the returned stream to release the database connection. Otherwise, there will be a
+     * connection leak.
      *
      * @param statementCreator create a [PreparedStatement] from a [Connection].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if
-     * returned from recordTransform.
+     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
+     * from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a stream.void execute(String sql)
-     * @throws SQLException SQL related exceptions.
-    </T> */
+     * @throws SQLException SQL related exceptions. </T>
+     */
     @MustBeClosed
     @Throws(SQLException::class)
-    abstract fun <T> unsafeQuery(statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-                                 recordTransform: CheckedFunction<ResultSet, T, SQLException?>): Stream<T>
+    abstract fun <T> unsafeQuery(
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+    ): Stream<T>
 
     /**
-     * Json query is a common use case for
-     * [JdbcDatabase.unsafeQuery]. So this method is created as
+     * Json query is a common use case for [JdbcDatabase.unsafeQuery]. So this method is created as
      * syntactic sugar.
      */
     @Throws(SQLException::class)
-    fun queryJsons(statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-                   recordTransform: CheckedFunction<ResultSet, JsonNode, SQLException?>): List<JsonNode> {
+    fun queryJsons(
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
+        recordTransform: CheckedFunction<ResultSet, JsonNode, SQLException?>
+    ): List<JsonNode> {
         unsafeQuery(statementCreator, recordTransform).use { stream ->
             return stream.toList()
         }
@@ -136,41 +144,48 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     fun queryInt(sql: String, vararg params: String): Int {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { rs: ResultSet -> rs.getInt(1) }).use { stream ->
-            return stream.findFirst().get()
-        }
+                { rs: ResultSet -> rs.getInt(1) }
+            )
+            .use { stream ->
+                return stream.findFirst().get()
+            }
     }
 
     @Throws(SQLException::class)
     fun queryBoolean(sql: String, vararg params: String): Boolean {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { rs: ResultSet -> rs.getBoolean(1) }).use { stream ->
-            return stream.findFirst().get()
-        }
+                { rs: ResultSet -> rs.getBoolean(1) }
+            )
+            .use { stream ->
+                return stream.findFirst().get()
+            }
     }
 
     /**
-     * It is "unsafe" because the caller must manually close the returned stream. Otherwise, there will
-     * be a database connection leak.
+     * It is "unsafe" because the caller must manually close the returned stream. Otherwise, there
+     * will be a database connection leak.
      */
     @MustBeClosed
     @Throws(SQLException::class)
-    override fun unsafeQuery(sql: String?, vararg params: String?): Stream<JsonNode?> {
-        return unsafeQuery({ connection: Connection ->
-            val statement = connection.prepareStatement(sql)
-            var i = 1
-            for (param in params) {
-                statement.setString(i, param)
-                ++i
-            }
-            statement
-        }, { queryResult: ResultSet? -> sourceOperations!!.rowToJson(queryResult) })
+    override fun unsafeQuery(sql: String?, vararg params: String?): Stream<JsonNode> {
+        return unsafeQuery(
+            { connection: Connection ->
+                val statement = connection.prepareStatement(sql)
+                var i = 1
+                for (param in params) {
+                    statement.setString(i, param)
+                    ++i
+                }
+                statement
+            },
+            { queryResult: ResultSet -> sourceOperations!!.rowToJson(queryResult) }
+        )
     }
 
     /**
-     * Json query is a common use case for [JdbcDatabase.unsafeQuery]. So this
-     * method is created as syntactic sugar.
+     * Json query is a common use case for [JdbcDatabase.unsafeQuery]. So this method is created as
+     * syntactic sugar.
      */
     @Throws(SQLException::class)
     fun queryJsons(sql: String?, vararg params: String?): List<JsonNode> {
@@ -183,14 +198,14 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     fun queryMetadata(sql: String, vararg params: String): ResultSetMetaData {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { obj: ResultSet -> obj.metaData }).use { q ->
-            return q.findFirst().orElse(null)
-        }
+                { obj: ResultSet -> obj.metaData }
+            )
+            .use { q ->
+                return q.findFirst().orElse(null)
+            }
     }
 
-    @JvmField
-    @get:Throws(SQLException::class)
-    abstract val metaData: DatabaseMetaData
+    @get:Throws(SQLException::class) abstract val metaData: DatabaseMetaData
 
     @Throws(SQLException::class)
     abstract fun <T> executeMetadataQuery(query: Function<DatabaseMetaData?, T>): T
@@ -203,28 +218,39 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
          * @param resultSet the result set
          * @param mapper function to make each record of the result set
          * @param <T> type that each record will be mapped to
-         * @return stream of records that the result set is mapped to.
-        </T> */
+         * @return stream of records that the result set is mapped to. </T>
+         */
+        @JvmStatic
         @MustBeClosed
-        protected fun <T> toUnsafeStream(resultSet: ResultSet, mapper: CheckedFunction<ResultSet, T, SQLException?>): Stream<T> {
-            return StreamSupport.stream(object : AbstractSpliterator<T>(Long.MAX_VALUE, ORDERED) {
-                override fun tryAdvance(action: Consumer<in T>): Boolean {
-                    try {
-                        if (!resultSet.next()) {
-                            resultSet.close()
-                            return false
+        fun <T> toUnsafeStream(
+            resultSet: ResultSet,
+            mapper: CheckedFunction<ResultSet, T, SQLException?>
+        ): Stream<T> {
+            return StreamSupport.stream(
+                object : AbstractSpliterator<T>(Long.MAX_VALUE, ORDERED) {
+                    override fun tryAdvance(action: Consumer<in T>): Boolean {
+                        try {
+                            if (!resultSet.next()) {
+                                resultSet.close()
+                                return false
+                            }
+                            action.accept(mapper.apply(resultSet))
+                            return true
+                        } catch (e: SQLException) {
+                            throw RuntimeException(e)
                         }
-                        action.accept(mapper.apply(resultSet))
-                        return true
-                    } catch (e: SQLException) {
-                        throw RuntimeException(e)
                     }
-                }
-            }, false)
+                },
+                false
+            )
         }
 
         @Throws(SQLException::class)
-        private fun getPreparedStatement(sql: String, params: Array<String>, c: Connection): PreparedStatement {
+        private fun getPreparedStatement(
+            sql: String,
+            params: Array<out String>,
+            c: Connection
+        ): PreparedStatement {
             val statement = c.prepareStatement(sql)
             var i = 1
             for (param in params) {

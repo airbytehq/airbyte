@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.integrations.source.relationaldb;
 
-import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -17,6 +15,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.CursorStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
@@ -107,7 +106,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       ApmTraceUtils.addExceptionToTrace(ex);
-      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(),
+      final String message = ErrorMessage.getErrorMessage(ex.getStateCode(), ex.getErrorCode(),
           ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
       return new AirbyteConnectionStatus()

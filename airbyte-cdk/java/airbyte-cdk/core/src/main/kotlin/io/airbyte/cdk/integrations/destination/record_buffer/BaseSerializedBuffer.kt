@@ -5,41 +5,40 @@ package io.airbyte.cdk.integrations.destination.record_buffer
 
 import com.google.common.io.CountingOutputStream
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import java.io.*
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.*
 
 /**
- * Base implementation of a [SerializableBuffer]. It is composed of a [BufferStorage]
- * where the actual data is being stored in a serialized format.
- *
+ * Base implementation of a [SerializableBuffer]. It is composed of a [BufferStorage] where the
+ * actual data is being stored in a serialized format.
  *
  * Such data format is defined by concrete implementation inheriting from this base abstract class.
  * To do so, necessary methods on handling "writer" methods should be defined. This writer would
- * take care of converting [AirbyteRecordMessage] into the serialized form of the data such as
- * it can be stored in the outputStream of the [BufferStorage].
+ * take care of converting [AirbyteRecordMessage] into the serialized form of the data such as it
+ * can be stored in the outputStream of the [BufferStorage].
  */
-abstract class BaseSerializedBuffer protected constructor(private val bufferStorage: BufferStorage) : SerializableBuffer {
-    private val byteCounter = CountingOutputStream(bufferStorage.outputStream)
+abstract class BaseSerializedBuffer
+protected constructor(private val bufferStorage: BufferStorage) : SerializableBuffer {
+    private val byteCounter = CountingOutputStream(bufferStorage.getOutputStream())
 
     private var useCompression = true
     private var compressedBuffer: GzipCompressorOutputStream? = null
     override var inputStream: InputStream? = null
-        private set
     private var isStarted = false
     private var isClosed = false
 
     /**
-     * Initializes the writer objects such that it can now write to the downstream @param outputStream
+     * Initializes the writer objects such that it can now write to the downstream @param
+     * outputStream
      */
-    @Throws(Exception::class)
-    protected abstract fun initWriter(outputStream: OutputStream?)
+    @Throws(Exception::class) protected abstract fun initWriter(outputStream: OutputStream?)
 
     /**
-     * Transform the @param record into a serialized form of the data and writes it to the registered
-     * OutputStream provided when [BaseSerializedBuffer.initWriter] was called.
+     * Transform the @param record into a serialized form of the data and writes it to the
+     * registered OutputStream provided when [BaseSerializedBuffer.initWriter] was called.
      */
     @Deprecated("")
     @Throws(IOException::class)
@@ -55,18 +54,20 @@ abstract class BaseSerializedBuffer protected constructor(private val bufferStor
      * @throws IOException
      */
     @Throws(IOException::class)
-    protected abstract fun writeRecord(recordString: String?, airbyteMetaString: String?, emittedAt: Long)
+    protected abstract fun writeRecord(
+        recordString: String?,
+        airbyteMetaString: String?,
+        emittedAt: Long
+    )
 
     /**
-     * Stops the writer from receiving new data and prepares it for being finalized and converted into
-     * an InputStream to read from instead. This is used when flushing the buffer into some other
-     * destination.
+     * Stops the writer from receiving new data and prepares it for being finalized and converted
+     * into an InputStream to read from instead. This is used when flushing the buffer into some
+     * other destination.
      */
-    @Throws(IOException::class)
-    protected abstract fun flushWriter()
+    @Throws(IOException::class) protected abstract fun flushWriter()
 
-    @Throws(IOException::class)
-    protected abstract fun closeWriter()
+    @Throws(IOException::class) protected abstract fun closeWriter()
 
     fun withCompression(useCompression: Boolean): SerializableBuffer {
         if (!isStarted) {
@@ -119,7 +120,7 @@ abstract class BaseSerializedBuffer protected constructor(private val bufferStor
     @get:Throws(IOException::class)
     override val filename: String?
         get() {
-            if (useCompression && !bufferStorage.filename.endsWith(GZ_SUFFIX)) {
+            if (useCompression && !bufferStorage.filename!!.endsWith(GZ_SUFFIX)) {
                 return bufferStorage.filename + GZ_SUFFIX
             }
             return bufferStorage.filename
@@ -128,8 +129,8 @@ abstract class BaseSerializedBuffer protected constructor(private val bufferStor
     @get:Throws(IOException::class)
     override val file: File?
         get() {
-            if (useCompression && !bufferStorage.filename.endsWith(GZ_SUFFIX)) {
-                if (bufferStorage.file.renameTo(File(bufferStorage.filename + GZ_SUFFIX))) {
+            if (useCompression && !bufferStorage.filename!!.endsWith(GZ_SUFFIX)) {
+                if (bufferStorage.file!!.renameTo(File(bufferStorage.filename + GZ_SUFFIX))) {
                     LOGGER.info("Renaming compressed file to include .gz file extension")
                 }
             }
@@ -153,7 +154,11 @@ abstract class BaseSerializedBuffer protected constructor(private val bufferStor
             closeWriter()
             bufferStorage.close()
             inputStream = convertToInputStream()
-            LOGGER.info("Finished writing data to {} ({})", filename, FileUtils.byteCountToDisplaySize(byteCounter.count))
+            LOGGER.info(
+                "Finished writing data to {} ({})",
+                filename,
+                FileUtils.byteCountToDisplaySize(byteCounter.count)
+            )
         }
     }
 

@@ -116,7 +116,7 @@ public class S3ConsumerFactory {
                 S3ConsumerFactory::toNameNamespacePair, Function.identity()));
 
     return (pair, writer) -> {
-      LOGGER.info("Flushing buffer for stream {} ({}) to storage", pair.getName(), FileUtils.byteCountToDisplaySize(writer.byteCount));
+      LOGGER.info("Flushing buffer for stream {} ({}) to storage", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", pair, Jsons.serialize(catalog)));

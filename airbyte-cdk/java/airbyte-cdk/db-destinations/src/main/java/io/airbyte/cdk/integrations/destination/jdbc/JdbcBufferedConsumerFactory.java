@@ -229,7 +229,7 @@ public class JdbcBufferedConsumerFactory {
       }
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
-      sqlOperations.insertRecords(database, records, writeConfig.getOutputSchemaName(), writeConfig.getOutputTableName());
+      sqlOperations.insertRecords(database, new ArrayList<>(records), writeConfig.getOutputSchemaName(), writeConfig.getOutputTableName());
     };
   }
 

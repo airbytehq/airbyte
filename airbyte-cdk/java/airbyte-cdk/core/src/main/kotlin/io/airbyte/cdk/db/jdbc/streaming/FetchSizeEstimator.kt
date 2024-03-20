@@ -6,9 +6,7 @@ package io.airbyte.cdk.db.jdbc.streaming
 import java.util.*
 import java.util.function.Consumer
 
-interface FetchSizeEstimator : Consumer<Any?> {
-    /**
-     * @return the estimated fetch size when the estimation is ready
-     */
-    val fetchSize: Optional<Int?>?
+interface FetchSizeEstimator : Consumer<Any> {
+    /** @return the estimated fetch size when the estimation is ready */
+    val fetchSize: Optional<Int>
 }

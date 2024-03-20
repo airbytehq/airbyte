@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 internal class TwoStageSizeEstimatorTest {
     @Test
     fun testDelegationSwitch() {
-        val sizeEstimator = TwoStageSizeEstimator.getInstance()
+        val sizeEstimator = TwoStageSizeEstimator.instance
         for (i in 0 until FetchSizeConstants.INITIAL_SAMPLE_SIZE) {
             sizeEstimator.accept("1")
             Assertions.assertTrue(sizeEstimator.delegate is InitialSizeEstimator)

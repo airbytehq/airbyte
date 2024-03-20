@@ -30,10 +30,10 @@ import org.mockito.kotlin.mock
 class BufferedStreamConsumerTest {
     private lateinit var consumer: BufferedStreamConsumer
     private lateinit var onStart: OnStartFunction
-    private lateinit var recordWriter: RecordWriter<AirbyteRecordMessage>
+    private lateinit var recordWriter: RecordWriter<AirbyteRecordMessage?>
     private lateinit var onClose: OnCloseFunction
-    private lateinit var isValidRecord: CheckedFunction<JsonNode, Boolean, Exception>
-    private lateinit var outputRecordCollector: Consumer<AirbyteMessage>
+    private lateinit var isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>
+    private lateinit var outputRecordCollector: Consumer<AirbyteMessage?>
 
     @BeforeEach
     @Throws(Exception::class)
@@ -644,7 +644,7 @@ class BufferedStreamConsumerTest {
             records: Collection<AirbyteMessage>
         ) {
             records.forEach(
-                Consumer { m: AirbyteMessage? ->
+                Consumer { m: AirbyteMessage ->
                     try {
                         consumer!!.accept(m)
                     } catch (e: Exception) {

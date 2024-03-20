@@ -13,13 +13,12 @@ import org.slf4j.LoggerFactory
  * SQL queries required for successfully syncing to a destination connector. These operations
  * include the ability to:
  *
- *  * Write - insert records from source connector
- *  * Create - overloaded function but primarily to create tables if they don't exist (e.g. tmp
+ * * Write - insert records from source connector
+ * * Create - overloaded function but primarily to create tables if they don't exist (e.g. tmp
  * tables to "stage" records before finalizing to final table
- *  * Drop - removes a table from the schema
- *  * Insert - move data from one table to another table - usually used for inserting data from tmp
+ * * Drop - removes a table from the schema
+ * * Insert - move data from one table to another table - usually used for inserting data from tmp
  * to final table (aka airbyte_raw)
- *
  */
 interface SqlOperations {
     /**
@@ -83,7 +82,11 @@ interface SqlOperations {
      * @param tableName Name of table
      * @return Query
      */
-    fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String?
+    fun truncateTableQuery(
+        database: JdbcDatabase?,
+        schemaName: String?,
+        tableName: String?
+    ): String?
 
     /**
      * Insert records into table. Assumes the table exists.
@@ -95,16 +98,18 @@ interface SqlOperations {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun insertRecords(database: JdbcDatabase?, records: List<PartialAirbyteMessage?>?, schemaName: String?, tableName: String?)
+    fun insertRecords(
+        database: JdbcDatabase?,
+        records: List<PartialAirbyteMessage?>?,
+        schemaName: String?,
+        tableName: String?
+    )
 
     /**
-     * Query to insert all records from source table to destination table. Both tables must be in the
-     * specified schema. Assumes both table exist.
-     *
-     *
+     * Query to insert all records from source table to destination table. Both tables must be in
+     * the specified schema. Assumes both table exist.
      *
      * NOTE: this is an append-only operation meaning that data can be duplicated
-     *
      *
      * @param database Database that the connector is syncing
      * @param schemaName Name of schema
@@ -112,7 +117,12 @@ interface SqlOperations {
      * @param destinationTableName Name of destination table
      * @return SQL Query string
      */
-    fun insertTableQuery(database: JdbcDatabase?, schemaName: String?, sourceTableName: String?, destinationTableName: String?): String?
+    fun insertTableQuery(
+        database: JdbcDatabase?,
+        schemaName: String?,
+        sourceTableName: String?,
+        destinationTableName: String?
+    ): String?
 
     /**
      * Given an arbitrary number of queries, execute a transaction.
@@ -124,9 +134,7 @@ interface SqlOperations {
     @Throws(Exception::class)
     fun executeTransaction(database: JdbcDatabase?, queries: List<String?>?)
 
-    /**
-     * Check if the data record is valid and ok to be written to destination
-     */
+    /** Check if the data record is valid and ok to be written to destination */
     fun isValidData(data: JsonNode?): Boolean
 
     /**
@@ -134,7 +142,6 @@ interface SqlOperations {
      *
      * @return true if the destination supports schema (ex: Postgres), false if it doesn't(MySQL)
      */
-    @JvmField
     val isSchemaRequired: Boolean
 
     companion object {

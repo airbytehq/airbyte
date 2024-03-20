@@ -14,10 +14,14 @@ object CDKConstants {
             val prop = Properties()
 
             try {
-                CDKConstants::class.java.classLoader.getResourceAsStream("version.properties").use { inputStream ->
-                    prop.load(inputStream)
-                    return prop.getProperty("version")
-                }
+                CDKConstants::class
+                    .java
+                    .classLoader
+                    .getResourceAsStream("version.properties")
+                    .use { inputStream ->
+                        prop.load(inputStream)
+                        return prop.getProperty("version")
+                    }
             } catch (e: IOException) {
                 throw RuntimeException("Could not read version properties file", e)
             }

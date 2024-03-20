@@ -73,7 +73,7 @@ public class SerialFlush {
       throw new ConfigErrorException(message);
     }
     return (pair, writer) -> {
-      log.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.byteCount));
+      log.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));

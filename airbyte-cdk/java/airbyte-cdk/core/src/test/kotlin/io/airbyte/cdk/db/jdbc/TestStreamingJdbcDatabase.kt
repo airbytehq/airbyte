@@ -53,7 +53,7 @@ internal class TestStreamingJdbcDatabase {
 
         defaultJdbcDatabase = Mockito.spy(DefaultJdbcDatabase(connectionPool))
         streamingJdbcDatabase =
-            StreamingJdbcDatabase(connectionPool, JdbcUtils.getDefaultSourceOperations()) { ->
+            StreamingJdbcDatabase(connectionPool, JdbcUtils.defaultSourceOperations) { ->
                 AdaptiveStreamingQueryConfig()
             }
     }
@@ -88,7 +88,7 @@ internal class TestStreamingJdbcDatabase {
                     ps1.set(ps)
                     ps
                 },
-                { queryContext: ResultSet? -> sourceOperations.rowToJson(queryContext) }
+                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) }
             )
         val expectedRecords: List<JsonNode> =
             Lists.newArrayList(
