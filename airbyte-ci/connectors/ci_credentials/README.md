@@ -39,7 +39,6 @@ This command installs `ci_credentials` and makes it globally available in your t
 > [!Note]
 > - `--force` is required to ensure updates are applied on subsequent installs.
 > - `--python=python3.10` is required to ensure the correct python version is used.
-> - `--editable` is required to ensure the correct python version is used.
 
 ## Get GSM access
 Download a Service account json key that has access to Google Secrets Manager.
@@ -71,7 +70,6 @@ This is useful when you are making changes to the package and want to test them 
 
 > [!Note]
 > - The package name is `ci_credentials`, not `airbyte-ci`. You will need this when uninstalling or reinstalling.
-> - Even with the above `--editable` method, live changes to the code in the sibling project `/airbyte-ci/connectors/connector_ops/` are not automatically captured. To ensure you are using the latest code, use the command `pipx reinstall ci_credentials`.
 
 ## Usage
 After installation, you can use the `ci_credentials` command in your terminal.

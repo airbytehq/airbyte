@@ -11,4 +11,4 @@ The installation instructions for the `airbyte-ci` CLI tool cal be found here
 | --------------------------------------------- | ------------------------------------------------------------------ |
 | [`base_images`](connectors/base_images)       | A set of tools to build and publish Airbyte base connector images. |
 | [`ci_credentials`](connectors/ci_credentials) | A CLI tool to fetch connector secrets from GCP Secrets Manager.    |
-| [`connector_ops`](connectors/connector_ops)   | A set of tools to verify connectors in CI.                         |
+| [`connector_ops`](connectors/connector_ops)   | A python package with utils reused in internal packages.                         |
