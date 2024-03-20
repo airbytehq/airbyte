@@ -72,7 +72,7 @@ definitions:
       type: CustomIncrementalSync
       class_name: source_klaviyo.components.datetime_based_cursor.KlaviyoDatetimeBasedCursor
       cursor_field: "{{ parameters.get('cursor_field', 'updated') }}"
-      start_datetime: "{{ config.get('start_date') }}"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       start_time_option:
         type: RequestOption
