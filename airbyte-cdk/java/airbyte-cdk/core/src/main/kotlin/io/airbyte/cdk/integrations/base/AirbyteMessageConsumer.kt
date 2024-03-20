@@ -17,19 +17,16 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
  *
  * Lifecycle:
  *
- *  * 1. Instantiate consumer.
- *  * 2. start() to initialize any resources that need to be created BEFORE the consumer consumes
- * any messages.
- *  * 3. Consumes ALL records via [AirbyteMessageConsumer.accept]
- *  * 4. Always (on success or failure) finalize by calling
- * [AirbyteMessageConsumer.close]
+ * * 1. Instantiate consumer.
+ * * 2. start() to initialize any resources that need to be created BEFORE the consumer consumes any
+ * messages.
+ * * 3. Consumes ALL records via [AirbyteMessageConsumer.accept]
+ * * 4. Always (on success or failure) finalize by calling [AirbyteMessageConsumer.close]
  *
- * We encourage implementing this interface using the [FailureTrackingAirbyteMessageConsumer]
- * class.
+ * We encourage implementing this interface using the [FailureTrackingAirbyteMessageConsumer] class.
  */
-interface AirbyteMessageConsumer : CheckedConsumer<AirbyteMessage?, Exception?>, AutoCloseable {
-    @Throws(Exception::class)
-    fun start()
+interface AirbyteMessageConsumer : CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
+    @Throws(Exception::class) fun start()
 
     /**
      * Consumes all [AirbyteMessage]s
@@ -37,22 +34,22 @@ interface AirbyteMessageConsumer : CheckedConsumer<AirbyteMessage?, Exception?>,
      * @param message [AirbyteMessage] to be processed
      * @throws Exception
      */
-    @Throws(Exception::class)
-    override fun accept(message: AirbyteMessage)
+    @Throws(Exception::class) override fun accept(message: AirbyteMessage)
 
     /**
-     * Executes at the end of consumption of all incoming streamed data regardless of success or failure
+     * Executes at the end of consumption of all incoming streamed data regardless of success or
+     * failure
      *
      * @throws Exception
      */
-    @Throws(Exception::class)
-    override fun close()
+    @Throws(Exception::class) override fun close()
 
     companion object {
-        /**
-         * Append a function to be called on [AirbyteMessageConsumer.close].
-         */
-        fun appendOnClose(consumer: AirbyteMessageConsumer?, voidCallable: VoidCallable): AirbyteMessageConsumer? {
+        /** Append a function to be called on [AirbyteMessageConsumer.close]. */
+        fun appendOnClose(
+            consumer: AirbyteMessageConsumer?,
+            voidCallable: VoidCallable
+        ): AirbyteMessageConsumer? {
             return object : AirbyteMessageConsumer {
                 @Throws(Exception::class)
                 override fun start() {

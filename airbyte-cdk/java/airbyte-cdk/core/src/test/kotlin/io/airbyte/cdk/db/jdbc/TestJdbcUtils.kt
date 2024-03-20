@@ -34,7 +34,7 @@ import org.testcontainers.utility.MountableFile
 
 internal class TestJdbcUtils {
     private var dbName: String? = null
-    private var dataSource: DataSource? = null
+    private lateinit var dataSource: DataSource
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {
@@ -119,7 +119,7 @@ internal class TestJdbcUtils {
         dataSource!!.connection.use { connection ->
             val rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
             val actual =
-                JdbcDatabase.toUnsafeStream(rs) { queryContext: ResultSet? ->
+                JdbcDatabase.toUnsafeStream(rs) { queryContext: ResultSet ->
                         sourceOperations.rowToJson(queryContext)
                     }
                     .collect(Collectors.toList())

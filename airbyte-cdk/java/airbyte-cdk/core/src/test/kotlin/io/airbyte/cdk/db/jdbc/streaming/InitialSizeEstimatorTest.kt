@@ -40,7 +40,7 @@ internal class InitialSizeEstimatorTest {
         val fetchSize = sizeEstimator.fetchSize
         Assertions.assertTrue(fetchSize.isPresent)
         val expectedMaxByteSize = 21L
-        Assertions.assertEquals(expectedMaxByteSize, Math.round(sizeEstimator.getMaxRowByteSize()))
+        Assertions.assertEquals(expectedMaxByteSize, Math.round(sizeEstimator.maxRowByteSize))
         Assertions.assertEquals(
             (bufferByteSize / expectedMaxByteSize) + 1,
             fetchSize.get().toLong()

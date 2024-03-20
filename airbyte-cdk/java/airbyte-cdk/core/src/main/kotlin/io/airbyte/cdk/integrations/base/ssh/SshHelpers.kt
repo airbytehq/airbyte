@@ -17,17 +17,25 @@ object SshHelpers {
         get() = getSpecAndInjectSsh(Optional.empty())
 
     @Throws(IOException::class)
-    fun getSpecAndInjectSsh(group: Optional<String?>): ConnectorSpecification? {
-        val originalSpec = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification::class.java)
+    fun getSpecAndInjectSsh(group: Optional<String>): ConnectorSpecification? {
+        val originalSpec =
+            Jsons.deserialize(
+                MoreResources.readResource("spec.json"),
+                ConnectorSpecification::class.java
+            )
         return injectSshIntoSpec(originalSpec, group)
     }
 
     @JvmOverloads
     @Throws(IOException::class)
-    fun injectSshIntoSpec(connectorSpecification: ConnectorSpecification?, group: Optional<String?> = Optional.empty()): ConnectorSpecification? {
+    fun injectSshIntoSpec(
+        connectorSpecification: ConnectorSpecification?,
+        group: Optional<String> = Optional.empty()
+    ): ConnectorSpecification? {
         val originalSpec = Jsons.clone(connectorSpecification)
         val propNode = originalSpec!!.connectionSpecification["properties"] as ObjectNode
-        val tunnelMethod = Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")) as ObjectNode
+        val tunnelMethod =
+            Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")) as ObjectNode
         if (group.isPresent) {
             tunnelMethod.put("group", group.get())
         }

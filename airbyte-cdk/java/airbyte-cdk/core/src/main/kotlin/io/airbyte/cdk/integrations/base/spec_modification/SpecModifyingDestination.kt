@@ -28,16 +28,20 @@ abstract class SpecModifyingDestination(private val destination: Destination) : 
     }
 
     @Throws(Exception::class)
-    override fun getConsumer(config: JsonNode?,
-                             catalog: ConfiguredAirbyteCatalog?,
-                             outputRecordCollector: Consumer<AirbyteMessage?>?): AirbyteMessageConsumer? {
+    override fun getConsumer(
+        config: JsonNode?,
+        catalog: ConfiguredAirbyteCatalog?,
+        outputRecordCollector: Consumer<AirbyteMessage?>?
+    ): AirbyteMessageConsumer? {
         return destination.getConsumer(config, catalog, outputRecordCollector)
     }
 
     @Throws(Exception::class)
-    override fun getSerializedMessageConsumer(config: JsonNode?,
-                                              catalog: ConfiguredAirbyteCatalog?,
-                                              outputRecordCollector: Consumer<AirbyteMessage?>?): SerializedAirbyteMessageConsumer? {
+    override fun getSerializedMessageConsumer(
+        config: JsonNode?,
+        catalog: ConfiguredAirbyteCatalog?,
+        outputRecordCollector: Consumer<AirbyteMessage?>?
+    ): SerializedAirbyteMessageConsumer? {
         return destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)
     }
 }

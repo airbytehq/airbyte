@@ -8,29 +8,30 @@ import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.functional.Either
-import org.apache.commons.lang3.exception.ExceptionUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.SQLException
 import java.sql.SQLSyntaxErrorException
 import java.util.stream.Collectors
+import org.apache.commons.lang3.exception.ExceptionUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-/**
- * Utility class defining methods for handling configuration exceptions in connectors.
- */
+/** Utility class defining methods for handling configuration exceptions in connectors. */
 object ConnectorExceptionUtil {
     private val LOGGER: Logger = LoggerFactory.getLogger(ConnectorExceptionUtil::class.java)
 
-    const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String = "Could not connect with provided configuration. Error: %s"
-    const val RECOVERY_CONNECTION_ERROR_MESSAGE: String = "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
+    const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
+        "Could not connect with provided configuration. Error: %s"
+    const val RECOVERY_CONNECTION_ERROR_MESSAGE: String =
+        "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
             "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds"
 
-    @JvmField
-    val HTTP_AUTHENTICATION_ERROR_CODES: List<Int> = ImmutableList.of(401, 403)
+    @JvmField val HTTP_AUTHENTICATION_ERROR_CODES: List<Int> = ImmutableList.of(401, 403)
 
     fun isConfigError(e: Throwable?): Boolean {
-        return isConfigErrorException(e) || isConnectionError(e) ||
-                isRecoveryConnectionException(e) || isUnknownColumnInFieldListException(e)
+        return isConfigErrorException(e) ||
+            isConnectionError(e) ||
+            isRecoveryConnectionException(e) ||
+            isUnknownColumnInFieldListException(e)
     }
 
     fun getDisplayMessage(e: Throwable?): String? {
@@ -43,13 +44,16 @@ object ConnectorExceptionUtil {
         } else if (isUnknownColumnInFieldListException(e)) {
             e!!.message
         } else {
-            String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, if (e!!.message != null) e.message else "")
+            String.format(
+                COMMON_EXCEPTION_MESSAGE_TEMPLATE,
+                if (e!!.message != null) e.message else ""
+            )
         }
     }
 
     /**
-     * Returns the first instance of an exception associated with a configuration error (if it exists).
-     * Otherwise, the original exception is returned.
+     * Returns the first instance of an exception associated with a configuration error (if it
+     * exists). Otherwise, the original exception is returned.
      */
     fun getRootConfigError(e: Exception?): Throwable? {
         var current: Throwable? = e
@@ -64,28 +68,39 @@ object ConnectorExceptionUtil {
     }
 
     /**
-     * Log all the exceptions, and rethrow the first. This is useful for e.g. running multiple futures
-     * and waiting for them to complete/fail. Rather than combining them into a single mega-exception
-     * (which works poorly in the UI), we just log all of them, and throw the first exception.
+     * Log all the exceptions, and rethrow the first. This is useful for e.g. running multiple
+     * futures and waiting for them to complete/fail. Rather than combining them into a single
+     * mega-exception (which works poorly in the UI), we just log all of them, and throw the first
+     * exception.
      *
-     *
-     * In most cases, all the exceptions will look very similar, so the user only needs to see the first
-     * exception anyway. This mimics e.g. a for-loop over multiple tasks, where the loop would break on
-     * the first exception.
+     * In most cases, all the exceptions will look very similar, so the user only needs to see the
+     * first exception anyway. This mimics e.g. a for-loop over multiple tasks, where the loop would
+     * break on the first exception.
      */
-    @Throws(T::class)
-    fun <T : Throwable?> logAllAndThrowFirst(initialMessage: String, throwables: Collection<T>) {
+    @JvmStatic
+    fun <T : Throwable> logAllAndThrowFirst(initialMessage: String, throwables: Collection<T>) {
         if (!throwables.isEmpty()) {
-            val stacktraces = throwables.stream().map { throwable: Throwable? -> ExceptionUtils.getStackTrace(throwable) }.collect(Collectors.joining("\n"))
+            val stacktraces =
+                throwables
+                    .stream()
+                    .map { throwable: Throwable? -> ExceptionUtils.getStackTrace(throwable) }
+                    .collect(Collectors.joining("\n"))
             LOGGER.error("$initialMessage$stacktraces\nRethrowing first exception.")
             throw throwables.iterator().next()
         }
     }
 
-    @Throws(T::class)
-    fun <T : Throwable?, Result> getResultsOrLogAndThrowFirst(initialMessage: String,
-                                                              eithers: List<Either<out T, Result>>): List<Result> {
-        val throwables: List<T> = eithers.stream().filter { obj: Either<out T, Result> -> obj.isLeft }.map { obj: Either<*, *> -> obj.left }.toList()
+    @JvmStatic
+    fun <T : Throwable, Result> getResultsOrLogAndThrowFirst(
+        initialMessage: String,
+        eithers: List<Either<out T, Result>>
+    ): List<Result> {
+        val throwables: List<T> =
+            eithers
+                .stream()
+                .filter { obj: Either<out T, Result> -> obj.isLeft }
+                .map { it.left }
+                .toList()
         if (!throwables.isEmpty()) {
             logAllAndThrowFirst(initialMessage, throwables)
         }
@@ -102,18 +117,13 @@ object ConnectorExceptionUtil {
     }
 
     private fun isRecoveryConnectionException(e: Throwable?): Boolean {
-        return e is SQLException && e.message
-                .lowercase()
-                .contains("due to conflict with recovery")
+        return e is SQLException &&
+            e.message!!.lowercase().contains("due to conflict with recovery")
     }
 
     private fun isUnknownColumnInFieldListException(e: Throwable?): Boolean {
-        return (e is SQLSyntaxErrorException
-                && e.message
-                .lowercase()
-                .contains("unknown column")
-                && e.message
-                .lowercase()
-                .contains("in 'field list'"))
+        return (e is SQLSyntaxErrorException &&
+            e.message!!.lowercase().contains("unknown column") &&
+            e.message!!.lowercase().contains("in 'field list'"))
     }
 }

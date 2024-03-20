@@ -6,6 +6,5 @@ package io.airbyte.cdk.db
 import java.sql.SQLException
 
 fun interface DataTypeSupplier<DataType> {
-    @Throws(SQLException::class)
-    fun apply(): DataType
+    @Throws(SQLException::class) fun apply(): DataType
 }

@@ -13,9 +13,9 @@ internal class IntegrationConfigTest {
     fun testSpec() {
         val config = IntegrationConfig.spec()
         Assertions.assertEquals(Command.SPEC, config.command)
-        Assertions.assertThrows(IllegalStateException::class.java) { config.configPath }
-        Assertions.assertThrows(IllegalStateException::class.java) { config.catalogPath }
-        Assertions.assertThrows(IllegalStateException::class.java) { config.statePath }
+        Assertions.assertThrows(IllegalStateException::class.java) { config.getConfigPath() }
+        Assertions.assertThrows(IllegalStateException::class.java) { config.getCatalogPath() }
+        Assertions.assertThrows(IllegalStateException::class.java) { config.getStatePath() }
     }
 
     @Test
@@ -24,9 +24,9 @@ internal class IntegrationConfigTest {
 
         val config = IntegrationConfig.check(CONFIG_PATH)
         Assertions.assertEquals(Command.CHECK, config.command)
-        Assertions.assertEquals(CONFIG_PATH, config.configPath)
-        Assertions.assertThrows(IllegalStateException::class.java) { config.catalogPath }
-        Assertions.assertThrows(IllegalStateException::class.java) { config.statePath }
+        Assertions.assertEquals(CONFIG_PATH, config.getConfigPath())
+        Assertions.assertThrows(IllegalStateException::class.java) { config.getCatalogPath() }
+        Assertions.assertThrows(IllegalStateException::class.java) { config.getStatePath() }
     }
 
     @Test
@@ -37,9 +37,9 @@ internal class IntegrationConfigTest {
 
         val config = IntegrationConfig.discover(CONFIG_PATH)
         Assertions.assertEquals(Command.DISCOVER, config.command)
-        Assertions.assertEquals(CONFIG_PATH, config.configPath)
-        Assertions.assertThrows(IllegalStateException::class.java) { config.catalogPath }
-        Assertions.assertThrows(IllegalStateException::class.java) { config.statePath }
+        Assertions.assertEquals(CONFIG_PATH, config.getConfigPath())
+        Assertions.assertThrows(IllegalStateException::class.java) { config.getCatalogPath() }
+        Assertions.assertThrows(IllegalStateException::class.java) { config.getStatePath() }
     }
 
     @Test
@@ -53,9 +53,9 @@ internal class IntegrationConfigTest {
 
         val config = IntegrationConfig.write(CONFIG_PATH, CATALOG_PATH)
         Assertions.assertEquals(Command.WRITE, config.command)
-        Assertions.assertEquals(CONFIG_PATH, config.configPath)
-        Assertions.assertEquals(CATALOG_PATH, config.catalogPath)
-        Assertions.assertThrows(IllegalStateException::class.java) { config.statePath }
+        Assertions.assertEquals(CONFIG_PATH, config.getConfigPath())
+        Assertions.assertEquals(CATALOG_PATH, config.getCatalogPath())
+        Assertions.assertThrows(IllegalStateException::class.java) { config.getStatePath() }
     }
 
     @Test
@@ -69,9 +69,9 @@ internal class IntegrationConfigTest {
 
         val config = IntegrationConfig.read(CONFIG_PATH, CATALOG_PATH, STATE_PATH)
         Assertions.assertEquals(Command.READ, config.command)
-        Assertions.assertEquals(CONFIG_PATH, config.configPath)
-        Assertions.assertEquals(CATALOG_PATH, config.catalogPath)
-        Assertions.assertEquals(Optional.of(STATE_PATH), config.statePath)
+        Assertions.assertEquals(CONFIG_PATH, config.getConfigPath())
+        Assertions.assertEquals(CATALOG_PATH, config.getCatalogPath())
+        Assertions.assertEquals(Optional.of(STATE_PATH), config.getStatePath())
     }
 
     @Test
@@ -85,9 +85,9 @@ internal class IntegrationConfigTest {
 
         val config = IntegrationConfig.read(CONFIG_PATH, CATALOG_PATH, null)
         Assertions.assertEquals(Command.READ, config.command)
-        Assertions.assertEquals(CONFIG_PATH, config.configPath)
-        Assertions.assertEquals(CATALOG_PATH, config.catalogPath)
-        Assertions.assertEquals(Optional.empty<Any>(), config.statePath)
+        Assertions.assertEquals(CONFIG_PATH, config.getConfigPath())
+        Assertions.assertEquals(CATALOG_PATH, config.getCatalogPath())
+        Assertions.assertEquals(Optional.empty<Any>(), config.getStatePath())
     }
 
     companion object {

@@ -3,16 +3,23 @@
  */
 package io.airbyte.cdk.db.factory
 
-/**
- * Collection of JDBC driver class names and the associated JDBC URL format string.
- */
-enum class DatabaseDriver(@JvmField val driverClassName: String, @JvmField val urlFormatString: String) {
+/** Collection of JDBC driver class names and the associated JDBC URL format string. */
+enum class DatabaseDriver(
+    @JvmField val driverClassName: String,
+    @JvmField val urlFormatString: String
+) {
     CLICKHOUSE("com.clickhouse.jdbc.ClickHouseDriver", "jdbc:clickhouse:%s://%s:%d/%s"),
-    DATABRICKS("com.databricks.client.jdbc.Driver", "jdbc:databricks://%s:%s;HttpPath=%s;SSL=1;UserAgentEntry=Airbyte"),
+    DATABRICKS(
+        "com.databricks.client.jdbc.Driver",
+        "jdbc:databricks://%s:%s;HttpPath=%s;SSL=1;UserAgentEntry=Airbyte"
+    ),
     DB2("com.ibm.db2.jcc.DB2Driver", "jdbc:db2://%s:%d/%s"),
     STARBURST("io.trino.jdbc.TrinoDriver", "jdbc:trino://%s:%s/%s?SSL=true&source=airbyte"),
     MARIADB("org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s"),
-    MSSQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d;databaseName=%s"),
+    MSSQLSERVER(
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        "jdbc:sqlserver://%s:%d;databaseName=%s"
+    ),
     MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s"),
     ORACLE("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%d/%s"),
     VERTICA("com.vertica.jdbc.Driver", "jdbc:vertica://%s:%d/%s"),
@@ -28,11 +35,10 @@ enum class DatabaseDriver(@JvmField val driverClassName: String, @JvmField val u
          * Finds the [DatabaseDriver] enumerated value that matches the provided driver class name.
          *
          * @param driverClassName The driver class name.
-         * @return The matching [DatabaseDriver] enumerated value or `null` if no match is
-         * found.
+         * @return The matching [DatabaseDriver] enumerated value or `null` if no match is found.
          */
-        fun findByDriverClassName(driverClassName: String?): DatabaseDriver? {
-            var selected: DatabaseDriver? = null
+        fun findByDriverClassName(driverClassName: String?): DatabaseDriver {
+            lateinit var selected: DatabaseDriver
 
             for (candidate in entries) {
                 if (candidate.driverClassName.equals(driverClassName, ignoreCase = true)) {

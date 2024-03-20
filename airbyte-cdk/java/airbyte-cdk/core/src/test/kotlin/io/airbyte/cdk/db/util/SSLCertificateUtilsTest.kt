@@ -24,7 +24,7 @@ internal class SSLCertificateUtilsTest {
         NoSuchAlgorithmException::class
     )
     fun testkeyStoreFromCertificateInternal(
-        certString: String?,
+        certString: String,
         pwd: String,
         fs: FileSystem?,
         directory: String?
@@ -82,9 +82,9 @@ internal class SSLCertificateUtilsTest {
         InterruptedException::class
     )
     fun testKeyStoreFromClientCertificateInternal(
-        certString: String?,
-        keyString: String?,
-        keyStorePassword: String?,
+        certString: String,
+        keyString: String,
+        keyStorePassword: String,
         filesystem: FileSystem?,
         directory: String?
     ) {

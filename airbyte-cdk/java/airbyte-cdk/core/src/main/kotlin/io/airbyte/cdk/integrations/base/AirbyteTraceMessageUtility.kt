@@ -5,9 +5,9 @@ package io.airbyte.cdk.integrations.base
 
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.protocol.models.v0.*
-import org.apache.commons.lang3.exception.ExceptionUtils
 import java.time.Instant
 import java.util.function.Consumer
+import org.apache.commons.lang3.exception.ExceptionUtils
 
 object AirbyteTraceMessageUtility {
     fun emitSystemErrorTrace(e: Throwable, displayMessage: String?) {
@@ -20,34 +20,50 @@ object AirbyteTraceMessageUtility {
     }
 
     fun emitCustomErrorTrace(displayMessage: String?, internalMessage: String?) {
-        emitMessage(makeAirbyteMessageFromTraceMessage(
+        emitMessage(
+            makeAirbyteMessageFromTraceMessage(
                 makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
-                        .withError(AirbyteErrorTraceMessage()
-                                .withFailureType(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
-                                .withMessage(displayMessage)
-                                .withInternalMessage(internalMessage))))
+                    .withError(
+                        AirbyteErrorTraceMessage()
+                            .withFailureType(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
+                            .withMessage(displayMessage)
+                            .withInternalMessage(internalMessage)
+                    )
+            )
+        )
     }
 
-    fun emitEstimateTrace(byteEstimate: Long,
-                          type: AirbyteEstimateTraceMessage.Type?,
-                          rowEstimate: Long,
-                          streamName: String?,
-                          streamNamespace: String?) {
-        emitMessage(makeAirbyteMessageFromTraceMessage(
+    fun emitEstimateTrace(
+        byteEstimate: Long,
+        type: AirbyteEstimateTraceMessage.Type?,
+        rowEstimate: Long,
+        streamName: String?,
+        streamNamespace: String?
+    ) {
+        emitMessage(
+            makeAirbyteMessageFromTraceMessage(
                 makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ESTIMATE)
-                        .withEstimate(AirbyteEstimateTraceMessage()
-                                .withByteEstimate(byteEstimate)
-                                .withType(type)
-                                .withRowEstimate(rowEstimate)
-                                .withName(streamName)
-                                .withNamespace(streamNamespace))))
+                    .withEstimate(
+                        AirbyteEstimateTraceMessage()
+                            .withByteEstimate(byteEstimate)
+                            .withType(type)
+                            .withRowEstimate(rowEstimate)
+                            .withName(streamName)
+                            .withNamespace(streamNamespace)
+                    )
+            )
+        )
     }
 
     fun emitAnalyticsTrace(airbyteAnalyticsTraceMessage: AirbyteAnalyticsTraceMessage) {
         emitMessage(makeAnalyticsTraceAirbyteMessage(airbyteAnalyticsTraceMessage))
     }
 
-    fun emitErrorTrace(e: Throwable, displayMessage: String?, failureType: AirbyteErrorTraceMessage.FailureType) {
+    fun emitErrorTrace(
+        e: Throwable,
+        displayMessage: String?,
+        failureType: AirbyteErrorTraceMessage.FailureType
+    ) {
         emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType))
     }
 
@@ -65,40 +81,60 @@ object AirbyteTraceMessageUtility {
     private fun emitMessage(message: AirbyteMessage) {
         // Not sure why defaultOutputRecordCollector is under Destination specifically,
         // but this matches usage elsewhere in base-java
-        val outputRecordCollector = Consumer<AirbyteMessage> { message: AirbyteMessage? -> Destination.Companion.defaultOutputRecordCollector(message) }
+        val outputRecordCollector =
+            Consumer<AirbyteMessage> { message: AirbyteMessage? ->
+                Destination.Companion.defaultOutputRecordCollector(message)
+            }
         outputRecordCollector.accept(message)
     }
 
     private fun makeErrorTraceAirbyteMessage(
-            e: Throwable,
-            displayMessage: String?,
-            failureType: AirbyteErrorTraceMessage.FailureType): AirbyteMessage {
+        e: Throwable,
+        displayMessage: String?,
+        failureType: AirbyteErrorTraceMessage.FailureType
+    ): AirbyteMessage {
         return makeAirbyteMessageFromTraceMessage(
-                makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
-                        .withError(AirbyteErrorTraceMessage()
-                                .withFailureType(failureType)
-                                .withMessage(displayMessage)
-                                .withInternalMessage(e.toString())
-                                .withStackTrace(ExceptionUtils.getStackTrace(e))))
+            makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
+                .withError(
+                    AirbyteErrorTraceMessage()
+                        .withFailureType(failureType)
+                        .withMessage(displayMessage)
+                        .withInternalMessage(e.toString())
+                        .withStackTrace(ExceptionUtils.getStackTrace(e))
+                )
+        )
     }
 
-    private fun makeAnalyticsTraceAirbyteMessage(airbyteAnalyticsTraceMessage: AirbyteAnalyticsTraceMessage): AirbyteMessage {
-        return AirbyteMessage().withType(AirbyteMessage.Type.TRACE)
-                .withTrace(AirbyteTraceMessage()
-                        .withAnalytics(airbyteAnalyticsTraceMessage)
-                        .withType(AirbyteTraceMessage.Type.ANALYTICS)
-                        .withEmittedAt(Instant.now().toEpochMilli().toDouble()))
+    private fun makeAnalyticsTraceAirbyteMessage(
+        airbyteAnalyticsTraceMessage: AirbyteAnalyticsTraceMessage
+    ): AirbyteMessage {
+        return AirbyteMessage()
+            .withType(AirbyteMessage.Type.TRACE)
+            .withTrace(
+                AirbyteTraceMessage()
+                    .withAnalytics(airbyteAnalyticsTraceMessage)
+                    .withType(AirbyteTraceMessage.Type.ANALYTICS)
+                    .withEmittedAt(Instant.now().toEpochMilli().toDouble())
+            )
     }
 
-    private fun makeStreamStatusTraceAirbyteMessage(airbyteStreamStatusHolder: AirbyteStreamStatusHolder): AirbyteMessage {
+    private fun makeStreamStatusTraceAirbyteMessage(
+        airbyteStreamStatusHolder: AirbyteStreamStatusHolder
+    ): AirbyteMessage {
         return makeAirbyteMessageFromTraceMessage(airbyteStreamStatusHolder.toTraceMessage())
     }
 
-    private fun makeAirbyteMessageFromTraceMessage(airbyteTraceMessage: AirbyteTraceMessage): AirbyteMessage {
+    private fun makeAirbyteMessageFromTraceMessage(
+        airbyteTraceMessage: AirbyteTraceMessage
+    ): AirbyteMessage {
         return AirbyteMessage().withType(AirbyteMessage.Type.TRACE).withTrace(airbyteTraceMessage)
     }
 
-    private fun makeAirbyteTraceMessage(traceMessageType: AirbyteTraceMessage.Type): AirbyteTraceMessage {
-        return AirbyteTraceMessage().withType(traceMessageType).withEmittedAt(System.currentTimeMillis().toDouble())
+    private fun makeAirbyteTraceMessage(
+        traceMessageType: AirbyteTraceMessage.Type
+    ): AirbyteTraceMessage {
+        return AirbyteTraceMessage()
+            .withType(traceMessageType)
+            .withEmittedAt(System.currentTimeMillis().toDouble())
     }
 }

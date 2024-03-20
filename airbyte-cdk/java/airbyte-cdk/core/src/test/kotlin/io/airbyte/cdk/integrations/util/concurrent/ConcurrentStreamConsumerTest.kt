@@ -48,8 +48,8 @@ internal class ConcurrentStreamConsumerTest {
         Mockito.verify(streamConsumer, Mockito.times(1)).accept(stream)
         Assertions.assertTrue(concurrentStreamConsumer.exception.isPresent)
         Assertions.assertEquals(e, concurrentStreamConsumer.exception.get())
-        Assertions.assertEquals(1, concurrentStreamConsumer.exceptions.size)
-        Assertions.assertTrue(concurrentStreamConsumer.exceptions.contains(e))
+        Assertions.assertEquals(1, concurrentStreamConsumer.getExceptions().size)
+        Assertions.assertTrue(concurrentStreamConsumer.getExceptions().contains(e))
     }
 
     @Test
@@ -75,10 +75,10 @@ internal class ConcurrentStreamConsumerTest {
         Mockito.verify(streamConsumer, Mockito.times(3)).accept(any())
         Assertions.assertTrue(concurrentStreamConsumer.exception.isPresent)
         Assertions.assertEquals(e1, concurrentStreamConsumer.exception.get())
-        Assertions.assertEquals(3, concurrentStreamConsumer.exceptions.size)
-        Assertions.assertTrue(concurrentStreamConsumer.exceptions.contains(e1))
-        Assertions.assertTrue(concurrentStreamConsumer.exceptions.contains(e2))
-        Assertions.assertTrue(concurrentStreamConsumer.exceptions.contains(e3))
+        Assertions.assertEquals(3, concurrentStreamConsumer.getExceptions().size)
+        Assertions.assertTrue(concurrentStreamConsumer.getExceptions().contains(e1))
+        Assertions.assertTrue(concurrentStreamConsumer.getExceptions().contains(e2))
+        Assertions.assertTrue(concurrentStreamConsumer.getExceptions().contains(e3))
     }
 
     @Test

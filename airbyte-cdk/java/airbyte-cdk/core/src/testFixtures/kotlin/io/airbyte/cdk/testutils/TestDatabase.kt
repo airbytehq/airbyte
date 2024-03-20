@@ -50,7 +50,7 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
 
     @Volatile private var dataSource: DataSource? = null
 
-    @Volatile private var dslContext: DSLContext? = null
+    @Volatile private lateinit var dslContext: DSLContext
 
     protected val databaseId: Int
     protected val containerId: Int
@@ -108,9 +108,9 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
                 password,
                 databaseDriver!!.driverClassName,
                 jdbcUrl,
-                connectionProperties,
+                connectionProperties.toMap(),
                 JdbcConnector.getConnectionTimeout(
-                    connectionProperties,
+                    connectionProperties.toMap(),
                     databaseDriver!!.driverClassName
                 )
             )
@@ -149,7 +149,7 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
         return dataSource
     }
 
-    fun getDslContext(): DSLContext? {
+    fun getDslContext(): DSLContext {
         if (!this.isInitialized) {
             throw RuntimeException("TestDatabase instance is not yet initialized")
         }
@@ -222,12 +222,12 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
     }
 
     @Throws(SQLException::class)
-    fun <X> query(transform: ContextQueryFunction<X?>?): X? {
+    fun <X> query(transform: ContextQueryFunction<X>): X? {
         return database!!.query(transform)
     }
 
     @Throws(SQLException::class)
-    fun <X> transaction(transform: ContextQueryFunction<X?>?): X? {
+    fun <X> transaction(transform: ContextQueryFunction<X>): X? {
         return database!!.transaction(transform)
     }
 

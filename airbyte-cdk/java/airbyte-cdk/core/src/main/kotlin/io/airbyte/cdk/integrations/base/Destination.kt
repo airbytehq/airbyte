@@ -10,30 +10,36 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import lombok.extern.slf4j.Slf4j
 import java.util.function.Consumer
+import lombok.extern.slf4j.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 interface Destination : Integration {
     /**
      * Return a consumer that writes messages to the destination.
      *
-     * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+     * @param config
+     * - integration-specific configuration object as json. e.g. { "username": "airbyte",
      * "password": "super secure" }
-     * @param catalog - schema of the incoming messages.
-     * @return Consumer that accepts message. The [AirbyteMessageConsumer.accept]
-     * will be called n times where n is the number of messages.
-     * [AirbyteMessageConsumer.close] will always be called once regardless of success
-     * or failure.
-     * @throws Exception - any exception.
+     * @param catalog
+     * - schema of the incoming messages.
+     * @return Consumer that accepts message. The [AirbyteMessageConsumer.accept] will be called n
+     * times where n is the number of messages. [AirbyteMessageConsumer.close] will always be called
+     * once regardless of success or failure.
+     * @throws Exception
+     * - any exception.
      */
     @Throws(Exception::class)
-    fun getConsumer(config: JsonNode?,
-                    catalog: ConfiguredAirbyteCatalog?,
-                    outputRecordCollector: Consumer<AirbyteMessage?>?): AirbyteMessageConsumer?
+    fun getConsumer(
+        config: JsonNode?,
+        catalog: ConfiguredAirbyteCatalog?,
+        outputRecordCollector: Consumer<AirbyteMessage?>?
+    ): AirbyteMessageConsumer?
 
     /**
-     * Default implementation allows us to not have to touch existing destinations while avoiding a lot
-     * of conditional statements in [IntegrationRunner]. This is preferred over #getConsumer and
+     * Default implementation allows us to not have to touch existing destinations while avoiding a
+     * lot of conditional statements in [IntegrationRunner]. This is preferred over #getConsumer and
      * is the default Async Framework method.
      *
      * @param config config
@@ -44,18 +50,23 @@ interface Destination : Integration {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun getSerializedMessageConsumer(config: JsonNode?,
-                                     catalog: ConfiguredAirbyteCatalog?,
-                                     outputRecordCollector: Consumer<AirbyteMessage?>?): SerializedAirbyteMessageConsumer? {
-        return ShimToSerializedAirbyteMessageConsumer(getConsumer(config, catalog, outputRecordCollector))
+    fun getSerializedMessageConsumer(
+        config: JsonNode?,
+        catalog: ConfiguredAirbyteCatalog?,
+        outputRecordCollector: Consumer<AirbyteMessage?>?
+    ): SerializedAirbyteMessageConsumer? {
+        return ShimToSerializedAirbyteMessageConsumer(
+            getConsumer(config, catalog, outputRecordCollector)
+        )
     }
 
     /**
-     * Backwards-compatibility wrapper for an AirbyteMessageConsumer. Strips the sizeInBytes argument
-     * away from the .accept call.
+     * Backwards-compatibility wrapper for an AirbyteMessageConsumer. Strips the sizeInBytes
+     * argument away from the .accept call.
      */
     @Slf4j
-    class ShimToSerializedAirbyteMessageConsumer(private val consumer: AirbyteMessageConsumer?) : SerializedAirbyteMessageConsumer {
+    class ShimToSerializedAirbyteMessageConsumer(private val consumer: AirbyteMessageConsumer?) :
+        SerializedAirbyteMessageConsumer {
         @Throws(Exception::class)
         override fun start() {
             consumer!!.start()
@@ -64,13 +75,13 @@ interface Destination : Integration {
         /**
          * Consumes an [AirbyteMessage] for processing.
          *
-         *
          * If the provided JSON string is invalid AND represents a [AirbyteMessage.Type.STATE]
-         * message, processing is halted. Otherwise, the invalid message is logged and execution continues.
+         * message, processing is halted. Otherwise, the invalid message is logged and execution
+         * continues.
          *
          * @param inputString JSON representation of an [AirbyteMessage].
-         * @throws Exception if an invalid state message is provided or the consumer is unable to accept the
-         * provided message.
+         * @throws Exception if an invalid state message is provided or the consumer is unable to
+         * accept the provided message.
          */
         @Throws(Exception::class)
         override fun accept(inputString: String, sizeInBytes: Int) {
@@ -95,17 +106,19 @@ interface Destination : Integration {
         }
 
         companion object {
+            private val LOGGER: Logger =
+                LoggerFactory.getLogger(ShimToSerializedAirbyteMessageConsumer::class.java)
             /**
              * Consumes an [AirbyteMessage] for processing.
              *
-             *
              * If the provided JSON string is invalid AND represents a [AirbyteMessage.Type.STATE]
-             * message, processing is halted. Otherwise, the invalid message is logged and execution continues.
+             * message, processing is halted. Otherwise, the invalid message is logged and execution
+             * continues.
              *
              * @param consumer An [AirbyteMessageConsumer] that can handle the provided message.
              * @param inputString JSON representation of an [AirbyteMessage].
-             * @throws Exception if an invalid state message is provided or the consumer is unable to accept the
-             * provided message.
+             * @throws Exception if an invalid state message is provided or the consumer is unable
+             * to accept the provided message.
              */
             @VisibleForTesting
             @Throws(Exception::class)
@@ -115,7 +128,7 @@ interface Destination : Integration {
                     consumer!!.accept(messageOptional.get())
                 } else {
                     check(!isStateMessage(inputString)) { "Invalid state message: $inputString" }
-                    ShimToSerializedAirbyteMessageConsumer.log.error("Received invalid message: $inputString")
+                    LOGGER.error("Received invalid message: $inputString")
                 }
             }
 
@@ -128,7 +141,7 @@ interface Destination : Integration {
             private fun isStateMessage(input: String): Boolean {
                 val deserialized = Jsons.tryDeserialize(input, AirbyteTypeMessage::class.java)
                 return if (deserialized.isPresent) {
-                    deserialized.get().getType() == AirbyteMessage.Type.STATE
+                    deserialized.get().type == AirbyteMessage.Type.STATE
                 } else {
                     false
                 }
@@ -137,9 +150,7 @@ interface Destination : Integration {
     }
 
     val isV2Destination: Boolean
-        /**
-         * Denotes if the destination fully supports Destinations V2.
-         */
+        /** Denotes if the destination fully supports Destinations V2. */
         get() = false
 
     companion object {

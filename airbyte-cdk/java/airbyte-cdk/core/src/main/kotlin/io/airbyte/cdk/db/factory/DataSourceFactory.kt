@@ -10,9 +10,9 @@ import java.time.Duration
 import javax.sql.DataSource
 
 /**
- * Temporary factory class that provides convenience methods for creating a [DataSource]
- * instance. This class will be removed once the project has been converted to leverage an
- * application framework to manage the creation and injection of [DataSource] objects.
+ * Temporary factory class that provides convenience methods for creating a [DataSource] instance.
+ * This class will be removed once the project has been converted to leverage an application
+ * framework to manage the creation and injection of [DataSource] objects.
  */
 object DataSourceFactory {
     /**
@@ -25,12 +25,13 @@ object DataSourceFactory {
      * @return The configured [DataSource].
      */
     @JvmStatic
-    fun create(username: String?,
-               password: String?,
-               driverClassName: String,
-               jdbcConnectionString: String?): DataSource {
-        return DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
-                .build()
+    fun create(
+        username: String?,
+        password: String?,
+        driverClassName: String,
+        jdbcConnectionString: String?
+    ): DataSource {
+        return DataSourceBuilder(username, password, driverClassName, jdbcConnectionString).build()
     }
 
     /**
@@ -43,16 +44,19 @@ object DataSourceFactory {
      * @param connectionProperties Additional configuration properties for the underlying driver.
      * @return The configured [DataSource].
      */
-    fun create(username: String?,
-               password: String?,
-               driverClassName: String,
-               jdbcConnectionString: String?,
-               connectionProperties: Map<String?, String?>?,
-               connectionTimeout: Duration?): DataSource {
+    @JvmStatic
+    fun create(
+        username: String?,
+        password: String?,
+        driverClassName: String,
+        jdbcConnectionString: String?,
+        connectionProperties: Map<String?, String?>?,
+        connectionTimeout: Duration?
+    ): DataSource {
         return DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
-                .withConnectionProperties(connectionProperties)
-                .withConnectionTimeout(connectionTimeout)
-                .build()
+            .withConnectionProperties(connectionProperties)
+            .withConnectionTimeout(connectionTimeout)
+            .build()
     }
 
     /**
@@ -66,14 +70,15 @@ object DataSourceFactory {
      * @param driverClassName The fully qualified name of the JDBC driver class.
      * @return The configured [DataSource].
      */
-    fun create(username: String?,
-               password: String?,
-               host: String?,
-               port: Int,
-               database: String?,
-               driverClassName: String): DataSource {
-        return DataSourceBuilder(username, password, driverClassName, host, port, database)
-                .build()
+    fun create(
+        username: String?,
+        password: String?,
+        host: String?,
+        port: Int,
+        database: String?,
+        driverClassName: String
+    ): DataSource {
+        return DataSourceBuilder(username, password, driverClassName, host, port, database).build()
     }
 
     /**
@@ -88,16 +93,18 @@ object DataSourceFactory {
      * @param connectionProperties Additional configuration properties for the underlying driver.
      * @return The configured [DataSource].
      */
-    fun create(username: String?,
-               password: String?,
-               host: String?,
-               port: Int,
-               database: String?,
-               driverClassName: String,
-               connectionProperties: Map<String?, String?>?): DataSource {
+    fun create(
+        username: String?,
+        password: String?,
+        host: String?,
+        port: Int,
+        database: String?,
+        driverClassName: String,
+        connectionProperties: Map<String?, String?>?
+    ): DataSource {
         return DataSourceBuilder(username, password, driverClassName, host, port, database)
-                .withConnectionProperties(connectionProperties)
-                .build()
+            .withConnectionProperties(connectionProperties)
+            .build()
     }
 
     /**
@@ -111,18 +118,19 @@ object DataSourceFactory {
      * @param database The name of the database.
      * @return The configured [DataSource].
      */
-    fun createPostgres(username: String?,
-                       password: String?,
-                       host: String?,
-                       port: Int,
-                       database: String?): DataSource {
+    fun createPostgres(
+        username: String?,
+        password: String?,
+        host: String?,
+        port: Int,
+        database: String?
+    ): DataSource {
         return DataSourceBuilder(username, password, "org.postgresql.Driver", host, port, database)
-                .build()
+            .build()
     }
 
     /**
-     * Utility method that attempts to close the provided [DataSource] if it implements
-     * [Closeable].
+     * Utility method that attempts to close the provided [DataSource] if it implements [Closeable].
      *
      * @param dataSource The [DataSource] to close.
      * @throws Exception if unable to close the data source.
@@ -137,12 +145,13 @@ object DataSourceFactory {
         }
     }
 
-    /**
-     * Builder class used to configure and construct [DataSource] instances.
-     */
-    class DataSourceBuilder private constructor(private var username: String?,
-                                                private var password: String?,
-                                                private var driverClassName: String) {
+    /** Builder class used to configure and construct [DataSource] instances. */
+    class DataSourceBuilder
+    private constructor(
+        private var username: String?,
+        private var password: String?,
+        private var driverClassName: String
+    ) {
         private var connectionProperties: Map<String?, String?> = java.util.Map.of()
         private var database: String? = null
         private var host: String? = null
@@ -153,25 +162,31 @@ object DataSourceFactory {
         private var port = 5432
         private var connectionInitSql: String? = null
 
-        constructor(username: String?,
-                    password: String?,
-                    driverClassName: String,
-                    jdbcUrl: String?) : this(username, password, driverClassName) {
+        constructor(
+            username: String?,
+            password: String?,
+            driverClassName: String,
+            jdbcUrl: String?
+        ) : this(username, password, driverClassName) {
             this.jdbcUrl = jdbcUrl
         }
 
-        constructor(username: String?,
-                    password: String?,
-                    driverClassName: String,
-                    host: String?,
-                    port: Int,
-                    database: String?) : this(username, password, driverClassName) {
+        constructor(
+            username: String?,
+            password: String?,
+            driverClassName: String,
+            host: String?,
+            port: Int,
+            database: String?
+        ) : this(username, password, driverClassName) {
             this.host = host
             this.port = port
             this.database = database
         }
 
-        fun withConnectionProperties(connectionProperties: Map<String?, String?>?): DataSourceBuilder {
+        fun withConnectionProperties(
+            connectionProperties: Map<String?, String?>?
+        ): DataSourceBuilder {
             if (connectionProperties != null) {
                 this.connectionProperties = connectionProperties
             }
@@ -242,14 +257,20 @@ object DataSourceFactory {
         }
 
         fun build(): DataSource {
-            val databaseDriver: DatabaseDriver = DatabaseDriver.Companion.findByDriverClassName(driverClassName)
+            val databaseDriver: DatabaseDriver =
+                DatabaseDriver.Companion.findByDriverClassName(driverClassName)
 
-            Preconditions.checkNotNull(databaseDriver, "Unknown or blank driver class name: '$driverClassName'.")
+            Preconditions.checkNotNull(
+                databaseDriver,
+                "Unknown or blank driver class name: '$driverClassName'."
+            )
 
             val config = HikariConfig()
 
             config.driverClassName = databaseDriver.driverClassName
-            config.jdbcUrl = if (jdbcUrl != null) jdbcUrl else String.format(databaseDriver.urlFormatString, host, port, database)
+            config.jdbcUrl =
+                if (jdbcUrl != null) jdbcUrl
+                else String.format(databaseDriver.urlFormatString, host, port, database)
             config.maximumPoolSize = maximumPoolSize
             config.minimumIdle = minimumPoolSize
             // HikariCP uses milliseconds for all time values:
@@ -259,15 +280,17 @@ object DataSourceFactory {
             config.username = username
 
             /*
-       * Disable to prevent failing on startup. Applications may start prior to the database container
-       * being available. To avoid failing to create the connection pool, disable the fail check. This
-       * will preserve existing behavior that tests for the connection on first use, not on creation.
-       */
+             * Disable to prevent failing on startup. Applications may start prior to the database container
+             * being available. To avoid failing to create the connection pool, disable the fail check. This
+             * will preserve existing behavior that tests for the connection on first use, not on creation.
+             */
             config.initializationFailTimeout = Int.MIN_VALUE.toLong()
 
             config.connectionInitSql = connectionInitSql
 
-            connectionProperties.forEach { (propertyName: String?, value: String?) -> config.addDataSourceProperty(propertyName, value) }
+            connectionProperties.forEach { (propertyName: String?, value: String?) ->
+                config.addDataSourceProperty(propertyName, value)
+            }
 
             return HikariDataSource(config)
         }

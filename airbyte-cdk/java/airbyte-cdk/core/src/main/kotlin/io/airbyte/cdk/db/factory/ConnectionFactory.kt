@@ -10,8 +10,8 @@ import java.util.*
 
 /**
  * This class as been added in order to be able to save the connection in a test. It was found that
- * the [javax.sql.DataSource] close method wasn't propagating the connection properly. It
- * shouldn't be needed in our application code.
+ * the [javax.sql.DataSource] close method wasn't propagating the connection properly. It shouldn't
+ * be needed in our application code.
  */
 object ConnectionFactory {
     /**
@@ -23,18 +23,19 @@ object ConnectionFactory {
      * @param jdbcConnectionString The JDBC connection string.
      * @return The configured [Connection]
      */
-    fun create(username: String?,
-               password: String?,
-               connectionProperties: Map<String?, String?>,
-               jdbcConnectionString: String?): Connection {
+    fun create(
+        username: String?,
+        password: String?,
+        connectionProperties: Map<String?, String?>,
+        jdbcConnectionString: String?
+    ): Connection {
         try {
             val properties = Properties()
             properties["user"] = username
             properties["password"] = password
             connectionProperties.forEach { (k: String?, v: String?) -> properties[k] = v }
 
-            return DriverManager.getConnection(jdbcConnectionString,
-                    properties)
+            return DriverManager.getConnection(jdbcConnectionString, properties)
         } catch (e: SQLException) {
             throw RuntimeException(e)
         }

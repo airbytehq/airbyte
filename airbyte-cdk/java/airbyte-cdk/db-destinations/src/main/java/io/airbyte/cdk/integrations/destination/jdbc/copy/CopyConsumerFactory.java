@@ -93,7 +93,7 @@ public class CopyConsumerFactory {
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
                                                                          final SqlOperations sqlOperations,
                                                                          final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
-    return (final AirbyteStreamNameNamespacePair pair, final List<AirbyteRecordMessage> records) -> {
+    return (final AirbyteStreamNameNamespacePair pair, final List<? extends AirbyteRecordMessage> records) -> {
       final var fileName = pairToCopier.get(pair).prepareStagingFile();
       for (final AirbyteRecordMessage recordMessage : records) {
         final var id = UUID.randomUUID();
@@ -110,7 +110,7 @@ public class CopyConsumerFactory {
 
   private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
     return (final AirbyteStreamNameNamespacePair pair, final String stagingFileName) -> {
-      final String currentFileName = pairToCopier.get(pair).currentFile;
+      final String currentFileName = pairToCopier.get(pair).getCurrentFile();
       if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
         pairToCopier.get(pair).closeNonCurrentStagingFileWriters();
       }

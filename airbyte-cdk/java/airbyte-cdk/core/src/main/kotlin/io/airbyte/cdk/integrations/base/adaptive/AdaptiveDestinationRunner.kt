@@ -6,9 +6,9 @@ package io.airbyte.cdk.integrations.base.adaptive
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.commons.features.EnvVariableFeatureFlags
+import java.util.function.Supplier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.function.Supplier
 
 /**
  * This class launches different variants of a destination connector based on where Airbyte is
@@ -26,20 +26,29 @@ object AdaptiveDestinationRunner {
     }
 
     class OssDestinationBuilder(private val deploymentMode: String) {
-        fun <OT : Destination?> withOssDestination(ossDestinationSupplier: Supplier<OT>): CloudDestinationBuilder<OT> {
+        fun <OT : Destination> withOssDestination(
+            ossDestinationSupplier: Supplier<OT>
+        ): CloudDestinationBuilder<OT> {
             return CloudDestinationBuilder(deploymentMode, ossDestinationSupplier)
         }
     }
 
-    class CloudDestinationBuilder<OT : Destination?>(private val deploymentMode: String, private val ossDestinationSupplier: Supplier<OT>) {
-        fun <CT : Destination?> withCloudDestination(cloudDestinationSupplier: Supplier<CT>): Runner<OT, CT> {
+    class CloudDestinationBuilder<OT : Destination>(
+        private val deploymentMode: String,
+        private val ossDestinationSupplier: Supplier<OT>
+    ) {
+        fun <CT : Destination> withCloudDestination(
+            cloudDestinationSupplier: Supplier<CT>
+        ): Runner<OT, CT> {
             return Runner(deploymentMode, ossDestinationSupplier, cloudDestinationSupplier)
         }
     }
 
-    class Runner<OT : Destination?, CT : Destination?>(private val deploymentMode: String?,
-                                                       private val ossDestinationSupplier: Supplier<OT>,
-                                                       private val cloudDestinationSupplier: Supplier<CT>) {
+    class Runner<OT : Destination, CT : Destination>(
+        private val deploymentMode: String?,
+        private val ossDestinationSupplier: Supplier<OT>,
+        private val cloudDestinationSupplier: Supplier<CT>
+    ) {
         private val destination: Destination
             get() {
                 LOGGER.info("Running destination under deployment mode: {}", deploymentMode)
@@ -53,7 +62,7 @@ object AdaptiveDestinationRunner {
             }
 
         @Throws(Exception::class)
-        fun run(args: Array<String?>?) {
+        fun run(args: Array<String>) {
             val destination = destination
             LOGGER.info("Starting destination: {}", destination.javaClass.name)
             IntegrationRunner(destination).run(args)
