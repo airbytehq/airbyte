@@ -145,11 +145,11 @@
               },
               "date_from": {
                 "title": "Начало выгрузки",
-                "description": "Начало выгрузки в формате YYYY-MM-DD",
+                "description": "Начало выгрузки в формате yyyy-mm-ddThh:mm:ss",
                 "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
-                "pattern_descriptor": "YYYY-MM-DD",
+                "pattern_descriptor": "yyyy-mm-ddThh:mm:ss",
                 "examples": [
-                  "2023-05-01"
+                  "2023-05-01T00:00:00"
                 ],
                 "order": 1,
                 "type": "string"

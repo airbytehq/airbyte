@@ -5,7 +5,7 @@ import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 # Enable debug mode for requests
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 
 # import http

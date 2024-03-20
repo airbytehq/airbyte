@@ -198,6 +198,7 @@ class Candidates(PaginationStream):
     data_key = "candidate_list"
     cursor_field = "updated_at"
     cursor_field_in_record = "updated_at"
+    page_size = 50
 
     def path(self, *args, **kwargs) -> str:
         return "candidates"
@@ -397,6 +398,7 @@ class Resumes(PaginationStream):
     primary_key = "id"
     cursor_field_in_record = "updated_at"
     cursor_field = "updated_at"
+    page_size = 50
 
     def path(self, *args, **kwargs) -> str:
         return "resumes"
@@ -445,6 +447,12 @@ class Stores(PaginationStream):
     primary_key = "id"
     cursor_field_in_record = "updated_at"
     cursor_field = "updated_at"
+
+    def build_params_filter(
+        self,
+        stream_state: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        return {}
 
     def path(self, *args, **kwargs) -> str:
         return "stores"
