@@ -3,12 +3,12 @@
  */
 package io.airbyte.cdk.db.jdbc.streaming
 
+import java.sql.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.*
 
 class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
-    private val fetchSizeEstimator: FetchSizeEstimator = TwoStageSizeEstimator.Companion.getInstance()
+    private val fetchSizeEstimator: FetchSizeEstimator = TwoStageSizeEstimator.Companion.instance
     private var currentFetchSize: Int
 
     init {
@@ -36,6 +36,7 @@ class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AdaptiveStreamingQueryConfig::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(AdaptiveStreamingQueryConfig::class.java)
     }
 }

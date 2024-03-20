@@ -17,13 +17,13 @@ interface NamingConventionTransformer {
      * @return modified name with invalid characters replaced by '_' and adapted for the chosen
      * destination.
      */
-    fun getIdentifier(name: String?): String
+    fun getIdentifier(name: String): String
 
     /**
      * Handle naming conversions of an input name to output a valid namespace for the desired
      * destination.
      */
-    fun getNamespace(namespace: String?): String
+    fun getNamespace(namespace: String): String
 
     /**
      * Same as getIdentifier but returns also the name of the table for storing raw data
@@ -31,7 +31,6 @@ interface NamingConventionTransformer {
      * @param name of the identifier to check proper naming conventions
      * @return modified name with invalid characters replaced by '_' and adapted for the chosen
      * destination.
-     *
      */
     @Deprecated("as this is very SQL specific, prefer using getIdentifier instead")
     fun getRawTableName(name: String): String
@@ -42,7 +41,6 @@ interface NamingConventionTransformer {
      * @param name of the identifier to check proper naming conventions
      * @return modified name with invalid characters replaced by '_' and adapted for the chosen
      * destination.
-     *
      */
     @Deprecated("as this is very SQL specific, prefer using getIdentifier instead")
     fun getTmpTableName(name: String): String
@@ -51,7 +49,7 @@ interface NamingConventionTransformer {
         return getTmpTableName(streamName)
     }
 
-    fun convertStreamName(input: String?): String
+    fun convertStreamName(input: String): String
 
     fun applyDefaultCase(input: String): String
 }

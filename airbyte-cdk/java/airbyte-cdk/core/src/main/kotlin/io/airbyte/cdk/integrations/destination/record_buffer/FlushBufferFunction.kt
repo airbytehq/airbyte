@@ -6,7 +6,8 @@ package io.airbyte.cdk.integrations.destination.record_buffer
 import io.airbyte.commons.functional.CheckedBiConsumer
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 
-interface FlushBufferFunction : CheckedBiConsumer<AirbyteStreamNameNamespacePair?, SerializableBuffer?, Exception?> {
+interface FlushBufferFunction :
+    CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> {
     @Throws(Exception::class)
     override fun accept(stream: AirbyteStreamNameNamespacePair, buffer: SerializableBuffer)
 }

@@ -12,19 +12,21 @@ interface Integration {
      * Fetch the specification for the integration.
      *
      * @return specification.
-     * @throws Exception - any exception.
+     * @throws Exception
+     * - any exception.
      */
-    @Throws(Exception::class)
-    fun spec(): ConnectorSpecification?
+    @Throws(Exception::class) fun spec(): ConnectorSpecification?
 
     /**
-     * Check whether, given the current configuration, the integration can connect to the integration.
+     * Check whether, given the current configuration, the integration can connect to the
+     * integration.
      *
-     * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+     * @param config
+     * - integration-specific configuration object as json. e.g. { "username": "airbyte",
      * "password": "super secure" }
      * @return Whether or not the connection was successful. Optional message if it was not.
-     * @throws Exception - any exception.
+     * @throws Exception
+     * - any exception.
      */
-    @Throws(Exception::class)
-    fun check(config: JsonNode?): AirbyteConnectionStatus?
+    @Throws(Exception::class) fun check(config: JsonNode?): AirbyteConnectionStatus?
 }

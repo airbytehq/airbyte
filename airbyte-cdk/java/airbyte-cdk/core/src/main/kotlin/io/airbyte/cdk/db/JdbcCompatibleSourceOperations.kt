@@ -5,6 +5,7 @@ package io.airbyte.cdk.db
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData
 import java.sql.*
 
 interface JdbcCompatibleSourceOperations<SourceType> : SourceOperations<ResultSet, SourceType> {
@@ -14,7 +15,7 @@ interface JdbcCompatibleSourceOperations<SourceType> : SourceOperations<ResultSe
      * @param colIndex 1-based column index.
      */
     @Throws(SQLException::class)
-    fun copyToJsonField(resultSet: ResultSet, colIndex: Int, json: ObjectNode?)
+    fun copyToJsonField(resultSet: ResultSet, colIndex: Int, json: ObjectNode)
 
     /** Set the cursor field in incremental table query. */
     @Throws(SQLException::class)
@@ -22,7 +23,7 @@ interface JdbcCompatibleSourceOperations<SourceType> : SourceOperations<ResultSe
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         cursorFieldType: SourceType?,
-        value: String?
+        value: String
     )
 
     /** Determine the database specific type of the input field based on its column metadata. */
@@ -36,4 +37,7 @@ interface JdbcCompatibleSourceOperations<SourceType> : SourceOperations<ResultSe
      * @return true is field type can be used as cursor field for incremental sync
      */
     fun isCursorType(type: SourceType?): Boolean
+
+    @Throws(SQLException::class)
+    abstract fun convertDatabaseRowToAirbyteRecordData(queryContext: ResultSet): AirbyteRecordData
 }

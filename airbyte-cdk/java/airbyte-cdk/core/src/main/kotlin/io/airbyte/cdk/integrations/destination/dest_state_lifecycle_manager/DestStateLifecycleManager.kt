@@ -10,19 +10,18 @@ import java.util.*
 /**
  * This class manages the lifecycle of state message. It tracks state messages that are in 3 states:
  *
- *  1. pending - associated records have been accepted by the connector but has NOT been pushed to
+ * 1. pending - associated records have been accepted by the connector but has NOT been pushed to
  * the destination
- *  1. flushed - associated records have been flushed to tmp storage in the destination but have NOT
+ * 1. flushed - associated records have been flushed to tmp storage in the destination but have NOT
  * been committed
- *  1. committed - associated records have been committed
- *
- *
+ * 1. committed - associated records have been committed
  */
 interface DestStateLifecycleManager {
     /**
      * Accepts a state into the manager. The state starts in a pending state.
      *
-     * @param message - airbyte message of type state
+     * @param message
+     * - airbyte message of type state
      */
     fun addState(message: AirbyteMessage)
 
@@ -39,7 +38,7 @@ interface DestStateLifecycleManager {
      *
      * @return list of state messages
      */
-    fun listFlushed(): Queue<AirbyteMessage?>?
+    fun listFlushed(): Queue<AirbyteMessage>
 
     /**
      * Moves any tracked state messages that are currently flushed to committed.
@@ -51,8 +50,8 @@ interface DestStateLifecycleManager {
 
     /**
      * Clears any committed state messages, this is called after returning the state message to the
-     * platform. The rationale behind this logic is to avoid returning duplicated state messages that
-     * would otherwise be held in the `committed` state
+     * platform. The rationale behind this logic is to avoid returning duplicated state messages
+     * that would otherwise be held in the `committed` state
      */
     fun clearCommitted()
 
@@ -69,9 +68,7 @@ interface DestStateLifecycleManager {
      */
     fun markPendingAsCommitted()
 
-    /**
-     * Mark all pending states for the given stream as committed.
-     */
+    /** Mark all pending states for the given stream as committed. */
     fun markPendingAsCommitted(stream: AirbyteStreamNameNamespacePair)
 
     /**
@@ -79,7 +76,7 @@ interface DestStateLifecycleManager {
      *
      * @return list of state messages
      */
-    fun listCommitted(): Queue<AirbyteMessage?>?
+    fun listCommitted(): Queue<AirbyteMessage>?
 
     fun supportsPerStreamFlush(): Boolean
 }

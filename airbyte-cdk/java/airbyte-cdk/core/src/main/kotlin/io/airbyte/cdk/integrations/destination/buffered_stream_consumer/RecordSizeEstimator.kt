@@ -14,8 +14,10 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage
  * records. The size of the samples are averaged together to protect the estimation against
  * outliers.
  */
-class RecordSizeEstimator @JvmOverloads constructor(// number of record messages
-        private val sampleBatchSize: Int = DEFAULT_SAMPLE_BATCH_SIZE) {
+class RecordSizeEstimator
+@JvmOverloads
+constructor( // number of record messages
+private val sampleBatchSize: Int = DEFAULT_SAMPLE_BATCH_SIZE) {
     // latest estimated record message size for each stream
     private val streamRecordSizeEstimation: MutableMap<String, Long> = HashMap()
 

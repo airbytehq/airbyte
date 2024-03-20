@@ -9,16 +9,14 @@ import org.slf4j.LoggerFactory
 
 /**
  * Minimal abstract class intended to provide a consistent structure to classes seeking to implement
- * the [AirbyteMessageConsumer] interface. The original interface methods are wrapped in
- * generic exception handlers - any exception is caught and logged.
+ * the [AirbyteMessageConsumer] interface. The original interface methods are wrapped in generic
+ * exception handlers - any exception is caught and logged.
  *
  * Two methods are intended for extension:
  *
- *  * startTracked: Wraps set up of necessary infrastructure/configuration before message
+ * * startTracked: Wraps set up of necessary infrastructure/configuration before message
  * consumption.
- *  * acceptTracked: Wraps actual processing of each
- * [io.airbyte.protocol.models.v0.AirbyteMessage].
- *
+ * * acceptTracked: Wraps actual processing of each [io.airbyte.protocol.models.v0.AirbyteMessage].
  *
  * Though not necessary, we highly encourage using this class when implementing destinations. See
  * child classes for examples.
@@ -31,8 +29,7 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
      *
      * @throws Exception
      */
-    @Throws(Exception::class)
-    protected abstract fun startTracked()
+    @Throws(Exception::class) protected abstract fun startTracked()
 
     @Throws(Exception::class)
     override fun start() {
@@ -46,16 +43,15 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
     }
 
     /**
-     * Processing of AirbyteMessages with general functionality of storing STATE messages, serializing
-     * RECORD messages and storage within a buffer
+     * Processing of AirbyteMessages with general functionality of storing STATE messages,
+     * serializing RECORD messages and storage within a buffer
      *
      * NOTE: Not all the functionality mentioned above is always true but generally applies
      *
      * @param msg [AirbyteMessage] to be processed
      * @throws Exception
      */
-    @Throws(Exception::class)
-    protected abstract fun acceptTracked(msg: AirbyteMessage)
+    @Throws(Exception::class) protected abstract fun acceptTracked(msg: AirbyteMessage)
 
     @Throws(Exception::class)
     override fun accept(msg: AirbyteMessage) {
@@ -68,8 +64,7 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
         }
     }
 
-    @Throws(Exception::class)
-    protected abstract fun close(hasFailed: Boolean)
+    @Throws(Exception::class) protected abstract fun close(hasFailed: Boolean)
 
     @Throws(Exception::class)
     override fun close() {
@@ -82,6 +77,7 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(FailureTrackingAirbyteMessageConsumer::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(FailureTrackingAirbyteMessageConsumer::class.java)
     }
 }

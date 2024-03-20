@@ -8,49 +8,58 @@ import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.functional.CheckedFunction
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.*
 import java.util.*
 import java.util.function.Function
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import javax.sql.DataSource
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Database object for interacting with a JDBC connection. Can be used for any JDBC compliant db.
  */
-open class DefaultJdbcDatabase @JvmOverloads constructor(protected val dataSource: DataSource, sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.getDefaultSourceOperations()) : JdbcDatabase(sourceOperations) {
+open class DefaultJdbcDatabase
+@JvmOverloads
+constructor(
+    protected val dataSource: DataSource,
+    sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations
+) : JdbcDatabase(sourceOperations) {
     @Throws(SQLException::class)
     override fun execute(query: CheckedConsumer<Connection, SQLException?>) {
-        dataSource.connection.use { connection ->
-            query.accept(connection)
-        }
+        dataSource.connection.use { connection -> query.accept(connection) }
     }
 
     @Throws(SQLException::class)
-    override fun <T> bufferedResultSetQuery(query: CheckedFunction<Connection?, ResultSet, SQLException?>,
-                                            recordTransform: CheckedFunction<ResultSet, T, SQLException?>): List<T> {
+    override fun <T> bufferedResultSetQuery(
+        query: CheckedFunction<Connection, ResultSet, SQLException?>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+    ): List<T> {
         dataSource.connection.use { connection ->
-            JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform).use { results ->
-                return results.collect<List<T>, Any>(Collectors.toList<T>())
-            }
+            JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform)
+                .use { results ->
+                    return results.toList()
+                }
         }
     }
 
     @MustBeClosed
     @Throws(SQLException::class)
-    override fun <T> unsafeResultSetQuery(query: CheckedFunction<Connection?, ResultSet, SQLException?>,
-                                          recordTransform: CheckedFunction<ResultSet, T, SQLException?>): Stream<T> {
+    override fun <T> unsafeResultSetQuery(
+        query: CheckedFunction<Connection, ResultSet, SQLException?>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+    ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform)
-                .onClose(Runnable {
+            .onClose(
+                Runnable {
                     try {
                         connection.close()
                     } catch (e: SQLException) {
                         throw RuntimeException(e)
                     }
-                })
+                }
+            )
     }
 
     @get:Throws(SQLException::class)
@@ -92,31 +101,38 @@ open class DefaultJdbcDatabase @JvmOverloads constructor(protected val dataSourc
     /**
      * You CANNOT assume that data will be returned from this method before the entire [ResultSet]
      * is buffered in memory. Review the implementation of the database's JDBC driver or use the
-     * StreamingJdbcDriver if you need this guarantee. The caller should close the returned stream to
-     * release the database connection.
+     * StreamingJdbcDriver if you need this guarantee. The caller should close the returned stream
+     * to release the database connection.
      *
      * @param statementCreator create a [PreparedStatement] from a [Connection].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if
-     * returned from recordTransform.
+     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
+     * from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a stream.
-     * @throws SQLException SQL related exceptions.
-    </T> */
+     * @throws SQLException SQL related exceptions. </T>
+     */
     @MustBeClosed
     @Throws(SQLException::class)
-    override fun <T> unsafeQuery(statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-                                 recordTransform: CheckedFunction<ResultSet, T, SQLException?>): Stream<T> {
+    override fun <T> unsafeQuery(
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+    ): Stream<T> {
         val connection = dataSource.connection
-        return JdbcDatabase.Companion.toUnsafeStream<T>(statementCreator.apply(connection).executeQuery(), recordTransform)
-                .onClose(Runnable {
+        return JdbcDatabase.Companion.toUnsafeStream<T>(
+                statementCreator.apply(connection).executeQuery(),
+                recordTransform
+            )
+            .onClose(
+                Runnable {
                     try {
                         LOGGER.info("closing connection")
                         connection.close()
                     } catch (e: SQLException) {
                         throw RuntimeException(e)
                     }
-                })
+                }
+            )
     }
 
     companion object {

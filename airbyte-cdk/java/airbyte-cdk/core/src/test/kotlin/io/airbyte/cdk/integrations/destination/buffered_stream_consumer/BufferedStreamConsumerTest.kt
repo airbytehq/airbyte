@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 
 class BufferedStreamConsumerTest {
@@ -372,7 +373,7 @@ class BufferedStreamConsumerTest {
         // The first two records that we push will not trigger any flushes, but the third record
         // _will_
         // trigger a flush
-        Mockito.`when`(strategy.addRecord(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        Mockito.`when`(strategy.addRecord(any(), any()))
             .thenReturn(
                 Optional.empty(),
                 Optional.empty(),
@@ -474,7 +475,7 @@ class BufferedStreamConsumerTest {
         // The first two records that we push will not trigger any flushes, but the third record
         // _will_
         // trigger a flush
-        Mockito.`when`(strategy.addRecord(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        Mockito.`when`(strategy.addRecord(any(), any()))
             .thenReturn(
                 Optional.empty(),
                 Optional.empty(),

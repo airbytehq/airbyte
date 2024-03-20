@@ -6,8 +6,8 @@ package io.airbyte.cdk.db.jdbc
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.Maps
 import io.airbyte.commons.exceptions.ConfigErrorException
-import org.jooq.JSONFormat
 import java.sql.JDBCType
+import org.jooq.JSONFormat
 
 object JdbcUtils {
     // config parameters in alphabetical order
@@ -15,15 +15,13 @@ object JdbcUtils {
     const val DATABASE_KEY: String = "database"
     const val ENCRYPTION_KEY: String = "encryption"
     const val HOST_KEY: String = "host"
-    @JvmField
-    val HOST_LIST_KEY: List<String> = listOf("host")
+    @JvmField val HOST_LIST_KEY: List<String> = listOf("host")
     const val JDBC_URL_KEY: String = "jdbc_url"
     const val JDBC_URL_PARAMS_KEY: String = "jdbc_url_params"
     const val PASSWORD_KEY: String = "password"
     const val PORT_KEY: String = "port"
 
-    @JvmField
-    val PORT_LIST_KEY: List<String> = listOf("port")
+    @JvmField val PORT_LIST_KEY: List<String> = listOf("port")
     const val SCHEMA_KEY: String = "schema"
 
     // NOTE: this is the plural version of SCHEMA_KEY
@@ -37,16 +35,34 @@ object JdbcUtils {
     const val AMPERSAND: String = "&"
     const val EQUALS: String = "="
 
-    // An estimate for how much additional data in sent over the wire due to conversion of source data
+    // An estimate for how much additional data in sent over the wire due to conversion of source
+    // data
     // into {@link AirbyteMessage}. This is due to
     // the fact that records are in JSON format and all database fields are converted to Strings.
     // Currently, this is used in the logic for emitting
     // estimate trace messages.
     const val PLATFORM_DATA_INCREASE_FACTOR: Int = 2
-    val ALLOWED_CURSOR_TYPES: Set<JDBCType> = java.util.Set.of(JDBCType.TIMESTAMP_WITH_TIMEZONE, JDBCType.TIMESTAMP, JDBCType.TIME_WITH_TIMEZONE, JDBCType.TIME, JDBCType.DATE, JDBCType.TINYINT, JDBCType.SMALLINT, JDBCType.INTEGER,
-            JDBCType.BIGINT, JDBCType.FLOAT, JDBCType.DOUBLE, JDBCType.REAL, JDBCType.NUMERIC, JDBCType.DECIMAL, JDBCType.NVARCHAR, JDBCType.VARCHAR, JDBCType.LONGVARCHAR)
-    @JvmField
-    val defaultSourceOperations: JdbcSourceOperations = JdbcSourceOperations()
+    val ALLOWED_CURSOR_TYPES: Set<JDBCType> =
+        java.util.Set.of(
+            JDBCType.TIMESTAMP_WITH_TIMEZONE,
+            JDBCType.TIMESTAMP,
+            JDBCType.TIME_WITH_TIMEZONE,
+            JDBCType.TIME,
+            JDBCType.DATE,
+            JDBCType.TINYINT,
+            JDBCType.SMALLINT,
+            JDBCType.INTEGER,
+            JDBCType.BIGINT,
+            JDBCType.FLOAT,
+            JDBCType.DOUBLE,
+            JDBCType.REAL,
+            JDBCType.NUMERIC,
+            JDBCType.DECIMAL,
+            JDBCType.NVARCHAR,
+            JDBCType.VARCHAR,
+            JDBCType.LONGVARCHAR
+        )
+    @JvmField val defaultSourceOperations: JdbcSourceOperations = JdbcSourceOperations()
 
     val defaultJSONFormat: JSONFormat = JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT)
 
@@ -57,7 +73,11 @@ object JdbcUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun parseJdbcParameters(config: JsonNode, jdbcUrlParamsKey: String?, delimiter: String = "&"): Map<String, String> {
+    fun parseJdbcParameters(
+        config: JsonNode,
+        jdbcUrlParamsKey: String?,
+        delimiter: String = "&"
+    ): Map<String, String> {
         return if (config.has(jdbcUrlParamsKey)) {
             parseJdbcParameters(config[jdbcUrlParamsKey].asText(), delimiter)
         } else {
@@ -66,18 +86,26 @@ object JdbcUtils {
     }
 
     @JvmOverloads
-    fun parseJdbcParameters(jdbcPropertiesString: String, delimiter: String = "&"): Map<String, String> {
+    fun parseJdbcParameters(
+        jdbcPropertiesString: String,
+        delimiter: String = "&"
+    ): Map<String, String> {
         val parameters: MutableMap<String, String> = HashMap()
         if (!jdbcPropertiesString.isBlank()) {
-            val keyValuePairs = jdbcPropertiesString.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val keyValuePairs =
+                jdbcPropertiesString
+                    .split(delimiter.toRegex())
+                    .dropLastWhile { it.isEmpty() }
+                    .toTypedArray()
             for (kv in keyValuePairs) {
                 val split = kv.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 if (split.size == 2) {
                     parameters[split[0]] = split[1]
                 } else {
                     throw ConfigErrorException(
-                            "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
-                                    + jdbcPropertiesString)
+                        "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got " +
+                            jdbcPropertiesString
+                    )
                 }
             }
         }
@@ -85,12 +113,12 @@ object JdbcUtils {
     }
 
     /**
-     * Checks that SSL_KEY has not been set or that an SSL_KEY is set and value can be mapped to true
-     * (e.g. non-zero integers, string true, etc)
+     * Checks that SSL_KEY has not been set or that an SSL_KEY is set and value can be mapped to
+     * true (e.g. non-zero integers, string true, etc)
      *
      * @param config A configuration used to check Jdbc connection
-     * @return true: if ssl has not been set and ssl mode not equals disabled or it has been set with
-     * true, false: in all other cases
+     * @return true: if ssl has not been set and ssl mode not equals disabled or it has been set
+     * with true, false: in all other cases
      */
     @JvmStatic
     fun useSsl(config: JsonNode): Boolean {

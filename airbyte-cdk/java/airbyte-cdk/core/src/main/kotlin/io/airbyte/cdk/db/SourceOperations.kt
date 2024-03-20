@@ -13,8 +13,7 @@ interface SourceOperations<QueryResult, SourceType> {
      *
      * @throws SQLException
      */
-    @Throws(SQLException::class)
-    fun rowToJson(queryResult: QueryResult): JsonNode
+    @Throws(SQLException::class) fun rowToJson(queryResult: QueryResult): JsonNode
 
     /**
      * Converts a database source type into an Airbyte type, which is currently represented by a

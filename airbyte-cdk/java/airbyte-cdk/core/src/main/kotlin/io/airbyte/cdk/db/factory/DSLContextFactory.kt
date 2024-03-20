@@ -3,16 +3,16 @@
  */
 package io.airbyte.cdk.db.factory
 
+import java.time.Duration
+import javax.sql.DataSource
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
-import java.time.Duration
-import javax.sql.DataSource
 
 /**
- * Temporary factory class that provides convenience methods for creating a [DSLContext]
- * instances. This class will be removed once the project has been converted to leverage an
- * application framework to manage the creation and injection of [DSLContext] objects.
+ * Temporary factory class that provides convenience methods for creating a [DSLContext] instances.
+ * This class will be removed once the project has been converted to leverage an application
+ * framework to manage the creation and injection of [DSLContext] objects.
  */
 object DSLContextFactory {
     /**
@@ -37,12 +37,17 @@ object DSLContextFactory {
      * @return The configured [DSLContext].
      */
     @JvmStatic
-    fun create(username: String?,
-               password: String?,
-               driverClassName: String,
-               jdbcConnectionString: String?,
-               dialect: SQLDialect?): DSLContext {
-        return DSL.using(DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString), dialect)
+    fun create(
+        username: String?,
+        password: String?,
+        driverClassName: String,
+        jdbcConnectionString: String?,
+        dialect: SQLDialect?
+    ): DSLContext {
+        return DSL.using(
+            DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString),
+            dialect
+        )
     }
 
     /**
@@ -56,14 +61,25 @@ object DSLContextFactory {
      * @param connectionProperties Additional configuration properties for the underlying driver.
      * @return The configured [DSLContext].
      */
-    fun create(username: String?,
-               password: String?,
-               driverClassName: String,
-               jdbcConnectionString: String?,
-               dialect: SQLDialect?,
-               connectionProperties: Map<String?, String?>?,
-               connectionTimeout: Duration?): DSLContext {
-        return DSL.using(DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString, connectionProperties,
-                connectionTimeout), dialect)
+    fun create(
+        username: String?,
+        password: String?,
+        driverClassName: String,
+        jdbcConnectionString: String?,
+        dialect: SQLDialect?,
+        connectionProperties: Map<String?, String?>?,
+        connectionTimeout: Duration?
+    ): DSLContext {
+        return DSL.using(
+            DataSourceFactory.create(
+                username,
+                password,
+                driverClassName,
+                jdbcConnectionString,
+                connectionProperties,
+                connectionTimeout
+            ),
+            dialect
+        )
     }
 }
