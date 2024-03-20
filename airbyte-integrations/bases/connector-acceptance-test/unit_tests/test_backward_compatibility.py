@@ -1598,6 +1598,28 @@ VALID_CATALOG_TRANSITIONS = [
         },
     ),
     Transition(
+        name="Given the same types, the order does not matter",
+        should_fail=False,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": ["null", "string"]}}}}},
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": ["string", "null"]}}}}},
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
         name="Changing 'type' field to list should not fail.",
         should_fail=False,
         previous={
