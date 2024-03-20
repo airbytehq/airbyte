@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class MicronautConfiguredAirbyteCatalogTest {
     @Test
-    internal fun `test that a non-empty configured catalog can be converted`() {
+    internal fun testThatANonEmptyConfiguredCatalogCanBeConverted() {
         val streamName = "test-name"
         val streamNamespace = "test-namespace"
         val catalog = MicronautConfiguredAirbyteCatalog()
@@ -24,7 +24,7 @@ class MicronautConfiguredAirbyteCatalogTest {
     }
 
     @Test
-    internal fun `test that an empty configured catalog results in an emtpy configured catalog`() {
+    internal fun testThatAnEmptyConfiguredCatalogResultsInAnEmptyConfiguredCatalog() {
         val catalog = MicronautConfiguredAirbyteCatalog()
         catalog.json = ""
         val configuredCatalog = catalog.getConfiguredCatalog()

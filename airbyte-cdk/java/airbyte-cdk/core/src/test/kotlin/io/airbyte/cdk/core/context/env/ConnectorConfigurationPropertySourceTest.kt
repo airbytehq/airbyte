@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 
 class ConnectorConfigurationPropertySourceTest {
     @Test
-    internal fun `test converting the connector configuration argument to configuration properties`() {
+    internal fun testConvertingTheConnectorConfigurationArgumentToConfigurationProperties() {
         val key = "key"
         val value = "foo"
         val operation = OperationType.CHECK.name.lowercase()
@@ -44,7 +44,7 @@ class ConnectorConfigurationPropertySourceTest {
     }
 
     @Test
-    internal fun `test converting the connector configuration argument with an unknown path to configuration properties`() {
+    internal fun testConvertingTheConnectorConfigurationArgumentWithAnUnknownPathToConfigurationProperties() {
         val operation = OperationType.CHECK.name.lowercase()
         val commandLine: CommandLine = mockk()
         val configFilePath = "/does/not/exist"
@@ -60,7 +60,7 @@ class ConnectorConfigurationPropertySourceTest {
     }
 
     @Test
-    internal fun `test converting the connector configuration argument with a blank path to configuration properties`() {
+    internal fun testConvertingTheConnectorConfigurationArgumentWithABlankPathToConfigurationProperties() {
         val operation = OperationType.CHECK.name.lowercase()
         val commandLine: CommandLine = mockk()
         every { commandLine.rawArguments } returns
@@ -75,7 +75,7 @@ class ConnectorConfigurationPropertySourceTest {
     }
 
     @Test
-    internal fun `test converting the connector catalog argument to configuration properties`() {
+    internal fun testConvertingTheConnectorCatalogArgumentToConfigurationProperties() {
         val streamName = "test"
         val streamNamespace = "test-namespace"
         val operation = OperationType.READ.name.lowercase()
@@ -100,7 +100,7 @@ class ConnectorConfigurationPropertySourceTest {
     }
 
     @Test
-    internal fun `test converting the connector catalog argument with an unknown path to configuration properties`() {
+    internal fun testConvertingTheConnectorCatalogArgumentWithAnUnknownPathToConfigurationProperties() {
         val operation = OperationType.READ.name.lowercase()
         val commandLine: CommandLine = mockk()
         val catalogFilePath = "/does/not/exist"
@@ -117,7 +117,7 @@ class ConnectorConfigurationPropertySourceTest {
     }
 
     @Test
-    internal fun `test converting the connector catalog argument with a blank path to configuration properties`() {
+    internal fun testConvertingTheConnectorCatalogArgumentWithABlankPathToConfigurationProperties() {
         val operation = OperationType.READ.name.lowercase()
         val commandLine: CommandLine = mockk()
         every { commandLine.rawArguments } returns
@@ -132,7 +132,7 @@ class ConnectorConfigurationPropertySourceTest {
     }
 
     @Test
-    internal fun `test converting the state argument to configuration properties`() {
+    internal fun testConvertingTheStateArgumentToConfigurationProperties() {
         val operation = OperationType.READ.name.lowercase()
         val commandLine: CommandLine = mockk()
         val stateJson = "{\"cursor\":\"foo\"}"
@@ -151,7 +151,7 @@ class ConnectorConfigurationPropertySourceTest {
     }
 
     @Test
-    internal fun `test converting the connector state argument with an unknown path to configuration properties`() {
+    internal fun testConvertingTheConnectorStateArgumentWithAnUnknownPathToConfigurationProperties() {
         val operation = OperationType.READ.name.lowercase()
         val commandLine: CommandLine = mockk()
         val stateFilePath = "/does/not/exist"
@@ -167,7 +167,7 @@ class ConnectorConfigurationPropertySourceTest {
     }
 
     @Test
-    internal fun `test converting the connector state argument with a blank path to configuration properties`() {
+    internal fun testConvertingTheConnectorStateArgumentWithABlankPathToConfigurationProperties() {
         val operation = OperationType.READ.name.lowercase()
         val commandLine: CommandLine = mockk()
         every { commandLine.rawArguments } returns

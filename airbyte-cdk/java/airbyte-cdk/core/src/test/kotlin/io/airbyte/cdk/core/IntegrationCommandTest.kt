@@ -20,7 +20,7 @@ import picocli.CommandLine.Model.CommandSpec
 
 class IntegrationCommandTest {
     @Test
-    internal fun `test that the operation command is executed`() {
+    internal fun testThatTheOperationCommandIsExecuted() {
         val operationType = OperationType.CHECK
         val command = operationType.name.lowercase()
         val commandSpec: CommandSpec = mockk()
@@ -47,7 +47,7 @@ class IntegrationCommandTest {
     }
 
     @Test
-    internal fun `test that when the operation command is executed and fails, the failure is handled`() {
+    internal fun testThatWhenTheOperationCommandIsExecutedAndFailsTheFailureIsHandled() {
         val operationType = OperationType.CHECK
         val command = operationType.name.lowercase()
         val commandSpec: CommandSpec = mockk()

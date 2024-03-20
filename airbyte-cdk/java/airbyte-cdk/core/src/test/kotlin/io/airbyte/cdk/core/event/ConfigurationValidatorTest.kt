@@ -21,7 +21,7 @@ import org.junit.jupiter.params.provider.EnumSource
 class ConfigurationValidatorTest {
     @ParameterizedTest
     @EnumSource(value = OperationType::class, names = ["CHECK", "DISCOVER", "READ", "WRITE"])
-    internal fun `test that a populated connector configuration can be validated`(
+    internal fun testThatAPopulatedConnectorConfigurationCanBeValidated(
         operationType: OperationType
     ) {
         val connectorName = "test-destination"
@@ -50,7 +50,7 @@ class ConfigurationValidatorTest {
 
     @ParameterizedTest
     @EnumSource(value = OperationType::class, names = ["CHECK", "DISCOVER", "READ", "WRITE"])
-    internal fun `test that an invalid populated connector configuration fails validation`(
+    internal fun testThatAnInvalidPopulatedConnectorConfigurationFailsValidation(
         operationType: OperationType
     ) {
         val connectorName = "test-destination"
@@ -79,7 +79,7 @@ class ConfigurationValidatorTest {
 
     @ParameterizedTest
     @EnumSource(value = OperationType::class, names = ["SPEC"])
-    internal fun `test that a connector configuration validation is skipped for unsupported operations`(
+    internal fun testThatAConnectorConfigurationValidationIsSkippedForUnsupportedOperations(
         operationType: OperationType
     ) {
         val connectorName = "test-destination"

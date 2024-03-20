@@ -21,9 +21,7 @@ import org.junit.jupiter.params.provider.EnumSource
 class CatalogValidatorTest {
     @ParameterizedTest
     @EnumSource(value = OperationType::class, names = ["READ", "WRITE"])
-    internal fun `test that a populated configured catalog can be validated`(
-        operationType: OperationType
-    ) {
+    internal fun testThatAPopulatedConfiguredCatalogCanBeValidated(operationType: OperationType) {
         val connectorName = "test-destination"
         val streamName = "test-name"
         val streamNamespace = "test-namespace"
@@ -49,9 +47,7 @@ class CatalogValidatorTest {
 
     @ParameterizedTest
     @EnumSource(value = OperationType::class, names = ["READ", "WRITE"])
-    internal fun `test that a missing configured catalog can be invalidated`(
-        operationType: OperationType
-    ) {
+    internal fun testThatAMissingConfiguredCatalogCanBeInvalidated(operationType: OperationType) {
         val connectorName = "test-destination"
         val catalog: MicronautConfiguredAirbyteCatalog = mockk()
         val operation: Operation = mockk()
@@ -72,7 +68,7 @@ class CatalogValidatorTest {
 
     @ParameterizedTest
     @EnumSource(value = OperationType::class, names = ["SPEC", "DISCOVER", "CHECK"])
-    internal fun `test that catalog validation is skipped for unsupported operations`(
+    internal fun testThatCatalogValidationIsSkippedForUnsupportedOperations(
         operationType: OperationType
     ) {
         val connectorName = "test-destination"

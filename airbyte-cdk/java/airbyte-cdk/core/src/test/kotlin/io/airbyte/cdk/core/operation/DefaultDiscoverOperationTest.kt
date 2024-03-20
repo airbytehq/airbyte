@@ -14,14 +14,14 @@ import org.junit.jupiter.api.Test
 
 class DefaultDiscoverOperationTest {
     @Test
-    internal fun `test that the correct operation type is returned`() {
+    internal fun testThatTheCorrectOperationTypeIsReturned() {
         val operationExecutor: OperationExecutor = mockk()
         val operation = DefaultDiscoverOperation(operationExecutor = operationExecutor)
         assertEquals(OperationType.DISCOVER, operation.type())
     }
 
     @Test
-    internal fun `test that on successful execution of the operation, the result is written to the output record collector`() {
+    internal fun testThatOnSuccessfulExecutionOfTheOperationTheResultIsWrittenToTheOutputRecordCollector() {
         val operationExecutor: OperationExecutor = mockk()
         val expectedMessage = AirbyteMessage()
         val operation = DefaultDiscoverOperation(operationExecutor = operationExecutor)
@@ -34,7 +34,7 @@ class DefaultDiscoverOperationTest {
     }
 
     @Test
-    internal fun `test that on a failed execution of the operation, the failure result is returned`() {
+    internal fun testThatOnAFailedExecutionOfTheOperationTheFailureResultIsReturned() {
         val operationExecutor: OperationExecutor = mockk()
 
         every { operationExecutor.execute() } returns Result.failure(NullPointerException("test"))
