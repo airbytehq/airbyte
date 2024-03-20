@@ -1,0 +1,61 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Datacraft Static Table Spec",
+    "type": "object",
+    "required": [
+      "url_base",
+      "username",
+      "password",
+      "datasource_id"
+    ],
+    "properties": {
+      "url_base": {
+        "type": "string",
+        "title": "Datacraft Host URL",
+        "description": "Used as the base URL for all API calls to Datacraft",
+        "examples": [
+          "https://datacraft.adventum.ru",
+          "https://datacraft.adventum.ru/",
+          "https://localhost:8088/",
+          "https://100.100.100.100:8088/"
+        ],
+        "pattern": "^https?://[^/]+/?$"
+      },
+      "username": {
+        "type": "string",
+        "title": "Username",
+        "description": "Username for Datacraft",
+        "examples": [
+          "admin"
+        ]
+      },
+      "password": {
+        "type": "string",
+        "title": "Password",
+        "description": "Password for Datacraft",
+        "airbyte_secret": true
+      },
+      "datasource_id": {
+        "type": "integer",
+        "title": "Datasource ID",
+        "description": "ID of the datasource to use",
+        "examples": [
+          123
+        ]
+      },
+      "user_primary_keys": {
+        "type": "array",
+        "title": "User Primary Keys",
+        "description": "Primary keys for the user table",
+        "items": {
+          "type": "string",
+          "examples": [
+            "id"
+          ]
+        }
+      }
+    }
+  }
+}
