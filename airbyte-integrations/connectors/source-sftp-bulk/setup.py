@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.72",
+    "airbyte-cdk[file-based]~=0.72",
     "paramiko==3.4.0",
 ]
 
