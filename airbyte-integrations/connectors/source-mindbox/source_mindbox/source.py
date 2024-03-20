@@ -186,6 +186,12 @@ class EmailUnsubscribes(MindboxStream):
     operation_name = "EksportEmailOtpisannyx"
 
 
+class ExportSub(MindboxStream):
+    use_date_range = False
+    primary_key = "CustomerIdsMindboxId"
+    operation_name = "ExportSub"
+
+
 # Source
 class SourceMindbox(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -254,4 +260,5 @@ class SourceMindbox(AbstractSource):
             EmailUnsubscribes(**shared_kwargs),
             CustomerSegmentsApppushAndroid(**shared_kwargs),
             CustomerSegmentsApppushIos(**shared_kwargs),
+            ExportSub(**shared_kwargs),
         ]

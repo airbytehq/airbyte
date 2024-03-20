@@ -2,18 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "customer_segments_apppush_ios",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "customer_segments_apppush_android",
+        "name": "export_sub",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh"
