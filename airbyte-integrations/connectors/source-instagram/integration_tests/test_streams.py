@@ -35,8 +35,9 @@ class TestInstagramSource:
 
         assert states, "insights should produce states"
         for state in states:
-            assert "user_insights" == state.state.stream.stream_descriptor.name
-            assert len(state.state.stream.stream_state.dict().keys()) == 2
+            assert "user_insights" in state.state.data
+            assert isinstance(state.state.data["user_insights"], dict)
+            assert len(state.state.data["user_insights"].keys()) == 2
 
     @staticmethod
     def slice_catalog(catalog: ConfiguredAirbyteCatalog, predicate: Callable[[str], bool]) -> ConfiguredAirbyteCatalog:
