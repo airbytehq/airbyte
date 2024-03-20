@@ -3,7 +3,7 @@
   "type": [
     "object"
   ],
-  "additionalProperties": true,
+  "additionalProperties": { "type" : "string" },
   "required": [
     "id",
     "employeeId",

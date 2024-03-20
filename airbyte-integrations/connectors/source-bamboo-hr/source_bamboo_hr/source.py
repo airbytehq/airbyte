@@ -116,20 +116,32 @@ class TablesStream(BambooHrStream):
             ],
         )
 
+    # def _create_one_of_schema(bamboo_meta_table: BambooMetaTable) -> Mapping[str, Any]:
+    #     schema = {
+    #             "" : ""
+    #         }
+    #     return schema
+
     # def get_json_schema(self) -> Mapping[str, Any]:
     #     """
     #         1. Get access to the available tables.
     #         2. Construct the Json Schema from the available tables.
-    #            Essentially, 
+               
     #     """
 
     #     available_tables = self.config.get("available_tables")
     #     typed_available_tables = map(self._convert_raw_meta_table_to_typed, available_tables)
 
+    #     tables.forEach { table ->
+
+
+    #     }
+
     #     if self._schema is None:
     #         available_tables = self.config.get("available_tables")
     #         schema = {
-    #             "type": "object",
+    #             "$schema": "http://json-schema.org/draft-07/schema#",
+    #             "type": ["object"] ,
     #             "properties": {
     #                 "knoetic_table_name": {"type": "string"},
     #             },
@@ -157,7 +169,8 @@ class TablesStream(BambooHrStream):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._schema = None
+        schema = self.get_json_schema()
+        print(f"The schema is {schema}")
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         # Each table has an 'alias' field that we use to grab
@@ -184,7 +197,7 @@ class TablesStream(BambooHrStream):
             # If we're here, no issue.
             new_record = (dict(record, **{"knoetic_table_name": table_name}) for record in response.json())
             for record in new_record:
-                print("New record: ", record)
+                # print("New record: ", record)
                 yield record
             # yield from new_record
         except HTTPError as e:
