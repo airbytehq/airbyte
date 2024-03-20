@@ -102,6 +102,6 @@ class InvoicesTest(TestCase):
             _invoices_response().with_record(_a_message()).build()
         )
 
-        _read(ConfigBuilder().with_account_id(_AN_ACCOUNT_ID).with_api_token(_AN_API_KEY).with_start_date(self._datetime_start_date))
+        _read(ConfigBuilder().with_account_id(_AN_ACCOUNT_ID).with_api_token(_AN_API_KEY).with_replication_start_date(self._datetime_start_date))
 
         # endpoint is called
