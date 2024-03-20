@@ -69,7 +69,6 @@ const ProfessionalCell: React.FC<IProps> = ({
   userInfo,
 }) => {
   const { user } = useUser();
-  console.log(user, "user");
   const { formatMessage } = useIntl();
   const userPlanDetail = useUserPlanDetail();
   const { expiresTime } = userPlanDetail;

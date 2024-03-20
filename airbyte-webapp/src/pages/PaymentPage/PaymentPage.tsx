@@ -49,7 +49,6 @@ const PaymentPage: React.FC = () => {
   const { selectedProduct } = userPlanDetail;
   const userInfoJson = localStorage.getItem("daspire-user");
   const userInfo = JSON.parse(userInfoJson as string);
-  console.log(userInfo, "userInfo");
   const packages = useCloudPackages();
   const regions = useCloudRegions();
   const [currentStep, setCurrentStep] = useState<string>(PaymentSteps.SELECT_PLAN);
