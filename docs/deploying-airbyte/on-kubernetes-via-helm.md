@@ -308,7 +308,7 @@ GCS logging was tested on [Airbyte Helm Chart Version 0.54.69](https://artifacth
 1. **Access Google Cloud Console**: Go to the Google Cloud Console and select or create a project
    where you want to create the bucket.
 2. **Open Cloud Storage**: Navigate to "Storage" > "Browser" in the left-side menu.
-3. **Create Bucket**: Click on "Create bucket". Give your bucket a unique name, select a region for the bucket, and configure other settings such as storage class and access control according to your requirements. Finally, click "Create". The buckect will be referenced as <bucket_name>
+3. **Create Bucket**: Click on "Create bucket". Give your bucket a unique name, select a region for the bucket, and configure other settings such as storage class and access control according to your requirements. Finally, click "Create". The buckect will be referenced as `<bucket_name>`
 
 #### Create Google Cloud Service Account
 
@@ -316,7 +316,7 @@ GCS logging was tested on [Airbyte Helm Chart Version 0.54.69](https://artifacth
 2. **Create Service Account**: Click "Create Service Account", enter a name, description, and then click "Create".
 3. **Grant Permissions**: Assign the role of "Storage Object Admin" to the service account by selecting it from the role list.
 4. **Create Key**: After creating the service account, click on it, go to the "Keys" tab, and then click "Add Key" > "Create new key". Choose JSON as the key type and click "Create". The key file will be downloaded automatically to your computer.
-5. **Encode Key**: Encode GCP credentials file contents using Base64. This key will be referenced as <encoded_key> 
+5. **Encode Key**: Encode GCP credentials file contents using Base64. This key will be referenced as `<encoded_key>` 
 
 #### Update the values.yaml with the GCS Logging Information below
 
