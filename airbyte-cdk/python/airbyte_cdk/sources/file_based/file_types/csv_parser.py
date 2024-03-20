@@ -71,7 +71,7 @@ class _CsvReader:
                     # than headers or more headers dans columns
                     if None in row:
                         if config_format.skip_wrong_number_of_fields_error:
-                            logger.error(f"Skipping record in line {lineno} of file {file.uri} due to mismatched columns.")
+                            logger.error(f"Skipping record in line {lineno} of file {file.uri}; invalid CSV row with missing column.")
                         else:
                             raise RecordParseError(
                                 FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_COLUMNS,
@@ -80,7 +80,7 @@ class _CsvReader:
                             )
                     if None in row.values():
                         if config_format.skip_wrong_number_of_fields_error:
-                            logger.error(f"Skipping record in line {lineno} of file {file.uri} due to mismatched rows.")
+                            logger.error(f"Skipping record in line {lineno} of file {file.uri}; invalid CSV row with extra column.")
                         else:
                             raise RecordParseError(
                                 FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_ROWS, filename=file.uri, lineno=lineno

@@ -147,10 +147,10 @@ class CsvFormat(BaseModel):
         description="How to infer the types of the columns. If none, inference default to strings.",
         airbyte_hidden=True,
     )
-    skip_wrong_number_of_fields_error: bool = Field(
-        title="Skip Wrong Number of Fields Error",
+    ignore_errors_on_fields_mismatch: bool = Field(
+        title="Ignore errors on field mismatch",
         default=False,
-        description="Whether to skip the error when the number of fields in the CSV does not match the number of columns in the schema.",
+        description="Whether to ignore errors that occur when the number of fields in the CSV does not match the number of columns in the schema.",
     )
 
     @validator("delimiter")
