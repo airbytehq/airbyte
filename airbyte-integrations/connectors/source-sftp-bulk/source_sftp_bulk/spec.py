@@ -3,7 +3,7 @@
 from typing import Optional
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import Field, root_validator, ValidationError
+from pydantic import Field, ValidationError, root_validator
 
 
 class SourceSFTPBulkSpec(AbstractFileBasedSpec):
@@ -31,6 +31,6 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
 
     @root_validator(pre=True)
     def check_password_or_key_presented(cls, values):
-        if not any((values.get('password'), values.get('private_key'))):
-            raise ValidationError('Either password or private key should be provided')
+        if not any((values.get("password"), values.get("private_key"))):
+            raise ValidationError("Either password or private key should be provided")
         return values

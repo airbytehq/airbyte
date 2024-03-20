@@ -9,6 +9,7 @@ from typing import Any, Dict
 import backoff
 import paramiko
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from paramiko.ssh_exception import AuthenticationException
 
 # set default timeout to 300 seconds
@@ -56,8 +57,11 @@ class SFTPClient:
             socket.settimeout(self.timeout)
 
         except AuthenticationException as ex:
-            raise AirbyteTracedException(message='SSH Authentication failed, please check username, password or private key and try again',
-                                         internal_message="Authentication failed: %s" % ex)
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                message="SSH Authentication failed, please check username, password or private key and try again",
+                internal_message="Authentication failed: %s" % ex,
+            )
 
     def __del__(self):
         if self._connection is not None:
