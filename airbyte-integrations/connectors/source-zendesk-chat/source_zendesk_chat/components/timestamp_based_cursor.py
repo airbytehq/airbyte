@@ -4,7 +4,7 @@
 
 
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -14,8 +14,10 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 @dataclass
 class ZendeskChatTimestampCursor(DatetimeBasedCursor):
     """
-    Override for the default `DatetimeBasedCursor` to make self.close_slice() to produce the STATE from the RECORD cursor value instead of slicer values.
-    The dates in future are not allowed for the Zendesk Chat endpoints, and slicer values could be far away from exact cursor values.
+    Override for the default `DatetimeBasedCursor` to provide the `request_params["start_time"]` with added `microseconds`, as required by the API.
+    More info: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
+
+    The dates in future are not(!) allowed for the Zendesk Chat endpoints, and slicer values could be far away from exact cursor values.
 
     Arguments:
         use_microseconds: bool - whether or not to add dummy `000000` (six zeros) to provide the microseconds unit timestamps
@@ -27,10 +29,6 @@ class ZendeskChatTimestampCursor(DatetimeBasedCursor):
         self._use_microseconds = InterpolatedString.create(self.use_microseconds, parameters=parameters).eval(self.config)
         self._start_date = self.config.get("start_date")
         super().__post_init__(parameters=parameters)
-
-    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
-        last_record_cursor_value = most_recent_record.get(self._cursor_field.eval(self.config)) if most_recent_record else None
-        self._cursor = last_record_cursor_value if last_record_cursor_value else self._start_date
 
     def add_microseconds(
         self,

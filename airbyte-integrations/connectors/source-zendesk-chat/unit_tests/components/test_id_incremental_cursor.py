@@ -51,7 +51,8 @@ def test_id_incremental_cursor_set_initial_state_and_get_stream_state(
 )
 def test_id_incremental_cursor_close_slice(config, test_record, expected) -> None:
     cursor = _get_cursor(config)
-    cursor.close_slice(stream_slice={}, most_recent_record=test_record)
+    cursor.observe(stream_slice={}, record=test_record)
+    cursor.close_slice(stream_slice={})
     assert cursor._cursor == expected
     
 

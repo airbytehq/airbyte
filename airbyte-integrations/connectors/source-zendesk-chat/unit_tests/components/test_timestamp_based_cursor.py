@@ -52,16 +52,3 @@ def test_timestamp_based_cursor_add_microseconds(config, use_microseconds, input
 def test_timestamp_based_cursor_get_request_params(config, use_microseconds, input_slice, expected) -> None:
     cursor = _get_cursor(config, "start_time", use_microseconds)
     assert cursor.get_request_params(stream_slice=input_slice) == expected
-    
-    
-@pytest.mark.parametrize(
-    "use_microseconds, cursor_field, test_record, expected",
-    [
-        (True, "start_time", {"start_time": 123}, 123),
-        (True, "dummy_cursor", {"dummy_cursor": 456}, 456),
-    ],
-)
-def test_timestamp_based_cursor_close_slice(config, use_microseconds, cursor_field, test_record, expected) -> None:
-    cursor = _get_cursor(config, cursor_field, use_microseconds)
-    cursor.close_slice(stream_slice={}, most_recent_record=test_record)
-    assert cursor._cursor == expected
