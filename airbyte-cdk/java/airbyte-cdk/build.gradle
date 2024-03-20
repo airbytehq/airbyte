@@ -17,6 +17,10 @@ allprojects {
         ksp "io.micronaut:micronaut-inject-java:${libs.versions.micronaut.inject.get()}"
         ksp "io.micronaut:micronaut-inject-kotlin:${libs.versions.micronaut.inject.get()}"
 
+        api "io.micronaut:micronaut-context:${libs.versions.micronaut.platform.get()}"
+        api "io.micronaut:micronaut-inject-java:${libs.versions.micronaut.inject.get()}"
+        api "io.micronaut:micronaut-runtime:${libs.versions.micronaut.platform.get()}"
+        api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
         // Pin to 1.13.6 due to https://github.com/mockk/mockk/issues/1133
         testImplementation 'io.mockk:mockk:1.13.6'
     }

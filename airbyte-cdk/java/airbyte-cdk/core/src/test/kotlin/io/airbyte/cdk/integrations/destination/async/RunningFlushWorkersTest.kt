@@ -7,8 +7,6 @@ package io.airbyte.cdk.integrations.destination.async
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.Optional
 import java.util.UUID
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -34,12 +32,12 @@ class RunningFlushWorkersTest {
 
     @Test
     internal fun testTrackFlushWorker() {
-        assertThat(runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size).isEqualTo(0)
+        assertEquals(0, runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size)
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID1)
-        assertThat(runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size).isEqualTo(1)
+        assertEquals(1, runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size)
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID2)
         runningFlushWorkers.trackFlushWorker(STREAM2, FLUSH_WORKER_ID1)
-        assertThat(runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size).isEqualTo(2)
+        assertEquals(2, runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size)
     }
 
     @Test
@@ -47,29 +45,29 @@ class RunningFlushWorkersTest {
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID1)
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID2)
         runningFlushWorkers.completeFlushWorker(STREAM1, FLUSH_WORKER_ID1)
-        assertThat(runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size).isEqualTo(1)
+        assertEquals(1, runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size)
         runningFlushWorkers.completeFlushWorker(STREAM1, FLUSH_WORKER_ID2)
-        assertThat(runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size).isEqualTo(0)
+        assertEquals(0, runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size)
     }
 
     @Test
     internal fun testCompleteFlushWorkerWithoutTrackThrowsException() {
-        assertThatThrownBy {
+        val e =
+            assertThrows(IllegalStateException::class.java) {
                 runningFlushWorkers.completeFlushWorker(
                     STREAM1,
                     FLUSH_WORKER_ID1,
                 )
             }
-            .isInstanceOf(IllegalStateException::class.java)
-            .hasMessageContaining("Cannot complete flush worker for stream that has not started.")
+        assertEquals("Cannot complete flush worker for stream that has not started.", e.message)
     }
 
     @Test
     internal fun testMultipleStreams() {
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID1)
         runningFlushWorkers.trackFlushWorker(STREAM2, FLUSH_WORKER_ID1)
-        assertThat(runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size).isEqualTo(1)
-        assertThat(runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM2).size).isEqualTo(1)
+        assertEquals(1, runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size)
+        assertEquals(1, runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM2).size)
     }
 
     @Test

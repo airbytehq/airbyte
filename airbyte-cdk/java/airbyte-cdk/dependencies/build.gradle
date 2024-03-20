@@ -87,16 +87,9 @@ generate.configure {
     dependsOn tasks.named('generateJsonSchema2Pojo')
 }
 
-tasks.named('compileJava').configure {
-    dependsOn generate
-}
-tasks.named('compileTestJava').configure {
-    dependsOn generate
-}
-
 tasks.named('compileKotlin').configure {
     dependsOn generate
 }
-tasks.named('compileTestJava').configure {
+tasks.named('compileTestKotlin').configure {
     dependsOn generate
 }
