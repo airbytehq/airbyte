@@ -44,7 +44,7 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         # There is exactly one parent stream
         number_of_parent_streams = len(self._partition_router.parent_stream_configs)
         if number_of_parent_streams != 1:
-            # f"There should be exactly one parent stream
+            # There should be exactly one parent stream
             return False
         """
         The expected state format is
@@ -52,7 +52,6 @@ class LegacyToPerPartitionStateMigration(StateMigration):
           "<cursor_field>" : "<cursor_value>"
         }
         """
-        cursor_field = self._cursor_field()
         if stream_state:
             for key, value in stream_state.items():
                 if isinstance(value, dict):
@@ -60,7 +59,7 @@ class LegacyToPerPartitionStateMigration(StateMigration):
                     if len(keys) != 1:
                         # The input partitioned state should only have one key
                         return False
-                    if keys[0] != cursor_field:
+                    if keys[0] != self._cursor_field():
                         # Unexpected key. Found {keys[0]}. Expected {self._cursor.cursor_field}
                         return False
         return True
