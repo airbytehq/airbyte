@@ -4,7 +4,6 @@
 
 import io
 import logging
-from typing import Any, Dict
 
 import backoff
 import paramiko
@@ -17,17 +16,15 @@ REQUEST_TIMEOUT = 300
 
 logger = logging.getLogger("airbyte")
 
-File = Dict[str, Any]
-
 
 def handle_backoff(details):
     logger.warning("SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(**details))
 
 
 class SFTPClient:
-    _connection = None
+    _connection: paramiko.SFTPClient = None
 
-    def __init__(self, host, username, password=None, private_key=None, port=None, timeout=REQUEST_TIMEOUT):
+    def __init__(self, host: str, username: str, password: str = None, private_key=None, port: int = None, timeout=REQUEST_TIMEOUT):
         self.host = host
         self.username = username
         self.password = password
@@ -75,5 +72,5 @@ class SFTPClient:
                     raise
 
     @property
-    def sftp_connection(self):
+    def sftp_connection(self) -> paramiko.SFTPClient:
         return self._connection
