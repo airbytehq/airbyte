@@ -200,9 +200,6 @@ files = [
     {file = "Babel-2.14.0.tar.gz", hash = "sha256:6919867db036398ba21eb5c7a0f6b28ab8cbc3ae7a73a44ebe34ae74a4e7d363"},
 ]
 
-[package.dependencies]
-pytz = {version = ">=2015.7", markers = "python_version < \"3.9\""}
-
 [package.extras]
 dev = ["freezegun (>=1.0,<2.0)", "pytest (>=6.0)", "pytest-cov"]
 
@@ -4090,5 +4087,5 @@ vector-db-based = []
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.8.1"
-content-hash = "0d2fde940b1ac95c31235cd2235050d7fd4dec00153d9e1b3aa55365af2cc359"
+python-versions = "^3.9"
+content-hash = "e7e62822e2bada4412f5475e07434b9fecc05e1842d9622368befdd0b0bea94c"
