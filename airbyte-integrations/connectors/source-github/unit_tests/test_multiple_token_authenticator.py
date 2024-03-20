@@ -35,7 +35,7 @@ def test_authenticator_counter(rate_limit_mock_response):
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(5000, 5000), (5000, 5000), (5000, 5000)]
     organization_args = {"organizations": ["org1", "org2"], "authenticator": authenticator}
     stream = Organizations(**organization_args)
-    assert stream._session.auth.max_time == 60 * 40
+    assert stream._session.auth.max_time == 60 * 60
     responses.add("GET", "https://api.github.com/orgs/org1", json={"id": 1})
     responses.add("GET", "https://api.github.com/orgs/org2", json={"id": 2})
     list(read_full_refresh(stream))

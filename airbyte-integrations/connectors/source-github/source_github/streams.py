@@ -42,7 +42,7 @@ class GithubStreamABC(HttpStream, ABC):
     def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
         if kwargs.get("authenticator"):
             # TODO: get max time from env variable via Retool?
-            kwargs["authenticator"].max_time = 60 * 40  # Set to 40 minutes to bypass limitation of CDK
+            kwargs["authenticator"].max_time = 60 * 60  # Set to 60 minutes to bypass limitation of CDK
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
