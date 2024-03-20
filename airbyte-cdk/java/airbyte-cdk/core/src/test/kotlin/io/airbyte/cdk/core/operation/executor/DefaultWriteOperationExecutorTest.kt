@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 
 class DefaultWriteOperationExecutorTest {
     @Test
-    internal fun `test that for each message in the iterator, an airbyte message is written to the output record consumer`() {
+    internal fun testThatForEachMessageInTheIteratorAnAirbyteMessageIsWrittenToTheOutputRecordConsumer() {
         val consumer: SerializedAirbyteMessageConsumer = mockk()
         val inputStream =
             BufferedInputStream(
@@ -67,7 +67,7 @@ class DefaultWriteOperationExecutorTest {
     }
 
     @Test
-    internal fun `test that if during writing an exception is raised, a failure result is returned`() {
+    internal fun testThatIfDuringWritingAnExceptionIsRaisedAFailureResultIsReturned() {
         val messageConsumer: SerializedAirbyteMessageConsumer = mockk()
         val shutdownUtils: ShutdownUtils = mockk()
 

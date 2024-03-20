@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 
 class DefaultSpecOperationExecutorTest {
     @Test
-    internal fun `test that when the spec file is located on the classpath, a successful result is returned`() {
+    internal fun testThatWhenTheSpecFileIsLocatedOnTheClasspathASuccessfulResultIsReturned() {
         val executor = DefaultSpecOperationExecutor("spec.json")
 
         val result = executor.execute()
@@ -25,7 +25,7 @@ class DefaultSpecOperationExecutorTest {
     }
 
     @Test
-    internal fun `test that when the spec file cannot be located on the classpath, a failure result is returned`() {
+    internal fun testThatWhenTheSpecFileCannotBeLocatedOnTheClasspathAFailureResultIsReturned() {
         val executor = DefaultSpecOperationExecutor("missing-spec.json")
         val result = executor.execute()
         assertTrue(result.isFailure)

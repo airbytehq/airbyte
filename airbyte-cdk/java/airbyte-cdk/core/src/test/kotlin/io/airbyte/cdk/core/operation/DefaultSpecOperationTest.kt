@@ -10,19 +10,20 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DefaultSpecOperationTest {
     @Test
-    internal fun `test that the correct operation type is returned`() {
+    internal fun testThatTheCorrectOperationTypeIsReturned() {
         val operationExecutor: OperationExecutor = mockk()
         val operation = DefaultSpecOperation(operationExecutor = operationExecutor)
         assertEquals(OperationType.SPEC, operation.type())
     }
 
     @Test
-    internal fun `test that on successful execution of the operation, the result is written to the output record collector`() {
+    internal fun testThatOnSuccessfulExecutionOfTheOperationTheResultIsWrittenToTheOutputRecordCollector() {
         val operationExecutor: OperationExecutor = mockk()
         val expectedMessage = AirbyteMessage()
 
@@ -36,7 +37,7 @@ class DefaultSpecOperationTest {
     }
 
     @Test
-    internal fun `test that on a failed execution of the operation, the failure result is returned`() {
+    internal fun testThatOnAFailedExecutionOfTheOperationTheFailureResultIsReturned() {
         val operationExecutor: OperationExecutor = mockk()
 
         every { operationExecutor.execute() } returns Result.failure(NullPointerException("test"))
@@ -46,5 +47,19 @@ class DefaultSpecOperationTest {
         val result = operation.execute()
         assertTrue(result.isFailure)
         verify { operationExecutor.execute() }
+    }
+
+    @Test
+    internal fun testRequiresCatalog() {
+        val operationExecutor: OperationExecutor = mockk()
+        val operation = DefaultSpecOperation(operationExecutor = operationExecutor)
+        assertFalse(operation.requiresCatalog())
+    }
+
+    @Test
+    internal fun testRequiresConfiguration() {
+        val operationExecutor: OperationExecutor = mockk()
+        val operation = DefaultSpecOperation(operationExecutor = operationExecutor)
+        assertFalse(operation.requiresConfiguration())
     }
 }

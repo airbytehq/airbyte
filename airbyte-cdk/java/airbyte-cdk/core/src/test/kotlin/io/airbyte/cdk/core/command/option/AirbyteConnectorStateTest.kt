@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 
 class AirbyteConnectorStateTest {
     @Test
-    internal fun `test that a non-empty connector state can be converted to JSON`() {
+    internal fun testThatANonEmptyConnectorStateCanBeConvertedToJSON() {
         val connectorState = AirbyteConnectorState()
         connectorState.json = "{\"cursor\":\"foo\"}"
         val stateJson = connectorState.toJson()
@@ -21,7 +21,7 @@ class AirbyteConnectorStateTest {
     }
 
     @Test
-    internal fun `test that an empty connector state results in empty JSON`() {
+    internal fun testThatAnEmptyConnectorStateResultsInEmptyJSON() {
         val connectorState = AirbyteConnectorState()
         connectorState.json = ""
         val stateJson = connectorState.toJson()

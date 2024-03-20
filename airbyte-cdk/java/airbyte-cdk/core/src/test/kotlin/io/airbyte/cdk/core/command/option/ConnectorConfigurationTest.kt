@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 
 class ConnectorConfigurationTest {
     @Test
-    internal fun `test retrieving the default namespace from the configuration`() {
+    internal fun testRetrievingTheDefaultNamespaceFromTheConfiguration() {
         val namespace = "test"
         val configuration = TestConnectorConfiguration(namespace)
         assertEquals(namespace, configuration.getDefaultNamespace().get())
@@ -23,7 +23,7 @@ class ConnectorConfigurationTest {
     }
 
     @Test
-    internal fun `test retrieving the raw namespace from the configuration`() {
+    internal fun testRetrievingTheRawNamespaceFromTheConfiguration() {
         val namespace = "test"
         val configuration = TestConnectorConfiguration(namespace)
         assertEquals(namespace, configuration.getRawNamespace().get())
@@ -33,7 +33,7 @@ class ConnectorConfigurationTest {
     }
 
     @Test
-    internal fun `test converting the configuration to JSON`() {
+    internal fun testConvertingTheConfigurationToJSON() {
         val namespace = "test"
         val configuration = TestConnectorConfiguration(namespace)
         val json = configuration.toJson()
