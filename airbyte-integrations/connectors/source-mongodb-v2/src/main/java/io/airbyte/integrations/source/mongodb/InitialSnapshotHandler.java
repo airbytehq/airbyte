@@ -74,6 +74,8 @@ public class InitialSnapshotHandler {
           // "where _id > [last saved state] order by _id ASC".
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = existingState
+              // Full refresh streams that finished set their id to null
+              // This tells us to start over
               .filter(state -> state.id() != null)
               .map(state -> Filters.gt(MongoConstants.ID_FIELD,
                   switch (state.idType()) {
