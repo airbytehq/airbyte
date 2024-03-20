@@ -1,17 +1,18 @@
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-
-from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter
-
-from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor, SubstreamPartitionRouter
 
 
 class LegacyToPerPartitionStateMigration(StateMigration):
-
-    def __init__(self, partition_router: SubstreamPartitionRouter, cursor: DatetimeBasedCursor, config: Mapping[str, Any], parameters: Mapping[str, Any]):
+    def __init__(
+        self,
+        partition_router: SubstreamPartitionRouter,
+        cursor: DatetimeBasedCursor,
+        config: Mapping[str, Any],
+        parameters: Mapping[str, Any],
+    ):
         self._partition_router = partition_router
         self._cursor = cursor
         self._config = config
@@ -43,14 +44,13 @@ class LegacyToPerPartitionStateMigration(StateMigration):
 
         return True
 
-    def _cursor_field(self):
+    def _cursor_field(self) -> str:
         cursor_field_raw = InterpolatedString.create(self._cursor.cursor_field, parameters=self._parameters)
-        return cursor_field_raw.eval(self._config)
+        return str(cursor_field_raw.eval(self._config))
 
-    def _partition_key(self):
+    def _partition_key(self) -> str:
         # FIXME: maybe needs to be interpolated?
         return self._partition_router.parent_stream_configs[0].parent_key
-
 
     def _is_already_migrated(self, stream_state: Mapping[str, Any]) -> bool:
         if "states" not in stream_state:
@@ -79,8 +79,5 @@ class LegacyToPerPartitionStateMigration(StateMigration):
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         partition_key_field = self._partition_router.parent_stream_configs[0].parent_key
-        states = [
-            {"partition": {partition_key_field: key}, "cursor": value}
-            for key, value in stream_state.items()
-        ]
+        states = [{"partition": {partition_key_field: key}, "cursor": value} for key, value in stream_state.items()]
         return {"states": states}

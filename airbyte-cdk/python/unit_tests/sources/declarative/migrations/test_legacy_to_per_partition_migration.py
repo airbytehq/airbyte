@@ -2,16 +2,13 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
-from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter
-
-from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor
-
-from airbyte_cdk.sources.declarative.models import ParentStreamConfig
-
-from airbyte_cdk.sources.declarative.models import DeclarativeStream
-
-from airbyte_cdk.sources.declarative.models import CustomRetriever
-
+from airbyte_cdk.sources.declarative.models import (
+    CustomRetriever,
+    DatetimeBasedCursor,
+    DeclarativeStream,
+    ParentStreamConfig,
+    SubstreamPartitionRouter,
+)
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 
 

@@ -30,10 +30,11 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TR
 from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
+from airbyte_cdk.sources.declarative.models import CustomStateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
@@ -66,6 +67,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
+)
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel,
 )
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
@@ -122,10 +126,6 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMe
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic import BaseModel
-
-from airbyte_cdk.sources.declarative.models import CustomStateMigration
-
-from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
 
 ComponentDefinition = Mapping[str, Any]
 
@@ -186,7 +186,6 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
-            LegacySessionTokenAuthenticator: self.create_legacy_session_token_authenticator,
             LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
             ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
@@ -314,13 +313,15 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    def create_legacy_to_per_partition_state_migration(self, model: LegacyToPerPartitionsStateMigrationModel, config, partition_routers, cursor, parameters):
-        return LegacyToPerPartitionStateMigration(
-            partition_routers,
-            cursor,
-            config,
-            parameters
-        )
+    def create_legacy_to_per_partition_state_migration(
+        self,
+        _: LegacyToPerPartitionStateMigrationModel,
+        config: Mapping[str, Any],
+        partition_router: SubstreamPartitionRouterModel,
+        datetime_based_cursor: DatetimeBasedCursorModel,
+        parameters: Mapping[str, Any],
+    ) -> LegacyToPerPartitionStateMigration:
+        return LegacyToPerPartitionStateMigration(partition_router, datetime_based_cursor, config, parameters)
 
     def create_session_token_authenticator(
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
@@ -600,9 +601,16 @@ class ModelToComponentFactory:
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
-        state_transformations = [self._create_component_from_model(state_migration, config, partition_routers=model.retriever.partition_router, cursor=model.incremental_sync, parameters=model.parameters)
-                                 for state_migration in model.state_migrations]\
-            if model.state_migrations else []
+        if model.state_migrations:
+            if isinstance(retriever, SimpleRetriever):
+                state_transformations = [
+                    self._create_component_from_model(state_migration, config, partition_routers=model.retriever.partition_router, cursor=model.incremental_sync, parameters=model.parameters)  # type: ignore # there is a type check
+                    for state_migration in model.state_migrations
+                ]
+            else:
+                raise ValueError(f"State migrations for custom retrievers are not supported.")
+        else:
+            state_transformations = []
 
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
