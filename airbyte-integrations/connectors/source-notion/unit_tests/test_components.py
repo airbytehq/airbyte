@@ -18,59 +18,39 @@ def test_streams():
 
 def test_notion_properties_transformation():
     input_record = {
-        "id": "123",
-        "properties": {
+        "id": "123", "properties": {
             "Due date": {
-                "id": "M%3BBw",
-                "type": "date",
-                "date": {
-                    "start": "2023-02-23",
-                    "end": None,
-                    "time_zone": None
+                "id": "M%3BBw", "type": "date", "date": {
+                    "start": "2023-02-23", "end": None, "time_zone": None
                 }
             },
             "Status": {
-                "id": "Z%3ClH",
-                "type": "status",
-                "status": {
-                    "id": "86ddb6ec-0627-47f8-800d-b65afd28be13",
-                    "name": "Not started",
-                    "color": "default"
+                "id": "Z%3ClH", "type": "status", "status": {
+                    "id": "86ddb6ec-0627-47f8-800d-b65afd28be13", "name": "Not started", "color": "default"
                 }
             }
         }
     }
 
     output_record = {
-        "id": "123",
-        "properties": [
+        "id": "123", "properties": [
             {
-                "name": "Due date",
-                "value": {
-                    "id": "M%3BBw",
-                    "type": "date",
-                    "date": {
-                        "start": "2023-02-23",
-                        "end": None,
-                        "time_zone": None
+                "name": "Due date", "value": {
+                    "id": "M%3BBw", "type": "date", "date": {
+                        "start": "2023-02-23", "end": None, "time_zone": None
                     }
                 }
             },
             {
                 "name": "Status",
                 "value": {
-                    "id": "Z%3ClH",
-                    "type": "status",
-                    "status": {
-                        "id": "86ddb6ec-0627-47f8-800d-b65afd28be13",
-                        "name": "Not started",
-                        "color": "default"
+                    "id": "Z%3ClH", "type": "status", "status": {
+                        "id": "86ddb6ec-0627-47f8-800d-b65afd28be13", "name": "Not started", "color": "default"
                     }
                 }
             }
         ]
     }
-
     assert NotionPropertiesTransformation().transform(input_record) == output_record
 
 
@@ -90,7 +70,8 @@ def config_start_date():
         (
             [], "2021-01-01T00:00:00Z"
         )       
-    ]
+    ],
+    ids=["State value is greater than start_date", "State value is less than start_date", "Empty state, default to start_date"]
 )
 def test_semi_incremental_get_filter_date(config_start_date, state_value, expected_return):
     start_date = config_start_date.config["start_date"]
@@ -108,22 +89,22 @@ semi_incremental_records = [
 @pytest.mark.parametrize("stream_state,stream_slice,expected_records", [
     (
         {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-01T00:00:00Z"}}]},
-        {"partition": {"id": "some_id"}},
+        {"id": "some_id"},
         semi_incremental_records
     ),
     (
         {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-03T00:00:00Z"}}]},
-        {"partition": {"id": "some_id"}},
-        [semi_incremental_records[2]]
+        {"id": "some_id"},
+        [semi_incremental_records[-1]]
     ),
     (
         {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-04T00:00:00Z"}}]},
-        {"partition": {"id": "some_id"}},
+        {"id": "some_id"},
         []
     ),
     (
-        {},
-        {"partition": {"id": "some_id"}},
+        {"states": []},
+        {"id": "some_id"},
         semi_incremental_records
     )
 ],

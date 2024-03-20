@@ -4,6 +4,7 @@
 
 import freezegun
 from http import HTTPStatus
+import logging
 import pytest
 from pytest import fixture, mark
 import re
@@ -12,8 +13,10 @@ import time
 from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
+from source_notion.source import SourceNotion
 
 
 
@@ -53,9 +56,50 @@ def blocks(parent, args):
     return Blocks(parent=parent, **args)
 
 
+@pytest.mark.parametrize(
+    "config, expected_token",
+    [
+        ({"credentials": {"auth_type": "OAuth2.0", "access_token": "oauth_token_123"}}, "Bearer oauth_token_123"),
+        ({"credentials": {"auth_type": "token", "token": "api_token_456"}}, "Bearer api_token_456"),
+        ({"access_token": "legacy_token_789"}, "Bearer legacy_token_789"),
+        ({}, None),
+    ],
+)
+def test_get_authenticator(config, expected_token):
+    source = SourceNotion()
+    authenticator = source._get_authenticator(config)
+
+    if expected_token:
+        assert isinstance(authenticator, TokenAuthenticator)
+        assert authenticator.token == expected_token
+    else:
+        assert authenticator is None
+
+
 def test_cursor_field(stream):
     expected_cursor_field = "last_edited_time"
     assert stream.cursor_field == expected_cursor_field
+
+
+def test_supports_incremental(stream, mocker):
+    mocker.patch.object(IncrementalNotionStream, "cursor_field", "dummy_field")
+    assert stream.supports_incremental
+
+
+def test_source_defined_cursor(stream):
+    assert stream.source_defined_cursor
+
+
+def test_stream_checkpoint_interval(stream):
+    expected_checkpoint_interval = None
+    assert stream.state_checkpoint_interval == expected_checkpoint_interval
+
+
+def test_request_params(blocks):
+    stream = blocks
+    inputs = {"stream_state": {}, "next_page_token": {"next_cursor": "aaa"}}
+    expected_request_params = {"page_size": 100, "start_cursor": "aaa"}
+    assert stream.request_params(**inputs) == expected_request_params
 
 
 def test_stream_slices(blocks, requests_mock):
@@ -113,27 +157,6 @@ def test_end_of_stream_state(blocks, requests_mock):
                 assert state_value == "2021-10-30T00:00:00.000Z"
             else:
                 assert state_value == "2021-10-01T00:00:00.000Z"
-
-
-def test_supports_incremental(stream, mocker):
-    mocker.patch.object(IncrementalNotionStream, "cursor_field", "dummy_field")
-    assert stream.supports_incremental
-
-
-def test_source_defined_cursor(stream):
-    assert stream.source_defined_cursor
-
-
-def test_stream_checkpoint_interval(stream):
-    expected_checkpoint_interval = None
-    assert stream.state_checkpoint_interval == expected_checkpoint_interval
-
-
-def test_request_params(blocks):
-    stream = blocks
-    inputs = {"stream_state": {}, "next_page_token": {"next_cursor": "aaa"}}
-    expected_request_params = {"page_size": 100, "start_cursor": "aaa"}
-    assert stream.request_params(**inputs) == expected_request_params
 
 
 def test_record_filter(blocks, requests_mock):
@@ -418,3 +441,61 @@ def test_set_start_date(patch_base_class, config, expected_start_date, current_t
     with freezegun.freeze_time(current_time):
         stream = NotionStream(config=config)
         assert stream.start_date == expected_start_date
+
+
+def test_block_record_transformation():
+    stream = Blocks(parent=None, config=MagicMock())
+    response_record = {
+        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
+        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
+        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
+                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
+                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
+                                    {"type": "mention", "mention": {"type": "page", "page": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"},
+                                     "plain_text": "test", "href": "https://www.notion.so/id"}], "color": "default"}
+    }
+    expected_record = {
+        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
+        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
+        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations":{"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text":"test", "href": None},
+                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
+                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
+                                    {"type": "mention", "mention": {"type": "page", "info": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": "https://www.notion.so/id"}],
+                      "color": "default"}
+    }
+    assert stream.transform(response_record) == expected_record
+
+
+@pytest.mark.parametrize(
+    "initial_page_size, expected_page_size, mock_response",
+    [
+        (100, 50, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
+        (50, 25, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
+        (100, 100, {"status_code": 429, "json": {}, "headers": {"retry-after": "1"}}),
+        (50, 100, {"status_code": 200, "json": {"data": "success"}, "headers": {}}),
+    ],
+    ids=[
+        "504 error, page_size 100 -> 50",
+        "504 error, page_size 50 -> 25",
+        "429 error, page_size 100 -> 100",
+        "200 success, page_size 50 -> 100",
+    ],
+)
+def test_request_throttle(initial_page_size, expected_page_size, mock_response, requests_mock):
+    """
+    Tests that the request page_size is halved when a 504 error is encountered.
+    Once a 200 success is encountered, the page_size is reset to 100, for use in the next call.
+    """
+    requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/users",
+        [{"status_code": mock_response["status_code"], "json": mock_response["json"], "headers": mock_response["headers"]}],
+    )
+
+    stream = Pages(config={"authenticator": "auth"})
+    stream.page_size = initial_page_size
+    response = requests.get("https://api.notion.com/v1/users")
+
+    stream.should_retry(response=response)
+
+    assert stream.page_size == expected_page_size
