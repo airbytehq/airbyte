@@ -21,7 +21,7 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
         description="The directory to search files for sync",
         examples=["/logs/2022"],
         order=5,
-        default="",
+        default="/",
         pattern_descriptor="/folder_to_sync",
     )
 
