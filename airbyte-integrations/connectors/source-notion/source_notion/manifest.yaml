@@ -338,7 +338,8 @@ streams:
                     request_headers:
                       Notion-Version: "2022-06-28"
                     authenticator:
-                      $ref: "#/definitions/authenticator"
+                      type: BearerAuthenticator
+                      api_token: "{{ config.get('credentials', {}).get('token') if config.get('credentials', {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token', '') }}"
                     error_handler:
                       type: CompositeErrorHandler
                       error_handlers:

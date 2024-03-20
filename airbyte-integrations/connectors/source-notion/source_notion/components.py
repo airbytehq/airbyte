@@ -4,8 +4,6 @@ from dataclasses import dataclass, field
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -48,7 +46,7 @@ class NotionSemiIncrementalFilter(RecordFilter):
         current_state = [
             state_value
             for state_value in stream_state.get("states", [])
-            if state_value.get("partition", {}).get("id") == stream_slice.get("partition", {}).get("id")
+            if state_value.get("partition", {}).get("id") == stream_slice.get("id")
         ]
         cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
         if cursor_value:
