@@ -1,4 +1,4 @@
-version: 0.71.0
+version: 0.72.1
 type: DeclarativeSource
 
 definitions:
@@ -34,6 +34,8 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: "{{ response.get('links', {}).get('next') }}"
+    page_token_option:
+      type: RequestPath
 
   # Retrievers
   base_retriever:
@@ -42,13 +44,18 @@ definitions:
     requester: "#/definitions/requester"
     paginator: "#/definitions/paginator"
 
+  incremental_retriever:
+    $ref: "#/definitions/base_retriever"
+
   semi_incremental_retriever:
     $ref: "#/definitions/base_retriever"
-  #      record_selector:
-  #        $ref: "#/definitions/selector"
-  #        record_filter:
-  #          type: RecordFilter
-  #          condition: "{{  }}"
+    record_selector:
+      $ref: "#/definitions/selector"
+      record_filter:
+        type: RecordFilter
+        condition: >-
+          {% set starting_point = stream_state.get('updated', config.get('start_date')) %}
+          {{ starting_point and record.get('attributes', {}).get('updated') > starting_point or not starting_point }}
 
   # Transformation
   add_updated_field_transformation:
@@ -56,7 +63,7 @@ definitions:
     fields:
       - type: AddedFieldDefinition
         path: ["updated"]
-        value: "{{ record['attributes']['updated'] }}"
+        value: "{{ record.get('attributes', {}).get('updated') }}"
 
   # Base streams
   base_stream:
@@ -65,6 +72,7 @@ definitions:
 
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/incremental_retriever"
 
   base_semi_incremental_stream:
     $ref: "#/definitions/base_stream"
@@ -74,6 +82,7 @@ definitions:
 
   # Incremental streams
   profiles_stream:
+    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
     name: "profiles"
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -81,6 +90,7 @@ definitions:
       cursor_field: "updated"
 
   campaigns_stream:
+    # Docs: https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns
     name: "campaigns"
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -88,6 +98,7 @@ definitions:
       cursor_field: "updated_at"
 
   global_exclusions_stream:
+    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
     # TODO not ready at all
     name: "profiles"
     $ref: "#/definitions/base_incremental_stream"
@@ -96,6 +107,7 @@ definitions:
       cursor_field: "updated"
 
   events_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_events
     name: "events"
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -103,6 +115,7 @@ definitions:
       cursor_field: "datetime"
 
   flows_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_flows
     name: "flows"
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -110,6 +123,7 @@ definitions:
       cursor_field: "updated"
 
   email_templates_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_templates
     name: "email_templates"
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -118,6 +132,7 @@ definitions:
 
   # Semi-Incremental streams
   metrics_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_metrics
     name: "metrics"
     $ref: "#/definitions/base_semi_incremental_stream"
     $parameters:
@@ -125,6 +140,7 @@ definitions:
       cursor_field: "updated"
 
   lists_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_lists
     name: "lists"
     $ref: "#/definitions/base_semi_incremental_stream"
     $parameters:
