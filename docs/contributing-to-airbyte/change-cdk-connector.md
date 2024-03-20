@@ -1,4 +1,4 @@
-# Changes to CDK or Low-Code Connector
+# Changes to Python CDK or Low-Code Connector
 
 ## Contribution Process
 
@@ -21,10 +21,10 @@ Make sure you're working on an issue had been already triaged to not have your c
 3. Code the change
 4. Write a unit test for each custom function you added or changed
 5. Ensure all tests, including connector acceptance tests, pass
-6. Update the `metadata.yaml` and `Dockerfile` version following the [guidelines](./resources/pull-requests-handbook.md#semantic-versioning-for-connectors)
+6. Update the `metadata.yaml` following the [guidelines](./resources/pull-requests-handbook.md#semantic-versioning-for-connectors)
 7. Update the changelog entry in documentation in `docs/integrations/<connector-name>.md`
+8. Make sure your contribution passes our [QA checks](./resources/qa-checks.md)
 
-A comment will automatically be added to your PR with a checklist containing the necessary steps to complete your contribution and get it merged.
 
 :::info
 There is a README file inside each connector folder containing instructions to run that connector's tests locally.
@@ -55,7 +55,7 @@ When we review, we look at:
 
 ## Breaking Changes to Connectors
 
-Often times, changes to connectors can be made without impacting the user experience.  However, there are some changes that will require users to take action before they can continue to sync data.  These changes are considered **Breaking Changes** and require a
+Often times, changes to connectors can be made without impacting the user experience.  However, there are some changes that will require users to take action before they can continue to sync data.  These changes are considered **Breaking Changes** and require:
 
 1. A **Major Version** increase 
 2. A [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) in the `releases` section of the `metadata.yaml` file
@@ -66,7 +66,12 @@ Often times, changes to connectors can be made without impacting the user experi
 A breaking change is any change that will require users to take action before they can continue to sync data. The following are examples of breaking changes:
 
 - **Spec Change** - The configuration required by users of this connector have been changed and syncs will fail until users reconfigure or re-authenticate.  This change is not possible via a Config Migration 
-- **Schema Change** - The type of a property previously present within a record has changed
+- **Schema Change** - The type of property previously present within a record has changed
 - **Stream or Property Removal** - Data that was previously being synced is no longer going to be synced.
 - **Destination Format / Normalization Change** - The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full-refresh.
 - **State Changes** - The format of the source’s state has changed, and the full dataset will need to be re-synced
+
+### Limiting the Impact of Breaking Changes
+Some of the changes listed above may not impact all users of the connector. For example, a change to the schema of a specific stream only impacts users who are syncing that stream.
+
+The breaking change metadata allows you to specify narrowed scopes that are specifically affected by a breaking change. See the [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) documentation for supported scopes.

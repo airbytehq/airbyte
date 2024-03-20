@@ -4,10 +4,12 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
+
 import java.time.Instant;
 import java.util.Optional;
 
-public interface SqlGenerator<DialectTableDefinition> {
+public interface SqlGenerator {
 
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
 
@@ -21,9 +23,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
    * The generated SQL should throw an exception if the table already exists and {@code force} is
-   * false. Callers should use
-   * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known
-   * to exist, and potentially softReset
+   * false.
    *
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
@@ -31,16 +31,15 @@ public interface SqlGenerator<DialectTableDefinition> {
    *        table already exists. If you're passing a non-empty prefix, you likely want to set this to
    *        true.
    */
-  String createTable(final StreamConfig stream, final String suffix, boolean force);
+  Sql createTable(final StreamConfig stream, final String suffix, boolean force);
 
   /**
-   * Check the final table's schema and compare it to what the stream config would generate.
+   * Used to create either the airbyte_internal or final schemas if they don't exist
    *
-   * @param stream the stream/stable in question
-   * @param existingTable the existing table mapped to the stream
-   * @return whether the existing table matches the expected schema
+   * @param schema the schema to create
+   * @return SQL to create the schema if it does not exist
    */
-  boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable);
+  Sql createSchema(final String schema);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -70,7 +69,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    *        however sometimes we get badly typed data. In these cases we can use a more expensive
    *        query which handles casting exceptions.
    */
-  String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting);
+  Sql updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
@@ -78,24 +77,40 @@ public interface SqlGenerator<DialectTableDefinition> {
    * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is
    * non-empty. Callers are responsible for verifying those are true.
    */
-  String overwriteFinalTable(StreamId stream, String finalSuffix);
+  Sql overwriteFinalTable(StreamId stream, String finalSuffix);
 
   /**
    * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a soft
    * reset.
    *
    * @param streamId the stream to migrate
-   * @param namespace
-   * @param tableName
+   * @param namespace the namespace of the v1 raw table
+   * @param tableName name of the v2 raw table
    * @return a string containing the necessary sql to migrate
    */
-  String migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
+  Sql migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
 
   /**
    * Typically we need to create a soft reset temporary table and clear loaded at values
    *
    * @return
    */
-  String prepareTablesForSoftReset(final StreamConfig stream);
+  default Sql prepareTablesForSoftReset(final StreamConfig stream) {
+    final Sql createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
+    final Sql clearLoadedAt = clearLoadedAt(stream.id());
+    return Sql.concat(createTempTable, clearLoadedAt);
+  }
+
+  Sql clearLoadedAt(final StreamId streamId);
+
+  /**
+   * Implementation specific if there is no option to retry again with safe casted SQL or the specific
+   * cause of the exception can be retried or not.
+   *
+   * @return true if the exception should be retried with a safer query
+   */
+  default boolean shouldRetry(final Exception e) {
+    return true;
+  }
 
 }

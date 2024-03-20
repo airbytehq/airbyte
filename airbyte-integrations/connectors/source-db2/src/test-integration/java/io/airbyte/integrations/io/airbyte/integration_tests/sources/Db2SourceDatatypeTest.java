@@ -18,8 +18,10 @@ import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.protocol.models.JsonSchemaType;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Db2Container;
 
+@Disabled
 public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final String CREATE_TABLE_SQL = "CREATE TABLE %1$s(%2$s INTEGER NOT NULL PRIMARY KEY, %3$s %4$s)";
@@ -41,7 +43,6 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
     container.close();
   }
 

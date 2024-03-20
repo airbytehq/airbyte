@@ -3,7 +3,7 @@
 # Source: https://click.palletsprojects.com/en/8.1.x/complex/
 
 import importlib
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import asyncclick as click
 
@@ -13,7 +13,7 @@ class LazyGroup(click.Group):
     A click Group that can lazily load subcommands.
     """
 
-    def __init__(self, *args, lazy_subcommands: Optional[Dict[str, str]] = None, **kwargs):
+    def __init__(self, *args: Any, lazy_subcommands: Optional[Dict[str, str]] = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # lazy_subcommands is a map of the form:
         #
@@ -31,7 +31,7 @@ class LazyGroup(click.Group):
             return self._lazy_load(cmd_name)
         return super().get_command(ctx, cmd_name)
 
-    def _lazy_load(self, cmd_name: str) -> click.BaseCommand:
+    def _lazy_load(self, cmd_name: str) -> click.Command:
         # lazily loading a command, first get the module name and attribute name
         import_path = self.lazy_subcommands[cmd_name]
         modname, cmd_object_name = import_path.rsplit(".", 1)
@@ -40,7 +40,7 @@ class LazyGroup(click.Group):
         # get the Command object from that module
         cmd_object = getattr(mod, cmd_object_name)
         # check the result to make debugging easier
-        if not isinstance(cmd_object, click.BaseCommand):
+        if not isinstance(cmd_object, click.Command):
             print(f"{cmd_object} is of instance {type(cmd_object)}")
             raise ValueError(f"Lazy loading of {import_path} failed by returning " "a non-command object")
         return cmd_object

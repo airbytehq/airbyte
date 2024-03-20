@@ -11,6 +11,9 @@
     "contactEmail": {
       "type": ["null", "string"]
     },
+    "customId": {
+      "type": ["null", "string"]
+    },
     "name": {
       "type": ["null", "string"]
     },

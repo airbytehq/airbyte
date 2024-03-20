@@ -1,0 +1,61 @@
+{
+  "paging": {
+    "start": 0,
+    "count": 10,
+    "links": []
+  },
+  "elements": [
+    {
+      "oneClickLeads": 0,
+      "dateRange": {
+        "start": {
+          "month": 1,
+          "day": 2,
+          "year": 2021
+        },
+        "end": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        }
+      },
+      "landingPageClicks": 0,
+      "fullScreenPlays": 0,
+      "oneClickLeadFormOpens": 0,
+      "follows": 0,
+      "impressions": 1,
+      "otherEngagements": 0,
+      "leadGenerationMailContactInfoShares": 0,
+      "opens": 0,
+      "leadGenerationMailInterestedClicks": 0,
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
+      "likes": 0
+    },
+    {
+      "oneClickLeads": 0,
+      "dateRange": {
+        "start": {
+          "month": 1,
+          "day": 1,
+          "year": 2021
+        },
+        "end": {
+          "month": 1,
+          "day": 1,
+          "year": 2021
+        }
+      },
+      "landingPageClicks": 106,
+      "fullScreenPlays": 0,
+      "oneClickLeadFormOpens": 0,
+      "follows": 0,
+      "impressions": 19464,
+      "otherEngagements": 0,
+      "leadGenerationMailContactInfoShares": 0,
+      "opens": 0,
+      "leadGenerationMailInterestedClicks": 0,
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
+      "likes": 0
+    }
+  ]
+}

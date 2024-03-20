@@ -10,7 +10,16 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
-from source_bing_ads.bulk_streams import AdGroupLabels, AppInstallAdLabels, AppInstallAds, CampaignLabels, KeywordLabels, Keywords, Labels
+from source_bing_ads.bulk_streams import (
+    AdGroupLabels,
+    AppInstallAdLabels,
+    AppInstallAds,
+    Budget,
+    CampaignLabels,
+    KeywordLabels,
+    Keywords,
+    Labels,
+)
 from source_bing_ads.client import Client
 from source_bing_ads.report_streams import (  # noqa: F401
     AccountImpressionPerformanceReportDaily,
@@ -37,6 +46,10 @@ from source_bing_ads.report_streams import (  # noqa: F401
     AgeGenderAudienceReportHourly,
     AgeGenderAudienceReportMonthly,
     AgeGenderAudienceReportWeekly,
+    AudiencePerformanceReportDaily,
+    AudiencePerformanceReportHourly,
+    AudiencePerformanceReportMonthly,
+    AudiencePerformanceReportWeekly,
     BingAdsReportingServiceStream,
     BudgetSummaryReport,
     CampaignImpressionPerformanceReportDaily,
@@ -52,10 +65,22 @@ from source_bing_ads.report_streams import (  # noqa: F401
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
     GeographicPerformanceReportWeekly,
+    GoalsAndFunnelsReportDaily,
+    GoalsAndFunnelsReportHourly,
+    GoalsAndFunnelsReportMonthly,
+    GoalsAndFunnelsReportWeekly,
     KeywordPerformanceReportDaily,
     KeywordPerformanceReportHourly,
     KeywordPerformanceReportMonthly,
     KeywordPerformanceReportWeekly,
+    ProductDimensionPerformanceReportDaily,
+    ProductDimensionPerformanceReportHourly,
+    ProductDimensionPerformanceReportMonthly,
+    ProductDimensionPerformanceReportWeekly,
+    ProductSearchQueryPerformanceReportDaily,
+    ProductSearchQueryPerformanceReportHourly,
+    ProductSearchQueryPerformanceReportMonthly,
+    ProductSearchQueryPerformanceReportWeekly,
     SearchQueryPerformanceReportDaily,
     SearchQueryPerformanceReportHourly,
     SearchQueryPerformanceReportMonthly,
@@ -75,7 +100,10 @@ class SourceBingAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
-            account_ids = {str(account["Id"]) for account in Accounts(client, config).read_records(SyncMode.full_refresh)}
+            accounts = Accounts(client, config)
+            account_ids = set()
+            for _slice in accounts.stream_slices():
+                account_ids.update({str(account["Id"]) for account in accounts.read_records(SyncMode.full_refresh, _slice)})
             self.validate_custom_reposts(config, client)
             if account_ids:
                 return True, None
@@ -128,6 +156,7 @@ class SourceBingAds(AbstractSource):
             AppInstallAds(client, config),
             AppInstallAdLabels(client, config),
             Ads(client, config),
+            Budget(client, config),
             Campaigns(client, config),
             BudgetSummaryReport(client, config),
             Labels(client, config),
@@ -140,6 +169,7 @@ class SourceBingAds(AbstractSource):
             "AgeGenderAudienceReport",
             "AccountImpressionPerformanceReport",
             "AccountPerformanceReport",
+            "AudiencePerformanceReport",
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",
             "AdPerformanceReport",
@@ -147,6 +177,9 @@ class SourceBingAds(AbstractSource):
             "CampaignPerformanceReport",
             "CampaignImpressionPerformanceReport",
             "GeographicPerformanceReport",
+            "GoalsAndFunnelsReport",
+            "ProductDimensionPerformanceReport",
+            "ProductSearchQueryPerformanceReport",
             "SearchQueryPerformanceReport",
             "UserLocationPerformanceReport",
         )

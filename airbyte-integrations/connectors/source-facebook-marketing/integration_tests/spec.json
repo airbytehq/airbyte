@@ -5,14 +5,19 @@
     "title": "Source Facebook Marketing",
     "type": "object",
     "properties": {
-      "account_id": {
-        "title": "Ad Account ID",
-        "description": "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. The Ad account ID number is in the account dropdown menu or in your browser's address bar of your <a href=\"https://adsmanager.facebook.com/adsmanager/\">Meta Ads Manager</a>. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
+      "account_ids": {
+        "title": "Ad Account ID(s)",
+        "description": "The Facebook Ad account ID(s) to pull data from. The Ad account ID number is in the account dropdown menu or in your browser's address bar of your <a href=\"https://adsmanager.facebook.com/adsmanager/\">Meta Ads Manager</a>. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
         "order": 0,
-        "pattern": "^[0-9]+$",
-        "pattern_descriptor": "1234567890",
+        "pattern_descriptor": "The Ad Account ID must be a number.",
         "examples": ["111111111111111"],
-        "type": "string"
+        "minItems": 1,
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "uniqueItems": true
       },
       "access_token": {
         "title": "Access Token",
@@ -39,24 +44,81 @@
         "type": "string",
         "format": "date-time"
       },
-      "include_deleted": {
-        "title": "Include Deleted Campaigns, Ads, and AdSets",
-        "description": "Set to active if you want to include data from deleted Campaigns, Ads, and AdSets.",
-        "default": false,
+      "campaign_statuses": {
+        "title": "Campaign Statuses",
+        "description": "Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
+        "default": [],
         "order": 4,
-        "type": "boolean"
+        "type": "array",
+        "items": {
+          "title": "ValidCampaignStatuses",
+          "description": "An enumeration.",
+          "enum": [
+            "ACTIVE",
+            "ARCHIVED",
+            "DELETED",
+            "IN_PROCESS",
+            "PAUSED",
+            "WITH_ISSUES"
+          ]
+        }
+      },
+      "adset_statuses": {
+        "title": "AdSet Statuses",
+        "description": "Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
+        "default": [],
+        "order": 5,
+        "type": "array",
+        "items": {
+          "title": "ValidAdSetStatuses",
+          "description": "An enumeration.",
+          "enum": [
+            "ACTIVE",
+            "ARCHIVED",
+            "CAMPAIGN_PAUSED",
+            "DELETED",
+            "IN_PROCESS",
+            "PAUSED",
+            "WITH_ISSUES"
+          ]
+        }
+      },
+      "ad_statuses": {
+        "title": "Ad Statuses",
+        "description": "Select the statuses you want to be loaded in the stream. If no specific statuses are selected, the API's default behavior applies, and some statuses may be filtered out.",
+        "default": [],
+        "order": 6,
+        "type": "array",
+        "items": {
+          "title": "ValidAdStatuses",
+          "description": "An enumeration.",
+          "enum": [
+            "ACTIVE",
+            "ADSET_PAUSED",
+            "ARCHIVED",
+            "CAMPAIGN_PAUSED",
+            "DELETED",
+            "DISAPPROVED",
+            "IN_PROCESS",
+            "PAUSED",
+            "PENDING_BILLING_INFO",
+            "PENDING_REVIEW",
+            "PREAPPROVED",
+            "WITH_ISSUES"
+          ]
+        }
       },
       "fetch_thumbnail_images": {
         "title": "Fetch Thumbnail Images from Ad Creative",
         "description": "Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
         "default": false,
-        "order": 5,
+        "order": 7,
         "type": "boolean"
       },
       "custom_insights": {
         "title": "Custom Insights",
         "description": "A list which contains ad statistics entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns. Click on \"add\" to fill this field.",
-        "order": 6,
+        "order": 8,
         "type": "array",
         "items": {
           "title": "InsightConfig",
@@ -113,6 +175,7 @@
                   "catalog_segment_value_omni_purchase_roas",
                   "catalog_segment_value_website_purchase_roas",
                   "clicks",
+                  "conversion_lead_rate",
                   "conversion_rate_ranking",
                   "conversion_values",
                   "conversions",
@@ -123,6 +186,7 @@
                   "cost_per_action_type",
                   "cost_per_ad_click",
                   "cost_per_conversion",
+                  "cost_per_conversion_lead",
                   "cost_per_dda_countby_convs",
                   "cost_per_estimated_ad_recallers",
                   "cost_per_inline_link_click",
@@ -167,6 +231,9 @@
                   "interactive_component_tap",
                   "labels",
                   "location",
+                  "marketing_messages_cost_per_delivered",
+                  "marketing_messages_cost_per_link_btn_click",
+                  "marketing_messages_spend",
                   "mobile_app_purchase_roas",
                   "objective",
                   "optimization_goal",
@@ -176,9 +243,6 @@
                   "purchase_roas",
                   "qualifying_question_qualify_answer_rate",
                   "quality_ranking",
-                  "quality_score_ectr",
-                  "quality_score_ecvr",
-                  "quality_score_organic",
                   "reach",
                   "social_spend",
                   "spend",
@@ -247,7 +311,16 @@
                   "image_asset",
                   "impression_device",
                   "is_conversion_id_modeled",
+                  "landing_destination",
                   "link_url_asset",
+                  "marketing_messages_btn_name",
+                  "mdsa_landing_destination",
+                  "media_asset_url",
+                  "media_creator",
+                  "media_destination_url",
+                  "media_format",
+                  "media_origin_url",
+                  "media_text_content",
                   "mmm",
                   "place_page_id",
                   "platform_position",
@@ -258,6 +331,8 @@
                   "region",
                   "skan_campaign_id",
                   "skan_conversion_id",
+                  "skan_version",
+                  "standard_event_content_type",
                   "title_asset",
                   "video_asset"
                 ]
@@ -281,7 +356,8 @@
                   "action_target_id",
                   "action_type",
                   "action_video_sound",
-                  "action_video_type"
+                  "action_video_type",
+                  "standard_event_content_type"
                 ]
               }
             },
@@ -324,6 +400,15 @@
               "mininum": 1,
               "exclusiveMinimum": 0,
               "type": "integer"
+            },
+            "insights_job_timeout": {
+              "title": "Custom Insights Job Timeout",
+              "description": "The insights job timeout",
+              "default": 60,
+              "maximum": 60,
+              "mininum": 10,
+              "exclusiveMinimum": 0,
+              "type": "integer"
             }
           },
           "required": ["name"]
@@ -333,7 +418,7 @@
         "title": "Page Size of Requests",
         "description": "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
         "default": 100,
-        "order": 7,
+        "order": 10,
         "exclusiveMinimum": 0,
         "type": "integer"
       },
@@ -341,9 +426,19 @@
         "title": "Insights Lookback Window",
         "description": "The attribution window. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here.",
         "default": 28,
-        "order": 8,
+        "order": 11,
         "maximum": 28,
         "mininum": 1,
+        "exclusiveMinimum": 0,
+        "type": "integer"
+      },
+      "insights_job_timeout": {
+        "title": "Insights Job Timeout",
+        "description": "Insights Job Timeout establishes the maximum amount of time (in minutes) of waiting for the report job to complete. When timeout is reached the job is considered failed and we are trying to request smaller amount of data by breaking the job to few smaller ones. If you definitely know that 60 minutes is not enough for your report to be processed then you can decrease the timeout value, so we start breaking job to smaller parts faster.",
+        "default": 60,
+        "order": 12,
+        "maximum": 60,
+        "mininum": 10,
         "exclusiveMinimum": 0,
         "type": "integer"
       },
@@ -369,7 +464,7 @@
         "type": "string"
       }
     },
-    "required": ["account_id", "access_token"]
+    "required": ["account_ids", "access_token"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],

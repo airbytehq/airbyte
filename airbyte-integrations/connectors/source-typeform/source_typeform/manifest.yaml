@@ -26,12 +26,21 @@ definitions:
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    refresh_token_updater: {}
   requester:
     type: HttpRequester
     url_base: https://api.typeform.com/
     http_method: GET
     request_parameters: {}
     request_headers: {}
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [499]
+              action: FAIL
+              error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
     authenticator:
       class_name: source_typeform.components.TypeformAuthenticator
       token_auth: "#/definitions/token_auth"
@@ -116,7 +125,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ last_records[-1]['token'] }}"
-          stop_condition: "{{ not response['total_items'] }}"
+          stop_condition: "{{ not last_records }}"
           page_size: 1000
       partition_router:
         $ref: "#/definitions/form_id_partition_router"

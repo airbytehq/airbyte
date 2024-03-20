@@ -80,3 +80,7 @@ class Config(AbstractFileBasedSpec):
             objects_to_check["anyOf"] = objects_to_check.pop("allOf")
 
         return super(Config, Config).replace_enum_allOf_and_anyOf(schema)
+
+    @staticmethod
+    def remove_discriminator(schema) -> None:
+        pass

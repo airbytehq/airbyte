@@ -5,12 +5,12 @@
 package io.airbyte.cdk.integrations.destination.staging;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction;
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
-import io.airbyte.cdk.integrations.destination_async.DestinationFlushFunction;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
@@ -36,16 +36,6 @@ class AsyncFlush implements DestinationFlushFunction {
   private final TyperDeduper typerDeduper;
   private final long optimalBatchSizeBytes;
   private final boolean useDestinationsV2Columns;
-
-  public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
-                    final StagingOperations stagingOperations,
-                    final JdbcDatabase database,
-                    final ConfiguredAirbyteCatalog catalog,
-                    final TypeAndDedupeOperationValve typerDeduperValve,
-                    final TyperDeduper typerDeduper,
-                    final boolean useDestinationsV2Columns) {
-    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024, useDestinationsV2Columns);
-  }
 
   public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
                     final StagingOperations stagingOperations,
@@ -85,7 +75,7 @@ class AsyncFlush implements DestinationFlushFunction {
           // todo (cgardens) - most writers just go ahead and re-serialize the contents of the record message.
           // we should either just pass the raw string or at least have a way to do that and create a default
           // impl that maintains backwards compatible behavior.
-          writer.accept(record.getSerialized(), record.getRecord().getEmittedAt());
+          writer.accept(record.getSerialized(), Jsons.serialize(record.getRecord().getMeta()), record.getRecord().getEmittedAt());
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
@@ -105,7 +95,11 @@ class AsyncFlush implements DestinationFlushFunction {
     final String schemaName = writeConfig.getOutputSchemaName();
     final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
     final String stagingPath =
-        stagingOperations.getStagingPath(StagingConsumerFactory.RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(),
+        stagingOperations.getStagingPath(
+            GeneralStagingFunctions.RANDOM_CONNECTION_ID,
+            schemaName,
+            writeConfig.getStreamName(),
+            writeConfig.getOutputTableName(),
             writeConfig.getWriteDatetime());
     try {
       final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);

@@ -61,10 +61,10 @@ public class BigQueryStagingConsumerFactory {
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
-        (hasFailed) -> {
+        (hasFailed, recordCounts) -> {
           try {
-            onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(hasFailed);
-          } catch (Exception e) {
+            onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(hasFailed, recordCounts);
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         },
@@ -135,7 +135,8 @@ public class BigQueryStagingConsumerFactory {
                                           final TyperDeduper typerDeduper) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
-      typerDeduper.prepareTables();
+      typerDeduper.prepareSchemasAndRunMigrations();
+
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
             writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
@@ -156,6 +157,8 @@ public class BigQueryStagingConsumerFactory {
           bigQueryGcsOperations.truncateTableIfExists(rawDatasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
         }
       }
+
+      typerDeduper.prepareFinalTables();
       LOGGER.info("Preparing tables in destination completed.");
     };
   }
@@ -169,13 +172,13 @@ public class BigQueryStagingConsumerFactory {
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<StreamDescriptor, BigQueryWriteConfig> writeConfigs,
                                           final TyperDeduper typerDeduper) {
-    return (hasFailed) -> {
+    return (hasFailed, streamSyncSummaries) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,
        * however, with the changes to checkpointing this will no longer be necessary since despite partial
        * successes, we'll be committing the target table (aka airbyte_raw) table throughout the sync
        */
-      typerDeduper.typeAndDedupe();
+      typerDeduper.typeAndDedupe(streamSyncSummaries);
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final Map.Entry<StreamDescriptor, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());

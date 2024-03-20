@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;
@@ -13,14 +14,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator<DialectTableDefinition> {
+public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
 
   @Override
   public void migrateIfNecessary(
-                                 final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                                 final DestinationHandler<DialectTableDefinition> destinationHandler,
+                                 final SqlGenerator sqlGenerator,
+                                 final DestinationHandler<?> destinationHandler,
                                  final StreamConfig streamConfig)
       throws Exception {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
@@ -59,8 +60,8 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param destinationHandler the class which executes the sql statements
    * @param streamConfig the stream to migrate the raw table of
    */
-  public void migrate(final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                      final DestinationHandler<DialectTableDefinition> destinationHandler,
+  public void migrate(final SqlGenerator sqlGenerator,
+                      final DestinationHandler<?> destinationHandler,
                       final StreamConfig streamConfig)
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);
@@ -89,7 +90,10 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param existingV2AirbyteRawTable the v2 raw table
    */
   private void validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(final DialectTableDefinition existingV2AirbyteRawTable) {
-    if (!schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES)) {
+    // Account for the fact that the meta column was added later, so skip the rebuilding of the raw
+    // table.
+    if (!(schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META) ||
+        schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES))) {
       throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
     }
   }

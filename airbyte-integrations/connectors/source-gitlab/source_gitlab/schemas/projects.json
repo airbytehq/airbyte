@@ -123,6 +123,9 @@
         },
         "members": {
           "type": ["null", "string"]
+        },
+        "cluster_agents": {
+          "type": ["null", "string"]
         }
       }
     },
@@ -329,6 +332,15 @@
         },
         "packages_size": {
           "type": ["null", "integer"]
+        },
+        "container_registry_size": {
+          "type": ["null", "integer"]
+        },
+        "pipeline_artifacts_size": {
+          "type": ["null", "integer"]
+        },
+        "uploads_size": {
+          "type": ["null", "integer"]
         }
       }
     },
@@ -482,6 +494,21 @@
       "type": ["null", "string"]
     },
     "merge_trains_skip_train_allowed": {
+      "type": ["null", "boolean"]
+    },
+    "code_suggestions": {
+      "type": ["null", "boolean"]
+    },
+    "model_registry_access_level": {
+      "type": ["null", "string"]
+    },
+    "ci_restrict_pipeline_cancellation_role": {
+      "type": ["null", "string"]
+    },
+    "repository_object_format": {
+      "type": ["null", "string"]
+    },
+    "warn_about_potentially_unwanted_characters": {
       "type": ["null", "boolean"]
     }
   }

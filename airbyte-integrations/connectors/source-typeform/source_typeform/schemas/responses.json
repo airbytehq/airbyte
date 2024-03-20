@@ -4,6 +4,9 @@
     "response_id": {
       "type": ["null", "string"]
     },
+    "response_type": {
+      "type": ["null", "string"]
+    },
     "landed_at": {
       "type": ["null", "string"]
     },

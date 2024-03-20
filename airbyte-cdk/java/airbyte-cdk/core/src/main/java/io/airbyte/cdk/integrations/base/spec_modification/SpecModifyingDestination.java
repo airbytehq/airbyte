@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.base.spec_modification;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -39,6 +40,14 @@ public abstract class SpecModifyingDestination implements Destination {
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return destination.getConsumer(config, catalog, outputRecordCollector);
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    return destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector);
   }
 
 }

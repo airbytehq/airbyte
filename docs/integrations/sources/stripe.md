@@ -155,6 +155,13 @@ However, not all the entities are supported by the Events API, so the Stripe con
 - `Shipping Rates`
 
 On the other hand, the following streams use the `updated` field value as a cursor:
+
+:::note
+
+`updated` is an artificial cursor field introduced by Airbyte for the Incremental sync option.
+
+:::
+
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -215,7 +222,18 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
-|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------|:-----------| :-------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.3.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978)  | Upgrade CDK to start emitting record counts with state and full refresh state                                                                                                                                                 |
+| 5.2.4   | 2024-02-12 | [35137](https://github.com/airbytehq/airbyte/pull/35137)  | Fix license in `pyproject.toml`                                                                                                                                                                                               |
+| 5.2.3   | 2024-02-09 | [35068](https://github.com/airbytehq/airbyte/pull/35068)  | Manage dependencies with Poetry.                                                                                                                                                                                              |
+| 5.2.2   | 2024-01-31 | [34619](https://github.com/airbytehq/airbyte/pull/34619)  | Events stream concurrent on incremental syncs                                                                                                                                                                                 |
+| 5.2.1   | 2024-01-18 | [34495](https://github.com/airbytehq/airbyte/pull/34495)  | Fix deadlock issue                                                                                                                                                                                                            |
+| 5.2.0   | 2024-01-18 | [34347](https://github.com/airbytehq/airbyte/pull//34347) | Add new fields invoices and subscription streams. Upgrade the CDK for better memory usage.                                                                                                                                    |
+| 5.1.3   | 2023-12-18 | [33306](https://github.com/airbytehq/airbyte/pull/33306/) | Adding integration tests                                                                                                                                                                                                      |
+| 5.1.2   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414)  | Prepare for airbyte-lib                                                                                                                                                                                                       |
+| 5.1.1   | 2024-01-04 | [33926](https://github.com/airbytehq/airbyte/pull/33926/) | Update endpoint for `bank_accounts` stream                                                                                                                                                                                    |
+| 5.1.0   | 2023-12-11 | [32908](https://github.com/airbytehq/airbyte/pull/32908/) | Read full refresh streams concurrently                                                                                                                                                                                        |
+| 5.0.2   | 2023-12-01 | [33038](https://github.com/airbytehq/airbyte/pull/33038)  | Add stream slice logging for SubStream                                                                                                                                                                                        |
 | 5.0.1   | 2023-11-17 | [32638](https://github.com/airbytehq/airbyte/pull/32638/) | Availability stretegy: check availability of both endpoints (if applicable) - common API + events API                                                                                                                         |
 | 5.0.0   | 2023-11-16 | [32286](https://github.com/airbytehq/airbyte/pull/32286/) | Fix multiple issues regarding usage of the incremental sync mode for the `Refunds`, `CheckoutSessions`, `CheckoutSessionsLineItems` streams. Fix schemas for the streams: `Invoices`, `Subscriptions`, `SubscriptionSchedule` |
 | 4.5.4   | 2023-11-16 | [32284](https://github.com/airbytehq/airbyte/pull/32284/) | Enable client-side rate limiting                                                                                                                                                                                              |
@@ -301,5 +319,4 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 0.1.10  | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)    | Update data types to be number instead of int                                                                                                                                                                                 |
 | 0.1.9   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)    | Add acceptance tests for connected accounts                                                                                                                                                                                   |
 | 0.1.8   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)    | Bump CDK connectors                                                                                                                                                                                                           |
-
 </HideInUI>

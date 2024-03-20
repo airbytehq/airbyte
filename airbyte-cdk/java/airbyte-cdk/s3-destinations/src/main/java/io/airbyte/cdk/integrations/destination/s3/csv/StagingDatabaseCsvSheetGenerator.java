@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -49,7 +48,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   @Override
   public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
-    return getDataRow(id, Jsons.serialize(recordMessage.getData()), recordMessage.getEmittedAt());
+    return getDataRow(id, Jsons.serialize(recordMessage.getData()), recordMessage.getEmittedAt(), Jsons.serialize(recordMessage.getMeta()));
   }
 
   @Override
@@ -58,18 +57,19 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   }
 
   @Override
-  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
+  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt, String formattedAirbyteMetaString) {
     if (useDestinationsV2Columns) {
       return List.of(
           id,
-          Timestamp.from(Instant.ofEpochMilli(emittedAt)),
+          Instant.ofEpochMilli(emittedAt),
           "",
-          formattedString);
+          formattedString,
+          formattedAirbyteMetaString);
     } else {
       return List.of(
           id,
           formattedString,
-          Timestamp.from(Instant.ofEpochMilli(emittedAt)));
+          Instant.ofEpochMilli(emittedAt));
     }
   }
 

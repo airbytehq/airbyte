@@ -67,7 +67,7 @@ public class MongoDbCdcInitialSnapshotUtils {
     final List<ConfiguredAirbyteStream> initialSnapshotStreams = new ArrayList<>();
 
     if (!savedOffsetIsValid) {
-      LOGGER.debug("Offset state is invalid.  Add all {} stream(s) from the configured catalog to perform an initial snapshot.",
+      LOGGER.info("Offset state is invalid.  Add all {} stream(s) from the configured catalog to perform an initial snapshot.",
           fullCatalog.getStreams().size());
 
       /*
@@ -87,7 +87,7 @@ public class MongoDbCdcInitialSnapshotUtils {
           .map(Map.Entry::getKey)
           .collect(Collectors.toSet());
 
-      LOGGER.debug("There are {} stream(s) that are still in progress of an initial snapshot sync.", streamsStillInInitialSnapshot.size());
+      LOGGER.info("There are {} stream(s) that are still in progress of an initial snapshot sync.", streamsStillInInitialSnapshot.size());
 
       // Fetch the streams from the catalog that still need to complete the initial snapshot sync
       initialSnapshotStreams.addAll(fullCatalog.getStreams().stream()
@@ -98,7 +98,7 @@ public class MongoDbCdcInitialSnapshotUtils {
       // Fetch the streams added to the catalog since the last sync
       final List<ConfiguredAirbyteStream> newStreams = identifyStreamsToSnapshot(fullCatalog,
           new HashSet<>(stateManager.getStreamStates().keySet()));
-      LOGGER.debug("There are {} stream(s) that have been added to the catalog since the last sync.", newStreams.size());
+      LOGGER.info("There are {} stream(s) that have been added to the catalog since the last sync.", newStreams.size());
       initialSnapshotStreams.addAll(newStreams);
     }
 
