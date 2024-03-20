@@ -321,6 +321,8 @@ class SourceBambooHr(AbstractSource):
             MetaTablesStream(config).read_records(sync_mode=SyncMode.full_refresh)
         )
 
+        self.logger.inf("Current version: 1")
+
         config["available_fields"] = available_fields
         config["available_tables"] = available_tables
 
