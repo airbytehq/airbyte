@@ -6,7 +6,8 @@
   "additionalProperties": true,
   "required": [
     "id",
-    "employeeId"
+    "employeeId",
+    "knoetic_table_name"
   ],
   "properties": {
     "id": {
