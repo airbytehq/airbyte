@@ -319,6 +319,8 @@ class HttpStream(Stream, ABC):
             except requests.HTTPError as exc:
                 self.logger.error(response.text)
                 raise exc
+        self.logger.info("RESPONSE")
+        self.logger.info(response.json(), response.status_code)
         return response
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
@@ -351,7 +353,10 @@ class HttpStream(Stream, ABC):
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
-        return backoff_handler(user_backoff_handler)(request, request_kwargs)
+        res = backoff_handler(user_backoff_handler)(request, request_kwargs)self.logger.info("RESPONSE")
+        self.logger.info(res.json(), res.status_code)
+
+        return res
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
@@ -427,6 +432,7 @@ class HttpStream(Stream, ABC):
         next_page_token = None
         while not pagination_complete:
             request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
+            print(response.json())
             yield from records_generator_fn(request, response, stream_state, stream_slice)
 
             next_page_token = self.next_page_token(response)
