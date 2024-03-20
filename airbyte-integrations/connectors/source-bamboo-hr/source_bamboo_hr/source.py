@@ -74,6 +74,19 @@ class BambooMetaField(NamedTuple):
     alias: Optional[str] = None
     deprecated: Optional[bool] = None
 
+
+
+class MetaFieldsStream(BambooHrStream):
+    primary_key = None
+
+    def path(self, **kwargs) -> str:
+        return "meta/fields"
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        yield from response.json()
+
 class BambooMetaTableField(NamedTuple):
     """Immutable typed representation of the field data returned from the meta/tables
     endpoint."""
@@ -89,18 +102,6 @@ class BambooMetaTable(NamedTuple):
     alias: str
     fields: List[BambooMetaTableField]
 
-
-class MetaFieldsStream(BambooHrStream):
-    primary_key = None
-
-    def path(self, **kwargs) -> str:
-        return "meta/fields"
-
-    def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
-        yield from response.json()
-
 class TablesStream(BambooHrStream):
     primary_key = None
     raise_on_http_errors = False
@@ -108,6 +109,7 @@ class TablesStream(BambooHrStream):
         requests.codes.NOT_FOUND,
     ]
 
+    @staticmethod
     def _convert_raw_meta_table_to_typed(raw_meta_table: Mapping[str,Any]) -> BambooMetaTable:
         return BambooMetaTable(
             alias=raw_meta_table.get("alias"),
@@ -116,56 +118,39 @@ class TablesStream(BambooHrStream):
             ],
         )
 
-    # def _create_one_of_schema(bamboo_meta_table: BambooMetaTable) -> Mapping[str, Any]:
-    #     schema = {
-    #             "" : ""
-    #         }
-    #     return schema
 
-    # def get_json_schema(self) -> Mapping[str, Any]:
-    #     """
-    #         1. Get access to the available tables.
-    #         2. Construct the Json Schema from the available tables.
-               
-    #     """
+    def get_json_schema(self) -> Mapping[str, Any]:
+        available_tables = map(lambda table: TablesStream._convert_raw_meta_table_to_typed(table), self.config["available_tables"])
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": [
+                "object"
+            ],
+            "required": [
+                "id",
+                "employeeId",
+                "knoetic_table_name"
+            ],
+            "properties": {
+                "id": {
+                    "type": [ "string", "integer" ]
+                },
+                "employeeId": {
+                    "type": [ "string", "integer" ]
+                },
+                "knoetic_table_name": {
+                    "type": [ "string"]
+                }
+            }
+        }
 
-    #     available_tables = self.config.get("available_tables")
-    #     typed_available_tables = map(self._convert_raw_meta_table_to_typed, available_tables)
+        for table in available_tables:
+            for field in table.fields:
+                schema["properties"][field.alias] = {
+                    "type": [ "string", "null", "object" ]
+                }
 
-    #     tables.forEach { table ->
-
-
-    #     }
-
-    #     if self._schema is None:
-    #         available_tables = self.config.get("available_tables")
-    #         schema = {
-    #             "$schema": "http://json-schema.org/draft-07/schema#",
-    #             "type": ["object"] ,
-    #             "properties": {
-    #                 "knoetic_table_name": {"type": "string"},
-    #             },
-    #         }
-
-    #         for table in typed_available_tables:
-    #             table_name = table.get("alias")
-    #             fields = table.get("fields")
-    #             schema["properties"][table_name] = {
-    #                 "type": "object",
-    #                 "properties": {
-    #                     "knoetic_table_name": {"type": "string"},
-    #                 },
-    #             }
-    #             for field in fields:
-    #                 field_name = field.get("alias")
-    #                 field_type = field.get("type")
-    #                 schema["properties"][table_name]["properties"][field_name] = {
-    #                     "type": field_type
-    #                 }
-
-    #         self._schema = schema
-
-    #     return self._schema
+        return schema
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -338,7 +323,7 @@ class SourceBambooHr(AbstractSource):
             MetaTablesStream(config).read_records(sync_mode=SyncMode.full_refresh)
         )
 
-        print("Current version: 3")
+        print("Current version: 4")
 
         config["available_fields"] = available_fields
         config["available_tables"] = available_tables
