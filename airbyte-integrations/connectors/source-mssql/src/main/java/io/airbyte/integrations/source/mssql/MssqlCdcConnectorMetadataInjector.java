@@ -36,7 +36,7 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Ms
   }
 
   public static MssqlCdcConnectorMetadataInjector getInstance(final Instant emittedAt,
-      final MssqlDebeziumStateAttributes stateAttributes) {
+                                                              final MssqlDebeziumStateAttributes stateAttributes) {
     if (mssqlCdcConnectorMetadataInjector == null) {
       mssqlCdcConnectorMetadataInjector = new MssqlCdcConnectorMetadataInjector(emittedAt, stateAttributes);
     }

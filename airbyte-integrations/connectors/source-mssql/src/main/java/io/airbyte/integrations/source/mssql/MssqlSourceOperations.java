@@ -17,7 +17,6 @@ import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
-import io.airbyte.integrations.source.mssql.initialsync.CdcMetadataInjector;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
