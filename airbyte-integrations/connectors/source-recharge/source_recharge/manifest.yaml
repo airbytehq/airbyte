@@ -138,7 +138,8 @@ definitions:
   base_incremental_stream:
     $ref: "#/definitions/base_modern_api_stream"
     incremental_sync:
-      type: DatetimeBasedCursor
+      type: CustomIncrementalSync
+      class_name: source_recharge.components.datetime_based_cursor.RechargeDateTimeBasedCursor
       cursor_field: "updated_at"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S%z"
