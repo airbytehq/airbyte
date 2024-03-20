@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = [
     "paramiko==3.4.0",
 ]
 
-TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "docker==5.0.3"]
+TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "docker==5.0.3"]
 
 setup(
     entry_points={
