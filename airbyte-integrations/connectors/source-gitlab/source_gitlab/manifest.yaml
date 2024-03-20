@@ -1,4 +1,4 @@
-version: 0.70.2
+version: 0.72.2
 type: DeclarativeSource
 
 definitions:
@@ -172,7 +172,7 @@ definitions:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
-      start_datetime: "{{ config.get('start_date') }}"
+      start_datetime: "{{ config.get('start_date', '2014-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%f%z"
