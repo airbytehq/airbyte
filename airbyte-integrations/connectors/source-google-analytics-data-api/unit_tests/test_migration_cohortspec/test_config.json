@@ -1,5 +1,8 @@
 {
-  "credentials": { "auth_type": "Service", "credentials_json": "" },
+  "credentials": {
+    "auth_type": "Service",
+    "credentials_json": ""
+  },
   "date_ranges_start_date": "2023-09-01",
   "window_in_days": 30,
   "property_ids": "314186564",
@@ -12,25 +15,45 @@
         "cohorts": [
           {
             "dimension": "firstSessionDate",
-            "dateRange": { "startDate": "2023-04-24", "endDate": "2023-04-24" }
+            "dateRange": {
+              "startDate": "2023-04-24",
+              "endDate": "2023-04-24"
+            }
           }
         ],
-        "cohortsRange": { "endOffset": 100, "granularity": "DAILY" },
-        "cohortReportSettings": { "accumulate": false },
-        "enabled": "true"
+        "cohortsRange": {
+          "endOffset": 100,
+          "granularity": "DAILY"
+        },
+        "cohortReportSettings": {
+          "accumulate": false
+        }
       }
     },
     {
       "name": "pivot_report",
-      "dateRanges": [{ "startDate": "2020-09-01", "endDate": "2020-09-15" }],
+      "dateRanges": [
+        {
+          "startDate": "2020-09-01",
+          "endDate": "2020-09-15"
+        }
+      ],
       "dimensions": ["browser", "country", "language"],
       "metrics": ["sessions"],
       "pivots": [
-        { "fieldNames": ["browser"], "limit": 5 },
-        { "fieldNames": ["country"], "limit": 250 },
-        { "fieldNames": ["language"], "limit": 15 }
-      ],
-      "cohortSpec": { "enabled": "false" }
+        {
+          "fieldNames": ["browser"],
+          "limit": 5
+        },
+        {
+          "fieldNames": ["country"],
+          "limit": 250
+        },
+        {
+          "fieldNames": ["language"],
+          "limit": 15
+        }
+      ]
     }
   ]
 }
