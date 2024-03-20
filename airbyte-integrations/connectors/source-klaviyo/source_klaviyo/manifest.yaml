@@ -68,6 +68,16 @@ definitions:
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
     retriever: "#/definitions/base_retriever"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_klaviyo.components.datetime_based_cursor.KlaviyoDatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field', 'updated') }}"
+      start_datetime: "{{ config.get('start_date') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('cursor_field', 'updated') }}"
+        inject_into: request_parameter
 
   base_semi_incremental_stream:
     $ref: "#/definitions/base_stream"
