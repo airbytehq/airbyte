@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.72.2
+Connector Builder: have schema fields be nullable by default except from PK and cursor field
+
+## 0.72.1
+low code: add refresh_token_error handler to DeclarativeOauth2Authenticator
+
+## 0.72.0
+low-code: Allow defining custom schema loaders
+
 ## 0.71.0
 Declarative datetime-based cursors now only derive state values from records that were read
 
