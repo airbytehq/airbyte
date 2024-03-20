@@ -317,7 +317,7 @@ class ModelToComponentFactory:
 
     def create_legacy_to_per_partition_state_migration(
         self,
-        _: LegacyToPerPartitionStateMigrationModel,
+        model: LegacyToPerPartitionStateMigrationModel,
         config: Mapping[str, Any],
         partition_router: SubstreamPartitionRouterModel,
         datetime_based_cursor: DatetimeBasedCursorModel,
@@ -605,7 +605,7 @@ class ModelToComponentFactory:
 
         if model.state_migrations:
             state_transformations = [
-                self._create_component_from_model(state_migration, config, partition_routers=model.retriever.partition_router, cursor=model.incremental_sync, parameters=model.parameters)  # type: ignore # there is a type check
+                self._create_component_from_model(state_migration, config, partition_router=model.retriever.partition_router, datetime_based_cursor=model.incremental_sync, parameters=model.parameters)  # type: ignore # there is a type check
                 for state_migration in model.state_migrations
             ]
         else:
