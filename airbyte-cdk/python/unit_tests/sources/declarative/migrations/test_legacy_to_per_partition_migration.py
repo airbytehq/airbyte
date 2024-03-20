@@ -224,7 +224,7 @@ def _migrator():
         parent_stream_configs=[
             ParentStreamConfig(
                 type="ParentStreamConfig",
-                parent_key="id",
+                parent_key="{{ parameters['parent_key_id'] }}",
                 partition_field="parent_id",
                 stream=DeclarativeStream(
                     type="DeclarativeStream",
@@ -238,12 +238,12 @@ def _migrator():
     )
     cursor = DatetimeBasedCursor(
         type="DatetimeBasedCursor",
-        cursor_field="last_changed",
+        cursor_field="{{ parameters['cursor_field'] }}",
         datetime_format="%Y-%m-%dT%H:%M:%S.%fZ",
         start_datetime="1970-01-01T00:00:00.0Z",
     )
     config = {}
-    parameters = {}
+    parameters = {"cursor_field": "last_changed", "parent_key_id": "id"}
     return LegacyToPerPartitionStateMigration(partition_router, cursor, config, parameters)
 
 
@@ -279,7 +279,7 @@ def _migrator_with_multiple_parent_streams():
     )
     cursor = DatetimeBasedCursor(
         type="DatetimeBasedCursor",
-        cursor_field="last_changed",
+        cursor_field="{{ parameters['cursor_field'] }}",
         datetime_format="%Y-%m-%dT%H:%M:%S.%fZ",
         start_datetime="1970-01-01T00:00:00.0Z",
     )
