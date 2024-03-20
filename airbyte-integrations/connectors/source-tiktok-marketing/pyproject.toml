@@ -17,7 +17,7 @@ include = "source_tiktok_marketing"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.52.10"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-tiktok-marketing = "source_tiktok_marketing.run:run"
