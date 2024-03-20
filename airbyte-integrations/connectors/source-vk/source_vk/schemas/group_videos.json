@@ -1,0 +1,358 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "can_be_pinned": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_pinned": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "response_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "adding_date": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_comment": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_edit": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_delete": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_like": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_repost": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_add_to_faves": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_add": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_attach_link": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_edit_privacy": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "comments": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "width": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "height": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "ov_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_favorite": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "added": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "type": {
+      "type": "string"
+    },
+    "views": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "local_views": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "likes": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "user_likes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "reposts": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "wall_count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "mail_count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "user_reposted": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "can_dislike": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "group_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "live_status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "platform": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "restriction": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "blur": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "can_play": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "can_preview": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "card_icon": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "width": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "height": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "disclaimer_type": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "list_icon": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "width": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "height": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "icon_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mute_info_link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "need_mute": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "repeat": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

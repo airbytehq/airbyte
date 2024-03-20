@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "album_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "can_comment": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "web_view_token": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "has_tags": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "likes": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "user_likes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "comments": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "reposts": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "tags": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "group_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "post_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "lat": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "long": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  }
+}

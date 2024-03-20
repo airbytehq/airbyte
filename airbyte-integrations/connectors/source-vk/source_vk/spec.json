@@ -173,6 +173,51 @@
             }
           }
         ]
+      },
+      "chunks": {
+        "title": "Разбивка на части по датам",
+        "description": "Разбивать на части по датам. Например, если выбран период с 1 по 30 января, а количество дней в каждой части - 7, то будет сделано 4 запроса: с 1 по 7, с 8 по 14 и т.д. Применяется как к пользовательскому периоду, так и к последним N дням. Если не нужно разбивать на части, выберите вариант \"Не разбивать на части\"",
+        "type": "object",
+        "order": 2,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Разбивать на части по датам",
+            "required": [
+              "chunk_size_in_days",
+              "chunk_mode_type"
+            ],
+            "properties": {
+              "chunk_size_in_days": {
+                "title": "Количество дней в каждой части",
+                "type": "integer",
+                "min": 0,
+                "max": 1000,
+                "order": 1
+              },
+              "chunk_mode_type": {
+                "type": "string",
+                "const": "split_into_chunks",
+                "order": 2
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Не разбивать на части",
+            "required": [
+              "chunk_mode_type"
+            ],
+            "properties": {
+              "chunk_mode_type": {
+                "type": "string",
+                "description": "Chunk mode type",
+                "const": "dont_split",
+                "order": 2
+              }
+            }
+          }
+        ]
       }
     }
   }

@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "from_id": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "date": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "group_id": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "photo_id": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "reply_to_user": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "reply_to_comment": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        }
+    }
+}
