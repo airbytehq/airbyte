@@ -1,4 +1,4 @@
-version: 0.70.1
+version: 0.72.2
 
 definitions:
   # COMMON PARTS
@@ -138,14 +138,12 @@ definitions:
   base_incremental_stream:
     $ref: "#/definitions/base_modern_api_stream"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_recharge.components.datetime_based_cursor.RechargeDateTimeBasedCursor
+      type: DatetimeBasedCursor
       cursor_field: "updated_at"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%dT%H:%M:%S"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      emit_state_from: "most_recent_record"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"

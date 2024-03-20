@@ -23,15 +23,6 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  releases:
-    breakingChanges:
-      2.0.0:
-        message: >-
-          The source `Recharge` connector is being migrated from the Python CDK to our declarative low-code CDK.
-          Due to changes in State format, this migration constitutes a breaking change. 
-          After updating, please reset your source before resuming syncs. 
-          For more information, see our migration documentation for source `Recharge`.
-        upgradeDeadline: "2024-04-15"
   documentationUrl: https://docs.airbyte.com/integrations/sources/recharge
   tags:
     - language:python
