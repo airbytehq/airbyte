@@ -13,11 +13,7 @@ compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
 dependencies {
-    compileOnly libs.lombok
-    annotationProcessor libs.lombok     // Lombok must be added BEFORE Micronaut
-
     api 'org.apache.commons:commons-csv:1.10.0'
-    api "io.micronaut:micronaut-context:${libs.versions.micronaut.platform.get()}"
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
@@ -25,11 +21,8 @@ dependencies {
 
     implementation 'io.aesy:datasize:1.0.0'
 
-    testCompileOnly libs.lombok
-    testAnnotationProcessor libs.lombok
-
-    testFixturesCompileOnly libs.lombok
-    testFixturesAnnotationProcessor libs.lombok
+    testFixturesCompileOnly "org.projectlombok:lombok:${libs.versions.lombok.get()}"
+    testFixturesAnnotationProcessor "org.projectlombok:lombok:${libs.versions.lombok.get()}"
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:core')

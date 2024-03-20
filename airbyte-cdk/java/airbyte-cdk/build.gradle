@@ -1,7 +1,3 @@
-plugins {
-    alias(libs.plugins.ksp)
-}
-
 final var cdkVersion = {
     var props = new Properties()
     file("core/src/main/resources/version.properties").withInputStream(props::load)
@@ -11,7 +7,6 @@ final var cdkVersion = {
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'com.google.devtools.ksp'
 
     group 'io.airbyte.cdk'
 
@@ -19,6 +14,25 @@ allprojects {
     // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
     project.version = cdkVersion
+
+    dependencies {
+        compileOnly "org.projectlombok:lombok:${libs.versions.lombok.get()}"
+        // Lombok must be added BEFORE any Micronaut annotation processors
+        annotationProcessor "org.projectlombok:lombok:${libs.versions.lombok.get()}"
+        ksp "info.picocli:picocli-codegen:${libs.versions.picocli.get()}"
+        ksp "io.micronaut:micronaut-inject-java:${libs.versions.micronaut.inject.get()}"
+        ksp "io.micronaut:micronaut-inject-kotlin:${libs.versions.micronaut.inject.get()}"
+
+        api "io.micronaut:micronaut-context:${libs.versions.micronaut.platform.get()}"
+        api "io.micronaut:micronaut-inject-java:${libs.versions.micronaut.inject.get()}"
+        api "io.micronaut:micronaut-runtime:${libs.versions.micronaut.platform.get()}"
+        api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+
+        testCompileOnly "org.projectlombok:lombok:${libs.versions.lombok.get()}"
+        testAnnotationProcessor "org.projectlombok:lombok:${libs.versions.lombok.get()}"
+        // Pin to 1.13.6 due to https://github.com/mockk/mockk/issues/1133
+        testImplementation 'io.mockk:mockk:1.13.6'
+    }
 
     publishing {
         publications {
