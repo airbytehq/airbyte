@@ -4,7 +4,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.types import StreamSlice
@@ -96,6 +95,7 @@ def test_state_checkpoint_interval():
 
     assert stream.state_checkpoint_interval is None
 
+
 def test_state_migrations():
     intermediate_state = {"another_key", "another_value"}
     final_state = {"yet_another_key", "yet_another_value"}
@@ -148,7 +148,6 @@ def test_no_state_migration_is_applied_if_the_state_should_not_be_migrated():
     assert stream.state == input_state
     state_migration.should_migrate.assert_called_once_with(input_state)
     assert not state_migration.migrate.called
-
 
 
 def _schema_loader():

@@ -1,6 +1,7 @@
-from unittest.mock import Mock
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-import pytest
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
 from airbyte_cdk.sources.declarative.models import (
     CustomRetriever,
@@ -9,7 +10,6 @@ from airbyte_cdk.sources.declarative.models import (
     ParentStreamConfig,
     SubstreamPartitionRouter,
 )
-from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 
 
 def test_migrate_a_valid_legacy_state_to_per_partition():

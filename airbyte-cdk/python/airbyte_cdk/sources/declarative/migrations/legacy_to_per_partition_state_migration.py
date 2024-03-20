@@ -32,7 +32,7 @@ class LegacyToPerPartitionStateMigration(StateMigration):
             # f"There should be exactly one parent stream
             return False
         """
-        The expected state format is 
+        The expected state format is
         "<parent_key_id>" : {
           "<cursor_field>" : "<cursor_value>"
         }
