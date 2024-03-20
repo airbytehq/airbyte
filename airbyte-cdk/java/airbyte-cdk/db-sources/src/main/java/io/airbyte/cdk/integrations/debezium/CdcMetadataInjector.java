@@ -24,7 +24,7 @@ public interface CdcMetadataInjector<T> {
    */
   void addMetaData(ObjectNode event, JsonNode source);
 
-  default void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final T metadataToAdd) {
+  default void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record) {
     throw new RuntimeException("Not Supported");
   }
 
