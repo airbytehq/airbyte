@@ -2,17 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from abc import ABC
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
-import json
 
-from requests import Response
+from airbyte_cdk.sources.streams.http import HttpSubStream
 from airbyte_protocol.models import SyncMode
+from requests import Response
 from source_amazon_ads.schemas import (
+    CampaignNegativeKeywords,
     Keywords,
     NegativeKeywords,
-    CampaignNegativeKeywords,
     ProductAd,
     ProductAdGroupBidRecommendations,
     ProductAdGroups,
@@ -21,7 +22,7 @@ from source_amazon_ads.schemas import (
     ProductTargeting,
 )
 from source_amazon_ads.streams.common import AmazonAdsStream, SubProfilesStream
-from airbyte_cdk.sources.streams.http import HttpSubStream
+
 
 class SponsoredProductsV3(SubProfilesStream):
     """
@@ -44,7 +45,9 @@ class SponsoredProductsV3(SubProfilesStream):
             return None
         return response.json().get("nextToken", None)
 
-    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
         request_body = {}
         request_body["maxResults"] = self.page_size
         if next_page_token:
@@ -58,6 +61,7 @@ class SponsoredProductsV3(SubProfilesStream):
         next_page_token: int = None,
     ) -> MutableMapping[str, Any]:
         return {}
+
 
 class SponsoredProductCampaigns(SponsoredProductsV3):
     """
@@ -78,12 +82,12 @@ class SponsoredProductCampaigns(SponsoredProductsV3):
     def path(self, **kwargs) -> str:
         return "sp/campaigns/list"
 
-    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
         request_body = super().request_body_json(stream_state, stream_slice, next_page_token)
         if self.state_filter:
-            request_body["stateFilter"] = {
-                "include": self.state_filter
-            }
+            request_body["stateFilter"] = {"include": self.state_filter}
         return request_body
 
 
@@ -100,6 +104,7 @@ class SponsoredProductAdGroups(SponsoredProductsV3):
 
     def path(self, **kwargs) -> str:
         return "/sp/adGroups/list"
+
 
 class SponsoredProductAdGroupWithSlicesABC(SponsoredProductsV3, ABC):
     """ABC Class for extraction of additional information for each known sp ad group"""
@@ -150,11 +155,13 @@ class SponsoredProductAdGroupWithSlicesABC(SponsoredProductsV3, ABC):
         else:
             response.raise_for_status()
 
+
 class SponsoredProductAdGroupBidRecommendations(SponsoredProductAdGroupWithSlicesABC):
     """
     This stream corresponds to Amazon Ads API - Sponsored Products (v3) Ad group bid recommendations, now referred to as "Target Bid Recommendations" by Amazon Ads
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#tag/Bid-Recommendations/operation/getTargetBidRecommendations
     """
+
     primary_key = None
     data_field = "bidRecommendations"
     content_type = "application/vnd.spthemebasedbidrecommendation.v4+json"
@@ -163,14 +170,19 @@ class SponsoredProductAdGroupBidRecommendations(SponsoredProductAdGroupWithSlice
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "/sp/targets/bid/recommendations"
 
-    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
         self.current_ad_group_id = stream_slice["adGroupId"]
         self.current_campaign_id = stream_slice["campaignId"]
 
         request_body = {}
-        request_body["targetingExpressions"] = [{
-            "type": "KEYWORD_BROAD_MATCH"
-        }]
+        request_body["targetingExpressions"] = [
+            {"type": "CLOSE_MATCH"},
+            {"type": "LOOSE_MATCH"},
+            {"type": "SUBSTITUTES"},
+            {"type": "COMPLEMENTS"},
+        ]
         request_body["adGroupId"] = stream_slice["adGroupId"]
         request_body["campaignId"] = stream_slice["campaignId"]
         request_body["recommendationType"] = "BIDS_FOR_EXISTING_AD_GROUP"
@@ -206,10 +218,10 @@ class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlices
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"v2/sp/adGroups/{stream_slice['adGroupId']}/suggested/keywords"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: int = None) -> MutableMapping[str, Any]:
-        return {
-            "maxNumSuggestions": 100
-        }
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: int = None
+    ) -> MutableMapping[str, Any]:
+        return {"maxNumSuggestions": 100}
 
     def request_headers(self, profile_id: str = None, *args, **kwargs) -> MutableMapping[str, Any]:
         headers = {}
@@ -217,7 +229,9 @@ class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlices
         headers["Amazon-Advertising-API-ClientId"] = self._client_id
         return headers
 
-    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
         return {}
 
 
