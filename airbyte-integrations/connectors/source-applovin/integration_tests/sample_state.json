@@ -1,5 +1,13 @@
-{
-  "advertiser_reports": {
-    "day": "2024-02-27"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "advertiser_reports"
+      },
+      "stream_state": {
+        "day": "2022-03-13"
+      }
+    }
   }
-}
+]
