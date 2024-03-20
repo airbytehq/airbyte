@@ -132,20 +132,11 @@ class _CsvReader:
 class CsvParser(FileTypeParser):
     _MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1_000_000
 
-    def __init__(self, csv_reader: Optional[_CsvReader] = None):
+    def __init__(self, csv_reader: Optional[_CsvReader] = None, csv_field_max_bytes: int = 2**31):
         # Increase the maximum length of data that can be parsed in a single CSV field. The default is 128k, which is typically sufficient
-        # but given the use of Airbyte in loading a large variety of data it is best to allow for the maximum field size possible to avoid
+        # but given the use of Airbyte in loading a large variety of data it is best to allow for a larger maximum field size to avoid
         # skipping data on load. https://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072
-        max_int = sys.maxsize
-
-        while True:
-            # decrease the max_int value by factor 10 as long as the OverflowError occurs.
-            try:
-                csv.field_size_limit(max_int)
-                break
-            except OverflowError:
-                max_int = int(max_int/10)
-
+        csv.field_size_limit(csv_field_max_bytes)
         self._csv_reader = csv_reader if csv_reader else _CsvReader()
 
     def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
