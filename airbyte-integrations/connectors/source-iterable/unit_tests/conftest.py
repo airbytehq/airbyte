@@ -3,12 +3,8 @@
 #
 
 import pytest
+import responses
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-
-
-@pytest.fixture(autouse=True)
-def disable_cache(mocker):
-    mocker.patch("source_iterable.streams.ListUsers.use_cache", False)
 
 
 @pytest.fixture
@@ -31,7 +27,7 @@ def config_fixture():
 
 @pytest.fixture()
 def mock_lists_resp(mocker):
-    mocker.patch("source_iterable.streams.Lists.read_records", return_value=iter([{"id": 1}, {"id": 2}]))
+    responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}, {"id": 2}]})
 
 
 @pytest.fixture(name="lists_stream")
