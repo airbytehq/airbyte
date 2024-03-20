@@ -25,6 +25,7 @@ class LegacyToPerPartitionStateMigration(StateMigration):
       "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
     }
     """
+
     def __init__(
         self,
         partition_router: SubstreamPartitionRouter,
