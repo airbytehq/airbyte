@@ -499,7 +499,19 @@ def test_config_update():
 
 @patch("traceback.TracebackException.from_exception")
 def test_read_returns_error_response(mock_from_exception):
+    class MockDeclarativeStream:
+        @property
+        def primary_key(self):
+            return [[]]
+
+        @property
+        def cursor_field(self):
+            return []
+
     class MockManifestDeclarativeSource:
+        def streams(self, config):
+            return [MockDeclarativeStream()]
+
         def read(self, logger, config, catalog, state):
             raise ValueError("error_message")
 

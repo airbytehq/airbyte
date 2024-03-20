@@ -49,6 +49,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordFilter as CustomRecordFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomSchemaLoader as CustomSchemaLoader
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
@@ -165,6 +166,7 @@ class ModelToComponentFactory:
             CustomRecordFilterModel: self.create_custom_component,
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
+            CustomSchemaLoader: self.create_custom_component,
             CustomPaginationStrategyModel: self.create_custom_component,
             CustomPartitionRouterModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
@@ -319,7 +321,7 @@ class ModelToComponentFactory:
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
-                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),  # type: ignore # $parameters has a default value
                 config,
                 token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
@@ -431,11 +433,14 @@ class ModelToComponentFactory:
         return custom_component_class(**kwargs)
 
     @staticmethod
-    def _get_class_from_fully_qualified_class_name(class_name: str) -> Any:
-        split = class_name.split(".")
+    def _get_class_from_fully_qualified_class_name(full_qualified_class_name: str) -> Any:
+        split = full_qualified_class_name.split(".")
         module = ".".join(split[:-1])
         class_name = split[-1]
-        return getattr(importlib.import_module(module), class_name)
+        try:
+            return getattr(importlib.import_module(module), class_name)
+        except AttributeError:
+            raise ValueError(f"Could not load class {full_qualified_class_name}.")
 
     @staticmethod
     def _derive_component_type_from_type_hints(field_type: Any) -> Optional[str]:
@@ -803,7 +808,7 @@ class ModelToComponentFactory:
 
     def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
-            # ignore type error beause fixing it would have a lot of dependencies, revisit later
+            # ignore type error because fixing it would have a lot of dependencies, revisit later
             return DeclarativeSingleUseRefreshTokenOauth2Authenticator(  # type: ignore
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
@@ -824,6 +829,9 @@ class ModelToComponentFactory:
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
+                refresh_token_error_status_codes=model.refresh_token_updater.refresh_token_error_status_codes,
+                refresh_token_error_key=model.refresh_token_updater.refresh_token_error_key,
+                refresh_token_error_values=model.refresh_token_updater.refresh_token_error_values,
             )
         # ignore type error because fixing it would have a lot of dependencies, revisit later
         return DeclarativeOauth2Authenticator(  # type: ignore

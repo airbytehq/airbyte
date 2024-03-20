@@ -5,6 +5,7 @@
 # mypy: ignore-errors
 
 import datetime
+from typing import Any, Mapping
 
 import pytest
 from airbyte_cdk.models import Level
@@ -27,6 +28,7 @@ from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamMod
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
+from airbyte_cdk.sources.declarative.models import CustomSchemaLoader as CustomSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
@@ -66,6 +68,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
@@ -356,6 +359,9 @@ def test_single_use_oauth_branch():
         interpolated_body_field: "{{ config['apikey'] }}"
       refresh_token_updater:
         refresh_token_name: "the_refresh_token"
+        refresh_token_error_status_codes: [400]
+        refresh_token_error_key: "error"
+        refresh_token_error_values: ["invalid_grant"]
         refresh_token_config_path:
           - apikey
     """
@@ -378,6 +384,9 @@ def test_single_use_oauth_branch():
     # default values
     assert authenticator._access_token_config_path == ["credentials", "access_token"]
     assert authenticator._token_expiry_date_config_path == ["credentials", "token_expiry_date"]
+    assert authenticator._refresh_token_error_status_codes == [400]
+    assert authenticator._refresh_token_error_key == "error"
+    assert authenticator._refresh_token_error_values == ["invalid_grant"]
 
 
 def test_list_based_stream_slicer_with_values_refd():
@@ -1239,6 +1248,20 @@ def test_create_default_paginator():
             ValueError,
             id="test_create_custom_component_missing_required_field_emits_error",
         ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.NonExistingClass",
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
+                },
+            },
+            "paginator",
+            None,
+            ValueError,
+            id="test_create_custom_component_non_existing_class_raises_value_error",
+        ),
     ],
 )
 def test_create_custom_components(manifest, field_name, expected_value, expected_error):
@@ -1806,3 +1829,19 @@ def test_create_offset_increment():
     assert strategy.page_size == expected_strategy.page_size
     assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
     assert strategy.config == input_config
+
+
+class MyCustomSchemaLoader(SchemaLoader):
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Returns a mapping describing the stream's schema"""
+        return {}
+
+
+def test_create_custom_schema_loader():
+
+    definition = {
+        "type": "CustomSchemaLoader",
+        "class_name": "unit_tests.sources.declarative.parsers.test_model_to_component_factory.MyCustomSchemaLoader"
+    }
+    component = factory.create_component(CustomSchemaLoaderModel, definition, {})
+    assert isinstance(component, MyCustomSchemaLoader)

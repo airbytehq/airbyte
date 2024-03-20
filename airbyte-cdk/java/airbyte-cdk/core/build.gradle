@@ -18,6 +18,7 @@ dependencies {
     api 'com.zaxxer:HikariCP:5.1.0'
     api 'org.jooq:jooq:3.16.23'
     api 'org.apache.commons:commons-csv:1.10.0'
+    api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
 
@@ -45,4 +46,5 @@ dependencies {
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:postgresql:1.19.0'
     testImplementation 'org.xbib.elasticsearch:joptsimple:6.3.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 }
