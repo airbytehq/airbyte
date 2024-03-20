@@ -265,11 +265,11 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "airbyte_hidden": True,
                                                     "enum": ["None", "Primitive Types Only"],
                                                 },
-                                                "skip_wrong_number_of_fields_error": {
+                                                "ignore_errors_on_fields_mismatch": {
                                                     "type": "boolean",
-                                                    "title": "Skip Wrong Number of Fields Error",
+                                                    "title": "Ignore errors on field mismatch",
                                                     "default": False,
-                                                    "description": "Whether to skip the error when the number of fields in the CSV does not match the number of columns in the schema.",
+                                                    "description": "Whether to ignore errors that occur when the number of fields in the CSV does not match the number of columns in the schema.",
                                                 },
                                             },
                                             "required": ["filetype"],

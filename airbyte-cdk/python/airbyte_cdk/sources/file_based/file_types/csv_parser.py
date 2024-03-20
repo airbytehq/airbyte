@@ -70,7 +70,7 @@ class _CsvReader:
                     # The row was not properly parsed if any of the values are None. This will most likely occur if there are more columns
                     # than headers or more headers dans columns
                     if None in row:
-                        if config_format.skip_wrong_number_of_fields_error:
+                        if config_format.ignore_errors_on_fields_mismatch:
                             logger.error(f"Skipping record in line {lineno} of file {file.uri}; invalid CSV row with missing column.")
                         else:
                             raise RecordParseError(
@@ -79,7 +79,7 @@ class _CsvReader:
                                 lineno=lineno,
                             )
                     if None in row.values():
-                        if config_format.skip_wrong_number_of_fields_error:
+                        if config_format.ignore_errors_on_fields_mismatch:
                             logger.error(f"Skipping record in line {lineno} of file {file.uri}; invalid CSV row with extra column.")
                         else:
                             raise RecordParseError(
