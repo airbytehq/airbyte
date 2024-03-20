@@ -29,10 +29,10 @@ class ProjectStreamsPartitionRouter(SubstreamPartitionRouter):
         parent_stream = self.parent_stream_configs[0].stream
         projects_list = self.config.get("projects_list", [])
 
-        group_project_ids = set()
+        group_project_ids = []
         for stream_slice in parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                group_project_ids.update({i["path_with_namespace"] for i in record["projects"]})
+                group_project_ids.extend([i["path_with_namespace"] for i in record["projects"]])
 
         if group_project_ids:
             for project_id in group_project_ids:
