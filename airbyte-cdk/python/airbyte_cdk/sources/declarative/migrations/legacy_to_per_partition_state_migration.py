@@ -5,6 +5,10 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor, SubstreamPartitionRouter
 
 
+def _is_already_migrated(stream_state: Mapping[str, Any]) -> bool:
+    return "states" in stream_state
+
+
 class LegacyToPerPartitionStateMigration(StateMigration):
     def __init__(
         self,
@@ -19,13 +23,14 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         self._parameters = parameters
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if self._is_already_migrated(stream_state):
+        if _is_already_migrated(stream_state):
             return False
 
         # There is exactly one parent stream
         number_of_parent_streams = len(self._partition_router.parent_stream_configs)
         if number_of_parent_streams != 1:
-            raise ValueError(f"There should be exactly one parent stream. Found {number_of_parent_streams}")
+            # f"There should be exactly one parent stream
+            return False
         """
         The expected state format is 
         "<parent_key_id>" : {
@@ -38,9 +43,11 @@ class LegacyToPerPartitionStateMigration(StateMigration):
                 if isinstance(value, dict):
                     keys = list(value.keys())
                     if len(keys) != 1:
-                        raise ValueError(f"The input partitioned state should only have one key. Found {keys}")
+                        # The input partitioned state should only have one key
+                        return False
                     if keys[0] != cursor_field:
-                        raise ValueError(f"Unexpected key. Found {keys[0]}. Expected {self._cursor.cursor_field}")
+                        # Unexpected key. Found {keys[0]}. Expected {self._cursor.cursor_field}
+                        return False
 
         return True
 
@@ -51,31 +58,6 @@ class LegacyToPerPartitionStateMigration(StateMigration):
     def _partition_key(self) -> str:
         # FIXME: maybe needs to be interpolated?
         return self._partition_router.parent_stream_configs[0].parent_key
-
-    def _is_already_migrated(self, stream_state: Mapping[str, Any]) -> bool:
-        if "states" not in stream_state:
-            return False
-        states = stream_state["states"]
-        for state in states:
-            cursor_component = state.get("cursor")
-            if not cursor_component:
-                raise ValueError(f"Found unexpected state with missing cursor component {stream_state}")
-            cursor_keys = list(cursor_component.keys())
-            if len(cursor_keys) != 1:
-                raise ValueError(f"There should be exactly one cursor field. Found {cursor_keys}")
-            if cursor_keys[0] != self._cursor_field():
-                raise ValueError(f"Input state has invalid cursor field. Expected {self._cursor_field()}. Got {cursor_keys[0]}")
-
-            partition_component = state.get("partition")
-            if not partition_component:
-                raise ValueError(f"Found unexpected state with missing partition component {stream_state}")
-            partition_keys = list(partition_component)
-            if len(partition_keys) != 1:
-                raise ValueError(f"There should be exactly one partition field. Found {partition_keys}")
-            if partition_keys[0] != self._partition_key():
-                raise ValueError(f"Input state has invalid partition key. Expected {self._partition_key()}. Got {partition_keys[0]}")
-
-        return True
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         partition_key_field = self._partition_router.parent_stream_configs[0].parent_key

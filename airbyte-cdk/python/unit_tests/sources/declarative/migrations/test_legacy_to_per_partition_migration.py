@@ -76,8 +76,7 @@ def test_should_not_migrate_state_without_a_cursor_component():
 
     migrator = _migrator()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 
 def test_should_not_migrate_a_per_partition_state_with_wrong_cursor_field():
@@ -96,8 +95,7 @@ def test_should_not_migrate_a_per_partition_state_with_wrong_cursor_field():
 
     migrator = _migrator()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 
 def test_should_not_migrate_a_per_partition_state_with_multiple_cursor_fields():
@@ -116,8 +114,7 @@ def test_should_not_migrate_a_per_partition_state_with_multiple_cursor_fields():
 
     migrator = _migrator()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 
 def test_should_not_migrate_state_without_a_partition_component():
@@ -135,8 +132,7 @@ def test_should_not_migrate_state_without_a_partition_component():
 
     migrator = _migrator()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 
 def test_should_not_migrate_state_if_multiple_partition_keys():
@@ -155,8 +151,7 @@ def test_should_not_migrate_state_if_multiple_partition_keys():
 
     migrator = _migrator()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 
 def test_should_not_migrate_state_if_invalid_partition_key():
@@ -175,8 +170,7 @@ def test_should_not_migrate_state_if_invalid_partition_key():
 
     migrator = _migrator()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 
 def test_should_not_migrate_if_the_partitioned_state_has_more_than_one_key():
@@ -192,8 +186,7 @@ def test_should_not_migrate_if_the_partitioned_state_has_more_than_one_key():
 
     migrator = _migrator()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 def test_should_not_migrate_if_the_partitioned_state_key_is_not_the_cursor_field():
     input_state = {
@@ -207,8 +200,7 @@ def test_should_not_migrate_if_the_partitioned_state_key_is_not_the_cursor_field
 
     migrator = _migrator()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 
 def test_should_not_migrate_stream_with_multiple_parent_streams():
@@ -223,8 +215,7 @@ def test_should_not_migrate_stream_with_multiple_parent_streams():
 
     migrator = _migrator_with_multiple_parent_streams()
 
-    with pytest.raises(ValueError):
-        migrator.should_migrate(input_state)
+    assert not migrator.should_migrate(input_state)
 
 
 def _migrator():
