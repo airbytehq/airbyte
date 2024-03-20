@@ -37,7 +37,19 @@ data:
         upgradeDeadline: "2024-03-26"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: ["sponsored_brands_campaigns", "sponsored_brands_ad_groups", "sponsored_product_campaigns", "sponsored_product_ad_groups", "sponsored_product_ad_group_bid_recommendations", "sponsored_product_keywords", "sponsored_product_negative_keywords", "sponsored_product_negative_keywords", "sponsored_product_ads", "sponsored_product_targetings"]
+            impactedScopes:
+              [
+                "sponsored_brands_campaigns",
+                "sponsored_brands_ad_groups",
+                "sponsored_product_campaigns",
+                "sponsored_product_ad_groups",
+                "sponsored_product_ad_group_bid_recommendations",
+                "sponsored_product_keywords",
+                "sponsored_product_negative_keywords",
+                "sponsored_product_negative_keywords",
+                "sponsored_product_ads",
+                "sponsored_product_targetings",
+              ]
       4.0.0:
         message: "Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now have updated schemas."
         upgradeDeadline: "2024-01-17"

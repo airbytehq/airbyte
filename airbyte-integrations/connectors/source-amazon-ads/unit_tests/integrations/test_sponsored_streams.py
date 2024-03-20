@@ -20,11 +20,7 @@ from airbyte_protocol.models import SyncMode
 
 from .ad_requests import OAuthRequestBuilder, ProfilesRequestBuilder, SponsoredBrandsRequestBuilder
 from .ad_responses import ErrorResponseBuilder, OAuthResponseBuilder, ProfilesResponseBuilder, SponsoredBrandsResponseBuilder
-from .ad_responses.pagination_strategies import (
-    CountBasedPaginationStrategy,
-    CursorBasedPaginationStrategy,
-    SponsoredCursorBasedPaginationStrategy,
-)
+from .ad_responses.pagination_strategies import CountBasedPaginationStrategy, SponsoredCursorBasedPaginationStrategy
 from .ad_responses.records import ErrorRecordBuilder, ProfilesRecordBuilder, SponsoredBrandsRecordBuilder
 from .config import ConfigBuilder
 from .utils import get_log_messages_by_log_level, read_stream
@@ -211,7 +207,6 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
 
-    # to be updated to test cursor pagination
     @HttpMocker()
     def test_given_many_pages_when_read_campaigns_then_return_records(self, http_mocker: HttpMocker):
         """
