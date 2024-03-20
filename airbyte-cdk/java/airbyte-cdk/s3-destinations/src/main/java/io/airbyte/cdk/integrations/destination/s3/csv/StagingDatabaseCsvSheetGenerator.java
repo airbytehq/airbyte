@@ -48,7 +48,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   @Override
   public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
-    return getDataRow(id, Jsons.serialize(recordMessage.getData()), recordMessage.getEmittedAt());
+    return getDataRow(id, Jsons.serialize(recordMessage.getData()), recordMessage.getEmittedAt(), Jsons.serialize(recordMessage.getMeta()));
   }
 
   @Override
@@ -57,13 +57,14 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   }
 
   @Override
-  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
+  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt, String formattedAirbyteMetaString) {
     if (useDestinationsV2Columns) {
       return List.of(
           id,
           Instant.ofEpochMilli(emittedAt),
           "",
-          formattedString);
+          formattedString,
+          formattedAirbyteMetaString);
     } else {
       return List.of(
           id,

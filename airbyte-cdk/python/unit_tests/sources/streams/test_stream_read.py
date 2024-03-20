@@ -26,7 +26,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
@@ -105,8 +105,9 @@ def _stream(slice_to_partition_mapping, slice_logger, logger, message_repository
     return _MockStream(slice_to_partition_mapping)
 
 
-def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message_repository, cursor: Cursor = NoopCursor()):
+def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message_repository, cursor: Optional[Cursor] = None):
     stream = _stream(slice_to_partition_mapping, slice_logger, logger, message_repository)
+    cursor = cursor or FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=message_repository)
     source = Mock()
     source._slice_logger = slice_logger
     source.message_repository = message_repository
