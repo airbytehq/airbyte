@@ -51,6 +51,7 @@ interface IProps {
   instanceRef?: any;
   isCloud?: boolean;
   regionSelected?: boolean;
+  user?: any;
 }
 
 const SelectPlanStep: React.FC<IProps> = ({
@@ -90,6 +91,7 @@ const SelectPlanStep: React.FC<IProps> = ({
   instanceRef,
   isCloud,
   regionSelected,
+  user,
 }) => {
   return (
     <>
@@ -162,6 +164,7 @@ const SelectPlanStep: React.FC<IProps> = ({
           planDetail={planDetail}
           selectedProduct={selectedProduct}
           jobs={jobs}
+          user={user}
         />
       ) : null}
     </>
