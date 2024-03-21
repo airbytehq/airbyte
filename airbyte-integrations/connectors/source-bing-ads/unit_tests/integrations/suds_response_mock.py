@@ -137,10 +137,10 @@ GET_USER_RESPONSE = b"""<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/env
 
 
 def mock_http_authenticated_send(transport: HttpAuthenticated, request: Request) -> Reply:
-    if request.headers.get('SOAPAction').decode() == '"GetUser"':
+    if request.headers.get("SOAPAction").decode() == '"GetUser"':
         return Reply(code=200, headers={}, message=GET_USER_RESPONSE)
 
-    if request.headers.get('SOAPAction').decode() == '"SearchAccounts"':
+    if request.headers.get("SOAPAction").decode() == '"SearchAccounts"':
         return Reply(code=200, headers={}, message=SEARCH_ACCOUNTS_RESPONSE)
 
     raise Exception(f"Unexpected SOAPAction provided for mock SOAP client: {request.headers.get('SOAPAction').decode()}")
