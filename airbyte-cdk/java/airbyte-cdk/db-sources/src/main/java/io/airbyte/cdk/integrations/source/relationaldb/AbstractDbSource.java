@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
 import io.airbyte.cdk.db.AbstractDatabase;
 import io.airbyte.cdk.db.IncrementalUtils;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
@@ -463,7 +464,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         table.getFields().stream().anyMatch(f -> f.getName().equals(cursorField)),
         String.format("Could not find cursor field %s in table %s", cursorField, table.getName()));
 
-    final AutoCloseableIterator<JsonNode> queryIterator = queryTableIncremental(
+    final AutoCloseableIterator<AirbyteRecordData> queryIterator = queryTableIncremental(
         database,
         selectedDatabaseFields,
         table.getNameSpace(),
@@ -495,26 +496,27 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                      final Instant emittedAt,
                                                                      final SyncMode syncMode,
                                                                      final Optional<String> cursorField) {
-    final AutoCloseableIterator<JsonNode> queryStream =
+    final AutoCloseableIterator<AirbyteRecordData> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(),
             table.getName(), syncMode, cursorField);
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
   private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(
-                                                                          final AutoCloseableIterator<JsonNode> recordIterator,
+                                                                          final AutoCloseableIterator<AirbyteRecordData> recordIterator,
                                                                           final String streamName,
                                                                           final String namespace,
                                                                           final long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator,
         new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(streamName, namespace),
-        r -> new AirbyteMessage()
+        airbyteRecordData -> new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
                 .withStream(streamName)
                 .withNamespace(namespace)
                 .withEmittedAt(emittedAt)
-                .withData(r)));
+                .withData(airbyteRecordData.rawRowData())
+                .withMeta(airbyteRecordData.meta())));
   }
 
   /**
@@ -646,7 +648,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param syncMode The sync mode that this full refresh stream should be associated with.
    * @return iterator with read data
    */
-  protected abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
+  protected abstract AutoCloseableIterator<AirbyteRecordData> queryTableFullRefresh(final Database database,
                                                                            final List<String> columnNames,
                                                                            final String schemaName,
                                                                            final String tableName,
@@ -661,7 +663,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return iterator with read data
    */
-  protected abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
+  protected abstract AutoCloseableIterator<AirbyteRecordData> queryTableIncremental(Database database,
                                                                            List<String> columnNames,
                                                                            String schemaName,
                                                                            String tableName,

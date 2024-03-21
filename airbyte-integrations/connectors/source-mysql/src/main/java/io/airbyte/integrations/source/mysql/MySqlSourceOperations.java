@@ -46,6 +46,7 @@ import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.result.Field;
 import io.airbyte.cdk.db.SourceOperations;
 import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
@@ -81,13 +82,14 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    final ObjectNode jsonNode = (ObjectNode) super.rowToJson(queryContext);
+  public AirbyteRecordData convertDatabaseRowToAirbyteRecordData(final ResultSet queryContext) throws SQLException {
+    final AirbyteRecordData airbyteRecordData = super.convertDatabaseRowToAirbyteRecordData(queryContext);
+    final ObjectNode jsonNode = (ObjectNode) airbyteRecordData.rawRowData();
     if (!metadataInjector.isPresent()) {
-      return jsonNode;
+      return airbyteRecordData;
     }
     metadataInjector.get().addMetaDataToRowsFetchedOutsideDebezium(jsonNode);
-    return jsonNode;
+    return new AirbyteRecordData(jsonNode, airbyteRecordData.meta());
   }
 
   /**
