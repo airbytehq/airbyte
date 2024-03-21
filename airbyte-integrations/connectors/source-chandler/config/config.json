@@ -1,0 +1,4 @@
+{
+  "catalog": "{\"streams\":[{\"name\":\"stock_prices\",\"supported_sync_modes\":[\"full_refresh\"],\"json_schema\":{\"properties\":{\"price\":{\"type\":\"number\"},\"stock_ticker\":{\"type\":\"string\"}}}}]}",
+  "runtime": "emitRecord('stock_prices', null, { stock_ticker: 'goog', price: 100 });emitRecord('stock_prices', null, { stock_ticker: 'goog', price: 100 });"
+}

@@ -1,0 +1,23 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: be11d6e1-e90e-4dc5-8a53-360b8ea8fdd5
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-chandler
+  githubIssueLabel: source-chandler
+  icon: chandler.svg
+  license: MIT
+  name: Chandler
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chandler
+metadataSpecVersion: "1.0"
