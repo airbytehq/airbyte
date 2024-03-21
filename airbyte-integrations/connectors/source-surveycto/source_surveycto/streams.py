@@ -303,7 +303,7 @@ class Mediafiles(SurveyctoStream):
                     }
 
                     # check if url is valid
-                    url_pattern = re.compile(r"^(?:http|ftp)s?://")  # http:// or https://
+                    url_pattern = re.compile(r"^(?:http|ftp)s?://")  # https:// or ftp
                     if url_pattern.match(url) is None:
                         raise Exception("Invalid URL")
 
