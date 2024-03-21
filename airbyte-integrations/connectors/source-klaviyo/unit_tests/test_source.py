@@ -19,16 +19,17 @@ logger = logging.getLogger("airbyte")
         (
             400,
             False,
-            "Unable to connect to stream metrics - 400 Client Error: None for url: https://a.klaviyo.com/api/metrics",
+            (
+                "Unable to connect to stream metrics - "
+                "Request to https://a.klaviyo.com/api/metrics failed with status code 400 and error message None"
+            ),
         ),
         (
             403,
             False,
             (
-                "Unable to read metrics stream. The endpoint https://a.klaviyo.com/api/metrics returned 403: None. "
-                "This is most likely due to insufficient permissions on the credentials in use. "
-                "Try to grant required permissions/scopes or re-authenticate. "
-                "Please visit https://docs.airbyte.com/integrations/sources/klaviyo to learn more.  "
+                "Unable to connect to stream metrics - Please provide a valid API key and "
+                "make sure it has permissions to read specified streams."
             ),
         ),
     ),
@@ -47,11 +48,12 @@ def test_check_connection(requests_mock, status_code, is_connection_successful, 
 
 
 def test_check_connection_unexpected_error(requests_mock):
-    requests_mock.register_uri("GET", "https://a.klaviyo.com/api/metrics", exc=Exception("Something went wrong"))
+    exception_info = "Something went wrong"
+    requests_mock.register_uri("GET", "https://a.klaviyo.com/api/metrics", exc=Exception(exception_info))
     source = SourceKlaviyo()
     success, error = source.check_connection(logger=logger, config={"api_key": "api_key"})
     assert success is False
-    assert error == "Unable to connect to stream metrics - Something went wrong"
+    assert error == f"Unable to connect to stream metrics - {exception_info}"
 
 
 def test_streams():
