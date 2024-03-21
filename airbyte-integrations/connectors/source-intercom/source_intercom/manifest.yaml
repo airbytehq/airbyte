@@ -1,4 +1,4 @@
-version: "0.50.2"
+version: 0.72.1
 
 definitions:
   ## bases
@@ -21,13 +21,12 @@ definitions:
       api_token: "{{ config['access_token'] }}"
     request_headers:
       # API version header
-      Intercom-Version: "'2.10'"
+      # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
+      # https://github.com/airbytehq/oncall/issues/4514
+      Intercom-Version: "'2.9'"
       Accept: "application/json"
     error_handler:
       type: "DefaultErrorHandler"
-      response_filters:
-        - http_codes: [404]
-          action: IGNORE
   retriever:
     description: "Base Retriever for Full Refresh streams"
     record_selector:
