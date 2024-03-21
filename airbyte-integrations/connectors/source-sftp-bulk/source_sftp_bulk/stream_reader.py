@@ -38,11 +38,15 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
     @property
     def sftp_client(self) -> SFTPClient:
         if self._sftp_client is None:
+            authentication = (
+                {"password": self.config.credentials.password}
+                if self.config.credentials.auth_type == "password"
+                else {"private_key": "self.config.credentials.private_key"}
+            )
             self._sftp_client = SFTPClient(
                 host=self.config.host,
                 username=self.config.username,
-                password=self.config.password,
-                private_key=self.config.private_key,
+                **authentication,
                 port=self.config.port,
             )
         return self._sftp_client

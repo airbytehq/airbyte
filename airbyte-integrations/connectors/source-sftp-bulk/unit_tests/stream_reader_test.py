@@ -25,7 +25,12 @@ def test_stream_reader_files_read_and_filter_by_date():
     with patch.object(paramiko, "Transport", MagicMock()), patch.object(paramiko, "SFTPClient", fake_client):
         reader = SourceSFTPBulkStreamReader()
         config = SourceSFTPBulkSpec(
-            host="localhost", username="username", password="password", port=123, streams=[], start_date="2024-01-01T00:00:00.000000Z"
+            host="localhost",
+            username="username",
+            credentials={"auth_type": "password", "password": "password"},
+            port=123,
+            streams=[],
+            start_date="2024-01-01T00:00:00.000000Z",
         )
         reader.config = config
         files = list(reader.get_matching_files(globs=["**"], prefix=None, logger=logger))
