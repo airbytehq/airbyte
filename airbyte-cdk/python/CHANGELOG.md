@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.73.0
+set minimum python version to 3.9
+
+## 0.72.2
+Connector Builder: have schema fields be nullable by default except from PK and cursor field
+
 ## 0.72.1
 low code: add refresh_token_error handler to DeclarativeOauth2Authenticator
 
