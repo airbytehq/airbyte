@@ -72,21 +72,6 @@ definitions:
       $ref: "#/definitions/default_paginator"
     partition_router: []
 
-  retriever_filter:
-    type: SimpleRetriever
-    requester:
-      $ref: "#/definitions/requester"
-      request_parameters:
-        types: "public_channel"
-    record_selector:
-      $ref: "#/definitions/selector"
-      record_filter:
-        type: RecordFilter
-        condition: "{{ record.id in config.channel_filter or not config.channel_filter }}"
-    paginator:
-      $ref: "#/definitions/default_paginator"
-    partition_router: []
-
   stream_base:
     primary_key: "id"
     retriever:
@@ -125,16 +110,31 @@ definitions:
       field_path: members
 
   channels_stream:
-    $ref: "#/definitions/stream_base"
+    primary_key: "id"
     $parameters:
       name: channels
       path: conversations.list
       field_path: channels
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "#/definitions/retriever_filter"
-    transformations:
-      - type: CustomTransformation
-        class_name: "source_slack.components.join_channels.JoinChannels"
+      class_name: "source_slack.components.join_channels.ChannelsRetriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          types: "public_channel"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.id in config.channel_filter or not config.channel_filter }}"
+        $parameters:
+          transformations: [[]]
+      paginator:
+        $ref: "#/definitions/default_paginator"
+        $parameters:
+          url_base: https://slack.com/api/
+      partition_router: []
 
   channels_partition_router:
     type: SubstreamPartitionRouter
