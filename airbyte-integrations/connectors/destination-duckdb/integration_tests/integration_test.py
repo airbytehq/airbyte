@@ -29,6 +29,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_duckdb import DestinationDuckdb
+from destination_duckdb.destination import CONFIG_MOTHERDUCK_API_KEY
 
 CONFIG_PATH = "integration_tests/config.json"
 SECRETS_CONFIG_PATH = "secrets/config.json"  # Should contain a valid MotherDuck API token
@@ -179,8 +180,11 @@ def test_write(
 
     result = list(generator)
     assert len(result) == 1
-
-    con = duckdb.connect(database=config.get("destination_path"), read_only=False)
+    motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
+    duckdb_config = {}
+    duckdb_config["motherduck_token"] = motherduck_api_key
+    duckdb_config["custom_user_agent"] =  "airbyte_intg_test"
+    con = duckdb.connect(database=config.get("destination_path"), config=duckdb_config,read_only=False)
     with con:
         cursor = con.execute(
             "SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data "

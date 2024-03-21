@@ -86,7 +86,6 @@ class DestinationDuckdb(Destination):
             duckdb_config["motherduck_token"] = motherduck_api_key
             duckdb_config["custom_user_agent"] =  "airbyte"
 
-
         con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
 
         con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
