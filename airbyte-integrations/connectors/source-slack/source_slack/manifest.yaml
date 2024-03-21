@@ -240,7 +240,7 @@ definitions:
             value: "{{ record.ts|int }}"
           - path:
               - channel_id
-            value: "{{ stream_partition.get('channel_id') }}"
+            value: "{{ stream_partition.get('channel') }}"
 
   threads_stream:
     $ref: "#/definitions/stream_base"
