@@ -8,7 +8,7 @@ import shutil
 import time
 from io import StringIO
 from socket import socket
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 import docker
 import paramiko
@@ -50,7 +50,7 @@ def config_fixture(docker_client):
 
     dir_path = os.getcwd()
 
-    config = load_config('config_password.json') | {"port": available_port}
+    config = load_config("config_password.json") | {"port": available_port}
 
     container = docker_client.containers.run(
         "atmoz/sftp",
@@ -90,10 +90,10 @@ def config_fixture_private_key(docker_client):
     with open(pub_key_path, "w") as f:
         f.write(public_key)
 
-    config = load_config("config_private_key.json") | {"port": available_port, "credentials": {
-        "auth_type": "private_key",
-        "private_key": private_key
-    }}
+    config = load_config("config_private_key.json") | {
+        "port": available_port,
+        "credentials": {"auth_type": "private_key", "private_key": private_key},
+    }
 
     container = docker_client.containers.run(
         "atmoz/sftp",
@@ -120,19 +120,11 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {
         "type": "object",
         "properties": {
-            "_ab_source_file_last_modified": {
-                "type": "string"
-            },
-            "_ab_source_file_url": {
-                "type": "string"
-            },
-            "f0": {
-                "type": ["null", "string"]
-            },
-            "f1": {
-                "type": ["null", "string"]
-            }
-        }
+            "_ab_source_file_last_modified": {"type": "string"},
+            "_ab_source_file_url": {"type": "string"},
+            "f0": {"type": ["null", "string"]},
+            "f1": {"type": ["null", "string"]},
+        },
     }
 
     overwrite_stream = ConfiguredAirbyteStream(
@@ -147,43 +139,29 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
 
 def test_check_invalid_private_key_config(configured_catalog: ConfiguredAirbyteCatalog, config_private_key: Mapping[str, Any]):
-    invalid_config = config_private_key | {"credentials": {
-        "auth_type": "private_key",
-        "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----"
-    }}
-    outcome = SourceSFTPBulk(
-        catalog=configured_catalog,
-        config=invalid_config,
-        state=None
-    ).check(logger, invalid_config)
+    invalid_config = config_private_key | {
+        "credentials": {
+            "auth_type": "private_key",
+            "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----",
+        }
+    }
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=invalid_config, state=None).check(logger, invalid_config)
     assert outcome.status == Status.FAILED
 
 
 def test_check_invalid_config(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):
-    config['credentials']['password'] = 'wrongpass'
-    outcome = SourceSFTPBulk(
-        catalog=configured_catalog,
-        config=config,
-        state=None
-    ).check(logger, config)
+    invalid_config = config | {"credentials": {"auth_type": "password", "password": "wrongpass"}}
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=invalid_config, state=None).check(logger, invalid_config)
     assert outcome.status == Status.FAILED
 
 
 def test_check_valid_config(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):
-    outcome = SourceSFTPBulk(
-        catalog=configured_catalog,
-        config=config,
-        state=None
-    ).check(logger, config)
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config, state=None).check(logger, config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_get_files_no_pattern_json(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):
-    source = SourceSFTPBulk(
-        catalog=configured_catalog,
-        config=config,
-        state=None
-    )
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config, state=None)
     result_iter = source.read(logger, config, configured_catalog, None)
     result = list(result_iter)
     assert len(result) == 2
