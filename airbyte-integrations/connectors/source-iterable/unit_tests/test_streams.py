@@ -12,7 +12,7 @@ import responses
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_iterable.source import SourceIterable
-from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
+from source_iterable.streams import Campaigns, CampaignsMetrics, Templates, IterableStream, IterableExportStreamAdjustableRange, IterableExportEventsStreamAdjustableRange, IterableExportStreamRanged
 from source_iterable.utils import dateutil_parse
 
 
@@ -36,7 +36,7 @@ def test_stream_stops_on_401(config):
     for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         slices += 1
         _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
-    assert len(responses.calls) == 3
+    assert len(responses.calls) == 2
     assert slices >= 1
 
 @responses.activate
@@ -91,3 +91,60 @@ def test_events_read_full_refresh(config):
         records.extend(slice_records)
 
     assert [r["email"] for r in records] == ["user1", "user2", "user3", "user4"]
+
+
+def test_templates_parse_response():
+    stream = Templates(authenticator=None, start_date="2019-10-10T00:00:00")
+    with responses.RequestsMock() as rsps:
+        rsps.add(
+            responses.GET,
+            "https://api.iterable.com/api/1/foobar",
+            json={"templates": [{"createdAt": "2022-01-01", "id": 1}]},
+            status=200,
+            content_type="application/json",
+        )
+        resp = requests.get("https://api.iterable.com/api/1/foobar")
+
+        records = stream.parse_response(response=resp)
+
+        assert list(records) == [{"id": 1, "createdAt": dateutil_parse("2022-01-01")}]
+
+
+@pytest.mark.parametrize(
+    "stream,date,slice,expected_path",
+    [
+        (Campaigns, False, {}, "campaigns"),
+        (CampaignsMetrics, True, {}, "campaigns/metrics"),
+        (Templates, True, {}, "templates"),
+    ],
+)
+def test_path(config, stream, date, slice, expected_path):
+    args = {"authenticator": None}
+    if date:
+        args["start_date"] = "2019-10-10T00:00:00"
+
+    assert stream(**args).path(stream_slice=slice) == expected_path
+
+
+def test_campaigns_metrics_parse_response():
+
+    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
+    with responses.RequestsMock() as rsps:
+        rsps.add(
+            responses.GET,
+            "https://api.iterable.com/lists/getUsers?listId=100",
+            body="""a,b,c,d
+1, 2,, 3
+6,, 1, 2
+""",
+            status=200,
+            content_type="application/json",
+        )
+        resp = requests.get("https://api.iterable.com/lists/getUsers?listId=100")
+
+        records = stream.parse_response(response=resp)
+
+        assert list(records) == [
+            {"data": {"a": 1, "b": 2, "d": 3}},
+            {"data": {"a": 6, "c": 1, "d": 2}},
+        ]
