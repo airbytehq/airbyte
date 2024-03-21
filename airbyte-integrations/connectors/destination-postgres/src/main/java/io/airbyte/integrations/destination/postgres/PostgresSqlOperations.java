@@ -8,8 +8,8 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.*;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -25,9 +25,7 @@ import org.postgresql.core.BaseConnection;
 
 public class PostgresSqlOperations extends JdbcSqlOperations {
 
-  public PostgresSqlOperations() {
-    super(new PostgresDataAdapter());
-  }
+  public PostgresSqlOperations() {}
 
   @Override
   protected List<String> postCreateTableQueries(final String schemaName, final String tableName) {
