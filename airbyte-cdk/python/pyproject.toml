@@ -81,5 +81,5 @@ generate-component-manifest-files = "bin/generate-component-manifest-files.sh"
 build = ["build-code-generator-image", "generate-component-manifest-files"]
 
 flake-check = "pflake8 --config ../../pyproject.toml ./"
-unit-test-with-cov = "coverage run --data-file=unit_tests/.coverage.testPython --rcfile=../../pyproject.toml -m pytest -s unit_tests -c pytest.ini"
+unit-test-with-cov = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml"
 check = ["flake-check", "unit-test-with-cov"]
