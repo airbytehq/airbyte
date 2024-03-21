@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedupingTest {
@@ -73,6 +74,31 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+  }
+
+  @Test
+  public void testMixedCaseRawTableMigration() throws Exception {
+    streamName = "MixedCaseSchema" + streamName;
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                            .withNamespace(streamNamespace)
+                            .withName(streamName)
+                            .withJsonSchema(SCHEMA))));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+
+    runSync(catalog, messages1, "airbyte/destination-postgres:0.6.3");
+    final List<JsonNode> rawActualRecords = database.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, "_airbyte_raw_"+streamName.toLowerCase())).getSQL());
+    System.out.println(rawActualRecords);
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+    runSync(catalog, messages2);
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   @Override
