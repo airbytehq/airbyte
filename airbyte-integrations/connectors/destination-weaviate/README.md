@@ -119,7 +119,7 @@ poetry run pytest -s unit_tests
 ```
 
 ### Integration Tests
-To run integration tests locally, make sure you have a secrets/config.json as explained above, and then run:
+To run integration tests locally, make sure you create a secrets/config.json as explained above, and then run:
 ```
 poetry run pytest -s integration_tests
 ``` 
