@@ -23,6 +23,12 @@ logger = logging.getLogger("airbyte")
 TMP_FOLDER = "/tmp/test_sftp_source"
 
 
+# HELPERS
+def load_config(config_path: str) -> Mapping[str, Any]:
+    with open(f"{os.path.dirname(__file__)}/{config_path}", "r") as config:
+        return json.load(config)
+
+
 def generate_ssh_keys():
     key = paramiko.RSAKey.generate(2048)
     privateString = StringIO()
@@ -44,17 +50,7 @@ def config_fixture(docker_client):
 
     dir_path = os.getcwd()
 
-    # config = {
-    #     "host": "localhost",
-    #     "port": available_port,
-    #     "username": "foo",
-    #     "password": "pass",
-    #     "file_type": "json",
-    #     "start_date": "2021-01-01T00:00:00Z",
-    #     "folder_path": "/files",
-    #     "stream_name": "overwrite_stream",
-    # }
-    config = json.loads(open(f"{dir_path}/config_password.json").read()) | {"port": available_port}
+    config = load_config('config_password.json') | {"port": available_port}
 
     container = docker_client.containers.run(
         "atmoz/sftp",
@@ -94,22 +90,10 @@ def config_fixture_private_key(docker_client):
     with open(pub_key_path, "w") as f:
         f.write(public_key)
 
-    # config = {
-    #     "host": "localhost",
-    #     "port": available_port,
-    #     "username": "foo",
-    #     "password": "pass",
-    #     "file_type": "json",
-    #     "private_key": private_key,
-    #     "start_date": "2021-01-01T00:00:00Z",
-    #     "folder_path": "/files",
-    #     "stream_name": "overwrite_stream",
-    # }
-
-    config = json.loads(open(f"{dir_path}/config_private_key.json").read()) | {"port": available_port, "credentials": {
-    "auth_type": "private_key",
-    "private_key": private_key
-  }}
+    config = load_config("config_private_key.json") | {"port": available_port, "credentials": {
+        "auth_type": "private_key",
+        "private_key": private_key
+    }}
 
     container = docker_client.containers.run(
         "atmoz/sftp",
@@ -134,22 +118,22 @@ def config_fixture_private_key(docker_client):
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {
-          "type": "object",
-          "properties": {
+        "type": "object",
+        "properties": {
             "_ab_source_file_last_modified": {
-              "type": "string"
+                "type": "string"
             },
             "_ab_source_file_url": {
-              "type": "string"
+                "type": "string"
             },
             "f0": {
-              "type": ["null", "string"]
+                "type": ["null", "string"]
             },
             "f1": {
-              "type": ["null", "string"]
+                "type": ["null", "string"]
             }
-          }
         }
+    }
 
     overwrite_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
