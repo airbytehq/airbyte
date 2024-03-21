@@ -66,7 +66,6 @@ def config(request, test_schema_name: str) -> Dict[str, str]:
     elif request.param == "motherduck_config":
         config_dict = json.loads(Path(SECRETS_CONFIG_PATH).read_text())
         config_dict["schema"] = test_schema_name
-        print(config_dict)
         yield config_dict
 
     else:
