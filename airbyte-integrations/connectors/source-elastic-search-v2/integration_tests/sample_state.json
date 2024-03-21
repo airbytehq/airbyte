@@ -1,5 +1,11 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "accounts": {
+    "updated_at": "2024-03-17T10:36:02.535234"
+  },
+  "campaigns": {
+    "updated_at": "2024-03-18T10:3:02.535234"
+  },
+  "creatives": {
+    "updated_at": "2024-03-20T10:36:02.535234"
   }
 }

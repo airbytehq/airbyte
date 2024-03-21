@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1.56",
+    "airbyte-cdk~=0.36",
     "elasticsearch"
 ]
 
@@ -17,8 +17,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_elastic_search_v2",
-    description="Source implementation for Elastic Search V2.",
+    name="source_elastic_search_v4",
+    description="Source implementation for Elastic Search V4.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
