@@ -66,6 +66,7 @@ def config(request, test_schema_name: str) -> Dict[str, str]:
     elif request.param == "motherduck_config":
         config_dict = json.loads(Path(SECRETS_CONFIG_PATH).read_text())
         config_dict["schema"] = test_schema_name
+        print(config_dict)
         yield config_dict
 
     else:
@@ -182,9 +183,10 @@ def test_write(
     assert len(result) == 1
     motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
     duckdb_config = {}
-    duckdb_config["motherduck_token"] = motherduck_api_key
-    duckdb_config["custom_user_agent"] =  "airbyte_intg_test"
-    con = duckdb.connect(database=config.get("destination_path"), config=duckdb_config,read_only=False)
+    if motherduck_api_key:
+        duckdb_config["motherduck_token"] = motherduck_api_key
+        duckdb_config["custom_user_agent"] =  "airbyte_intg_test"
+    con = duckdb.connect(database=config.get("destination_path"),read_only=False, config=duckdb_config)
     with con:
         cursor = con.execute(
             "SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data "
