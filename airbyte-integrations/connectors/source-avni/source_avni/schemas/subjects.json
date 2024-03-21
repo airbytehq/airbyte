@@ -80,11 +80,11 @@
         "format": "uuid"
       }
     },
-    "last_modified_at":{
+    "last_modified_at": {
       "type": "string",
       "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
     },
-    "catchments":{
+    "catchments": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

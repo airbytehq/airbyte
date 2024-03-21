@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_avni.components import CustomAuthenticator
 from unittest.mock import Mock, patch
+
+from source_avni.components import CustomAuthenticator
 
 
 @patch('boto3.client')

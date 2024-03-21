@@ -68,7 +68,7 @@
         "type": ["null", "string"]
       }
     },
-    "last_modified_at":{
+    "last_modified_at": {
       "type": "string",
       "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
     },
