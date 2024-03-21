@@ -16,12 +16,12 @@ class TestAccountsStream(BaseTest):
     stream_name = "accounts"
 
     def read_stream(
-            self,
-            stream_name: str,
-            sync_mode: SyncMode,
-            config: Dict[str, Any],
-            state: Optional[Dict[str, Any]] = None,
-            expecting_exception: bool = False,
+        self,
+        stream_name: str,
+        sync_mode: SyncMode,
+        config: Dict[str, Any],
+        state: Optional[Dict[str, Any]] = None,
+        expecting_exception: bool = False,
     ) -> Tuple[EntrypointOutput, MagicMock]:
         with patch.object(HttpAuthenticated, "send", mock_http_authenticated_send):
             catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
@@ -32,6 +32,8 @@ class TestAccountsStream(BaseTest):
         # Our account doesn't have configured Tax certificate.
         self.auth_client(http_mocker)
         output = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config)
-        assert output.records[0].record.data["TaxCertificate"] == {"Status": "Active",
-                                                                   "TaxCertificateBlobContainerName": "Test Container Name",
-                                                                   "TaxCertificates": [{"key": "test_key", "value": "test_value"}]}
+        assert output.records[0].record.data["TaxCertificate"] == {
+            "Status": "Active",
+            "TaxCertificateBlobContainerName": "Test Container Name",
+            "TaxCertificates": [{"key": "test_key", "value": "test_value"}],
+        }
