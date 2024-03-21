@@ -24,7 +24,7 @@ paramiko = "3.4.0"
 source-sftp-bulk = "source_sftp_bulk.run:run"
 
 [tool.poetry.group.dev.dependencies]
-docker = "==5.0.3"
+docker = "^7.0.0"
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"
 pytest = "^6.1"
