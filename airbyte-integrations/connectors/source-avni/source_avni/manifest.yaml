@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "0.52.0"
 
 definitions:
   selector:
@@ -48,10 +48,10 @@ definitions:
       inject_into: "request_parameter"
 
   transformations_base:
-      - type: AddFields
-        fields:
-          - path: [ "last_modified_at" ]
-            value: "{{ record['audit']['Last modified at'] }}"
+    - type: AddFields
+      fields:
+        - path: ["last_modified_at"]
+          value: "{{ record['audit']['Last modified at'] }}"
 
   base_stream:
     type: DeclarativeStream
@@ -112,7 +112,6 @@ check:
   type: CheckStream
   stream_names:
     - "subjects"
-
 
 spec:
   type: Spec
