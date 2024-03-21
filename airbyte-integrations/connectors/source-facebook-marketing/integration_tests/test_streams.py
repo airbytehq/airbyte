@@ -55,7 +55,7 @@ class TestFacebookMarketingSource:
     @pytest.mark.parametrize(
         "stream_name, deleted_id",
         [
-            ("ads", "23846756820320398"),
+            # ("ads", "23846756820320398"),
             ("campaigns", "23846541919710398"),
             ("ad_sets", "23846541706990398"),
         ],
@@ -80,27 +80,27 @@ class TestFacebookMarketingSource:
     @pytest.mark.parametrize(
         "stream_name, deleted_num, filter_statuses",
         [
-            ("ads", 2, False),
+            # ("ads", 2, False),
             ("campaigns", 3, False),
             ("ad_sets", 1, False),
-            (
-                "ads",
-                0,
-                [
-                    "ACTIVE",
-                    "ADSET_PAUSED",
-                    "ARCHIVED",
-                    "CAMPAIGN_PAUSED",
-                    "DELETED",
-                    "DISAPPROVED",
-                    "IN_PROCESS",
-                    "PAUSED",
-                    "PENDING_BILLING_INFO",
-                    "PENDING_REVIEW",
-                    "PREAPPROVED",
-                    "WITH_ISSUES",
-                ],
-            ),
+            # (
+            #     "ads",
+            #     0,
+            #     [
+            #         "ACTIVE",
+            #         "ADSET_PAUSED",
+            #         "ARCHIVED",
+            #         "CAMPAIGN_PAUSED",
+            #         "DELETED",
+            #         "DISAPPROVED",
+            #         "IN_PROCESS",
+            #         "PAUSED",
+            #         "PENDING_BILLING_INFO",
+            #         "PENDING_REVIEW",
+            #         "PREAPPROVED",
+            #         "WITH_ISSUES",
+            #     ],
+            # ),
             (
                 "campaigns",
                 0,

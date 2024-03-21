@@ -110,6 +110,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 4.1.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                 |
 | 4.0.4   | 2024-02-23 | [35481](https://github.com/airbytehq/airbyte/pull/35481) | Migrate source to `YamlDeclarativeSource` with custom `check_connection`                                        |
 | 4.0.3   | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry                                                                                 |
 | 4.0.2   | 2024-02-08 | [35013](https://github.com/airbytehq/airbyte/pull/35013) | Add missing field to `sponsored_display_budget_rules` stream                                                    |

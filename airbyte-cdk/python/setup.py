@@ -36,7 +36,7 @@ setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.72.1",
+    version="0.73.0",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -54,7 +54,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
         # Python Version Support
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     keywords="airbyte connector-development-kit cdk",
     project_urls={
@@ -84,7 +84,7 @@ setup(
         "cachetools",
         "wcmatch==8.4",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     extras_require={
         "dev": [
             avro_dependency,

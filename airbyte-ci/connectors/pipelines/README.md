@@ -649,6 +649,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.6.1   | [#0](https://github.com/airbytehq/airbyte/pull/0)          | Fix `ValueError` related to PR number in migrate-to-poetry                                                                 |
 | 4.6.0   | [#35583](https://github.com/airbytehq/airbyte/pull/35583)  | Implement the `airbyte-ci connectors migrate-to-poetry` command.                                                           |
 | 4.5.4   | [#36206](https://github.com/airbytehq/airbyte/pull/36206)  | Revert poetry cache removal during nightly builds                                                                          |
 | 4.5.3   | [#34586](https://github.com/airbytehq/airbyte/pull/34586)  | Extract connector changelog modification logic into its own class                                                          |
