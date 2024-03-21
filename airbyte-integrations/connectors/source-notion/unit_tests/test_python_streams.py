@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 import re
 import time
 from http import HTTPStatus
@@ -13,9 +12,7 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from pytest import fixture, mark
-from source_notion.source import SourceNotion
 from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
 
 
@@ -55,26 +52,6 @@ def blocks(parent, args):
     return Blocks(parent=parent, **args)
 
 
-@pytest.mark.parametrize(
-    "config, expected_token",
-    [
-        ({"credentials": {"auth_type": "OAuth2.0", "access_token": "oauth_token_123"}}, "Bearer oauth_token_123"),
-        ({"credentials": {"auth_type": "token", "token": "api_token_456"}}, "Bearer api_token_456"),
-        ({"access_token": "legacy_token_789"}, "Bearer legacy_token_789"),
-        ({}, None),
-    ],
-)
-def test_get_authenticator(config, expected_token):
-    source = SourceNotion()
-    authenticator = source._get_authenticator(config)
-
-    if expected_token:
-        assert isinstance(authenticator, TokenAuthenticator)
-        assert authenticator.token == expected_token
-    else:
-        assert authenticator is None
-
-
 def test_cursor_field(stream):
     expected_cursor_field = "last_edited_time"
     assert stream.cursor_field == expected_cursor_field
@@ -92,6 +69,52 @@ def test_source_defined_cursor(stream):
 def test_stream_checkpoint_interval(stream):
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
+
+
+def test_http_method(patch_base_class):
+    stream = NotionStream(config=MagicMock())
+    expected_method = "GET"
+    assert stream.http_method == expected_method
+
+
+@pytest.mark.parametrize(
+    "response_json, expected_output",
+    [
+        ({"next_cursor": "some_cursor", "has_more": True}, {"next_cursor": "some_cursor"}),
+        ({"has_more": False}, None), 
+        ({}, None)
+    ],
+    ids=["Next_page_token exists with cursor", "No next_page_token", "No next_page_token"],
+)
+def test_next_page_token(patch_base_class, response_json, expected_output):
+    stream = NotionStream(config=MagicMock())
+    mock_response = MagicMock()
+    mock_response.json.return_value = response_json
+    result = stream.next_page_token(mock_response)
+    assert result == expected_output
+
+
+@pytest.mark.parametrize(
+    "config, expected_start_date, current_time",
+    [
+        (
+            {"authenticator": "secret_token", "start_date": "2021-09-01T00:00:00.000Z"},
+            "2021-09-01T00:00:00.000Z",
+            "2022-09-22T00:00:00.000Z",
+        ),
+        ({"authenticator": "super_secret_token", "start_date": None}, "2020-09-22T00:00:00.000Z", "2022-09-22T00:00:00.000Z"),
+        ({"authenticator": "even_more_secret_token"}, "2021-01-01T12:30:00.000Z", "2023-01-01T12:30:00.000Z"),
+    ],
+)
+def test_set_start_date(patch_base_class, config, expected_start_date, current_time):
+    """
+    Test that start_date in config is either:
+      1. set to the value provided by the user
+      2. defaults to two years from the present date set by the test environment.
+    """
+    with freezegun.freeze_time(current_time):
+        stream = NotionStream(config=config)
+        assert stream.start_date == expected_start_date
 
 
 def test_request_params(blocks):
@@ -297,55 +320,6 @@ def test_retry_logic(status_code, error_code, error_message, expected_backoff_ti
         assert backoff_times == expected_backoff_time, f"Unexpected backoff times: {backoff_times}"
 
 
-def test_request_params(patch_base_class):
-    stream = NotionStream(config=MagicMock())
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {}
-    assert stream.request_params(**inputs) == expected_params
-
-
-def test_next_page_token(patch_base_class, requests_mock):
-    stream = NotionStream(config=MagicMock())
-    requests_mock.get("https://dummy", json={"next_cursor": "aaa"})
-    inputs = {"response": requests.get("https://dummy")}
-    expected_token = {"next_cursor": "aaa"}
-    assert stream.next_page_token(**inputs) == expected_token
-
-
-@pytest.mark.parametrize(
-    "response_json, expected_output",
-    [({"next_cursor": "some_cursor", "has_more": True}, {"next_cursor": "some_cursor"}), ({"has_more": False}, None), ({}, None)],
-)
-def test_next_page_token_with_no_cursor(patch_base_class, response_json, expected_output):
-    stream = NotionStream(config=MagicMock())
-    mock_response = MagicMock()
-    mock_response.json.return_value = response_json
-    result = stream.next_page_token(mock_response)
-    assert result == expected_output
-
-
-def test_parse_response(patch_base_class, requests_mock):
-    stream = NotionStream(config=MagicMock())
-    requests_mock.get("https://dummy", json={"results": [{"a": 123}, {"b": "xx"}]})
-    resp = requests.get("https://dummy")
-    inputs = {"response": resp, "stream_state": MagicMock()}
-    expected_parsed_object = [{"a": 123}, {"b": "xx"}]
-    assert list(stream.parse_response(**inputs)) == expected_parsed_object
-
-
-def test_request_headers(patch_base_class):
-    stream = NotionStream(config=MagicMock())
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {"Notion-Version": "2022-06-28"}
-    assert stream.request_headers(**inputs) == expected_headers
-
-
-def test_http_method(patch_base_class):
-    stream = NotionStream(config=MagicMock())
-    expected_method = "GET"
-    assert stream.http_method == expected_method
-
-
 @pytest.mark.parametrize(
     ("http_status", "should_retry"),
     [
@@ -420,52 +394,6 @@ def test_backoff_time(status_code, retry_after_header, expected_backoff, patch_b
 
 
 @pytest.mark.parametrize(
-    "config, expected_start_date, current_time",
-    [
-        (
-            {"authenticator": "secret_token", "start_date": "2021-09-01T00:00:00.000Z"},
-            "2021-09-01T00:00:00.000Z",
-            "2022-09-22T00:00:00.000Z",
-        ),
-        ({"authenticator": "super_secret_token", "start_date": None}, "2020-09-22T00:00:00.000Z", "2022-09-22T00:00:00.000Z"),
-        ({"authenticator": "even_more_secret_token"}, "2021-01-01T12:30:00.000Z", "2023-01-01T12:30:00.000Z"),
-    ],
-)
-def test_set_start_date(patch_base_class, config, expected_start_date, current_time):
-    """
-    Test that start_date in config is either:
-      1. set to the value provided by the user
-      2. defaults to two years from the present date set by the test environment.
-    """
-    with freezegun.freeze_time(current_time):
-        stream = NotionStream(config=config)
-        assert stream.start_date == expected_start_date
-
-
-def test_block_record_transformation():
-    stream = Blocks(parent=None, config=MagicMock())
-    response_record = {
-        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
-        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
-        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
-                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "mention", "mention": {"type": "page", "page": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"},
-                                     "plain_text": "test", "href": "https://www.notion.so/id"}], "color": "default"}
-    }
-    expected_record = {
-        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
-        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
-        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations":{"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text":"test", "href": None},
-                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
-                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
-                                    {"type": "mention", "mention": {"type": "page", "info": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": "https://www.notion.so/id"}],
-                      "color": "default"}
-    }
-    assert stream.transform(response_record) == expected_record
-
-
-@pytest.mark.parametrize(
     "initial_page_size, expected_page_size, mock_response",
     [
         (100, 50, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
@@ -498,3 +426,26 @@ def test_request_throttle(initial_page_size, expected_page_size, mock_response, 
     stream.should_retry(response=response)
 
     assert stream.page_size == expected_page_size
+
+
+def test_block_record_transformation():
+    stream = Blocks(parent=None, config=MagicMock())
+    response_record = {
+        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
+        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
+        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
+                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
+                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
+                                    {"type": "mention", "mention": {"type": "page", "page": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"},
+                                     "plain_text": "test", "href": "https://www.notion.so/id"}], "color": "default"}
+    }
+    expected_record = {
+        "object": "block", "id": "id", "parent": {"type": "page_id", "page_id": "id"}, "created_time": "2021-10-19T13:33:00.000Z", "last_edited_time": "2021-10-19T13:33:00.000Z",
+        "created_by": {"object": "user", "id": "id"}, "last_edited_by": {"object": "user", "id": "id"}, "has_children": False, "archived": False, "type": "paragraph",
+        "paragraph": {"rich_text": [{"type": "text", "text": {"content": "test", "link": None}, "annotations":{"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text":"test", "href": None},
+                                    {"type": "text", "text": {"content": "@", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": True, "color": "default"}, "plain_text": "@", "href": None},
+                                    {"type": "text", "text": {"content": "test", "link": None}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": None},
+                                    {"type": "mention", "mention": {"type": "page", "info": {"id": "id"}}, "annotations": {"bold": False, "italic": False, "strikethrough": False, "underline": False, "code": False, "color": "default"}, "plain_text": "test", "href": "https://www.notion.so/id"}],
+                      "color": "default"}
+    }
+    assert stream.transform(response_record) == expected_record
