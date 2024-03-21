@@ -298,12 +298,9 @@ Than run:
 
 ### External Logs with GCS
 
-::: info
-
-GCS Logging is similar to the approach taken for S3 above, with a few small differences GCS logging
-was tested on
-[Airbyte Helm Chart Version 0.53.178](https://artifacthub.io/packages/helm/airbyte/airbyte/0.53.178)
-
+:::Info
+GCS Logging is similar to the approach taken for S3 above, with a few small differences
+GCS logging was tested on [Airbyte Helm Chart Version 0.54.69](https://artifacthub.io/packages/helm/airbyte/airbyte/0.54.69)
 :::
 
 #### Create Google Cloud Storage Bucket
@@ -311,43 +308,15 @@ was tested on
 1. **Access Google Cloud Console**: Go to the Google Cloud Console and select or create a project
    where you want to create the bucket.
 2. **Open Cloud Storage**: Navigate to "Storage" > "Browser" in the left-side menu.
-3. **Create Bucket**: Click on "Create bucket". Give your bucket a unique name, select a region for
-   the bucket, and configure other settings such as storage class and access control according to
-   your requirements. Finally, click "Create".
+3. **Create Bucket**: Click on "Create bucket". Give your bucket a unique name, select a region for the bucket, and configure other settings such as storage class and access control according to your requirements. Finally, click "Create". The buckect will be referenced as `<bucket_name>`
 
 #### Create Google Cloud Service Account
 
 1. **Open IAM & Admin**: In the Cloud Console, navigate to "IAM & Admin" > "Service Accounts".
-2. **Create Service Account**: Click "Create Service Account", enter a name, description, and then
-   click "Create".
-3. **Grant Permissions**: Assign the role of "Storage Object Admin" to the service account by
-   selecting it from the role list.
-4. **Create Key**: After creating the service account, click on it, go to the "Keys" tab, and then
-   click "Add Key" > "Create new key". Choose JSON as the key type and click "Create". The key file
-   will be downloaded automatically to your computer.
-
-#### Create a Kubernetes Secret
-
-- Use the **`kubectl create secret`** command to create a Kubernetes secret from the JSON key file.
-  Replace **`<secret-name>`** with the desired name for your secret, **`<path-to-json-key-file>`**
-  with the path to the JSON key file you downloaded, and **`<namespace>`** with the namespace where
-  your deployment will be running.
-
-`kubectl create secret generic <mysecret> --from-file=gcp.json=</location/to/secret.json> --namespace=<namespace>`
-
-#### Create an extra Volume where the GCSFS secret will be added in the values.yaml inside of the worker section
-
-```
-worker:
-  extraVolumes:
-    - name: gcsfs-creds
-      secret:
-        secretName: <secret name>
-  extraVolumeMounts:
-    - name: gcsfs-creds
-      mountPath: "/etc/secrets"
-      readOnly: true
-```
+2. **Create Service Account**: Click "Create Service Account", enter a name, description, and then click "Create".
+3. **Grant Permissions**: Assign the role of "Storage Object Admin" to the service account by selecting it from the role list.
+4. **Create Key**: After creating the service account, click on it, go to the "Keys" tab, and then click "Add Key" > "Create new key". Choose JSON as the key type and click "Create". The key file will be downloaded automatically to your computer.
+5. **Encode Key**: Encode GCP credentials file contents using Base64. This key will be referenced as `<encoded_key>` 
 
 #### Update the values.yaml with the GCS Logging Information below
 
@@ -363,22 +332,29 @@ global:
    storage:
      type: "GCS"
    gcs:
-     bucket: "<bucket name>"
-     credentials: "/etc/secrets/gcp.json"
-
- extraEnv:
-   - name: STATE_STORAGE_GCS_BUCKET_NAME
-     value: <bucket name>
-   - name: STATE_STORAGE_GCS_APPLICATION_CREDENTIALS
-     value: /etc/secrets/gcp.json
-   - name: CONTAINER_ORCHESTRATOR_SECRET_NAME
-     value: <name of secret>
-   - name: CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH
-     value: /etc/secrets/
+     bucket: "<bucket_name>"
+     credentials: "/secrets/gcs-log-creds/gcp.json"      
+     credentialsJson: "<encoded_key>"
 ```
 
-Than run:
-`helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.53.178`
+
+Update the following Environment Variables in the worker section:
+```
+worker:
+ 
+ extraEnv:
+   - name: STATE_STORAGE_GCS_BUCKET_NAME
+     value: <bucket_name>
+   - name: STATE_STORAGE_GCS_APPLICATION_CREDENTIALS
+     value: /secrets/gcs-log-creds/gcp.json
+   - name: CONTAINER_ORCHESTRATOR_SECRET_NAME
+     value: <%RELEASE_NAME%>-gcs-log-creds
+   - name: CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH
+     value: /secrets/gcs-log-creds
+```
+
+Then run:
+`helm upgrade --install %RELEASE_NAME% airbyte/airbyte -n <NAMESPACE> --values /path/to/values.yaml --version 0.54.69`
 
 ### External Airbyte Database
 
