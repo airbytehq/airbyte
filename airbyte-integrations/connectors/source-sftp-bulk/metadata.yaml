@@ -27,5 +27,5 @@ data:
   supportLevel: community
   tags:
     - language:python
-    - cdk:python
+    - cdk:python-file-base
 metadataSpecVersion: "1.0"
