@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 1.6.3
+  dockerImageTag: 1.7.0
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   githubIssueLabel: source-github
@@ -24,7 +24,6 @@ data:
       packageName: airbyte-source-github
   registries:
     cloud:
-      dockerImageTag: 1.5.7
       enabled: true
     oss:
       enabled: true
@@ -44,4 +43,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

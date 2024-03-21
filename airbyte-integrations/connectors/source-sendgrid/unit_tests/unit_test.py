@@ -17,17 +17,21 @@ from requests import codes
 from source_sendgrid.source import SourceSendgrid
 from source_sendgrid.streams import (
     Blocks,
+    Bounces,
     Campaigns,
     Contacts,
     GlobalSuppressions,
+    InvalidEmails,
     Lists,
     Segments,
     SendgridStream,
     SendgridStreamIncrementalMixin,
     SendgridStreamOffsetPagination,
+    SpamReports,
     SuppressionGroupMembers,
     SuppressionGroups,
     Templates,
+    UnsubscribeGroups,
 )
 
 FAKE_NOW = pendulum.DateTime(2022, 1, 1, tzinfo=pendulum.timezone("utc"))
@@ -36,9 +40,10 @@ FAKE_NOW_ISO_STRING = FAKE_NOW.to_iso8601_string()
 
 @pytest.fixture(name="sendgrid_stream")
 def sendgrid_stream_fixture(mocker) -> SendgridStream:
-    # Wipe the internal list of abstract methods to allow instantiating the abstract class without implementing its abstract methods
+    # Wipe the internal list of abstract methods to allow instantiating
+    # the abstract class without implementing its abstract methods
     mocker.patch("source_sendgrid.streams.SendgridStream.__abstractmethods__", set())
-    # Mypy yells at us because we're init'ing an abstract class
+    # Mypy yells at us because we're initializing an abstract class
     return SendgridStream()  # type: ignore
 
 
@@ -130,6 +135,10 @@ def test_read_records(
         [SuppressionGroupMembers, "asm/suppressions"],
         [SuppressionGroups, "asm/groups"],
         [GlobalSuppressions, "suppression/unsubscribes"],
+        [Bounces, "suppression/bounces"],
+        [InvalidEmails, "suppression/invalid_emails"],
+        [SpamReports, "suppression/spam_reports"],
+        [UnsubscribeGroups, "asm/groups"],
     ),
 )
 def test_path(stream_class, expected):
@@ -144,7 +153,7 @@ def test_path(stream_class, expected):
         (SuppressionGroupMembers, 401, False),
     ),
 )
-def test_should_retry_on_permission_error(requests_mock, stream_class, status, expected):
+def test_should_retry_on_permission_error(stream_class, status, expected):
     stream = stream_class(Mock())
     response_mock = MagicMock()
     response_mock.status_code = status
@@ -211,3 +220,17 @@ def test_read_chunks_pd():
     list(stream.read_with_chunks(path="file_not_exist.csv", file_encoding="utf-8"))
     with pytest.raises(FileNotFoundError):
         list(stream.read_with_chunks(path="file_not_exist.csv", file_encoding="utf-8"))
+
+
+@pytest.mark.parametrize(
+    "current_stream_state, latest_record, expected_state",
+    (
+        ({}, {"created": "7270247822"}, {"created": "7270247822"}),
+        ({"created": "7270247899"}, {"created": "7270247822"}, {"created": "7270247899"}),
+        ({"created": "7270247822"}, {"created": "7270247899"}, {"created": "7270247899"}),
+    ),
+)
+def test_get_updated_state(current_stream_state, latest_record, expected_state):
+    stream = Blocks(Mock())
+    assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+

@@ -57,6 +57,7 @@ public class PostgresTestDatabase extends
 
   }
 
+  @SuppressWarnings("deprecation")
   static public PostgresTestDatabase in(BaseImage baseImage, ContainerModifier... modifiers) {
     String[] methodNames = Stream.of(modifiers).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new PostgresContainerFactory().shared(baseImage.reference, methodNames);

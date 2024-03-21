@@ -249,7 +249,6 @@ const buildAConnector = {
         },
         "connector-development/tutorials/building-a-python-source",
         "connector-development/tutorials/building-a-java-destination",
-        "connector-development/tutorials/profile-java-connector-memory",
       ],
     },
     "connector-development/connector-specification-reference",
@@ -310,7 +309,6 @@ const contributeToAirbyte = {
       label: "Resources",
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/code-style",
         "contributing-to-airbyte/resources/code-formatting",
         "contributing-to-airbyte/resources/qa-checks",
         "contributing-to-airbyte/resources/developing-locally",
@@ -480,6 +478,11 @@ module.exports = {
       ],
     },
     {
+      type: "doc",
+      label: "Using PyAirbyte",
+      id: "using-airbyte/pyairbyte/getting-started",
+    },
+    {
       type: "category",
       label: "Workspace Management",
       items: [
@@ -502,6 +505,7 @@ module.exports = {
       },
       items: [
         "enterprise-setup/implementation-guide",
+        "enterprise-setup/api-access-config",
         "enterprise-setup/upgrading-from-community",
       ]
     },
@@ -597,6 +601,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/february_2024",
         "release_notes/january_2024",
         "release_notes/december_2023",
         "release_notes/november_2023",

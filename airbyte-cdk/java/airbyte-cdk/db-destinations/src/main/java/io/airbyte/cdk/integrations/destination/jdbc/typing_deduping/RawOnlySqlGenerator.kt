@@ -1,21 +1,23 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping
 
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
-import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import java.util.*
 import org.jooq.Condition
 import org.jooq.DataType
 import org.jooq.Field
 import org.jooq.SQLDialect
-import java.util.*
 
 /**
  * Some Destinations do not support Typing and Deduping but have the updated raw table format
  * SqlGenerator implementations are only for "final" tables and are a required input for
- * TyperDeduper classes. This implementation appeases that requirement but does not implement
- * any "final" table operations.
+ * TyperDeduper classes. This implementation appeases that requirement but does not implement any
+ * "final" table operations.
  */
 class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransformer) :
     JdbcSqlGenerator(namingTransformer) {
@@ -37,7 +39,7 @@ class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransfo
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): List<Field<*>>? {
         throw NotImplementedError("This Destination does not support final tables")
     }
@@ -52,7 +54,7 @@ class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransfo
 
     override fun getRowNumber(
         primaryKey: List<ColumnId>,
-        cursorField: Optional<ColumnId>
+        cursorField: Optional<ColumnId>,
     ): Field<Int>? {
         throw NotImplementedError("This Destination does not support final tables")
     }

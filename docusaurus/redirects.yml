@@ -93,3 +93,9 @@
     - /enterprise-setup/self-managed/sso
     - /enterprise-setup/sso
   to: /access-management/sso
+- from:
+    - /pyairbyte
+  to: /using-airbyte/pyairbyte/getting-started
+- from:
+    - /telemetry
+  to: /operator-guides/telemetry

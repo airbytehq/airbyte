@@ -5,6 +5,7 @@
 # mypy: ignore-errors
 
 import datetime
+from typing import Any, Mapping
 
 import pytest
 from airbyte_cdk.models import Level
@@ -27,6 +28,7 @@ from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamMod
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
+from airbyte_cdk.sources.declarative.models import CustomSchemaLoader as CustomSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
@@ -66,6 +68,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
@@ -356,6 +359,9 @@ def test_single_use_oauth_branch():
         interpolated_body_field: "{{ config['apikey'] }}"
       refresh_token_updater:
         refresh_token_name: "the_refresh_token"
+        refresh_token_error_status_codes: [400]
+        refresh_token_error_key: "error"
+        refresh_token_error_values: ["invalid_grant"]
         refresh_token_config_path:
           - apikey
     """
@@ -378,6 +384,9 @@ def test_single_use_oauth_branch():
     # default values
     assert authenticator._access_token_config_path == ["credentials", "access_token"]
     assert authenticator._token_expiry_date_config_path == ["credentials", "token_expiry_date"]
+    assert authenticator._refresh_token_error_status_codes == [400]
+    assert authenticator._refresh_token_error_key == "error"
+    assert authenticator._refresh_token_error_values == ["invalid_grant"]
 
 
 def test_list_based_stream_slicer_with_values_refd():
@@ -525,23 +534,23 @@ def test_datetime_based_cursor():
 
     assert isinstance(stream_slicer, DatetimeBasedCursor)
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer.cursor_field.string == "created"
+    assert stream_slicer._cursor_field.string == "created"
     assert stream_slicer.cursor_granularity == "PT0.000001S"
-    assert stream_slicer.lookback_window.string == "P5D"
+    assert stream_slicer._lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.start_time_option.field_name.eval(config=input_config | {"cursor_field": "updated_at"}) == "since_updated_at"
     assert stream_slicer.end_time_option.inject_into == RequestOptionType.body_json
     assert stream_slicer.end_time_option.field_name.eval({}) == "before_created_at"
-    assert stream_slicer.partition_field_start.eval({}) == "star"
-    assert stream_slicer.partition_field_end.eval({}) == "en"
+    assert stream_slicer._partition_field_start.eval({}) == "star"
+    assert stream_slicer._partition_field_end.eval({}) == "en"
 
-    assert isinstance(stream_slicer.start_datetime, MinMaxDatetime)
+    assert isinstance(stream_slicer._start_datetime, MinMaxDatetime)
     assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
 
-    assert isinstance(stream_slicer.end_datetime, MinMaxDatetime)
-    assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+    assert isinstance(stream_slicer._end_datetime, MinMaxDatetime)
+    assert stream_slicer._end_datetime.datetime.string == "{{ config['end_time'] }}"
 
 
 def test_stream_with_incremental_and_retriever_with_partition_router():
@@ -636,17 +645,17 @@ list_stream:
 
     datetime_stream_slicer = stream.retriever.stream_slicer._cursor_factory.create()
     assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
-    assert isinstance(datetime_stream_slicer.start_datetime, MinMaxDatetime)
-    assert datetime_stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
-    assert isinstance(datetime_stream_slicer.end_datetime, MinMaxDatetime)
-    assert datetime_stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+    assert isinstance(datetime_stream_slicer._start_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer._start_datetime.datetime.string == "{{ config['start_time'] }}"
+    assert isinstance(datetime_stream_slicer._end_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer._end_datetime.datetime.string == "{{ config['end_time'] }}"
     assert datetime_stream_slicer.step == "P10D"
-    assert datetime_stream_slicer.cursor_field.string == "created"
+    assert datetime_stream_slicer._cursor_field.string == "created"
 
     list_stream_slicer = stream.retriever.stream_slicer._partition_router
     assert isinstance(list_stream_slicer, ListPartitionRouter)
     assert list_stream_slicer.values == ["airbyte", "airbyte-cloud"]
-    assert list_stream_slicer.cursor_field.string == "a_key"
+    assert list_stream_slicer._cursor_field.string == "a_key"
 
 
 def test_incremental_data_feed():
@@ -1239,6 +1248,20 @@ def test_create_default_paginator():
             ValueError,
             id="test_create_custom_component_missing_required_field_emits_error",
         ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.NonExistingClass",
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
+                },
+            },
+            "paginator",
+            None,
+            ValueError,
+            id="test_create_custom_component_non_existing_class_raises_value_error",
+        ),
     ],
 )
 def test_create_custom_components(manifest, field_name, expected_value, expected_error):
@@ -1764,11 +1787,31 @@ def test_create_page_increment():
         start_from_page=1,
         inject_on_first_request=True,
     )
-    expected_strategy = PageIncrement(page_size=10, start_from_page=1, inject_on_first_request=True, parameters={})
+    expected_strategy = PageIncrement(page_size=10, start_from_page=1, inject_on_first_request=True, parameters={}, config=input_config)
 
     strategy = factory.create_page_increment(model, input_config)
 
     assert strategy.page_size == expected_strategy.page_size
+    assert strategy.start_from_page == expected_strategy.start_from_page
+    assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
+
+
+def test_create_page_increment_with_interpolated_page_size():
+    model = PageIncrementModel(
+        type="PageIncrement",
+        page_size="{{ config['page_size'] }}",
+        start_from_page=1,
+        inject_on_first_request=True,
+    )
+    config = {
+        **input_config,
+        "page_size": 5
+    }
+    expected_strategy = PageIncrement(page_size=5, start_from_page=1, inject_on_first_request=True, parameters={}, config=config)
+
+    strategy = factory.create_page_increment(model, config)
+
+    assert strategy.get_page_size() == expected_strategy.get_page_size()
     assert strategy.start_from_page == expected_strategy.start_from_page
     assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
 
@@ -1786,3 +1829,19 @@ def test_create_offset_increment():
     assert strategy.page_size == expected_strategy.page_size
     assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
     assert strategy.config == input_config
+
+
+class MyCustomSchemaLoader(SchemaLoader):
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Returns a mapping describing the stream's schema"""
+        return {}
+
+
+def test_create_custom_schema_loader():
+
+    definition = {
+        "type": "CustomSchemaLoader",
+        "class_name": "unit_tests.sources.declarative.parsers.test_model_to_component_factory.MyCustomSchemaLoader"
+    }
+    component = factory.create_component(CustomSchemaLoaderModel, definition, {})
+    assert isinstance(component, MyCustomSchemaLoader)

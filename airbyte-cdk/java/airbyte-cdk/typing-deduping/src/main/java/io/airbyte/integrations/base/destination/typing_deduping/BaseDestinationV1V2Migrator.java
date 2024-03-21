@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;
@@ -20,7 +21,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
   @Override
   public void migrateIfNecessary(
                                  final SqlGenerator sqlGenerator,
-                                 final DestinationHandler destinationHandler,
+                                 final DestinationHandler<?> destinationHandler,
                                  final StreamConfig streamConfig)
       throws Exception {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
@@ -60,7 +61,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param streamConfig the stream to migrate the raw table of
    */
   public void migrate(final SqlGenerator sqlGenerator,
-                      final DestinationHandler destinationHandler,
+                      final DestinationHandler<?> destinationHandler,
                       final StreamConfig streamConfig)
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);
@@ -89,7 +90,10 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param existingV2AirbyteRawTable the v2 raw table
    */
   private void validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(final DialectTableDefinition existingV2AirbyteRawTable) {
-    if (!schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES)) {
+    // Account for the fact that the meta column was added later, so skip the rebuilding of the raw
+    // table.
+    if (!(schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META) ||
+        schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES))) {
       throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
     }
   }
