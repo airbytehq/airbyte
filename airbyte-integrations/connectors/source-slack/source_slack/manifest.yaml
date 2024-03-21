@@ -1,4 +1,4 @@
-version: 0.58.7
+version: 0.73.0
 type: DeclarativeSource
 
 definitions:
@@ -171,7 +171,7 @@ definitions:
         fields:
           - path:
               - channel_id
-            value: "{{ stream_partition['channel_id'] }}"
+            value: "{{ stream_partition.get('channel_id') }}"
 
   channel_messages_stream:
     $ref: "#/definitions/stream_base"
@@ -240,7 +240,7 @@ definitions:
             value: "{{ record.ts|int }}"
           - path:
               - channel_id
-            value: "{{ stream_partition['channel_id'] }}"
+            value: "{{ stream_partition.get('channel_id') }}"
 
   threads_stream:
     $ref: "#/definitions/stream_base"
@@ -256,7 +256,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          channel: "{{ stream_slice['channel'] }}"
+          channel: "{{ stream_slice.get('channel') }}"
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
@@ -292,7 +292,7 @@ definitions:
             value: "{{ record['ts']|int }}"
           - path:
               - channel_id
-            value: "{{ stream_slice['channel'] }}"
+            value: "{{ stream_slice.get('channel') }}"
 
 streams:
   - "#/definitions/users_stream"

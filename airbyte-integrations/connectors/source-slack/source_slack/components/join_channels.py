@@ -38,7 +38,7 @@ class JoinChannelsStream(HttpStream):
         Override to simply indicate that the specific channel was joined successfully.
         This method should not return any data, but should return an empty iterable.
         """
-        is_ok = response.json()["ok"]
+        is_ok = response.json().get("ok", False)
         if is_ok:
             self.logger.info(f"Successfully joined channel: {stream_slice['channel_name']}")
         else:
@@ -46,7 +46,8 @@ class JoinChannelsStream(HttpStream):
         return []
 
     def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
-        return {"channel": stream_slice["channel"]}
+        if stream_slice:
+            return {"channel": stream_slice.get("channel")}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -106,17 +107,17 @@ class ChannelsRetriever(SimpleRetriever):
         )
 
         for stream_data in self._read_pages(record_generator, self.state, _slice):
+            # joining channel logic
+            if self.should_join_to_channel(self.config, stream_data):
+                self.join_channel(self.config, stream_data)
+
             current_record = self._extract_record(stream_data, _slice)
             if self.cursor and current_record:
                 self.cursor.observe(_slice, current_record)
 
             most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, current_record, _slice)
-            # joining channel logic
-            if self.should_join_to_channel(self.config, stream_data):
-                self.join_channel(self.config, stream_data)
-
             yield stream_data
 
         if self.cursor:
-            self.cursor.close_slice(_slice, most_recent_record_from_slice)
+            self.cursor.observe(_slice, most_recent_record_from_slice)
         return
