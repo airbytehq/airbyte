@@ -16,6 +16,23 @@ definitions:
         refresh_token: "{{ config['credentials']['refresh_token'] }}"
         refresh_request_body: {}
         token_refresh_endpoint: https://id.getharvest.com/api/v2/oauth2/token
+  composite_error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header:  Retry-After
+        response_filters:
+          - http_codes: [401]
+            action: IGNORE
+            error_message: "Please ensure your credentials are valid."
+          - http_codes: [403]
+            action: IGNORE
+            error_message: "This is most likely due to insufficient permissions on the credentials in use."
+          - http_codes: [404]
+            action: IGNORE
+            error_message: "Please ensure that your account ID is properly set. If it is the case and you are still seeing this error, please contact Airbyte support."
 spec:
   connection_specification:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -122,12 +139,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -201,12 +213,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -256,12 +263,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -311,12 +313,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -366,12 +363,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -421,12 +413,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -476,12 +463,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -531,12 +513,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -586,12 +563,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -641,13 +613,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
-            - type: DefaultErrorHandler
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -697,12 +663,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -752,12 +713,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -807,12 +763,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -862,12 +813,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -917,12 +863,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -971,12 +912,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1046,12 +982,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1121,12 +1052,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1196,12 +1122,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1271,12 +1192,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1311,12 +1227,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1386,12 +1297,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1461,12 +1367,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1536,12 +1437,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1611,12 +1507,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1687,12 +1578,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1809,12 +1695,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1931,12 +1812,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -2053,12 +1929,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -2175,12 +2046,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -2297,12 +2163,7 @@ streams:
         authenticator:
           $ref: "#/definitions/authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+          $ref: "#/definitions/composite_error_handler"
         request_body_json: {}
       record_selector:
         type: RecordSelector
