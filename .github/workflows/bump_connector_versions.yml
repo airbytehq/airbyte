@@ -1,24 +1,16 @@
-name: Connector Ops CI - Publish Connectors
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+name: Connector Ops CI - Bump Connector Versions
 
 on:
   push:
     branches:
       - master
     paths:
-      - "airbyte-integrations/connectors/**/metadata.yaml"
-  workflow_dispatch:
-    inputs:
-      connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--name=source-pokeapi"
-      publish-options:
-        description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
-        default: "--pre-release"
-      airbyte_ci_binary_url:
-        description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
-        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+      - "airbyte-integrations/connectors/**/.changelog_entries/*"
+
 jobs:
-  publish_connectors:
+  bump_connector_versions:
     name: Publish connectors
     runs-on: connector-publish-large
     steps:
@@ -42,36 +34,14 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only --without-use-local-cdk publish --main-release"
+          subcommand: "connectors bump_version"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
-
-      - name: Publish connectors [manual]
-        id: publish-connectors
-        if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
-          python_registry_token: ${{ secrets.PYPI_TOKEN }}
-          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
     runs-on: ubuntu-latest
     needs:
-      - publish_connectors
+      - bump_connector_versions
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
@@ -84,7 +54,7 @@ jobs:
     name: Create Instatus Incident on Success
     runs-on: ubuntu-latest
     needs:
-      - publish_connectors
+      - bump_connector_versions
     if: ${{ success() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
@@ -97,7 +67,7 @@ jobs:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
     needs:
-      - publish_connectors
+      - bump_connector_versions
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
@@ -116,7 +86,7 @@ jobs:
           args: >-
             {\"channel\":\"C056HGD1QSW\", \"blocks\":[
             {\"type\":\"divider\"},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Publish Connector Failed! :bangbang: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Connector Version Bump Failed! :bangbang: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
