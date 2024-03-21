@@ -38,6 +38,9 @@ data:
           For more information, see our migration documentation for source Notion.
         # TODO: Set to the actual deadline date
         upgradeDeadline: "2024-12-31"
+        scopedImpact: 
+          - scopeType: stream
+            impactedScopes: ["comments"]
       2.0.0:
         message:
           Version 2.0.0 introduces schema changes to multiple properties shared
