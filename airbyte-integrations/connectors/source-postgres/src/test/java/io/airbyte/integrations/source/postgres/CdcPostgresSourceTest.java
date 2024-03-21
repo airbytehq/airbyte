@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +80,13 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   protected void setBaseImage() {
     this.postgresImage = getServerImage();
+  }
+
+  @Override
+  protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
+    AtomicLong count = new AtomicLong(0L);
+    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    assertEquals(totalCount, count.get());
   }
 
   @Override
@@ -863,9 +871,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    if (!isOnLegacyPostgres()) {
-      assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    }
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
+    // lsn_commit only increases with a new transaction, we expect only one state message.
+    assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
@@ -904,9 +913,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-    if (!isOnLegacyPostgres()) {
-      assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-    }
+    // We expect only one cdc state message, as all the records are inserted in a single transaction.
+    // Since
+    // lsn_commit only increases with a new transaction, we expect only one state message.
+    assertTrue(stateMessagesCDC.size() == 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 

@@ -19,7 +19,16 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStreamStatus, Level
+from airbyte_protocol.models import (
+    AirbyteStateBlob,
+    AirbyteStreamState,
+    AirbyteStreamStatus,
+    ConfiguredAirbyteCatalog,
+    FailureType,
+    Level,
+    StreamDescriptor,
+    SyncMode,
+)
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
@@ -316,7 +325,9 @@ class PersonsTest(TestCase):
         )
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert actual_messages.most_recent_state == {"persons": {"updated": int(state_datetime.timestamp())}}
+        most_recent_state = actual_messages.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -355,7 +366,9 @@ class PersonsTest(TestCase):
         )
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert actual_messages.most_recent_state == {"persons": {"updated": int(state_datetime.timestamp())}}
+        most_recent_state = actual_messages.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
         assert len(actual_messages.records) == 1
         assert actual_messages.records[0].record.data.get("is_deleted")
 
@@ -391,7 +404,9 @@ class PersonsTest(TestCase):
         )
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert actual_messages.most_recent_state == {"persons": {"updated": int(state_datetime.timestamp())}}
+        most_recent_state = actual_messages.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -490,7 +505,9 @@ class PersonsTest(TestCase):
         )
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert actual_messages.most_recent_state == {"persons": {"updated": int(state_datetime.timestamp())}}
+        most_recent_state = actual_messages.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name="persons")
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -558,7 +575,7 @@ class PersonsTest(TestCase):
             state=state,
         )
 
-        assert len(actual_messages.errors) == 1
+        assert len(actual_messages.errors) == 2
 
     @HttpMocker()
     def test_server_error_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:

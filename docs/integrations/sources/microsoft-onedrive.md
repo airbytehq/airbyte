@@ -121,6 +121,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.1.9   | 2024-03-11 | [35956](https://github.com/airbytehq/airbyte/pull/35956) | Pin `transformers` transitive dependency                                                         |
 | 0.1.8   | 2024-03-06 | [35858](https://github.com/airbytehq/airbyte/pull/35858) | Bump poetry.lock to upgrade transitive dependency                                                         |
 | 0.1.7   | 2024-03-0q | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Enable in Cloud                                                         |
 | 0.1.6   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                       |
