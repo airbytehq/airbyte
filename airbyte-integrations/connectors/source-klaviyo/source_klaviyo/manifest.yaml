@@ -1,4 +1,4 @@
-version: 0.72.1
+version: 0.73.0
 type: DeclarativeSource
 
 definitions:
@@ -29,11 +29,13 @@ definitions:
       field_path: ["data"]
 
   # Paginator
+  cursor_pagination_strategy:
+    type: CursorPagination
+    cursor_value: "{{ response.get('links', {}).get('next') }}"
+
   paginator:
     type: DefaultPaginator
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: "{{ response.get('links', {}).get('next') }}"
+    pagination_strategy: "#/definitions/cursor_pagination_strategy"
     page_token_option:
       type: RequestPath
 
@@ -53,6 +55,25 @@ definitions:
         condition: >-
           {% set starting_point = stream_state.get('updated', config.get('start_date')) %}
           {{ starting_point and record.get('attributes', {}).get('updated') > starting_point or not starting_point }}
+
+  profiles_retriever:
+    $ref: "#/definitions/base_retriever"
+    paginator:
+      $ref: "#/definitions/paginator"
+      pagination_strategy:
+        $ref: "#/definitions/cursor_pagination_strategy"
+        page_size: 100
+      page_size_option:
+        type: RequestOption
+        field_name: "page[size]"
+        inject_into: request_parameter
+    requester:
+      $ref: "#/definitions/requester"
+      request_headers:
+        Accept: "application/json"
+        Revision: "2023-02-22"
+      request_parameters:
+        "additional-fields[profile]": "predictive_analytics"
 
   # Base streams
   base_stream:
@@ -74,6 +95,10 @@ definitions:
       cursor_field: "{{ parameters.get('cursor_field', 'updated') }}"
       start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
       start_time_option:
         type: RequestOption
         field_name: "{{ parameters.get('cursor_field', 'updated') }}"
@@ -88,6 +113,7 @@ definitions:
     # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
     name: "profiles"
     $ref: "#/definitions/base_incremental_stream"
+    retriever: "#/definitions/profiles_retriever"
     $parameters:
       path: "profiles"
 
@@ -95,6 +121,13 @@ definitions:
     # Docs: https://developers.klaviyo.com/en/v2023-06-15/reference/get_campaigns
     name: "campaigns"
     $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_headers:
+          Accept: "application/json"
+          Revision: "2023-06-15"
     transformations:
       - type: AddFields
         fields:
@@ -108,9 +141,14 @@ definitions:
   global_exclusions_stream:
     # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
     name: "global_exclusions"
-    $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      path: "profiles"
+    $ref: "#/definitions/profiles_stream"
+    retriever:
+      $ref: "#/definitions/profiles_retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['attributes'].get('subscriptions', {}).get('email', {}).get('marketing', {}).get('suppressions') }}"
 
   events_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_events
