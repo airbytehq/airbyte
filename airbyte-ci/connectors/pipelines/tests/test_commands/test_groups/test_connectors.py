@@ -31,6 +31,9 @@ def test_get_selected_connectors_by_name_no_file_modification():
         metadata_changes_only=False,
         metadata_query=None,
         modified_files=set(),
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 1
@@ -48,6 +51,9 @@ def test_get_selected_connectors_by_support_level_no_file_modification():
         metadata_changes_only=False,
         metadata_query=None,
         modified_files=set(),
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     set([c.support_level for c in selected_connectors]) == {"certified"}
@@ -62,6 +68,9 @@ def test_get_selected_connectors_by_language_no_file_modification():
         metadata_changes_only=False,
         metadata_query=None,
         modified_files=set(),
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     set([c.language for c in selected_connectors]) == {ConnectorLanguage.LOW_CODE}
@@ -78,6 +87,9 @@ def test_get_selected_connectors_by_name_with_file_modification():
         metadata_changes_only=False,
         metadata_query=None,
         modified_files=modified_files,
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 1
@@ -97,6 +109,9 @@ def test_get_selected_connectors_by_name_and_support_level_or_languages_leads_to
         metadata_changes_only=False,
         metadata_query=None,
         modified_files=modified_files,
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 1
@@ -114,6 +129,9 @@ def test_get_selected_connectors_with_modified():
         metadata_changes_only=False,
         metadata_query=None,
         modified_files=modified_files,
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 2
@@ -131,6 +149,9 @@ def test_get_selected_connectors_with_modified_and_language():
         metadata_changes_only=False,
         metadata_query=None,
         modified_files=modified_files,
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 1
@@ -149,6 +170,9 @@ def test_get_selected_connectors_with_modified_and_support_level():
         metadata_changes_only=False,
         metadata_query=None,
         modified_files=modified_files,
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 1
@@ -171,6 +195,9 @@ def test_get_selected_connectors_with_modified_and_metadata_only():
         metadata_changes_only=True,
         metadata_query=None,
         modified_files=modified_files,
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 1
@@ -197,6 +224,9 @@ def test_get_selected_connectors_with_metadata_only():
         metadata_changes_only=True,
         metadata_query=None,
         modified_files=modified_files,
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 1
@@ -218,6 +248,9 @@ def test_get_selected_connectors_with_metadata_query():
         metadata_changes_only=False,
         metadata_query=metadata_query,
         modified_files=set(),
+        with_changelog_entry_files=False,
+        with_use_local_cdk=False,
+        without_use_local_cdk=False,
     )
 
     assert len(selected_connectors) == 1
