@@ -118,6 +118,9 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+      - name: Install Poetry
+        id: install_poetry
+        uses: snok/install-poetry@v1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -127,10 +130,9 @@ jobs:
       - name: "Publish Python CDK: bump version"
         id: bumpversion
         run: |
-          pip install bumpversion
           cd airbyte-cdk/python
-          bumpversion ${{ github.event.inputs.release-type }}
-          new_version="$(grep -i 'current_version = ' .bumpversion.cfg | sed -e 's/.* = //')"
+          poetry version ${{ github.event.inputs.release-type }}
+          new_version="$(poetry version -s)"
           awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="${{ github.event.inputs.changelog-message }}" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
           echo NEW_VERSION=$new_version >> $GITHUB_OUTPUT
 #      - name: Commit and Push Changes
