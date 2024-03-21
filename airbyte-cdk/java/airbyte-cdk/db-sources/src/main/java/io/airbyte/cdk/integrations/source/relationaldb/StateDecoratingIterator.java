@@ -19,6 +19,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StateDecoratingIterator.class);
