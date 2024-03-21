@@ -17,6 +17,13 @@ definitions:
     url_base: "https://a.klaviyo.com/api/"
     authenticator: "#/definitions/authenticator"
     http_method: GET
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401, 403]
+          error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
     request_headers:
       Accept: "application/json"
       Revision: "2023-10-15"
