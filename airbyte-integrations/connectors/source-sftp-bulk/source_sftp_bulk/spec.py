@@ -10,17 +10,17 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
     class Config:
         title = "SFTP Bulk Source Spec"
 
-    username: str = Field(title="User Name", description="The server user", order=0)
+    username: str = Field(title="User Name", description="The server user", order=2)
 
-    password: Optional[str] = Field(title="Password", description="Password", airbyte_secret=True, order=1)
-    private_key: Optional[str] = Field(title="Private key", description="The Private key", multiline=True, order=2)
-    host: str = Field(title="Host Address", description="The server host address", examples=["www.host.com", "192.0.2.1"], order=3)
-    port: int = Field(title="Host Address", description="The server port", default=22, examples=["22"], order=4)
+    password: Optional[str] = Field(title="Password", description="Password", airbyte_secret=True, order=3)
+    private_key: Optional[str] = Field(title="Private key", description="The Private key", multiline=True, order=4)
+    host: str = Field(title="Host Address", description="The server host address", examples=["www.host.com", "192.0.2.1"], order=5)
+    port: int = Field(title="Host Address", description="The server port", default=22, examples=["22"], order=6)
     folder_path: Optional[str] = Field(
         title="Folder Path",
         description="The directory to search files for sync",
         examples=["/logs/2022"],
-        order=5,
+        order=7,
         default="/",
         pattern_descriptor="/folder_to_sync",
     )
