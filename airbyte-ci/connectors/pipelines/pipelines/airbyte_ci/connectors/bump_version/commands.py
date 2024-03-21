@@ -10,17 +10,33 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
 @click.command(cls=DaggerPipelineCommand, short_help="Bump a connector version: update metadata.yaml and changelog.")
-@click.argument("bump-type", type=click.Choice(["patch", "minor", "major"]))
-@click.argument("pull-request-number", type=str)
-@click.argument("changelog-entry", type=str)
+@click.argument("bump-type", type=click.Choice(["patch", "minor", "major"]), required=False, default=None)
+@click.argument("pull-request-number", type=str, required=False, default=None)
+@click.argument("changelog-entry", type=str, required=False, default=None)
+@click.option("--from-changelog-entry-files", help="bump version according to changelog_entry files.", default=False, type=bool)
 @click.pass_context
 async def bump_version(
     ctx: click.Context,
     bump_type: str,
     pull_request_number: str,
     changelog_entry: str,
+    from_changelog_entry_files: bool,
 ) -> bool:
     """Bump a connector version: update metadata.yaml and changelog."""
+
+    if from_changelog_entry_files:
+        if bump_type is not None or pull_request_number is not None or changelog_entry is not None:
+            raise click.UsageError(f"--from-changelog-entry-files cannot be used with other bump_version options")
+    else:
+        if bump_type is None or pull_request_number is None or changelog_entry is None:
+            missing_parameters = []
+            if bump_type is None:
+                missing_parameters += "{patch|minor|major}"
+            if pull_request_number is None:
+                missing_parameters += "PULL_REQUEST_NUMBER"
+            if changelog_entry is None:
+                missing_parameters += "CHANGELOG_ENTRY"
+            raise click.UsageError(f"missing bump_version parameters: {', '.join(missing_parameters)}")
 
     connectors_contexts = [
         ConnectorContext(
@@ -58,6 +74,7 @@ async def bump_version(
         bump_type,
         changelog_entry,
         pull_request_number,
+        from_changelog_entry_files,
     )
 
     return True

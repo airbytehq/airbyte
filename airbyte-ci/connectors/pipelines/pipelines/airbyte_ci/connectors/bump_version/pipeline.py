@@ -2,36 +2,27 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Set
 
 import semver
 from dagger import Container, Directory
+from semver import Version
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
 from pipelines.helpers import git
-from pipelines.helpers.changelog import Changelog
+from pipelines.helpers.changelog import Changelog, ChangelogEntry
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
+
+import tomli
 
 if TYPE_CHECKING:
     from anyio import Semaphore
 
 
-def get_bumped_version(version: str, bump_type: str) -> str:
-    current_version = semver.VersionInfo.parse(version)
-    if bump_type == "patch":
-        new_version = current_version.bump_patch()
-    elif bump_type == "minor":
-        new_version = current_version.bump_minor()
-    elif bump_type == "major":
-        new_version = current_version.bump_major()
-    else:
-        raise ValueError(f"Unknown bump type: {bump_type}")
-    return str(new_version)
-
-
-class AddChangelogEntry(Step):
+class AddChangelogEntries(Step):
     context: ConnectorContext
     title = "Add changelog entry"
 
@@ -39,16 +30,12 @@ class AddChangelogEntry(Step):
         self,
         context: ConnectorContext,
         repo_dir: Container,
-        new_version: str,
-        comment: str,
-        pull_request_number: str,
+        entries: Set[ChangelogEntry],
         export_docs: bool = False,
     ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
-        self.new_version = semver.VersionInfo.parse(new_version)
-        self.comment = comment
-        self.pull_request_number = int(pull_request_number)
+        self.entries = entries
         self.export_docs = export_docs
 
     async def _run(self) -> StepResult:
@@ -63,7 +50,8 @@ class AddChangelogEntry(Step):
         try:
             original_markdown = doc_path.read_text()
             changelog = Changelog(original_markdown)
-            changelog.add_entry(self.new_version, datetime.date.today(), self.pull_request_number, self.comment)
+            for entry in self.entries:
+                changelog.add_entry(entry)
             updated_doc = changelog.to_markdown()
         except Exception as e:
             return StepResult(
@@ -88,7 +76,7 @@ class BumpDockerImageTagInMetadata(Step):
         self,
         context: ConnectorContext,
         repo_dir: Directory,
-        new_version: str,
+        new_version: Version,
         export_metadata: bool = False,
     ) -> None:
         super().__init__(context)
@@ -97,8 +85,8 @@ class BumpDockerImageTagInMetadata(Step):
         self.export_metadata = export_metadata
 
     @staticmethod
-    def get_metadata_with_bumped_version(previous_version: str, new_version: str, metadata_str: str) -> str:
-        return metadata_str.replace("dockerImageTag: " + previous_version, "dockerImageTag: " + new_version)
+    def get_metadata_with_bumped_version(previous_version: str, new_version: Version, metadata_str: str) -> str:
+        return metadata_str.replace("dockerImageTag: " + previous_version, "dockerImageTag: " + str(new_version))
 
     async def _run(self) -> StepResult:
         metadata_path = self.context.connector.metadata_file_path
@@ -137,6 +125,7 @@ async def run_connector_version_bump_pipeline(
     bump_type: str,
     changelog_entry: str,
     pull_request_number: str,
+    from_changelog_entry_files: bool,
 ) -> Report:
     """Run a pipeline to upgrade for a single connector.
 
@@ -150,7 +139,13 @@ async def run_connector_version_bump_pipeline(
         steps_results = []
         async with context:
             og_repo_dir = await context.get_repo_dir()
-            new_version = get_bumped_version(context.connector.version, bump_type)
+            changelog_entries: Set[ChangelogEntry]
+            new_version: Version
+            if from_changelog_entry_files:
+                new_version = Changelog.get_bumped_version(context.connector.version, bump_type)
+                changelog_entries = {ChangelogEntry(version=new_version, pr_number=int(pull_request_number), comment=changelog_entry, date=datetime.date.today())}
+            else:
+                changelog_entries, new_version = Changelog.entries_from_files(context.connector.version, {tomli .load(open(f, 'rb')) for f in context.connector.changelog_entry_files})
             update_docker_image_tag_in_metadata = BumpDockerImageTagInMetadata(
                 context,
                 og_repo_dir,
@@ -160,12 +155,10 @@ async def run_connector_version_bump_pipeline(
             repo_dir_with_updated_metadata = update_docker_image_tag_in_metadata_result.output
             steps_results.append(update_docker_image_tag_in_metadata_result)
 
-            add_changelog_entry = AddChangelogEntry(
+            add_changelog_entry = AddChangelogEntries(
                 context,
                 repo_dir_with_updated_metadata,
-                new_version,
-                changelog_entry,
-                pull_request_number,
+                changelog_entries,
             )
             add_changelog_entry_result = await add_changelog_entry.run()
             steps_results.append(add_changelog_entry_result)

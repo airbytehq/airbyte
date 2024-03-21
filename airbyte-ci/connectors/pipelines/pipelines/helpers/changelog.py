@@ -6,9 +6,12 @@ import datetime
 import re
 from dataclasses import dataclass
 from operator import attrgetter
-from typing import Set, Tuple
+from os import path
+from typing import Set, Tuple, List
 
 import semver
+from semver import Version
+
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO
 
 
@@ -99,8 +102,8 @@ class Changelog:
         self.new_entries: Set[ChangelogEntry] = set()
         self.github_repo = github_repo
 
-    def add_entry(self, version: semver.Version, date: datetime.date, pull_request_number: int, comment: str) -> None:
-        self.new_entries.add(ChangelogEntry(date, version, pull_request_number, comment))
+    def add_entry(self, entry: ChangelogEntry) -> None:
+        self.new_entries.add(entry)
 
     def to_markdown(self) -> str:
         all_entries = set(self.original_entries.union(self.new_entries))
@@ -119,3 +122,20 @@ class Changelog:
             + self.original_markdown_lines[(self.changelog_entries_start_line_index + len(self.original_entries)) :]
         )
         return "\n".join(new_lines) + "\n"
+
+    @staticmethod
+    def entries_from_files(old_version: str, tomls: set[dict]) -> [List[ChangelogEntry], Version]:
+        return []
+
+    @staticmethod
+    def get_bumped_version(version: str, bump_type: str, ) -> Version:
+        current_version = semver.VersionInfo.parse(version)
+        if bump_type == "patch":
+            new_version = current_version.bump_patch()
+        elif bump_type == "minor":
+            new_version = current_version.bump_minor()
+        elif bump_type == "major":
+            new_version = current_version.bump_major()
+        else:
+            raise ValueError(f"Unknown bump type: {bump_type}")
+        return new_version
