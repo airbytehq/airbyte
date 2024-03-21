@@ -144,7 +144,7 @@ class IncrementalOrbStream(OrbStream, ABC):
             # This may (reasonably) override the existing `created_at[gte]` set based on the start_date
             # of the stream, as configured.
             params[f"{self.cursor_field}[gte]"] = state_based_start_timestamp
-        
+
         if self.end_date:
             params[f"{self.cursor_field}[lte]"] = self.end_date
 
