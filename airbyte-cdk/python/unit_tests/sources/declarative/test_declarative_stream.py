@@ -4,6 +4,7 @@
 
 from unittest.mock import MagicMock
 
+import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.types import StreamSlice

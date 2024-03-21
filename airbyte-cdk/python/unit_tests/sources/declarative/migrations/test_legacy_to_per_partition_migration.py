@@ -188,6 +188,7 @@ def test_should_not_migrate_if_the_partitioned_state_has_more_than_one_key():
 
     assert not migrator.should_migrate(input_state)
 
+
 def test_should_not_migrate_if_the_partitioned_state_key_is_not_the_cursor_field():
     input_state = {
         "13506132": {
