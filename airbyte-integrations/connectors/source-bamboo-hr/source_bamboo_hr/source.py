@@ -21,6 +21,7 @@ from .exception import (
 )
 from .utils import (
     chunk_iterable,
+    get_json_schema_for_field_type,
 )
 
 
@@ -75,7 +76,6 @@ class BambooMetaField(NamedTuple):
     deprecated: Optional[bool] = None
 
 
-
 class MetaFieldsStream(BambooHrStream):
     primary_key = None
 
@@ -87,13 +87,16 @@ class MetaFieldsStream(BambooHrStream):
     ) -> Iterable[Mapping]:
         yield from response.json()
 
+
 class BambooMetaTableField(NamedTuple):
     """Immutable typed representation of the field data returned from the meta/tables
     endpoint."""
+
     id: int
     name: str
     alias: str
     type: str
+
 
 class BambooMetaTable(NamedTuple):
     """Immutable typed representation of what is returned from the meta/tables
@@ -101,6 +104,7 @@ class BambooMetaTable(NamedTuple):
 
     alias: str
     fields: List[BambooMetaTableField]
+
 
 class TablesStream(BambooHrStream):
     primary_key = None
@@ -110,7 +114,9 @@ class TablesStream(BambooHrStream):
     ]
 
     @staticmethod
-    def _convert_raw_meta_table_to_typed(raw_meta_table: Mapping[str,Any]) -> BambooMetaTable:
+    def _convert_raw_meta_table_to_typed(
+        raw_meta_table: Mapping[str, Any]
+    ) -> BambooMetaTable:
         return BambooMetaTable(
             alias=raw_meta_table.get("alias"),
             fields=[
@@ -118,44 +124,47 @@ class TablesStream(BambooHrStream):
             ],
         )
 
-
     def get_json_schema(self) -> Mapping[str, Any]:
-        available_tables = map(lambda table: TablesStream._convert_raw_meta_table_to_typed(table), self.config["available_tables"])
+        available_tables = map(
+            lambda table: TablesStream._convert_raw_meta_table_to_typed(table),
+            self.config["available_tables"],
+        )
         schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": [
-                "object"
-            ],
-            "required": [
-                "id",
-                "employeeId",
-                "knoetic_table_name"
-            ],
+            "type": ["object"],
+            "required": ["id", "employeeId", "knoetic_table_name"],
             "properties": {
-                "id": {
-                    "type": [ "string", "integer" ]
-                },
-                "employeeId": {
-                    "type": [ "string", "integer" ]
-                },
-                "knoetic_table_name": {
-                    "type": [ "string"]
-                }
-            }
+                "id": {"type": ["string", "integer"]},
+                "employeeId": {"type": ["string", "integer"]},
+                "knoetic_table_name": {"type": ["string"]},
+            },
         }
 
+        # As per https://documentation.bamboohr.com/docs/field-types
+        default_field_schema = {"type": ["string", "null"]}
+        currency_field_schema = {
+            "type": ["object", "null"],
+            "properties": {
+                "value": {"type": ["string"]},
+                "currency": {"type": ["string"]},
+            },
+        }
         for table in available_tables:
             for field in table.fields:
-                schema["properties"][field.alias] = {
-                    "type": [ "string", "null", "object" ]
-                }
+                field_schema = (
+                    currency_field_schema
+                    if field.type == "currency"
+                    else default_field_schema
+                )
+                field_schema = get_json_schema_for_field_type(field)
+                schema["properties"][field.alias] = field_schema
 
         return schema
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        schema = self.get_json_schema()
-        print(f"The schema is {schema}")
+        # schema = self.get_json_schema()
+        # print(f"The schema is {schema}")
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         # Each table has an 'alias' field that we use to grab
@@ -179,39 +188,33 @@ class TablesStream(BambooHrStream):
         try:
             # This will raise an exception if the response is not 2xx
             response.raise_for_status()
+
             # If we're here, no issue.
-            new_record = (dict(record, **{"knoetic_table_name": table_name}) for record in response.json())
-            for record in new_record:
-                # print("New record: ", record)
+
+            # Adding the field here in parsing because I was having
+            # a little trouble getting it passed along when I tried
+            # to do it in read_records.
+            augmented_records = (
+                dict(record, **{"knoetic_table_name": table_name})
+                for record in response.json()
+            )
+
+            for record in augmented_records:
                 yield record
-            # yield from new_record
         except HTTPError as e:
-            # If it's one of the status codes we're skipping, log a warning.
-            # Otherwise, raise the exception.
+            # Check to see if this error code is one we expect.
+            # If so, raise an error.
             if not (
                 self.skip_http_status_codes
                 and e.response.status_code in self.skip_http_status_codes
             ):
                 raise e
+            
+            # Otherwise, just log a warning.
             self.logger.warning(
                 f"Stream `{self.name}`. An error occurred, details: {e}. Skipping for now."
             )
             yield {}
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        # table_name = stream_slice["table"]
-        for record in super().read_records(
-            sync_mode, cursor_field, stream_slice, stream_state
-        ):
-            # # Augment the record with the table name.
-            # record["knoetic_table_name"] = table_name
-            yield record
 
 
 class CustomReportsStream(BambooHrStream):
@@ -219,7 +222,8 @@ class CustomReportsStream(BambooHrStream):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._schema = None
+        self._schema = self._generate_json_schema()
+        print(f"The schema for custom reports is {self._schema}")
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for raw_fields in chunk_iterable(self.config.get("available_fields"), 100):
@@ -236,10 +240,37 @@ class CustomReportsStream(BambooHrStream):
     @staticmethod
     def _convert_field_to_id(field: BambooMetaField) -> str:
         """Converts a BambooMetaField to an id for the custom report endpoint."""
+
+        # The reports/custom endpoint takes a list of fields, each of
+        # which can be referred to by its alias (if one exists) or
+        # by its stringified id.
         if field.alias is None:
             return str(id)
         else:
             return field.alias
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._schema
+
+    def _generate_json_schema(self) -> Mapping[str, Any]:
+        available_fields = map(
+            lambda field: BambooMetaField(**field),
+            self.config["available_fields"],
+        )
+
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["object"],
+            "additionalProperties" : True,
+            "properties": {},
+        }
+
+        for field in available_fields:
+            field_schema = get_json_schema_for_field_type(field.type)
+            field_key = CustomReportsStream._convert_field_to_id(field)
+            schema["properties"][field_key] = field_schema
+
+        return schema
 
     def request_body_json(
         self, stream_slice: Mapping[str, Any] = None, **kwargs
@@ -256,9 +287,10 @@ class CustomReportsStream(BambooHrStream):
 
 class EmployeesDirectoryStream(BambooHrStream):
     """
-        This is not currently in use as per
-        https://documentation.bamboohr.com/reference/get-employees-directory-1
+    This is not currently in use as per
+    https://documentation.bamboohr.com/reference/get-employees-directory-1
     """
+
     primary_key = "id"
 
     def parse_response(
