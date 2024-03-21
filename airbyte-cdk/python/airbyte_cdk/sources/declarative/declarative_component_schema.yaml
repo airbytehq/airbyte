@@ -668,19 +668,19 @@ definitions:
   LegacyToPerPartitionStateMigration:
     title: Legacy To Per-partition-state Migration
     description: "Transforms the input state for per-partitioned streams from the legacy format to the low-code format.
-    The cursor field and partition ID fields are automatically extracted from the stream's DatetimebasedCursor and SubstreamPartitionRouter.
+      The cursor field and partition ID fields are automatically extracted from the stream's DatetimebasedCursor and SubstreamPartitionRouter.
 
-    Example input state:
-    {
-    \"13506132\": {
-      \"last_changed\": \"2022-12-27T08:34:39+00:00\"
-    }
-    Example output state:
-    {
-      \"partition\": {\"id\": \"13506132\"},
-      \"cursor\": {\"last_changed\": \"2022-12-27T08:34:39+00:00\"}
-    }
-    "
+      Example input state:
+      {
+      \"13506132\": {
+        \"last_changed\": \"2022-12-27T08:34:39+00:00\"
+      }
+      Example output state:
+      {
+        \"partition\": {\"id\": \"13506132\"},
+        \"cursor\": {\"last_changed\": \"2022-12-27T08:34:39+00:00\"}
+      }
+      "
     type: object
     additionalProperties: true
     properties:
