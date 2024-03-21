@@ -3,23 +3,27 @@
   "type": [
     "object"
   ],
-  "additionalProperties": { "type" : "string" },
   "required": [
     "id",
     "employeeId",
-    "knoetic_table_name"
+    "table_name",
+    "data"
   ],
   "properties": {
     "id": {
       "type": [ "string", "integer" ]
     },
-    "employeeId": {
+    "employee_id": {
       "type": [
         "string", "integer"
       ]
     },
-    "knoetic_table_name": {
+    "table_name": {
       "type": [ "string"]
+    },
+    "data": {
+      "type": [ "object" ],
+      "additionalProperties": true
     }
   }
 }

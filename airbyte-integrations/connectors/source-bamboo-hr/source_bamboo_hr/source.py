@@ -21,7 +21,6 @@ from .exception import (
 )
 from .utils import (
     chunk_iterable,
-    get_json_schema_for_field_type,
 )
 
 
@@ -124,42 +123,66 @@ class TablesStream(BambooHrStream):
             ],
         )
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        available_tables = map(
-            lambda table: TablesStream._convert_raw_meta_table_to_typed(table),
-            self.config["available_tables"],
-        )
-        schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": ["object"],
-            "required": ["id", "employeeId", "knoetic_table_name"],
-            "properties": {
-                "id": {"type": ["string", "integer"]},
-                "employeeId": {"type": ["string", "integer"]},
-                "knoetic_table_name": {"type": ["string"]},
-            },
-        }
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        table_name = stream_slice["table"]
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            # Augment the record with the table name.
+            if record == {}:
+                continue
+            else:
+                new_record = {
+                    "id" : record["id"],
+                    "employee_id" : record["employeeId"],
+                    "table_name" : table_name,
+                    "data" : record,
+                }
+                # record["knoetic_table_name"] = table_name
+                # record[""]
+                # yield record
+                yield new_record
 
-        # As per https://documentation.bamboohr.com/docs/field-types
-        default_field_schema = {"type": ["string", "null"]}
-        currency_field_schema = {
-            "type": ["object", "null"],
-            "properties": {
-                "value": {"type": ["string"]},
-                "currency": {"type": ["string"]},
-            },
-        }
-        for table in available_tables:
-            for field in table.fields:
-                field_schema = (
-                    currency_field_schema
-                    if field.type == "currency"
-                    else default_field_schema
-                )
-                field_schema = get_json_schema_for_field_type(field)
-                schema["properties"][field.alias] = field_schema
+    # def get_json_schema(self) -> Mapping[str, Any]:
+    #     available_tables = map(
+    #         lambda table: TablesStream._convert_raw_meta_table_to_typed(table),
+    #         self.config["available_tables"],
+    #     )
+    #     schema = {
+    #         "$schema": "http://json-schema.org/draft-07/schema#",
+    #         "type": ["object"],
+    #         "required": ["id", "employeeId", "knoetic_table_name"],
+    #         "properties": {
+    #             "id": {"type": ["string", "integer"]},
+    #             "employeeId": {"type": ["string", "integer"]},
+    #             "knoetic_table_name": {"type": ["string"]},
+    #         },
+    #     }
 
-        return schema
+    #     # As per https://documentation.bamboohr.com/docs/field-types
+    #     default_field_schema = {"type": ["string", "null"]}
+    #     currency_field_schema = {
+    #         "type": ["object", "null"],
+    #         "properties": {
+    #             "value": {"type": ["string"]},
+    #             "currency": {"type": ["string"]},
+    #         },
+    #     }
+    #     for table in available_tables:
+    #         for field in table.fields:
+    #             field_schema = (
+    #                 currency_field_schema
+    #                 if field.type == "currency"
+    #                 else default_field_schema
+    #             )
+    #             field_schema = get_json_schema_for_field_type(field)
+    #             schema["properties"][field.alias] = field_schema
+
+    #     return schema
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -183,24 +206,12 @@ class TablesStream(BambooHrStream):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         **kwargs,
-    ) -> Iterable[Mapping]:
-        table_name = stream_slice["table"]
+    ) -> Iterable[Mapping[str, Any]]:
+        # table_name = stream_slice["table"]
         try:
             # This will raise an exception if the response is not 2xx
             response.raise_for_status()
-
-            # If we're here, no issue.
-
-            # Adding the field here in parsing because I was having
-            # a little trouble getting it passed along when I tried
-            # to do it in read_records.
-            augmented_records = (
-                dict(record, **{"knoetic_table_name": table_name})
-                for record in response.json()
-            )
-
-            for record in augmented_records:
-                yield record
+            yield from response.json()
         except HTTPError as e:
             # Check to see if this error code is one we expect.
             # If so, raise an error.
@@ -222,8 +233,8 @@ class CustomReportsStream(BambooHrStream):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._schema = self._generate_json_schema()
-        print(f"The schema for custom reports is {self._schema}")
+        # self._schema = self._generate_json_schema()
+        # print(f"The schema for custom reports is {self._schema}")
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for raw_fields in chunk_iterable(self.config.get("available_fields"), 100):
@@ -232,6 +243,27 @@ class CustomReportsStream(BambooHrStream):
 
     def path(self, **kwargs) -> str:
         return "reports/custom"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            # Augment the record with the table name.
+            if record == {}:
+                continue
+            else:
+                new_record = {
+                    "id" : record["id"],
+                    "data" : record,
+                }
+                # record["knoetic_table_name"] = table_name
+                # record[""]
+                # yield record
+                yield new_record
 
     @property
     def http_method(self) -> str:
@@ -249,28 +281,28 @@ class CustomReportsStream(BambooHrStream):
         else:
             return field.alias
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return self._schema
+    # def get_json_schema(self) -> Mapping[str, Any]:
+    #     return self._schema
 
-    def _generate_json_schema(self) -> Mapping[str, Any]:
-        available_fields = map(
-            lambda field: BambooMetaField(**field),
-            self.config["available_fields"],
-        )
+    # def _generate_json_schema(self) -> Mapping[str, Any]:
+    #     available_fields = map(
+    #         lambda field: BambooMetaField(**field),
+    #         self.config["available_fields"],
+    #     )
 
-        schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": ["object"],
-            "additionalProperties" : True,
-            "properties": {},
-        }
+    #     schema = {
+    #         "$schema": "http://json-schema.org/draft-07/schema#",
+    #         "type": ["object"],
+    #         "additionalProperties" : True,
+    #         "properties": {},
+    #     }
 
-        for field in available_fields:
-            field_schema = get_json_schema_for_field_type(field.type)
-            field_key = CustomReportsStream._convert_field_to_id(field)
-            schema["properties"][field_key] = field_schema
+    #     for field in available_fields:
+    #         field_schema = get_json_schema_for_field_type(field.type)
+    #         field_key = CustomReportsStream._convert_field_to_id(field)
+    #         schema["properties"][field_key] = field_schema
 
-        return schema
+    #     return schema
 
     def request_body_json(
         self, stream_slice: Mapping[str, Any] = None, **kwargs
