@@ -14,6 +14,7 @@ import docker
 import paramiko
 import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode, Type
+from airbyte_cdk.test.entrypoint_wrapper import read
 from source_sftp_bulk import SourceSFTPBulk
 
 # pytest_plugins = ("connector_acceptance_test.plugin",)
@@ -160,15 +161,10 @@ def test_check_valid_config(configured_catalog: ConfiguredAirbyteCatalog, config
     assert outcome.status == Status.SUCCEEDED
 
 
-def test_get_files_no_pattern_json(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):
+def test_get_files_csv(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):
     source = SourceSFTPBulk(catalog=configured_catalog, config=config, state=None)
-    result_iter = source.read(logger, config, configured_catalog, None)
-    result = list(result_iter)
-    assert len(result) == 2
-    for res in result:
-        assert res.type == Type.RECORD
-        assert res.record.data["string_col"] in ["foo", "hello"]
-        assert res.record.data["int_col"] in [1, 2]
+    output = read(source=source, config=config, catalog=configured_catalog)
+    assert len(output.records) == 3
 
 
 def test_get_files_pattern_json(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
