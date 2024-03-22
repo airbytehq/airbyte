@@ -60,7 +60,7 @@ class RecordSelector(HttpSelector):
         :param next_page_token: The paginator token
         :return: List of Records selected from the response
         """
-        all_data = self.extractor.extract_records(response)
+        all_data: Iterable[Mapping[str, Any]] = self.extractor.extract_records(response)
         filtered_data = self._filter(all_data, stream_state, stream_slice, next_page_token)
         transformed_data = self._transform(filtered_data, stream_state, stream_slice)
         normalized_data = self._normalize_by_schema(transformed_data, schema=records_schema)
@@ -73,8 +73,9 @@ class RecordSelector(HttpSelector):
         if schema:
             # record has type Mapping[str, Any], but dict[str, Any] expected
             for record in records:
-                self.schema_normalization.transform(record, schema)
-                yield record
+                normalized_record = dict(record)
+                self.schema_normalization.transform(normalized_record, schema)
+                yield normalized_record
         else:
             yield from records
 
@@ -84,7 +85,7 @@ class RecordSelector(HttpSelector):
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
-    ) -> List[Mapping[str, Any]]:
+    ) -> Iterable[Mapping[str, Any]]:
         if self.record_filter:
             yield from self.record_filter.filter_records(
                 records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
@@ -97,7 +98,7 @@ class RecordSelector(HttpSelector):
         records: Iterable[Mapping[str, Any]],
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
-    ) -> None:
+    ) -> Iterable[Mapping[str, Any]]:
         for record in records:
             for transformation in self.transformations:
                 # record has type Mapping[str, Any], but Record expected

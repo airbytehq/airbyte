@@ -166,9 +166,9 @@ class DefaultPaginator(Paginator):
             and isinstance(self.page_token_option, RequestOption)
             and self.page_token_option.inject_into == option_type
         ):
-            options[self.page_token_option.field_name.eval(config=self.config)] = self._token # type: ignore # field_name is known to be an interpolated string
+            options[self.page_token_option.field_name.eval(config=self.config)] = self._token  # type: ignore # field_name is known to be an interpolated string
         if self.page_size_option and self.pagination_strategy.get_page_size() and self.page_size_option.inject_into == option_type:
-            options[self.page_size_option.field_name.eval(config=self.config)] = self.pagination_strategy.get_page_size() # type: ignore # field_name is known to be an interpolated string
+            options[self.page_size_option.field_name.eval(config=self.config)] = self.pagination_strategy.get_page_size()  # type: ignore # field_name is known to be an interpolated string
         return options
 
 
