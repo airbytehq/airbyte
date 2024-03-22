@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import lombok.extern.slf4j.Slf4j;
@@ -41,22 +40,19 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   public JsonNode getSourceOAuthParamConfig(final UUID workspaceId, final UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
-    log.error("inside getSourceOAuthParamConfig function ");
     try {
-      final Optional<SourceOAuthParameter> param = MoreOAuthParameters.getSourceOAuthParameter(
-              configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
-      if (param.isPresent()) {
-        log.error("getSourceOAuthParamConfig :: param is present ");
+      if (ObjectUtils.isNotEmpty(sourceDefinitionId)) {
         // TODO: if we write a flyway migration to flatten persisted configs in db, we don't need to flatten
         // here see https://github.com/airbytehq/airbyte/issues/7624
 
         StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(workspaceId, Boolean.FALSE);
-        JsonNode config = DaspireOauthHttpUtil.getDaspireOauthConfig(String.valueOf(workspaceId), String.valueOf(param.get().getSourceDefinitionId()),
+        JsonNode config = DaspireOauthHttpUtil.getDaspireOauthConfig(String.valueOf(workspaceId), String.valueOf(sourceDefinitionId),
             standardWorkspace.getToken());
-        log.error("getSourceOAuthParamConfig :: config -> {}", config);
         if (ObjectUtils.isNotEmpty(config)) {
           return MoreOAuthParameters.flattenOAuthConfig(config);
         }
+      } else {
+        log.error("getSourceOAuthParamConfig :: sourceDefinitionId not found");
       }
     } catch (final JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);
@@ -68,18 +64,18 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   protected JsonNode getDestinationOAuthParamConfig(final UUID workspaceId, final UUID destinationDefinitionId)
       throws IOException, ConfigNotFoundException {
     try {
-      final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
-          configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
-      if (param.isPresent()) {
+      if (ObjectUtils.isNotEmpty(destinationDefinitionId)) {
         // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
         // here see https://github.com/airbytehq/airbyte/issues/7624
         StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(workspaceId, Boolean.FALSE);
         JsonNode config =
-            DaspireOauthHttpUtil.getDaspireOauthConfig(String.valueOf(workspaceId), String.valueOf(param.get().getDestinationDefinitionId()),
+            DaspireOauthHttpUtil.getDaspireOauthConfig(String.valueOf(workspaceId), String.valueOf(destinationDefinitionId),
                 standardWorkspace.getToken());
         if (ObjectUtils.isNotEmpty(config)) {
           return MoreOAuthParameters.flattenOAuthConfig(config);
         }
+      } else {
+        log.error("getDestinationOAuthParamConfig :: destinationDefinitionId not found");
       }
     } catch (final JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);

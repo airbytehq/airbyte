@@ -181,7 +181,7 @@ public class OAuthHandler {
         .withSourceDefinitionId(requestBody.getSourceDefinitionId());
     // TODO validate requestBody.getParams() against
     // spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerInputSpecification()
-    configRepository.writeSourceOAuthParam(param, requestBody.getToken());
+    configRepository.writeSourceOAuthParam(param);
   }
 
   public void setDestinationInstancewideOauthParams(final SetInstancewideDestinationOauthParamsRequestBody requestBody)
@@ -193,7 +193,7 @@ public class OAuthHandler {
         .withDestinationDefinitionId(requestBody.getDestinationDefinitionId());
     // TODO validate requestBody.getParams() against
     // spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerInputSpecification()
-    configRepository.writeDestinationOAuthParam(param, requestBody.getToken());
+    configRepository.writeDestinationOAuthParam(param);
   }
 
   private ImmutableMap<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)

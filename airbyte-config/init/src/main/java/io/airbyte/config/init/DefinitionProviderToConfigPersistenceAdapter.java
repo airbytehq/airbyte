@@ -71,11 +71,6 @@ public class DefinitionProviderToConfigPersistenceAdapter implements ConfigPersi
   }
 
   @Override
-  public <T> void writeConfig(AirbyteConfig configType, String configId, T config, String token) throws JsonValidationException, IOException {
-    throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
-  }
-
-  @Override
   public <T> void writeConfigs(AirbyteConfig configType, Map<String, T> configs) throws IOException, JsonValidationException {
     throw new UnsupportedOperationException(PERSISTENCE_READ_ONLY_ERROR_MSG);
 

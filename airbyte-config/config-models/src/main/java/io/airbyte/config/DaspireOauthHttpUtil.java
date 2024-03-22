@@ -1,11 +1,12 @@
-
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
 
 package io.airbyte.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -21,7 +22,6 @@ import org.apache.http.util.EntityUtils;
 public class DaspireOauthHttpUtil {
 
   private final static String GET_DASPIRE_OAUTH_CONFIG = "/oauth/config/get";
-  private final static String WRITE_DASPIRE_OAUTH_CONFIG = "/oauth/config/save";
 
   public static String post(String uri, Map<String, Object> param) {
     log.error("DaspireOauthHttpUtil post function URL ----> {}", uri);
@@ -63,29 +63,6 @@ public class DaspireOauthHttpUtil {
       log.error("Rpc：msg:{}", e.getMessage());
     }
     return null;
-  }
-
-  public static Boolean writeDaspireOauthConfig(JsonNode config, String actorDefinitionId, String token) throws IOException {
-    try {
-      Configs configs = new EnvConfigs();
-      Map<String, Object> param = Map.of(
-          "config", config,
-          "actorDefinitionId", actorDefinitionId,
-          "token", token);
-      String jsonString = post(configs.getDaspireUrl() + WRITE_DASPIRE_OAUTH_CONFIG, param);
-      if (ObjectUtils.isNotEmpty(jsonString)) {
-        JsonNode responseObject = new ObjectMapper().readTree(jsonString);
-        if ("200".equals(responseObject.get("code").toString())) {
-          log.info("Rpc：daspire config save successfully");
-          return true;
-        } else {
-          log.error("Rpc：daspire response -> {}", responseObject);
-        }
-      }
-    } catch (JsonProcessingException e) {
-      log.error("Rpc：msg:{}", e.getMessage());
-    }
-    throw new IOException("Failed to write daspire data");
   }
 
 }

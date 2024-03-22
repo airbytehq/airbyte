@@ -65,12 +65,6 @@ public class ClassEnforcingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfig(AirbyteConfig configType, String configId, T config, String token) throws JsonValidationException, IOException {
-    Preconditions.checkArgument(configType.getClassName().equals(config.getClass()));
-    decoratedPersistence.writeConfig(configType, configId, config, token);
-  }
-
-  @Override
   public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException, JsonValidationException {
     // attempt to check the input type. if it is empty, then there is nothing to check.
     Preconditions.checkArgument(configs.isEmpty() || configType.getClassName().equals(new ArrayList<>(configs.values()).get(0).getClass()));

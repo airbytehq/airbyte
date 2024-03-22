@@ -61,13 +61,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import org.apache.commons.lang3.ObjectUtils;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.*;
 import org.jooq.Record;
@@ -690,12 +690,12 @@ public class ConfigRepository {
       ActorDefinition DESTINATION_ACTOR_DEFINITION = ACTOR_DEFINITION.as("DESTINATION_ACTOR_DEFINITION");
 
       SelectConditionStep<Record> where = ctx.select(CONNECTION.asterisk()).from(CONNECTION)
-              .join(SOURCE_ACTOR).on(CONNECTION.SOURCE_ID.eq(SOURCE_ACTOR.ID))
-              .join(SOURCE_ACTOR_DEFINITION).on(SOURCE_ACTOR.ACTOR_DEFINITION_ID.eq(SOURCE_ACTOR_DEFINITION.ID))
-              .join(DESTINATION_ACTOR).on(CONNECTION.DESTINATION_ID.eq(DESTINATION_ACTOR.ID))
-              .join(DESTINATION_ACTOR_DEFINITION).on(DESTINATION_ACTOR.ACTOR_DEFINITION_ID.eq(DESTINATION_ACTOR_DEFINITION.ID))
-              .where(SOURCE_ACTOR.WORKSPACE_ID.eq(workspaceId));
-      
+          .join(SOURCE_ACTOR).on(CONNECTION.SOURCE_ID.eq(SOURCE_ACTOR.ID))
+          .join(SOURCE_ACTOR_DEFINITION).on(SOURCE_ACTOR.ACTOR_DEFINITION_ID.eq(SOURCE_ACTOR_DEFINITION.ID))
+          .join(DESTINATION_ACTOR).on(CONNECTION.DESTINATION_ID.eq(DESTINATION_ACTOR.ID))
+          .join(DESTINATION_ACTOR_DEFINITION).on(DESTINATION_ACTOR.ACTOR_DEFINITION_ID.eq(DESTINATION_ACTOR_DEFINITION.ID))
+          .where(SOURCE_ACTOR.WORKSPACE_ID.eq(workspaceId));
+
       if (sourceId != null) {
         where.and(SOURCE_ACTOR.ACTOR_DEFINITION_ID.eq(sourceId));
       }
@@ -729,7 +729,7 @@ public class ConfigRepository {
       if (sortField != null) {
         where.orderBy(sortField);
       }
-      
+
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
     }).fetch();
@@ -754,9 +754,9 @@ public class ConfigRepository {
       throws IOException {
     final Result<Record> result = database.query(ctx -> {
       SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR)
-              .join(ACTOR_DEFINITION).on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
-              .where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
-              .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
+          .join(ACTOR_DEFINITION).on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+          .where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
+          .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
       }
@@ -799,9 +799,9 @@ public class ConfigRepository {
       throws IOException {
     final Result<Record> result = database.query(ctx -> {
       SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR)
-              .join(ACTOR_DEFINITION).on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
-              .where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
-              .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
+          .join(ACTOR_DEFINITION).on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+          .where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
+          .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
       }
@@ -1015,8 +1015,8 @@ public class ConfigRepository {
     return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
   }
 
-  public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter, String token) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString(), sourceOAuthParameter, token);
+  public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString(), sourceOAuthParameter);
   }
 
   public List<SourceOAuthParameter> listSourceOAuthParam() throws JsonValidationException, IOException {
@@ -1044,10 +1044,10 @@ public class ConfigRepository {
     return Optional.of(DbConverter.buildDestinationOAuthParameter(result.get(0)));
   }
 
-  public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter, String token)
+  public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter)
       throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.DESTINATION_OAUTH_PARAM, destinationOAuthParameter.getOauthParameterId().toString(),
-        destinationOAuthParameter, token);
+        destinationOAuthParameter);
   }
 
   public List<DestinationOAuthParameter> listDestinationOAuthParam() throws JsonValidationException, IOException {
@@ -1339,8 +1339,8 @@ public class ConfigRepository {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
-        .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
-        .and(ACTOR.TOMBSTONE.eq(Boolean.FALSE)))
+            .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+            .and(ACTOR.TOMBSTONE.eq(Boolean.FALSE)))
         .orderBy(lower(ACTOR.NAME).asc())
         .fetch());
     return result.stream().map(data -> DbConverter.buildSourceConnection(data)).collect(Collectors.toList());
@@ -1350,8 +1350,8 @@ public class ConfigRepository {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
-        .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
-        .and(ACTOR.TOMBSTONE.eq(Boolean.FALSE)))
+            .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+            .and(ACTOR.TOMBSTONE.eq(Boolean.FALSE)))
         .orderBy(lower(ACTOR.NAME).asc())
         .fetch());
     return result.stream().map(data -> DbConverter.buildDestinationConnection(data)).collect(Collectors.toList());
