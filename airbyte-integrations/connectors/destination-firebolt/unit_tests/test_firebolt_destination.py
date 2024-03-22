@@ -25,8 +25,8 @@ from pytest import fixture
 def config(request: Any) -> Dict[str, str]:
     args = {
         "database": "my_database",
-        "username": "my_username",
-        "password": "my_password",
+        "client_id": "my_id",
+        "client_secret": "my_secret",
         "engine": request.param,
         "loading_method": {
             "method": "SQL",
@@ -39,8 +39,8 @@ def config(request: Any) -> Dict[str, str]:
 def config_external_table() -> Dict[str, str]:
     args = {
         "database": "my_database",
-        "username": "my_username",
-        "password": "my_password",
+        "client_id": "my_id",
+        "client_secret": "my_secret",
         "engine": "my_engine",
         "loading_method": {
             "method": "S3",
@@ -57,8 +57,8 @@ def config_external_table() -> Dict[str, str]:
 def config_no_engine() -> Dict[str, str]:
     args = {
         "database": "my_database",
-        "username": "my_username",
-        "password": "my_password",
+        "client_id": "my_id",
+        "client_secret": "my_secret",
     }
     return args
 
@@ -134,8 +134,8 @@ def test_parse_config(config: Dict[str, str]):
     result = parse_config(config)
     assert result["database"] == "my_database"
     assert result["engine_name"] == "override_engine"
-    assert result["auth"].username == "my_username"
-    assert result["auth"].password == "my_password"
+    assert result["auth"].client_id == "my_id"
+    assert result["auth"].client_secret == "my_secret"
     config["engine"] = "override_engine.api.firebolt.io"
     result = parse_config(config)
     assert result["engine_url"] == "override_engine.api.firebolt.io"
