@@ -118,8 +118,13 @@ def config_fixture_private_key_csv(config_private_key):
 
 
 @pytest.fixture(name="config_password_all_csv", scope="session")
-def config_fixture_private_key_all_csv(config):
+def config_fixture_password_all_csv(config):
     yield config | load_config("stream_csv.json")
+
+
+@pytest.fixture(name="config_password_all_jsonl", scope="session")
+def config_fixture_password_all_jsonl(config):
+    yield config | load_config("stream_jsonl.json")
 
 
 @pytest.fixture(name="configured_catalog")
