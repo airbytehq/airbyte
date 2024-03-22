@@ -14,8 +14,7 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.BufferedInputStream
-import java.io.ByteArrayOutputStream
-import java.nio.charset.StandardCharsets
+import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
 private val logger = KotlinLogging.logger {}
@@ -33,12 +32,10 @@ class DefaultWriteOperationExecutor(
 ) : OperationExecutor {
     override fun execute(): Result<AirbyteMessage?> {
         logger.info { "Using default write operation executor." }
+        val inputReader = InputStreamReader(getInputStream())
         try {
-            getInputStream().use { bis ->
-                ByteArrayOutputStream().use { baos ->
-                    consumeWriteStream(messageConsumer, bis, baos)
-                }
-            }
+            messageConsumer.start()
+            inputReader.forEachLine { messageConsumer.accept(it, it.toByteArray().size) }
             return Result.success(null)
         } catch (e: Exception) {
             return Result.failure(
@@ -62,39 +59,5 @@ class DefaultWriteOperationExecutor(
 
     fun getInputStream(): BufferedInputStream {
         return BufferedInputStream(System.`in`)
-    }
-
-    @Throws(Exception::class)
-    fun consumeWriteStream(
-        consumer: SerializedAirbyteMessageConsumer,
-        bis: BufferedInputStream,
-        baos: ByteArrayOutputStream,
-    ) {
-        consumer.start()
-
-        val buffer = ByteArray(8192) // 8K buffer
-        var bytesRead: Int
-        var lastWasNewLine = false
-
-        while ((bis.read(buffer).also { bytesRead = it }) != -1) {
-            for (i in 0 until bytesRead) {
-                val b = buffer[i]
-                if (b == '\n'.code.toByte() || b == '\r'.code.toByte()) {
-                    if (!lastWasNewLine && baos.size() > 0) {
-                        consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size())
-                        baos.reset()
-                    }
-                    lastWasNewLine = true
-                } else {
-                    baos.write(b.toInt())
-                    lastWasNewLine = false
-                }
-            }
-        }
-
-        // Handle last line if there's one
-        if (baos.size() > 0) {
-            consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size())
-        }
     }
 }
