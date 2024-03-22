@@ -43,7 +43,7 @@ definitions:
       type: DefaultPaginator
       pagination_strategy:
         type: "OffsetIncrement"
-        page_size: 100
+        page_size: 2
       page_token_option:
         type: RequestOption
         inject_into: "request_parameter"

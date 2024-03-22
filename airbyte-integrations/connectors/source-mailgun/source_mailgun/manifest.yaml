@@ -39,7 +39,7 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['paging', 'next'] }}"
+      cursor_value: "{{ last_record['paging', 'next'] }}"
     page_token_option:
       type: "RequestPath"
       field_name: "from"
