@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, Union
 
 import dpath.util
 import requests
@@ -63,7 +63,7 @@ class DpathExtractor(RecordExtractor):
             if isinstance(self.field_path[path_index], str):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
-    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         response_body = self.decoder.decode(response)
         if len(self.field_path) == 0:
             extracted = response_body
@@ -74,8 +74,8 @@ class DpathExtractor(RecordExtractor):
             else:
                 extracted = dpath.util.get(response_body, path, default=[])
         if isinstance(extracted, list):
-            return extracted
+            yield from extracted
         elif extracted:
-            return [extracted]
+            yield extracted
         else:
-            return []
+            yield from []

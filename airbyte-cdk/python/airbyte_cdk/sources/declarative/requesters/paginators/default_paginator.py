@@ -101,8 +101,8 @@ class DefaultPaginator(Paginator):
             self.url_base = InterpolatedString(string=self.url_base, parameters=parameters)
         self._token = self.pagination_strategy.initial_token
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Mapping[str, Any]]:
-        self._token = self.pagination_strategy.next_page_token(response, last_records)
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Record) -> Optional[Mapping[str, Any]]:
+        self._token = self.pagination_strategy.next_page_token(response, last_page_size, last_record)
         if self._token:
             return {"next_page_token": self._token}
         else:
