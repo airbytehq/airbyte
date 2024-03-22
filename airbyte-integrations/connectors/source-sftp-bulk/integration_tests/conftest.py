@@ -9,7 +9,7 @@ import shutil
 import time
 import uuid
 from io import StringIO
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Union, Tuple
 
 import docker
 import paramiko
@@ -41,7 +41,7 @@ def get_docker_ip() -> Union[str, Any]:
     return match.group(1)
 
 
-def generate_ssh_keys():
+def generate_ssh_keys() -> Tuple[str, str]:
     key = paramiko.RSAKey.generate(2048)
     privateString = StringIO()
     key.write_private_key(privateString)
@@ -50,12 +50,12 @@ def generate_ssh_keys():
 
 
 @pytest.fixture(scope="session")
-def docker_client():
+def docker_client() -> docker.client.DockerClient:
     return docker.from_env()
 
 
 @pytest.fixture(scope="session", autouse=True)
-def connector_setup_fixture(docker_client):
+def connector_setup_fixture(docker_client) -> None:
     ssh_path = TMP_FOLDER + "/ssh"
     dir_path = os.path.dirname(__file__)
     if os.path.exists(TMP_FOLDER):
@@ -92,14 +92,14 @@ def connector_setup_fixture(docker_client):
 
 
 @pytest.fixture(name="config", scope="session")
-def config_fixture(docker_client):
+def config_fixture(docker_client) -> Mapping[str, Any]:
     config = load_config("config_password.json")
     config["host"] = get_docker_ip()
     yield config
 
 
 @pytest.fixture(name="config_private_key", scope="session")
-def config_fixture_private_key(docker_client):
+def config_fixture_private_key(docker_client) -> Mapping[str, Any]:
     config = load_config("config_private_key.json") | {
         "credentials": {"auth_type": "private_key", "private_key": PRIVATE_KEY},
     }
@@ -108,17 +108,17 @@ def config_fixture_private_key(docker_client):
 
 
 @pytest.fixture(name="config_private_key_csv", scope="session")
-def config_fixture_private_key_csv(config_private_key):
+def config_fixture_private_key_csv(config_private_key) -> Mapping[str, Any]:
     yield config_private_key
 
 
 @pytest.fixture(name="config_password_all_csv", scope="session")
-def config_fixture_password_all_csv(config):
+def config_fixture_password_all_csv(config) -> Mapping[str, Any]:
     yield config | load_config("stream_csv.json")
 
 
 @pytest.fixture(name="config_password_all_jsonl", scope="session")
-def config_fixture_password_all_jsonl(config):
+def config_fixture_password_all_jsonl(config) -> Mapping[str, Any]:
     yield config | load_config("stream_jsonl.json")
 
 
