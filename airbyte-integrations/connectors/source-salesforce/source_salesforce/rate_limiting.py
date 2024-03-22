@@ -8,6 +8,8 @@ import sys
 import backoff
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests import codes, exceptions  # type: ignore[import]
+from http.client import IncompleteRead
+
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,
@@ -15,6 +17,9 @@ TRANSIENT_EXCEPTIONS = (
     exceptions.ReadTimeout,
     exceptions.ConnectionError,
     exceptions.HTTPError,
+    # We've had a customer on a self-managed instance which got this issue. The error occurred during `BulkSalesforceStream.download_data`.
+    # Without much more information, we will make it retryable hoping that performing the same request will work.
+    IncompleteRead,
 )
 
 logger = logging.getLogger("airbyte")
