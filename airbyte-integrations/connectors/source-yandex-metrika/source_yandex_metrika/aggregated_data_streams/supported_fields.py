@@ -413,6 +413,8 @@ _RAW_METRICS_FIELDS = [
     ("ym:s:goal<goal_id>revenue", "number"),
     ("ym:s:goal<goal_id><currency>revenue", "number"),
     ("ym:s:goal<goal_id>converted<currency>Revenue", "number"),
+    ("ym:s:goal<goal_id>ecommercePurchases", "number"),
+    ("ym:s:goal<goal_id>ecommerce<currency>ConvertedRevenue", "number"),
     ("ym:s:anyGoalConversionRate", "number"),
     ("ym:s:sumGoalReachesAny", "integer"),
     ("ym:s:paramsNumber", "integer"),
