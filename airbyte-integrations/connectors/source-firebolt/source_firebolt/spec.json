@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Firebolt Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "account", "database"],
+    "required": ["client_id", "client_secret", "account", "database", "engine"],
     "additionalProperties": true,
     "properties": {
       "client_id": {
