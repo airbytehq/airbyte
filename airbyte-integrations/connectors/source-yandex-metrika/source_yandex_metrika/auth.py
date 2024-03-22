@@ -1,7 +1,8 @@
-from typing import Mapping, Optional, Union
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from typing import Any
+from typing import Mapping, Union
+
 import requests
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class CredentialsCraftAuthenticator(TokenAuthenticator):
