@@ -244,6 +244,9 @@
         },
         "repo_id": {
           "type": ["null", "integer"]
+        },
+        "user": {
+          "$ref": "user.json"
         }
       }
     },
@@ -264,6 +267,12 @@
         },
         "repo_id": {
           "type": ["null", "integer"]
+        },
+        "repo": {
+          "type": ["null", "object"]
+        },
+        "user": {
+          "$ref": "user.json"
         }
       }
     },

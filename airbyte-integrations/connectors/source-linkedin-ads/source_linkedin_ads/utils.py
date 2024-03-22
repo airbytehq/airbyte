@@ -14,18 +14,11 @@ import pendulum as pdm
 DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
 
 
-def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
+def get_parent_stream_values(record: Mapping[str, Any], key_value_map: Mapping[str, str]) -> Mapping[str, Any]:
     """
-    Outputs the Dict with key:value slices for the stream.
-    :: EXAMPLE:
-        Input:
-            records = [{dict}, {dict}, ...],
-            key_value_map = {<slice_key_name>: <key inside record>}
-
-        Output:
-            {
-                <slice_key_name> : records.<key inside record>.value,
-            }
+    :param record: Mapping[str, Any]
+    :param key_value_map: Mapping[str, str] {<slice_key_name>: <key inside record>}
+    :return: Mapping[str, str] {<slice_key_name> : records.<key inside record>.value}
     """
     result = {}
     for key in key_value_map:

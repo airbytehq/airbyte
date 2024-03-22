@@ -11,12 +11,11 @@ from .conftest import parametrized_configs
 
 
 @parametrized_configs
-def test_streams(conversations_list, join_channels, config, is_valid):
+def test_streams(conversations_list, config, is_valid):
     source = SourceSlack()
     if is_valid:
         streams = source.streams(config)
         assert len(streams) == 5
-        assert join_channels.call_count == 2
     else:
         with pytest.raises(Exception) as exc_info:
             _ = source.streams(config)

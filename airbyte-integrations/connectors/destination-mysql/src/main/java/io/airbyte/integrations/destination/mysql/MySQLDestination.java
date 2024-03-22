@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -125,6 +126,11 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    throw new UnsupportedOperationException("mysql does not yet support DV2");
   }
 
   public static void main(final String[] args) throws Exception {

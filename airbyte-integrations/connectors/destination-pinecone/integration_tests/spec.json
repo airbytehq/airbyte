@@ -1,7 +1,8 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/pinecone",
   "connectionSpecification": {
-    "title": "Pinecone Destination Config",
+    "title": "Destination Config",
+    "description": "The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,\nas well as to provide type safety for the configuration passed to the destination.\n\nThe configuration model is composed of four parts:\n* Processing configuration\n* Embedding configuration\n* Indexing configuration\n* Advanced configuration\n\nProcessing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.",
     "type": "object",
     "properties": {
       "indexing": {
@@ -323,13 +324,21 @@
         },
         "required": ["chunk_size"],
         "group": "processing"
+      },
+      "omit_raw_text": {
+        "title": "Do not store raw text",
+        "description": "Do not store the text that gets embedded along with the vector and the metadata in the destination. If set to true, only the vector and the metadata will be stored - in this case raw text for LLM use cases needs to be retrieved from another source.",
+        "default": false,
+        "group": "advanced",
+        "type": "boolean"
       }
     },
-    "required": ["indexing", "embedding", "processing"],
+    "required": ["embedding", "processing", "indexing"],
     "groups": [
       { "id": "processing", "title": "Processing" },
       { "id": "embedding", "title": "Embedding" },
-      { "id": "indexing", "title": "Indexing" }
+      { "id": "indexing", "title": "Indexing" },
+      { "id": "advanced", "title": "Advanced" }
     ]
   },
   "supportsIncremental": true,

@@ -6,32 +6,39 @@ package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Singleton of destination config for easy lookup of values.
  */
-@Singleton
 public class DestinationConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationConfig.class);
 
   private static DestinationConfig config;
 
+  // whether the destination fully supports Destinations V2
+  private boolean isV2Destination;
+
   @VisibleForTesting
   protected JsonNode root;
 
   private DestinationConfig() {}
 
+  @VisibleForTesting
   public static void initialize(final JsonNode root) {
+    initialize(root, false);
+  }
+
+  public static void initialize(final JsonNode root, final boolean isV2Destination) {
     if (config == null) {
       if (root == null) {
         throw new IllegalArgumentException("Cannot create DestinationConfig from null.");
       }
       config = new DestinationConfig();
       config.root = root;
+      config.isV2Destination = isV2Destination;
     } else {
       LOGGER.warn("Singleton was already initialized.");
     }
@@ -42,6 +49,11 @@ public class DestinationConfig {
       throw new IllegalStateException("Singleton not initialized.");
     }
     return config;
+  }
+
+  @VisibleForTesting
+  public static void clearInstance() {
+    config = null;
   }
 
   public JsonNode getNodeValue(final String key) {
@@ -63,13 +75,17 @@ public class DestinationConfig {
   }
 
   // boolean value, otherwise false
-  public Boolean getBooleanValue(final String key) {
+  public boolean getBooleanValue(final String key) {
     final JsonNode node = getNodeValue(key);
     if (node == null || !node.isBoolean()) {
       LOGGER.debug("Cannot retrieve boolean value for node with key {}", key);
       return false;
     }
     return node.asBoolean();
+  }
+
+  public boolean getIsV2Destination() {
+    return isV2Destination;
   }
 
 }

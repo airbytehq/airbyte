@@ -75,4 +75,9 @@ public enum AirbyteProtocolType implements AirbyteType {
     return UNKNOWN;
   }
 
+  @Override
+  public String getTypeName() {
+    return this.name();
+  }
+
 }

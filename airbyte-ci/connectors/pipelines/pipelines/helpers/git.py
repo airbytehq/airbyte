@@ -3,12 +3,13 @@
 #
 
 import functools
-from typing import List, Set
+from typing import Set
 
 import git
-from dagger import Connection
-from github import PullRequest
-from pipelines.helpers.utils import AIRBYTE_REPO_URL, DAGGER_CONFIG, DIFF_FILTER
+from dagger import Connection, SessionError
+from pipelines.consts import CIContext
+from pipelines.dagger.containers.git import checked_out_git_container
+from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
 
 
 def get_current_git_revision() -> str:  # noqa D103
@@ -20,42 +21,27 @@ def get_current_git_branch() -> str:  # noqa D103
 
 
 async def get_modified_files_in_branch_remote(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master"
+    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master", retries: int = 3
 ) -> Set[str]:
     """Use git diff to spot the modified files on the remote branch."""
-    async with Connection(DAGGER_CONFIG) as dagger_client:
-        modified_files = await (
-            dagger_client.container()
-            .from_("alpine/git:latest")
-            .with_workdir("/repo")
-            .with_exec(["init"])
-            .with_env_variable("CACHEBUSTER", current_git_revision)
-            .with_exec(
-                [
-                    "remote",
-                    "add",
-                    "--fetch",
-                    "--track",
-                    diffed_branch.split("/")[-1],
-                    "--track",
-                    current_git_branch,
-                    "origin",
-                    AIRBYTE_REPO_URL,
-                ]
-            )
-            .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
-            .with_exec(["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"])
-            .stdout()
-        )
+    try:
+        async with Connection(DAGGER_CONFIG) as dagger_client:
+            container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision, diffed_branch)
+            modified_files = await container.with_exec(
+                ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_branch}"]
+            ).stdout()
+    except SessionError:
+        if retries > 0:
+            return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch, retries - 1)
+        else:
+            raise
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
-    """Use git diff and git status to spot the modified files on the local branch."""
+def get_modified_files_local(current_git_revision: str, diffed: str = "master") -> Set[str]:
+    """Use git diff and git status to spot the modified files in the local repo."""
     airbyte_repo = git.Repo()
-    modified_files = airbyte_repo.git.diff(
-        f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"
-    ).split("\n")
+    modified_files = airbyte_repo.git.diff(f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed}...{current_git_revision}").split("\n")
     status_output = airbyte_repo.git.status("--porcelain")
     for not_committed_change in status_output.split("\n"):
         file_path = not_committed_change.strip().split(" ")[-1]
@@ -69,34 +55,21 @@ async def get_modified_files_in_branch(
 ) -> Set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
-        return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
+        return get_modified_files_local(current_git_revision, diffed_branch)
     else:
         return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch)
 
 
-async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
-    async with Connection(DAGGER_CONFIG) as dagger_client:
-        modified_files = await (
-            dagger_client.container()
-            .from_("alpine/git:latest")
-            .with_workdir("/repo")
-            .with_exec(["init"])
-            .with_env_variable("CACHEBUSTER", current_git_revision)
-            .with_exec(
-                [
-                    "remote",
-                    "add",
-                    "--fetch",
-                    "--track",
-                    current_git_branch,
-                    "origin",
-                    AIRBYTE_REPO_URL,
-                ]
-            )
-            .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
-            .with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"])
-            .stdout()
-        )
+async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str, retries: int = 3) -> Set[str]:
+    try:
+        async with Connection(DAGGER_CONFIG) as dagger_client:
+            container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision)
+            modified_files = await container.with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"]).stdout()
+    except SessionError:
+        if retries > 0:
+            return await get_modified_files_in_commit_remote(current_git_branch, current_git_revision, retries - 1)
+        else:
+            raise
     return set(modified_files.split("\n"))
 
 
@@ -113,11 +86,6 @@ async def get_modified_files_in_commit(current_git_branch: str, current_git_revi
         return await get_modified_files_in_commit_remote(current_git_branch, current_git_revision)
 
 
-def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
-    """Retrieve the list of modified files in a pull request."""
-    return [f.filename for f in pull_request.get_files()]
-
-
 @functools.cache
 def get_git_repo() -> git.Repo:
     """Retrieve the git repo."""
@@ -127,4 +95,19 @@ def get_git_repo() -> git.Repo:
 @functools.cache
 def get_git_repo_path() -> str:
     """Retrieve the git repo path."""
-    return get_git_repo().working_tree_dir
+    return str(get_git_repo().working_tree_dir)
+
+
+async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> Set[str]:
+    """Get the list of modified files in the current git branch.
+    If the current branch is master, it will return the list of modified files in the head commit.
+    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
+    Pipelines like "publish on merge" are triggered on each new commit on master.
+
+    If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
+    If the current branch is not master, it will return the list of modified files in the current branch.
+    This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
+    """
+    if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
+        return await get_modified_files_in_commit(git_branch, git_revision, is_local)
+    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)

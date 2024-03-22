@@ -7,7 +7,7 @@
     },
     "message": {
       "$resolver": "pattern",
-      "pattern": "%level %C{1.}(%M):%L %m",
+      "pattern": "%level %thread %C{1.}(%M):%L %m",
       "stringified": true
     },
     "stack_trace": {

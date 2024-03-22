@@ -1,4 +1,0 @@
-# This file is an example file with API HTTP headers used to pass to the octavia CLI API client.
-# It can be helpful to reach out to secured airbyte instances (ex. proxy auth server)
-headers:
-  Content-Type: application/json

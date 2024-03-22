@@ -1,4 +1,15 @@
+---
+products: oss-*
+---
+
 # Upgrading Airbyte
+
+:::info
+
+If you run on [Airbyte Cloud](https://cloud.airbyte.com/signup) you'll always run on the newest
+Airbyte version automatically. This documentation only applies to users deploying our self-managed
+version.
+:::
 
 ## Overview
 
@@ -73,91 +84,22 @@ This will completely reset your Airbyte deployment back to scratch and you will 
 
 :::
 
-## Upgrading on K8s (0.27.0-alpha and above)
+## Upgrading on K8s using Helm
 
-If you are upgrading from (i.e. your current version of Airbyte is) Airbyte version **0.27.0-alpha or above** on Kubernetes :
+The instructions below are for users using custom deployment and have a `values.yaml`. If you're not using a `values.yaml` to deploy Airbyte using Helm can jump directly to step `4.`.
 
-1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
-
+1. Access [Airbyte ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte) and select the version you want to upgrade.
+2. You can click in `Default Values` and compare the value file between the new version and version you're running. You can run `helm list -n <NAMESPACE>` to check the CHART version you're using.
+3. Update your `values.yaml` file if necessary.
+4. Upgrade the Helm app running:
    ```bash
-   kubectl delete deployments airbyte-db airbyte-worker airbyte-server airbyte-temporal airbyte-webapp --namespace=<yournamespace or default>
+   helm upgrade --install <RELEASE-NAME> airbyte/airbyte --values <VALUE.YAML> --version <HELM-APP-VERSION>
    ```
 
-2. Upgrade the kube deployment to new version.
-
-   i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
-
-3. Bring Airbyte back online.
-
+   After 2-5 minutes, Helm will print a message showing how to port-forward Airbyte. This may take longer on Kubernetes clusters with slow internet connections. In general the message is the following:
    ```bash
-   kubectl apply -k kube/overlays/stable
-   ```
-
-   After 2-5 minutes, `kubectl get pods | grep airbyte` should show `Running` as the status for all the core Airbyte pods. This may take longer on Kubernetes clusters with slow internet connections.
-
-   Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` to allow access to the UI/API.
-
-## Upgrading on K8s (0.26.4-alpha and below)
-
-If you are upgrading from (i.e. your current version of Airbyte is) Airbyte version **before 0.27.0-alpha** on Kubernetes we **do not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
-
-1. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
-
-   _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as a secret._
-
-2. Back to the terminal, migrate the local archive to the new version using the Migration App (packaged in a docker container).
-
-   ```bash
-   docker run --rm -v <path to directory containing downloaded airbyte_archive.tar.gz>:/config airbyte/migration:<version you are upgrading to> --\
-     --input /config/airbyte_archive.tar.gz\
-     --output <path to where migrated archive will be written (should end in .tar.gz)>\
-     [ --target-version <version you are migrating to or empty for latest> ]
-   ```
-
-   Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
-
-   ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.50.34 --\
-   --input /config/airbyte_archive.tar.gz\
-   --output /config/airbyte_archive_migrated.tar.gz
-   ```
-
-3. Turn off Airbyte fully and **(see warning)** delete the existing Airbyte Kubernetes volumes.
-
-   _WARNING: Make sure you have already exported your data \(step 1\). This command is going to delete your data in Kubernetes, you may lose your airbyte configurations!_
-
-   This is where all airbyte configurations are saved. Those configuration files need to be upgraded and restored with the proper version in the following steps.
-
-   ```bash
-   # Careful, this is deleting data!
-   kubectl delete -k kube/overlays/stable
-   ```
-
-4. Follow **Step 2** in the `Upgrading on Docker` section to check out the most recent version of Airbyte. Although it is possible to migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
-5. Bring Airbyte back up.
-
-   ```bash
-   kubectl apply -k kube/overlays/stable
-   ```
-
-6. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab and click on Import. Upload your migrated archive.
-
-If you prefer to import and export your data via API instead the UI, follow these instructions:
-
-1. Instead of Step 3 above use the following curl command to export the archive:
-
-   ```bash
-   curl -H "Content-Type: application/json" -X POST localhost:8000/api/v1/deployment/export --output /tmp/airbyte_archive.tar.gz
-   ```
-
-2. Instead of Step X above user the following curl command to import the migrated archive:
-
-   ```bash
-   curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @<path to arhive>
-   ```
-
-Here is an example of what this request might look like assuming that the migrated archive is called `airbyte_archive_migrated.tar.gz` and is in the `/tmp` directory.
-
-```bash
-curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
-```
+   export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=webapp" -o jsonpath="{.items[0].metadata.name}")          
+   export CONTAINER_PORT=$(kubectl get pod  $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")          
+   echo "Visit http://127.0.0.1:8080 to use your application"
+   kubectl  port-forward $POD_NAME 8080:$CONTAINER_PORT
+  ```

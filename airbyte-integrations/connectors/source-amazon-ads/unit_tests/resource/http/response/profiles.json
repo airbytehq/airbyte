@@ -1,0 +1,16 @@
+[
+  {
+    "profileId": 1,
+    "countryCode": "CA",
+    "currencyCode": "CAD",
+    "dailyBudget": 0.0,
+    "timezone": "America/Los_Angeles",
+    "accountInfo": {
+      "marketplaceStringId": "A2EUQ1WTGCTBG2",
+      "id": "A3LUQZ2NBMFGO4",
+      "type": "seller",
+      "name": "string",
+      "validPaymentMethod": true
+    }
+  }
+]

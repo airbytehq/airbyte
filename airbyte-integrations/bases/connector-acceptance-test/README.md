@@ -1,7 +1,7 @@
 # Connector Acceptance Tests (CAT)
 This package gathers multiple test suites to assess the sanity of any Airbyte connector.
 It is shipped as a [pytest](https://docs.pytest.org/en/7.1.x/) plugin and relies on pytest to discover, configure and execute tests.
-Test-specific documentation can be found [here](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/)).
+Test-specific documentation can be found [here](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/).
 
 ## Configuration
 The acceptance tests are configured via the `acceptance-test-config.yml` YAML file, which is passed to the plugin via the `--acceptance-test-config` option.
@@ -93,7 +93,7 @@ These iterations are more conveniently achieved by remaining in the current dire
 8. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
 9. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
 10. Open a PR on our GitHub repository
-11. This [Github action workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/cat-tests.yml) will be triggered an run the unit tests on your branch.
+11. This [GitHub action workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/cat-tests.yml) will be triggered and run the unit tests on your branch.
 12. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test run-tests=false` in a GitHub comment
 13. Merge your PR
 

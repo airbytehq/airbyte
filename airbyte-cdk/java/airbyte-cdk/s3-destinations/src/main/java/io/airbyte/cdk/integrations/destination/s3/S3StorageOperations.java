@@ -32,6 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +68,7 @@ public class S3StorageOperations extends BlobStorageOperations {
   private static final String FORMAT_VARIABLE_EPOCH = "${EPOCH}";
   private static final String FORMAT_VARIABLE_UUID = "${UUID}";
   private static final String GZ_FILE_EXTENSION = "gz";
+  private final ConcurrentMap<String, AtomicInteger> partCounts = new ConcurrentHashMap<>();
 
   private final NamingConventionTransformer nameTransformer;
   protected final S3DestinationConfig s3Config;
@@ -116,7 +120,6 @@ public class S3StorageOperations extends BlobStorageOperations {
   @Override
   public String uploadRecordsToBucket(final SerializableBuffer recordsData,
                                       final String namespace,
-                                      final String streamName,
                                       final String objectPath) {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
@@ -156,7 +159,7 @@ public class S3StorageOperations extends BlobStorageOperations {
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String partId = UUID.randomUUID().toString();
+    final String partId = getPartId(objectPath);
     final String fileExtension = getExtension(recordsData.getFilename());
     final String fullObjectKey;
     if (StringUtils.isNotBlank(s3Config.getFileNamePattern())) {
@@ -213,6 +216,41 @@ public class S3StorageOperations extends BlobStorageOperations {
     final String newFilename = getFilename(fullObjectKey);
     LOGGER.info("Uploaded buffer file to storage: {} -> {} (filename: {})", recordsData.getFilename(), fullObjectKey, newFilename);
     return newFilename;
+  }
+
+  /**
+   * Users want deterministic file names (e.g. the first file part is really foo-0.csv). Using UUIDs
+   * (previous approach) doesn't allow that. However, using pure integers could lead to a collision
+   * with an upload from another thread. We also want to be able to continue the same offset between
+   * attempts. So, we'll count up the existing files in the directory and use that as a lazy-offset,
+   * assuming airbyte manages the dir and has similar naming conventions. `getPartId` will be
+   * 0-indexed.
+   */
+  @VisibleForTesting
+  synchronized String getPartId(String objectPath) {
+    final AtomicInteger partCount = partCounts.computeIfAbsent(objectPath, k -> new AtomicInteger(0));
+
+    if (partCount.get() == 0) {
+      ObjectListing objects;
+      int objectCount = 0;
+
+      final String bucket = s3Config.getBucketName();
+      objects = s3Client.listObjects(bucket, objectPath);
+
+      if (objects != null) {
+        objectCount = objectCount + objects.getObjectSummaries().size();
+        while (objects != null && objects.getNextMarker() != null) {
+          objects = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucket).withPrefix(objectPath).withMarker(objects.getNextMarker()));
+          if (objects != null) {
+            objectCount = objectCount + objects.getObjectSummaries().size();
+          }
+        }
+      }
+
+      partCount.set(objectCount);
+    }
+
+    return Integer.toString(partCount.getAndIncrement());
   }
 
   @VisibleForTesting

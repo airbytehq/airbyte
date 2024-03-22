@@ -28,7 +28,7 @@ async def get_container_from_id(dagger_client: dagger.Client, container_id: str)
         dagger_client (dagger.Client): The dagger client to use to import the connector image
     """
     try:
-        return await dagger_client.container(dagger.ContainerID(container_id))
+        return await dagger_client.container(id=dagger.ContainerID(container_id))
     except dagger.DaggerError as e:
         pytest.exit(f"Failed to load connector container: {e}")
 
@@ -244,11 +244,11 @@ class ConnectorRunner:
         if not enable_caching:
             container = container.with_env_variable("CAT_CACHEBUSTER", str(uuid.uuid4()))
         if config:
-            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, json.dumps(dict(config)))
+            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)))
         if state:
-            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, json.dumps(state))
+            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(state))
         if catalog:
-            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, catalog.json())
+            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=catalog.json())
         try:
             output = await self._read_output_from_stdout(airbyte_command, container)
         except dagger.QueryError as e:

@@ -15,6 +15,10 @@ data:
   icon: prestashop.svg
   license: MIT
   name: PrestaShop
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-prestashop
   registries:
     cloud:
       enabled: true
@@ -23,6 +27,6 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

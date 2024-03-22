@@ -6,8 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import FrozenSet, Set, Union
 
-from anyio import Path
-from connector_ops.utils import Connector
+from connector_ops.utils import Connector  # type: ignore
 from pipelines import main_logger
 from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS, METADATA_FILE_NAME
 
@@ -64,7 +63,7 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
 
 @dataclass(frozen=True)
 class ConnectorWithModifiedFiles(Connector):
-    modified_files: Set[Path] = field(default_factory=frozenset)
+    modified_files: FrozenSet[Path] = field(default_factory=frozenset)
 
     @property
     def has_metadata_change(self) -> bool:

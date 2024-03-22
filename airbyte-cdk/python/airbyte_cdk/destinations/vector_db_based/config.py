@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
+import dpath.util
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
 
 
@@ -217,3 +219,57 @@ class CohereEmbeddingConfigModel(BaseModel):
         title = "Cohere"
         description = "Use the Cohere API to embed text."
         discriminator = "mode"
+
+
+class VectorDBConfigModel(BaseModel):
+    """
+    The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,
+    as well as to provide type safety for the configuration passed to the destination.
+
+    The configuration model is composed of four parts:
+    * Processing configuration
+    * Embedding configuration
+    * Indexing configuration
+    * Advanced configuration
+
+    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.
+    """
+
+    embedding: Union[
+        OpenAIEmbeddingConfigModel,
+        CohereEmbeddingConfigModel,
+        FakeEmbeddingConfigModel,
+        AzureOpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
+    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
+    processing: ProcessingConfigModel
+    omit_raw_text: bool = Field(
+        default=False,
+        title="Do not store raw text",
+        group="advanced",
+        description="Do not store the text that gets embedded along with the vector and the metadata in the destination. If set to true, only the vector and the metadata will be stored - in this case raw text for LLM use cases needs to be retrieved from another source.",
+    )
+
+    class Config:
+        title = "Destination Config"
+        schema_extra = {
+            "groups": [
+                {"id": "processing", "title": "Processing"},
+                {"id": "embedding", "title": "Embedding"},
+                {"id": "indexing", "title": "Indexing"},
+                {"id": "advanced", "title": "Advanced"},
+            ]
+        }
+
+    @staticmethod
+    def remove_discriminator(schema: Dict[str, Any]) -> None:
+        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        dpath.util.delete(schema, "properties/**/discriminator")
+
+    @classmethod
+    def schema(cls, by_alias: bool = True, ref_template: str = "") -> Dict[str, Any]:
+        """we're overriding the schema classmethod to enable some post-processing"""
+        schema: Dict[str, Any] = super().schema()
+        schema = resolve_refs(schema)
+        cls.remove_discriminator(schema)
+        return schema

@@ -1,0 +1,44 @@
+{
+  "payload": {
+    "shippingLabels": [
+      {
+        "purchaseOrderNumber": "2JK3S9VCE",
+        "sellingParty": {
+          "partyId": "999US"
+        },
+        "shipFromParty": {
+          "partyId": "ABCD"
+        },
+        "labelFormat": "PNG",
+        "labelData": [
+          {
+            "packageIdentifier": "PKG001",
+            "trackingNumber": "1Z6A34Y60369738804",
+            "shipMethod": "UPS_GR_RES",
+            "shipMethodName": "UPS Ground Residential",
+            "content": "Base 64 encoded string goes here"
+          }
+        ]
+      },
+      {
+        "purchaseOrderNumber": "2JK3S9VD",
+        "sellingParty": {
+          "partyId": "999US"
+        },
+        "shipFromParty": {
+          "partyId": "ABCD"
+        },
+        "labelFormat": "PNG",
+        "labelData": [
+          {
+            "packageIdentifier": "PKG002",
+            "trackingNumber": "1Z6A34Y60369738805",
+            "shipMethod": "UPS_GR_RES",
+            "shipMethodName": "UPS Ground Residential",
+            "content": "Base 64 encoded string goes here"
+          }
+        ]
+      }
+    ]
+  }
+}

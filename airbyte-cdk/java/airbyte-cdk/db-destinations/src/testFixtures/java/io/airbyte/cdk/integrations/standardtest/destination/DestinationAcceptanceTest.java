@@ -35,9 +35,7 @@ import io.airbyte.configoss.OperatorDbt;
 import io.airbyte.configoss.StandardCheckConnectionInput;
 import io.airbyte.configoss.StandardCheckConnectionOutput;
 import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
-import io.airbyte.configoss.StandardDestinationDefinition;
 import io.airbyte.configoss.WorkerDestinationConfig;
-import io.airbyte.configoss.init.LocalDefinitionsProvider;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -65,6 +63,8 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -74,7 +74,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -83,7 +82,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Getter;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -99,7 +97,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DestinationAcceptanceTest {
 
-  protected static final HashSet<String> TEST_SCHEMAS = new HashSet<>();
+  protected HashSet<String> TEST_SCHEMAS;
 
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
@@ -142,20 +140,31 @@ public abstract class DestinationAcceptanceTest {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
   }
 
-  protected static Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
-                                                                                                        final String imageNameWithoutTag) {
-    final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
-    return provider.getDestinationDefinitions().stream()
-        .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
-        .findFirst();
+  private JsonNode readMetadata() {
+    try {
+      return Jsons.jsonNodeFromFile(MoreResources.readResourceAsFile("metadata.yaml"));
+    } catch (IllegalArgumentException | URISyntaxException e) {
+      // Resource is not found.
+      return Jsons.emptyObject();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   protected String getNormalizationImageName() {
-    return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
-        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
-        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
-            + NORMALIZATION_VERSION)
-        .orElse(null);
+    var metadata = readMetadata().get("data");
+    if (metadata == null) {
+      return null;
+    }
+    var normalizationConfig = metadata.get("normalizationConfig");
+    if (normalizationConfig == null) {
+      return null;
+    }
+    var normalizationRepository = normalizationConfig.get("normalizationRepository");
+    if (normalizationRepository == null) {
+      return null;
+    }
+    return normalizationRepository.asText() + ":" + NORMALIZATION_VERSION;
   }
 
   /**
@@ -240,18 +249,24 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected boolean normalizationFromDefinition() {
-    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
-        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository())
-            && Objects.nonNull(standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()))
-        .orElse(false);
+    var metadata = readMetadata().get("data");
+    if (metadata == null) {
+      return false;
+    }
+    var normalizationConfig = metadata.get("normalizationConfig");
+    if (normalizationConfig == null) {
+      return false;
+    }
+    return normalizationConfig.has("normalizationRepository") && normalizationConfig.has("normalizationTag");
   }
 
   protected boolean dbtFromDefinition() {
-    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getSupportsDbt())
-            && standardDestinationDefinition.getSupportsDbt())
-        .orElse(false);
+    var metadata = readMetadata().get("data");
+    if (metadata == null) {
+      return false;
+    }
+    var supportsDbt = metadata.get("supportsDbt");
+    return supportsDbt != null && supportsDbt.asBoolean(false);
   }
 
   protected String getDestinationDefinitionKey() {
@@ -259,10 +274,19 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected String getNormalizationIntegrationType() {
-    return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
-        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
-        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
-        .orElse(null);
+    var metadata = readMetadata().get("data");
+    if (metadata == null) {
+      return null;
+    }
+    var normalizationConfig = metadata.get("normalizationConfig");
+    if (normalizationConfig == null) {
+      return null;
+    }
+    var normalizationIntegrationType = normalizationConfig.get("normalizationIntegrationType");
+    if (normalizationIntegrationType == null) {
+      return null;
+    }
+    return normalizationIntegrationType.asText();
   }
 
   /**
@@ -357,7 +381,7 @@ public abstract class DestinationAcceptanceTest {
     LOGGER.info("localRoot: {}", localRoot);
     testEnv = new TestDestinationEnv(localRoot);
     mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
-
+    TEST_SCHEMAS = new HashSet<>();
     setup(testEnv, TEST_SCHEMAS);
 
     processFactory = new DockerProcessFactory(
@@ -765,7 +789,7 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
-    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, true);
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, supportsNormalization());
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
@@ -796,7 +820,7 @@ public abstract class DestinationAcceptanceTest {
             .withType(Type.STATE)
             .withState(new AirbyteStateMessage().withData(
                 Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
-    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, true);
+    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
 
     final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
     expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
@@ -829,22 +853,11 @@ public abstract class DestinationAcceptanceTest {
     final String defaultSchema = getDefaultSchema(config);
     retrieveRawRecordsAndAssertSameMessages(catalog, expectedMessagesAfterSecondSync,
         defaultSchema);
-    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
-        defaultSchema);
-    assertSameMessages(expectedMessages, actualMessages, true);
-  }
-
-  private String generateBigString(final int addExtraCharacters) {
-    final int length = getMaxRecordValueLimit() + addExtraCharacters;
-    return RANDOM
-        .ints('a', 'z' + 1)
-        .limit(length)
-        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-        .toString();
-  }
-
-  protected int getGenerateBigStringAddExtraCharacters() {
-    return 0;
+    if (normalizationFromDefinition()) {
+      final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
+          defaultSchema);
+      assertSameMessages(expectedMessages, actualMessages, true);
+    }
   }
 
   /**
@@ -1268,6 +1281,13 @@ public abstract class DestinationAcceptanceTest {
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .findFirst()
+        .map(msg -> {
+          // Modify state message to remove destination stats.
+          final AirbyteStateMessage clone = msg.getState();
+          clone.setDestinationStats(null);
+          msg.setState(clone);
+          return msg;
+        })
         .orElseGet(() -> {
           fail("Destination failed to output state");
           return null;
@@ -1316,7 +1336,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.close();
 
-    if (!runNormalization || (runNormalization && supportsInDestinationNormalization())) {
+    if (!runNormalization || (supportsInDestinationNormalization())) {
       return destinationOutput;
     }
 
@@ -1517,7 +1537,7 @@ public abstract class DestinationAcceptanceTest {
       while (true) {
         System.out.println(
             "currentStreamNumber=" + currentStreamNumber + ", currentRecordNumberForStream="
-                + currentRecordNumberForStream + ", " + DateTime.now());
+                + currentRecordNumberForStream + ", " + Instant.now());
         try {
           Thread.sleep(10000);
         } catch (final InterruptedException e) {
@@ -1827,6 +1847,10 @@ public abstract class DestinationAcceptanceTest {
           });
     }
 
+  }
+
+  private boolean supportsNormalization() {
+    return supportsInDestinationNormalization() || normalizationFromDefinition();
   }
 
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {

@@ -20,6 +20,16 @@
     },
     {
       "stream": {
+        "name": "budget",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["Modified Time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "campaigns",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -579,6 +589,166 @@
     {
       "stream": {
         "name": "ad_group_impression_performance_report_monthly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_dimension_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_dimension_performance_report_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_dimension_performance_report_weekly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_dimension_performance_report_monthly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "audience_performance_report_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "audience_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "audience_performance_report_weekly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "audience_performance_report_monthly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "goals_and_funnels_report_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "goals_and_funnels_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "goals_and_funnels_report_weekly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "goals_and_funnels_report_monthly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_search_query_performance_report_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_search_query_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_search_query_performance_report_weekly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_search_query_performance_report_monthly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },

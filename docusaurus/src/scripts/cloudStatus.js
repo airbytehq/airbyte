@@ -9,12 +9,12 @@ if (ExecutionEnvironment.canUseDOM) {
       .then((summary) => {
         const status = summary.page.status;
         const el = document.querySelector(".cloudStatusLink");
-        el.classList.forEach((className) => {
+        el?.classList.forEach((className) => {
           if (className.startsWith("status-")) {
             el.classList.remove(className);
           }
         });
-        el.classList.add(`status-${status.toLowerCase()}`)
+        el?.classList.add(`status-${status.toLowerCase()}`)
       });
   }
 

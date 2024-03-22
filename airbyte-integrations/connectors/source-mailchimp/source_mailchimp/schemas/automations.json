@@ -8,10 +8,14 @@
       "type": ["null", "string"]
     },
     "create_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte-type": "timestamp_with_timezone"
     },
     "start_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "status": {
       "type": ["null", "string"]
@@ -42,7 +46,10 @@
             },
             "conditions": {
               "type": ["null", "array"],
-              "items": {}
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true
+              }
             }
           }
         },
@@ -178,29 +185,6 @@
         },
         "click_rate": {
           "type": ["null", "number"]
-        }
-      }
-    },
-    "_links": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "rel": {
-            "type": ["null", "string"]
-          },
-          "href": {
-            "type": ["null", "string"]
-          },
-          "method": {
-            "type": ["null", "string"]
-          },
-          "targetSchema": {
-            "type": ["null", "string"]
-          },
-          "schema": {
-            "type": ["null", "string"]
-          }
         }
       }
     }

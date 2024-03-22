@@ -1,30 +1,45 @@
 # Asana
 
-This page contains the setup guide and reference information for the Asana source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Asana](https://www.asana.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
-Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
+This connector supports **OAuth** and **Personal Access Tokens**. Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
 
 ## Setup guide
 
-## Step 1: Set up the Asana connector in Airbyte
+<!-- env:cloud -->
 
-### For Airbyte Cloud:
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. Set the name for your source
-4. Enter your `personal_access_token`
-5. Click **Set up source**
+3. Set the name for your source.
+4. Authenticate using OAuth (recommended) or enter your `personal_access_token`.
+5. Click **Set up source**.
 
-### For Airbyte OSS:
+#### Syncing Multiple Projects
+If you have access to multiple projects, Airbyte will sync data related to all projects you have access to. The ability to filter to specific projects is not available at this time.
 
-1. Navigate to the Airbyte Open Source dashboard
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+**For Airbyte Open Source:**
+
+1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. Set the name for your source
-4. Enter your `personal_access_token`
-5. Click **Set up source**
+3. Set the name for your source.
+4. Enter your `personal_access_token`.
+5. Click **Set up source**.
+
+<!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -51,10 +66,6 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 - [Users](https://developers.asana.com/docs/users)
 - [Workspaces](https://developers.asana.com/docs/workspaces)
 
-## Performance considerations
-
-The connector is restricted by normal Asana [requests limitation](https://developers.asana.com/docs/rate-limits).
-
 ## Data type map
 
 | Integration Type         | Airbyte Type |
@@ -65,6 +76,26 @@ The connector is restricted by normal Asana [requests limitation](https://develo
 | `datetime`               | `datetime`   |
 | `array`                  | `array`      |
 | `object`                 | `object`     |
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Asana connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+The connector is restricted by [Asana rate limits](https://developers.asana.com/docs/rate-limits).
+
+### Troubleshooting
+
+* If you encounter access errors while using **OAuth** authentication, please make sure you've followed this [Asana Article](https://developers.asana.com/docs/oauth).
+* Check out common troubleshooting issues for the Asana source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## Changelog
 
@@ -86,3 +117,5 @@ The connector is restricted by normal Asana [requests limitation](https://develo
 | 0.1.2   | 2021-09-24 | [6402](https://github.com/airbytehq/airbyte/pull/6402)   | Fix SAT tests: update schemas and invalid_config.json file        |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add entrypoint and bump version for connector                     |
 | 0.1.0   | 2021-05-25 | [3510](https://github.com/airbytehq/airbyte/pull/3510)   | New Source: Asana                                                 |
+
+</HideInUI>
