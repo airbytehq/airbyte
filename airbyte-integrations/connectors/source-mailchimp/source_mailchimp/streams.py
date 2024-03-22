@@ -357,6 +357,7 @@ class ListMembers(MailChimpListSubStream):
 
     cursor_field = "last_changed"
     data_field = "members"
+    primary_key = "contact_id"
 
 
 class Reports(IncrementalMailChimpStream):
