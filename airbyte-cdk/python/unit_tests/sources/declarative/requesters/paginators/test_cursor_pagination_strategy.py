@@ -17,7 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ("test_static_token", "token", None, "token", None),
         ("test_static_token_with_page_size", "token", None, "token", 5),
         ("test_token_from_config", "{{ config.config_key }}", None, "config_value", None),
-        ("test_token_from_last_record", "{{ last_records[-1].id }}", None, 1, None),
+        ("test_token_from_last_record", "{{ last_record.id }}", None, 1, None),
         ("test_token_from_response", "{{ response._metadata.content }}", None, "content_value", None),
         ("test_token_from_parameters", "{{ parameters.key }}", None, "value", None),
         ("test_token_not_found", "{{ response.invalid_key }}", None, None, None),
@@ -57,8 +57,8 @@ def test_cursor_pagination_strategy(test_name, template_string, stop_condition, 
     response.headers = {"has_more": True, "next": "ready_to_go", "link": link_str}
     response_body = {"_metadata": {"content": "content_value"}, "accounts": [], "end": 99, "total": 200, "characters": {}}
     response._content = json.dumps(response_body).encode("utf-8")
-    last_records = [{"id": 0, "more_records": True}, {"id": 1, "more_records": True}]
+    last_record = {"id": 1, "more_records": True}
 
-    token = strategy.next_page_token(response, last_records)
+    token = strategy.next_page_token(response, 1, last_record)
     assert expected_token == token
     assert page_size == strategy.get_page_size()

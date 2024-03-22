@@ -92,10 +92,10 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.stream_slices() == stream_slices
 
     assert retriever._last_response is None
-    assert retriever._records_from_last_response == []
-    assert retriever._parse_response(response, stream_state={}, records_schema={}) == records
+    assert retriever._last_record is None
+    assert list(retriever._parse_response(response, stream_state={}, records_schema={})) == records
     assert retriever._last_response == response
-    assert retriever._records_from_last_response == records
+    assert retriever._last_page_size == 2
 
     [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
@@ -135,46 +135,6 @@ def test_simple_retriever_with_request_response_logs(mock_http_stream):
     assert isinstance(actual_messages[1], AirbyteLogMessage)
     assert actual_messages[2] == records[0]
     assert actual_messages[3] == records[1]
-
-
-@patch.object(SimpleRetriever, "_read_pages", return_value=iter([]))
-def test_simple_retriever_with_request_response_log_last_records(mock_http_stream):
-    requester = MagicMock()
-    paginator = MagicMock()
-    record_selector = MagicMock()
-    record_selector.select_records.return_value = request_response_logs
-    response = requests.Response()
-    response.status_code = 200
-    stream_slicer = DatetimeBasedCursor(
-        start_datetime="",
-        end_datetime="",
-        step="P1D",
-        cursor_field="id",
-        datetime_format="",
-        cursor_granularity="P1D",
-        config={},
-        parameters={},
-    )
-
-    retriever = SimpleRetriever(
-        name="stream_name",
-        primary_key=primary_key,
-        requester=requester,
-        paginator=paginator,
-        record_selector=record_selector,
-        stream_slicer=stream_slicer,
-        parameters={},
-        config={},
-    )
-
-    assert retriever._last_response is None
-    assert retriever._records_from_last_response == []
-    assert retriever._parse_response(response, stream_state={}, records_schema={}) == request_response_logs
-    assert retriever._last_response == response
-    assert retriever._records_from_last_response == request_response_logs
-
-    [r for r in retriever.read_records(SyncMode.full_refresh)]
-    paginator.reset.assert_called()
 
 
 @pytest.mark.parametrize(

@@ -43,9 +43,9 @@ class PageIncrement(PaginationStrategy):
             return self._page
         return None
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
         # Stop paginating when there are fewer records than the page size or the current page has no records
-        if (self._page_size and len(last_records) < self._page_size) or len(last_records) == 0:
+        if (self._page_size and last_page_size < self._page_size) or last_page_size == 0:
             return None
         else:
             self._page += 1

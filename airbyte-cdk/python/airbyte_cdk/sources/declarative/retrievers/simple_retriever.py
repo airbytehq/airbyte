@@ -65,7 +65,7 @@ class SimpleRetriever(Retriever):
         self._paginator = self.paginator or NoPagination(parameters=parameters)
         self._last_response: Optional[requests.Response] = None
         self._last_page_size: int = 0
-        self._last_record: Mapping[str, Any] = {}
+        self._last_record: Optional[Record] = None
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
 

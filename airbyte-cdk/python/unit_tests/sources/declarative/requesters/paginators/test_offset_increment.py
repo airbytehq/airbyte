@@ -11,16 +11,16 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_inc
 
 
 @pytest.mark.parametrize(
-    "page_size, parameters, last_records, expected_next_page_token, expected_offset",
+    "page_size, parameters, last_page_size, last_record, expected_next_page_token, expected_offset",
     [
-        pytest.param("2", {}, [{"id": 0}, {"id": 1}], 2, 2, id="test_same_page_size"),
-        pytest.param(2, {}, [{"id": 0}, {"id": 1}], 2, 2, id="test_same_page_size"),
-        pytest.param("{{ parameters['page_size'] }}", {"page_size": 3}, [{"id": 0}, {"id": 1}], None, 0, id="test_larger_page_size"),
-        pytest.param(None, {}, [], None, 0, id="test_stop_if_no_records"),
-        pytest.param("{{ response['page_metadata']['limit'] }}", {}, [{"id": 0}, {"id": 1}], None, 0, id="test_page_size_from_response"),
+        pytest.param("2", {}, 2, {"id": 1}, 2, 2, id="test_same_page_size"),
+        pytest.param(2, {}, 2, {"id": 1}, 2, 2, id="test_same_page_size"),
+        pytest.param("{{ parameters['page_size'] }}", {"page_size": 3}, 2, {"id": 1}, None, 0, id="test_larger_page_size"),
+        pytest.param(None, {}, 0, [], None, 0, id="test_stop_if_no_records"),
+        pytest.param("{{ response['page_metadata']['limit'] }}", {}, 2, {"id": 1}, None, 0, id="test_page_size_from_response"),
     ],
 )
-def test_offset_increment_paginator_strategy(page_size, parameters, last_records, expected_next_page_token, expected_offset):
+def test_offset_increment_paginator_strategy(page_size, parameters, last_page_size, last_record, expected_next_page_token, expected_offset):
     paginator_strategy = OffsetIncrement(page_size=page_size, parameters=parameters, config={})
     assert paginator_strategy._offset == 0
 
@@ -30,7 +30,7 @@ def test_offset_increment_paginator_strategy(page_size, parameters, last_records
     response_body = {"next": "https://airbyte.io/next_url", "page_metadata": {"limit": 5}}
     response._content = json.dumps(response_body).encode("utf-8")
 
-    next_page_token = paginator_strategy.next_page_token(response, last_records)
+    next_page_token = paginator_strategy.next_page_token(response, last_page_size, last_record)
     assert expected_next_page_token == next_page_token
     assert expected_offset == paginator_strategy._offset
 
