@@ -159,12 +159,12 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     url_base = "https://r.applovin.com/"
     report_type = ""
     cursor_field = "day"
-    page_size = 150000
+    page_size = 200000
 
     def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
         self.config = config
         self._state = {}
-        self.offset = 100000
+        self.offset = 0
         self.counter = 0
         super().__init__(
             authenticator=authenticator,
@@ -179,8 +179,6 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         self._state[self.cursor_field] = value[self.cursor_field]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-        print("Response count " + str(response.json()["count"]))
         response_count = response.json()["count"]
         if response_count < self.page_size:
             return None
