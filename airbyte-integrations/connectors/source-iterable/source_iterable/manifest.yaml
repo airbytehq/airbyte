@@ -44,15 +44,6 @@ streams:
             type: RequestOption
             field_name: Api-Key
             inject_into: header
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -83,15 +74,6 @@ streams:
             type: RequestOption
             field_name: Api-Key
             inject_into: header
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -168,15 +150,6 @@ streams:
             type: RequestOption
             field_name: Api-Key
             inject_into: header
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -207,15 +180,6 @@ streams:
             type: RequestOption
             field_name: Api-Key
             inject_into: header
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -246,15 +210,6 @@ streams:
             type: RequestOption
             field_name: Api-Key
             inject_into: header
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -285,15 +240,6 @@ streams:
             type: RequestOption
             field_name: Api-Key
             inject_into: header
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
         request_headers: {}
         request_body_json: {}
         request_parameters: {}
@@ -323,15 +269,6 @@ streams:
             type: RequestOption
             field_name: Api-Key
             inject_into: header
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
         request_headers: {}
         request_body_json: {}
         request_parameters:
@@ -388,15 +325,6 @@ streams:
             type: RequestOption
             field_name: Api-Key
             inject_into: header
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 401
         request_body_json: {}
       record_selector:
         type: RecordSelector

@@ -10,9 +10,18 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_iterable.source import SourceIterable
-from source_iterable.streams import Campaigns, CampaignsMetrics, Templates, IterableStream, IterableExportStreamAdjustableRange, IterableExportEventsStreamAdjustableRange, IterableExportStreamRanged
+from source_iterable.streams import (
+    Campaigns,
+    CampaignsMetrics,
+    IterableExportEventsStreamAdjustableRange,
+    IterableExportStreamAdjustableRange,
+    IterableExportStreamRanged,
+    IterableStream,
+    Templates,
+)
 from source_iterable.utils import dateutil_parse
 
 
@@ -33,29 +42,41 @@ def test_stream_stops_on_401(config):
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={}, status=401)
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=2", json={}, status=401)
     slices = 0
-    for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        slices += 1
-        _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
-    assert len(responses.calls) == 2
-    assert slices >= 1
+    with pytest.raises(ReadException):
+        for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            slices += 1
+            _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
 
 @responses.activate
-def test_listuser_stream(config):
+def test_listuser_stream_keep_working_on_500(config):
     stream = next(filter(lambda x: x.name == "list_users", SourceIterable().streams(config=config)))
-    responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1000}, {"id": 2000}]})
+
+    msg_error = "An error occurred. Please try again later. If problem persists, please contact your CSM"
+    generic_error1 = {"msg": msg_error, "code": "GenericError"}
+    generic_error2 = {"msg": msg_error, "code": "Generic Error"}
+
+    responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1000}, {"id": 2000}, {"id": 3000}]})
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1000", json=generic_error1, status=500)
     responses.get("https://api.iterable.com/api/lists/getUsers?listId=1000", body="one@d1.com\ntwo@d1.com\nthree@d1.com")
-    responses.get("https://api.iterable.com/api/lists/getUsers?listId=2000", body="one@d2.com\ntwo@d2.com\nthree@d2.com")
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=2000", body="one@d1.com\ntwo@d1.com\nthree@d1.com")
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=3000", json=generic_error2, status=500)
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=3000", body="one@d2.com\ntwo@d2.com\nthree@d2.com")
+
     expected_records = [
         {"email": "one@d1.com", "listId": 1000},
         {"email": "two@d1.com", "listId": 1000},
         {"email": "three@d1.com", "listId": 1000},
-        {"email": "one@d2.com", "listId": 2000},
-        {"email": "two@d2.com", "listId": 2000},
-        {"email": "three@d2.com", "listId": 2000},
+        {"email": "one@d1.com", "listId": 2000},
+        {"email": "two@d1.com", "listId": 2000},
+        {"email": "three@d1.com", "listId": 2000},
+        {"email": "one@d2.com", "listId": 3000},
+        {"email": "two@d2.com", "listId": 3000},
+        {"email": "three@d2.com", "listId": 3000},
     ]
     stream_slices = [
         StreamSlice(partition={"list_id": 1000}, cursor_slice={}),
-        StreamSlice(partition={"list_id": 2000}, cursor_slice={})
+        StreamSlice(partition={"list_id": 2000}, cursor_slice={}),
+        StreamSlice(partition={"list_id": 3000}, cursor_slice={}),
     ]
     records = []
     for stream_slice in stream_slices:
