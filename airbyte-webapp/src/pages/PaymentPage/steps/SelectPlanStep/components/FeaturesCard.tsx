@@ -130,12 +130,14 @@ const FeaturesCard: React.FC<IProps> = ({
         <FeatureBodyRow borderBottom="1px solid #E5E7EB" key={getKeyProp()}>
           <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
           <FeatureBodyCell>
-            {item?.professional?.itemName === "No. of concurrent Jobs" && jobs !== null
+            {item?.professional?.itemName === "No. of concurrent Jobs" ||
+            (item?.professional?.itemName === "并行运行的数据接口数" && jobs !== null)
               ? jobs
               : item.professional?.itemScopeLang}
           </FeatureBodyCell>
           <FeatureBodyCell>
-            {item?.enterprise?.itemName === "No. of concurrent Jobs" && jobs !== null
+            {item?.enterprise?.itemName === "No. of concurrent Jobs" ||
+            (item?.professional?.itemName === "并行运行的数据接口数" && jobs !== null)
               ? jobs
               : item.enterprise?.itemScopeLang}
           </FeatureBodyCell>
