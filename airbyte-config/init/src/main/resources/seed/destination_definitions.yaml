@@ -11,6 +11,7 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: alpha
+  public: false
 - name: Amazon SQS
   destinationDefinitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
   dockerRepository: airbyte/destination-amazon-sqs
@@ -18,12 +19,14 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/amazon-sqs
   icon: amazonsqs.svg
   releaseStage: alpha
+  public: false
 - name: AWS Datalake
   destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
   dockerRepository: airbyte/destination-aws-datalake
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/aws-datalake
   releaseStage: alpha
+  public: false
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
@@ -37,6 +40,7 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: generally_available
+  public: false
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
@@ -50,6 +54,7 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: beta
+  public: false
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
   dockerRepository: airbyte/destination-cassandra
@@ -57,6 +62,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/cassandra
   icon: cassandra.svg
   releaseStage: alpha
+  public: false
 - name: Chargify (Keen)
   destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
   dockerRepository: airbyte/destination-keen
@@ -64,6 +70,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
   icon: chargify.svg
   releaseStage: alpha
+  public: false
 - name: Clickhouse
   destinationDefinitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
   dockerRepository: airbyte/destination-clickhouse
@@ -77,6 +84,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/databricks
   icon: databricks.svg
   releaseStage: alpha
+  public: false
 - name: DynamoDB
   destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
   dockerRepository: airbyte/destination-dynamodb
@@ -84,12 +92,14 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
   icon: dynamodb.svg
   releaseStage: alpha
+  public: false
 - name: E2E Testing
   destinationDefinitionId: 2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537
   dockerRepository: airbyte/destination-e2e-test
   dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/e2e-test
   icon: airbyte.svg
+  public: false
 - destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
   name: ElasticSearch
   dockerRepository: airbyte/destination-elasticsearch
@@ -97,12 +107,14 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/elasticsearch
   icon: elasticsearch.svg
   releaseStage: alpha
+  public: false
 - name: Firebolt
   destinationDefinitionId: 18081484-02a5-4662-8dba-b270b582f321
   dockerRepository: airbyte/destination-firebolt
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/firebolt
   releaseStage: alpha
+  public: false
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
@@ -116,6 +128,7 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: beta
+  public: false
 - name: Google Firestore
   destinationDefinitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
   dockerRepository: airbyte/destination-firestore
@@ -123,6 +136,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/firestore
   icon: firestore.svg
   releaseStage: alpha
+  public: false
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
@@ -130,6 +144,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
   icon: googlepubsub.svg
   releaseStage: alpha
+  public: false
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
@@ -137,6 +152,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
   icon: kafka.svg
   releaseStage: alpha
+  public: false
 - name: Kinesis
   destinationDefinitionId: 6d1d66d4-26ab-4602-8d32-f85894b04955
   dockerRepository: airbyte/destination-kinesis
@@ -144,6 +160,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kinesis
   icon: kinesis.svg
   releaseStage: alpha
+  public: false
 - name: Local CSV
   destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
   dockerRepository: airbyte/destination-csv
@@ -151,6 +168,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-csv
   icon: file.svg
   releaseStage: alpha
+  public: false
 - name: Local JSON
   destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816
   dockerRepository: airbyte/destination-local-json
@@ -158,6 +176,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json
   icon: file.svg
   releaseStage: alpha
+  public: false
 - name: MQTT
   destinationDefinitionId: f3802bc4-5406-4752-9e8d-01e504ca8194
   dockerRepository: airbyte/destination-mqtt
@@ -165,6 +184,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mqtt
   icon: mqtt.svg
   releaseStage: alpha
+  public: false
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql
@@ -172,6 +192,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
   icon: mssql.svg
   releaseStage: alpha
+  public: false
 - name: MeiliSearch
   destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
   dockerRepository: airbyte/destination-meilisearch
@@ -179,6 +200,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/meilisearch
   icon: meilisearch.svg
   releaseStage: alpha
+  public: false
 - name: MongoDB
   destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   dockerRepository: airbyte/destination-mongodb
@@ -186,6 +208,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
   icon: mongodb.svg
   releaseStage: alpha
+  public: false
 - name: MySQL
   destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   dockerRepository: yuanrui2014/destination-mysql
@@ -200,6 +223,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/oracle
   icon: oracle.svg
   releaseStage: alpha
+  public: false
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
@@ -207,6 +231,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
   releaseStage: alpha
+  public: false
 - name: Pulsar
   destinationDefinitionId: 2340cbba-358e-11ec-8d3d-0242ac130203
   dockerRepository: airbyte/destination-pulsar
@@ -214,6 +239,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
   icon: pulsar.svg
   releaseStage: alpha
+  public: false
 - name: RabbitMQ
   destinationDefinitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
   dockerRepository: airbyte/destination-rabbitmq
@@ -221,6 +247,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/rabbitmq
   icon: pulsar.svg
   releaseStage: alpha
+  public: false
 - name: Redis
   destinationDefinitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
   dockerRepository: airbyte/destination-redis
@@ -228,6 +255,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redis
   icon: redis.svg
   releaseStage: alpha
+  public: false
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
@@ -241,12 +269,14 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: beta
+  public: false
 - name: Rockset
   destinationDefinitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
   dockerRepository: airbyte/destination-rockset
   dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/rockset
   releaseStage: alpha
+  public: false
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
@@ -260,6 +290,7 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: generally_available
+  public: false
 - name: SFTP-JSON
   destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
   dockerRepository: airbyte/destination-sftp-json
@@ -267,6 +298,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/sftp-json
   icon: sftp.svg
   releaseStage: alpha
+  public: false
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: yuanrui2014/destination-snowflake
@@ -287,6 +319,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mariadb-columnstore
   icon: mariadb.svg
   releaseStage: alpha
+  public: false
 - name: Streamr
   destinationDefinitionId: eebd85cf-60b2-4af6-9ba0-edeca01437b0
   dockerRepository: ghcr.io/devmate-cloud/streamr-airbyte-connectors
@@ -294,6 +327,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/streamr
   icon: streamr.svg
   releaseStage: alpha
+  public: false
 - name: Scylla
   destinationDefinitionId: 3dc6f384-cd6b-4be3-ad16-a41450899bf0
   dockerRepository: airbyte/destination-scylla
@@ -301,6 +335,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/scylla
   icon: scylla.svg
   releaseStage: alpha
+  public: false
 - name: Google Sheets
   destinationDefinitionId: a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a
   dockerRepository: airbyte/destination-google-sheets
@@ -308,6 +343,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/google-sheets
   icon: google-sheets.svg
   releaseStage: alpha
+  public: false
 - name: Local SQLite
   destinationDefinitionId: b76be0a6-27dc-4560-95f6-2623da0bd7b6
   dockerRepository: airbyte/destination-sqlite
@@ -315,6 +351,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-sqlite
   icon: sqlite.svg
   releaseStage: alpha
+  public: false
 - name: TiDB
   destinationDefinitionId: 06ec60c7-7468-45c0-91ac-174f6e1a788b
   dockerRepository: airbyte/destination-tidb
@@ -322,3 +359,4 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/tidb
   icon: tidb.svg
   releaseStage: alpha
+  public: false
