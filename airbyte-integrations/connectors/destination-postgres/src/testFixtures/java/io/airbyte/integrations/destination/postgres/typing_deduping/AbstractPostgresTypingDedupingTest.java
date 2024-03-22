@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -78,7 +79,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
   @Test
   public void testMixedCaseRawTableMigration() throws Exception {
-    streamName = "MixedCaseSchema" + streamName;
+    streamName = "Mixed Case Table" + streamName;
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
@@ -92,8 +93,10 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
     runSync(catalog, messages1, "airbyte/destination-postgres:0.6.3");
-    final List<JsonNode> rawActualRecords = database.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, "_airbyte_raw_"+streamName.toLowerCase())).getSQL());
-    System.out.println(rawActualRecords);
+    // Special case to retrieve raw records pre DV2 using the same logic as actual code.
+    final List<JsonNode> rawActualRecords = database.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, "_airbyte_raw_"+ Names.toAlphanumericAndUnderscore(streamName).toLowerCase())).getSQL());
+    // Just verify the size of raw pre DV2, postgres was lower casing the MixedCaseSchema so above retrieval should give 5 records from sync1
+    assertEquals(5, rawActualRecords.size());
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
     runSync(catalog, messages2);
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
