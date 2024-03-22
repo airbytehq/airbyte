@@ -42,7 +42,6 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
     - language:python
-    - cdk:python
     - cdk:low-code
   ab_internal:
     sl: 200

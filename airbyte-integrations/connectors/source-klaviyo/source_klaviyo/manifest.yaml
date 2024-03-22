@@ -59,7 +59,7 @@ definitions:
       $ref: "#/definitions/selector"
       record_filter:
         type: RecordFilter
-        condition: >-
+        condition: |
           {% set starting_point = stream_state.get('updated', config.get('start_date')) %}
           {{ starting_point and record.get('attributes', {}).get('updated') > starting_point or not starting_point }}
 
@@ -139,7 +139,7 @@ definitions:
         $ref: "#/definitions/selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ record['attributes'].get('subscriptions', {}).get('email', {}).get('marketing', {}).get('suppressions') }}"
+          condition: "{{ record['attributes']['subscriptions']['email']['marketing']['suppressions'] }}"
 
   events_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_events

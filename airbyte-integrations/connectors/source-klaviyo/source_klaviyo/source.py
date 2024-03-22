@@ -24,7 +24,6 @@ class SourceKlaviyo(YamlDeclarativeSource):
         start_date = config.get("start_date")
         streams = super().streams(config)
         streams.extend([Campaigns(api_key=api_key, start_date=start_date), Flows(api_key=api_key, start_date=start_date)])
-
         return streams
 
     def continue_sync_on_stream_failure(self) -> bool:
