@@ -238,7 +238,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
 
 class PublisherReports(ApplovinIncrementalMetricsStream):
     report_type = "publisher"
-    primary_key = ["zone_id", "country", "ad_type", "device_type", "platform", "day", "hour", "application", "placement", "size", "package_name", "bidding_integration"]
+    primary_key = ["zone_id", "ad_type", "platform", "day", "hour", "placement", "size", "package_name", "bidding_integration"]
 
     def path(self, **kwargs) -> str:
         return "report"
@@ -246,7 +246,7 @@ class PublisherReports(ApplovinIncrementalMetricsStream):
 
 class AdvertiserReports(ApplovinIncrementalMetricsStream):
     report_type = "advertiser"
-    primary_key = ["ad_id", "country", "ad_type", "device_type", "platform", "day", "application"]
+    primary_key = ["ad_id", "ad_type", "platform", "day", "external_placement_id"]
 
     def path(self, **kwargs) -> str:
         return "report"
@@ -254,7 +254,7 @@ class AdvertiserReports(ApplovinIncrementalMetricsStream):
 
 class ProbabilisticPublisherReports(ApplovinIncrementalMetricsStream):
     report_type = "publisher"
-    primary_key = ["country", "ad_type", "device_type", "platform", "day", "hour", "application", "size"]
+    primary_key = ["country", "ad_type", "platform", "day", "hour", "size"]
 
     def path(self, **kwargs) -> str:
         return "probabilisticReport"
@@ -262,7 +262,7 @@ class ProbabilisticPublisherReports(ApplovinIncrementalMetricsStream):
 
 class ProbabilisticAdvertiserReports(ApplovinIncrementalMetricsStream):
     report_type = "advertiser"
-    primary_key = ["ad_id", "country", "ad_type", "device_type", "platform", "day", "application"]
+    primary_key = ["ad_id", "ad_type", "platform", "day", "external_placement_id"]
 
     def path(self, **kwargs) -> str:
         return "probabilisticReport"
