@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from copy import deepcopy
 from typing import Any, Mapping
@@ -27,6 +28,11 @@ def test_check_invalid_config(configured_catalog: ConfiguredAirbyteCatalog, conf
     invalid_config = config | {"credentials": {"auth_type": "password", "password": "wrongpass"}}
     outcome = SourceSFTPBulk(catalog=configured_catalog, config=invalid_config, state=None).check(logger, invalid_config)
     assert outcome.status == Status.FAILED
+
+
+def test_check_valid_config_private_key(configured_catalog: ConfiguredAirbyteCatalog, config_private_key: Mapping[str, Any]):
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_private_key, state=None).check(logger, config_private_key)
+    assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_valid_config(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):

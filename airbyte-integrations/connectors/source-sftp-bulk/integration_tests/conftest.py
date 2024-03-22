@@ -4,11 +4,12 @@
 import json
 import logging
 import os
+import re
 import shutil
 import time
+import uuid
 from io import StringIO
-from socket import socket
-from typing import Any, Mapping
+from typing import Any, Mapping, Union
 
 import docker
 import paramiko
@@ -17,6 +18,7 @@ from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, Configur
 
 logger = logging.getLogger("airbyte")
 
+PRIVATE_KEY = str
 TMP_FOLDER = "/tmp/test_sftp_source"
 
 
@@ -24,6 +26,19 @@ TMP_FOLDER = "/tmp/test_sftp_source"
 def load_config(config_path: str) -> Mapping[str, Any]:
     with open(f"{os.path.dirname(__file__)}/configs/{config_path}", "r") as config:
         return json.load(config)
+
+
+def get_docker_ip() -> Union[str, Any]:
+    # When talking to the Docker daemon via a UNIX socket, route all TCP
+    # traffic to docker containers via the TCP loopback interface.
+    docker_host = os.environ.get("DOCKER_HOST", "").strip()
+    if not docker_host or docker_host.startswith("unix://"):
+        return "127.0.0.1"
+
+    match = re.match(r"^tcp://(.+?):\d+$", docker_host)
+    if not match:
+        raise ValueError('Invalid value for DOCKER_HOST: "%s".' % (docker_host,))
+    return match.group(1)
 
 
 def generate_ssh_keys():
@@ -39,77 +54,57 @@ def docker_client():
     return docker.from_env()
 
 
-@pytest.fixture(name="config", scope="session")
-def config_fixture(docker_client):
-    with socket() as s:
-        s.bind(("", 0))
-        available_port = s.getsockname()[1]
-
-    dir_path = os.getcwd()
-
-    config = load_config("config_password.json") | {"port": available_port}
-
-    container = docker_client.containers.run(
-        "atmoz/sftp",
-        f"{config['username']}:{config['credentials']['password']}",
-        name="mysftp",
-        ports={22: config["port"]},
-        volumes={
-            f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
-        },
-        detach=True,
-    )
-
-    time.sleep(20)
-    yield config
-
-    container.kill()
-    container.remove()
-
-
-@pytest.fixture(name="config_private_key", scope="session")
-def config_fixture_private_key(docker_client):
-    with socket() as s:
-        s.bind(("", 0))
-        available_port = s.getsockname()[1]
-
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup_fixture(docker_client):
     ssh_path = TMP_FOLDER + "/ssh"
-    dir_path = os.getcwd()
+    dir_path = os.path.dirname(__file__)
+    if os.path.exists(TMP_FOLDER):
+        shutil.rmtree(TMP_FOLDER)
 
-    if os.path.exists(ssh_path):
-        shutil.rmtree(ssh_path)
-
+    shutil.copytree(f"{dir_path}/files", TMP_FOLDER)
     os.makedirs(ssh_path)
-
     private_key, public_key = generate_ssh_keys()
-
+    global PRIVATE_KEY
+    PRIVATE_KEY = private_key
     pub_key_path = ssh_path + "/id_rsa.pub"
     with open(pub_key_path, "w") as f:
         f.write(public_key)
-
-    config = load_config("config_private_key.json") | {
-        "port": available_port,
-        "credentials": {"auth_type": "private_key", "private_key": private_key},
-    }
-
+    available_port = 2222
+    config = load_config("config_password.json") | {"port": available_port}
+    config["host"] = get_docker_ip()
     container = docker_client.containers.run(
         "atmoz/sftp",
-        f"{config['username']}:{config['credentials'].get('password', 'pass')}:1001",
-        name="mysftpssh",
-        ports={22: config["port"]},
+        f"{config['username']}:{config['credentials']['password']}",
+        name=f"mysftp_integration_{uuid.uuid4().hex}",
+        ports={22: ("0.0.0.0", config["port"])},
         volumes={
-            f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
+            f"{TMP_FOLDER}": {"bind": "/home/foo/files", "mode": "rw"},
             f"{pub_key_path}": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
         },
         detach=True,
     )
+    time.sleep(10)
 
-    time.sleep(20)
-    yield config
+    yield
 
-    shutil.rmtree(ssh_path)
     container.kill()
     container.remove()
+
+
+@pytest.fixture(name="config", scope="session")
+def config_fixture(docker_client):
+    config = load_config("config_password.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_private_key", scope="session")
+def config_fixture_private_key(docker_client):
+    config = load_config("config_private_key.json") | {
+        "credentials": {"auth_type": "private_key", "private_key": PRIVATE_KEY},
+    }
+    config["host"] = get_docker_ip()
+    yield config
 
 
 @pytest.fixture(name="config_private_key_csv", scope="session")
