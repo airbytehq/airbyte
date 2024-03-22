@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Iterable, Mapping, Optional, Any, List, Union, MutableMapping
 
 import requests
@@ -180,6 +180,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_count = response.json()["count"]
+        print(f"Page count: {str(response_count)}")
         if response_count < self.page_size:
             return None
         else:
@@ -197,7 +198,10 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     ) -> Iterable[Mapping[str, Any]]:
         default_start_date = self.config["start_date"]
         if stream_state is None:
+            print("generated a dummy record")
             return self.generate_dummy_record()
+
+        print(f"Slice {str(stream_slice)}, state {str(stream_state)}")
 
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             record_date = record[self.cursor_field]
@@ -211,12 +215,11 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        start_date = self.state[self.cursor_field] if stream_state.get(self.cursor_field) else self.config["start_date"]
-        print(f"request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, start {start_date}, offset {self.offset}, limit {self.page_size}")
+        print(f"Request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, date {str(stream_slice['date'])}, offset {self.offset}, limit {self.page_size}")
         return {
             "api_key": self.config["reporting_api_key"],
-            "start": '2024-03-20',
-            "end": '2024-03-20',
+            "start": stream_slice["date"],
+            "end": stream_slice["date"],
             "format": "json",
             "report_type": self.report_type,
             "columns": self.columns,
@@ -234,6 +237,24 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
     def columns(self):
         schema = self.get_json_schema()
         return ",".join(schema['properties'].keys())
+
+    def stream_slices(
+            self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = datetime.now()
+        end_date = datetime.now()
+        if stream_state and stream_state.get(self.cursor_field):
+            start_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%d')
+
+        start_date = start_date - timedelta(days=5)
+
+        num_days = (end_date - start_date).days
+        dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(num_days + 1)]
+
+        print(f"Slices: {str(dates)}")
+        for date in dates:
+            yield {"date": date}
+            continue
 
 
 class PublisherReports(ApplovinIncrementalMetricsStream):
