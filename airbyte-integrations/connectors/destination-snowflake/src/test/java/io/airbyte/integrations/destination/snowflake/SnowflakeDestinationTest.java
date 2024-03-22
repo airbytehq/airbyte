@@ -90,7 +90,7 @@ public class SnowflakeDestinationTest {
   void testWriteSnowflakeInternal() throws Exception {
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("internal_staging_config.json"), JsonNode.class);
     final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS)
-        .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
+        .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), message -> {});
     assertEquals(AsyncStreamConsumer.class, consumer.getClass());
   }
 
