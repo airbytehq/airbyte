@@ -90,6 +90,7 @@ which will be translated for compatibility with the Glue Data Catalog:
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.6   | 2024-01-03 | [#36386](https://github.com/airbytehq/airbyte/pull/36386)  | Support new state protocol                           |
 | 0.1.5   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)  | Add new ap-southeast-3 AWS region                    |
 | 0.1.4   | 2023-10-25 | [\#29221](https://github.com/airbytehq/airbyte/pull/29221) | Upgrade AWSWrangler                                  |
 | 0.1.3   | 2023-03-28 | [\#24642](https://github.com/airbytehq/airbyte/pull/24642) | Prefer airbyte type for complex types when available |
