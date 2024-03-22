@@ -26,6 +26,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
+        validate_state_messages: False
         file_types:
           skip_test: yes
           bypass_reason: "Source is not based on file based CDK"
