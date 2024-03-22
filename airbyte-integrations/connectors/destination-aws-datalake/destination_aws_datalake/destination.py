@@ -83,7 +83,7 @@ class DestinationAwsDatalake(Destination):
                         logger.info(f"Got state message from source: flushing records for {stream}")
                         streams[stream].flush(partial=True)
                     else:
-                        logger.warning(f"Trying to reset stream {stream} that is not in the configured catalog")
+                        logger.warning(f"Trying to flush stream {stream} that is not in the configured catalog")
 
                 yield message
 
