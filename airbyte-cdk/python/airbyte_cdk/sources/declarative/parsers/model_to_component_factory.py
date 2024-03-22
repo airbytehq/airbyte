@@ -319,11 +319,13 @@ class ModelToComponentFactory:
         self,
         model: LegacyToPerPartitionStateMigrationModel,
         config: Mapping[str, Any],
-        partition_router: SubstreamPartitionRouterModel,
-        datetime_based_cursor: DatetimeBasedCursorModel,
-        parameters: Mapping[str, Any],
+        declarative_stream: DeclarativeStreamModel,
     ) -> LegacyToPerPartitionStateMigration:
-        return LegacyToPerPartitionStateMigration(partition_router, datetime_based_cursor, config, parameters)
+        if not isinstance(declarative_stream.retriever, SimpleRetrieverModel):
+            raise ValueError(f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(declarative_stream.retriever)}")
+        if not isinstance(declarative_stream.retriever.partition_router, SubstreamPartitionRouter):
+            raise ValueError(f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(declarative_stream.retriever.partition_router)}")
+        return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.datetime_based_cursor, config, declarative_stream.parameters) # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
@@ -605,7 +607,7 @@ class ModelToComponentFactory:
 
         if model.state_migrations:
             state_transformations = [
-                self._create_component_from_model(state_migration, config, partition_router=model.retriever.partition_router, datetime_based_cursor=model.incremental_sync, parameters=model.parameters)  # type: ignore # there is a type check
+                self._create_component_from_model(state_migration, config, declarative_stream=model)
                 for state_migration in model.state_migrations
             ]
         else:
