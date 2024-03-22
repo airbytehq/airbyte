@@ -90,6 +90,7 @@ def base64decode(value: str) -> str:
 
     return base64.b64decode(value.encode("utf-8")).decode()
 
+
 def string(value: Any) -> str:
     """
     Converts the input value to a string.
@@ -100,7 +101,7 @@ def string(value: Any) -> str:
     """
     if isinstance(value, str):
         return value
-    ret = f"\"\"\"{json.dumps(value)}\"\"\""
+    ret = f'"""{json.dumps(value)}"""'
     return ret
 
 
