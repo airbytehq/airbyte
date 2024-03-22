@@ -18,7 +18,8 @@ include = "destination_vectara"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = ">=0.62.0"
+# Note: Maintainers can bump this to the latest via `poetry add airbyte-cdk@latest`
+airbyte-cdk = "0.74.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=6.2,<7.0"
