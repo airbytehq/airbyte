@@ -1,0 +1,59 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": ["null", "object"],
+    "properties": {
+      "cc": {
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "string"]
+        }
+      },
+      "id": {
+        "type": ["null", "string"]
+      },
+      "to": {
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "string"]
+        }
+      },
+      "bcc": {
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "string"]
+        }
+      },
+      "csid": {
+        "type": ["null", "number"]
+      },
+      "from": {
+        "type": ["null", "string"]
+      },
+      "text": {
+        "type": ["null", "string"]
+      },
+      "direction": {
+        "type": ["null", "string"]
+      },
+      "created_at": {
+        "type": ["null", "number"]
+      },
+      "author_name": {
+        "type": ["null", "string"]
+      },
+      "author_email": {
+        "type": ["null", "string"]
+      },
+      "attached_files": {
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "string"]
+        }
+      },
+      "initial_channel": {
+        "type": ["null", "string"]
+      }
+    },
+    "additionalProperties": true
+  }
+  
