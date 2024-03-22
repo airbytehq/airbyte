@@ -14,7 +14,14 @@ from typing import Any, Iterable, Mapping
 import duckdb
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 
 logger = getLogger("airbyte")
 
@@ -39,7 +46,9 @@ class DestinationDuckdb(Destination):
         Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
-        if destination_path.startswith("md:") or destination_path.startswith("motherduck:"):
+        if destination_path.startswith("md:") or destination_path.startswith(
+            "motherduck:"
+        ):
             return destination_path
 
         if not destination_path.startswith("/local"):
@@ -48,7 +57,8 @@ class DestinationDuckdb(Destination):
         destination_path = os.path.normpath(destination_path)
         if not destination_path.startswith("/local"):
             raise ValueError(
-                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix"
+                f"destination_path={destination_path} is not a valid path."
+                "A valid path shall start with /local or no / prefix"
             )
 
         return destination_path
@@ -84,7 +94,7 @@ class DestinationDuckdb(Destination):
         duckdb_config = {}
         if motherduck_api_key:
             duckdb_config["motherduck_token"] = motherduck_api_key
-            duckdb_config["custom_user_agent"] =  "airbyte"
+            duckdb_config["custom_user_agent"] = "airbyte"
 
         con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
 
@@ -132,7 +142,9 @@ class DestinationDuckdb(Destination):
                 data = message.record.data
                 stream = message.record.stream
                 if stream not in streams:
-                    logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                    logger.debug(
+                        f"Stream {stream} was not present in configured streams, skipping"
+                    )
                     continue
 
                 # add to buffer
@@ -157,7 +169,9 @@ class DestinationDuckdb(Destination):
             con.executemany(query, buffer[stream_name])
             con.commit()
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
@@ -179,9 +193,10 @@ class DestinationDuckdb(Destination):
 
             duckdb_config = {}
             if CONFIG_MOTHERDUCK_API_KEY in config:
-                duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
-                duckdb_config["custom_user_agent"] =  "airbyte"
-
+                duckdb_config["motherduck_token"] = str(
+                    config[CONFIG_MOTHERDUCK_API_KEY]
+                )
+                duckdb_config["custom_user_agent"] = "airbyte"
 
             con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
             con.execute("SELECT 1;")
@@ -189,4 +204,6 @@ class DestinationDuckdb(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
+            )
