@@ -4,12 +4,11 @@
 
 import logging
 import sys
+from http.client import IncompleteRead
 
 import backoff
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests import codes, exceptions  # type: ignore[import]
-from http.client import IncompleteRead
-
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,
