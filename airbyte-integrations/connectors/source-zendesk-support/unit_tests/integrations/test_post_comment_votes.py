@@ -175,7 +175,7 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 1
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        assert output.most_recent_state.stream_state.updated_at == "2023-06-22T00:32:22Z"
+        assert output.most_recent_state.stream_state == {"updated_at": post_comment_votes["updated_at"]}
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker):
