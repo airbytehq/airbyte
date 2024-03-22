@@ -15,6 +15,8 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
@@ -66,6 +68,8 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
   private final Optional<Long> bufferMemoryLimit;
   private final long optimalBatchSizeBytes;
 
+  private final StreamAwareDataTransformer dataTransformer;
+
   private StagingConsumerFactory(
                                  final Consumer<AirbyteMessage> outputRecordCollector,
                                  final JdbcDatabase database,
@@ -80,7 +84,8 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
                                  final String defaultNamespace,
                                  final boolean useDestinationsV2Columns,
                                  final Optional<Long> bufferMemoryLimit,
-                                 final long optimalBatchSizeBytes) {
+                                 final long optimalBatchSizeBytes,
+                                 final StreamAwareDataTransformer dataTransformer) {
     this.outputRecordCollector = outputRecordCollector;
     this.database = database;
     this.stagingOperations = stagingOperations;
@@ -95,6 +100,7 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
     this.useDestinationsV2Columns = useDestinationsV2Columns;
     this.bufferMemoryLimit = bufferMemoryLimit;
     this.optimalBatchSizeBytes = optimalBatchSizeBytes;
+    this.dataTransformer = dataTransformer;
   }
 
   public static class Builder {
@@ -119,6 +125,8 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
     private Optional<Long> bufferMemoryLimit = Optional.empty();
     private long optimalBatchSizeBytes = 50 * 1024 * 1024;
 
+    private StreamAwareDataTransformer dataTransformer;
+
     private Builder() {}
 
     public Builder setBufferMemoryLimit(final Optional<Long> bufferMemoryLimit) {
@@ -128,6 +136,11 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
 
     public Builder setOptimalBatchSizeBytes(final long optimalBatchSizeBytes) {
       this.optimalBatchSizeBytes = optimalBatchSizeBytes;
+      return this;
+    }
+
+    public Builder setDataTransformer(final StreamAwareDataTransformer dataTransformer) {
+      this.dataTransformer = dataTransformer;
       return this;
     }
 
@@ -146,7 +159,8 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
           defaultNamespace,
           useDestinationsV2Columns,
           bufferMemoryLimit,
-          optimalBatchSizeBytes);
+          optimalBatchSizeBytes,
+          dataTransformer != null ? dataTransformer : new IdentityDataTransformer());
     }
 
   }
@@ -211,7 +225,8 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
         flusher,
         catalog,
         new BufferManager(getMemoryLimit(bufferMemoryLimit)),
-        Optional.ofNullable(defaultNamespace));
+        Optional.ofNullable(defaultNamespace),
+        dataTransformer);
   }
 
   private static long getMemoryLimit(final Optional<Long> bufferMemoryLimit) {

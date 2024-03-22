@@ -1,21 +1,29 @@
 # Snowflake
 
-Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console and configuring the Snowflake destination connector using the Airbyte UI.
+Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse,
+database, schema, user, and role) in the Snowflake console and configuring the Snowflake destination
+connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
 ## Prerequisites
 
-- A Snowflake account with the [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake administrator to set one up for you.
-- (Optional) An AWS, or Google Cloud Storage.
+- A Snowflake account with the
+  [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html)
+  role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake
+  administrator to set one up for you.
 
 ### Network policies
 
-By default, Snowflake allows users to connect to the service from any computer or device IP address. A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network policy to allow or deny access to a single IP address or a list of addresses.
+By default, Snowflake allows users to connect to the service from any computer or device IP address.
+A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
+policy to allow or deny access to a single IP address or a list of addresses.
 
-If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses is on the allowed list
+If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses
+is on the allowed list
 
-To determine whether a network policy is set on your account or for a specific user, execute the _SHOW PARAMETERS_ command.
+To determine whether a network policy is set on your account or for a specific user, execute the
+_SHOW PARAMETERS_ command.
 
 **Account**
 
@@ -29,20 +37,28 @@ SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
 SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 ```
 
-To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+To read more please check official
+[Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
 ## Setup guide
 
 ### Step 1: Set up Airbyte-specific entities in Snowflake
 
-To set up the Snowflake destination connector, you first need to create Airbyte-specific Snowflake entities (a warehouse, database, schema, user, and role) with the `OWNERSHIP` permission to write data into Snowflake, track costs pertaining to Airbyte, and control permissions at a granular level.
+To set up the Snowflake destination connector, you first need to create Airbyte-specific Snowflake
+entities (a warehouse, database, schema, user, and role) with the `OWNERSHIP` permission to write
+data into Snowflake, track costs pertaining to Airbyte, and control permissions at a granular level.
 
-You can use the following script in a new [Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) to create the entities:
+You can use the following script in a new
+[Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) to create the
+entities:
 
 1.  [Log into your Snowflake account](https://www.snowflake.com/login/).
-2.  Edit the following script to change the password to a more secure password and to change the names of other resources if you so desire.
+2.  Edit the following script to change the password to a more secure password and to change the
+    names of other resources if you so desire.
 
-    **Note:** Make sure you follow the [Snowflake identifier requirements](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html) while renaming the resources.
+    **Note:** Make sure you follow the
+    [Snowflake identifier requirements](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html)
+    while renaming the resources.
 
         -- set variables (these need to be uppercase)
         set airbyte_role = 'AIRBYTE_ROLE';
@@ -113,22 +129,28 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
 
         commit;
 
-3.  Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select the **All Queries** checkbox.
+3.  Run the script using the
+    [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or
+    [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select
+    the **All Queries** checkbox.
 
 ### Step 2: Set up a data loading method
 
-Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data.
+Airbyte uses Snowflake’s
+[Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html)
+to load data.
 
 Make sure the database and schema have the `USAGE` privilege.
 
 ### Step 3: Set up Snowflake as a destination in Airbyte
 
-Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using username/password or OAuth 2.0:
+Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using
+username/password or OAuth 2.0:
 
 ### Login and Password
 
 | Field                                                                                                 | Description                                                                                                                                                                                                                          |
-|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com`                                    |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                                                              |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                                                      |
@@ -142,7 +164,7 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 ### OAuth 2.0
 
 | Field                                                                                                 | Description                                                                                                                                                                                       |
-|:------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
@@ -178,25 +200,30 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 
 ## Output schema
 
-Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (can be overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_ deduplicated.
+Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (can be
+overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_
+deduplicated.
 
 ### Raw Table schema
 
 | Airbyte field          | Description                                                        | Column type              |
-|------------------------|--------------------------------------------------------------------|--------------------------|
+| ---------------------- | ------------------------------------------------------------------ | ------------------------ |
 | \_airbyte_raw_id       | A UUID assigned to each processed event                            | VARCHAR                  |
 | \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP WITH TIME ZONE |
 | \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP WITH TIME ZONE |
 | \_airbyte_data         | A JSON blob with the event data.                                   | VARIANT                  |
 
-**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions.
+**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
+could be subject to change in future versions.
 
-**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated transient database for Airbyte. For more information, refer to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
+dedicated transient database for Airbyte. For more information, refer
+to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
 
 ## Data type map
 
 | Airbyte type                        | Snowflake type |
-|:------------------------------------|:---------------|
+| :---------------------------------- | :------------- |
 | STRING                              | TEXT           |
 | STRING (BASE64)                     | TEXT           |
 | STRING (BIG_NUMBER)                 | TEXT           |
@@ -223,7 +250,8 @@ The Snowflake destination supports the following sync modes:
 
 ## Snowflake tutorials
 
-Now that you have set up the Snowflake destination connector, check out the following Snowflake tutorials:
+Now that you have set up the Snowflake destination connector, check out the following Snowflake
+tutorials:
 
 - [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
 - [Replicate data from a PostgreSQL database to Snowflake](https://airbyte.com/tutorials/postgresql-database-to-snowflake)
@@ -234,18 +262,21 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 ### 'Current role does not have permissions on the target schema'
 
-If you receive an error stating `Current role does not have permissions on the target schema` make sure that the
-Snowflake destination `SCHEMA` is one that the role you've provided has permissions on. When creating a connection,
-it may allow you to select `Mirror source structure` for the `Destination namespace`, which if you have followed
-some of our default examples and tutorials may result in the connection trying to write to a `PUBLIC` schema.
+If you receive an error stating `Current role does not have permissions on the target schema` make
+sure that the Snowflake destination `SCHEMA` is one that the role you've provided has permissions
+on. When creating a connection, it may allow you to select `Mirror source structure` for the
+`Destination namespace`, which if you have followed some of our default examples and tutorials may
+result in the connection trying to write to a `PUBLIC` schema.
 
-A quick fix could be to edit your connection's 'Replication' settings from `Mirror source structure` to `Destination Default`.
-Otherwise, make sure to grant the role the required permissions in the desired namespace.
+A quick fix could be to edit your connection's 'Replication' settings from `Mirror source structure`
+to `Destination Default`. Otherwise, make sure to grant the role the required permissions in the
+desired namespace.
 
 ## Changelog
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :-------------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.6.2           | 2024-03-18 | [\#36240](https://github.com/airbytehq/airbyte/pull/36240) | Hide oAuth config option                                                                                                                                        |
 | 3.6.1           | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.23.18; Null safety check in state parsing                                                                                                           |
 | 3.6.0           | 2024-03-06 | [35308](https://github.com/airbytehq/airbyte/pull/35308)   | Upgrade CDK; use utc tz for extracted_at; Migrate existing extracted_at to utc;                                                                                 |
 | 3.5.14          | 2024-02-22 | [35456](https://github.com/airbytehq/airbyte/pull/35456)   | Adopt CDK 0.23.0; Gather initial state upfront, reduce information_schema calls                                                                                 |

@@ -156,6 +156,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      */
     fun flushStates(outputRecordCollector: Consumer<AirbyteMessage?>) {
         var bytesFlushed: Long = 0L
+        logger.info { "Flushing states" }
         synchronized(lock) {
             for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in
                 descToStateIdQ.entries) {
@@ -184,7 +185,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                             stateIdToCounterForPopulatingDestinationStats[oldestStateId]!!
                                 .toDouble()
 
-                        logger.info {
+                        logger.debug {
                             "State with arrival number ${stateMessage.arrivalNumber} emitted from thread ${Thread.currentThread().name} at ${Instant.now()}"
                         }
                         val message: AirbyteMessage =
@@ -209,7 +210,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                 }
             }
         }
-
+        logger.info { "Flushing states complete" }
         freeBytes(bytesFlushed)
     }
 
@@ -345,7 +346,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                     SENTINEL_GLOBAL_DESC,
                 )
         synchronized(lock) {
-            logger.info { "State with arrival number $arrivalNumber received" }
+            logger.debug { "State with arrival number $arrivalNumber received" }
             stateIdToState[getStateId(resolvedDescriptor)] =
                 ImmutablePair.of(
                     StateMessageWithArrivalNumber(
