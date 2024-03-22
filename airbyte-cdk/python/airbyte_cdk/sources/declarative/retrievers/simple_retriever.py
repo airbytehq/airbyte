@@ -224,7 +224,6 @@ class SimpleRetriever(Retriever):
     ) -> Iterable[Record]:
         if not response:
             self._last_response = None
-            self._records_from_last_response = []
             return []
 
         self._last_response = response

@@ -166,9 +166,9 @@ class DefaultPaginator(Paginator):
             and isinstance(self.page_token_option, RequestOption)
             and self.page_token_option.inject_into == option_type
         ):
-            options[self.page_token_option.field_name.eval(config=self.config)] = self._token
+            options[self.page_token_option.field_name.eval(config=self.config)] = self._token # type: ignore # field_name is known to be an interpolated string
         if self.page_size_option and self.pagination_strategy.get_page_size() and self.page_size_option.inject_into == option_type:
-            options[self.page_size_option.field_name.eval(config=self.config)] = self.pagination_strategy.get_page_size()
+            options[self.page_size_option.field_name.eval(config=self.config)] = self.pagination_strategy.get_page_size() # type: ignore # field_name is known to be an interpolated string
         return options
 
 
@@ -205,7 +205,7 @@ class PaginatorTestReadDecorator(Paginator):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Mapping[str, Any]:
         return self._decorated.get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def get_request_headers(
@@ -223,7 +223,7 @@ class PaginatorTestReadDecorator(Paginator):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping[str, Any], str]]:
+    ) -> Union[Mapping[str, Any], str]:
         return self._decorated.get_request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def get_request_body_json(
@@ -232,7 +232,7 @@ class PaginatorTestReadDecorator(Paginator):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         return self._decorated.get_request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def reset(self) -> None:

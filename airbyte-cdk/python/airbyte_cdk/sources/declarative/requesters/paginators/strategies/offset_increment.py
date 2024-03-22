@@ -42,13 +42,10 @@ class OffsetIncrement(PaginationStrategy):
     decoder: Decoder = JsonDecoder(parameters={})
     inject_on_first_request: bool = False
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._offset = 0
         page_size = str(self.page_size) if isinstance(self.page_size, int) else self.page_size
-        if page_size:
-            self._page_size = InterpolatedString(page_size, parameters=parameters)
-        else:
-            self._page_size = None
+        self._page_size = InterpolatedString(page_size, parameters=parameters) if page_size else None
 
     @property
     def initial_token(self) -> Optional[Any]:
@@ -66,7 +63,7 @@ class OffsetIncrement(PaginationStrategy):
             self._offset += last_page_size
             return self._offset
 
-    def reset(self):
+    def reset(self) -> None:
         self._offset = 0
 
     def get_page_size(self) -> Optional[int]:
@@ -76,4 +73,4 @@ class OffsetIncrement(PaginationStrategy):
                 raise Exception(f"{page_size} is of type {type(page_size)}. Expected {int}")
             return page_size
         else:
-            return self._page_size
+            return None
