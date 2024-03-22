@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.s3.util;
 
-import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants.getNAME_TRANSFORMER;
+import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
 
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.LinkedList;
@@ -27,9 +27,9 @@ public class S3OutputPathHelper {
       paths.add(bucketPath);
     }
     if (namespace != null) {
-      paths.add(getNAME_TRANSFORMER().convertStreamName(namespace));
+      paths.add(NAME_TRANSFORMER.convertStreamName(namespace));
     }
-    paths.add(getNAME_TRANSFORMER().convertStreamName(streamName));
+    paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
 
     return String.join("/", paths).replaceAll("/+", "/");
   }

@@ -18,9 +18,9 @@ class AvroConstants {
         val JSON_EXTRA_PROPS_FIELDS: Set<String> =
             setOf("_ab_additional_properties", AVRO_EXTRA_PROPS_FIELD)
 
-        @JvmStatic val NAME_TRANSFORMER: AvroNameTransformer = AvroNameTransformer()
+        @JvmField val NAME_TRANSFORMER: AvroNameTransformer = AvroNameTransformer()
 
-        @JvmStatic
+        @JvmField
         val JSON_CONVERTER: JsonAvroConverter =
             JsonAvroConverter.builder()
                 .setNameTransformer { name: String? ->

@@ -64,7 +64,7 @@ public abstract class GcsBaseAvroDestinationAcceptanceTest extends GcsAvroParque
         final ObjectReader jsonReader = MAPPER.reader();
         while (dataFileReader.hasNext()) {
           final Record record = dataFileReader.next();
-          final byte[] jsonBytes = AvroConstants.getJSON_CONVERTER().convertToJson(record);
+          final byte[] jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record);
           JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
           jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
           jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));
