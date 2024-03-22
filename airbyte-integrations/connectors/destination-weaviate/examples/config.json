@@ -5,8 +5,7 @@
     "chunk_size": 1000
   },
   "embedding": {
-    "mode": "openai",
-    "openai_key": "mykey"
+    "mode": "fake"
   },
   "indexing": {
     "host": "https://my-cluster.weaviate.network",
