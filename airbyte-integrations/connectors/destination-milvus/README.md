@@ -35,7 +35,6 @@ python main.py write --config secrets/config.json --catalog integration_tests/co
 ### Locally running the connector docker image
 
 
-
 #### Use `airbyte-ci` to build your connector
 The Airbyte way of building this connector is to use our `airbyte-ci` tool.
 You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
