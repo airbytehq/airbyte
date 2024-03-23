@@ -1,0 +1,42 @@
+version: "0.71.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      class_name: source_rss.components.CustomExtractor
+
+  requester:
+    type: HttpRequester
+    url_base: "{{ config['url'] }}"
+    http_method: "GET"
+    authenticator:
+      type: NoAuth
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  items_stream:
+    $ref: "#/definitions/base_stream"
+    name: "items"
+    $parameters:
+      path: "/"
+
+streams:
+  - "#/definitions/items_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "items"
