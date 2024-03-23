@@ -131,6 +131,8 @@ public class DateTimeConverter {
     } else if (date instanceof LocalDate d) {
       // Incremental mode
       return resolveEra(d, d.format(DATE_FORMATTER));
+    } else if (date instanceof final Integer d) {
+      return LocalDate.ofEpochDay(d).format(DATE_FORMATTER);
     } else {
       if (!loggedUnknownDateClass) {
         LOGGER.info("Unknown class for Date data type" + date.getClass());
