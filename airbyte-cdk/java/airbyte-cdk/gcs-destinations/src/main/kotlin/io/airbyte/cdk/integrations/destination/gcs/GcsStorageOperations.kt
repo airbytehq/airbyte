@@ -11,21 +11,25 @@ import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class GcsStorageOperations(nameTransformer: NamingConventionTransformer?,
-                           s3Client: AmazonS3?,
-                           s3Config: S3DestinationConfig?) : S3StorageOperations(nameTransformer!!, s3Client!!, s3Config!!) {
-    /**
-     * GCS only supports the legacy AmazonS3#doesBucketExist method.
-     */
+class GcsStorageOperations(
+    nameTransformer: NamingConventionTransformer,
+    s3Client: AmazonS3,
+    s3Config: S3DestinationConfig
+) : S3StorageOperations(nameTransformer!!, s3Client!!, s3Config!!) {
+    /** GCS only supports the legacy AmazonS3#doesBucketExist method. */
     override fun doesBucketExist(bucket: String?): Boolean {
         return s3Client.doesBucketExist(bucket)
     }
 
     /**
-     * This method is overridden because GCS doesn't accept request to delete multiple objects. The only
-     * difference is that the AmazonS3#deleteObjects method is replaced with AmazonS3#deleteObject.
+     * This method is overridden because GCS doesn't accept request to delete multiple objects. The
+     * only difference is that the AmazonS3#deleteObjects method is replaced with
+     * AmazonS3#deleteObject.
      */
-    override fun cleanUpObjects(bucket: String?, keysToDelete: List<DeleteObjectsRequest.KeyVersion>) {
+    override fun cleanUpObjects(
+        bucket: String?,
+        keysToDelete: List<DeleteObjectsRequest.KeyVersion>
+    ) {
         for (keyToDelete in keysToDelete) {
             LOGGER.info("Deleting object {}", keyToDelete.key)
             s3Client.deleteObject(bucket, keyToDelete.key)

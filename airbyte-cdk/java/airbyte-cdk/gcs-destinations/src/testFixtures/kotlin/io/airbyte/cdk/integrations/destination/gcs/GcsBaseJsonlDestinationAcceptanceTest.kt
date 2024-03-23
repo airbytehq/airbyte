@@ -7,7 +7,6 @@ import com.amazonaws.services.s3.model.S3Object
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.S3Format
-import io.airbyte.cdk.integrations.destination.s3.util.Flattening.value
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.commons.json.Jsons
 import java.io.BufferedReader
@@ -19,21 +18,30 @@ import java.util.Map
 import kotlin.collections.List
 import kotlin.collections.MutableList
 
-abstract class GcsBaseJsonlDestinationAcceptanceTest : GcsDestinationAcceptanceTest(S3Format.JSONL) {
+abstract class GcsBaseJsonlDestinationAcceptanceTest :
+    GcsDestinationAcceptanceTest(S3Format.JSONL) {
     override fun getProtocolVersion(): ProtocolVersion {
         return ProtocolVersion.V1
     }
 
     override val formatConfig: JsonNode?
-        get() = Jsons.jsonNode(Map.of(
-                "format_type", outputFormat,
-                "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))))
+        get() =
+            Jsons.jsonNode(
+                Map.of(
+                    "format_type",
+                    outputFormat,
+                    "compression",
+                    Jsons.jsonNode(Map.of("compression_type", "No Compression"))
+                )
+            )
 
     @Throws(IOException::class)
-    override fun retrieveRecords(testEnv: TestDestinationEnv,
-                                 streamName: String,
-                                 namespace: String,
-                                 streamSchema: JsonNode): List<JsonNode> {
+    override fun retrieveRecords(
+        testEnv: TestDestinationEnv,
+        streamName: String,
+        namespace: String,
+        streamSchema: JsonNode
+    ): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 

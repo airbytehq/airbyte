@@ -7,9 +7,9 @@ import io.airbyte.cdk.integrations.destination.gcs.credential.GcsHmacKeyCredenti
 import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
+import java.io.IOException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.io.IOException
 
 internal class GcsDestinationConfigTest {
     @Test
