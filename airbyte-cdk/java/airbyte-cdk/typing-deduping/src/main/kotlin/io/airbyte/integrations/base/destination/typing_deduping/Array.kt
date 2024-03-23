@@ -3,16 +3,10 @@
  */
 package io.airbyte.integrations.base.destination.typing_deduping
 
-class Array(items: AirbyteType) : AirbyteType {
-    val items: AirbyteType
-
-    init {
-        this.transactions = transactions
-        this.items = items
-    }
+data class Array(val items: AirbyteType) : AirbyteType {
+    override val typeName: String = TYPE
 
     companion object {
-        val typeName: String = "ARRAY"
-            get() = Companion.field
+        const val TYPE: String = "ARRAY"
     }
 }

@@ -111,9 +111,9 @@ public class SerialStagingConsumerFactory {
       final String outputSchema;
       final String tableName;
       if (useDestinationsV2Columns) {
-        final StreamId streamId = parsedCatalog.getStream(abStream.getNamespace(), streamName).id();
-        outputSchema = streamId.rawNamespace();
-        tableName = streamId.rawName();
+        final StreamId streamId = parsedCatalog.getStream(abStream.getNamespace(), streamName).getId();
+        outputSchema = streamId.getRawNamespace();
+        tableName = streamId.getRawName();
       } else {
         outputSchema = getOutputSchema(abStream, config.get("schema").asText(), namingResolver);
         tableName = namingResolver.getRawTableName(streamName);

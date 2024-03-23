@@ -7,9 +7,8 @@ interface DestinationV1V2Migrator {
     /**
      * This is the primary entrypoint to this interface
      *
-     *
-     * Determine whether a migration is necessary for a given stream and if so, migrate the raw table
-     * and rebuild the final table with a soft reset
+     * Determine whether a migration is necessary for a given stream and if so, migrate the raw
+     * table and rebuild the final table with a soft reset
      *
      * @param sqlGenerator the class to use to generate sql
      * @param destinationHandler the handler to execute the sql statements
@@ -17,7 +16,8 @@ interface DestinationV1V2Migrator {
      */
     @Throws(TableNotMigratedException::class, UnexpectedSchemaException::class, Exception::class)
     fun migrateIfNecessary(
-            sqlGenerator: SqlGenerator,
-            destinationHandler: DestinationHandler<*>?,
-            streamConfig: StreamConfig)
+        sqlGenerator: SqlGenerator,
+        destinationHandler: DestinationHandler<*>,
+        streamConfig: StreamConfig
+    )
 }
