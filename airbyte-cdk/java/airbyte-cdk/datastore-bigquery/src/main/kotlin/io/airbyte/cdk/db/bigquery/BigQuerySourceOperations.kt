@@ -23,37 +23,75 @@ import io.airbyte.cdk.db.util.JsonUtil.putLongValueIntoJson
 import io.airbyte.cdk.db.util.JsonUtil.putStringValueIntoJson
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.JsonSchemaType
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.function.Consumer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class BigQuerySourceOperations : SourceOperations<BigQueryResultSet?, StandardSQLTypeName?> {
+class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQLTypeName?> {
     private val BIG_QUERY_DATE_FORMAT: DateFormat = SimpleDateFormat("yyyy-MM-dd")
     private val BIG_QUERY_DATETIME_FORMAT: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-    private val BIG_QUERY_TIMESTAMP_FORMAT: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS z")
+    private val BIG_QUERY_TIMESTAMP_FORMAT: DateFormat =
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS z")
 
     override fun rowToJson(bigQueryResultSet: BigQueryResultSet): JsonNode {
         val jsonNode = Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode
-        bigQueryResultSet.fieldList.forEach(Consumer { field: Field -> setJsonField(field, bigQueryResultSet.rowValues[field.name], jsonNode) })
+        bigQueryResultSet!!
+            .fieldList
+            .forEach(
+                Consumer { field: Field ->
+                    setJsonField(field, bigQueryResultSet.rowValues[field.name], jsonNode)
+                }
+            )
         return jsonNode
     }
 
-    private fun fillObjectNode(fieldName: String, fieldType: StandardSQLTypeName, fieldValue: FieldValue, node: ContainerNode<*>) {
+    private fun fillObjectNode(
+        fieldName: String,
+        fieldType: StandardSQLTypeName,
+        fieldValue: FieldValue,
+        node: ContainerNode<*>
+    ) {
         when (fieldType) {
-            StandardSQLTypeName.BOOL -> putBooleanValueIntoJson(node, fieldValue.booleanValue, fieldName)
+            StandardSQLTypeName.BOOL ->
+                putBooleanValueIntoJson(node, fieldValue.booleanValue, fieldName)
             StandardSQLTypeName.INT64 -> putLongValueIntoJson(node, fieldValue.longValue, fieldName)
-            StandardSQLTypeName.FLOAT64 -> putDoubleValueIntoJson(node, fieldValue.doubleValue, fieldName)
-            StandardSQLTypeName.NUMERIC -> putBigDecimalValueIntoJson(node, fieldValue.numericValue, fieldName)
-            StandardSQLTypeName.BIGNUMERIC -> putBigDecimalValueIntoJson(node, returnNullIfInvalid(DataTypeSupplier { fieldValue.numericValue }), fieldName)
-            StandardSQLTypeName.STRING, StandardSQLTypeName.TIME -> putStringValueIntoJson(node, fieldValue.stringValue, fieldName)
-            StandardSQLTypeName.BYTES -> putBytesValueIntoJson(node, fieldValue.bytesValue, fieldName)
-            StandardSQLTypeName.DATE -> putStringValueIntoJson(node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)), fieldName)
-            StandardSQLTypeName.DATETIME -> putStringValueIntoJson(node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)), fieldName)
-            StandardSQLTypeName.TIMESTAMP -> putStringValueIntoJson(node, toISO8601String(fieldValue.timestampValue / 1000), fieldName)
+            StandardSQLTypeName.FLOAT64 ->
+                putDoubleValueIntoJson(node, fieldValue.doubleValue, fieldName)
+            StandardSQLTypeName.NUMERIC ->
+                putBigDecimalValueIntoJson(node, fieldValue.numericValue, fieldName)
+            StandardSQLTypeName.BIGNUMERIC ->
+                putBigDecimalValueIntoJson(
+                    node,
+                    returnNullIfInvalid(DataTypeSupplier { fieldValue.numericValue }),
+                    fieldName
+                )
+            StandardSQLTypeName.STRING,
+            StandardSQLTypeName.TIME ->
+                putStringValueIntoJson(node, fieldValue.stringValue, fieldName)
+            StandardSQLTypeName.BYTES ->
+                putBytesValueIntoJson(node, fieldValue.bytesValue, fieldName)
+            StandardSQLTypeName.DATE ->
+                putStringValueIntoJson(
+                    node,
+                    toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)),
+                    fieldName
+                )
+            StandardSQLTypeName.DATETIME ->
+                putStringValueIntoJson(
+                    node,
+                    toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)),
+                    fieldName
+                )
+            StandardSQLTypeName.TIMESTAMP ->
+                putStringValueIntoJson(
+                    node,
+                    toISO8601String(fieldValue.timestampValue / 1000),
+                    fieldName
+                )
             else -> putStringValueIntoJson(node, fieldValue.stringValue, fieldName)
         }
     }
@@ -72,15 +110,18 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet?, StandardSQ
             val subFields = field.subFields
             // Array of primitive
             if (subFields == null || subFields.isEmpty()) {
-                fieldValue.repeatedValue.forEach(Consumer { arrayFieldValue: FieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode) })
+                fieldValue.repeatedValue.forEach(
+                    Consumer { arrayFieldValue: FieldValue ->
+                        fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode)
+                    }
+                )
                 // Array of records
             } else {
                 for (arrayFieldValue in fieldValue.repeatedValue) {
                     var count = 0 // named get doesn't work here for some reasons.
                     val newNode = arrayNode.addObject()
                     for (repeatedField in subFields) {
-                        setJsonField(repeatedField, arrayFieldValue.recordValue[count++],
-                                newNode)
+                        setJsonField(repeatedField, arrayFieldValue.recordValue[count++], newNode)
                     }
                 }
             }
@@ -88,7 +129,8 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet?, StandardSQ
             val newNode = node.putObject(fieldName)
             val subFields = field.subFields
             try {
-                // named get doesn't work here with nested arrays and objects; index is the only correlation between
+                // named get doesn't work here with nested arrays and objects; index is the only
+                // correlation between
                 // field and field value
                 if (subFields != null && !subFields.isEmpty()) {
                     for (i in subFields.indices) {
@@ -112,12 +154,19 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet?, StandardSQ
         return parsedValue
     }
 
-    override fun getAirbyteType(bigQueryType: StandardSQLTypeName): JsonSchemaType {
+    override fun getAirbyteType(bigQueryType: StandardSQLTypeName?): JsonSchemaType {
         return when (bigQueryType) {
             StandardSQLTypeName.BOOL -> JsonSchemaType.BOOLEAN
             StandardSQLTypeName.INT64 -> JsonSchemaType.INTEGER
-            StandardSQLTypeName.FLOAT64, StandardSQLTypeName.NUMERIC, StandardSQLTypeName.BIGNUMERIC -> JsonSchemaType.NUMBER
-            StandardSQLTypeName.STRING, StandardSQLTypeName.BYTES, StandardSQLTypeName.TIMESTAMP, StandardSQLTypeName.DATE, StandardSQLTypeName.TIME, StandardSQLTypeName.DATETIME -> JsonSchemaType.STRING
+            StandardSQLTypeName.FLOAT64,
+            StandardSQLTypeName.NUMERIC,
+            StandardSQLTypeName.BIGNUMERIC -> JsonSchemaType.NUMBER
+            StandardSQLTypeName.STRING,
+            StandardSQLTypeName.BYTES,
+            StandardSQLTypeName.TIMESTAMP,
+            StandardSQLTypeName.DATE,
+            StandardSQLTypeName.TIME,
+            StandardSQLTypeName.DATETIME -> JsonSchemaType.STRING
             StandardSQLTypeName.ARRAY -> JsonSchemaType.ARRAY
             StandardSQLTypeName.STRUCT -> JsonSchemaType.OBJECT
             else -> JsonSchemaType.STRING
@@ -127,17 +176,19 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet?, StandardSQ
     private fun getFormattedValue(paramType: StandardSQLTypeName, paramValue: String): String {
         try {
             return when (paramType) {
-                StandardSQLTypeName.DATE -> BIG_QUERY_DATE_FORMAT.format(dateFormat.parse(paramValue))
-                StandardSQLTypeName.DATETIME -> BIG_QUERY_DATETIME_FORMAT
-                        .format(dateFormat.parse(paramValue))
-
-                StandardSQLTypeName.TIMESTAMP -> BIG_QUERY_TIMESTAMP_FORMAT
-                        .format(dateFormat.parse(paramValue))
-
+                StandardSQLTypeName.DATE ->
+                    BIG_QUERY_DATE_FORMAT.format(dateFormat.parse(paramValue))
+                StandardSQLTypeName.DATETIME ->
+                    BIG_QUERY_DATETIME_FORMAT.format(dateFormat.parse(paramValue))
+                StandardSQLTypeName.TIMESTAMP ->
+                    BIG_QUERY_TIMESTAMP_FORMAT.format(dateFormat.parse(paramValue))
                 else -> paramValue
             }
         } catch (e: ParseException) {
-            throw RuntimeException("Fail to parse value " + paramValue + " to type " + paramType.name, e)
+            throw RuntimeException(
+                "Fail to parse value " + paramValue + " to type " + paramType.name,
+                e
+            )
         }
     }
 
