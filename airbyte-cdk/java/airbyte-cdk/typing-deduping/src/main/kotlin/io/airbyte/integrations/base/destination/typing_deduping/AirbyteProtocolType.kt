@@ -9,8 +9,7 @@ import java.util.*
 /**
  * Protocol types are ordered by precedence in the case of a Union that contains multiple types.
  * Priority is given to wider scope types over narrower ones. (Note that because of dedup logic in
- * [AirbyteType.fromJsonSchema], at most one string or date/time type can exist in a
- * Union.)
+ * [AirbyteType.fromJsonSchema], at most one string or date/time type can exist in a Union.)
  */
 enum class AirbyteProtocolType : AirbyteType {
     STRING,
@@ -32,7 +31,13 @@ enum class AirbyteProtocolType : AirbyteType {
             try {
                 return valueOf(type.uppercase(Locale.getDefault()))
             } catch (e: IllegalArgumentException) {
-                AirbyteType.Companion.LOGGER.error(String.format("Could not find matching AirbyteProtocolType for \"%s\": %s", type, e))
+                AirbyteType.Companion.LOGGER.error(
+                    String.format(
+                        "Could not find matching AirbyteProtocolType for \"%s\": %s",
+                        type,
+                        e
+                    )
+                )
                 return UNKNOWN
             }
         }
@@ -54,20 +59,31 @@ enum class AirbyteProtocolType : AirbyteType {
             } else if (AirbyteType.Companion.nodeMatches(propertyType, "integer")) {
                 return INTEGER
             } else if (AirbyteType.Companion.nodeMatches(propertyType, "number")) {
-                return if (AirbyteType.Companion.nodeMatches(airbyteType, "integer")) INTEGER else NUMBER
+                return if (AirbyteType.Companion.nodeMatches(airbyteType, "integer")) INTEGER
+                else NUMBER
             } else if (AirbyteType.Companion.nodeMatches(propertyType, "string")) {
                 if (AirbyteType.Companion.nodeMatches(format, "date")) {
                     return DATE
                 } else if (AirbyteType.Companion.nodeMatches(format, "time")) {
                     if (AirbyteType.Companion.nodeMatches(airbyteType, "time_without_timezone")) {
                         return TIME_WITHOUT_TIMEZONE
-                    } else if (AirbyteType.Companion.nodeMatches(airbyteType, "time_with_timezone")) {
+                    } else if (
+                        AirbyteType.Companion.nodeMatches(airbyteType, "time_with_timezone")
+                    ) {
                         return TIME_WITH_TIMEZONE
                     }
                 } else if (AirbyteType.Companion.nodeMatches(format, "date-time")) {
-                    if (AirbyteType.Companion.nodeMatches(airbyteType, "timestamp_without_timezone")) {
+                    if (
+                        AirbyteType.Companion.nodeMatches(airbyteType, "timestamp_without_timezone")
+                    ) {
                         return TIMESTAMP_WITHOUT_TIMEZONE
-                    } else if (airbyteType == null || AirbyteType.Companion.nodeMatches(airbyteType, "timestamp_with_timezone")) {
+                    } else if (
+                        airbyteType == null ||
+                            AirbyteType.Companion.nodeMatches(
+                                airbyteType,
+                                "timestamp_with_timezone"
+                            )
+                    ) {
                         return TIMESTAMP_WITH_TIMEZONE
                     }
                 } else {

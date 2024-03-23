@@ -3,19 +3,19 @@
  */
 package io.airbyte.integrations.base.destination.typing_deduping
 
-import com.google.common.collect.ImmutableList
 import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Companion.fromJsonSchema
+import java.util.List
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
-import java.util.List
 
 class AirbyteTypeTest {
     @Test
     fun testStruct() {
         val structSchema: MutableList<String> = ArrayList()
-        structSchema.add("""
+        structSchema.add(
+            """
                      {
                        "type": "object",
                        "properties": {
@@ -66,8 +66,10 @@ class AirbyteTypeTest {
                        }
                      }
                      
-                     """.trimIndent())
-        structSchema.add("""
+                     """.trimIndent()
+        )
+        structSchema.add(
+            """
                      {
                        "type": ["object"],
                        "properties": {
@@ -118,8 +120,10 @@ class AirbyteTypeTest {
                        }
                      }
                      
-                     """.trimIndent())
-        structSchema.add("""
+                     """.trimIndent()
+        )
+        structSchema.add(
+            """
                      {
                        "type": ["null", "object"],
                        "properties": {
@@ -170,7 +174,8 @@ class AirbyteTypeTest {
                        }
                      }
                      
-                     """.trimIndent())
+                     """.trimIndent()
+        )
 
         val propertiesMap = LinkedHashMap<String, AirbyteType>()
         propertiesMap["key1"] = AirbyteProtocolType.BOOLEAN
@@ -194,24 +199,30 @@ class AirbyteTypeTest {
     @Test
     fun testEmptyStruct() {
         val structSchema: MutableList<String> = ArrayList()
-        structSchema.add("""
+        structSchema.add(
+            """
                      {
                        "type": "object"
                      }
                      
-                     """.trimIndent())
-        structSchema.add("""
+                     """.trimIndent()
+        )
+        structSchema.add(
+            """
                      {
                        "type": ["object"]
                      }
                      
-                     """.trimIndent())
-        structSchema.add("""
+                     """.trimIndent()
+        )
+        structSchema.add(
+            """
                      {
                        "type": ["null", "object"]
                      }
                      
-                     """.trimIndent())
+                     """.trimIndent()
+        )
 
         val struct: AirbyteType = Struct(LinkedHashMap())
         for (schema in structSchema) {
@@ -221,7 +232,8 @@ class AirbyteTypeTest {
 
     @Test
     fun testImplicitStruct() {
-        val structSchema = """
+        val structSchema =
+            """
                                 {
                                   "properties": {
                                     "key1": {
@@ -242,7 +254,8 @@ class AirbyteTypeTest {
     @Test
     fun testArray() {
         val arraySchema: MutableList<String> = ArrayList()
-        arraySchema.add("""
+        arraySchema.add(
+            """
                     {
                       "type": "array",
                       "items": {
@@ -252,8 +265,10 @@ class AirbyteTypeTest {
                       }
                     }
                     
-                    """.trimIndent())
-        arraySchema.add("""
+                    """.trimIndent()
+        )
+        arraySchema.add(
+            """
                     {
                       "type": ["array"],
                       "items": {
@@ -263,8 +278,10 @@ class AirbyteTypeTest {
                       }
                     }
                     
-                    """.trimIndent())
-        arraySchema.add("""
+                    """.trimIndent()
+        )
+        arraySchema.add(
+            """
                     {
                       "type": ["null", "array"],
                       "items": {
@@ -274,7 +291,8 @@ class AirbyteTypeTest {
                       }
                     }
                     
-                    """.trimIndent())
+                    """.trimIndent()
+        )
 
         val array: AirbyteType = Array(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
         for (schema in arraySchema) {
@@ -285,25 +303,31 @@ class AirbyteTypeTest {
     @Test
     fun testEmptyArray() {
         val arraySchema: MutableList<String> = ArrayList()
-        arraySchema.add("""
+        arraySchema.add(
+            """
                     {
                       "type": "array"
                     }
                     
-                    """.trimIndent())
-        arraySchema.add("""
+                    """.trimIndent()
+        )
+        arraySchema.add(
+            """
                     {
                       "type": ["array"]
                     }
                     
-                    """.trimIndent())
+                    """.trimIndent()
+        )
 
-        arraySchema.add("""
+        arraySchema.add(
+            """
                     {
                       "type": ["null", "array"]
                     }
                     
-                    """.trimIndent())
+                    """.trimIndent()
+        )
 
         val array: AirbyteType = Array(AirbyteProtocolType.UNKNOWN)
         for (schema in arraySchema) {
@@ -313,7 +337,8 @@ class AirbyteTypeTest {
 
     @Test
     fun testUnsupportedOneOf() {
-        val unsupportedOneOfSchema = """
+        val unsupportedOneOfSchema =
+            """
                                           {
                                             "oneOf": ["number", "string"]
                                           }
@@ -325,12 +350,16 @@ class AirbyteTypeTest {
         options.add(AirbyteProtocolType.STRING)
 
         val unsupportedOneOf = UnsupportedOneOf(options)
-        Assertions.assertEquals(unsupportedOneOf, fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema)))
+        Assertions.assertEquals(
+            unsupportedOneOf,
+            fromJsonSchema(Jsons.deserialize(unsupportedOneOfSchema))
+        )
     }
 
     @Test
     fun testUnion() {
-        val unionSchema = """
+        val unionSchema =
+            """
                                {
                                  "type": ["string", "number"]
                                }
@@ -347,7 +376,9 @@ class AirbyteTypeTest {
 
     @Test
     fun testUnionComplex() {
-        val schema = Jsons.deserialize("""
+        val schema =
+            Jsons.deserialize(
+                """
                                               {
                                                 "type": ["string", "object", "array", "null", "string", "object", "array", "null"],
                                                 "properties": {
@@ -356,59 +387,82 @@ class AirbyteTypeTest {
                                                 "items": {"type": "string"}
                                               }
                                               
-                                              """.trimIndent())
+                                              """.trimIndent()
+            )
 
         val parsed = fromJsonSchema(schema)
 
-        val expected: AirbyteType = Union(List.of(
-                AirbyteProtocolType.STRING,
-                Struct(object : LinkedHashMap<String?, AirbyteType?>() {
-                    init {
-                        put("foo", AirbyteProtocolType.STRING)
-                    }
-                }),
-                Array(AirbyteProtocolType.STRING)))
+        val expected: AirbyteType =
+            Union(
+                List.of(
+                    AirbyteProtocolType.STRING,
+                    Struct(
+                        object : LinkedHashMap<String, AirbyteType>() {
+                            init {
+                                put("foo", AirbyteProtocolType.STRING)
+                            }
+                        }
+                    ),
+                    Array(AirbyteProtocolType.STRING)
+                )
+            )
         Assertions.assertEquals(expected, parsed)
     }
 
     @Test
     fun testUnionUnderspecifiedNonPrimitives() {
-        val schema = Jsons.deserialize("""
+        val schema =
+            Jsons.deserialize(
+                """
                                               {
                                                 "type": ["string", "object", "array", "null", "string", "object", "array", "null"]
                                               }
                                               
-                                              """.trimIndent())
+                                              """.trimIndent()
+            )
 
         val parsed = fromJsonSchema(schema)
 
-        val expected: AirbyteType = Union(List.of(
-                AirbyteProtocolType.STRING,
-                Struct(LinkedHashMap()),
-                Array(AirbyteProtocolType.UNKNOWN)))
+        val expected: AirbyteType =
+            Union(
+                List.of(
+                    AirbyteProtocolType.STRING,
+                    Struct(LinkedHashMap()),
+                    Array(AirbyteProtocolType.UNKNOWN)
+                )
+            )
+        expected.toString()
         Assertions.assertEquals(expected, parsed)
     }
 
     @Test
     fun testInvalidTextualType() {
-        val invalidTypeSchema = """
+        val invalidTypeSchema =
+            """
                                      {
                                        "type": "foo"
                                      }
                                      
                                      """.trimIndent()
-        Assertions.assertEquals(AirbyteProtocolType.UNKNOWN, fromJsonSchema(Jsons.deserialize(invalidTypeSchema)))
+        Assertions.assertEquals(
+            AirbyteProtocolType.UNKNOWN,
+            fromJsonSchema(Jsons.deserialize(invalidTypeSchema))
+        )
     }
 
     @Test
     fun testInvalidBooleanType() {
-        val invalidTypeSchema = """
+        val invalidTypeSchema =
+            """
                                      {
                                        "type": true
                                      }
                                      
                                      """.trimIndent()
-        Assertions.assertEquals(AirbyteProtocolType.UNKNOWN, fromJsonSchema(Jsons.deserialize(invalidTypeSchema)))
+        Assertions.assertEquals(
+            AirbyteProtocolType.UNKNOWN,
+            fromJsonSchema(Jsons.deserialize(invalidTypeSchema))
+        )
     }
 
     @Test
@@ -424,7 +478,10 @@ class AirbyteTypeTest {
         invalidSchema.add("{}")
 
         for (schema in invalidSchema) {
-            Assertions.assertEquals(AirbyteProtocolType.UNKNOWN, fromJsonSchema(Jsons.deserialize(schema)))
+            Assertions.assertEquals(
+                AirbyteProtocolType.UNKNOWN,
+                fromJsonSchema(Jsons.deserialize(schema))
+            )
         }
     }
 
@@ -439,63 +496,98 @@ class AirbyteTypeTest {
         properties["key2"] = AirbyteProtocolType.INTEGER
         val s = Struct(properties)
 
-        unionToType[Union(ImmutableList.of(s, a))] = a
-        unionToType[Union(ImmutableList.of(AirbyteProtocolType.NUMBER, a))] = a
-        unionToType[Union(ImmutableList.of(AirbyteProtocolType.INTEGER, s))] = s
-        unionToType[Union(ImmutableList.of(AirbyteProtocolType.NUMBER, AirbyteProtocolType.DATE, AirbyteProtocolType.BOOLEAN))] = AirbyteProtocolType.DATE
-        unionToType[Union(ImmutableList.of(AirbyteProtocolType.INTEGER, AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.NUMBER))] = AirbyteProtocolType.NUMBER
-        unionToType[Union(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.INTEGER))] = AirbyteProtocolType.INTEGER
+        unionToType[Union(listOf(s, a))] = a
+        unionToType[Union(listOf(AirbyteProtocolType.NUMBER, a))] = a
+        unionToType[Union(listOf(AirbyteProtocolType.INTEGER, s))] = s
+        unionToType[
+            Union(
+                listOf(
+                    AirbyteProtocolType.NUMBER,
+                    AirbyteProtocolType.DATE,
+                    AirbyteProtocolType.BOOLEAN
+                )
+            )
+        ] = AirbyteProtocolType.DATE
+        unionToType[
+            Union(
+                listOf(
+                    AirbyteProtocolType.INTEGER,
+                    AirbyteProtocolType.BOOLEAN,
+                    AirbyteProtocolType.NUMBER
+                )
+            )
+        ] = AirbyteProtocolType.NUMBER
+        unionToType[Union(listOf(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.INTEGER))] =
+            AirbyteProtocolType.INTEGER
 
         Assertions.assertAll(
-                unionToType.entries.stream().map { e: Map.Entry<Union, AirbyteType> -> Executable { Assertions.assertEquals(e.value, e.key.chooseType()) } })
+            unionToType.entries.map { e ->
+                Executable { Assertions.assertEquals(e.value, e.key.chooseType()) }
+            }
+        )
     }
 
     @Test
     fun testAsColumns() {
-        val u = Union(List.of(
-                AirbyteProtocolType.STRING,
-                Struct(object : LinkedHashMap<String?, AirbyteType?>() {
-                    init {
-                        put("foo", AirbyteProtocolType.STRING)
-                    }
-                }),
-                Array(AirbyteProtocolType.STRING),  // This is bad behavior, but it matches current behavior so we'll test it.
-                // Ideally, we would recognize that the sub-unions are also objects.
-                Union(List.of(Struct(LinkedHashMap()))),
-                UnsupportedOneOf(List.of(Struct(LinkedHashMap())))))
+        val u =
+            Union(
+                List.of(
+                    AirbyteProtocolType.STRING,
+                    Struct(
+                        object : LinkedHashMap<String, AirbyteType>() {
+                            init {
+                                put("foo", AirbyteProtocolType.STRING)
+                            }
+                        }
+                    ),
+                    Array(
+                        AirbyteProtocolType.STRING
+                    ), // This is bad behavior, but it matches current behavior so we'll test it.
+                    // Ideally, we would recognize that the sub-unions are also objects.
+                    Union(List.of(Struct(LinkedHashMap()))),
+                    UnsupportedOneOf(List.of(Struct(LinkedHashMap())))
+                )
+            )
 
         val columns = u.asColumns()
 
         Assertions.assertEquals(
-                object : LinkedHashMap<Any?, Any?>() {
-                    init {
-                        put("foo", AirbyteProtocolType.STRING)
-                    }
-                },
-                columns)
+            object : LinkedHashMap<Any?, Any?>() {
+                init {
+                    put("foo", AirbyteProtocolType.STRING)
+                }
+            },
+            columns
+        )
     }
 
     @Test
     fun testAsColumnsMultipleObjects() {
-        val u = Union(List.of(
-                Struct(LinkedHashMap()),
-                Struct(LinkedHashMap())))
+        val u = Union(List.of(Struct(LinkedHashMap()), Struct(LinkedHashMap())))
 
-        // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
+        // This prooobably should throw an exception, but for the sake of smooth rollout it just
+        // logs a
         // warning for now.
         Assertions.assertEquals(LinkedHashMap<Any, Any>(), u.asColumns())
     }
 
     @Test
     fun testAsColumnsNoObjects() {
-        val u = Union(List.of(
-                AirbyteProtocolType.STRING,
-                Array(AirbyteProtocolType.STRING),
-                UnsupportedOneOf(ArrayList()),  // Similar to testAsColumns(), this is bad behavior.
-                Union(List.of(Struct(LinkedHashMap()))),
-                UnsupportedOneOf(List.of(Struct(LinkedHashMap())))))
+        val u =
+            Union(
+                List.of(
+                    AirbyteProtocolType.STRING,
+                    Array(AirbyteProtocolType.STRING),
+                    UnsupportedOneOf(
+                        ArrayList()
+                    ), // Similar to testAsColumns(), this is bad behavior.
+                    Union(List.of(Struct(LinkedHashMap()))),
+                    UnsupportedOneOf(List.of(Struct(LinkedHashMap())))
+                )
+            )
 
-        // This prooobably should throw an exception, but for the sake of smooth rollout it just logs a
+        // This prooobably should throw an exception, but for the sake of smooth rollout it just
+        // logs a
         // warning for now.
         Assertions.assertEquals(LinkedHashMap<Any, Any>(), u.asColumns())
     }

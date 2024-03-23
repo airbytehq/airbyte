@@ -8,31 +8,47 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import java.util.List
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.invocation.InvocationOnMock
-import java.util.List
 
 internal class CatalogParserTest {
-    private var sqlGenerator: SqlGenerator? = null
+    private lateinit var sqlGenerator: SqlGenerator
     private var parser: CatalogParser? = null
 
     @BeforeEach
     fun setup() {
         sqlGenerator = Mockito.mock(SqlGenerator::class.java)
         // noop quoting logic
-        Mockito.`when`(sqlGenerator.buildColumnId(ArgumentMatchers.any())).thenAnswer { invocation: InvocationOnMock ->
+        Mockito.`when`(sqlGenerator.buildColumnId(ArgumentMatchers.any())).thenAnswer {
+            invocation: InvocationOnMock ->
             val fieldName = invocation.getArgument<String>(0)
             ColumnId(fieldName, fieldName, fieldName)
         }
-        Mockito.`when`(sqlGenerator.buildStreamId(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer { invocation: InvocationOnMock ->
-            val namespace = invocation.getArgument<String>(0)
-            val name = invocation.getArgument<String>(1)
-            val rawNamespace = invocation.getArgument<String>(1)
-            StreamId(namespace, name, rawNamespace, namespace + "_abab_" + name, namespace, name)
-        }
+        Mockito.`when`(
+                sqlGenerator.buildStreamId(
+                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any()
+                )
+            )
+            .thenAnswer { invocation: InvocationOnMock ->
+                val namespace = invocation.getArgument<String>(0)
+                val name = invocation.getArgument<String>(1)
+                val rawNamespace = invocation.getArgument<String>(1)
+                StreamId(
+                    namespace,
+                    name,
+                    rawNamespace,
+                    namespace + "_abab_" + name,
+                    namespace,
+                    name
+                )
+            }
 
         parser = CatalogParser(sqlGenerator)
     }
@@ -43,40 +59,57 @@ internal class CatalogParserTest {
      */
     @Test
     fun finalNameCollision() {
-        Mockito.`when`(sqlGenerator!!.buildStreamId(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer { invocation: InvocationOnMock ->
-            val originalNamespace = invocation.getArgument<String>(0)
-            val originalName = (invocation.getArgument<String>(1))
-            val originalRawNamespace = (invocation.getArgument<String>(1))
+        Mockito.`when`(
+                sqlGenerator!!.buildStreamId(
+                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any()
+                )
+            )
+            .thenAnswer { invocation: InvocationOnMock ->
+                val originalNamespace = invocation.getArgument<String>(0)
+                val originalName = (invocation.getArgument<String>(1))
+                val originalRawNamespace = (invocation.getArgument<String>(1))
 
-            // emulate quoting logic that causes a name collision
-            val quotedName = originalName.replace("bar".toRegex(), "")
-            StreamId(originalNamespace, quotedName, originalRawNamespace, originalNamespace + "_abab_" + quotedName, originalNamespace,
-                    originalName)
-        }
-        val catalog = ConfiguredAirbyteCatalog().withStreams(List.of(
-                stream("a", "foobarfoo"),
-                stream("a", "foofoo")))
+                // emulate quoting logic that causes a name collision
+                val quotedName = originalName.replace("bar".toRegex(), "")
+                StreamId(
+                    originalNamespace,
+                    quotedName,
+                    originalRawNamespace,
+                    originalNamespace + "_abab_" + quotedName,
+                    originalNamespace,
+                    originalName
+                )
+            }
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(List.of(stream("a", "foobarfoo"), stream("a", "foofoo")))
 
         val parsedCatalog = parser!!.parseCatalog(catalog)
 
-        assertNotEquals(
-                parsedCatalog.streams().get(0).id().finalName(),
-                parsedCatalog.streams().get(1).id().finalName())
+        Assertions.assertNotEquals(
+            parsedCatalog.streams.get(0).id.finalName,
+            parsedCatalog.streams.get(1).id.finalName
+        )
     }
 
     /**
-     * The schema contains two fields, which will both end up named "foofoo" after quoting. Verify that
-     * they don't actually use the same column name.
+     * The schema contains two fields, which will both end up named "foofoo" after quoting. Verify
+     * that they don't actually use the same column name.
      */
     @Test
     fun columnNameCollision() {
-        Mockito.`when`(sqlGenerator!!.buildColumnId(ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer { invocation: InvocationOnMock ->
-            val originalName = invocation.getArgument<String>(0)
-            // emulate quoting logic that causes a name collision
-            val quotedName = originalName.replace("bar".toRegex(), "")
-            ColumnId(quotedName, originalName, quotedName)
-        }
-        val schema = Jsons.deserialize("""
+        Mockito.`when`(sqlGenerator!!.buildColumnId(ArgumentMatchers.any(), ArgumentMatchers.any()))
+            .thenAnswer { invocation: InvocationOnMock ->
+                val originalName = invocation.getArgument<String>(0)
+                // emulate quoting logic that causes a name collision
+                val quotedName = originalName.replace("bar".toRegex(), "")
+                ColumnId(quotedName, originalName, quotedName)
+            }
+        val schema =
+            Jsons.deserialize(
+                """
                                               {
                                                 "type": "object",
                                                 "properties": {
@@ -85,16 +118,22 @@ internal class CatalogParserTest {
                                                 }
                                               }
                                               
-                                              """.trimIndent())
+                                              """.trimIndent()
+            )
         val catalog = ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)))
 
         val parsedCatalog = parser!!.parseCatalog(catalog)
 
-        assertEquals(2, parsedCatalog.streams().get(0).columns().size())
+        Assertions.assertEquals(2, parsedCatalog.streams.get(0).columns!!.size)
     }
 
     companion object {
-        private fun stream(namespace: String, name: String, schema: JsonNode = Jsons.deserialize("""
+        private fun stream(
+            namespace: String,
+            name: String,
+            schema: JsonNode =
+                Jsons.deserialize(
+                    """
                           {
                             "type": "object",
                             "properties": {
@@ -102,12 +141,13 @@ internal class CatalogParserTest {
                             }
                           }
                           
-                          """.trimIndent())): ConfiguredAirbyteStream {
-            return ConfiguredAirbyteStream().withStream(
-                    AirbyteStream()
-                            .withNamespace(namespace)
-                            .withName(name)
-                            .withJsonSchema(schema))
+                          """.trimIndent()
+                )
+        ): ConfiguredAirbyteStream {
+            return ConfiguredAirbyteStream()
+                .withStream(
+                    AirbyteStream().withNamespace(namespace).withName(name).withJsonSchema(schema)
+                )
         }
     }
 }

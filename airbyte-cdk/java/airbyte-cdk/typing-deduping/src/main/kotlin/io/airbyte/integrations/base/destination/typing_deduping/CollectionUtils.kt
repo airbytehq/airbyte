@@ -8,11 +8,11 @@ import java.util.*
 /**
  * TODO these are not in the right place, they probably belongs in a base library but to avoid
  * having to publish a bunch of connectors I'm putting it here temporarily
- *
  */
 object CollectionUtils {
     /**
-     * Pass in a collection and search term to determine whether any of the values match ignoring case
+     * Pass in a collection and search term to determine whether any of the values match ignoring
+     * case
      *
      * @param collection the collection of values
      * @param search the value to look for
@@ -30,15 +30,22 @@ object CollectionUtils {
      * @param searchTerms the keys you're looking for
      * @return whether all searchTerms are in the searchCollection
      */
-    fun containsAllIgnoreCase(searchCollection: Collection<String>, searchTerms: Collection<String>): Boolean {
+    fun containsAllIgnoreCase(
+        searchCollection: Collection<String>,
+        searchTerms: Collection<String>
+    ): Boolean {
         require(!searchTerms.isEmpty()) {
-            // There isn't a good behavior for an empty collection. Without this check, an empty collection
+            // There isn't a good behavior for an empty collection. Without this check, an empty
+            // collection
             // would always return
-            // true, but it feels misleading to say that the searchCollection does "contain all" when
+            // true, but it feels misleading to say that the searchCollection does "contain all"
+            // when
             // searchTerms is empty
             "Search Terms collection may not be empty"
         }
-        return searchTerms.stream().allMatch { term: String -> containsIgnoreCase(searchCollection, term) }
+        return searchTerms.stream().allMatch { term: String ->
+            containsIgnoreCase(searchCollection, term)
+        }
     }
 
     /**
@@ -52,6 +59,9 @@ object CollectionUtils {
         if (collection.contains(search)) {
             return Optional.of(search)
         }
-        return collection.stream().filter { s: String -> s.equals(search, ignoreCase = true) }.findFirst()
+        return collection
+            .stream()
+            .filter { s: String -> s.equals(search, ignoreCase = true) }
+            .findFirst()
     }
 }

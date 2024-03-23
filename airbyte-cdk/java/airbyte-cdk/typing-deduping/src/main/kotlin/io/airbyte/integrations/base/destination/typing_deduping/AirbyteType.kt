@@ -14,12 +14,11 @@ interface AirbyteType {
 
     companion object {
         /**
-         * The most common call pattern is probably to use this method on the stream schema, verify that
-         * it's an [Struct] schema, and then call [Struct.properties] to get the columns.
+         * The most common call pattern is probably to use this method on the stream schema, verify
+         * that it's an [Struct] schema, and then call [Struct.properties] to get the columns.
          *
-         *
-         * If the top-level schema is not an object, then we can't really do anything with it, and should
-         * probably fail the sync. (but see also [Union.asColumns]).
+         * If the top-level schema is not an object, then we can't really do anything with it, and
+         * should probably fail the sync. (but see also [Union.asColumns]).
          */
         @JvmStatic
         fun fromJsonSchema(schema: JsonNode): AirbyteType {
@@ -37,10 +36,13 @@ interface AirbyteType {
                     }
                 } else if (schema.hasNonNull("oneOf")) {
                     val options: MutableList<AirbyteType> = ArrayList()
-                    schema["oneOf"].elements().forEachRemaining { element: JsonNode -> options.add(fromJsonSchema(element)) }
+                    schema["oneOf"].elements().forEachRemaining { element: JsonNode ->
+                        options.add(fromJsonSchema(element))
+                    }
                     return UnsupportedOneOf(options)
                 } else if (schema.hasNonNull("properties")) {
-                    // The schema has neither type nor oneof, but it does have properties. Assume we're looking at a
+                    // The schema has neither type nor oneof, but it does have properties. Assume
+                    // we're looking at a
                     // struct.
                     // This is for backwards-compatibility with legacy normalization.
                     return getStruct(schema)
@@ -89,19 +91,28 @@ interface AirbyteType {
                 }
             }
 
-            // we encounter an array of types that actually represents a single type rather than a Union
+            // we encounter an array of types that actually represents a single type rather than a
+            // Union
             if (typeOptions.size == 1) {
                 return if (typeOptions[0] == "object") {
                     getStruct(schema)
                 } else if (typeOptions[0] == "array") {
                     getArray(schema)
                 } else {
-                    AirbyteProtocolType.Companion.fromJson(getTrimmedJsonSchema(schema, typeOptions[0]))
+                    AirbyteProtocolType.Companion.fromJson(
+                        getTrimmedJsonSchema(schema, typeOptions[0])
+                    )
                 }
             }
 
             // Recurse into a schema that forces a specific one of each option
-            val options = typeOptions.stream().map { typeOption: String -> fromJsonSchema(getTrimmedJsonSchema(schema, typeOption)) }.toList()
+            val options =
+                typeOptions
+                    .stream()
+                    .map { typeOption: String ->
+                        fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))
+                    }
+                    .toList()
             return Union(options)
         }
 
