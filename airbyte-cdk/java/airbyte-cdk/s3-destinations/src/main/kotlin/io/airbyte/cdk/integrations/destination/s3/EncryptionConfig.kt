@@ -9,7 +9,8 @@ import java.util.*
 interface EncryptionConfig {
     companion object {
         fun fromJson(encryptionNode: JsonNode?): EncryptionConfig? {
-            // For backwards-compatibility. Preexisting configs which don't contain the "encryption" key will
+            // For backwards-compatibility. Preexisting configs which don't contain the "encryption"
+            // key will
             // pass a null JsonNode into this method.
             if (encryptionNode == null) {
                 return NoEncryption()

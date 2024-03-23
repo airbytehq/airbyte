@@ -28,5 +28,5 @@ interface Integration {
      * @throws Exception
      * - any exception.
      */
-    @Throws(Exception::class) fun check(config: JsonNode?): AirbyteConnectionStatus?
+    @Throws(Exception::class) fun check(config: JsonNode): AirbyteConnectionStatus?
 }

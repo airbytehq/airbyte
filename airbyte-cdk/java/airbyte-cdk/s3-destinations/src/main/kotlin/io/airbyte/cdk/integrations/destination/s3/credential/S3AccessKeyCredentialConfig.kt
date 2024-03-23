@@ -8,8 +8,11 @@ import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 
-class S3AccessKeyCredentialConfig(@JvmField val accessKeyId: String?, @JvmField val secretAccessKey: String?) : S3CredentialConfig {
-    override val credentialType: CredentialType
+class S3AccessKeyCredentialConfig(
+    @JvmField val accessKeyId: String?,
+    @JvmField val secretAccessKey: String?
+) : S3CredentialConfig {
+    override val credentialType: S3CredentialType
         get() = S3CredentialType.ACCESS_KEY
 
     override val s3CredentialsProvider: AWSCredentialsProvider

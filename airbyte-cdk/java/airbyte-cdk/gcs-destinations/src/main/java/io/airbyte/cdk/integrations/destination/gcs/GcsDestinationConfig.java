@@ -61,7 +61,7 @@ public class GcsDestinationConfig extends S3DestinationConfig {
 
   @Override
   protected AmazonS3 createS3Client() {
-    switch (credentialConfig.credentialType) {
+    switch (credentialConfig.getCredentialType()) {
       case HMAC_KEY -> {
         final GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) credentialConfig;
         final BasicAWSCredentials awsCreds = new BasicAWSCredentials(hmacKeyCredential.getHmacKeyAccessId(), hmacKeyCredential.getHmacKeySecret());
@@ -72,7 +72,7 @@ public class GcsDestinationConfig extends S3DestinationConfig {
             .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
             .build();
       }
-      default -> throw new IllegalArgumentException("Unsupported credential type: " + credentialConfig.credentialType.name());
+      default -> throw new IllegalArgumentException("Unsupported credential type: " + credentialConfig.getCredentialType().name());
     }
   }
 

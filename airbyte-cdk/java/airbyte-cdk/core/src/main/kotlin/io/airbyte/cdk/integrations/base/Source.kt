@@ -21,7 +21,7 @@ interface Source : Integration {
      * @throws Exception
      * - any exception.
      */
-    @Throws(Exception::class) fun discover(config: JsonNode?): AirbyteCatalog?
+    @Throws(Exception::class) fun discover(config: JsonNode): AirbyteCatalog?
 
     /**
      * Return a iterator of messages pulled from the source.
@@ -41,7 +41,7 @@ interface Source : Integration {
      */
     @Throws(Exception::class)
     fun read(
-        config: JsonNode?,
+        config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
         state: JsonNode?
     ): AutoCloseableIterator<AirbyteMessage>
@@ -64,7 +64,7 @@ interface Source : Integration {
      */
     @Throws(Exception::class)
     fun readStreams(
-        config: JsonNode?,
+        config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
         state: JsonNode?
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {

@@ -112,7 +112,7 @@ class GcsAvroFormatConfigTest {
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     final S3FormatConfig formatConfig = gcsDestinationConfig.formatConfig;
-    assertEquals("AVRO", formatConfig.format.name());
+    assertEquals("AVRO", formatConfig.getFormat().name());
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
         .create(gcsDestinationConfig.bucketName, "objectKey", null)

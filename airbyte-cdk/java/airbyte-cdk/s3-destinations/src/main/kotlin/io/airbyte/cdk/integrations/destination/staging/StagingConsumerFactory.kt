@@ -12,43 +12,48 @@ import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
  * [AirbyteMessage] for processing
  */
-class StagingConsumerFactory private constructor(private val outputRecordCollector: Consumer<AirbyteMessage>?,
-                                                 private val database: JdbcDatabase?,
-                                                 private val stagingOperations: StagingOperations?,
-                                                 private val namingResolver: NamingConventionTransformer?,
-                                                 private val config: JsonNode?,
-                                                 private val catalog: ConfiguredAirbyteCatalog?,
-                                                 private val purgeStagingData: Boolean,
-                                                 private val typerDeduperValve: TypeAndDedupeOperationValve?,
-                                                 private val typerDeduper: TyperDeduper?,
-                                                 private val parsedCatalog: ParsedCatalog?,
-                                                 private val defaultNamespace: String?,
-                                                 private val useDestinationsV2Columns: Boolean,
-        // Optional fields
-                                                 private val bufferMemoryLimit: Optional<Long>,
-                                                 private val optimalBatchSizeBytes: Long,
-                                                 private val dataTransformer: StreamAwareDataTransformer) : SerialStagingConsumerFactory() {
+class StagingConsumerFactory
+private constructor(
+    private val outputRecordCollector: Consumer<AirbyteMessage>?,
+    private val database: JdbcDatabase?,
+    private val stagingOperations: StagingOperations?,
+    private val namingResolver: NamingConventionTransformer?,
+    private val config: JsonNode?,
+    private val catalog: ConfiguredAirbyteCatalog?,
+    private val purgeStagingData: Boolean,
+    private val typerDeduperValve: TypeAndDedupeOperationValve?,
+    private val typerDeduper: TyperDeduper?,
+    private val parsedCatalog: ParsedCatalog?,
+    private val defaultNamespace: String?,
+    private val useDestinationsV2Columns: Boolean,
+    // Optional fields
+    private val bufferMemoryLimit: Optional<Long>,
+    private val optimalBatchSizeBytes: Long,
+    private val dataTransformer: StreamAwareDataTransformer
+) : SerialStagingConsumerFactory() {
     class Builder {
         // Required (?) fields
-        // (TODO which of these are _actually_ required, and which have we just coincidentally always
+        // (TODO which of these are _actually_ required, and which have we just coincidentally
+        // always
         // provided?)
         var outputRecordCollector: Consumer<AirbyteMessage>? = null
         var database: JdbcDatabase? = null
@@ -86,28 +91,38 @@ class StagingConsumerFactory private constructor(private val outputRecordCollect
 
         fun build(): StagingConsumerFactory {
             return StagingConsumerFactory(
-                    outputRecordCollector,
-                    database,
-                    stagingOperations,
-                    namingResolver,
-                    config,
-                    catalog,
-                    purgeStagingData,
-                    typerDeduperValve,
-                    typerDeduper,
-                    parsedCatalog,
-                    defaultNamespace,
-                    useDestinationsV2Columns,
-                    bufferMemoryLimit,
-                    optimalBatchSizeBytes,
-                    (if (dataTransformer != null) dataTransformer else IdentityDataTransformer())!!)
+                outputRecordCollector,
+                database,
+                stagingOperations,
+                namingResolver,
+                config,
+                catalog,
+                purgeStagingData,
+                typerDeduperValve,
+                typerDeduper,
+                parsedCatalog,
+                defaultNamespace,
+                useDestinationsV2Columns,
+                bufferMemoryLimit,
+                optimalBatchSizeBytes,
+                (if (dataTransformer != null) dataTransformer else IdentityDataTransformer())!!
+            )
         }
     }
 
     fun createAsync(): SerializedAirbyteMessageConsumer {
-        val writeConfigs: List<WriteConfig> = createWriteConfigs(namingResolver, config, catalog, parsedCatalog, useDestinationsV2Columns)
-        val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> = streamDescToWriteConfig(writeConfigs)
-        val flusher = AsyncFlush(
+        val writeConfigs: List<WriteConfig> =
+            createWriteConfigs(
+                namingResolver,
+                config,
+                catalog,
+                parsedCatalog,
+                useDestinationsV2Columns
+            )
+        val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> =
+            streamDescToWriteConfig(writeConfigs)
+        val flusher =
+            AsyncFlush(
                 streamDescToWriteConfig,
                 stagingOperations,
                 database,
@@ -115,27 +130,36 @@ class StagingConsumerFactory private constructor(private val outputRecordCollect
                 typerDeduperValve,
                 typerDeduper,
                 optimalBatchSizeBytes,
-                useDestinationsV2Columns)
+                useDestinationsV2Columns
+            )
         return AsyncStreamConsumer(
-                outputRecordCollector,
-                GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),  // todo (cgardens) - wrapping the old close function to avoid more code churn.
-                { hasFailed, streamSyncSummaries ->
-                    try {
-                        GeneralStagingFunctions.onCloseFunction(
-                                database,
-                                stagingOperations,
-                                writeConfigs,
-                                purgeStagingData,
-                                typerDeduper).accept(false, streamSyncSummaries)
-                    } catch (e: Exception) {
-                        throw RuntimeException(e)
-                    }
-                },
-                flusher,
-                catalog,
-                BufferManager(getMemoryLimit(bufferMemoryLimit)),
-                Optional.ofNullable(defaultNamespace),
-                dataTransformer)
+            outputRecordCollector!!,
+            GeneralStagingFunctions.onStartFunction(
+                database,
+                stagingOperations,
+                writeConfigs,
+                typerDeduper
+            ), // todo (cgardens) - wrapping the old close function to avoid more code churn.
+            OnCloseFunction { _, streamSyncSummaries ->
+                try {
+                    GeneralStagingFunctions.onCloseFunction(
+                            database,
+                            stagingOperations,
+                            writeConfigs,
+                            purgeStagingData,
+                            typerDeduper
+                        )
+                        .accept(false, streamSyncSummaries)
+                } catch (e: Exception) {
+                    throw RuntimeException(e)
+                }
+            },
+            flusher,
+            catalog!!,
+            BufferManager(getMemoryLimit(bufferMemoryLimit)),
+            Optional.ofNullable(defaultNamespace),
+            dataTransformer
+        )
     }
 
     companion object {
@@ -144,18 +168,19 @@ class StagingConsumerFactory private constructor(private val outputRecordCollect
         private val SYNC_DATETIME: Instant = Instant.now()
 
         fun builder(
-                outputRecordCollector: Consumer<AirbyteMessage>?,
-                database: JdbcDatabase?,
-                stagingOperations: StagingOperations?,
-                namingResolver: NamingConventionTransformer?,
-                config: JsonNode?,
-                catalog: ConfiguredAirbyteCatalog?,
-                purgeStagingData: Boolean,
-                typerDeduperValve: TypeAndDedupeOperationValve?,
-                typerDeduper: TyperDeduper?,
-                parsedCatalog: ParsedCatalog?,
-                defaultNamespace: String?,
-                useDestinationsV2Columns: Boolean): Builder {
+            outputRecordCollector: Consumer<AirbyteMessage>,
+            database: JdbcDatabase?,
+            stagingOperations: StagingOperations?,
+            namingResolver: NamingConventionTransformer?,
+            config: JsonNode?,
+            catalog: ConfiguredAirbyteCatalog,
+            purgeStagingData: Boolean,
+            typerDeduperValve: TypeAndDedupeOperationValve?,
+            typerDeduper: TyperDeduper?,
+            parsedCatalog: ParsedCatalog?,
+            defaultNamespace: String?,
+            useDestinationsV2Columns: Boolean
+        ): Builder {
             val builder = Builder()
             builder.outputRecordCollector = outputRecordCollector
             builder.database = database
@@ -173,40 +198,58 @@ class StagingConsumerFactory private constructor(private val outputRecordCollect
         }
 
         private fun getMemoryLimit(bufferMemoryLimit: Optional<Long>): Long {
-            return bufferMemoryLimit.orElse((Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong())
+            return bufferMemoryLimit.orElse(
+                (Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong()
+            )
         }
 
-        private fun streamDescToWriteConfig(writeConfigs: List<WriteConfig>): Map<StreamDescriptor, WriteConfig> {
-            val conflictingStreams: MutableSet<WriteConfig?> = HashSet<WriteConfig?>()
-            val streamDescToWriteConfig: MutableMap<StreamDescriptor, WriteConfig> = HashMap<StreamDescriptor, WriteConfig>()
+        private fun streamDescToWriteConfig(
+            writeConfigs: List<WriteConfig>
+        ): Map<StreamDescriptor, WriteConfig> {
+            val conflictingStreams: MutableSet<WriteConfig> = HashSet()
+            val streamDescToWriteConfig: MutableMap<StreamDescriptor, WriteConfig> =
+                HashMap<StreamDescriptor, WriteConfig>()
             for (config in writeConfigs) {
                 val streamIdentifier = toStreamDescriptor(config)
                 if (streamDescToWriteConfig.containsKey(streamIdentifier)) {
                     conflictingStreams.add(config)
-                    val existingConfig: WriteConfig? = streamDescToWriteConfig[streamIdentifier]
-                    // The first conflicting stream won't have any problems, so we need to explicitly add it here.
+                    val existingConfig: WriteConfig =
+                        streamDescToWriteConfig.getValue(streamIdentifier)
+                    // The first conflicting stream won't have any problems, so we need to
+                    // explicitly add it here.
                     conflictingStreams.add(existingConfig)
                 } else {
                     streamDescToWriteConfig[streamIdentifier] = config
                 }
             }
             if (!conflictingStreams.isEmpty()) {
-                val message = String.format(
+                val message =
+                    String.format(
                         "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-                        conflictingStreams.stream().map<String>(Function<WriteConfig?, String> { config: WriteConfig? -> config.getNamespace() + "." + config.getStreamName() }).collect(Collectors.joining(", ")))
+                        conflictingStreams
+                            .stream()
+                            .map<String>(
+                                Function<WriteConfig, String> { config: WriteConfig ->
+                                    config.getNamespace() + "." + config.getStreamName()
+                                }
+                            )
+                            .collect(Collectors.joining(", "))
+                    )
                 throw ConfigErrorException(message)
             }
             return streamDescToWriteConfig
         }
 
         private fun toStreamDescriptor(config: WriteConfig): StreamDescriptor {
-            return StreamDescriptor().withName(config.getStreamName()).withNamespace(config.getNamespace())
+            return StreamDescriptor()
+                .withName(config.getStreamName())
+                .withNamespace(config.getNamespace())
         }
 
         /**
-         * Creates a list of all [WriteConfig] for each stream within a
-         * [ConfiguredAirbyteCatalog]. Each write config represents the configuration settings for
-         * writing to a destination connector
+         * Creates a list of all [WriteConfig] for each stream within a [ConfiguredAirbyteCatalog].
+         * Each write config represents the configuration settings for writing to a destination
+         * connector
          *
          * @param namingResolver [NamingConventionTransformer] used to transform names that are
          * acceptable by each destination connector
@@ -215,20 +258,32 @@ class StagingConsumerFactory private constructor(private val outputRecordCollect
          * [ConfiguredAirbyteStream]
          * @return list of all write configs for each stream in a [ConfiguredAirbyteCatalog]
          */
-        private fun createWriteConfigs(namingResolver: NamingConventionTransformer?,
-                                       config: JsonNode?,
-                                       catalog: ConfiguredAirbyteCatalog?,
-                                       parsedCatalog: ParsedCatalog?,
-                                       useDestinationsV2Columns: Boolean): List<WriteConfig> {
-            return catalog!!.streams.stream().map(toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns)).collect<List<WriteConfig>, Any>(Collectors.toList<Any>())
+        private fun createWriteConfigs(
+            namingResolver: NamingConventionTransformer?,
+            config: JsonNode?,
+            catalog: ConfiguredAirbyteCatalog?,
+            parsedCatalog: ParsedCatalog?,
+            useDestinationsV2Columns: Boolean
+        ): List<WriteConfig> {
+            return catalog!!
+                .streams
+                .stream()
+                .map(toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns))
+                .toList()
         }
 
-        private fun toWriteConfig(namingResolver: NamingConventionTransformer?,
-                                  config: JsonNode?,
-                                  parsedCatalog: ParsedCatalog?,
-                                  useDestinationsV2Columns: Boolean): Function<ConfiguredAirbyteStream, WriteConfig> {
-            return Function<ConfiguredAirbyteStream, WriteConfig> { stream: ConfiguredAirbyteStream ->
-                Preconditions.checkNotNull(stream.destinationSyncMode, "Undefined destination sync mode")
+        private fun toWriteConfig(
+            namingResolver: NamingConventionTransformer?,
+            config: JsonNode?,
+            parsedCatalog: ParsedCatalog?,
+            useDestinationsV2Columns: Boolean
+        ): Function<ConfiguredAirbyteStream, WriteConfig> {
+            return Function<ConfiguredAirbyteStream, WriteConfig> { stream: ConfiguredAirbyteStream
+                ->
+                Preconditions.checkNotNull(
+                    stream.destinationSyncMode,
+                    "Undefined destination sync mode"
+                )
                 val abStream = stream.stream
                 val streamName = abStream.name
 
@@ -239,24 +294,34 @@ class StagingConsumerFactory private constructor(private val outputRecordCollect
                     outputSchema = streamId.rawNamespace
                     tableName = streamId.rawName
                 } else {
-                    outputSchema = getOutputSchema(abStream, config!!["schema"].asText(), namingResolver)
+                    outputSchema =
+                        getOutputSchema(abStream, config!!["schema"].asText(), namingResolver)
                     tableName = namingResolver!!.getRawTableName(streamName)
                 }
                 val tmpTableName = namingResolver!!.getTmpTableName(streamName)
                 val syncMode = stream.destinationSyncMode
 
                 val writeConfig: WriteConfig =
-                        WriteConfig(streamName, abStream.namespace, outputSchema, tmpTableName, tableName, syncMode, SYNC_DATETIME)
+                    WriteConfig(
+                        streamName,
+                        abStream.namespace,
+                        outputSchema,
+                        tmpTableName,
+                        tableName,
+                        syncMode,
+                        SYNC_DATETIME
+                    )
                 LOGGER.info("Write config: {}", writeConfig)
                 writeConfig
             }
         }
 
-        private fun getOutputSchema(stream: AirbyteStream,
-                                    defaultDestSchema: String,
-                                    namingResolver: NamingConventionTransformer?): String {
-            return if (stream.namespace != null
-            ) namingResolver!!.getNamespace(stream.namespace)
+        private fun getOutputSchema(
+            stream: AirbyteStream,
+            defaultDestSchema: String,
+            namingResolver: NamingConventionTransformer?
+        ): String {
+            return if (stream.namespace != null) namingResolver!!.getNamespace(stream.namespace)
             else namingResolver!!.getNamespace(defaultDestSchema)
         }
     }

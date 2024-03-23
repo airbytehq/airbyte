@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory
 open class SshTunnel
 @JvmOverloads
 constructor(
-    val originalConfig: JsonNode?,
+    val originalConfig: JsonNode,
     private val hostKey: List<String>?,
     private val portKey: List<String>?,
     private val endPointKey: String?,
@@ -196,7 +196,7 @@ constructor(
     }
 
     @get:Throws(Exception::class)
-    val configInTunnel: JsonNode?
+    val configInTunnel: JsonNode
         get() {
             if (tunnelMethod == TunnelMethod.NO_TUNNEL) {
                 return originalConfig
@@ -423,7 +423,7 @@ constructor(
         const val TIMEOUT_MILLIS: Int = 15000 // 15 seconds
 
         fun getInstance(
-            config: JsonNode?,
+            config: JsonNode,
             hostKey: List<String>?,
             portKey: List<String>?
         ): SshTunnel {
@@ -490,7 +490,7 @@ constructor(
         }
 
         @Throws(Exception::class)
-        fun getInstance(config: JsonNode?, endPointKey: String?): SshTunnel {
+        fun getInstance(config: JsonNode, endPointKey: String?): SshTunnel {
             val tunnelMethod =
                 Jsons.getOptional(config, "tunnel_method", "tunnel_method")
                     .map { method: JsonNode ->
@@ -521,7 +521,7 @@ constructor(
 
         @Throws(Exception::class)
         fun sshWrap(
-            config: JsonNode?,
+            config: JsonNode,
             hostKey: List<String>?,
             portKey: List<String>?,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
@@ -534,7 +534,7 @@ constructor(
 
         @Throws(Exception::class)
         fun sshWrap(
-            config: JsonNode?,
+            config: JsonNode,
             endPointKey: String?,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
@@ -546,10 +546,10 @@ constructor(
 
         @Throws(Exception::class)
         fun <T> sshWrap(
-            config: JsonNode?,
+            config: JsonNode,
             hostKey: List<String>?,
             portKey: List<String>?,
-            wrapped: CheckedFunction<JsonNode?, T, Exception?>
+            wrapped: CheckedFunction<JsonNode, T, Exception?>
         ): T {
             getInstance(config, hostKey, portKey).use { sshTunnel ->
                 return wrapped.apply(sshTunnel.configInTunnel)
@@ -558,9 +558,9 @@ constructor(
 
         @Throws(Exception::class)
         fun <T> sshWrap(
-            config: JsonNode?,
+            config: JsonNode,
             endPointKey: String?,
-            wrapped: CheckedFunction<JsonNode?, T, Exception?>
+            wrapped: CheckedFunction<JsonNode, T, Exception?>
         ): T {
             getInstance(config, endPointKey).use { sshTunnel ->
                 return wrapped.apply(sshTunnel.configInTunnel)

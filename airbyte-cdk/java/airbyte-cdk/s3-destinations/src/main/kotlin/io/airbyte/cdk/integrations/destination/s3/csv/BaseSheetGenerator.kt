@@ -20,15 +20,20 @@ abstract class BaseSheetGenerator : CsvSheetGenerator {
         return data
     }
 
-    override fun getDataRow(formattedData: JsonNode?): List<Any> {
+    override fun getDataRow(formattedData: JsonNode): List<Any> {
         return LinkedList<Any>(getRecordColumns(formattedData))
     }
 
-    override fun getDataRow(id: UUID, formattedString: String, emittedAt: Long, airbyteMetaString: String): List<Any> {
+    override fun getDataRow(
+        id: UUID,
+        formattedString: String,
+        emittedAt: Long,
+        airbyteMetaString: String
+    ): List<Any> {
         // TODO: Make this abstract or default if No-op is intended in NoFlatteningSheetGenerator or
         // RootLevelFlatteningSheetGenerator
         throw UnsupportedOperationException("Not implemented in BaseSheetGenerator")
     }
 
-    abstract fun getRecordColumns(json: JsonNode?): List<String>?
+    abstract fun getRecordColumns(json: JsonNode): List<String>?
 }

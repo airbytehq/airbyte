@@ -12,14 +12,15 @@ import com.amazonaws.services.s3.model.ObjectMetadata
  * A custom stream transfer manager which overwrites the metadata on the
  * InitiateMultipartUploadRequest.
  *
- *
  * This is, apparently, the correct way to implement this functionality.
  * https://github.com/alexmojaki/s3-stream-upload/issues/3
  */
-class StreamTransferManagerWithMetadata(bucketName: String?,
-                                        putKey: String?,
-                                        s3Client: AmazonS3?,
-                                        private val userMetadata: Map<String, String>?) : StreamTransferManager(bucketName, putKey, s3Client) {
+class StreamTransferManagerWithMetadata(
+    bucketName: String?,
+    putKey: String?,
+    s3Client: AmazonS3?,
+    private val userMetadata: Map<String, String>?
+) : StreamTransferManager(bucketName, putKey, s3Client) {
     override fun customiseInitiateRequest(request: InitiateMultipartUploadRequest) {
         if (userMetadata != null) {
             var objectMetadata = request.getObjectMetadata()

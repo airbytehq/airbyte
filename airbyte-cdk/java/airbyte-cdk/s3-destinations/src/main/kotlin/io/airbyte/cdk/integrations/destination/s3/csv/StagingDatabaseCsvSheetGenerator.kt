@@ -14,41 +14,55 @@ import java.util.*
  * A CsvSheetGenerator that produces data in the format expected by JdbcSqlOperations. See
  * JdbcSqlOperations#createTableQuery.
  *
- *
  * This intentionally does not extend [BaseSheetGenerator], because it needs the columns in a
  * different order (ABID, JSON, timestamp) vs (ABID, timestamp, JSON)
- *
  *
  * In 1s1t mode, the column ordering is also different (raw_id, extracted_at, loaded_at, data). Note
  * that the loaded_at column is rendered as an empty string; callers are expected to configure their
  * destination to parse this as NULL. For example, Snowflake's COPY into command accepts a NULL_IF
  * parameter, and Redshift accepts an EMPTYASNULL option.
  */
-class StagingDatabaseCsvSheetGenerator @JvmOverloads constructor(private val useDestinationsV2Columns: Boolean = false) : CsvSheetGenerator {
+class StagingDatabaseCsvSheetGenerator
+@JvmOverloads
+constructor(private val useDestinationsV2Columns: Boolean = false) : CsvSheetGenerator {
     // TODO is this even used anywhere?
-    override val headerRow: List<String> = if (this.useDestinationsV2Columns) JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES else JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
+    private var header: List<String> =
+        if (this.useDestinationsV2Columns) JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
+        else JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
 
-    override fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage): List<Any> {
-        return getDataRow(id, Jsons.serialize(recordMessage.data), recordMessage.emittedAt, Jsons.serialize(recordMessage.meta))
+    override fun getHeaderRow(): List<String> {
+        return header
     }
 
-    override fun getDataRow(formattedData: JsonNode?): List<Any> {
+    override fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage): List<Any> {
+        return getDataRow(
+            id,
+            Jsons.serialize(recordMessage.data),
+            recordMessage.emittedAt,
+            Jsons.serialize(recordMessage.meta)
+        )
+    }
+
+    override fun getDataRow(formattedData: JsonNode): List<Any> {
         return LinkedList<Any>(listOf(Jsons.serialize(formattedData)))
     }
 
-    override fun getDataRow(id: UUID, formattedString: String, emittedAt: Long, formattedAirbyteMetaString: String): List<Any> {
+    override fun getDataRow(
+        id: UUID,
+        formattedString: String,
+        emittedAt: Long,
+        formattedAirbyteMetaString: String
+    ): List<Any> {
         return if (useDestinationsV2Columns) {
             java.util.List.of<Any>(
-                    id,
-                    Instant.ofEpochMilli(emittedAt),
-                    "",
-                    formattedString,
-                    formattedAirbyteMetaString)
+                id,
+                Instant.ofEpochMilli(emittedAt),
+                "",
+                formattedString,
+                formattedAirbyteMetaString
+            )
         } else {
-            java.util.List.of<Any>(
-                    id,
-                    formattedString,
-                    Instant.ofEpochMilli(emittedAt))
+            java.util.List.of<Any>(id, formattedString, Instant.ofEpochMilli(emittedAt))
         }
     }
 }

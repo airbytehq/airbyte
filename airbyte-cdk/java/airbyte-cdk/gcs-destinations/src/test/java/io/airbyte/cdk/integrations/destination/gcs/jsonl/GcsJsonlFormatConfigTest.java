@@ -33,7 +33,7 @@ public class GcsJsonlFormatConfigTest {
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     final S3FormatConfig formatConfig = gcsDestinationConfig.formatConfig;
-    assertEquals("JSONL", formatConfig.format.name());
+    assertEquals("JSONL", formatConfig.getFormat().name());
 
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
