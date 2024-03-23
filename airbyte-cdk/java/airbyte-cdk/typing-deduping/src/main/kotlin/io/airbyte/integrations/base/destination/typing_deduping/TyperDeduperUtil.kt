@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping
 
-import com.google.common.collect.Streams
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
 import io.airbyte.commons.concurrency.CompletableFutures
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
@@ -161,14 +160,10 @@ class TyperDeduperUtil {
             destinationHandler: DestinationHandler<DestinationState>,
             parsedCatalog: ParsedCatalog
         ) {
-            val rawSchema = parsedCatalog.streams.stream().map { it.id.rawNamespace }
-            val finalSchema = parsedCatalog.streams.stream().map { it.id.finalNamespace }
+            val rawSchema = parsedCatalog.streams.map { it.id.rawNamespace }
+            val finalSchema = parsedCatalog.streams.map { it.id.finalNamespace }
             val createAllSchemasSql =
-                Streams.concat<String>(rawSchema, finalSchema)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .map(sqlGenerator::createSchema)
-                    .toList()
+                (rawSchema + finalSchema).distinct().map { sqlGenerator.createSchema(it) }
             destinationHandler.execute(Sql.concat(createAllSchemasSql))
         }
 

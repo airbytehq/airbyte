@@ -4,10 +4,10 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey
+import java.util.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import java.util.*
 
 class CollectionUtilsTest {
     @ParameterizedTest

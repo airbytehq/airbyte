@@ -96,7 +96,7 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
   }
 
   private Optional<TableDefinition> findExistingTable(final StreamId id) throws Exception {
-    return findExistingTable(jdbcDatabase, databaseName, id.finalNamespace(), id.finalName());
+    return findExistingTable(jdbcDatabase, databaseName, id.getFinalNamespace(), id.getFinalName());
   }
 
   private boolean isFinalTableEmpty(final StreamId id) throws Exception {
@@ -104,15 +104,15 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
         getDslContext().select(
             field(exists(
                 selectOne()
-                    .from(name(id.finalNamespace(), id.finalName()))
+                    .from(name(id.getFinalNamespace(), id.getFinalName()))
                     .limit(1))))
             .getSQL(ParamType.INLINED));
   }
 
   private InitialRawTableStatus getInitialRawTableState(final StreamId id) throws Exception {
     boolean tableExists = jdbcDatabase.executeMetadataQuery(dbmetadata -> {
-      LOGGER.info("Retrieving table from Db metadata: {} {} {}", databaseName, id.rawNamespace(), id.rawName());
-      try (final ResultSet table = dbmetadata.getTables(databaseName, id.rawNamespace(), id.rawName(), null)) {
+      LOGGER.info("Retrieving table from Db metadata: {} {} {}", databaseName, id.getRawNamespace(), id.getRawName());
+      try (final ResultSet table = dbmetadata.getTables(databaseName, id.getRawNamespace(), id.getRawName(), null)) {
         return table.next();
       } catch (SQLException e) {
         LOGGER.error("Failed to retrieve table info from metadata", e);
@@ -131,7 +131,7 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
     try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
         conn -> conn.prepareStatement(
             getDslContext().select(field("MIN(_airbyte_extracted_at)").as("min_timestamp"))
-                .from(name(id.rawNamespace(), id.rawName()))
+                .from(name(id.getRawNamespace(), id.getRawName()))
                 .where(DSL.condition("_airbyte_loaded_at IS NULL"))
                 .getSQL()),
         record -> record.getTimestamp("min_timestamp"))) {
@@ -150,7 +150,7 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
     try (final Stream<Timestamp> timestampStream = jdbcDatabase.unsafeQuery(
         conn -> conn.prepareStatement(
             getDslContext().select(field("MAX(_airbyte_extracted_at)").as("min_timestamp"))
-                .from(name(id.rawNamespace(), id.rawName()))
+                .from(name(id.getRawNamespace(), id.getRawName()))
                 .getSQL()),
         record -> record.getTimestamp("min_timestamp"))) {
       // Filter for nonNull values in case the query returned NULL (i.e. no raw records at all).
@@ -161,7 +161,7 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
 
   @Override
   public void execute(final Sql sql) throws Exception {
-    final List<List<String>> transactions = sql.transactions();
+    final List<List<String>> transactions = sql.transactions;
     final UUID queryId = UUID.randomUUID();
     for (final List<String> transaction : transactions) {
       final UUID transactionId = UUID.randomUUID();
@@ -255,20 +255,20 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
                                                                                     final StreamConfig streamConfig) {
     return destinationStatesFuture.thenApply(destinationStates -> {
       try {
-        final Optional<TableDefinition> finalTableDefinition = findExistingTable(streamConfig.id());
+        final Optional<TableDefinition> finalTableDefinition = findExistingTable(streamConfig.getId());
         final boolean isSchemaMismatch;
         final boolean isFinalTableEmpty;
         if (finalTableDefinition.isPresent()) {
           isSchemaMismatch = !existingSchemaMatchesStreamConfig(streamConfig, finalTableDefinition.get());
-          isFinalTableEmpty = isFinalTableEmpty(streamConfig.id());
+          isFinalTableEmpty = isFinalTableEmpty(streamConfig.getId());
         } else {
           // If the final table doesn't exist, then by definition it doesn't have a schema mismatch and has no
           // records.
           isSchemaMismatch = false;
           isFinalTableEmpty = true;
         }
-        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.id());
-        DestinationState destinationState = destinationStates.getOrDefault(streamConfig.id().asPair(), toDestinationState(Jsons.emptyObject()));
+        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.getId());
+        DestinationState destinationState = destinationStates.getOrDefault(streamConfig.getId().asPair(), toDestinationState(Jsons.emptyObject()));
         return new DestinationInitialStatus<>(streamConfig, finalTableDefinition.isPresent(), initialRawTableState,
             isSchemaMismatch, isFinalTableEmpty, destinationState);
       } catch (Exception e) {
@@ -337,9 +337,9 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
       // Missing AB meta columns from final table, we need them to do proper T+D so trigger soft-reset
       return false;
     }
-    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
+    final LinkedHashMap<String, String> intendedColumns = stream.getColumns().entrySet().stream()
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey().name(), toJdbcTypeName(column.getValue())),
+            (map, column) -> map.put(column.getKey().getName(), toJdbcTypeName(column.getValue())),
             LinkedHashMap::putAll);
 
     // Filter out Meta columns since they don't exist in stream config.
@@ -354,7 +354,7 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
   }
 
   @Override
-  public void commitDestinationStates(final Map<StreamId, DestinationState> destinationStates) throws Exception {
+  public void commitDestinationStates(final Map<StreamId, ? extends DestinationState> destinationStates) throws Exception {
     if (destinationStates.isEmpty()) {
       return;
     }
@@ -362,8 +362,8 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
     // Delete all state records where the stream name+namespace match one of our states
     String deleteStates = getDslContext().deleteFrom(table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME)))
         .where(destinationStates.keySet().stream()
-            .map(streamId -> field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME)).eq(streamId.originalName())
-                .and(field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)).eq(streamId.originalNamespace())))
+            .map(streamId -> field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME)).eq(streamId.getOriginalName())
+                .and(field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)).eq(streamId.getOriginalNamespace())))
             .reduce(
                 DSL.falseCondition(),
                 Condition::or))
@@ -381,10 +381,11 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
                 // and assume the destination can cast it appropriately.
                 // Destination-specific timestamp syntax is weird and annoying.
                 field(quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT), String.class));
-    for (Map.Entry<StreamId, DestinationState> destinationState : destinationStates.entrySet()) {
+    for (Map.Entry<StreamId, ? extends DestinationState> destinationState : destinationStates.entrySet()) {
       final StreamId streamId = destinationState.getKey();
       final String stateJson = Jsons.serialize(destinationState.getValue());
-      insertStatesStep = insertStatesStep.values(streamId.originalName(), streamId.originalNamespace(), stateJson, OffsetDateTime.now().toString());
+      insertStatesStep =
+          insertStatesStep.values(streamId.getOriginalName(), streamId.getOriginalNamespace(), stateJson, OffsetDateTime.now().toString());
     }
     String insertStates = insertStatesStep.getSQL(ParamType.INLINED);
 

@@ -90,7 +90,7 @@ public abstract class JdbcTypingDedupingTest extends BaseTypingDedupingTest {
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws Exception {
+  public List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws Exception {
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema(getConfig());
     }
