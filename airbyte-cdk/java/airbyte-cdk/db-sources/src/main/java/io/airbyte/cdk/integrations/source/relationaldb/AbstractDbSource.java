@@ -17,6 +17,9 @@ import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.CursorStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
@@ -48,6 +51,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -399,15 +403,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
           cursorField);
 
+      CursorStateMessageProducer messageProducer = new CursorStateMessageProducer(
+          stateManager,
+          cursorInfo.map(CursorInfo::getCursor));
+
       iterator = AutoCloseableIterators.transform(
-          autoCloseableIterator -> new StateDecoratingIterator(
-              autoCloseableIterator,
-              stateManager,
-              pair,
-              cursorField,
-              cursorInfo.map(CursorInfo::getCursor).orElse(null),
-              cursorType,
-              getStateEmissionFrequency()),
+          autoCloseableIterator -> new SourceStateIterator(autoCloseableIterator, airbyteStream, messageProducer,
+              new StateEmitFrequency(getStateEmissionFrequency(),
+                  Duration.ZERO)),
           airbyteMessageIterator,
           AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
@@ -672,6 +675,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * When larger than 0, the incremental iterator will emit intermediate state for every N records.
    * Please note that if intermediate state emission is enabled, the incremental query must be ordered
    * by the cursor field.
+   *
+   * TODO: Return an optional value instead of 0 to make it easier to understand.
    */
   protected int getStateEmissionFrequency() {
     return 0;
