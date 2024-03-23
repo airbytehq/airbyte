@@ -13,22 +13,23 @@ import io.airbyte.cdk.db.AbstractDatabase
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.util.MoreIterators
-import org.bson.BsonDocument
-import org.bson.Document
-import org.bson.conversions.Bson
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.Spliterators.AbstractSpliterator
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
+import org.bson.BsonDocument
+import org.bson.Document
+import org.bson.conversions.Bson
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class MongoDatabase(connectionString: String?, databaseName: String?) : AbstractDatabase(), AutoCloseable {
+class MongoDatabase(connectionString: String?, databaseName: String?) :
+    AbstractDatabase(), AutoCloseable {
     private var connectionString: ConnectionString? = null
     var database: com.mongodb.client.MongoDatabase? = null
-    private var mongoClient: MongoClient? = null
+    private val mongoClient: MongoClient
 
     init {
         try {
@@ -54,14 +55,15 @@ class MongoDatabase(connectionString: String?, databaseName: String?) : Abstract
 
     val collectionNames: Set<String?>
         get() {
-            val collectionNames = database!!.listCollectionNames() ?: return Collections.EMPTY_SET
-            return MoreIterators.toSet(database!!.listCollectionNames().iterator()).stream()
-                    .filter { c: String? -> !c!!.startsWith(MONGO_RESERVED_COLLECTION_PREFIX) }.collect(Collectors.toSet())
+            val collectionNames = database!!.listCollectionNames() ?: return Collections.emptySet()
+            return MoreIterators.toSet(database!!.listCollectionNames().iterator())
+                .stream()
+                .filter { c: String -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX) }
+                .collect(Collectors.toSet())
         }
 
-    fun getCollection(collectionName: String?): MongoCollection<Document> {
-        return database!!.getCollection(collectionName)
-                .withReadConcern(ReadConcern.MAJORITY)
+    fun getCollection(collectionName: String): MongoCollection<Document> {
+        return database!!.getCollection(collectionName).withReadConcern(ReadConcern.MAJORITY)
     }
 
     fun getOrCreateNewCollection(collectionName: String): MongoCollection<Document> {
@@ -73,7 +75,7 @@ class MongoDatabase(connectionString: String?, databaseName: String?) : Abstract
     }
 
     @VisibleForTesting
-    fun createCollection(name: String?): MongoCollection<Document> {
+    fun createCollection(name: String): MongoCollection<Document> {
         database!!.createCollection(name)
         return database!!.getCollection(name)
     }
@@ -82,40 +84,57 @@ class MongoDatabase(connectionString: String?, databaseName: String?) : Abstract
     val name: String
         get() = database!!.name
 
-    fun read(collectionName: String?, columnNames: List<String>, filter: Optional<Bson?>): Stream<JsonNode> {
+    fun read(
+        collectionName: String?,
+        columnNames: List<String>,
+        filter: Optional<Bson?>
+    ): Stream<JsonNode> {
         try {
             val collection = database!!.getCollection(collectionName)
-            val cursor = collection
-                    .find(filter.orElse(BsonDocument()))
-                    .batchSize(BATCH_SIZE)
-                    .cursor()
+            val cursor =
+                collection.find(filter.orElse(BsonDocument())).batchSize(BATCH_SIZE).cursor()
 
-            return getStream(cursor, CheckedFunction { document: Document -> MongoUtils.toJsonNode(document, columnNames) })
-                    .onClose {
-                        try {
-                            cursor.close()
-                        } catch (e: Exception) {
-                            throw RuntimeException(e.message, e)
-                        }
+            return getStream(
+                    cursor,
+                    CheckedFunction { document: Document ->
+                        MongoUtils.toJsonNode(document, columnNames)
                     }
+                )
+                .onClose {
+                    try {
+                        cursor.close()
+                    } catch (e: Exception) {
+                        throw RuntimeException(e.message, e)
+                    }
+                }
         } catch (e: Exception) {
-            LOGGER.error("Exception attempting to read data from collection: {}, {}", collectionName, e.message)
+            LOGGER.error(
+                "Exception attempting to read data from collection: {}, {}",
+                collectionName,
+                e.message
+            )
             throw RuntimeException(e)
         }
     }
 
-    private fun getStream(cursor: MongoCursor<Document>, mapper: CheckedFunction<Document, JsonNode, Exception>): Stream<JsonNode> {
-        return StreamSupport.stream(object : AbstractSpliterator<JsonNode?>(Long.MAX_VALUE, ORDERED) {
-            override fun tryAdvance(action: Consumer<in JsonNode>): Boolean {
-                try {
-                    val document = cursor.tryNext() ?: return false
-                    action.accept(mapper.apply(document))
-                    return true
-                } catch (e: Exception) {
-                    throw RuntimeException(e)
+    private fun getStream(
+        cursor: MongoCursor<Document>,
+        mapper: CheckedFunction<Document, JsonNode, Exception>
+    ): Stream<JsonNode> {
+        return StreamSupport.stream(
+            object : AbstractSpliterator<JsonNode>(Long.MAX_VALUE, ORDERED) {
+                override fun tryAdvance(action: Consumer<in JsonNode>): Boolean {
+                    try {
+                        val document = cursor.tryNext() ?: return false
+                        action.accept(mapper.apply(document))
+                        return true
+                    } catch (e: Exception) {
+                        throw RuntimeException(e)
+                    }
                 }
-            }
-        }, false)
+            },
+            false
+        )
     }
 
     companion object {
