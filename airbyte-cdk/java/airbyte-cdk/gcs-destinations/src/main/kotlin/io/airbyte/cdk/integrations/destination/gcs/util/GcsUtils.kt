@@ -13,14 +13,19 @@ import org.slf4j.LoggerFactory
 
 object GcsUtils {
     private val LOGGER: Logger = LoggerFactory.getLogger(GcsUtils::class.java)
-    private val UUID_SCHEMA: Schema = LogicalTypes.uuid().addToSchema(Schema.create(Schema.Type.STRING))
-    private val TIMESTAMP_MILLIS_SCHEMA: Schema = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG))
-    private val NULLABLE_TIMESTAMP_MILLIS: Schema = SchemaBuilder.builder().unionOf().nullType().and().type(TIMESTAMP_MILLIS_SCHEMA).endUnion()
+    private val UUID_SCHEMA: Schema =
+        LogicalTypes.uuid().addToSchema(Schema.create(Schema.Type.STRING))
+    private val TIMESTAMP_MILLIS_SCHEMA: Schema =
+        LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG))
+    private val NULLABLE_TIMESTAMP_MILLIS: Schema =
+        SchemaBuilder.builder().unionOf().nullType().and().type(TIMESTAMP_MILLIS_SCHEMA).endUnion()
 
-    fun getDefaultAvroSchema(name: String?,
-                             namespace: String?,
-                             appendAirbyteFields: Boolean,
-                             useDestinationsV2Columns: Boolean): Schema? {
+    fun getDefaultAvroSchema(
+        name: String,
+        namespace: String,
+        appendAirbyteFields: Boolean,
+        useDestinationsV2Columns: Boolean
+    ): Schema? {
         LOGGER.info("Default schema.")
         val stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name!!)
         val stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(namespace!!)
@@ -36,17 +41,38 @@ object GcsUtils {
         var assembler = builder.fields()
         if (useDestinationsV2Columns) {
             if (appendAirbyteFields) {
-                assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).type(UUID_SCHEMA).noDefault()
-                assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT).type(TIMESTAMP_MILLIS_SCHEMA).noDefault()
-                assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT).type(NULLABLE_TIMESTAMP_MILLIS).withDefault(null)
+                assembler =
+                    assembler
+                        .name(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID)
+                        .type(UUID_SCHEMA)
+                        .noDefault()
+                assembler =
+                    assembler
+                        .name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)
+                        .type(TIMESTAMP_MILLIS_SCHEMA)
+                        .noDefault()
+                assembler =
+                    assembler
+                        .name(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)
+                        .type(NULLABLE_TIMESTAMP_MILLIS)
+                        .withDefault(null)
             }
         } else {
             if (appendAirbyteFields) {
-                assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_ID).type(UUID_SCHEMA).noDefault()
-                assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).type(TIMESTAMP_MILLIS_SCHEMA).noDefault()
+                assembler =
+                    assembler
+                        .name(JavaBaseConstants.COLUMN_NAME_AB_ID)
+                        .type(UUID_SCHEMA)
+                        .noDefault()
+                assembler =
+                    assembler
+                        .name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                        .type(TIMESTAMP_MILLIS_SCHEMA)
+                        .noDefault()
             }
         }
-        assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_DATA).type().stringType().noDefault()
+        assembler =
+            assembler.name(JavaBaseConstants.COLUMN_NAME_DATA).type().stringType().noDefault()
 
         return assembler.endRecord()
     }

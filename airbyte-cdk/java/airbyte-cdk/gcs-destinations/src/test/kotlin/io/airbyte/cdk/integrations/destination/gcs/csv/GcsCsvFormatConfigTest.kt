@@ -8,6 +8,7 @@ import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.util.ConfigTestUtils
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening.Companion.fromValue
+import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.commons.json.Jsons
 import org.apache.commons.lang3.reflect.FieldUtils
@@ -30,39 +31,53 @@ class GcsCsvFormatConfigTest {
     @Test
     @Throws(IllegalAccessException::class)
     fun testHandlePartSizeConfig() {
-        val config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("""{
+        val config =
+            ConfigTestUtils.getBaseConfig(
+                Jsons.deserialize(
+                    """{
   "format_type": "CSV",
   "flattening": "Root level flattening"
-}"""))
+}"""
+                )
+            )
 
         val gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
         ConfigTestUtils.assertBaseConfig(gcsDestinationConfig)
 
-        val formatConfig = gcsDestinationConfig.formatConfig
+        val formatConfig = gcsDestinationConfig.formatConfig!!
         Assertions.assertEquals("CSV", formatConfig.format.name)
         // Assert that is set properly in config
-        val streamTransferManager = create(gcsDestinationConfig.bucketName, "objectKey", null)
-                .get()
+        val streamTransferManager = create(gcsDestinationConfig.bucketName, "objectKey", null).get()
 
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
-        Assertions.assertEquals(Constants.MB * DEFAULT_PART_SIZE_MB, partSizeBytes)
+        Assertions.assertEquals(
+            Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
+            partSizeBytes
+        )
     }
 
     @Test
     @Throws(IllegalAccessException::class)
     fun testHandleAbsenceOfPartSizeConfig() {
-        val config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("""{
+        val config =
+            ConfigTestUtils.getBaseConfig(
+                Jsons.deserialize(
+                    """{
   "format_type": "CSV",
   "flattening": "Root level flattening"
-}"""))
+}"""
+                )
+            )
 
         val gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
         ConfigTestUtils.assertBaseConfig(gcsDestinationConfig)
 
-        val streamTransferManager = create(gcsDestinationConfig.bucketName, "objectKey", null)
-                .get()
+        val streamTransferManager = create(gcsDestinationConfig.bucketName, "objectKey", null).get()
 
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
-        Assertions.assertEquals(Constants.MB * DEFAULT_PART_SIZE_MB, partSizeBytes)
+        Assertions.assertEquals(
+            Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
+            partSizeBytes
+        )
     }
 }

@@ -14,33 +14,34 @@ import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.sql.Timestamp
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * The base implementation takes care of the following:
  *
- *  * Create shared instance variables.
- *  * Create the bucket and prepare the bucket path.
- *
+ * * Create shared instance variables.
+ * * Create the bucket and prepare the bucket path.
  */
-abstract class BaseGcsWriter protected constructor(protected val config: GcsDestinationConfig,
-                                                   protected val s3Client: AmazonS3,
-                                                   configuredStream: ConfiguredAirbyteStream) : DestinationFileWriter {
+abstract class BaseGcsWriter
+protected constructor(
+    protected val config: GcsDestinationConfig,
+    protected val s3Client: AmazonS3,
+    configuredStream: ConfiguredAirbyteStream
+) : DestinationFileWriter {
     protected val stream: AirbyteStream = configuredStream.stream
-    protected val syncMode: DestinationSyncMode = configuredStream.destinationSyncMode
+    protected val syncMode: DestinationSyncMode? = configuredStream.destinationSyncMode
     protected val outputPrefix: String = getOutputPrefix(config.bucketPath, stream)
 
     /**
      *
-     *  * 1. Create bucket if necessary.
-     *  * 2. Under OVERWRITE mode, delete all objects with the output prefix.
-     *
+     * * 1. Create bucket if necessary.
+     * * 2. Under OVERWRITE mode, delete all objects with the output prefix.
      */
     @Throws(IOException::class)
     override fun initialize() {
@@ -55,20 +56,25 @@ abstract class BaseGcsWriter protected constructor(protected val config: GcsDest
             if (syncMode == DestinationSyncMode.OVERWRITE) {
                 LOGGER.info("Overwrite mode")
                 val keysToDelete: MutableList<DeleteObjectsRequest.KeyVersion> = LinkedList()
-                val objects = s3Client.listObjects(bucket, outputPrefix)
-                        .objectSummaries
+                val objects = s3Client.listObjects(bucket, outputPrefix).objectSummaries
                 for (`object` in objects) {
                     keysToDelete.add(DeleteObjectsRequest.KeyVersion(`object`.key))
                 }
 
                 if (keysToDelete.size > 0) {
-                    LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...", stream.name)
+                    LOGGER.info(
+                        "Purging non-empty output path for stream '{}' under OVERWRITE mode...",
+                        stream.name
+                    )
                     // Google Cloud Storage doesn't accept request to delete multiple objects
                     for (keyToDelete in keysToDelete) {
                         s3Client.deleteObject(bucket, keyToDelete.key)
                     }
-                    LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size,
-                            stream.name)
+                    LOGGER.info(
+                        "Deleted {} file(s) for stream '{}'.",
+                        keysToDelete.size,
+                        stream.name
+                    )
                 }
                 LOGGER.info("Overwrite is finished")
             }
@@ -106,17 +112,13 @@ abstract class BaseGcsWriter protected constructor(protected val config: GcsDest
         }
     }
 
-    /**
-     * Operations that will run when the write succeeds.
-     */
+    /** Operations that will run when the write succeeds. */
     @Throws(IOException::class)
     protected open fun closeWhenSucceed() {
         // Do nothing by default
     }
 
-    /**
-     * Operations that will run when the write fails.
-     */
+    /** Operations that will run when the write fails. */
     @Throws(IOException::class)
     protected open fun closeWhenFail() {
         // Do nothing by default
@@ -127,13 +129,15 @@ abstract class BaseGcsWriter protected constructor(protected val config: GcsDest
 
         // Filename: <upload-date>_<upload-millis>_0.<format-extension>
         fun getOutputFilename(timestamp: Timestamp, format: S3Format): String {
-            val formatter: DateFormat = SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING)
+            val formatter: DateFormat =
+                SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING)
             formatter.timeZone = TimeZone.getTimeZone("UTC")
             return String.format(
-                    "%s_%d_0.%s",
-                    formatter.format(timestamp),
-                    timestamp.time,
-                    format.fileExtension)
+                "%s_%d_0.%s",
+                formatter.format(timestamp),
+                timestamp.time,
+                format.fileExtension
+            )
         }
     }
 }

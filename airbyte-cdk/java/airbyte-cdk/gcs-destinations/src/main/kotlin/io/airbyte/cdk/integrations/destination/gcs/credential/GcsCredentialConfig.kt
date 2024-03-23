@@ -8,5 +8,5 @@ import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialConfig
 import java.util.*
 
 interface GcsCredentialConfig : BlobStorageCredentialConfig<GcsCredentialType?> {
-    val s3CredentialConfig: Optional<S3CredentialConfig?>
+    val s3CredentialConfig: Optional<S3CredentialConfig>
 }
