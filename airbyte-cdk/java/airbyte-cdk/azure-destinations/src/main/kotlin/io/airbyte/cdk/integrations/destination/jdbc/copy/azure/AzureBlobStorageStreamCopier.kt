@@ -17,10 +17,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
@@ -28,54 +24,63 @@ import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-abstract class AzureBlobStorageStreamCopier(protected val stagingFolder: String,
-                                            private val destSyncMode: DestinationSyncMode,
-                                            protected val schemaName: String,
-                                            protected val streamName: String,
-                                            private val specializedBlobClientBuilder: SpecializedBlobClientBuilder,
-                                            protected val db: JdbcDatabase,
-                                            protected val azureBlobConfig: AzureBlobStorageConfig,
-                                            private val nameTransformer: StandardNameTransformer,
-                                            private val sqlOperations: SqlOperations) : StreamCopier {
-    protected var filenameGenerator: StagingFilenameGenerator = StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong())
-    protected val azureStagingFiles: MutableSet<String?> = HashSet()
+abstract class AzureBlobStorageStreamCopier(
+    protected val stagingFolder: String,
+    private val destSyncMode: DestinationSyncMode,
+    protected val schemaName: String,
+    protected val streamName: String,
+    private val specializedBlobClientBuilder: SpecializedBlobClientBuilder,
+    protected val db: JdbcDatabase,
+    protected val azureBlobConfig: AzureBlobStorageConfig,
+    private val nameTransformer: StandardNameTransformer,
+    private val sqlOperations: SqlOperations
+) : StreamCopier {
+    protected var filenameGenerator: StagingFilenameGenerator =
+        StagingFilenameGenerator(
+            streamName,
+            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
+        )
+    protected val azureStagingFiles: MutableSet<String> = HashSet()
 
-    @get:VisibleForTesting
-    val tmpTableName: String = nameTransformer.getTmpTableName(streamName)
+    @get:VisibleForTesting val tmpTableName: String = nameTransformer.getTmpTableName(streamName)
     protected val activeStagingWriterFileNames: MutableSet<String?> = HashSet()
     private val csvPrinters = HashMap<String?, CSVPrinter>()
     private val blobClients = HashMap<String?, AppendBlobClient>()
     override var currentFile: String? = null
-        private set
-
-    fun getAzureStagingFiles(): Set<String?> {
-        return azureStagingFiles
-    }
 
     @Throws(Exception::class)
     override fun write(id: UUID?, recordMessage: AirbyteRecordMessage?, azureFileName: String?) {
         if (csvPrinters.containsKey(azureFileName)) {
-            csvPrinters[azureFileName]!!.printRecord(id,
-                    Jsons.serialize(recordMessage!!.data),
-                    Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt)))
+            csvPrinters[azureFileName]!!.printRecord(
+                id,
+                Jsons.serialize(recordMessage!!.data),
+                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt))
+            )
         }
     }
 
     override fun prepareStagingFile(): String? {
         currentFile = prepareAzureStagingFile()
+        val currentFile = this.currentFile!!
         if (!azureStagingFiles.contains(currentFile)) {
             azureStagingFiles.add(currentFile)
             activeStagingWriterFileNames.add(currentFile)
 
-            val appendBlobClient = specializedBlobClientBuilder
-                    .blobName(currentFile)
-                    .buildAppendBlobClient()
+            val appendBlobClient =
+                specializedBlobClientBuilder.blobName(currentFile).buildAppendBlobClient()
             blobClients[currentFile] = appendBlobClient
             appendBlobClient.create(true)
 
             val bufferedOutputStream =
-                    BufferedOutputStream(appendBlobClient.blobOutputStream, Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE))
+                BufferedOutputStream(
+                    appendBlobClient.blobOutputStream,
+                    Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE)
+                )
             val writer = PrintWriter(bufferedOutputStream, true, StandardCharsets.UTF_8)
             try {
                 csvPrinters[currentFile] = CSVPrinter(writer, CSVFormat.DEFAULT)
@@ -87,7 +92,12 @@ abstract class AzureBlobStorageStreamCopier(protected val stagingFolder: String,
     }
 
     private fun prepareAzureStagingFile(): String {
-        return java.lang.String.join("/", stagingFolder, schemaName, filenameGenerator.stagingFilename)
+        return java.lang.String.join(
+            "/",
+            stagingFolder,
+            schemaName,
+            filenameGenerator.stagingFilename
+        )
     }
 
     @Throws(Exception::class)
@@ -107,22 +117,48 @@ abstract class AzureBlobStorageStreamCopier(protected val stagingFolder: String,
 
     @Throws(Exception::class)
     override fun createTemporaryTable() {
-        LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName)
+        LOGGER.info(
+            "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
+            streamName,
+            schemaName,
+            tmpTableName
+        )
         sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName)
     }
 
     @Throws(Exception::class)
     override fun copyStagingFileToTemporaryTable() {
-        LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}.", tmpTableName, streamName, schemaName)
+        LOGGER.info(
+            "Starting copy to tmp table: {} in destination for stream: {}, schema: {}.",
+            tmpTableName,
+            streamName,
+            schemaName
+        )
         for (azureStagingFile in azureStagingFiles) {
-            copyAzureBlobCsvFileIntoTable(db, getFullAzurePath(azureStagingFile), schemaName, tmpTableName, azureBlobConfig)
+            copyAzureBlobCsvFileIntoTable(
+                db,
+                getFullAzurePath(azureStagingFile),
+                schemaName,
+                tmpTableName,
+                azureBlobConfig
+            )
         }
-        LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName)
+        LOGGER.info(
+            "Copy to tmp table {} in destination for stream {} complete.",
+            tmpTableName,
+            streamName
+        )
     }
 
     private fun getFullAzurePath(azureStagingFile: String?): String {
-        return ("azure://" + azureBlobConfig.accountName + "." + azureBlobConfig.endpointDomainName
-                + "/" + azureBlobConfig.containerName + "/" + azureStagingFile)
+        return ("azure://" +
+            azureBlobConfig.accountName +
+            "." +
+            azureBlobConfig.endpointDomainName +
+            "/" +
+            azureBlobConfig.containerName +
+            "/" +
+            azureStagingFile)
     }
 
     @Throws(Exception::class)
@@ -137,11 +173,20 @@ abstract class AzureBlobStorageStreamCopier(protected val stagingFolder: String,
 
     @Throws(Exception::class)
     override fun generateMergeStatement(destTableName: String?): String? {
-        LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName)
+        LOGGER.info(
+            "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
+            tmpTableName,
+            destTableName,
+            schemaName
+        )
         val queries = StringBuilder()
         if (destSyncMode == DestinationSyncMode.OVERWRITE) {
             queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName))
-            LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName)
+            LOGGER.info(
+                "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.",
+                destTableName,
+                schemaName
+            )
         }
         queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName))
         return queries.toString()
@@ -175,18 +220,22 @@ abstract class AzureBlobStorageStreamCopier(protected val stagingFolder: String,
     }
 
     @Throws(SQLException::class)
-    abstract fun copyAzureBlobCsvFileIntoTable(database: JdbcDatabase?,
-                                               snowflakeAzureExternalStageName: String?,
-                                               schema: String?,
-                                               tableName: String?,
-                                               config: AzureBlobStorageConfig?)
+    abstract fun copyAzureBlobCsvFileIntoTable(
+        database: JdbcDatabase?,
+        snowflakeAzureExternalStageName: String?,
+        schema: String?,
+        tableName: String?,
+        config: AzureBlobStorageConfig?
+    )
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AzureBlobStorageStreamCopier::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(AzureBlobStorageStreamCopier::class.java)
         fun attemptAzureBlobWriteAndDelete(config: AzureBlobStorageConfig) {
             var appendBlobClient: AppendBlobClient? = null
             try {
-                appendBlobClient = SpecializedBlobClientBuilder()
+                appendBlobClient =
+                    SpecializedBlobClientBuilder()
                         .endpoint(config.endpointUrl)
                         .sasToken(config.sasToken)
                         .containerName(config.containerName)
@@ -205,21 +254,34 @@ abstract class AzureBlobStorageStreamCopier(protected val stagingFolder: String,
         }
 
         private fun listCreatedBlob(containerClient: BlobContainerClient) {
-            containerClient.listBlobs().forEach(Consumer { blobItem: BlobItem -> LOGGER.info("Blob name: " + blobItem.name + "Snapshot: " + blobItem.snapshot) })
+            containerClient
+                .listBlobs()
+                .forEach(
+                    Consumer { blobItem: BlobItem ->
+                        LOGGER.info(
+                            "Blob name: " + blobItem.name + "Snapshot: " + blobItem.snapshot
+                        )
+                    }
+                )
         }
 
         private fun writeTestDataIntoBlob(appendBlobClient: AppendBlobClient?) {
             val test = "test_data"
             LOGGER.info("Writing test data to Azure Blob storage: $test")
-            val dataStream: InputStream = ByteArrayInputStream(test.toByteArray(StandardCharsets.UTF_8))
+            val dataStream: InputStream =
+                ByteArrayInputStream(test.toByteArray(StandardCharsets.UTF_8))
 
-            val blobCommittedBlockCount = appendBlobClient!!.appendBlock(dataStream, test.length.toLong())
+            val blobCommittedBlockCount =
+                appendBlobClient!!
+                    .appendBlock(dataStream, test.length.toLong())
                     .blobCommittedBlockCount
 
             LOGGER.info("blobCommittedBlockCount: $blobCommittedBlockCount")
         }
 
-        private fun getBlobContainerClient(appendBlobClient: AppendBlobClient?): BlobContainerClient {
+        private fun getBlobContainerClient(
+            appendBlobClient: AppendBlobClient?
+        ): BlobContainerClient {
             val containerClient = appendBlobClient!!.containerClient
             if (!containerClient.exists()) {
                 containerClient.create()
