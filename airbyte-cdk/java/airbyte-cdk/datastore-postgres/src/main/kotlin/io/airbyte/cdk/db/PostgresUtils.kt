@@ -15,9 +15,15 @@ object PostgresUtils {
     @Throws(SQLException::class)
     fun getLsn(database: JdbcDatabase): PgLsn {
         // pg version >= 10. For versions < 10 use query select * from pg_current_xlog_location()
-        val jsonNodes = database
-                .bufferedResultSetQuery({ conn: Connection -> conn.createStatement().executeQuery("select * from pg_current_wal_lsn()") },
-                        { resultSet: ResultSet? -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet!!) })
+        val jsonNodes =
+            database.bufferedResultSetQuery(
+                { conn: Connection ->
+                    conn.createStatement().executeQuery("select * from pg_current_wal_lsn()")
+                },
+                { resultSet: ResultSet? ->
+                    JdbcUtils.defaultSourceOperations.rowToJson(resultSet!!)
+                }
+            )
 
         Preconditions.checkState(jsonNodes.size == 1)
         return PgLsn.Companion.fromPgString(jsonNodes[0]["pg_current_wal_lsn"].asText())
