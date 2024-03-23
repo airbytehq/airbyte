@@ -69,24 +69,24 @@ public class GcsAvroWriter extends BaseGcsWriter implements DestinationFileWrite
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     objectKey = String.join("/", outputPrefix, outputFilename);
-    gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
+    gcsFileLocation = String.format("gs://%s/%s", config.bucketName, objectKey);
 
-    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.bucketName,
         objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = StreamTransferManagerFactory
-        .create(config.getBucketName(), objectKey, s3Client)
+        .create(config.bucketName, objectKey, s3Client)
         .setPartSize((long) DEFAULT_PART_SIZE_MB)
         .get();
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
-    final S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
+    final S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.formatConfig;
     // The DataFileWriter always uses binary encoding.
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
-        .setCodec(formatConfig.getCodecFactory())
+        .setCodec(formatConfig.codecFactory)
         .create(schema, outputStream);
   }
 

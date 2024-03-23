@@ -48,25 +48,25 @@ public class GcsCsvWriter extends BaseGcsWriter implements DestinationFileWriter
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
+    final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.formatConfig;
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(), formatConfig);
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.CSV);
     objectKey = String.join("/", outputPrefix, outputFilename);
-    gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
+    gcsFileLocation = String.format("gs://%s/%s", config.bucketName, objectKey);
 
-    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.bucketName,
         objectKey);
 
     this.uploadManager = StreamTransferManagerFactory
-        .create(config.getBucketName(), objectKey, s3Client)
+        .create(config.bucketName, objectKey, s3Client)
         .setPartSize((long) DEFAULT_PART_SIZE_MB)
         .get();
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
         CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+            .withHeader(csvSheetGenerator.headerRow.toArray(new String[0])));
   }
 
   @Override

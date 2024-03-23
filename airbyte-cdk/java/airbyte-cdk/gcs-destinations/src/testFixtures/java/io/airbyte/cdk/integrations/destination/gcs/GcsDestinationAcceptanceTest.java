@@ -131,11 +131,11 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
         namespaceStr,
         streamNameStr,
         DateTime.now(DateTimeZone.UTC),
-        config.getPathFormat());
+        config.pathFormat);
     // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
     final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
     final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), parentFolder)
+        .listObjects(config.bucketName, parentFolder)
         .getObjectSummaries()
         .stream()
         .filter(o -> o.getKey().contains(streamNameStr + "/"))
@@ -168,7 +168,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
         .set("format", getFormatConfig());
     this.configJson = configJson;
     this.config = GcsDestinationConfig.getGcsDestinationConfig(configJson);
-    LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
+    LOGGER.info("Test full path: {}/{}", config.bucketName, config.bucketPath);
 
     this.s3Client = config.getS3Client();
     this.nameTransformer = new GcsNameTransformer();
@@ -182,18 +182,18 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected void tearDown(final TestDestinationEnv testEnv) {
     final List<KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
-        .listObjects(config.getBucketName(), config.getBucketPath())
+        .listObjects(config.bucketName, config.bucketPath)
         .getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", config.getBucketName(),
-          config.getBucketPath());
+      LOGGER.info("Tearing down test bucket path: {}/{}", config.bucketName,
+          config.bucketPath);
       // Google Cloud Storage doesn't accept request to delete multiple objects
       for (final KeyVersion keyToDelete : keysToDelete) {
-        s3Client.deleteObject(config.getBucketName(), keyToDelete.getKey());
+        s3Client.deleteObject(config.bucketName, keyToDelete.getKey());
       }
       LOGGER.info("Deleted {} file(s).", keysToDelete.size());
     }
