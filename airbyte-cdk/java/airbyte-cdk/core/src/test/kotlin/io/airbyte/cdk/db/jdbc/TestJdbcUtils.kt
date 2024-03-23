@@ -342,7 +342,7 @@ internal class TestJdbcUtils {
         @BeforeAll
         fun init(): Unit {
             PSQL_DB = PostgreSQLContainer<Nothing>("postgres:13-alpine")
-            PSQL_DB!!.start()
+            PSQL_DB.start()
         }
 
         @Throws(SQLException::class)

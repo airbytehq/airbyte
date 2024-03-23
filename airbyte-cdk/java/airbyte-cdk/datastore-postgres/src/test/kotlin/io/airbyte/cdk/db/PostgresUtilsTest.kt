@@ -16,15 +16,15 @@ import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
+import java.sql.Connection
+import java.sql.SQLException
+import javax.sql.DataSource
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.MountableFile
-import java.sql.Connection
-import java.sql.SQLException
-import javax.sql.DataSource
 
 internal class PostgresUtilsTest {
     private var dataSource: DataSource? = null
@@ -40,31 +40,45 @@ internal class PostgresUtilsTest {
         val tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE $dbName;")
         PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB)
 
-        dataSource = create(
+        dataSource =
+            create(
                 config[JdbcUtils.USERNAME_KEY].asText(),
                 config[JdbcUtils.PASSWORD_KEY].asText(),
                 DatabaseDriver.POSTGRESQL.driverClassName,
-                String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
-                        config[JdbcUtils.HOST_KEY].asText(),
-                        config[JdbcUtils.PORT_KEY].asInt(),
-                        config[JdbcUtils.DATABASE_KEY].asText()))
+                String.format(
+                    DatabaseDriver.POSTGRESQL.urlFormatString,
+                    config[JdbcUtils.HOST_KEY].asText(),
+                    config[JdbcUtils.PORT_KEY].asInt(),
+                    config[JdbcUtils.DATABASE_KEY].asText()
+                )
+            )
 
         val defaultJdbcDatabase: JdbcDatabase = DefaultJdbcDatabase(dataSource!!)
 
-        defaultJdbcDatabase.execute(CheckedConsumer { connection: Connection ->
-            connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
-            connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
-        })
+        defaultJdbcDatabase.execute(
+            CheckedConsumer { connection: Connection ->
+                connection
+                    .createStatement()
+                    .execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+                connection
+                    .createStatement()
+                    .execute(
+                        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                    )
+            }
+        )
     }
 
     private fun getConfig(psqlDb: PostgreSQLContainer<*>?, dbName: String): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.builder<Any, Any>()
+        return Jsons.jsonNode(
+            ImmutableMap.builder<Any, Any>()
                 .put(JdbcUtils.HOST_KEY, psqlDb!!.host)
                 .put(JdbcUtils.PORT_KEY, psqlDb.firstMappedPort)
                 .put(JdbcUtils.DATABASE_KEY, dbName)
                 .put(JdbcUtils.USERNAME_KEY, psqlDb.username)
                 .put(JdbcUtils.PASSWORD_KEY, psqlDb.password)
-                .build())
+                .build()
+        )
     }
 
     @Test
@@ -76,9 +90,15 @@ internal class PostgresUtilsTest {
         Assertions.assertNotNull(lsn1)
         Assertions.assertTrue(lsn1.asLong() > 0)
 
-        database.execute(CheckedConsumer { connection: Connection ->
-            connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
-        })
+        database.execute(
+            CheckedConsumer { connection: Connection ->
+                connection
+                    .createStatement()
+                    .execute(
+                        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                    )
+            }
+        )
 
         val lsn2 = getLsn(database)
         Assertions.assertNotNull(lsn2)
@@ -88,12 +108,13 @@ internal class PostgresUtilsTest {
     }
 
     companion object {
-        private var PSQL_DB: PostgreSQLContainer<*>? = null
+        lateinit var PSQL_DB: PostgreSQLContainer<Nothing>
 
+        @JvmStatic
         @BeforeAll
-        fun init() {
-            PSQL_DB = PostgreSQLContainer<SELF>("postgres:13-alpine")
-            PSQL_DB!!.start()
+        fun init(): Unit {
+            PSQL_DB = PostgreSQLContainer<Nothing>("postgres:13-alpine")
+            PSQL_DB.start()
         }
     }
 }
