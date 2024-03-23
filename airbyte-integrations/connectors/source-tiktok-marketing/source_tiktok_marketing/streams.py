@@ -284,6 +284,7 @@ class AdvertiserIds(TiktokStream):
 class FullRefreshTiktokStream(TiktokStream, ABC):
     primary_key = "id"
     fields: List[str] = None
+    include_deleted_additional_params = {}
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
@@ -305,6 +306,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         # convert end date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
         self._end_time = pendulum.parse(end_date or DEFAULT_END_DATE).strftime("%Y-%m-%d 00:00:00")
+        self.include_deleted = kwargs.get("include_deleted", False)
         self.max_cursor_date = None
         self._advertiser_ids = []
 
@@ -372,6 +374,8 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
             params["fields"] = self.convert_array_param(self.fields)
         if stream_slice:
             params.update(stream_slice)
+        if self.include_deleted:
+            params.update(self.include_deleted_additional_params)
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -506,6 +510,7 @@ class Campaigns(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739315828649986"""
 
     primary_key = "campaign_id"
+    include_deleted_additional_params = {"filtering": '{"secondary_status": "CAMPAIGN_STATUS_ALL"}'}
 
     def path(self, *args, **kwargs) -> str:
         return "campaign/get/"
@@ -515,6 +520,7 @@ class AdGroups(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739314558673922"""
 
     primary_key = "adgroup_id"
+    include_deleted_additional_params = {"filtering": '{"secondary_status": "ADGROUP_STATUS_ALL"}'}
 
     def path(self, *args, **kwargs) -> str:
         return "adgroup/get/"
@@ -524,6 +530,7 @@ class Ads(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1735735588640770"""
 
     primary_key = "ad_id"
+    include_deleted_additional_params = {"filtering": '{"secondary_status": "AD_STATUS_ALL"}'}
 
     def path(self, *args, **kwargs) -> str:
         return "ad/get/"
@@ -574,7 +581,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
         self.attribution_window = kwargs.get("attribution_window") or 0
-        self.include_deleted = kwargs.get("include_deleted", False)
         super().__init__(**kwargs)
 
         # Important:

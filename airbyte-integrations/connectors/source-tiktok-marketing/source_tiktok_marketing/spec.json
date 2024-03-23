@@ -101,8 +101,8 @@
         "type": "integer"
       },
       "include_deleted": {
-        "title": "Include Deleted Data in Reports",
-        "description": "Set to active if you want to include deleted data in reports.",
+        "title": "Include Deleted Data",
+        "description": "Set to active if you want to include deleted data.",
         "default": false,
         "order": 4,
         "type": "boolean"
