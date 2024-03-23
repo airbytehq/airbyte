@@ -24,7 +24,6 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 
-
 /**
  * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
  * to use debezium for CDC, it should use this class
