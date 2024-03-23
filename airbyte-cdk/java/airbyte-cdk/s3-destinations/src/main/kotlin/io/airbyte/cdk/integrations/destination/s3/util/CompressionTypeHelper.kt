@@ -8,15 +8,14 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants
 import java.util.*
 
 object CompressionTypeHelper {
-    /**
-     * Sample expected input: { "compression_type": "No Compression" }
-     */
+    /** Sample expected input: { "compression_type": "No Compression" } */
     @JvmStatic
     fun parseCompressionType(compressionConfig: JsonNode?): CompressionType {
         if (compressionConfig == null || compressionConfig.isNull) {
             return S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
         }
-        val compressionType = compressionConfig[S3DestinationConstants.COMPRESSION_TYPE_ARG_NAME].asText()
+        val compressionType =
+            compressionConfig[S3DestinationConstants.COMPRESSION_TYPE_ARG_NAME].asText()
         return if (compressionType.uppercase(Locale.getDefault()) == CompressionType.GZIP.name) {
             CompressionType.GZIP
         } else {

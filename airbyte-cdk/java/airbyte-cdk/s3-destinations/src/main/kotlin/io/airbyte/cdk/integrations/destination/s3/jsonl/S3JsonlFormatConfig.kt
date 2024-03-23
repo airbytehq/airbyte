@@ -11,24 +11,28 @@ import io.airbyte.cdk.integrations.destination.s3.util.CompressionType
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionTypeHelper
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening.Companion.fromValue
-import lombok.ToString
 import java.util.*
+import lombok.ToString
 
 @ToString
-class S3JsonlFormatConfig(val flatteningType: Flattening, val compressionType: CompressionType?) : S3FormatConfig {
-    constructor(formatConfig: JsonNode) : this(
-            if (formatConfig.has(S3DestinationConstants.FLATTENING_ARG_NAME)
-            ) fromValue(formatConfig[S3DestinationConstants.FLATTENING_ARG_NAME].asText())
-            else Flattening.NO,
-            if (formatConfig.has(S3DestinationConstants.COMPRESSION_ARG_NAME)
-            ) CompressionTypeHelper.parseCompressionType(formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME])
-            else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE)
+class S3JsonlFormatConfig(val flatteningType: Flattening, val compressionType: CompressionType) :
+    S3FormatConfig {
+    constructor(
+        formatConfig: JsonNode
+    ) : this(
+        if (formatConfig.has(S3DestinationConstants.FLATTENING_ARG_NAME))
+            fromValue(formatConfig[S3DestinationConstants.FLATTENING_ARG_NAME].asText())
+        else Flattening.NO,
+        if (formatConfig.has(S3DestinationConstants.COMPRESSION_ARG_NAME))
+            CompressionTypeHelper.parseCompressionType(
+                formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME]
+            )
+        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+    )
 
-    override val format: S3Format?
-        get() = S3Format.JSONL
+    override val format: S3Format = S3Format.JSONL
 
-    override val fileExtension: String
-        get() = JSONL_SUFFIX + compressionType!!.fileExtension
+    override val fileExtension: String = JSONL_SUFFIX + compressionType.fileExtension
 
     override fun equals(o: Any?): Boolean {
         if (this === o) {

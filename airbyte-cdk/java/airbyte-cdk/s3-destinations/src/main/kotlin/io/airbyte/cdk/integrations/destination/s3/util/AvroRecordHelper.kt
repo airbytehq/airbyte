@@ -15,19 +15,22 @@ import io.airbyte.commons.util.MoreIterators
  */
 object AvroRecordHelper {
     @JvmStatic
-    fun getFieldNameUpdater(streamName: String?, namespace: String?, streamSchema: JsonNode?): JsonFieldNameUpdater {
+    fun getFieldNameUpdater(
+        streamName: String,
+        namespace: String?,
+        streamSchema: JsonNode
+    ): JsonFieldNameUpdater {
         val schemaConverter = JsonToAvroSchemaConverter()
-        schemaConverter.getAvroSchema(streamSchema!!, streamName!!, namespace)
+        schemaConverter.getAvroSchema(streamSchema, streamName, namespace)
         return JsonFieldNameUpdater(schemaConverter.getStandardizedNames())
     }
 
     /**
      * Convert an Airbyte JsonNode from Avro / Parquet Record to a plain one.
      *
-     *  * Remove the airbyte id and emission timestamp fields.
-     *  * Remove null fields that must exist in Parquet but does not in original Json. This function
+     * * Remove the airbyte id and emission timestamp fields.
+     * * Remove null fields that must exist in Parquet but does not in original Json. This function
      * mutates the input Json.
-     *
      */
     @JvmStatic
     fun pruneAirbyteJson(input: JsonNode): JsonNode {

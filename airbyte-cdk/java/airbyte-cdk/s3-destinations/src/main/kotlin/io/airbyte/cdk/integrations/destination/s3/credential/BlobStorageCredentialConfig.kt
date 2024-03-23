@@ -4,6 +4,5 @@
 package io.airbyte.cdk.integrations.destination.s3.credential
 
 interface BlobStorageCredentialConfig<CredentialType> {
-    @JvmField
     val credentialType: CredentialType
 }

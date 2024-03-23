@@ -7,7 +7,7 @@ import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.InstanceProfileCredentialsProvider
 
 class S3InstanceProfileCredentialConfig : S3CredentialConfig {
-    override val credentialType: CredentialType
+    override val credentialType: S3CredentialType
         get() = S3CredentialType.DEFAULT_PROFILE
 
     override val s3CredentialsProvider: AWSCredentialsProvider

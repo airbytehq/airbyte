@@ -32,8 +32,8 @@ interface Destination : Integration {
      */
     @Throws(Exception::class)
     fun getConsumer(
-        config: JsonNode?,
-        catalog: ConfiguredAirbyteCatalog?,
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage?>?
     ): AirbyteMessageConsumer?
 
@@ -51,8 +51,8 @@ interface Destination : Integration {
      */
     @Throws(Exception::class)
     fun getSerializedMessageConsumer(
-        config: JsonNode?,
-        catalog: ConfiguredAirbyteCatalog?,
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage?>?
     ): SerializedAirbyteMessageConsumer? {
         return ShimToSerializedAirbyteMessageConsumer(

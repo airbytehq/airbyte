@@ -12,7 +12,7 @@ import io.airbyte.commons.json.Jsons
  * them when necessary, so that the tests can correctly compare the generated json with the original
  * input.
  */
-class JsonFieldNameUpdater(standardizedNames: Map<String, String>?) {
+class JsonFieldNameUpdater(standardizedNames: Map<String, String>) {
     // A map from original name to standardized name.
     private val standardizedNames: Map<String, String> = ImmutableMap.copyOf(standardizedNames)
 

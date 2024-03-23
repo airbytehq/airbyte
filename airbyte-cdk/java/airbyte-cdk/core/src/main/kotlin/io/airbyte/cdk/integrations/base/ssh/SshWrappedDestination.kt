@@ -59,14 +59,14 @@ class SshWrappedDestination : Destination {
     }
 
     @Throws(Exception::class)
-    override fun check(config: JsonNode?): AirbyteConnectionStatus? {
+    override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
             return if ((endPointKey != null))
                 SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
                     config,
                     endPointKey,
-                    CheckedFunction<JsonNode?, AirbyteConnectionStatus?, Exception?> {
-                        config: JsonNode? ->
+                    CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> {
+                        config: JsonNode ->
                         delegate.check(config)
                     }
                 )
@@ -75,8 +75,8 @@ class SshWrappedDestination : Destination {
                     config,
                     hostKey,
                     portKey,
-                    CheckedFunction<JsonNode?, AirbyteConnectionStatus?, Exception?> {
-                        config: JsonNode? ->
+                    CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> {
+                        config: JsonNode ->
                         delegate.check(config)
                     }
                 )
@@ -92,8 +92,8 @@ class SshWrappedDestination : Destination {
 
     @Throws(Exception::class)
     override fun getConsumer(
-        config: JsonNode?,
-        catalog: ConfiguredAirbyteCatalog?,
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage?>?
     ): AirbyteMessageConsumer? {
         val tunnel = getTunnelInstance(config)
@@ -118,8 +118,8 @@ class SshWrappedDestination : Destination {
 
     @Throws(Exception::class)
     override fun getSerializedMessageConsumer(
-        config: JsonNode?,
-        catalog: ConfiguredAirbyteCatalog?,
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage?>?
     ): SerializedAirbyteMessageConsumer? {
         val clone = Jsons.clone(config)
@@ -163,7 +163,7 @@ class SshWrappedDestination : Destination {
     }
 
     @Throws(Exception::class)
-    protected fun getTunnelInstance(config: JsonNode?): SshTunnel {
+    protected fun getTunnelInstance(config: JsonNode): SshTunnel {
         return if ((endPointKey != null)) SshTunnel.Companion.getInstance(config, endPointKey)
         else SshTunnel.Companion.getInstance(config, hostKey, portKey)
     }

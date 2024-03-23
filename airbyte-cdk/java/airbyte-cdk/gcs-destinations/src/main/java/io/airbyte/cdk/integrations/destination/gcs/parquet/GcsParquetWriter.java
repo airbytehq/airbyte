@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.gcs.parquet;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.cdk.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.cdk.integrations.destination.gcs.util.GcsS3FileSystem;
@@ -43,6 +44,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
   private final String gcsFileLocation;
   private final String objectKey;
 
+  @SuppressFBWarnings("NP_NULL_ON_SOME_PATH")
   public GcsParquetWriter(final GcsDestinationConfig config,
                           final AmazonS3 s3Client,
                           final ConfiguredAirbyteStream configuredStream,

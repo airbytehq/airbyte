@@ -4,12 +4,12 @@
 package io.airbyte.cdk.integrations.destination.s3.util
 
 import io.airbyte.commons.io.LineGobbler
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 object JavaProcessRunner {
     private val LOGGER: Logger = LoggerFactory.getLogger(JavaProcessRunner::class.java)
@@ -17,7 +17,9 @@ object JavaProcessRunner {
     @Throws(IOException::class, InterruptedException::class)
     fun runProcess(path: String, run: Runtime, vararg commands: String?) {
         LOGGER.info("Running process: " + Arrays.asList(*commands))
-        val pr = if (path == System.getProperty("user.dir")) run.exec(commands) else run.exec(commands, null, File(path))
+        val pr =
+            if (path == System.getProperty("user.dir")) run.exec(commands)
+            else run.exec(commands, null, File(path))
         LineGobbler.gobble(pr.errorStream) { s: String? -> LOGGER.error(s) }
         LineGobbler.gobble(pr.inputStream) { s: String? -> LOGGER.info(s) }
         if (!pr.waitFor(10, TimeUnit.MINUTES)) {
