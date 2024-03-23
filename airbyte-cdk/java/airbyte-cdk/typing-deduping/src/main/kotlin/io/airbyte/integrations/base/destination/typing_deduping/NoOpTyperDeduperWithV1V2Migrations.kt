@@ -11,32 +11,33 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import lombok.extern.slf4j.Slf4j
-import org.apache.commons.lang3.concurrent.BasicThreadFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.locks.Lock
-import java.util.function.Function
-import java.util.stream.Collectors
+import org.apache.commons.lang3.concurrent.BasicThreadFactory
 
 /**
  * This is a NoOp implementation which skips and Typing and Deduping operations and does not emit
  * the final tables. However, this implementation still performs V1->V2 migrations and V2
  * json->string migrations in the raw tables.
  */
-@Slf4j
-class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationState?>(private val sqlGenerator: SqlGenerator,
-                                                                                      destinationHandler: DestinationHandler<DestinationState>,
-                                                                                      parsedCatalog: ParsedCatalog,
-                                                                                      v1V2Migrator: DestinationV1V2Migrator,
-                                                                                      v2TableMigrator: V2TableMigrator,
-                                                                                      migrations: List<Migration<DestinationState>>) : TyperDeduper {
+private val log = KotlinLogging.logger {}
+
+class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationState>(
+    private val sqlGenerator: SqlGenerator,
+    destinationHandler: DestinationHandler<DestinationState>,
+    parsedCatalog: ParsedCatalog,
+    v1V2Migrator: DestinationV1V2Migrator,
+    v2TableMigrator: V2TableMigrator,
+    migrations: List<Migration<DestinationState>>
+) : TyperDeduper {
     private val v1V2Migrator: DestinationV1V2Migrator
     private val v2TableMigrator: V2TableMigrator
-    private val migrations: List<Migration<DestinationState?>>
+    private val migrations: List<Migration<DestinationState>>
     private val executorService: ExecutorService
     private val parsedCatalog: ParsedCatalog
-    private val destinationHandler: DestinationHandler<DestinationState?>
+    private val destinationHandler: DestinationHandler<DestinationState>
 
     init {
         this.destinationHandler = destinationHandler
@@ -44,8 +45,13 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
         this.v1V2Migrator = v1V2Migrator
         this.v2TableMigrator = v2TableMigrator
         this.migrations = migrations
-        this.executorService = Executors.newFixedThreadPool(FutureUtils.getCountOfTypeAndDedupeThreads(),
-                BasicThreadFactory.Builder().namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME).build())
+        this.executorService =
+            Executors.newFixedThreadPool(
+                FutureUtils.countOfTypeAndDedupeThreads,
+                BasicThreadFactory.Builder()
+                    .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
+                    .build()
+            )
     }
 
     @Throws(Exception::class)
@@ -53,32 +59,35 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
         prepareSchemas(sqlGenerator, destinationHandler, parsedCatalog)
 
         executeWeirdMigrations(
-                executorService,
-                sqlGenerator,
-                destinationHandler,
-                v1V2Migrator,
-                v2TableMigrator,
-                parsedCatalog)
+            executorService,
+            sqlGenerator,
+            destinationHandler,
+            v1V2Migrator,
+            v2TableMigrator,
+            parsedCatalog
+        )
 
-        val destinationInitialStatuses = executeRawTableMigrations(
+        val destinationInitialStatuses =
+            executeRawTableMigrations(
                 executorService,
                 destinationHandler,
                 migrations,
-                destinationHandler.gatherInitialState(parsedCatalog.streams))
+                destinationHandler.gatherInitialState(parsedCatalog.streams)
+            )
 
         // Commit the updated destination states.
         // We don't need to trigger any soft resets, because we don't have any final tables.
-        destinationHandler.commitDestinationStates(destinationInitialStatuses.stream().collect(Collectors.toMap(
-                Function { state: DestinationInitialStatus<DestinationState?> -> state.streamConfig.id },
-                DestinationInitialStatus::destinationState)))
+        destinationHandler.commitDestinationStates(
+            destinationInitialStatuses.associate { it.streamConfig.id to it.destinationState }
+        )
     }
 
     override fun prepareFinalTables() {
-        NoOpTyperDeduperWithV1V2Migrations.log.info("Skipping prepareFinalTables")
+        log.info("Skipping prepareFinalTables")
     }
 
     override fun typeAndDedupe(originalNamespace: String, originalName: String, mustRun: Boolean) {
-        NoOpTyperDeduperWithV1V2Migrations.log.info("Skipping TypeAndDedupe")
+        log.info("Skipping TypeAndDedupe")
     }
 
     override fun getRawTableInsertLock(originalNamespace: String, originalName: String): Lock {
@@ -86,15 +95,15 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
     }
 
     override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor?, StreamSyncSummary>) {
-        NoOpTyperDeduperWithV1V2Migrations.log.info("Skipping TypeAndDedupe final")
+        log.info("Skipping TypeAndDedupe final")
     }
 
     override fun commitFinalTables() {
-        NoOpTyperDeduperWithV1V2Migrations.log.info("Skipping commitFinalTables final")
+        log.info("Skipping commitFinalTables final")
     }
 
     override fun cleanup() {
-        NoOpTyperDeduperWithV1V2Migrations.log.info("Cleaning Up type-and-dedupe thread pool")
+        log.info("Cleaning Up type-and-dedupe thread pool")
         executorService.shutdown()
     }
 }

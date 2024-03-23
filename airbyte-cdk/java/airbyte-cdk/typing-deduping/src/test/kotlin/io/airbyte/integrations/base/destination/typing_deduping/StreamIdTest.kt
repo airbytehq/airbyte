@@ -10,8 +10,8 @@ import org.junit.jupiter.api.function.Executable
 
 internal class StreamIdTest {
     /**
-     * Both these streams naively want the same raw table name ("aaa_abab_bbb_abab_ccc"). Verify that
-     * they don't actually use the same raw table.
+     * Both these streams naively want the same raw table name ("aaa_abab_bbb_abab_ccc"). Verify
+     * that they don't actually use the same raw table.
      */
     @Test
     fun rawNameCollision() {
@@ -19,8 +19,9 @@ internal class StreamIdTest {
         val stream2 = concatenateRawTableName("aaa", "bbb_abab_ccc")
 
         Assertions.assertAll(
-                Executable { Assertions.assertEquals("aaa_abab_bbb_raw__stream_ccc", stream1) },
-                Executable { Assertions.assertEquals("aaa_raw__stream_bbb_abab_ccc", stream2) })
+            Executable { Assertions.assertEquals("aaa_abab_bbb_raw__stream_ccc", stream1) },
+            Executable { Assertions.assertEquals("aaa_raw__stream_bbb_abab_ccc", stream2) }
+        )
     }
 
     @Test

@@ -195,7 +195,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator {
     final List<Field<?>> fields =
         metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(toList());
     final List<Field<?>> dataFields =
-        columns.entrySet().stream().map(column -> field(quotedName(column.getKey().name()), toDialectType(column.getValue()))).collect(
+        columns.entrySet().stream().map(column -> field(quotedName(column.getKey().getName()), toDialectType(column.getValue()))).collect(
             toList());
     dataFields.addAll(fields);
     return dataFields;
@@ -258,16 +258,16 @@ public abstract class JdbcSqlGenerator implements SqlGenerator {
   @Override
   public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
-    final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
+    final String finalTableIdentifier = stream.getId().getFinalName() + suffix.toLowerCase();
     if (!force) {
       return transactionally(Stream.concat(
-          Stream.of(createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+          Stream.of(createTableSql(stream.getId().getFinalNamespace(), finalTableIdentifier, stream.getColumns())),
           createIndexSql(stream, suffix).stream()).toList());
     }
     return transactionally(Stream.concat(
         Stream.of(
-            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
-            createTableSql(stream.id().finalNamespace(), finalTableIdentifier, stream.columns())),
+            dropTableIfExists(quotedName(stream.getId().getFinalNamespace(), finalTableIdentifier)).getSQL(ParamType.INLINED),
+            createTableSql(stream.getId().getFinalNamespace(), finalTableIdentifier, stream.getColumns())),
         createIndexSql(stream, suffix).stream()).toList());
   }
 
@@ -285,18 +285,18 @@ public abstract class JdbcSqlGenerator implements SqlGenerator {
   @Override
   public Sql overwriteFinalTable(final StreamId stream, final String finalSuffix) {
     return transactionally(
-        dropTableIfExists(name(stream.finalNamespace(), stream.finalName())).getSQL(ParamType.INLINED),
-        alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
-            .renameTo(name(stream.finalName()))
+        dropTableIfExists(name(stream.getFinalNamespace(), stream.getFinalName())).getSQL(ParamType.INLINED),
+        alterTable(name(stream.getFinalNamespace(), stream.getFinalName() + finalSuffix))
+            .renameTo(name(stream.getFinalName()))
             .getSQL());
   }
 
   @Override
   public Sql migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
-    final Name rawTableName = name(streamId.rawNamespace(), streamId.rawName());
+    final Name rawTableName = name(streamId.getRawNamespace(), streamId.getRawName());
     final DSLContext dsl = getDslContext();
     return transactionally(
-        dsl.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
+        dsl.createSchemaIfNotExists(streamId.getRawNamespace()).getSQL(),
         dsl.dropTableIfExists(rawTableName).getSQL(),
         DSL.createTable(rawTableName)
             .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
@@ -315,7 +315,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator {
 
   @Override
   public Sql clearLoadedAt(final StreamId streamId) {
-    return Sql.of(update(table(name(streamId.rawNamespace(), streamId.rawName())))
+    return Sql.of(update(table(name(streamId.getRawNamespace(), streamId.getRawName())))
         .set(field(COLUMN_NAME_AB_LOADED_AT), inline((String) null))
         .getSQL());
   }
@@ -350,28 +350,28 @@ public abstract class JdbcSqlGenerator implements SqlGenerator {
                                          final String finalSuffix,
                                          final Optional<Instant> minRawTimestamp,
                                          final boolean useExpensiveSaferCasting) {
-    final String finalSchema = streamConfig.id().finalNamespace();
-    final String finalTable = streamConfig.id().finalName() + (finalSuffix != null ? finalSuffix.toLowerCase() : "");
-    final String rawSchema = streamConfig.id().rawNamespace();
-    final String rawTable = streamConfig.id().rawName();
+    final String finalSchema = streamConfig.getId().getFinalNamespace();
+    final String finalTable = streamConfig.getId().getFinalName() + (finalSuffix != null ? finalSuffix.toLowerCase() : "");
+    final String rawSchema = streamConfig.getId().getRawNamespace();
+    final String rawTable = streamConfig.getId().getRawName();
 
     // Poor person's guarantee of ordering of fields by using same source of ordered list of columns to
     // generate fields.
     final CommonTableExpression<Record> rawTableRowsWithCast = name(TYPING_CTE_ALIAS).as(
-        selectFromRawTable(rawSchema, rawTable, streamConfig.columns(),
+        selectFromRawTable(rawSchema, rawTable, streamConfig.getColumns(),
             getFinalTableMetaColumns(false),
-            rawTableCondition(streamConfig.destinationSyncMode(),
-                streamConfig.columns().containsKey(cdcDeletedAtColumn),
+            rawTableCondition(streamConfig.getDestinationSyncMode(),
+                streamConfig.getColumns().containsKey(cdcDeletedAtColumn),
                 minRawTimestamp),
             useExpensiveSaferCasting));
-    final List<Field<?>> finalTableFields = buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true));
-    final Field<Integer> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
+    final List<Field<?>> finalTableFields = buildFinalTableFields(streamConfig.getColumns(), getFinalTableMetaColumns(true));
+    final Field<Integer> rowNumber = getRowNumber(streamConfig.getPrimaryKey(), streamConfig.getCursor());
     final CommonTableExpression<Record> filteredRows = name(NUMBERED_ROWS_CTE_ALIAS).as(
         select(asterisk(), rowNumber).from(rawTableRowsWithCast));
 
     // Used for append-dedupe mode.
     final String insertStmtWithDedupe =
-        insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
+        insertIntoFinalTable(finalSchema, finalTable, streamConfig.getColumns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
                 .with(filteredRows)
                 .select(finalTableFields)
@@ -383,17 +383,17 @@ public abstract class JdbcSqlGenerator implements SqlGenerator {
 
     // Used for append and overwrite modes.
     final String insertStmt =
-        insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
+        insertIntoFinalTable(finalSchema, finalTable, streamConfig.getColumns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
                 .select(finalTableFields)
                 .from(rawTableRowsWithCast))
             .getSQL(ParamType.INLINED);
-    final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
+    final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.getPrimaryKey(), streamConfig.getCursor());
     final String deleteCdcDeletesStmt =
-        streamConfig.columns().containsKey(cdcDeletedAtColumn) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
+        streamConfig.getColumns().containsKey(cdcDeletedAtColumn) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
     final String checkpointStmt = checkpointRawTable(rawSchema, rawTable, minRawTimestamp);
 
-    if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
+    if (streamConfig.getDestinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return transactionally(
           insertStmt,
           checkpointStmt);
@@ -470,7 +470,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator {
   private String deleteFromFinalTableCdcDeletes(final String schema, final String tableName) {
     final DSLContext dsl = getDslContext();
     return dsl.deleteFrom(table(quotedName(schema, tableName)))
-        .where(field(quotedName(cdcDeletedAtColumn.name())).isNotNull())
+        .where(field(quotedName(cdcDeletedAtColumn.getName())).isNotNull())
         .getSQL(ParamType.INLINED);
   }
 
