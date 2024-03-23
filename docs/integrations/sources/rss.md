@@ -34,5 +34,5 @@ None
 
 | Version | Date        | Pull Request                                             | Subject                        |
 | :------ | :---------- | :------------------------------------------------------- | :----------------------------- |
-| 1.0.0   | 2024-04-20  | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate python cdk to low code |
+| 1.0.0   | 2024-04-20  | [36418](https://github.com/airbytehq/airbyte/pull/36418) | Migrate python cdk to low code |
 | 0.1.0   | 2022-10-12  | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
