@@ -97,7 +97,7 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     return Arrays.stream(JsonSchemaType.values())
         .filter(
-            value -> value.getJsonSchemaType().equals(typeProperty.asText()) && compareAirbyteTypes(airbyteTypePropertyText, value))
+            value -> value.jsonSchemaType.equals(typeProperty.asText()) && compareAirbyteTypes(airbyteTypePropertyText, value))
         .map(JsonSchemaType::getAvroType)
         .collect(Collectors.toSet());
   }
