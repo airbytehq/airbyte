@@ -23,35 +23,47 @@ import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
  * Currently we always reuse the S3 client for GCS. So the GCS config extends from the S3 config.
  * This may change in the future.
  */
-class GcsDestinationConfig(bucketName: String?,
-                           bucketPath: String?,
-                           bucketRegion: String?,
-                           val gcsCredentialConfig: GcsCredentialConfig?,
-                           formatConfig: S3FormatConfig?) : S3DestinationConfig(GCS_ENDPOINT,
+class GcsDestinationConfig(
+    bucketName: String,
+    bucketPath: String,
+    bucketRegion: String?,
+    val gcsCredentialConfig: GcsCredentialConfig,
+    formatConfig: S3FormatConfig
+) :
+    S3DestinationConfig(
+        GCS_ENDPOINT,
         bucketName!!,
         bucketPath!!,
         bucketRegion,
         S3DestinationConstants.DEFAULT_PATH_FORMAT,
-        gcsCredentialConfig.getS3CredentialConfig().orElseThrow(),
+        gcsCredentialConfig.s3CredentialConfig.orElseThrow(),
         formatConfig!!,
         null,
         null,
         false,
-        S3StorageOperations.DEFAULT_UPLOAD_THREADS) {
+        S3StorageOperations.DEFAULT_UPLOAD_THREADS
+    ) {
     override fun createS3Client(): AmazonS3 {
-        when (gcsCredentialConfig!!.credentialType) {
+        when (gcsCredentialConfig.credentialType) {
             GcsCredentialType.HMAC_KEY -> {
-                val hmacKeyCredential = gcsCredentialConfig as GcsHmacKeyCredentialConfig?
-                val awsCreds = BasicAWSCredentials(hmacKeyCredential.getHmacKeyAccessId(), hmacKeyCredential.getHmacKeySecret())
+                val hmacKeyCredential = gcsCredentialConfig as GcsHmacKeyCredentialConfig
+                val awsCreds =
+                    BasicAWSCredentials(
+                        hmacKeyCredential.hmacKeyAccessId,
+                        hmacKeyCredential.hmacKeySecret
+                    )
 
                 return AmazonS3ClientBuilder.standard()
-                        .withEndpointConfiguration(
-                                AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, bucketRegion))
-                        .withCredentials(AWSStaticCredentialsProvider(awsCreds))
-                        .build()
+                    .withEndpointConfiguration(
+                        AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, bucketRegion)
+                    )
+                    .withCredentials(AWSStaticCredentialsProvider(awsCreds))
+                    .build()
             }
-
-            else -> throw IllegalArgumentException("Unsupported credential type: " + gcsCredentialConfig.credentialType!!.name)
+            else ->
+                throw IllegalArgumentException(
+                    "Unsupported credential type: " + gcsCredentialConfig.credentialType!!.name
+                )
         }
     }
 
@@ -60,11 +72,12 @@ class GcsDestinationConfig(bucketName: String?,
 
         fun getGcsDestinationConfig(config: JsonNode): GcsDestinationConfig {
             return GcsDestinationConfig(
-                    config["gcs_bucket_name"].asText(),
-                    config["gcs_bucket_path"].asText(),
-                    config["gcs_bucket_region"].asText(),
-                    GcsCredentialConfigs.getCredentialConfig(config),
-                    getS3FormatConfig(config))
+                config["gcs_bucket_name"].asText(),
+                config["gcs_bucket_path"].asText(),
+                config["gcs_bucket_region"].asText(),
+                GcsCredentialConfigs.getCredentialConfig(config),
+                getS3FormatConfig(config)
+            )
         }
     }
 }

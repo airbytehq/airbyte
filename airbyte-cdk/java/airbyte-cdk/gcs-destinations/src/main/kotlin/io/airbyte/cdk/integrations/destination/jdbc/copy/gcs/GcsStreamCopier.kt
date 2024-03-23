@@ -19,10 +19,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -33,25 +29,39 @@ import java.sql.SQLException
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-abstract class GcsStreamCopier(protected val stagingFolder: String,
-                               private val destSyncMode: DestinationSyncMode,
-                               protected val schemaName: String,
-                               protected val streamName: String,
-                               private val storageClient: Storage,
-                               protected val db: JdbcDatabase,
-                               protected val gcsConfig: GcsConfig,
-                               private val nameTransformer: StandardNameTransformer,
-                               private val sqlOperations: SqlOperations) : StreamCopier {
-    @get:VisibleForTesting
-    val tmpTableName: String = nameTransformer.getTmpTableName(streamName)
+abstract class GcsStreamCopier(
+    protected val stagingFolder: String,
+    private val destSyncMode: DestinationSyncMode,
+    protected val schemaName: String,
+    protected val streamName: String,
+    private val storageClient: Storage,
+    protected val db: JdbcDatabase,
+    protected val gcsConfig: GcsConfig,
+    private val nameTransformer: StandardNameTransformer,
+    private val sqlOperations: SqlOperations
+) : StreamCopier {
+    @get:VisibleForTesting val tmpTableName: String = nameTransformer.getTmpTableName(streamName)
     protected val gcsStagingFiles: MutableSet<String> = HashSet()
-    protected var filenameGenerator: StagingFilenameGenerator = StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong())
+    protected var filenameGenerator: StagingFilenameGenerator =
+        StagingFilenameGenerator(
+            streamName,
+            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
+        )
     private val channels = HashMap<String, WriteChannel>()
     private val csvPrinters = HashMap<String?, CSVPrinter>()
 
     private fun prepareGcsStagingFile(): String {
-        return java.lang.String.join("/", stagingFolder, schemaName, filenameGenerator.stagingFilename)
+        return java.lang.String.join(
+            "/",
+            stagingFolder,
+            schemaName,
+            filenameGenerator.stagingFilename
+        )
     }
 
     override fun prepareStagingFile(): String? {
@@ -78,9 +88,11 @@ abstract class GcsStreamCopier(protected val stagingFolder: String,
     @Throws(Exception::class)
     override fun write(id: UUID?, recordMessage: AirbyteRecordMessage?, gcsFileName: String?) {
         if (csvPrinters.containsKey(gcsFileName)) {
-            csvPrinters[gcsFileName]!!.printRecord(id,
-                    Jsons.serialize(recordMessage!!.data),
-                    Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt)))
+            csvPrinters[gcsFileName]!!.printRecord(
+                id,
+                Jsons.serialize(recordMessage!!.data),
+                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt))
+            )
         }
     }
 
@@ -103,11 +115,26 @@ abstract class GcsStreamCopier(protected val stagingFolder: String,
 
     @Throws(Exception::class)
     override fun copyStagingFileToTemporaryTable() {
-        LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}.", tmpTableName, streamName, schemaName)
+        LOGGER.info(
+            "Starting copy to tmp table: {} in destination for stream: {}, schema: {}.",
+            tmpTableName,
+            streamName,
+            schemaName
+        )
         for (gcsStagingFile in gcsStagingFiles) {
-            copyGcsCsvFileIntoTable(db, getFullGcsPath(gcsConfig.bucketName, gcsStagingFile), schemaName, tmpTableName, gcsConfig)
+            copyGcsCsvFileIntoTable(
+                db,
+                getFullGcsPath(gcsConfig.bucketName, gcsStagingFile),
+                schemaName,
+                tmpTableName,
+                gcsConfig
+            )
         }
-        LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName)
+        LOGGER.info(
+            "Copy to tmp table {} in destination for stream {} complete.",
+            tmpTableName,
+            streamName
+        )
     }
 
     @Throws(Exception::class)
@@ -134,7 +161,12 @@ abstract class GcsStreamCopier(protected val stagingFolder: String,
 
     @Throws(Exception::class)
     override fun createTemporaryTable() {
-        LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName)
+        LOGGER.info(
+            "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
+            streamName,
+            schemaName,
+            tmpTableName
+        )
         sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName)
     }
 
@@ -150,40 +182,48 @@ abstract class GcsStreamCopier(protected val stagingFolder: String,
 
     @Throws(Exception::class)
     override fun generateMergeStatement(destTableName: String?): String? {
-        LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName)
+        LOGGER.info(
+            "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
+            tmpTableName,
+            destTableName,
+            schemaName
+        )
         val queries = StringBuilder()
         if (destSyncMode == DestinationSyncMode.OVERWRITE) {
             queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName))
-            LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.", destTableName, schemaName)
+            LOGGER.info(
+                "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.",
+                destTableName,
+                schemaName
+            )
         }
         queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName))
         return queries.toString()
     }
 
     override val currentFile: String?
-        get() =// TODO need to update this method when updating whole class for using GcsWriter
-            null
-
-    @VisibleForTesting
-    fun getGcsStagingFiles(): Set<String> {
-        return gcsStagingFiles
-    }
+        get() = // TODO need to update this method when updating whole class for using GcsWriter
+        null
 
     @Throws(SQLException::class)
-    abstract fun copyGcsCsvFileIntoTable(database: JdbcDatabase?,
-                                         gcsFileLocation: String?,
-                                         schema: String?,
-                                         tableName: String?,
-                                         gcsConfig: GcsConfig?)
+    abstract fun copyGcsCsvFileIntoTable(
+        database: JdbcDatabase?,
+        gcsFileLocation: String?,
+        schema: String?,
+        tableName: String?,
+        gcsConfig: GcsConfig?
+    )
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(GcsStreamCopier::class.java)
 
-        // It is optimal to write every 10,000,000 records (BATCH_SIZE * MAX_PER_FILE_PART_COUNT) to a new
+        // It is optimal to write every 10,000,000 records (BATCH_SIZE * MAX_PER_FILE_PART_COUNT) to
+        // a new
         // file.
         // The BATCH_SIZE is defined in CopyConsumerFactory.
         // The average size of such a file will be about 1 GB.
-        // This will make it easier to work with files and speed up the recording of large amounts of data.
+        // This will make it easier to work with files and speed up the recording of large amounts
+        // of data.
         // In addition, for a large number of records, we will not get a drop in the copy request to
         // QUERY_TIMEOUT when
         // the records from the file are copied to the staging table.
@@ -195,7 +235,9 @@ abstract class GcsStreamCopier(protected val stagingFolder: String,
 
         @Throws(IOException::class)
         fun attemptWriteToPersistence(gcsConfig: GcsConfig) {
-            val outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replace("-".toRegex(), "")
+            val outputTableName =
+                "_airbyte_connection_test_" +
+                    UUID.randomUUID().toString().replace("-".toRegex(), "")
             attemptWriteAndDeleteGcsObject(gcsConfig, outputTableName)
         }
 
@@ -211,13 +253,14 @@ abstract class GcsStreamCopier(protected val stagingFolder: String,
 
         @Throws(IOException::class)
         fun getStorageClient(gcsConfig: GcsConfig): Storage {
-            val credentialsInputStream: InputStream = ByteArrayInputStream(gcsConfig.credentialsJson.toByteArray(StandardCharsets.UTF_8))
+            val credentialsInputStream: InputStream =
+                ByteArrayInputStream(gcsConfig.credentialsJson.toByteArray(StandardCharsets.UTF_8))
             val credentials = GoogleCredentials.fromStream(credentialsInputStream)
             return StorageOptions.newBuilder()
-                    .setCredentials(credentials)
-                    .setProjectId(gcsConfig.projectId)
-                    .build()
-                    .service
+                .setCredentials(credentials)
+                .setProjectId(gcsConfig.projectId)
+                .build()
+                .service
         }
     }
 }

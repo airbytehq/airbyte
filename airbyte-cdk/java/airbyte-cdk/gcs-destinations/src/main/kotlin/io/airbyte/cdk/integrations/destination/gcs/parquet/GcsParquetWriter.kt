@@ -16,6 +16,10 @@ import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import java.io.IOException
+import java.net.URI
+import java.sql.Timestamp
+import java.util.*
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.conf.Configuration
@@ -26,28 +30,33 @@ import org.apache.parquet.hadoop.util.HadoopOutputFile
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
-import java.io.IOException
-import java.net.URI
-import java.sql.Timestamp
-import java.util.*
 
-class GcsParquetWriter(config: GcsDestinationConfig,
-                       s3Client: AmazonS3,
-                       configuredStream: ConfiguredAirbyteStream,
-                       uploadTimestamp: Timestamp,
-                       schema: Schema?,
-                       converter: JsonAvroConverter?) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
+class GcsParquetWriter(
+    config: GcsDestinationConfig,
+    s3Client: AmazonS3,
+    configuredStream: ConfiguredAirbyteStream,
+    uploadTimestamp: Timestamp,
+    schema: Schema?,
+    converter: JsonAvroConverter?
+) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val parquetWriter: ParquetWriter<GenericData.Record>
     private val avroRecordFactory: AvroRecordFactory
     override val fileLocation: String
     override val outputPath: String
 
     init {
-        val outputFilename: String = BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.PARQUET)
+        val outputFilename: String =
+            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.PARQUET)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
-        LOGGER.info("Storage path for stream '{}': {}/{}", stream.name, config.bucketName, outputPath)
+        LOGGER.info(
+            "Storage path for stream '{}': {}/{}",
+            stream.name,
+            config.bucketName,
+            outputPath
+        )
 
-        fileLocation = String.format("s3a://%s/%s/%s", config.bucketName, outputPrefix, outputFilename)
+        fileLocation =
+            String.format("s3a://%s/%s/%s", config.bucketName, outputPrefix, outputFilename)
         val uri = URI(fileLocation)
         val path = Path(uri)
 
@@ -55,7 +64,10 @@ class GcsParquetWriter(config: GcsDestinationConfig,
 
         val formatConfig = config.formatConfig as S3ParquetFormatConfig
         val hadoopConfig = getHadoopConfig(config)
-        this.parquetWriter = AvroParquetWriter.builder<GenericData.Record>(HadoopOutputFile.fromPath(path, hadoopConfig))
+        this.parquetWriter =
+            AvroParquetWriter.builder<GenericData.Record>(
+                    HadoopOutputFile.fromPath(path, hadoopConfig)
+                )
                 .withSchema(schema)
                 .withCompressionCodec(formatConfig.compressionCodec)
                 .withRowGroupSize(formatConfig.blockSize)

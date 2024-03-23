@@ -18,18 +18,20 @@ import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class GcsJsonlWriter(config: GcsDestinationConfig,
-                     s3Client: AmazonS3,
-                     configuredStream: ConfiguredAirbyteStream,
-                     uploadTimestamp: Timestamp) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
+class GcsJsonlWriter(
+    config: GcsDestinationConfig,
+    s3Client: AmazonS3,
+    configuredStream: ConfiguredAirbyteStream,
+    uploadTimestamp: Timestamp
+) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val uploadManager: StreamTransferManager
     private val outputStream: MultiPartOutputStream
     private val printWriter: PrintWriter
@@ -37,16 +39,22 @@ class GcsJsonlWriter(config: GcsDestinationConfig,
     override val outputPath: String
 
     init {
-        val outputFilename: String = BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.JSONL)
+        val outputFilename: String =
+            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.JSONL)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
-        LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.name, config.bucketName, outputPath)
+        LOGGER.info(
+            "Full GCS path for stream '{}': {}/{}",
+            stream.name,
+            config.bucketName,
+            outputPath
+        )
 
-        this.uploadManager = create(config.bucketName, outputPath, s3Client)
-                .get()
+        this.uploadManager = create(config.bucketName, outputPath, s3Client).get()
 
-        // We only need one output stream as we only have one input stream. This is reasonably performant.
+        // We only need one output stream as we only have one input stream. This is reasonably
+        // performant.
         this.outputStream = uploadManager.multiPartOutputStreams[0]
         this.printWriter = PrintWriter(outputStream, true, StandardCharsets.UTF_8)
     }

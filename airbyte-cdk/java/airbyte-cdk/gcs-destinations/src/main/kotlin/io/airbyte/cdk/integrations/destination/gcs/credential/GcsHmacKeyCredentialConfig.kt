@@ -25,6 +25,6 @@ class GcsHmacKeyCredentialConfig : GcsCredentialConfig {
     override val credentialType: GcsCredentialType
         get() = GcsCredentialType.HMAC_KEY
 
-    override val s3CredentialConfig: Optional<S3CredentialConfig?>
+    override val s3CredentialConfig: Optional<S3CredentialConfig>
         get() = Optional.of(S3AccessKeyCredentialConfig(hmacKeyAccessId, hmacKeySecret))
 }

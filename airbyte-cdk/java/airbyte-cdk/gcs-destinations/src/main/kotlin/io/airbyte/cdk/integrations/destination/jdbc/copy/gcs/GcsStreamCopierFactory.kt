@@ -19,46 +19,58 @@ import java.io.InputStream
 import java.nio.charset.StandardCharsets
 
 abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
-    /**
-     * Used by the copy consumer.
-     */
-    override fun create(configuredSchema: String?,
-                        gcsConfig: GcsConfig,
-                        stagingFolder: String?,
-                        configuredStream: ConfiguredAirbyteStream?,
-                        nameTransformer: StandardNameTransformer?,
-                        db: JdbcDatabase?,
-                        sqlOperations: SqlOperations?): StreamCopier? {
+    /** Used by the copy consumer. */
+    fun create(
+        configuredSchema: String?,
+        gcsConfig: GcsConfig,
+        stagingFolder: String?,
+        configuredStream: ConfiguredAirbyteStream?,
+        nameTransformer: StandardNameTransformer?,
+        db: JdbcDatabase?,
+        sqlOperations: SqlOperations?
+    ): StreamCopier? {
         try {
             val stream = configuredStream!!.stream
             val syncMode = configuredStream.destinationSyncMode
             val schema = getSchema(stream.namespace, configuredSchema!!, nameTransformer!!)
 
-            val credentialsInputStream: InputStream = ByteArrayInputStream(gcsConfig.credentialsJson.toByteArray(StandardCharsets.UTF_8))
+            val credentialsInputStream: InputStream =
+                ByteArrayInputStream(gcsConfig.credentialsJson.toByteArray(StandardCharsets.UTF_8))
             val credentials = GoogleCredentials.fromStream(credentialsInputStream)
-            val storageClient = StorageOptions.newBuilder()
+            val storageClient =
+                StorageOptions.newBuilder()
                     .setCredentials(credentials)
                     .setProjectId(gcsConfig.projectId)
                     .build()
                     .service
 
-            return create(stagingFolder, syncMode, schema, stream.name, storageClient, db, gcsConfig, nameTransformer, sqlOperations)
+            return create(
+                stagingFolder,
+                syncMode,
+                schema,
+                stream.name,
+                storageClient,
+                db,
+                gcsConfig,
+                nameTransformer,
+                sqlOperations
+            )
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
     }
 
-    /**
-     * For specific copier suppliers to implement.
-     */
+    /** For specific copier suppliers to implement. */
     @Throws(Exception::class)
-    abstract fun create(stagingFolder: String?,
-                        syncMode: DestinationSyncMode?,
-                        schema: String?,
-                        streamName: String?,
-                        storageClient: Storage?,
-                        db: JdbcDatabase?,
-                        gcsConfig: GcsConfig?,
-                        nameTransformer: StandardNameTransformer?,
-                        sqlOperations: SqlOperations?): StreamCopier?
+    abstract fun create(
+        stagingFolder: String?,
+        syncMode: DestinationSyncMode?,
+        schema: String?,
+        streamName: String?,
+        storageClient: Storage?,
+        db: JdbcDatabase?,
+        gcsConfig: GcsConfig?,
+        nameTransformer: StandardNameTransformer?,
+        sqlOperations: SqlOperations?
+    ): StreamCopier?
 }

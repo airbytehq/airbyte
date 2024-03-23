@@ -14,12 +14,12 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import java.io.IOException
 import java.sql.Timestamp
 import java.time.Instant
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 
 internal class GcsAvroWriterTest {
     @Test
@@ -27,21 +27,30 @@ internal class GcsAvroWriterTest {
     fun generatesCorrectObjectPath() {
         initialize(Jsons.deserialize("{}"))
 
-        val writer = GcsAvroWriter(
+        val writer =
+            GcsAvroWriter(
                 GcsDestinationConfig(
-                        "fake-bucket",
-                        "fake-bucketPath",
-                        "fake-bucketRegion",
-                        GcsHmacKeyCredentialConfig("fake-access-id", "fake-secret"),
-                        S3AvroFormatConfig(ObjectMapper().createObjectNode())),
+                    "fake-bucket",
+                    "fake-bucketPath",
+                    "fake-bucketRegion",
+                    GcsHmacKeyCredentialConfig("fake-access-id", "fake-secret"),
+                    S3AvroFormatConfig(ObjectMapper().createObjectNode())
+                ),
                 Mockito.mock(AmazonS3::class.java, Mockito.RETURNS_DEEP_STUBS),
                 ConfiguredAirbyteStream()
-                        .withStream(AirbyteStream()
-                                .withNamespace("fake-namespace")
-                                .withName("fake-stream").withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))),
+                    .withStream(
+                        AirbyteStream()
+                            .withNamespace("fake-namespace")
+                            .withName("fake-stream")
+                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
+                    ),
                 Timestamp.from(Instant.ofEpochMilli(1234)),
-                null)
+                null
+            )
 
-        Assertions.assertEquals("fake-bucketPath/fake-namespace/fake-stream/1970_01_01_1234_0.avro", writer.outputPath)
+        Assertions.assertEquals(
+            "fake-bucketPath/fake-namespace/fake-stream/1970_01_01_1234_0.avro",
+            writer.outputPath
+        )
     }
 }

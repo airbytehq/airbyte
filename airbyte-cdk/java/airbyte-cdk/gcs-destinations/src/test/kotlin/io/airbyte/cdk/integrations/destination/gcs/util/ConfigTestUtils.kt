@@ -10,14 +10,16 @@ import org.junit.jupiter.api.Assertions
 
 object ConfigTestUtils {
     fun getBaseConfig(formatConfig: JsonNode): JsonNode {
-        return Jsons.deserialize("""{
+        return Jsons.deserialize(
+            """{
   "gcs_bucket_name": "test-bucket-name",
   "gcs_bucket_path": "test_path",
   "gcs_bucket_region": "us-east-2",  "credential": {
     "credential_type": "HMAC_KEY",
     "hmac_key_access_id": "some_hmac_key",
     "hmac_key_secret": "some_key_secret"
-  },  "format": $formatConfig}""")
+  },  "format": $formatConfig}"""
+        )
     }
 
     fun assertBaseConfig(gcsDestinationConfig: GcsDestinationConfig) {

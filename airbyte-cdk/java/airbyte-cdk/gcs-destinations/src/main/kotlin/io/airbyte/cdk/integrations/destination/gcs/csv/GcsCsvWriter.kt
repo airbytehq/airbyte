@@ -13,25 +13,28 @@ import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSheetGenerator
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSheetGenerator.Factory.create
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
-import org.apache.commons.csv.QuoteMode
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.*
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
+import org.apache.commons.csv.QuoteMode
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class GcsCsvWriter(config: GcsDestinationConfig,
-                   s3Client: AmazonS3,
-                   configuredStream: ConfiguredAirbyteStream,
-                   uploadTimestamp: Timestamp) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
+class GcsCsvWriter(
+    config: GcsDestinationConfig,
+    s3Client: AmazonS3,
+    configuredStream: ConfiguredAirbyteStream,
+    uploadTimestamp: Timestamp
+) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val csvSheetGenerator: CsvSheetGenerator
     private val uploadManager: StreamTransferManager
     private val outputStream: MultiPartOutputStream
@@ -43,21 +46,31 @@ class GcsCsvWriter(config: GcsDestinationConfig,
         val formatConfig = config.formatConfig as S3CsvFormatConfig
         this.csvSheetGenerator = create(configuredStream.stream.jsonSchema, formatConfig)
 
-        val outputFilename: String = BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.CSV)
+        val outputFilename: String =
+            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.CSV)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
-        LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.name, config.bucketName,
-                outputPath)
+        LOGGER.info(
+            "Full GCS path for stream '{}': {}/{}",
+            stream.name,
+            config.bucketName,
+            outputPath
+        )
 
-        this.uploadManager = create(config.bucketName, outputPath, s3Client)
-                .setPartSize(DEFAULT_PART_SIZE_MB.toLong())
+        this.uploadManager =
+            create(config.bucketName, outputPath, s3Client)
+                .setPartSize(StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB.toLong())
                 .get()
-        // We only need one output stream as we only have one input stream. This is reasonably performant.
+        // We only need one output stream as we only have one input stream. This is reasonably
+        // performant.
         this.outputStream = uploadManager.multiPartOutputStreams[0]
-        this.csvPrinter = CSVPrinter(PrintWriter(outputStream, true, StandardCharsets.UTF_8),
+        this.csvPrinter =
+            CSVPrinter(
+                PrintWriter(outputStream, true, StandardCharsets.UTF_8),
                 CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-                        .withHeader(*csvSheetGenerator.headerRow.toTypedArray<String>()))
+                    .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>())
+            )
     }
 
     @Throws(IOException::class)

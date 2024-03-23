@@ -14,26 +14,31 @@ import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter
 import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import java.io.IOException
+import java.sql.Timestamp
+import java.util.*
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericDatumWriter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
-import java.io.IOException
-import java.sql.Timestamp
-import java.util.*
 
-class GcsAvroWriter @JvmOverloads constructor(config: GcsDestinationConfig,
-                                              s3Client: AmazonS3,
-                                              configuredStream: ConfiguredAirbyteStream,
-                                              uploadTimestamp: Timestamp,
-                                              converter: JsonAvroConverter?,
-                                              jsonSchema: JsonNode? = null) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
+class GcsAvroWriter
+@JvmOverloads
+constructor(
+    config: GcsDestinationConfig,
+    s3Client: AmazonS3,
+    configuredStream: ConfiguredAirbyteStream,
+    uploadTimestamp: Timestamp,
+    converter: JsonAvroConverter?,
+    jsonSchema: JsonNode? = null
+) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val avroRecordFactory: AvroRecordFactory
     private val uploadManager: StreamTransferManager
     private val outputStream: MultiPartOutputStream
@@ -42,30 +47,48 @@ class GcsAvroWriter @JvmOverloads constructor(config: GcsDestinationConfig,
     override val outputPath: String
 
     init {
-        val schema = if (jsonSchema == null
-        ) GcsUtils.getDefaultAvroSchema(stream.name, stream.namespace, true, false)
-        else JsonToAvroSchemaConverter().getAvroSchema(jsonSchema, stream.name,
-                stream.namespace, true, false, false, true)
+        val schema =
+            if (jsonSchema == null)
+                GcsUtils.getDefaultAvroSchema(stream.name, stream.namespace, true, false)
+            else
+                JsonToAvroSchemaConverter()
+                    .getAvroSchema(
+                        jsonSchema,
+                        stream.name,
+                        stream.namespace,
+                        true,
+                        false,
+                        false,
+                        true
+                    )
         LOGGER.info("Avro schema for stream {}: {}", stream.name, schema!!.toString(false))
 
-        val outputFilename: String = BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.AVRO)
+        val outputFilename: String =
+            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.AVRO)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
-        LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.name, config.bucketName,
-                outputPath)
+        LOGGER.info(
+            "Full GCS path for stream '{}': {}/{}",
+            stream.name,
+            config.bucketName,
+            outputPath
+        )
 
         this.avroRecordFactory = AvroRecordFactory(schema, converter)
-        this.uploadManager = create(config.bucketName, outputPath, s3Client)
-                .setPartSize(DEFAULT_PART_SIZE_MB.toLong())
+        this.uploadManager =
+            create(config.bucketName, outputPath, s3Client)
+                .setPartSize(StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB.toLong())
                 .get()
-        // We only need one output stream as we only have one input stream. This is reasonably performant.
+        // We only need one output stream as we only have one input stream. This is reasonably
+        // performant.
         this.outputStream = uploadManager.multiPartOutputStreams[0]
 
         val formatConfig = config.formatConfig as S3AvroFormatConfig
         // The DataFileWriter always uses binary encoding.
         // If json encoding is needed in the future, use the GenericDatumWriter directly.
-        this.dataFileWriter = DataFileWriter(GenericDatumWriter<GenericData.Record>())
+        this.dataFileWriter =
+            DataFileWriter(GenericDatumWriter<GenericData.Record>())
                 .setCodec(formatConfig.codecFactory)
                 .create(schema, outputStream)
     }

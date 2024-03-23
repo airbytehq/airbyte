@@ -5,7 +5,6 @@ package io.airbyte.cdk.integrations.destination.gcs
 
 import com.amazonaws.services.s3.model.S3Object
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.integrations.destination.s3.util.Flattening.value
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.commons.json.Jsons
 import java.io.BufferedReader
@@ -21,11 +20,13 @@ abstract class GcsBaseJsonlGzipDestinationAcceptanceTest : GcsBaseJsonlDestinati
     }
 
     override val formatConfig: JsonNode?
-        get() =// config without compression defaults to GZIP
-            Jsons.jsonNode(Map.of("format_type", outputFormat))
+        get() = // config without compression defaults to GZIP
+        Jsons.jsonNode(Map.of("format_type", outputFormat))
 
     @Throws(IOException::class)
     override fun getReader(s3Object: S3Object): BufferedReader {
-        return BufferedReader(InputStreamReader(GZIPInputStream(s3Object.objectContent), StandardCharsets.UTF_8))
+        return BufferedReader(
+            InputStreamReader(GZIPInputStream(s3Object.objectContent), StandardCharsets.UTF_8)
+        )
     }
 }

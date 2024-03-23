@@ -12,6 +12,7 @@ import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.testMultipartUpload
 import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.testSingleUpload
 import io.airbyte.cdk.integrations.destination.s3.S3ConsumerFactory
@@ -19,24 +20,29 @@ import io.airbyte.cdk.integrations.destination.s3.SerializedBufferFactory.Compan
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.function.Consumer
 import java.util.function.Function
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 abstract class BaseGcsDestination : BaseConnector(), Destination {
     private val nameTransformer: NamingConventionTransformer = GcsNameTransformer()
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
-            val destinationConfig: GcsDestinationConfig = GcsDestinationConfig.Companion.getGcsDestinationConfig(config)
-            val s3Client = destinationConfig.s3Client
+            val destinationConfig: GcsDestinationConfig =
+                GcsDestinationConfig.Companion.getGcsDestinationConfig(config)
+            val s3Client = destinationConfig.getS3Client()
 
             // Test single upload (for small files) permissions
             testSingleUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath)
 
             // Test multipart upload with stream transfer manager
-            testMultipartUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath)
+            testMultipartUpload(
+                s3Client,
+                destinationConfig.bucketName,
+                destinationConfig.bucketPath
+            )
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: AmazonS3Exception) {
@@ -44,34 +50,51 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
             val message = getErrorMessage(e.errorCode, 0, e.message, e)
             emitConfigErrorTrace(e, message)
             return AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage(message)
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(message)
         } catch (e: Exception) {
-            LOGGER.error("Exception attempting to access the Gcs bucket: {}. Please make sure you account has all of these roles: " + EXPECTED_ROLES, e)
+            LOGGER.error(
+                "Exception attempting to access the Gcs bucket: {}. Please make sure you account has all of these roles: " +
+                    EXPECTED_ROLES,
+                e
+            )
             emitConfigErrorTrace(e, e.message)
             return AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
-                            .message)
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(
+                    "Could not connect to the Gcs bucket with the provided configuration. \n" +
+                        e.message
+                )
         }
     }
 
-    override fun getConsumer(config: JsonNode,
-                             configuredCatalog: ConfiguredAirbyteCatalog?,
-                             outputRecordCollector: Consumer<AirbyteMessage?>?): AirbyteMessageConsumer? {
-        val gcsConfig: GcsDestinationConfig = GcsDestinationConfig.Companion.getGcsDestinationConfig(config)
-        return S3ConsumerFactory().create(
+    override fun getConsumer(
+        config: JsonNode,
+        configuredCatalog: ConfiguredAirbyteCatalog,
+        outputRecordCollector: Consumer<AirbyteMessage?>?
+    ): AirbyteMessageConsumer? {
+        val gcsConfig: GcsDestinationConfig =
+            GcsDestinationConfig.Companion.getGcsDestinationConfig(config)
+        return S3ConsumerFactory()
+            .create(
                 outputRecordCollector,
-                GcsStorageOperations(nameTransformer, gcsConfig.s3Client, gcsConfig),
+                GcsStorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig),
                 nameTransformer,
-                getCreateFunction(gcsConfig, Function<String, BufferStorage> { fileExtension: String? -> FileBuffer(fileExtension) }),
+                getCreateFunction(
+                    gcsConfig,
+                    Function<String, BufferStorage> { fileExtension: String ->
+                        FileBuffer(fileExtension)
+                    }
+                ),
                 gcsConfig,
-                configuredCatalog)
+                configuredCatalog
+            )
     }
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(BaseGcsDestination::class.java)
-        const val EXPECTED_ROLES: String = ("storage.multipartUploads.abort, storage.multipartUploads.create, "
-                + "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list")
+        const val EXPECTED_ROLES: String =
+            ("storage.multipartUploads.abort, storage.multipartUploads.create, " +
+                "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list")
     }
 }
