@@ -49,11 +49,11 @@ public class GcsJsonlWriter extends BaseGcsWriter implements DestinationFileWrit
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.JSONL);
     objectKey = String.join("/", outputPrefix, outputFilename);
 
-    gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
-    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
+    gcsFileLocation = String.format("gs://%s/%s", config.bucketName, objectKey);
+    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.bucketName, objectKey);
 
     this.uploadManager = StreamTransferManagerFactory
-        .create(config.getBucketName(), objectKey, s3Client)
+        .create(config.bucketName, objectKey, s3Client)
         .get();
 
     // We only need one output stream as we only have one input stream. This is reasonably performant.
