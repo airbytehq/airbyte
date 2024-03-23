@@ -5,16 +5,15 @@ package io.airbyte.cdk.db.bigquery
 
 import io.airbyte.cdk.db.ContextQueryFunction
 import io.airbyte.cdk.db.Database
+import java.sql.SQLException
+import java.util.*
 import org.jooq.Record
 import org.jooq.Result
 import org.jooq.SQLDialect
 import org.jooq.exception.DataAccessException
 import org.jooq.impl.DefaultDSLContext
-import java.sql.SQLException
 
-/**
- * This class is a temporary and will be removed as part of the issue @TODO #4547
- */
+/** This class is a temporary and will be removed as part of the issue @TODO #4547 */
 class TempBigQueryJoolDatabaseImpl(projectId: String?, jsonCreds: String?) : Database(null) {
     val realDatabase: BigQueryDatabase
 
@@ -32,7 +31,8 @@ class TempBigQueryJoolDatabaseImpl(projectId: String?, jsonCreds: String?) : Dat
         return transform.query(FakeDefaultDSLContext(realDatabase))
     }
 
-    private class FakeDefaultDSLContext(private val database: BigQueryDatabase) : DefaultDSLContext(null as SQLDialect?) {
+    private class FakeDefaultDSLContext(private val database: BigQueryDatabase) :
+        DefaultDSLContext(null as SQLDialect?) {
         @Throws(DataAccessException::class)
         override fun fetch(sql: String): Result<Record> {
             try {
@@ -40,7 +40,7 @@ class TempBigQueryJoolDatabaseImpl(projectId: String?, jsonCreds: String?) : Dat
             } catch (e: SQLException) {
                 throw DataAccessException(e.message, e)
             }
-            return null
+            return fetchFromStringData(Collections.emptyList())
         }
     }
 
