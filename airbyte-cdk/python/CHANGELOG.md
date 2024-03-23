@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.74.0
+Request option params are allowed to be an array
+
 ## 0.73.0
 set minimum python version to 3.9
 
