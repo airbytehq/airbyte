@@ -1,8 +1,8 @@
 # Connector Metadata.yaml File
 
-The `metadata.yaml` file is a new addition to Airbyte's connector folders. This file is created with the goal of simplifying and enhancing how we manage information related to each connector. It is designed to replace the previous `source_definitions.yaml` and `destinations_definitions.yaml` files.
-
 The `metadata.yaml` file contains crucial information about the connector, including its type, definition ID, Docker image tag, Docker repository, and much more. It plays a key role in the way Airbyte handles connector data and improves the overall organization and accessibility of this data.
+
+N.B. the `metadata.yaml` file replaces the previous `source_definitions.yaml` and `destinations_definitions.yaml` files.
 
 ## Structure
 
