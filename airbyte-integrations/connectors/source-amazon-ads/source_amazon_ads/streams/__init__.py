@@ -8,7 +8,6 @@ from .attribution_report import (
     AttributionReportProducts,
 )
 from .portfolios import Portfolios
-from .profiles import Profiles
 from .report_streams import (
     SponsoredBrandsReportStream,
     SponsoredBrandsV3ReportStream,
@@ -39,7 +38,6 @@ from .sponsored_products import (
 
 __all__ = [
     "Portfolios",
-    "Profiles",
     "SponsoredDisplayAdGroups",
     "SponsoredDisplayCampaigns",
     "SponsoredDisplayProductAds",

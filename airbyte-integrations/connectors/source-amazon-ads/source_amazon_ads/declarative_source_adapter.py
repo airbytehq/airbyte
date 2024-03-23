@@ -1,10 +1,9 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-
-
+import logging
 from logging import Logger
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteConnectionStatus
 from airbyte_cdk.sources import AbstractSource
@@ -27,10 +26,13 @@ class DeclarativeSourceAdapter(YamlDeclarativeSource):
         return self._source.spec(logger)
 
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        self._source.profiles_stream = self._get_profiles_stream(config)
         return self._source.check(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return self._source.streams(config)
+        self._source.profiles_stream = self._get_profiles_stream(config)
+        all_streams = self._source.streams(config)
+        return all_streams
 
     def _validate_source(self) -> None:
         """Skipping manifest validation as it can be incomplete when use adapter"""
@@ -42,7 +44,11 @@ class DeclarativeSourceAdapter(YamlDeclarativeSource):
         this method determines whether each of methods `spec`, `check`, and `streams` was declared in the manifest file
         and if yes, makes the source use it, otherwise the method defined in the source will be used
         """
-        adapted_methods = ("spec", "check", "streams")
+        adapted_methods = ("spec",)
         for method in adapted_methods:
             if method in self.resolved_manifest:
                 self._source.__setattr__(method, getattr(super(), method))
+
+    def _get_profiles_stream(self, config):
+        declarative_streams = super().streams(config)
+        return [stream for stream in declarative_streams if stream.name == "profiles"][0]

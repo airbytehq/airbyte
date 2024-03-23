@@ -166,3 +166,65 @@ spec:
             type: string
             path_in_connector_config:
               - client_secret
+streams:
+  - name: profiles
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: v2/profiles?profileTypeFilter=seller,vendor
+        type: HttpRequester
+        url_base: '{{ ''https://advertising-api.amazon.com''}}'
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.amazon.com/auth/o2/token
+        request_headers:
+          Amazon-Advertising-API-ClientId: '{{ config[''client_id''] }}'
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          timezone:
+            type: string
+          profileId:
+            type: number
+          accountInfo:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              type:
+                type: string
+              subType:
+                type: string
+              validPaymentMethod:
+                type: boolean
+              marketplaceStringId:
+                type: string
+          countryCode:
+            type: string
+          dailyBudget:
+            type: number
+          currencyCode:
+            type: string
