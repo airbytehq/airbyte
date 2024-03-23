@@ -12,7 +12,6 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject.Companion.builder
-import io.airbyte.cdk.integrations.destination.s3.util.Flattening.value
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
@@ -20,18 +19,20 @@ import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class S3JsonlWriter(config: S3DestinationConfig,
-                    s3Client: AmazonS3,
-                    configuredStream: ConfiguredAirbyteStream,
-                    uploadTimestamp: Timestamp?) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
+class S3JsonlWriter(
+    config: S3DestinationConfig,
+    s3Client: AmazonS3,
+    configuredStream: ConfiguredAirbyteStream,
+    uploadTimestamp: Timestamp?
+) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val uploadManager: StreamTransferManager
     private val outputStream: MultiPartOutputStream
     private val printWriter: PrintWriter
@@ -39,20 +40,28 @@ class S3JsonlWriter(config: S3DestinationConfig,
     override val fileLocation: String
 
     init {
-        val outputFilename: String = BaseS3Writer.Companion.determineOutputFilename(builder()
-                .timestamp(uploadTimestamp)
-                .s3Format(S3Format.JSONL)
-                .fileExtension(S3Format.JSONL.fileExtension)
-                .fileNamePattern(config.fileNamePattern)
-                .build())
+        val outputFilename: String =
+            BaseS3Writer.Companion.determineOutputFilename(
+                builder()
+                    .timestamp(uploadTimestamp)
+                    .s3Format(S3Format.JSONL)
+                    .fileExtension(S3Format.JSONL.fileExtension)
+                    .fileNamePattern(config.fileNamePattern)
+                    .build()
+            )
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
-        LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.name, config.bucketName, outputPath)
+        LOGGER.info(
+            "Full S3 path for stream '{}': s3://{}/{}",
+            stream.name,
+            config.bucketName,
+            outputPath
+        )
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
-        this.uploadManager = create(config.bucketName, outputPath, s3Client)
-                .get()
-        // We only need one output stream as we only have one input stream. This is reasonably performant.
+        this.uploadManager = create(config.bucketName, outputPath, s3Client).get()
+        // We only need one output stream as we only have one input stream. This is reasonably
+        // performant.
         this.outputStream = uploadManager.multiPartOutputStreams[0]
         this.printWriter = PrintWriter(outputStream, true, StandardCharsets.UTF_8)
     }
@@ -81,7 +90,7 @@ class S3JsonlWriter(config: S3DestinationConfig,
         get() = S3Format.JSONL
 
     @Throws(IOException::class)
-    override fun write(formattedData: JsonNode?) {
+    override fun write(formattedData: JsonNode) {
         printWriter.println(Jsons.serialize(formattedData))
     }
 

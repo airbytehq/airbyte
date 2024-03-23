@@ -10,11 +10,14 @@ import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject.Companion.builder
-import io.airbyte.cdk.integrations.destination.s3.util.Flattening.value
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import java.io.IOException
+import java.net.URI
+import java.sql.Timestamp
+import java.util.*
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.hadoop.conf.Configuration
@@ -27,26 +30,27 @@ import org.apache.parquet.hadoop.util.HadoopOutputFile
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
-import java.io.IOException
-import java.net.URI
-import java.sql.Timestamp
-import java.util.*
 
-class S3ParquetWriter(config: S3DestinationConfig,
-                      s3Client: AmazonS3,
-                      configuredStream: ConfiguredAirbyteStream,
-                      uploadTimestamp: Timestamp?,
-                      schema: Schema?,
-                      converter: JsonAvroConverter?) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
+class S3ParquetWriter(
+    config: S3DestinationConfig,
+    s3Client: AmazonS3,
+    configuredStream: ConfiguredAirbyteStream,
+    uploadTimestamp: Timestamp?,
+    schema: Schema?,
+    converter: JsonAvroConverter?
+) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val parquetWriter: ParquetWriter<GenericData.Record>
     private val avroRecordFactory: AvroRecordFactory
     val schema: Schema?
-    val outputFilename: String = BaseS3Writer.Companion.determineOutputFilename(builder()
-            .s3Format(S3Format.PARQUET)
-            .timestamp(uploadTimestamp)
-            .fileExtension(S3Format.PARQUET.fileExtension)
-            .fileNamePattern(config.fileNamePattern)
-            .build())
+    val outputFilename: String =
+        BaseS3Writer.Companion.determineOutputFilename(
+            builder()
+                .s3Format(S3Format.PARQUET)
+                .timestamp(uploadTimestamp)
+                .fileExtension(S3Format.PARQUET.fileExtension)
+                .fileNamePattern(config.fileNamePattern)
+                .build()
+        )
 
     // object key = <path>/<output-filename>
     override val outputPath: String = java.lang.String.join("/", outputPrefix, outputFilename)
@@ -61,8 +65,13 @@ class S3ParquetWriter(config: S3DestinationConfig,
         val formatConfig = config.formatConfig as S3ParquetFormatConfig
         val hadoopConfig = getHadoopConfig(config)
         hadoopConfig.setBoolean(AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE, false)
-        this.parquetWriter = AvroParquetWriter.builder<GenericData.Record>(HadoopOutputFile.fromPath(path, hadoopConfig))
-                .withConf(hadoopConfig) // yes, this should be here despite the fact we pass this config above in path
+        this.parquetWriter =
+            AvroParquetWriter.builder<GenericData.Record>(
+                    HadoopOutputFile.fromPath(path, hadoopConfig)
+                )
+                .withConf(
+                    hadoopConfig
+                ) // yes, this should be here despite the fact we pass this config above in path
                 .withSchema(schema)
                 .withCompressionCodec(formatConfig.compressionCodec)
                 .withRowGroupSize(formatConfig.blockSize)
@@ -76,9 +85,7 @@ class S3ParquetWriter(config: S3DestinationConfig,
     }
 
     val outputFilePath: String
-        /**
-         * The file path includes prefix and filename, but does not include the bucket name.
-         */
+        /** The file path includes prefix and filename, but does not include the bucket name. */
         get() = "$outputPrefix/$outputFilename"
 
     @Throws(IOException::class)
@@ -100,7 +107,7 @@ class S3ParquetWriter(config: S3DestinationConfig,
         get() = S3Format.PARQUET
 
     @Throws(IOException::class)
-    override fun write(formattedData: JsonNode?) {
+    override fun write(formattedData: JsonNode) {
         parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData))
     }
 
@@ -113,13 +120,15 @@ class S3ParquetWriter(config: S3DestinationConfig,
             val credentialConfig = config.s3CredentialConfig as S3AccessKeyCredentialConfig
             hadoopConfig[Constants.ACCESS_KEY] = credentialConfig.accessKeyId
             hadoopConfig[Constants.SECRET_KEY] = credentialConfig.secretAccessKey
-            if (config.endpoint.isEmpty()) {
-                hadoopConfig[Constants.ENDPOINT] = String.format("s3.%s.amazonaws.com", config.bucketRegion)
+            if (config.endpoint.isNullOrEmpty()) {
+                hadoopConfig[Constants.ENDPOINT] =
+                    String.format("s3.%s.amazonaws.com", config.bucketRegion)
             } else {
                 hadoopConfig[Constants.ENDPOINT] = config.endpoint
                 hadoopConfig[Constants.PATH_STYLE_ACCESS] = "true"
             }
-            hadoopConfig[Constants.AWS_CREDENTIALS_PROVIDER] = "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"
+            hadoopConfig[Constants.AWS_CREDENTIALS_PROVIDER] =
+                "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"
             return hadoopConfig
         }
     }

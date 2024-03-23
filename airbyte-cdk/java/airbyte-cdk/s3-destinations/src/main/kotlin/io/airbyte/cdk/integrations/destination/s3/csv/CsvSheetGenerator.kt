@@ -13,27 +13,33 @@ import java.util.*
  * data row.
  */
 interface CsvSheetGenerator {
-    @JvmField
-    val headerRow: List<String>
+    fun getHeaderRow(): List<String>
 
-    // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized recordStrings,
+    // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized
+    // recordStrings,
     // both for performance and lowers memory footprint
     fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage): List<Any>
 
-    fun getDataRow(formattedData: JsonNode?): List<Any>
+    fun getDataRow(formattedData: JsonNode): List<Any>
 
-    fun getDataRow(id: UUID, formattedString: String, emittedAt: Long, formattedAirbyteMetaString: String): List<Any>
+    fun getDataRow(
+        id: UUID,
+        formattedString: String,
+        emittedAt: Long,
+        formattedAirbyteMetaString: String
+    ): List<Any>
 
     object Factory {
         @JvmStatic
-        fun create(jsonSchema: JsonNode?, formatConfig: S3CsvFormatConfig?): CsvSheetGenerator {
-            return if (formatConfig.getFlattening() == Flattening.NO) {
+        fun create(jsonSchema: JsonNode?, formatConfig: S3CsvFormatConfig): CsvSheetGenerator {
+            return if (formatConfig.flattening == Flattening.NO) {
                 NoFlatteningSheetGenerator()
-            } else if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {
+            } else if (formatConfig.flattening == Flattening.ROOT_LEVEL) {
                 RootLevelFlatteningSheetGenerator(jsonSchema!!)
             } else {
                 throw IllegalArgumentException(
-                        "Unexpected flattening config: " + formatConfig.getFlattening())
+                    "Unexpected flattening config: " + formatConfig.flattening
+                )
             }
         }
     }

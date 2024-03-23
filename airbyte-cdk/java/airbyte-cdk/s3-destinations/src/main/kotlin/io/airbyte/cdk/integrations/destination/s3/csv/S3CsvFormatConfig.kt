@@ -13,24 +13,33 @@ import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening.Companion.fromValue
 import java.util.*
 
-class S3CsvFormatConfig(@JvmField val flattening: Flattening, @JvmField val compressionType: CompressionType?) : S3FormatConfig {
-    constructor(formatConfig: JsonNode) : this(
-            fromValue(if (formatConfig.has("flattening")) formatConfig["flattening"].asText() else Flattening.NO.value),
-            if (formatConfig.has(S3DestinationConstants.COMPRESSION_ARG_NAME)
-            ) CompressionTypeHelper.parseCompressionType(formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME])
-            else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE)
+class S3CsvFormatConfig(val flattening: Flattening, val compressionType: CompressionType) :
+    S3FormatConfig {
+    constructor(
+        formatConfig: JsonNode
+    ) : this(
+        fromValue(
+            if (formatConfig.has("flattening")) formatConfig["flattening"].asText()
+            else Flattening.NO.value
+        ),
+        if (formatConfig.has(S3DestinationConstants.COMPRESSION_ARG_NAME))
+            CompressionTypeHelper.parseCompressionType(
+                formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME]
+            )
+        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+    )
 
-    override val format: S3Format?
-        get() = S3Format.CSV
+    override val format: S3Format = S3Format.CSV
 
-    override val fileExtension: String
-        get() = CSV_SUFFIX + compressionType!!.fileExtension
+    override val fileExtension: String = CSV_SUFFIX + compressionType.fileExtension
 
     override fun toString(): String {
         return "S3CsvFormatConfig{" +
-                "flattening=" + flattening +
-                ", compression=" + compressionType!!.name +
-                '}'
+            "flattening=" +
+            flattening +
+            ", compression=" +
+            compressionType!!.name +
+            '}'
     }
 
     override fun equals(o: Any?): Boolean {

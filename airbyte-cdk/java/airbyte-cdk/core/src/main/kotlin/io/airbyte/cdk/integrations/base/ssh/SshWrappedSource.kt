@@ -40,13 +40,13 @@ class SshWrappedSource : Source {
     }
 
     @Throws(Exception::class)
-    override fun check(config: JsonNode?): AirbyteConnectionStatus? {
+    override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
             return SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
                 config,
                 hostKey,
                 portKey,
-                CheckedFunction<JsonNode?, AirbyteConnectionStatus?, Exception?> { config: JsonNode?
+                CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> { config: JsonNode
                     ->
                     delegate.check(config)
                 }
@@ -62,12 +62,12 @@ class SshWrappedSource : Source {
     }
 
     @Throws(Exception::class)
-    override fun discover(config: JsonNode?): AirbyteCatalog? {
+    override fun discover(config: JsonNode): AirbyteCatalog? {
         return SshTunnel.Companion.sshWrap<AirbyteCatalog?>(
             config,
             hostKey,
             portKey,
-            CheckedFunction<JsonNode?, AirbyteCatalog?, Exception?> { config: JsonNode? ->
+            CheckedFunction<JsonNode, AirbyteCatalog?, Exception?> { config: JsonNode ->
                 delegate.discover(config)
             }
         )
@@ -75,7 +75,7 @@ class SshWrappedSource : Source {
 
     @Throws(Exception::class)
     override fun read(
-        config: JsonNode?,
+        config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
         state: JsonNode?
     ): AutoCloseableIterator<AirbyteMessage> {
@@ -96,7 +96,7 @@ class SshWrappedSource : Source {
 
     @Throws(Exception::class)
     override fun readStreams(
-        config: JsonNode?,
+        config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
         state: JsonNode?
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {

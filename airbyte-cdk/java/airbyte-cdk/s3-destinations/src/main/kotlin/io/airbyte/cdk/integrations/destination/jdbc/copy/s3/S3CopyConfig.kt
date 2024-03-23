@@ -11,16 +11,7 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
  * want additional flags to configure behavior that only applies to the copy-to-S3 +
  * load-into-warehouse portion. Currently this is just purgeStagingData, but this may expand.
  */
-class S3CopyConfig(purgeStagingData: Boolean, s3Config: S3DestinationConfig) {
-    val purgeStagingData: Boolean
-    val s3Config: S3DestinationConfig
-
-    init {
-        this.key = key
-        this.keyType = keyType
-        this.purgeStagingData = purgeStagingData
-        this.s3Config = s3Config
-    }
+class S3CopyConfig(val purgeStagingData: Boolean, val s3Config: S3DestinationConfig) {
 
     companion object {
         @JvmStatic
@@ -33,8 +24,10 @@ class S3CopyConfig(purgeStagingData: Boolean, s3Config: S3DestinationConfig) {
         }
 
         fun getS3CopyConfig(config: JsonNode): S3CopyConfig {
-            return S3CopyConfig(shouldPurgeStagingData(config),
-                    S3DestinationConfig.Companion.getS3DestinationConfig(config))
+            return S3CopyConfig(
+                shouldPurgeStagingData(config),
+                S3DestinationConfig.Companion.getS3DestinationConfig(config)
+            )
         }
     }
 }

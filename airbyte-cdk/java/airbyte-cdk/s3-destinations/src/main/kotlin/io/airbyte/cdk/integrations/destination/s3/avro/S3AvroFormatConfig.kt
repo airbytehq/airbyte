@@ -9,8 +9,9 @@ import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig
 import org.apache.avro.file.CodecFactory
 
 class S3AvroFormatConfig : S3FormatConfig {
-    @JvmField
     val codecFactory: CodecFactory
+
+    override val fileExtension: String = DEFAULT_SUFFIX
 
     constructor(codecFactory: CodecFactory) {
         this.codecFactory = codecFactory
@@ -20,7 +21,7 @@ class S3AvroFormatConfig : S3FormatConfig {
         this.codecFactory = parseCodecConfig(formatConfig["compression_codec"])
     }
 
-    override val format: S3Format?
+    override val format: S3Format
         get() = S3Format.AVRO
 
     enum class CompressionCodec(private val configValue: String) {
@@ -44,8 +45,7 @@ class S3AvroFormatConfig : S3FormatConfig {
     }
 
     companion object {
-        val fileExtension: String = ".avro"
-            get() = Companion.field
+        @JvmStatic val DEFAULT_SUFFIX: String = ".avro"
 
         @JvmStatic
         fun parseCodecConfig(compressionCodecConfig: JsonNode?): CodecFactory {
@@ -63,44 +63,50 @@ class S3AvroFormatConfig : S3FormatConfig {
                 CompressionCodec.NULL -> {
                     return CodecFactory.nullCodec()
                 }
-
                 CompressionCodec.DEFLATE -> {
                     val compressionLevel = getCompressionLevel(compressionCodecConfig, 0, 0, 9)
                     return CodecFactory.deflateCodec(compressionLevel)
                 }
-
                 CompressionCodec.BZIP2 -> {
                     return CodecFactory.bzip2Codec()
                 }
-
                 CompressionCodec.XZ -> {
                     val compressionLevel = getCompressionLevel(compressionCodecConfig, 6, 0, 9)
                     return CodecFactory.xzCodec(compressionLevel)
                 }
-
                 CompressionCodec.ZSTANDARD -> {
                     val compressionLevel = getCompressionLevel(compressionCodecConfig, 3, -5, 22)
                     val includeChecksum = getIncludeChecksum(compressionCodecConfig, false)
                     return CodecFactory.zstandardCodec(compressionLevel, includeChecksum)
                 }
-
                 CompressionCodec.SNAPPY -> {
                     return CodecFactory.snappyCodec()
                 }
-
                 else -> {
                     throw IllegalArgumentException("Unsupported compression codec: $codecType")
                 }
             }
         }
 
-        fun getCompressionLevel(compressionCodecConfig: JsonNode, defaultLevel: Int, minLevel: Int, maxLevel: Int): Int {
+        fun getCompressionLevel(
+            compressionCodecConfig: JsonNode,
+            defaultLevel: Int,
+            minLevel: Int,
+            maxLevel: Int
+        ): Int {
             val levelConfig = compressionCodecConfig["compression_level"]
             if (levelConfig == null || levelConfig.isNull || !levelConfig.isIntegralNumber) {
                 return defaultLevel
             }
             val level = levelConfig.asInt()
-            require(!(level < minLevel || level > maxLevel)) { String.format("Invalid compression level: %d, expected an integer in range [%d, %d]", level, minLevel, maxLevel) }
+            require(!(level < minLevel || level > maxLevel)) {
+                String.format(
+                    "Invalid compression level: %d, expected an integer in range [%d, %d]",
+                    level,
+                    minLevel,
+                    maxLevel
+                )
+            }
             return level
         }
 

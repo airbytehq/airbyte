@@ -10,6 +10,7 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.cdk.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.cdk.integrations.destination.gcs.writer.BaseGcsWriter;
@@ -52,6 +53,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements DestinationFileWrite
     this(config, s3Client, configuredStream, uploadTimestamp, converter, null);
   }
 
+  @SuppressFBWarnings("NP_NULL_ON_SOME_PATH")
   public GcsAvroWriter(final GcsDestinationConfig config,
                        final AmazonS3 s3Client,
                        final ConfiguredAirbyteStream configuredStream,
@@ -86,7 +88,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements DestinationFileWrite
     // The DataFileWriter always uses binary encoding.
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
-        .setCodec(formatConfig.codecFactory)
+        .setCodec(formatConfig.getCodecFactory())
         .create(schema, outputStream);
   }
 

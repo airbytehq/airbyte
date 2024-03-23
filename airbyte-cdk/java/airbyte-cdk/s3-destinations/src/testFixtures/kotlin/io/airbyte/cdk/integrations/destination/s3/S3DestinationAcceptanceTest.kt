@@ -12,74 +12,75 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
+import java.nio.file.Path
+import java.util.*
+import java.util.stream.Collectors
 import org.apache.commons.lang3.RandomStringUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.nio.file.Path
-import java.util.*
-import java.util.stream.Collectors
 
 /**
  * When adding a new S3 destination acceptance test, extend this class and do the following:
- *  * Implement [.getFormatConfig] that returns a [S3FormatConfig]
- *  * Implement [.retrieveRecords] that returns the Json records for the test
+ * * Implement [.getFormatConfig] that returns a [S3FormatConfig]
+ * * Implement [.retrieveRecords] that returns the Json records for the test
  *
  * Under the hood, a [S3DestinationConfig] is constructed as follows:
- *  * Retrieve the secrets from "secrets/config.json"
- *  * Get the S3 bucket path from the constructor
- *  * Get the format config from [.getFormatConfig]
+ * * Retrieve the secrets from "secrets/config.json"
+ * * Get the S3 bucket path from the constructor
+ * * Get the format config from [.getFormatConfig]
  */
-abstract class S3DestinationAcceptanceTest protected constructor(protected val outputFormat: S3Format) : DestinationAcceptanceTest() {
+abstract class S3DestinationAcceptanceTest
+protected constructor(protected val outputFormat: S3Format) : DestinationAcceptanceTest() {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
-    protected var config: S3DestinationConfig? = null
+    protected lateinit var config: S3DestinationConfig
     protected var s3Client: AmazonS3? = null
-    protected var nameTransformer: NamingConventionTransformer? = null
+    protected lateinit var nameTransformer: NamingConventionTransformer
     protected var s3StorageOperations: S3StorageOperations? = null
 
     protected val baseConfigJson: JsonNode
         get() = Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)))
 
-    protected fun getConfig(): JsonNode? {
-        return configJson
-    }
-
-    protected fun getDefaultSchema(config: JsonNode): String? {
+    override fun getDefaultSchema(config: JsonNode): String? {
         if (config.has("s3_bucket_path")) {
             return config["s3_bucket_path"].asText()
         }
         return null
     }
 
-    protected val failCheckConfig: JsonNode
-        get() {
-            val baseJson = baseConfigJson
-            val failCheckJson = Jsons.clone(baseJson)
-            // invalid credential
-            (failCheckJson as ObjectNode).put("access_key_id", "fake-key")
-            failCheckJson.put("secret_access_key", "fake-secret")
-            return failCheckJson
-        }
+    override fun getFailCheckConfig(): JsonNode {
+        val baseJson = baseConfigJson
+        val failCheckJson = Jsons.clone(baseJson)
+        // invalid credential
+        (failCheckJson as ObjectNode).put("access_key_id", "fake-key")
+        failCheckJson.put("secret_access_key", "fake-secret")
+        return failCheckJson
+    }
 
-    /**
-     * Helper method to retrieve all synced objects inside the configured bucket path.
-     */
-    protected fun getAllSyncedObjects(streamName: String?, namespace: String?): List<S3ObjectSummary> {
+    /** Helper method to retrieve all synced objects inside the configured bucket path. */
+    protected fun getAllSyncedObjects(
+        streamName: String?,
+        namespace: String?
+    ): List<S3ObjectSummary> {
         val namespaceStr = nameTransformer!!.getNamespace(namespace!!)
         val streamNameStr = nameTransformer!!.getIdentifier(streamName!!)
-        val outputPrefix = s3StorageOperations!!.getBucketObjectPath(
+        val outputPrefix =
+            s3StorageOperations!!.getBucketObjectPath(
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                config!!.pathFormat)
+                config!!.pathFormat
+            )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
-        val objectSummaries = s3Client
+        val objectSummaries =
+            s3Client!!
                 .listObjects(config!!.bucketName, parentFolder)
                 .objectSummaries
                 .stream()
@@ -87,8 +88,12 @@ abstract class S3DestinationAcceptanceTest protected constructor(protected val o
                 .sorted(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
                 .collect(Collectors.toList())
         LOGGER.info(
-                "All objects: {}",
-                objectSummaries.stream().map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }.collect(Collectors.toList()))
+            "All objects: {}",
+            objectSummaries
+                .stream()
+                .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
+                .collect(Collectors.toList())
+        )
         return objectSummaries
     }
 
@@ -97,62 +102,65 @@ abstract class S3DestinationAcceptanceTest protected constructor(protected val o
 
     /**
      * This method does the following:
-     *  * Construct the S3 destination config.
-     *  * Construct the S3 client.
+     * * Construct the S3 destination config.
+     * * Construct the S3 client.
      */
-    protected fun setup(testEnv: TestDestinationEnv?, TEST_SCHEMAS: HashSet<String?>?) {
+    override fun setup(testEnv: TestDestinationEnv?, TEST_SCHEMAS: HashSet<String?>?) {
         val baseConfigJson = baseConfigJson
         // Set a random s3 bucket path for each integration test
         val configJson = Jsons.clone(baseConfigJson)
-        val testBucketPath = String.format(
+        val testBucketPath =
+            String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5))
+                RandomStringUtils.randomAlphanumeric(5)
+            )
         (configJson as ObjectNode)
-                .put("s3_bucket_path", testBucketPath)
-                .set<JsonNode>("format", formatConfig)
+            .put("s3_bucket_path", testBucketPath)
+            .set<JsonNode>("format", formatConfig)
         this.configJson = configJson
         this.config = S3DestinationConfig.getS3DestinationConfig(configJson, storageProvider())
         LOGGER.info("Test full path: {}/{}", config.bucketName, config.bucketPath)
 
         this.s3Client = config.getS3Client()
         this.nameTransformer = S3NameTransformer()
-        this.s3StorageOperations = S3StorageOperations(nameTransformer, s3Client, config)
+        this.s3StorageOperations = S3StorageOperations(nameTransformer, s3Client!!, config)
     }
 
-    /**
-     * Remove all the S3 output from the tests.
-     */
-    protected fun tearDown(testEnv: TestDestinationEnv?) {
+    /** Remove all the S3 output from the tests. */
+    override fun tearDown(testEnv: TestDestinationEnv?) {
         val keysToDelete: MutableList<DeleteObjectsRequest.KeyVersion> = LinkedList()
-        val objects = s3Client
-                .listObjects(config!!.bucketName, config!!.bucketPath)
-                .objectSummaries
+        val objects =
+            s3Client!!.listObjects(config!!.bucketName, config!!.bucketPath).objectSummaries
         for (`object` in objects) {
             keysToDelete.add(DeleteObjectsRequest.KeyVersion(`object`.key))
         }
 
         if (keysToDelete.size > 0) {
-            LOGGER.info("Tearing down test bucket path: {}/{}", config!!.bucketName,
-                    config!!.bucketPath)
-            val result = s3Client
-                    .deleteObjects(DeleteObjectsRequest(config!!.bucketName).withKeys(keysToDelete))
+            LOGGER.info(
+                "Tearing down test bucket path: {}/{}",
+                config!!.bucketName,
+                config!!.bucketPath
+            )
+            val result =
+                s3Client!!.deleteObjects(
+                    DeleteObjectsRequest(config!!.bucketName).withKeys(keysToDelete)
+                )
             LOGGER.info("Deleted {} file(s).", result.deletedObjects.size)
         }
     }
 
-    protected open val testDataComparator: TestDataComparator
-        get() = AdvancedTestDataComparator()
+    override fun getTestDataComparator() = AdvancedTestDataComparator()
 
-    protected fun supportBasicDataTypeTest(): Boolean {
+    override fun supportBasicDataTypeTest(): Boolean {
         return true
     }
 
-    protected fun supportArrayDataTypeTest(): Boolean {
+    override fun supportArrayDataTypeTest(): Boolean {
         return true
     }
 
-    protected fun supportObjectDataTypeTest(): Boolean {
+    override fun supportObjectDataTypeTest(): Boolean {
         return true
     }
 
@@ -161,7 +169,8 @@ abstract class S3DestinationAcceptanceTest protected constructor(protected val o
     }
 
     companion object {
-        protected val LOGGER: Logger = LoggerFactory.getLogger(S3DestinationAcceptanceTest::class.java)
-        protected val MAPPER: ObjectMapper = MoreMappers.initMapper()
+        protected val LOGGER: Logger =
+            LoggerFactory.getLogger(S3DestinationAcceptanceTest::class.java)
+        @JvmStatic protected val MAPPER: ObjectMapper = MoreMappers.initMapper()
     }
 }

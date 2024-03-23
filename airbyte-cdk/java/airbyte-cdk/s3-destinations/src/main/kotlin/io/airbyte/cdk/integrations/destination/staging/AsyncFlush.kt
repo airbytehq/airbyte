@@ -15,45 +15,60 @@ import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOpe
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import lombok.extern.slf4j.Slf4j
-import org.apache.commons.io.FileUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.List
 import java.util.stream.Stream
+import org.apache.commons.io.FileUtils
 
 /**
  * Async flushing logic. Flushing async prevents backpressure and is the superior flushing strategy.
  */
-@Slf4j
-internal class AsyncFlush(streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig>,
-                          private val stagingOperations: StagingOperations?,
-                          private val database: JdbcDatabase?,
-                          private val catalog: ConfiguredAirbyteCatalog?,
-                          private val typerDeduperValve: TypeAndDedupeOperationValve?,
-                          private val typerDeduper: TyperDeduper?,  // In general, this size is chosen to improve the performance of lower memory connectors. With 1 Gi
-        // of
-        // resource the connector will usually at most fill up around 150 MB in a single queue. By lowering
-        // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
-        // freed earlier similar to a sliding window effect
-                          override val optimalBatchSizeBytes: Long,
-                          private val useDestinationsV2Columns: Boolean) : DestinationFlushFunction {
-    private val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> = streamDescToWriteConfig
+private val logger = KotlinLogging.logger {}
+
+internal class AsyncFlush(
+    streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig>,
+    private val stagingOperations: StagingOperations?,
+    private val database: JdbcDatabase?,
+    private val catalog: ConfiguredAirbyteCatalog?,
+    private val typerDeduperValve: TypeAndDedupeOperationValve?,
+    private val typerDeduper:
+        TyperDeduper?, // In general, this size is chosen to improve the performance of lower memory
+    // connectors. With 1 Gi
+    // of
+    // resource the connector will usually at most fill up around 150 MB in a single queue. By
+    // lowering
+    // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
+    // freed earlier similar to a sliding window effect
+    override val optimalBatchSizeBytes: Long,
+    private val useDestinationsV2Columns: Boolean
+) : DestinationFlushFunction {
+    private val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> =
+        streamDescToWriteConfig
 
     @Throws(Exception::class)
     override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage?>) {
         val writer: CsvSerializedBuffer
         try {
-            writer = CsvSerializedBuffer(
+            writer =
+                CsvSerializedBuffer(
                     FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
                     StagingDatabaseCsvSheetGenerator(useDestinationsV2Columns),
-                    true)
+                    true
+                )
 
             // reassign as lambdas require references to be final.
             stream.forEach { record: PartialAirbyteMessage? ->
                 try {
-                    // todo (cgardens) - most writers just go ahead and re-serialize the contents of the record message.
-                    // we should either just pass the raw string or at least have a way to do that and create a default
+                    // todo (cgardens) - most writers just go ahead and re-serialize the contents of
+                    // the record message.
+                    // we should either just pass the raw string or at least have a way to do that
+                    // and create a default
                     // impl that maintains backwards compatible behavior.
-                    writer.accept(record!!.serialized!!, Jsons.serialize(record.record!!.meta), record.record!!.emittedAt)
+                    writer.accept(
+                        record!!.serialized!!,
+                        Jsons.serialize(record.record!!.meta),
+                        record.record!!.emittedAt
+                    )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
                 }
@@ -63,35 +78,54 @@ internal class AsyncFlush(streamDescToWriteConfig: Map<StreamDescriptor, WriteCo
         }
 
         writer.flush()
-        AsyncFlush.log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.name, FileUtils.byteCountToDisplaySize(writer.byteCount))
-        require(streamDescToWriteConfig.containsKey(decs)) { String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)) }
+        logger.info(
+            "Flushing CSV buffer for stream {} ({}) to staging",
+            decs.name,
+            FileUtils.byteCountToDisplaySize(writer.byteCount)
+        )
+        require(streamDescToWriteConfig.containsKey(decs)) {
+            String.format(
+                "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
+                Jsons.serialize(catalog)
+            )
+        }
 
-        val writeConfig: WriteConfig? = streamDescToWriteConfig[decs]
+        val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(decs)
         val schemaName: String = writeConfig.getOutputSchemaName()
-        val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.getOutputTableName())
+        val stageName =
+            stagingOperations!!.getStageName(schemaName, writeConfig.getOutputTableName())
         val stagingPath =
-                stagingOperations.getStagingPath(
-                        GeneralStagingFunctions.RANDOM_CONNECTION_ID,
-                        schemaName,
-                        writeConfig.getStreamName(),
-                        writeConfig.getOutputTableName(),
-                        writeConfig.getWriteDatetime())
+            stagingOperations.getStagingPath(
+                GeneralStagingFunctions.RANDOM_CONNECTION_ID,
+                schemaName,
+                writeConfig.getStreamName(),
+                writeConfig.getOutputTableName(),
+                writeConfig.getWriteDatetime()
+            )
         try {
-            val stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath)
-            GeneralStagingFunctions.copyIntoTableFromStage(
+            val stagedFile =
+                stagingOperations.uploadRecordsToStage(
                     database,
-                    stageName,
-                    stagingPath,
-                    List.of(stagedFile),
-                    writeConfig.getOutputTableName(),
+                    writer,
                     schemaName,
-                    stagingOperations,
-                    writeConfig.getNamespace(),
-                    writeConfig.getStreamName(),
-                    typerDeduperValve,
-                    typerDeduper)
+                    stageName,
+                    stagingPath
+                )
+            GeneralStagingFunctions.copyIntoTableFromStage(
+                database,
+                stageName,
+                stagingPath,
+                List.of(stagedFile),
+                writeConfig.getOutputTableName(),
+                schemaName,
+                stagingOperations,
+                writeConfig.getNamespace(),
+                writeConfig.getStreamName(),
+                typerDeduperValve,
+                typerDeduper
+            )
         } catch (e: Exception) {
-            AsyncFlush.log.error("Failed to flush and commit buffer data into destination's raw table", e)
+            logger.error("Failed to flush and commit buffer data into destination's raw table", e)
             throw RuntimeException("Failed to upload buffer to stage and commit to destination", e)
         }
 

@@ -13,11 +13,9 @@ object S3OutputPathHelper {
         return getOutputPrefix(bucketPath, stream.namespace, stream.name)
     }
 
-    /**
-     * Prefix: &lt;bucket-path&gt;/&lt;source-namespace-if-present&gt;/&lt;stream-name&gt;
-     */
+    /** Prefix: &lt;bucket-path&gt;/&lt;source-namespace-if-present&gt;/&lt;stream-name&gt; */
     // Prefix: <bucket-path>/<source-namespace-if-present>/<stream-name>
-    fun getOutputPrefix(bucketPath: String?, namespace: String?, streamName: String?): String {
+    fun getOutputPrefix(bucketPath: String?, namespace: String?, streamName: String): String {
         val paths: MutableList<String> = LinkedList()
 
         if (bucketPath != null) {
@@ -26,7 +24,7 @@ object S3OutputPathHelper {
         if (namespace != null) {
             paths.add(S3DestinationConstants.NAME_TRANSFORMER.convertStreamName(namespace))
         }
-        paths.add(S3DestinationConstants.NAME_TRANSFORMER.convertStreamName(streamName!!))
+        paths.add(S3DestinationConstants.NAME_TRANSFORMER.convertStreamName(streamName))
 
         return java.lang.String.join("/", paths).replace("/+".toRegex(), "/")
     }

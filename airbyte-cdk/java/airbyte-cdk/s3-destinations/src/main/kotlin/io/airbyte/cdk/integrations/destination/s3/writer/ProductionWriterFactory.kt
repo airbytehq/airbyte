@@ -12,33 +12,49 @@ import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroWriter
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvWriter
 import io.airbyte.cdk.integrations.destination.s3.jsonl.S3JsonlWriter
 import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetWriter
-import io.airbyte.cdk.integrations.destination.s3.util.Flattening.value
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import java.sql.Timestamp
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.Timestamp
 
 class ProductionWriterFactory : S3WriterFactory {
     @Throws(Exception::class)
-    override fun create(config: S3DestinationConfig,
-                        s3Client: AmazonS3,
-                        configuredStream: ConfiguredAirbyteStream,
-                        uploadTimestamp: Timestamp): DestinationFileWriter? {
-        val format = config.formatConfig.format
+    override fun create(
+        config: S3DestinationConfig,
+        s3Client: AmazonS3,
+        configuredStream: ConfiguredAirbyteStream,
+        uploadTimestamp: Timestamp
+    ): DestinationFileWriter? {
+        val format = config.formatConfig!!.format
 
         if (format == S3Format.AVRO || format == S3Format.PARQUET) {
             val stream = configuredStream.stream
             LOGGER.info("Json schema for stream {}: {}", stream.name, stream.jsonSchema)
 
             val schemaConverter = JsonToAvroSchemaConverter()
-            val avroSchema = schemaConverter.getAvroSchema(stream.jsonSchema, stream.name, stream.namespace)
+            val avroSchema =
+                schemaConverter.getAvroSchema(stream.jsonSchema, stream.name, stream.namespace)
 
             LOGGER.info("Avro schema for stream {}: {}", stream.name, avroSchema.toString(false))
 
             return if (format == S3Format.AVRO) {
-                S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER)
+                S3AvroWriter(
+                    config,
+                    s3Client,
+                    configuredStream,
+                    uploadTimestamp,
+                    avroSchema,
+                    AvroConstants.JSON_CONVERTER
+                )
             } else {
-                S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER)
+                S3ParquetWriter(
+                    config,
+                    s3Client,
+                    configuredStream,
+                    uploadTimestamp,
+                    avroSchema,
+                    AvroConstants.JSON_CONVERTER
+                )
             }
         }
 

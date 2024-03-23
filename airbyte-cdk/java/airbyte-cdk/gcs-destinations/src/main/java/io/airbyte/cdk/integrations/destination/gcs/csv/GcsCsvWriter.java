@@ -10,6 +10,7 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.cdk.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
@@ -41,6 +42,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements DestinationFileWriter
   private final String gcsFileLocation;
   private final String objectKey;
 
+  @SuppressFBWarnings("NP_NULL_PARAM_DEREF")
   public GcsCsvWriter(final GcsDestinationConfig config,
                       final AmazonS3 s3Client,
                       final ConfiguredAirbyteStream configuredStream,
@@ -66,7 +68,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements DestinationFileWriter
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
         CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-            .withHeader(csvSheetGenerator.headerRow.toArray(new String[0])));
+            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
   }
 
   @Override
