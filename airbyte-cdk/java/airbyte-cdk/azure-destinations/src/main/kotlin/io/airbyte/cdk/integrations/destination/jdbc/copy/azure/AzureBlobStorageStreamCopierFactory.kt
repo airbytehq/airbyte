@@ -13,39 +13,54 @@ import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopierFactory.Com
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 
-abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBlobStorageConfig?> {
-    override fun create(configuredSchema: String?,
-                        azureBlobConfig: AzureBlobStorageConfig,
-                        stagingFolder: String?,
-                        configuredStream: ConfiguredAirbyteStream?,
-                        nameTransformer: StandardNameTransformer?,
-                        db: JdbcDatabase?,
-                        sqlOperations: SqlOperations?): StreamCopier? {
+abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBlobStorageConfig> {
+    override fun create(
+        configuredSchema: String?,
+        azureBlobConfig: AzureBlobStorageConfig,
+        stagingFolder: String?,
+        configuredStream: ConfiguredAirbyteStream?,
+        nameTransformer: StandardNameTransformer?,
+        db: JdbcDatabase?,
+        sqlOperations: SqlOperations?
+    ): StreamCopier? {
         try {
             val stream = configuredStream!!.stream
             val syncMode = configuredStream.destinationSyncMode
             val schema = getSchema(stream.namespace, configuredSchema!!, nameTransformer!!)
             val streamName = stream.name
 
-            val specializedBlobClientBuilder = SpecializedBlobClientBuilder()
+            val specializedBlobClientBuilder =
+                SpecializedBlobClientBuilder()
                     .endpoint(azureBlobConfig.endpointUrl)
                     .sasToken(azureBlobConfig.sasToken)
                     .containerName(azureBlobConfig.containerName)
 
-            return create(stagingFolder, syncMode, schema, streamName, specializedBlobClientBuilder, db, azureBlobConfig, nameTransformer, sqlOperations)
+            return create(
+                stagingFolder,
+                syncMode,
+                schema,
+                streamName,
+                specializedBlobClientBuilder,
+                db,
+                azureBlobConfig,
+                nameTransformer,
+                sqlOperations
+            )
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
     }
 
     @Throws(Exception::class)
-    abstract fun create(stagingFolder: String?,
-                        syncMode: DestinationSyncMode?,
-                        schema: String?,
-                        streamName: String?,
-                        specializedBlobClientBuilder: SpecializedBlobClientBuilder?,
-                        db: JdbcDatabase?,
-                        azureBlobConfig: AzureBlobStorageConfig?,
-                        nameTransformer: StandardNameTransformer?,
-                        sqlOperations: SqlOperations?): StreamCopier?
+    abstract fun create(
+        stagingFolder: String?,
+        syncMode: DestinationSyncMode?,
+        schema: String?,
+        streamName: String?,
+        specializedBlobClientBuilder: SpecializedBlobClientBuilder?,
+        db: JdbcDatabase?,
+        azureBlobConfig: AzureBlobStorageConfig?,
+        nameTransformer: StandardNameTransformer?,
+        sqlOperations: SqlOperations?
+    ): StreamCopier?
 }
