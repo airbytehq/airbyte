@@ -652,6 +652,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 | ------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 4.6.2   | [#36220](https://github.com/airbytehq/airbyte/pull/36220)  | Allow using `migrate-to-base-image` without PULL_REQUEST_NUMBER                                                            |
 | 4.6.1   | [#36319](https://github.com/airbytehq/airbyte/pull/36319)  | Fix `ValueError` related to PR number in migrate-to-poetry                                                                 |
 | 4.6.0   | [#35583](https://github.com/airbytehq/airbyte/pull/35583)  | Implement the `airbyte-ci connectors migrate-to-poetry` command.                                                           |
 | 4.5.4   | [#36206](https://github.com/airbytehq/airbyte/pull/36206)  | Revert poetry cache removal during nightly builds                                                                          |
