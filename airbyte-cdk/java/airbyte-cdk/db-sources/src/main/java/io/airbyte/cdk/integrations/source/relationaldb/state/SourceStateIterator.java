@@ -48,10 +48,10 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     try {
       iteratorHasNextValue = messageIterator.hasNext();
     } catch (final Exception ex) {
-      // If the initial snapshot is incomplete for this stream, throw an exception failing the sync. This
-      // will ensure the platform retry logic
-      // kicks in and keeps retrying the sync until the initial snapshot is complete.
-      throw new RuntimeException(ex);
+      // If the underlying iterator throws an exception, we want to fail the sync, expecting sync/attempt
+      // will be restarted and
+      // sync will resume from the last state message.
+      throw new FailedRecordIteratorException(ex);
     }
     if (iteratorHasNextValue) {
       if (shouldEmitStateMessage() && sourceStateMessageProducer.shouldEmitStateMessage(stream)) {
@@ -71,7 +71,7 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
         recordCount++;
         return processedMessage;
       } catch (final Exception e) {
-        throw new RuntimeException(e);
+        throw new FailedRecordIteratorException(e);
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
@@ -86,10 +86,20 @@ public class SourceStateIterator<T> extends AbstractIterator<AirbyteMessage> imp
     }
   }
 
+  // This method is used to check if we should emit a state message. If the record count is set to 0,
+  // we should not emit a state message.
+  // If the frequency is set to be zero, we should not use it.
   private boolean shouldEmitStateMessage() {
-    return (recordCount >= stateEmitFrequency.syncCheckpointRecords()
-        || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(stateEmitFrequency.syncCheckpointDuration()) > 0);
-
+    if (stateEmitFrequency.syncCheckpointRecords() == 0) {
+      return false;
+    }
+    if (recordCount >= stateEmitFrequency.syncCheckpointRecords()) {
+      return true;
+    }
+    if (!stateEmitFrequency.syncCheckpointDuration().isZero()) {
+      return Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(stateEmitFrequency.syncCheckpointDuration()) > 0;
+    }
+    return false;
   }
 
 }
