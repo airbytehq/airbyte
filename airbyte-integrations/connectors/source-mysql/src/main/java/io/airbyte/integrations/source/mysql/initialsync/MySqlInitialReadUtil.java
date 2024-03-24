@@ -32,7 +32,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils;
-import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcPosition;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
@@ -41,6 +40,7 @@ import io.airbyte.integrations.source.mysql.cdc.MySqlCdcStateHandler;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcTargetPosition;
 import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil;
 import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
+import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.CommonField;
@@ -129,8 +129,7 @@ public class MySqlInitialReadUtil {
         || stateManager.getCdcStateManager().getCdcState().getState() == null)) ? new CdcState().withState(initialDebeziumState)
             : stateManager.getCdcStateManager().getCdcState();
 
-    final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
-    final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt, stateAttributes);
+    final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
     // If there are streams to sync via primary key load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
@@ -140,8 +139,11 @@ public class MySqlInitialReadUtil {
           new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
               initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
               stateToBeUsed, catalog);
+      final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
 
-      final MySqlSourceOperations sourceOperations = new MySqlSourceOperations(Optional.of(metadataInjector));
+      final MySqlInitialLoadSourceOperations sourceOperations =
+          new MySqlInitialLoadSourceOperations(
+              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
       final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
           sourceOperations,
           quoteString,

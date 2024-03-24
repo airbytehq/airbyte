@@ -46,8 +46,6 @@ import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.result.Field;
 import io.airbyte.cdk.db.SourceOperations;
 import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
-import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
-import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -56,7 +54,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,29 +65,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
       FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
       TIME, YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
-
-  private final Optional<CdcMetadataInjector> metadataInjector;
-
-  public MySqlSourceOperations() {
-    super();
-    this.metadataInjector = Optional.empty();
-  }
-
-  public MySqlSourceOperations(final Optional<CdcMetadataInjector> metadataInjector) {
-    super();
-    this.metadataInjector = metadataInjector;
-  }
-
-  @Override
-  public AirbyteRecordData convertDatabaseRowToAirbyteRecordData(final ResultSet queryContext) throws SQLException {
-    final AirbyteRecordData airbyteRecordData = super.convertDatabaseRowToAirbyteRecordData(queryContext);
-    final ObjectNode jsonNode = (ObjectNode) airbyteRecordData.rawRowData();
-    if (!metadataInjector.isPresent()) {
-      return airbyteRecordData;
-    }
-    metadataInjector.get().addMetaDataToRowsFetchedOutsideDebezium(jsonNode);
-    return new AirbyteRecordData(jsonNode, airbyteRecordData.meta());
-  }
 
   /**
    * @param colIndex 1-based column index.
