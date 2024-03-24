@@ -652,11 +652,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return iterator with read data
    */
   protected abstract AutoCloseableIterator<AirbyteRecordData> queryTableFullRefresh(final Database database,
-                                                                           final List<String> columnNames,
-                                                                           final String schemaName,
-                                                                           final String tableName,
-                                                                           final SyncMode syncMode,
-                                                                           final Optional<String> cursorField);
+                                                                                    final List<String> columnNames,
+                                                                                    final String schemaName,
+                                                                                    final String tableName,
+                                                                                    final SyncMode syncMode,
+                                                                                    final Optional<String> cursorField);
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor
@@ -667,11 +667,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return iterator with read data
    */
   protected abstract AutoCloseableIterator<AirbyteRecordData> queryTableIncremental(Database database,
-                                                                           List<String> columnNames,
-                                                                           String schemaName,
-                                                                           String tableName,
-                                                                           CursorInfo cursorInfo,
-                                                                           DataType cursorFieldType);
+                                                                                    List<String> columnNames,
+                                                                                    String schemaName,
+                                                                                    String tableName,
+                                                                                    CursorInfo cursorInfo,
+                                                                                    DataType cursorFieldType);
 
   /**
    * When larger than 0, the incremental iterator will emit intermediate state for every N records.

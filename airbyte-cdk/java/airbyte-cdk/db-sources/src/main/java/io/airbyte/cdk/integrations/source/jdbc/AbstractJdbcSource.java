@@ -25,7 +25,6 @@ import static io.airbyte.cdk.db.jdbc.JdbcConstants.KEY_SEQ;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -106,11 +105,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   @Override
   protected AutoCloseableIterator<AirbyteRecordData> queryTableFullRefresh(final JdbcDatabase database,
-                                                                  final List<String> columnNames,
-                                                                  final String schemaName,
-                                                                  final String tableName,
-                                                                  final SyncMode syncMode,
-                                                                  final Optional<String> cursorField) {
+                                                                           final List<String> columnNames,
+                                                                           final String schemaName,
+                                                                           final String tableName,
+                                                                           final SyncMode syncMode,
+                                                                           final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
     final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
         AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
@@ -338,11 +337,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   @Override
   public AutoCloseableIterator<AirbyteRecordData> queryTableIncremental(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final CursorInfo cursorInfo,
-                                                               final Datatype cursorFieldType) {
+                                                                        final List<String> columnNames,
+                                                                        final String schemaName,
+                                                                        final String tableName,
+                                                                        final CursorInfo cursorInfo,
+                                                                        final Datatype cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
     final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
         AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);

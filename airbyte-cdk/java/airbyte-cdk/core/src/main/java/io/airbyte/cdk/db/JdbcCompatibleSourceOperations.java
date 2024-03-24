@@ -14,6 +14,7 @@ import java.sql.SQLException;
 public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperations<ResultSet, SourceType> {
 
   AirbyteRecordData convertDatabaseRowToAirbyteRecordData(final ResultSet queryContext) throws SQLException;
+
   /**
    * Read from a result set, and copy the value of the column at colIndex to the Json object.
    * <p/>

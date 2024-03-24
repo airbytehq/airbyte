@@ -146,7 +146,8 @@ public class PostgresCtidHandler {
             .withStream(streamName)
             .withNamespace(namespace)
             .withEmittedAt(emittedAt)
-            .withData(r.data())),
+            .withData(r.recordData().rawRowData())
+            .withMeta(r.recordData().meta())),
         r.ctid()));
   }
 
