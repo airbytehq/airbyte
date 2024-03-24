@@ -7,8 +7,6 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import urlencode
-from datetime import datetime
-
 
 import pendulum
 import requests
