@@ -519,7 +519,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                 .withNamespace(namespace)
                 .withEmittedAt(emittedAt)
                 .withData(airbyteRecordData.rawRowData())
-                .withMeta(airbyteRecordData.meta())));
+                .withMeta(airbyteRecordData.meta().getChanges().isEmpty() ? null : airbyteRecordData.meta())));
   }
 
   /**

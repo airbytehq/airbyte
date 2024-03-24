@@ -15,9 +15,9 @@ import java.util.Optional;
 
 public class CtidPostgresSourceOperations extends PostgresSourceOperations {
 
-  private final Optional<CdcMetadataInjector> cdcMetadataInjector;
+  private final Optional<PostgresCdcConnectorMetadataInjector> cdcMetadataInjector;
 
-  public CtidPostgresSourceOperations(final Optional<CdcMetadataInjector> cdcMetadataInjector) {
+  public CtidPostgresSourceOperations(final Optional<PostgresCdcConnectorMetadataInjector> cdcMetadataInjector) {
     super();
     this.cdcMetadataInjector = cdcMetadataInjector;
   }
@@ -31,7 +31,7 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
     // We need to modify this base record by (1) extracting the CTID field and (2) injecting the CDC
     // metadata
     if (Objects.nonNull(cdcMetadataInjector) && cdcMetadataInjector.isPresent()) {
-      cdcMetadataInjector.get().inject(jsonNode);
+      cdcMetadataInjector.get().addMetaDataToRowsFetchedOutsideDebezium(jsonNode);
     }
     String ctid = jsonNode.remove(CTID).asText();
     AirbyteRecordData recordData = new AirbyteRecordData(jsonNode, airbyteRecordData.meta());
@@ -40,28 +40,6 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
     return new RowDataWithCtid(recordData, ctid);
   }
 
-  public record RowDataWithCtid(AirbyteRecordData recordData, String ctid) {
-
-  }
-
-  public static class CdcMetadataInjector {
-
-    private final String transactionTimestamp;
-    private final long lsn;
-    private final PostgresCdcConnectorMetadataInjector metadataInjector;
-
-    public CdcMetadataInjector(final String transactionTimestamp,
-                               final long lsn,
-                               final PostgresCdcConnectorMetadataInjector metadataInjector) {
-      this.transactionTimestamp = transactionTimestamp;
-      this.lsn = lsn;
-      this.metadataInjector = metadataInjector;
-    }
-
-    private void inject(final ObjectNode record) {
-      metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(record, transactionTimestamp, lsn);
-    }
-
-  }
+  public record RowDataWithCtid(AirbyteRecordData recordData, String ctid) {}
 
 }

@@ -147,7 +147,7 @@ public class PostgresCtidHandler {
             .withNamespace(namespace)
             .withEmittedAt(emittedAt)
             .withData(r.recordData().rawRowData())
-            .withMeta(r.recordData().meta())),
+            .withMeta(r.recordData().meta().getChanges().isEmpty() ? null : r.recordData().meta())),
         r.ctid()));
   }
 
