@@ -31,6 +31,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import kotlin.jvm.optionals.getOrNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -52,7 +53,7 @@ constructor(
     private val catalog: ConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
     private val flushFailure: FlushFailure,
-    private val defaultNamespace: String,
+    private val defaultNamespace: Optional<String>,
     workerPool: ExecutorService,
     private val dataTransformer: StreamAwareDataTransformer,
     private val deserializationUtil: DeserializationUtil,
@@ -94,7 +95,7 @@ constructor(
         flusher: DestinationFlushFunction,
         catalog: ConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
-        defaultNamespace: String,
+        defaultNamespace: Optional<String>,
     ) : this(
         outputRecordCollector,
         onStart,
@@ -113,7 +114,7 @@ constructor(
         flusher: DestinationFlushFunction,
         catalog: ConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
-        defaultNamespace: String,
+        defaultNamespace: Optional<String>,
         dataTransformer: StreamAwareDataTransformer,
     ) : this(
         outputRecordCollector,
@@ -136,7 +137,7 @@ constructor(
         flusher: DestinationFlushFunction,
         catalog: ConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
-        defaultNamespace: String,
+        defaultNamespace: Optional<String>,
         workerPool: ExecutorService,
     ) : this(
         outputRecordCollector,
@@ -161,7 +162,7 @@ constructor(
         catalog: ConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
         flushFailure: FlushFailure,
-        defaultNamespace: String,
+        defaultNamespace: Optional<String>,
     ) : this(
         outputRecordCollector,
         onStart,
@@ -206,7 +207,7 @@ constructor(
             )
         if (AirbyteMessage.Type.RECORD == message.type) {
             if (Strings.isNullOrEmpty(message.record?.namespace)) {
-                message.record?.namespace = defaultNamespace
+                message.record?.namespace = defaultNamespace.getOrNull()
             }
             validateRecord(message)
 

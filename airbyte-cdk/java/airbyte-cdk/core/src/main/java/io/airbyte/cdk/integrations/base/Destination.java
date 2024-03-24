@@ -117,7 +117,7 @@ public interface Destination extends Integration {
         if (isStateMessage(inputString)) {
           throw new IllegalStateException("Invalid state message: " + inputString);
         } else {
-          log.error("Received invalid message: " + inputString);
+          log.error("Received invalid message, not logging as this may contain sensitive data");
         }
       }
     }

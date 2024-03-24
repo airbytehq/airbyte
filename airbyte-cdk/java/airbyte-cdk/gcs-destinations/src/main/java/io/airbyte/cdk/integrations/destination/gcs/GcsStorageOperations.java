@@ -12,6 +12,8 @@ import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +32,7 @@ public class GcsStorageOperations extends S3StorageOperations {
    */
   @Override
   protected boolean doesBucketExist(final String bucket) {
-    return s3Client.doesBucketExist(bucket);
+    return getS3Client().doesBucketExist(bucket);
   }
 
   /**
@@ -38,15 +40,15 @@ public class GcsStorageOperations extends S3StorageOperations {
    * difference is that the AmazonS3#deleteObjects method is replaced with AmazonS3#deleteObject.
    */
   @Override
-  protected void cleanUpObjects(final String bucket, final List<KeyVersion> keysToDelete) {
+  protected void cleanUpObjects(@Nullable String bucket, @NotNull List<? extends KeyVersion> keysToDelete) {
     for (final KeyVersion keyToDelete : keysToDelete) {
       LOGGER.info("Deleting object {}", keyToDelete.getKey());
-      s3Client.deleteObject(bucket, keyToDelete.getKey());
+      getS3Client().deleteObject(bucket, keyToDelete.getKey());
     }
   }
 
   @Override
-  protected Map<String, String> getMetadataMapping() {
+  public Map<String, String> getMetadataMapping() {
     return new HashMap<>();
   }
 
