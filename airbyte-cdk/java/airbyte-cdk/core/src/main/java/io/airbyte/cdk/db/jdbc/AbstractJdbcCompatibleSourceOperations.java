@@ -59,18 +59,10 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     for (int i = 1; i <= columnCount; i++) {
       final String columnName = queryContext.getMetaData().getColumnName(i);
       try {
-        // attempt to access the column. this allows us to know if it is null before we do type-specific
-        // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
-        // checking for null values with jdbc.
-        queryContext.getObject(i);
-        if (queryContext.wasNull()) {
-          continue;
-        }
-
         // convert to java types that will convert into reasonable json.
         copyToJsonField(queryContext, i, jsonNode);
       } catch (Exception e) {
-        LOGGER.info("Failed to serialize column: {}, value", columnName);
+        LOGGER.info("Failed to serialize column: {}, with error {}", columnName, e.getMessage());
         metaChanges.add(
             new AirbyteRecordMessageMetaChange()
                 .withField(columnName)
