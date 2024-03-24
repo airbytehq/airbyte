@@ -70,7 +70,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: users
+        path: users?$top={{ config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -94,7 +94,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
   - type: DeclarativeStream
     name: groups
     primary_key: []
@@ -296,7 +302,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: groups
+        path: groups?$top={{ config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -320,7 +326,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
   - type: DeclarativeStream
     name: group_members
     primary_key: []
@@ -328,32 +340,29 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
-            type:
-              - 'null'
-              - string
           '@odata.type':
             type:
               - 'null'
               - string
           businessPhones:
-            type:
-              - 'null'
-              - array
             items:
               type:
                 - 'null'
                 - string
+            type:
+              - 'null'
+              - array
           displayName:
             type:
               - 'null'
               - string
           givenName:
+            type:
+              - 'null'
+              - string
+          id:
             type:
               - 'null'
               - string
@@ -385,12 +394,17 @@ streams:
             type:
               - 'null'
               - string
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: groups/{{ stream_partition.group_id }}/members
+        path: >-
+          groups/{{ stream_partition.group_id }}/members?$top={{
+          config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -414,7 +428,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -623,7 +643,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -647,7 +667,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
   - type: DeclarativeStream
     name: group_owners
     primary_key: []
@@ -655,12 +681,25 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
+          '@odata.type':
+            type:
+              - 'null'
+              - string
+          businessPhones:
+            items:
+              type:
+                - 'null'
+                - string
+            type:
+              - 'null'
+              - array
+          displayName:
+            type:
+              - 'null'
+              - string
+          givenName:
             type:
               - 'null'
               - string
@@ -668,23 +707,7 @@ streams:
             type:
               - 'null'
               - string
-          '@odata.type':
-            type:
-              - 'null'
-              - string
-          businessPhones:
-            type:
-              - 'null'
-              - array
-            items:
-              type:
-                - 'null'
-                - string
-          displayName:
-            type:
-              - 'null'
-              - string
-          givenName:
+          id:
             type:
               - 'null'
               - string
@@ -716,12 +739,17 @@ streams:
             type:
               - 'null'
               - string
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: groups/{{ stream_partition.group_id }}/owners
+        path: >-
+          groups/{{ stream_partition.group_id }}/owners?$top={{
+          config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -745,7 +773,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -954,7 +988,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -978,7 +1012,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
   - type: DeclarativeStream
     name: conversations
     primary_key: []
@@ -986,20 +1026,9 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
-            type:
-              - 'null'
-              - string
           groupId:
-            type:
-              - 'null'
-              - string
-          topic:
             type:
               - 'null'
               - string
@@ -1007,30 +1036,43 @@ streams:
             type:
               - 'null'
               - boolean
-          lastDeliveredDateTime:
+          id:
             type:
               - 'null'
               - string
-            format: date-time
+          lastDeliveredDateTime:
             airbyte_type: timestamp_without_timezone
-          uniqueSenders:
+            format: date-time
             type:
               - 'null'
-              - array
-            items:
-              type:
-                - 'null'
-                - string
+              - string
           preview:
             type:
               - 'null'
               - string
+          topic:
+            type:
+              - 'null'
+              - string
+          uniqueSenders:
+            items:
+              type:
+                - 'null'
+                - string
+            type:
+              - 'null'
+              - array
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: groups/{{ stream_partition.group_id }}/conversations
+        path: >-
+          groups/{{ stream_partition.group_id }}/conversations?$top={{
+          config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -1064,7 +1106,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1273,7 +1321,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -1297,7 +1345,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
   - type: DeclarativeStream
     name: channels
     primary_key: []
@@ -1305,28 +1359,25 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
-            type:
-              - 'null'
-              - string
           createdDateTime:
-            type: string
-            format: date-time
             airbyte_type: timestamp_without_timezone
-          displayName:
-            type:
-              - 'null'
-              - string
+            format: date-time
+            type: string
           description:
             type:
               - 'null'
               - string
+          displayName:
+            type:
+              - 'null'
+              - string
           email:
+            type:
+              - 'null'
+              - string
+          id:
             type:
               - 'null'
               - string
@@ -1346,6 +1397,9 @@ streams:
             type:
               - 'null'
               - string
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
@@ -1595,7 +1649,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -1619,7 +1673,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
   - type: DeclarativeStream
     name: channel_members
     primary_key: []
@@ -1627,36 +1687,9 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
-            type:
-              - 'null'
-              - string
           '@odata.type':
-            type:
-              - 'null'
-              - string
-          displayName:
-            type:
-              - 'null'
-              - string
-          roles:
-            type:
-              - 'null'
-              - array
-            items:
-              type:
-                - 'null'
-                - string
-          userId:
-            type:
-              - 'null'
-              - string
-          email:
             type:
               - 'null'
               - string
@@ -1664,16 +1697,43 @@ streams:
             type:
               - 'null'
               - string
+          displayName:
+            type:
+              - 'null'
+              - string
+          email:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - string
+          roles:
+            items:
+              type:
+                - 'null'
+                - string
+            type:
+              - 'null'
+              - array
           tenantId:
             type:
               - 'null'
               - string
-          visibleHistoryStartDateTime:
+          userId:
             type:
               - 'null'
               - string
-            format: date-time
+          visibleHistoryStartDateTime:
             airbyte_type: timestamp_without_timezone
+            format: date-time
+            type:
+              - 'null'
+              - string
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
@@ -1681,7 +1741,7 @@ streams:
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
           teams/{{ stream_partition.group_id }}/channels/{{
-          stream_partition.channel_id }}/members
+          stream_partition.channel_id }}/members?$top={{ config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -1716,7 +1776,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1925,7 +1991,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -1949,7 +2015,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
@@ -1963,28 +2035,25 @@ streams:
                   type: InlineSchemaLoader
                   schema:
                     $schema: http://json-schema.org/draft-07/schema#
-                    type:
-                      - 'null'
-                      - object
                     additionalProperties: true
                     properties:
-                      id:
-                        type:
-                          - 'null'
-                          - string
                       createdDateTime:
-                        type: string
-                        format: date-time
                         airbyte_type: timestamp_without_timezone
-                      displayName:
-                        type:
-                          - 'null'
-                          - string
+                        format: date-time
+                        type: string
                       description:
                         type:
                           - 'null'
                           - string
+                      displayName:
+                        type:
+                          - 'null'
+                          - string
                       email:
+                        type:
+                          - 'null'
+                          - string
+                      id:
                         type:
                           - 'null'
                           - string
@@ -2004,6 +2073,9 @@ streams:
                         type:
                           - 'null'
                           - string
+                    type:
+                      - 'null'
+                      - object
                 retriever:
                   type: SimpleRetriever
                   requester:
@@ -2253,7 +2325,7 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups
+                                path: groups?$top={{ config['page_size'] }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
@@ -2277,7 +2349,15 @@ streams:
                                   field_path:
                                     - value
                               paginator:
-                                type: NoPagination
+                                type: DefaultPaginator
+                                page_token_option:
+                                  type: RequestPath
+                                pagination_strategy:
+                                  type: CursorPagination
+                                  cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                                  stop_condition: >-
+                                    {{ not response.get("@odata.nextLink", {})
+                                    }}
   - type: DeclarativeStream
     name: channel_tabs
     primary_key: []
@@ -2285,67 +2365,27 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
-            type:
-              - 'null'
-              - string
-          groupId:
-            type:
-              - 'null'
-              - string
           channelId:
             type:
               - 'null'
               - string
-          displayName:
-            type:
-              - 'null'
-              - string
-          webUrl:
-            type:
-              - 'null'
-              - string
-          sortOrderIndex:
-            type:
-              - 'null'
-              - string
-          teamsApp:
-            type:
-              - 'null'
-              - object
-            additionalProperties: true
-            properties:
-              id:
-                type:
-                  - 'null'
-                  - string
-              displayName:
-                type:
-                  - 'null'
-                  - string
-              distributionMethod:
-                type:
-                  - 'null'
-                  - string
           configuration:
-            type:
-              - 'null'
-              - object
             additionalProperties: true
             properties:
-              entityId:
-                type:
-                  - 'null'
-                  - string
               contentUrl:
                 type:
                   - 'null'
                   - string
+              entityId:
+                type:
+                  - 'null'
+                  - string
+              hasContent:
+                type:
+                  - 'null'
+                  - boolean
               removeUrl:
                 type:
                   - 'null'
@@ -2354,18 +2394,58 @@ streams:
                 type:
                   - 'null'
                   - string
-              wikiTabId:
-                type:
-                  - 'null'
-                  - integer
               wikiDefaultTab:
                 type:
                   - 'null'
                   - boolean
-              hasContent:
+              wikiTabId:
                 type:
                   - 'null'
-                  - boolean
+                  - integer
+            type:
+              - 'null'
+              - object
+          displayName:
+            type:
+              - 'null'
+              - string
+          groupId:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - string
+          sortOrderIndex:
+            type:
+              - 'null'
+              - string
+          teamsApp:
+            additionalProperties: true
+            properties:
+              displayName:
+                type:
+                  - 'null'
+                  - string
+              distributionMethod:
+                type:
+                  - 'null'
+                  - string
+              id:
+                type:
+                  - 'null'
+                  - string
+            type:
+              - 'null'
+              - object
+          webUrl:
+            type:
+              - 'null'
+              - string
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
@@ -2617,7 +2697,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -2641,7 +2721,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
@@ -2655,28 +2741,25 @@ streams:
                   type: InlineSchemaLoader
                   schema:
                     $schema: http://json-schema.org/draft-07/schema#
-                    type:
-                      - 'null'
-                      - object
                     additionalProperties: true
                     properties:
-                      id:
-                        type:
-                          - 'null'
-                          - string
                       createdDateTime:
-                        type: string
-                        format: date-time
                         airbyte_type: timestamp_without_timezone
-                      displayName:
-                        type:
-                          - 'null'
-                          - string
+                        format: date-time
+                        type: string
                       description:
                         type:
                           - 'null'
                           - string
+                      displayName:
+                        type:
+                          - 'null'
+                          - string
                       email:
+                        type:
+                          - 'null'
+                          - string
+                      id:
                         type:
                           - 'null'
                           - string
@@ -2696,6 +2779,9 @@ streams:
                         type:
                           - 'null'
                           - string
+                    type:
+                      - 'null'
+                      - object
                 retriever:
                   type: SimpleRetriever
                   requester:
@@ -2945,7 +3031,7 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups
+                                path: groups?$top={{ config['page_size'] }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
@@ -2969,7 +3055,15 @@ streams:
                                   field_path:
                                     - value
                               paginator:
-                                type: NoPagination
+                                type: DefaultPaginator
+                                page_token_option:
+                                  type: RequestPath
+                                pagination_strategy:
+                                  type: CursorPagination
+                                  cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                                  stop_condition: >-
+                                    {{ not response.get("@odata.nextLink", {})
+                                    }}
   - type: DeclarativeStream
     name: conversation_threads
     primary_key: []
@@ -2977,12 +3071,9 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
+          conversationId:
             type:
               - 'null'
               - string
@@ -2990,33 +3081,11 @@ streams:
             type:
               - 'null'
               - string
-          conversationId:
-            type:
-              - 'null'
-              - string
-          topic:
-            type:
-              - 'null'
-              - string
           hasAttachments:
             type:
               - 'null'
               - boolean
-          lastDeliveredDateTime:
-            type:
-              - 'null'
-              - string
-            format: date-time
-            airbyte_type: timestamp_without_timezone
-          uniqueSenders:
-            type:
-              - 'null'
-              - array
-            items:
-              type:
-                - 'null'
-                - string
-          preview:
+          id:
             type:
               - 'null'
               - string
@@ -3024,6 +3093,31 @@ streams:
             type:
               - 'null'
               - boolean
+          lastDeliveredDateTime:
+            airbyte_type: timestamp_without_timezone
+            format: date-time
+            type:
+              - 'null'
+              - string
+          preview:
+            type:
+              - 'null'
+              - string
+          topic:
+            type:
+              - 'null'
+              - string
+          uniqueSenders:
+            items:
+              type:
+                - 'null'
+                - string
+            type:
+              - 'null'
+              - array
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
@@ -3031,7 +3125,8 @@ streams:
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
           groups/{{ stream_partition.group_id }}/conversations/{{
-          stream_partition.conversation_id }}/threads
+          stream_partition.conversation_id }}/threads?$top={{
+          config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -3067,7 +3162,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -3276,7 +3377,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -3300,7 +3401,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
@@ -3314,20 +3421,9 @@ streams:
                   type: InlineSchemaLoader
                   schema:
                     $schema: http://json-schema.org/draft-07/schema#
-                    type:
-                      - 'null'
-                      - object
                     additionalProperties: true
                     properties:
-                      id:
-                        type:
-                          - 'null'
-                          - string
                       groupId:
-                        type:
-                          - 'null'
-                          - string
-                      topic:
                         type:
                           - 'null'
                           - string
@@ -3335,30 +3431,43 @@ streams:
                         type:
                           - 'null'
                           - boolean
-                      lastDeliveredDateTime:
+                      id:
                         type:
                           - 'null'
                           - string
-                        format: date-time
+                      lastDeliveredDateTime:
                         airbyte_type: timestamp_without_timezone
-                      uniqueSenders:
+                        format: date-time
                         type:
                           - 'null'
-                          - array
-                        items:
-                          type:
-                            - 'null'
-                            - string
+                          - string
                       preview:
                         type:
                           - 'null'
                           - string
+                      topic:
+                        type:
+                          - 'null'
+                          - string
+                      uniqueSenders:
+                        items:
+                          type:
+                            - 'null'
+                            - string
+                        type:
+                          - 'null'
+                          - array
+                    type:
+                      - 'null'
+                      - object
                 retriever:
                   type: SimpleRetriever
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups/{{ stream_partition.group_id }}/conversations
+                    path: >-
+                      groups/{{ stream_partition.group_id
+                      }}/conversations?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -3392,7 +3501,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
                   partition_router:
                     - type: SubstreamPartitionRouter
                       parent_stream_configs:
@@ -3601,7 +3716,7 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups
+                                path: groups?$top={{ config['page_size'] }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
@@ -3625,7 +3740,15 @@ streams:
                                   field_path:
                                     - value
                               paginator:
-                                type: NoPagination
+                                type: DefaultPaginator
+                                page_token_option:
+                                  type: RequestPath
+                                pagination_strategy:
+                                  type: CursorPagination
+                                  cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                                  stop_condition: >-
+                                    {{ not response.get("@odata.nextLink", {})
+                                    }}
   - type: DeclarativeStream
     name: conversation_posts
     primary_key: []
@@ -3633,16 +3756,35 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
+          '@odata.etag':
             type:
               - 'null'
               - string
-          threadId:
+          body:
+            additionalProperties: true
+            properties:
+              content:
+                type:
+                  - 'null'
+                  - string
+              contentType:
+                type:
+                  - 'null'
+                  - string
+            type:
+              - 'null'
+              - object
+          categories:
+            items:
+              type:
+                - 'null'
+                - string
+            type:
+              - 'null'
+              - array
+          changeKey:
             type:
               - 'null'
               - string
@@ -3651,96 +3793,77 @@ streams:
               - 'null'
               - string
           createdDateTime:
-            type:
-              - 'null'
-              - string
-            format: date-time
             airbyte_type: timestamp_without_timezone
-          lastModifiedDateTime:
-            type:
-              - 'null'
-              - string
             format: date-time
-            airbyte_type: timestamp_without_timezone
-          '@odata.etag':
             type:
               - 'null'
               - string
-          changeKey:
+          from:
+            additionalProperties: true
+            properties:
+              emailAddress:
+                properties:
+                  address:
+                    type:
+                      - 'null'
+                      - string
+                  name:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
             type:
               - 'null'
-              - string
-          categories:
-            type:
-              - 'null'
-              - array
-            items:
-              type:
-                - 'null'
-                - string
-          receivedDateTime:
-            type:
-              - 'null'
-              - string
-            format: date-time
-            airbyte_type: timestamp_without_timezone
+              - object
           hasAttachments:
             type:
               - 'null'
               - boolean
-          body:
+          id:
             type:
               - 'null'
-              - object
-            additionalProperties: true
-            properties:
-              contentType:
-                type:
-                  - 'null'
-                  - string
-              content:
-                type:
-                  - 'null'
-                  - string
-          from:
+              - string
+          lastModifiedDateTime:
+            airbyte_type: timestamp_without_timezone
+            format: date-time
             type:
               - 'null'
-              - object
-            additionalProperties: true
-            properties:
-              emailAddress:
-                type:
-                  - 'null'
-                  - object
-                properties:
-                  name:
-                    type:
-                      - 'null'
-                      - string
-                  address:
-                    type:
-                      - 'null'
-                      - string
+              - string
+          receivedDateTime:
+            airbyte_type: timestamp_without_timezone
+            format: date-time
+            type:
+              - 'null'
+              - string
           sender:
-            type:
-              - 'null'
-              - object
             additionalProperties: true
             properties:
               emailAddress:
-                type:
-                  - 'null'
-                  - object
                 additionalProperties: true
                 properties:
-                  name:
-                    type:
-                      - 'null'
-                      - string
                   address:
                     type:
                       - 'null'
                       - string
+                  name:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+            type:
+              - 'null'
+              - object
+          threadId:
+            type:
+              - 'null'
+              - string
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
@@ -3749,7 +3872,7 @@ streams:
         path: >-
           groups/{{ stream_partition.group_id }}/conversations/{{
           stream_partition.conversation_id }}/threads/{{
-          stream_partition.thread_id }}/posts
+          stream_partition.thread_id }}/posts?$top={{ config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -3786,7 +3909,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -3995,7 +4124,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -4019,7 +4148,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
@@ -4033,20 +4168,9 @@ streams:
                   type: InlineSchemaLoader
                   schema:
                     $schema: http://json-schema.org/draft-07/schema#
-                    type:
-                      - 'null'
-                      - object
                     additionalProperties: true
                     properties:
-                      id:
-                        type:
-                          - 'null'
-                          - string
                       groupId:
-                        type:
-                          - 'null'
-                          - string
-                      topic:
                         type:
                           - 'null'
                           - string
@@ -4054,30 +4178,43 @@ streams:
                         type:
                           - 'null'
                           - boolean
-                      lastDeliveredDateTime:
+                      id:
                         type:
                           - 'null'
                           - string
-                        format: date-time
+                      lastDeliveredDateTime:
                         airbyte_type: timestamp_without_timezone
-                      uniqueSenders:
+                        format: date-time
                         type:
                           - 'null'
-                          - array
-                        items:
-                          type:
-                            - 'null'
-                            - string
+                          - string
                       preview:
                         type:
                           - 'null'
                           - string
+                      topic:
+                        type:
+                          - 'null'
+                          - string
+                      uniqueSenders:
+                        items:
+                          type:
+                            - 'null'
+                            - string
+                        type:
+                          - 'null'
+                          - array
+                    type:
+                      - 'null'
+                      - object
                 retriever:
                   type: SimpleRetriever
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups/{{ stream_partition.group_id }}/conversations
+                    path: >-
+                      groups/{{ stream_partition.group_id
+                      }}/conversations?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -4111,7 +4248,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
                   partition_router:
                     - type: SubstreamPartitionRouter
                       parent_stream_configs:
@@ -4320,7 +4463,7 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups
+                                path: groups?$top={{ config['page_size'] }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
@@ -4344,7 +4487,15 @@ streams:
                                   field_path:
                                     - value
                               paginator:
-                                type: NoPagination
+                                type: DefaultPaginator
+                                page_token_option:
+                                  type: RequestPath
+                                pagination_strategy:
+                                  type: CursorPagination
+                                  cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                                  stop_condition: >-
+                                    {{ not response.get("@odata.nextLink", {})
+                                    }}
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
@@ -4358,12 +4509,9 @@ streams:
                   type: InlineSchemaLoader
                   schema:
                     $schema: http://json-schema.org/draft-07/schema#
-                    type:
-                      - 'null'
-                      - object
                     additionalProperties: true
                     properties:
-                      id:
+                      conversationId:
                         type:
                           - 'null'
                           - string
@@ -4371,33 +4519,11 @@ streams:
                         type:
                           - 'null'
                           - string
-                      conversationId:
-                        type:
-                          - 'null'
-                          - string
-                      topic:
-                        type:
-                          - 'null'
-                          - string
                       hasAttachments:
                         type:
                           - 'null'
                           - boolean
-                      lastDeliveredDateTime:
-                        type:
-                          - 'null'
-                          - string
-                        format: date-time
-                        airbyte_type: timestamp_without_timezone
-                      uniqueSenders:
-                        type:
-                          - 'null'
-                          - array
-                        items:
-                          type:
-                            - 'null'
-                            - string
-                      preview:
+                      id:
                         type:
                           - 'null'
                           - string
@@ -4405,6 +4531,31 @@ streams:
                         type:
                           - 'null'
                           - boolean
+                      lastDeliveredDateTime:
+                        airbyte_type: timestamp_without_timezone
+                        format: date-time
+                        type:
+                          - 'null'
+                          - string
+                      preview:
+                        type:
+                          - 'null'
+                          - string
+                      topic:
+                        type:
+                          - 'null'
+                          - string
+                      uniqueSenders:
+                        items:
+                          type:
+                            - 'null'
+                            - string
+                        type:
+                          - 'null'
+                          - array
+                    type:
+                      - 'null'
+                      - object
                 retriever:
                   type: SimpleRetriever
                   requester:
@@ -4412,7 +4563,8 @@ streams:
                     url_base: https://graph.microsoft.com/v1.0/
                     path: >-
                       groups/{{ stream_partition.group_id }}/conversations/{{
-                      stream_partition.conversation_id }}/threads
+                      stream_partition.conversation_id }}/threads?$top={{
+                      config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -4450,7 +4602,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
                   partition_router:
                     - type: SubstreamPartitionRouter
                       parent_stream_configs:
@@ -4659,7 +4817,7 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups
+                                path: groups?$top={{ config['page_size'] }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
@@ -4683,7 +4841,15 @@ streams:
                                   field_path:
                                     - value
                               paginator:
-                                type: NoPagination
+                                type: DefaultPaginator
+                                page_token_option:
+                                  type: RequestPath
+                                pagination_strategy:
+                                  type: CursorPagination
+                                  cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                                  stop_condition: >-
+                                    {{ not response.get("@odata.nextLink", {})
+                                    }}
                     - type: SubstreamPartitionRouter
                       parent_stream_configs:
                         - type: ParentStreamConfig
@@ -4697,20 +4863,9 @@ streams:
                               type: InlineSchemaLoader
                               schema:
                                 $schema: http://json-schema.org/draft-07/schema#
-                                type:
-                                  - 'null'
-                                  - object
                                 additionalProperties: true
                                 properties:
-                                  id:
-                                    type:
-                                      - 'null'
-                                      - string
                                   groupId:
-                                    type:
-                                      - 'null'
-                                      - string
-                                  topic:
                                     type:
                                       - 'null'
                                       - string
@@ -4718,24 +4873,35 @@ streams:
                                     type:
                                       - 'null'
                                       - boolean
-                                  lastDeliveredDateTime:
+                                  id:
                                     type:
                                       - 'null'
                                       - string
-                                    format: date-time
+                                  lastDeliveredDateTime:
                                     airbyte_type: timestamp_without_timezone
-                                  uniqueSenders:
+                                    format: date-time
                                     type:
                                       - 'null'
-                                      - array
-                                    items:
-                                      type:
-                                        - 'null'
-                                        - string
+                                      - string
                                   preview:
                                     type:
                                       - 'null'
                                       - string
+                                  topic:
+                                    type:
+                                      - 'null'
+                                      - string
+                                  uniqueSenders:
+                                    items:
+                                      type:
+                                        - 'null'
+                                        - string
+                                    type:
+                                      - 'null'
+                                      - array
+                                type:
+                                  - 'null'
+                                  - object
                             retriever:
                               type: SimpleRetriever
                               requester:
@@ -4743,7 +4909,8 @@ streams:
                                 url_base: https://graph.microsoft.com/v1.0/
                                 path: >-
                                   groups/{{ stream_partition.group_id
-                                  }}/conversations
+                                  }}/conversations?$top={{ config['page_size']
+                                  }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
@@ -4779,7 +4946,15 @@ streams:
                                   field_path:
                                     - value
                               paginator:
-                                type: NoPagination
+                                type: DefaultPaginator
+                                page_token_option:
+                                  type: RequestPath
+                                pagination_strategy:
+                                  type: CursorPagination
+                                  cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                                  stop_condition: >-
+                                    {{ not response.get("@odata.nextLink", {})
+                                    }}
                               partition_router:
                                 - type: SubstreamPartitionRouter
                                   parent_stream_configs:
@@ -4988,7 +5163,7 @@ streams:
                                           requester:
                                             type: HttpRequester
                                             url_base: https://graph.microsoft.com/v1.0/
-                                            path: groups
+                                            path: groups?$top={{ config['page_size'] }}
                                             http_method: GET
                                             request_parameters: {}
                                             request_headers: {}
@@ -5012,7 +5187,17 @@ streams:
                                               field_path:
                                                 - value
                                           paginator:
-                                            type: NoPagination
+                                            type: DefaultPaginator
+                                            page_token_option:
+                                              type: RequestPath
+                                            pagination_strategy:
+                                              type: CursorPagination
+                                              cursor_value: >-
+                                                {{ response.get("@odata.nextLink", {})
+                                                }}
+                                              stop_condition: >-
+                                                {{ not response.get("@odata.nextLink",
+                                                {}) }}
   - type: DeclarativeStream
     name: team_drives
     primary_key: []
@@ -5020,29 +5205,43 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          id:
+          createdBy:
+            additionalProperties: true
+            properties:
+              user:
+                additionalProperties: true
+                properties:
+                  displayName:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
             type:
               - 'null'
-              - string
+              - object
           createdDateTime:
+            airbyte_type: timestamp_without_timezone
+            format: date-time
             type:
               - 'null'
               - string
-            format: date-time
-            airbyte_type: timestamp_without_timezone
           description:
             type:
               - 'null'
               - string
-          lastModifiedBy:
+          driveType:
             type:
               - 'null'
-              - object
+              - string
+          id:
+            type:
+              - 'null'
+              - string
+          lastModifiedBy:
             additionalProperties: true
             properties:
               displayName:
@@ -5053,52 +5252,29 @@ streams:
                 type:
                   - 'null'
                   - string
+            type:
+              - 'null'
+              - object
           lastModifiedDateTime:
+            airbyte_type: timestamp_without_timezone
+            format: date-time
             type:
               - 'null'
               - string
-            format: date-time
-            airbyte_type: timestamp_without_timezone
           name:
             type:
               - 'null'
               - string
-          webUrl:
-            type:
-              - 'null'
-              - string
-          driveType:
-            type:
-              - 'null'
-              - string
-          createdBy:
-            type:
-              - 'null'
-              - object
+          owner:
             additionalProperties: true
             properties:
-              user:
-                type:
-                  - 'null'
-                  - object
+              group:
                 additionalProperties: true
                 properties:
                   displayName:
                     type:
                       - 'null'
                       - string
-          owner:
-            type:
-              - 'null'
-              - object
-            additionalProperties: true
-            properties:
-              group:
-                type:
-                  - 'null'
-                  - object
-                additionalProperties: true
-                properties:
                   email:
                     type:
                       - 'null'
@@ -5107,14 +5283,13 @@ streams:
                     type:
                       - 'null'
                       - string
-                  displayName:
-                    type:
-                      - 'null'
-                      - string
-          quota:
+                type:
+                  - 'null'
+                  - object
             type:
               - 'null'
               - object
+          quota:
             additionalProperties: true
             properties:
               deleted:
@@ -5137,12 +5312,24 @@ streams:
                 type:
                   - 'null'
                   - integer
+            type:
+              - 'null'
+              - object
+          webUrl:
+            type:
+              - 'null'
+              - string
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: groups/{{ stream_partition.group_id }}/drives
+        path: >-
+          groups/{{ stream_partition.group_id }}/drives?$top={{
+          config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -5177,7 +5364,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -5386,7 +5579,7 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups
+                    path: groups?$top={{ config['page_size'] }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -5410,7 +5603,13 @@ streams:
                       field_path:
                         - value
                   paginator:
-                    type: NoPagination
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestPath
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+                      stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
   - type: DeclarativeStream
     name: team_device_usage_report
     primary_key: []
@@ -5418,16 +5617,65 @@ streams:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
-        type:
-          - 'null'
-          - object
         additionalProperties: true
         properties:
-          reportRefreshDate:
+          deletedDate:
             type:
               - 'null'
               - string
+          isDeleted:
+            type:
+              - 'null'
+              - string
+          isLisenced:
+            type:
+              - 'null'
+              - string
+          lastActivityDate:
+            type:
+              - 'null'
+              - string
+          reportPeriod:
+            type:
+              - 'null'
+              - string
+          reportRefreshDate:
             format: date
+            type:
+              - 'null'
+              - string
+          usedAndroidPhone:
+            type:
+              - 'null'
+              - string
+          usedChromeOS:
+            type:
+              - 'null'
+              - string
+          usedIOs:
+            type:
+              - 'null'
+              - string
+          usedLinux:
+            type:
+              - 'null'
+              - string
+          usedMac:
+            type:
+              - 'null'
+              - string
+          usedWeb:
+            type:
+              - 'null'
+              - string
+          usedWindows:
+            type:
+              - 'null'
+              - string
+          usedWindowsPhone:
+            type:
+              - 'null'
+              - string
           userId:
             type:
               - 'null'
@@ -5436,64 +5684,17 @@ streams:
             type:
               - 'null'
               - string
-          lastActivityDate:
-            type:
-              - 'null'
-              - string
-          isDeleted:
-            type:
-              - 'null'
-              - string
-          deletedDate:
-            type:
-              - 'null'
-              - string
-          usedWeb:
-            type:
-              - 'null'
-              - string
-          usedWindowsPhone:
-            type:
-              - 'null'
-              - string
-          usedIOs:
-            type:
-              - 'null'
-              - string
-          usedMac:
-            type:
-              - 'null'
-              - string
-          usedAndroidPhone:
-            type:
-              - 'null'
-              - string
-          usedWindows:
-            type:
-              - 'null'
-              - string
-          usedChromeOS:
-            type:
-              - 'null'
-              - string
-          usedLinux:
-            type:
-              - 'null'
-              - string
-          isLisenced:
-            type:
-              - 'null'
-              - string
-          reportPeriod:
-            type:
-              - 'null'
-              - string
+        type:
+          - 'null'
+          - object
     retriever:
       type: SimpleRetriever
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: reports/getTeamsDeviceUsageUserDetail(period='{{ config['period'] }}')
+        path: >-
+          reports/getTeamsDeviceUsageUserDetail(period='{{ config['period']
+          }}')?$top={{ config['page_size'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -5527,7 +5728,13 @@ streams:
           field_path:
             - value
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
+          stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -5569,6 +5776,12 @@ spec:
         airbyte_secret: true
         type: string
         order: 3
+      page_size:
+        title: page_size
+        description: Default page size for pagination
+        default: '10'
+        type: string
+        order: 4
     additionalProperties: true
   documentation_url: https://example.org
   type: Spec
