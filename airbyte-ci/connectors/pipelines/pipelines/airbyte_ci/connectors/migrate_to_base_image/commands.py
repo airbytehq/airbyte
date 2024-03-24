@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from email.policy import default
 
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
