@@ -80,12 +80,14 @@ definitions:
       paginator:
         $ref: "#/definitions/paginator"
       partition_router: [ ]
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
       cursor_datetime_formats:
-        - '%s.%f'
-      datetime_format: '%s.%f'
+        - '%s'
+      datetime_format: '%s'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -127,6 +129,8 @@ streams:
       paginator:
         $ref: "#/definitions/paginator"
       partition_router: [ ]
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
 
   - type: DeclarativeStream
     name: applications
@@ -154,6 +158,8 @@ streams:
               stream:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
 
   - type: DeclarativeStream
     name: interviews
@@ -181,6 +187,8 @@ streams:
               stream:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
 
   - type: DeclarativeStream
     name: notes
@@ -208,6 +216,8 @@ streams:
               stream:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
 
   - type: DeclarativeStream
     name: offers
@@ -235,6 +245,8 @@ streams:
               stream:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
 
   - type: DeclarativeStream
     name: referrals
@@ -275,6 +287,8 @@ streams:
               stream:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
 
 spec:
   connectionSpecification:
