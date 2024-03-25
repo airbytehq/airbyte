@@ -4,7 +4,7 @@ connector_image: airbyte/source-sftp-bulk:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_sftp_bulk/spec.json"
+      - spec_path: "integration_tests/spec.json"
         timeout_seconds: 60
         backward_compatibility_tests_config:
           disable_for_version: 0.3.2 # `start_date` format changed to format: date-time
