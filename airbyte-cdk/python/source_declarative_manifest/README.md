@@ -19,6 +19,8 @@ poetry run poe build
 
 ### Locally running the connector
 
+See `pokeapi_config.json` for an example of a config file that can be passed into the connector.
+
 ```bash
 # TODO probably wrong
 python main.py check --config secrets/config.json
