@@ -7,11 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.db.util.SSLCertificateUtils.keyStoreFromCertificate
 import io.airbyte.cdk.db.util.SSLCertificateUtils.keyStoreFromClientCertificate
-import org.apache.commons.lang3.RandomStringUtils
-import org.apache.commons.lang3.tuple.ImmutablePair
-import org.apache.commons.lang3.tuple.Pair
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URI
@@ -22,6 +17,11 @@ import java.security.NoSuchAlgorithmException
 import java.security.cert.CertificateException
 import java.security.spec.InvalidKeySpecException
 import java.util.*
+import org.apache.commons.lang3.RandomStringUtils
+import org.apache.commons.lang3.tuple.ImmutablePair
+import org.apache.commons.lang3.tuple.Pair
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class JdbcSSLConnectionUtils {
     var caCertKeyStorePair: Pair<URI, String>? = null
@@ -40,8 +40,8 @@ class JdbcSSLConnectionUtils {
         companion object {
             fun bySpec(spec: String): Optional<SslMode> {
                 return Arrays.stream(entries.toTypedArray())
-                        .filter { sslMode: SslMode -> sslMode.spec.contains(spec) }
-                        .findFirst()
+                    .filter { sslMode: SslMode -> sslMode.spec.contains(spec) }
+                    .findFirst()
             }
         }
     }
@@ -57,7 +57,8 @@ class JdbcSSLConnectionUtils {
         const val TRUST_KEY_STORE_TYPE: String = "trustCertificateKeyStoreType"
         const val KEY_STORE_TYPE_PKCS12: String = "PKCS12"
         const val PARAM_MODE: String = "mode"
-        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcSSLConnectionUtils::class.java.javaClass)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(JdbcSSLConnectionUtils::class.java.javaClass)
         const val PARAM_CA_CERTIFICATE: String = "ca_certificate"
         const val PARAM_CLIENT_CERTIFICATE: String = "client_certificate"
         const val PARAM_CLIENT_KEY: String = "client_key"
@@ -67,7 +68,8 @@ class JdbcSSLConnectionUtils {
          * Parses SSL related configuration and generates keystores to be used by connector
          *
          * @param config configuration
-         * @return map containing relevant parsed values including location of keystore or an empty map
+         * @return map containing relevant parsed values including location of keystore or an empty
+         * map
          */
         fun parseSSLConfig(config: JsonNode): Map<String, String> {
             LOGGER.debug("source config: {}", config)
@@ -79,18 +81,30 @@ class JdbcSSLConnectionUtils {
             if (!config.has(JdbcUtils.SSL_KEY) || config[JdbcUtils.SSL_KEY].asBoolean()) {
                 if (config.has(JdbcUtils.SSL_MODE_KEY)) {
                     val specMode = config[JdbcUtils.SSL_MODE_KEY][PARAM_MODE].asText()
-                    additionalParameters[SSL_MODE] = SslMode.bySpec(specMode).orElseThrow { IllegalArgumentException("unexpected ssl mode") }.name
+                    additionalParameters[SSL_MODE] =
+                        SslMode.bySpec(specMode)
+                            .orElseThrow { IllegalArgumentException("unexpected ssl mode") }
+                            .name
                     if (Objects.isNull(caCertKeyStorePair)) {
                         caCertKeyStorePair = prepareCACertificateKeyStore(config)
                     }
 
                     if (Objects.nonNull(caCertKeyStorePair)) {
-                        LOGGER.debug("uri for ca cert keystore: {}", caCertKeyStorePair!!.left.toString())
+                        LOGGER.debug(
+                            "uri for ca cert keystore: {}",
+                            caCertKeyStorePair!!.left.toString()
+                        )
                         try {
-                            additionalParameters.putAll(java.util.Map.of(
-                                    TRUST_KEY_STORE_URL, caCertKeyStorePair.left.toURL().toString(),
-                                    TRUST_KEY_STORE_PASS, caCertKeyStorePair.right,
-                                    TRUST_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12))
+                            additionalParameters.putAll(
+                                java.util.Map.of(
+                                    TRUST_KEY_STORE_URL,
+                                    caCertKeyStorePair.left.toURL().toString(),
+                                    TRUST_KEY_STORE_PASS,
+                                    caCertKeyStorePair.right,
+                                    TRUST_KEY_STORE_TYPE,
+                                    KEY_STORE_TYPE_PKCS12
+                                )
+                            )
                         } catch (e: MalformedURLException) {
                             throw RuntimeException("Unable to get a URL for trust key store")
                         }
@@ -101,12 +115,22 @@ class JdbcSSLConnectionUtils {
                     }
 
                     if (Objects.nonNull(clientCertKeyStorePair)) {
-                        LOGGER.debug("uri for client cert keystore: {} / {}", clientCertKeyStorePair!!.left.toString(), clientCertKeyStorePair.right)
+                        LOGGER.debug(
+                            "uri for client cert keystore: {} / {}",
+                            clientCertKeyStorePair!!.left.toString(),
+                            clientCertKeyStorePair.right
+                        )
                         try {
-                            additionalParameters.putAll(java.util.Map.of(
-                                    CLIENT_KEY_STORE_URL, clientCertKeyStorePair.left.toURL().toString(),
-                                    CLIENT_KEY_STORE_PASS, clientCertKeyStorePair.right,
-                                    CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12))
+                            additionalParameters.putAll(
+                                java.util.Map.of(
+                                    CLIENT_KEY_STORE_URL,
+                                    clientCertKeyStorePair.left.toURL().toString(),
+                                    CLIENT_KEY_STORE_PASS,
+                                    clientCertKeyStorePair.right,
+                                    CLIENT_KEY_STORE_TYPE,
+                                    KEY_STORE_TYPE_PKCS12
+                                )
+                            )
                         } catch (e: MalformedURLException) {
                             throw RuntimeException("Unable to get a URL for client key store")
                         }
@@ -129,23 +153,40 @@ class JdbcSSLConnectionUtils {
             if (Objects.nonNull(config)) {
                 if (!config.has(JdbcUtils.SSL_KEY) || config[JdbcUtils.SSL_KEY].asBoolean()) {
                     val encryption = config[JdbcUtils.SSL_MODE_KEY]
-                    if (encryption.has(PARAM_CA_CERTIFICATE) && !encryption[PARAM_CA_CERTIFICATE].asText().isEmpty()) {
+                    if (
+                        encryption.has(PARAM_CA_CERTIFICATE) &&
+                            !encryption[PARAM_CA_CERTIFICATE].asText().isEmpty()
+                    ) {
                         val clientKeyPassword = getOrGeneratePassword(encryption)
                         try {
-                            val caCertKeyStoreUri = keyStoreFromCertificate(
+                            val caCertKeyStoreUri =
+                                keyStoreFromCertificate(
                                     encryption[PARAM_CA_CERTIFICATE].asText(),
                                     clientKeyPassword,
                                     null,
-                                    null)
+                                    null
+                                )
                             caCertKeyStorePair = ImmutablePair(caCertKeyStoreUri, clientKeyPassword)
                         } catch (e: CertificateException) {
-                            throw RuntimeException("Failed to create keystore for CA certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for CA certificate",
+                                e
+                            )
                         } catch (e: IOException) {
-                            throw RuntimeException("Failed to create keystore for CA certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for CA certificate",
+                                e
+                            )
                         } catch (e: KeyStoreException) {
-                            throw RuntimeException("Failed to create keystore for CA certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for CA certificate",
+                                e
+                            )
                         } catch (e: NoSuchAlgorithmException) {
-                            throw RuntimeException("Failed to create keystore for CA certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for CA certificate",
+                                e
+                            )
                         }
                     }
                 }
@@ -154,11 +195,15 @@ class JdbcSSLConnectionUtils {
         }
 
         private fun getOrGeneratePassword(sslModeConfig: JsonNode): String {
-            val clientKeyPassword = if (sslModeConfig.has(PARAM_CLIENT_KEY_PASSWORD) && !sslModeConfig[PARAM_CLIENT_KEY_PASSWORD].asText().isEmpty()) {
-                sslModeConfig[PARAM_CLIENT_KEY_PASSWORD].asText()
-            } else {
-                RandomStringUtils.randomAlphanumeric(10)
-            }
+            val clientKeyPassword =
+                if (
+                    sslModeConfig.has(PARAM_CLIENT_KEY_PASSWORD) &&
+                        !sslModeConfig[PARAM_CLIENT_KEY_PASSWORD].asText().isEmpty()
+                ) {
+                    sslModeConfig[PARAM_CLIENT_KEY_PASSWORD].asText()
+                } else {
+                    RandomStringUtils.randomAlphanumeric(10)
+                }
             return clientKeyPassword
         }
 
@@ -167,26 +212,53 @@ class JdbcSSLConnectionUtils {
             if (Objects.nonNull(config)) {
                 if (!config.has(JdbcUtils.SSL_KEY) || config[JdbcUtils.SSL_KEY].asBoolean()) {
                     val encryption = config[JdbcUtils.SSL_MODE_KEY]
-                    if (encryption.has(PARAM_CLIENT_CERTIFICATE) && !encryption[PARAM_CLIENT_CERTIFICATE].asText().isEmpty()
-                            && encryption.has(PARAM_CLIENT_KEY) && !encryption[PARAM_CLIENT_KEY].asText().isEmpty()) {
+                    if (
+                        encryption.has(PARAM_CLIENT_CERTIFICATE) &&
+                            !encryption[PARAM_CLIENT_CERTIFICATE].asText().isEmpty() &&
+                            encryption.has(PARAM_CLIENT_KEY) &&
+                            !encryption[PARAM_CLIENT_KEY].asText().isEmpty()
+                    ) {
                         val clientKeyPassword = getOrGeneratePassword(encryption)
                         try {
-                            val clientCertKeyStoreUri = keyStoreFromClientCertificate(encryption[PARAM_CLIENT_CERTIFICATE].asText(),
+                            val clientCertKeyStoreUri =
+                                keyStoreFromClientCertificate(
+                                    encryption[PARAM_CLIENT_CERTIFICATE].asText(),
                                     encryption[PARAM_CLIENT_KEY].asText(),
-                                    clientKeyPassword, null)
-                            clientCertKeyStorePair = ImmutablePair(clientCertKeyStoreUri, clientKeyPassword)
+                                    clientKeyPassword,
+                                    null
+                                )
+                            clientCertKeyStorePair =
+                                ImmutablePair(clientCertKeyStoreUri, clientKeyPassword)
                         } catch (e: CertificateException) {
-                            throw RuntimeException("Failed to create keystore for Client certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for Client certificate",
+                                e
+                            )
                         } catch (e: IOException) {
-                            throw RuntimeException("Failed to create keystore for Client certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for Client certificate",
+                                e
+                            )
                         } catch (e: KeyStoreException) {
-                            throw RuntimeException("Failed to create keystore for Client certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for Client certificate",
+                                e
+                            )
                         } catch (e: NoSuchAlgorithmException) {
-                            throw RuntimeException("Failed to create keystore for Client certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for Client certificate",
+                                e
+                            )
                         } catch (e: InvalidKeySpecException) {
-                            throw RuntimeException("Failed to create keystore for Client certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for Client certificate",
+                                e
+                            )
                         } catch (e: InterruptedException) {
-                            throw RuntimeException("Failed to create keystore for Client certificate", e)
+                            throw RuntimeException(
+                                "Failed to create keystore for Client certificate",
+                                e
+                            )
                         }
                     }
                 }

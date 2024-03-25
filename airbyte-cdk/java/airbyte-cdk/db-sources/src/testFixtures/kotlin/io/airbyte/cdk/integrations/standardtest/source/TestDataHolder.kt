@@ -6,23 +6,27 @@ package io.airbyte.cdk.integrations.standardtest.source
 import io.airbyte.protocol.models.JsonSchemaType
 import java.util.*
 
-class TestDataHolder internal constructor(val sourceType: String?,
-                                          val airbyteType: JsonSchemaType?,
-                                          val values: List<String>,
-                                          val expectedValues: MutableList<String?>,
-                                          private val createTablePatternSql: String,
-                                          private val insertPatternSql: String,
-                                          private val fullSourceDataType: String?) {
+class TestDataHolder
+internal constructor(
+    val sourceType: String?,
+    val airbyteType: JsonSchemaType,
+    val values: List<String>,
+    val expectedValues: MutableList<String?>,
+    private val createTablePatternSql: String,
+    private val insertPatternSql: String,
+    private val fullSourceDataType: String?
+) {
     var nameSpace: String? = null
     private var testNumber: Long = 0
     private var idColumnName: String? = null
     private var testColumnName: String? = null
 
-    private var declarationLocation: Array<StackTraceElement>
+    var declarationLocation: String = ""
+        private set
 
     class TestDataHolderBuilder internal constructor() {
         private var sourceType: String? = null
-        private var airbyteType: JsonSchemaType? = null
+        private lateinit var airbyteType: JsonSchemaType
         private val values: MutableList<String> = ArrayList()
         private val expectedValues: MutableList<String?> = ArrayList()
         private var createTablePatternSql: String
@@ -35,10 +39,11 @@ class TestDataHolder internal constructor(val sourceType: String?,
         }
 
         /**
-         * The name of the source data type. Duplicates by name will be tested independently from each
-         * others. Note that this name will be used for connector setup and table creation. If source syntax
-         * requires more details (E.g. "varchar" type requires length "varchar(50)"), you can additionally
-         * set custom data type syntax by [TestDataHolderBuilder.fullSourceDataType] method.
+         * The name of the source data type. Duplicates by name will be tested independently from
+         * each others. Note that this name will be used for connector setup and table creation. If
+         * source syntax requires more details (E.g. "varchar" type requires length "varchar(50)"),
+         * you can additionally set custom data type syntax by
+         * [TestDataHolderBuilder.fullSourceDataType] method.
          *
          * @param sourceType source data type name
          * @return builder
@@ -56,16 +61,16 @@ class TestDataHolder internal constructor(val sourceType: String?,
          * @param airbyteType Airbyte data type
          * @return builder
          */
-        fun airbyteType(airbyteType: JsonSchemaType?): TestDataHolderBuilder {
+        fun airbyteType(airbyteType: JsonSchemaType): TestDataHolderBuilder {
             this.airbyteType = airbyteType
             return this
         }
 
         /**
-         * Set custom the create table script pattern. Use it if you source uses untypical table creation
-         * sql. Default patter described [.DEFAULT_CREATE_TABLE_SQL] Note! The patter should contain
-         * four String place holders for the: - namespace.table name (as one placeholder together) - id
-         * column name - test column name - test column data type
+         * Set custom the create table script pattern. Use it if you source uses untypical table
+         * creation sql. Default patter described [.DEFAULT_CREATE_TABLE_SQL] Note! The patter
+         * should contain four String place holders for the: - namespace.table name (as one
+         * placeholder together) - id column name - test column name - test column data type
          *
          * @param createTablePatternSql creation table sql pattern
          * @return builder
@@ -76,9 +81,9 @@ class TestDataHolder internal constructor(val sourceType: String?,
         }
 
         /**
-         * Set custom the insert record script pattern. Use it if you source uses untypical insert record
-         * sql. Default patter described [.DEFAULT_INSERT_SQL] Note! The patter should contains two
-         * String place holders for the table name and value.
+         * Set custom the insert record script pattern. Use it if you source uses untypical insert
+         * record sql. Default patter described [.DEFAULT_INSERT_SQL] Note! The patter should
+         * contains two String place holders for the table name and value.
          *
          * @param insertPatternSql creation table sql pattern
          * @return builder
@@ -89,8 +94,8 @@ class TestDataHolder internal constructor(val sourceType: String?,
         }
 
         /**
-         * Allows to set extended data type for the table creation. E.g. The "varchar" type requires in
-         * MySQL requires length. In this case fullSourceDataType will be "varchar(50)".
+         * Allows to set extended data type for the table creation. E.g. The "varchar" type requires
+         * in MySQL requires length. In this case fullSourceDataType will be "varchar(50)".
          *
          * @param fullSourceDataType actual string for the column data type description
          * @return builder
@@ -101,21 +106,21 @@ class TestDataHolder internal constructor(val sourceType: String?,
         }
 
         /**
-         * Adds value(s) to the scope of a corresponding test. The values will be inserted into the created
-         * table. Note! The value will be inserted into the insert script without any transformations. Make
-         * sure that the value is in line with the source syntax.
+         * Adds value(s) to the scope of a corresponding test. The values will be inserted into the
+         * created table. Note! The value will be inserted into the insert script without any
+         * transformations. Make sure that the value is in line with the source syntax.
          *
          * @param insertValue test value
          * @return builder
          */
-        fun addInsertValues(vararg insertValue: String?): TestDataHolderBuilder {
+        fun addInsertValues(vararg insertValue: String): TestDataHolderBuilder {
             values.addAll(Arrays.asList(*insertValue))
             return this
         }
 
         /**
-         * Adds expected value(s) to the test scope. If you add at least one value, it will check that all
-         * values are provided by corresponding streamer.
+         * Adds expected value(s) to the test scope. If you add at least one value, it will check
+         * that all values are provided by corresponding streamer.
          *
          * @param expectedValue value which should be provided by a streamer
          * @return builder
@@ -126,8 +131,8 @@ class TestDataHolder internal constructor(val sourceType: String?,
         }
 
         /**
-         * Add NULL value to the expected value list. If you need to add only one value and it's NULL, you
-         * have to use this method instead of [.addExpectedValues]
+         * Add NULL value to the expected value list. If you need to add only one value and it's
+         * NULL, you have to use this method instead of [.addExpectedValues]
          *
          * @return builder
          */
@@ -137,7 +142,15 @@ class TestDataHolder internal constructor(val sourceType: String?,
         }
 
         fun build(): TestDataHolder {
-            return TestDataHolder(sourceType, airbyteType, values, expectedValues, createTablePatternSql, insertPatternSql, fullSourceDataType)
+            return TestDataHolder(
+                sourceType,
+                airbyteType,
+                values,
+                expectedValues,
+                createTablePatternSql,
+                insertPatternSql,
+                fullSourceDataType
+            )
         }
     }
 
@@ -154,19 +167,21 @@ class TestDataHolder internal constructor(val sourceType: String?,
     }
 
     val nameWithTestPrefix: String
-        get() =// source type may include space (e.g. "character varying")
-            nameSpace + "_" + testNumber + "_" + sourceType!!.replace("\\s".toRegex(), "_")
+        get() = // source type may include space (e.g. "character varying")
+        nameSpace + "_" + testNumber + "_" + sourceType!!.replace("\\s".toRegex(), "_")
 
     val createSqlQuery: String
-        get() = String.format(createTablePatternSql, (if (nameSpace != null) "$nameSpace." else "") + this.nameWithTestPrefix, idColumnName, testColumnName,
-                fullSourceDataType)
+        get() =
+            String.format(
+                createTablePatternSql,
+                (if (nameSpace != null) "$nameSpace." else "") + this.nameWithTestPrefix,
+                idColumnName,
+                testColumnName,
+                fullSourceDataType
+            )
 
     fun setDeclarationLocation(declarationLocation: Array<StackTraceElement>) {
-        this.declarationLocation = declarationLocation
-    }
-
-    fun getDeclarationLocation(): String {
-        return Arrays.asList(*declarationLocation).subList(2, 3).toString()
+        this.declarationLocation = Arrays.asList(*declarationLocation).subList(2, 3).toString()
     }
 
     val insertSqlQueries: List<String?>
@@ -174,13 +189,21 @@ class TestDataHolder internal constructor(val sourceType: String?,
             val insertSqls: MutableList<String?> = ArrayList()
             var rowId = 1
             for (value in values) {
-                insertSqls.add(String.format(insertPatternSql, (if (nameSpace != null) "$nameSpace." else "") + this.nameWithTestPrefix, rowId++, value))
+                insertSqls.add(
+                    String.format(
+                        insertPatternSql,
+                        (if (nameSpace != null) "$nameSpace." else "") + this.nameWithTestPrefix,
+                        rowId++,
+                        value
+                    )
+                )
             }
             return insertSqls
         }
 
     companion object {
-        private const val DEFAULT_CREATE_TABLE_SQL = "CREATE TABLE %1\$s(%2\$s INTEGER PRIMARY KEY, %3\$s %4\$s)"
+        private const val DEFAULT_CREATE_TABLE_SQL =
+            "CREATE TABLE %1\$s(%2\$s INTEGER PRIMARY KEY, %3\$s %4\$s)"
         private const val DEFAULT_INSERT_SQL = "INSERT INTO %1\$s VALUES (%2\$s, %3\$s)"
 
         /**

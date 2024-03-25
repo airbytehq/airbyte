@@ -10,42 +10,42 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 
 @Deprecated("")
-class StateDecoratingIterator(private val messageIterator: Iterator<AirbyteMessage>,
-                              private val stateManager: StateManager,
-                              private val pair: AirbyteStreamNameNamespacePair,
-                              private val cursorField: String,
-                              private val initialCursor: String,
-                              private val cursorType: JsonSchemaPrimitiveUtil.JsonSchemaPrimitive,
-                              stateEmissionFrequency: Int) : AbstractIterator<AirbyteMessage?>(), MutableIterator<AirbyteMessage?> {
+class StateDecoratingIterator(
+    private val messageIterator: Iterator<AirbyteMessage>,
+    private val stateManager: StateManager,
+    private val pair: AirbyteStreamNameNamespacePair,
+    private val cursorField: String,
+    private val initialCursor: String,
+    private val cursorType: JsonSchemaPrimitiveUtil.JsonSchemaPrimitive,
+    stateEmissionFrequency: Int
+) : AbstractIterator<AirbyteMessage?>(), MutableIterator<AirbyteMessage?> {
     private var currentMaxCursor: String?
     private var currentMaxCursorRecordCount = 0L
     private var hasEmittedFinalState = false
 
     /**
-     * These parameters are for intermediate state message emission. We can emit an intermediate state
-     * when the following two conditions are met.
-     *
+     * These parameters are for intermediate state message emission. We can emit an intermediate
+     * state when the following two conditions are met.
      *
      * 1. The records are sorted by the cursor field. This is true when `stateEmissionFrequency` >
-     * 0. This logic is guaranteed in `AbstractJdbcSource#queryTableIncremental`, in which an
-     * "ORDER BY" clause is appended to the SQL query if `stateEmissionFrequency` > 0.
+     * 0. This logic is guaranteed in `AbstractJdbcSource#queryTableIncremental`, in which an "ORDER
+     * BY" clause is appended to the SQL query if `stateEmissionFrequency` > 0.
      *
+     * 2. There is a cursor value that is ready for emission. A cursor value is "ready" if there is
+     * no more record with the same value. We cannot emit a cursor at will, because there may be
+     * multiple records with the same cursor value. If we emit a cursor ignoring this condition,
+     * should the sync fail right after the emission, the next sync may skip some records with the
+     * same cursor value due to "WHERE cursor_field > cursor" in
+     * `AbstractJdbcSource#queryTableIncremental`.
      *
-     * 2. There is a cursor value that is ready for emission. A cursor value is "ready" if there is no
-     * more record with the same value. We cannot emit a cursor at will, because there may be multiple
-     * records with the same cursor value. If we emit a cursor ignoring this condition, should the sync
-     * fail right after the emission, the next sync may skip some records with the same cursor value due
-     * to "WHERE cursor_field > cursor" in `AbstractJdbcSource#queryTableIncremental`.
-     *
-     *
-     * The `intermediateStateMessage` is set to the latest state message that is ready for
-     * emission. For every `stateEmissionFrequency` messages, `emitIntermediateState` is set
-     * to true and the latest "ready" state will be emitted in the next `computeNext` call.
+     * The `intermediateStateMessage` is set to the latest state message that is ready for emission.
+     * For every `stateEmissionFrequency` messages, `emitIntermediateState` is set to true and the
+     * latest "ready" state will be emitted in the next `computeNext` call.
      */
     private val stateEmissionFrequency: Int
     private var totalRecordCount = 0
@@ -61,12 +61,12 @@ class StateDecoratingIterator(private val messageIterator: Iterator<AirbyteMessa
      * @param pair Stream Name and Namespace (e.g. public.users)
      * @param cursorField Path to the comparator field used to track the records read so far
      * @param initialCursor name of the initial cursor column
-     * @param cursorType ENUM type of primitive values that can be used as a cursor for checkpointing
-     * @param stateEmissionFrequency If larger than 0, the records are sorted by the cursor field, and
-     * intermediate states will be emitted for every `stateEmissionFrequency` records. The
-     * order of the records is guaranteed in `AbstractJdbcSource#queryTableIncremental`, in
-     * which an "ORDER BY" clause is appended to the SQL query if `stateEmissionFrequency`
-     * > 0.
+     * @param cursorType ENUM type of primitive values that can be used as a cursor for
+     * checkpointing
+     * @param stateEmissionFrequency If larger than 0, the records are sorted by the cursor field,
+     * and intermediate states will be emitted for every `stateEmissionFrequency` records. The order
+     * of the records is guaranteed in `AbstractJdbcSource#queryTableIncremental`, in which an
+     * "ORDER BY" clause is appended to the SQL query if `stateEmissionFrequency` > 0.
      */
     init {
         this.currentMaxCursor = initialCursor
@@ -86,15 +86,12 @@ class StateDecoratingIterator(private val messageIterator: Iterator<AirbyteMessa
     }
 
     /**
-     * Computes the next record retrieved from Source stream. Emits StateMessage containing data of the
-     * record that has been read so far
+     * Computes the next record retrieved from Source stream. Emits StateMessage containing data of
+     * the record that has been read so far
      *
-     *
-     *
-     * If this method throws an exception, it will propagate outward to the `hasNext` or
-     * `next` invocation that invoked this method. Any further attempts to use the iterator will
-     * result in an [IllegalStateException].
-     *
+     * If this method throws an exception, it will propagate outward to the `hasNext` or `next`
+     * invocation that invoked this method. Any further attempts to use the iterator will result in
+     * an [IllegalStateException].
      *
      * @return [AirbyteStateMessage] containing information of the records read so far
      */
@@ -102,7 +99,8 @@ class StateDecoratingIterator(private val messageIterator: Iterator<AirbyteMessa
         if (hasCaughtException) {
             // Mark iterator as done since the next call to messageIterator will result in an
             // IllegalArgumentException and resets exception caught state.
-            // This occurs when the previous iteration emitted state so this iteration cycle will indicate
+            // This occurs when the previous iteration emitted state so this iteration cycle will
+            // indicate
             // iteration is complete
             hasCaughtException = false
             return endOfData()
@@ -116,26 +114,37 @@ class StateDecoratingIterator(private val messageIterator: Iterator<AirbyteMessa
 
             totalRecordCount++
             recordCountInStateMessage++
-            // Use try-catch to catch Exception that could occur when connection to the database fails
+            // Use try-catch to catch Exception that could occur when connection to the database
+            // fails
             try {
                 val message = messageIterator.next()
                 if (message.record.data.hasNonNull(cursorField)) {
                     val cursorCandidate = getCursorCandidate(message)
-                    val cursorComparison = compareCursors(currentMaxCursor, cursorCandidate, cursorType)
+                    val cursorComparison =
+                        compareCursors(currentMaxCursor, cursorCandidate, cursorType)
                     if (cursorComparison < 0) {
-                        // Update the current max cursor only when current max cursor < cursor candidate from the message
-                        if (stateEmissionFrequency > 0 && currentMaxCursor != initialCursor && messageIterator.hasNext()) {
-                            // Only create an intermediate state when it is not the first or last record message.
+                        // Update the current max cursor only when current max cursor < cursor
+                        // candidate from the message
+                        if (
+                            stateEmissionFrequency > 0 &&
+                                currentMaxCursor != initialCursor &&
+                                messageIterator.hasNext()
+                        ) {
+                            // Only create an intermediate state when it is not the first or last
+                            // record message.
                             // The last state message will be processed seperately.
-                            intermediateStateMessage = createStateMessage(false, recordCountInStateMessage)
+                            intermediateStateMessage =
+                                createStateMessage(false, recordCountInStateMessage)
                         }
                         currentMaxCursor = cursorCandidate
                         currentMaxCursorRecordCount = 1L
                     } else if (cursorComparison == 0) {
                         currentMaxCursorRecordCount++
                     } else if (cursorComparison > 0 && stateEmissionFrequency > 0) {
-                        LOGGER.warn("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
-                                + "data loss can occur.")
+                        LOGGER.warn(
+                            "Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, " +
+                                "data loss can occur."
+                        )
                     }
                 }
 
@@ -158,24 +167,23 @@ class StateDecoratingIterator(private val messageIterator: Iterator<AirbyteMessa
         }
     }
 
-    protected val intermediateMessage: Optional<AirbyteMessage?>
+    protected val intermediateMessage: Optional<AirbyteMessage>
         /**
-         * Returns AirbyteStateMessage when in a ready state, a ready state means that it has satifies the
-         * conditions of:
-         *
+         * Returns AirbyteStateMessage when in a ready state, a ready state means that it has
+         * satifies the conditions of:
          *
          * cursorField has changed (e.g. 08-22-2022 -> 08-23-2022) and there have been at least
          * stateEmissionFrequency number of records since the last emission
          *
-         *
-         * @return AirbyteStateMessage if one exists, otherwise Optional indicating state was not ready to
-         * be emitted
+         * @return AirbyteStateMessage if one exists, otherwise Optional indicating state was not
+         * ready to be emitted
          */
         get() {
-            if (emitIntermediateState && intermediateStateMessage != null) {
-                val message: AirbyteMessage = intermediateStateMessage
+            val message: AirbyteMessage? = intermediateStateMessage
+            if (emitIntermediateState && message != null) {
                 if (message.state != null) {
-                    message.state.sourceStats = AirbyteStateStats().withRecordCount(recordCountInStateMessage.toDouble())
+                    message.state.sourceStats =
+                        AirbyteStateStats().withRecordCount(recordCountInStateMessage.toDouble())
                 }
 
                 intermediateStateMessage = null
@@ -195,26 +203,32 @@ class StateDecoratingIterator(private val messageIterator: Iterator<AirbyteMessa
      * @return AirbyteMessage which includes information on state of records read so far
      */
     fun createStateMessage(isFinalState: Boolean, recordCount: Int): AirbyteMessage {
-        val stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount)
+        val stateMessage =
+            stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount)
         val cursorInfo = stateManager.getCursorInfo(pair)
 
         // logging once every 100 messages to reduce log verbosity
         if (recordCount % 100 == 0) {
-            LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
-                    pair,
-                    cursorInfo!!.map { obj: CursorInfo? -> obj.getOriginalCursorField() }.orElse(null),
-                    cursorInfo.map { obj: CursorInfo? -> obj.getOriginalCursor() }.orElse(null),
-                    cursorInfo.map { obj: CursorInfo? -> obj.getOriginalCursorRecordCount() }.orElse(null),
-                    cursorInfo.map { obj: CursorInfo? -> obj.getCursorField() }.orElse(null),
-                    cursorInfo.map { obj: CursorInfo? -> obj.getCursor() }.orElse(null),
-                    cursorInfo.map { obj: CursorInfo? -> obj.getCursorRecordCount() }.orElse(null))
+            LOGGER.info(
+                "State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
+                pair,
+                cursorInfo.map { obj: CursorInfo -> obj.originalCursorField }.orElse(null),
+                cursorInfo.map { obj: CursorInfo -> obj.originalCursor }.orElse(null),
+                cursorInfo.map { obj: CursorInfo -> obj.originalCursorRecordCount }.orElse(null),
+                cursorInfo.map { obj: CursorInfo -> obj.cursorField }.orElse(null),
+                cursorInfo.map { obj: CursorInfo -> obj.cursor }.orElse(null),
+                cursorInfo.map { obj: CursorInfo -> obj.cursorRecordCount }.orElse(null)
+            )
         }
 
         stateMessage?.withSourceStats(AirbyteStateStats().withRecordCount(recordCount.toDouble()))
         if (isFinalState) {
             hasEmittedFinalState = true
             if (stateManager.getCursor(pair).isEmpty) {
-                LOGGER.warn("Cursor for stream {} was null. This stream will replicate all records on the next run", pair)
+                LOGGER.warn(
+                    "Cursor for stream {} was null. This stream will replicate all records on the next run",
+                    pair
+                )
             }
         }
 

@@ -14,5 +14,5 @@ import java.util.*
 interface CdcSavedInfoFetcher {
     val savedOffset: JsonNode?
 
-    val savedSchemaHistory: AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode?>?>?
+    val savedSchemaHistory: AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>>?
 }

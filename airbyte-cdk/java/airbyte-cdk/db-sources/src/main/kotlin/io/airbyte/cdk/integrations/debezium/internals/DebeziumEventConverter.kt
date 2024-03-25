@@ -15,29 +15,32 @@ interface DebeziumEventConverter {
 
     companion object {
         fun buildAirbyteMessage(
-                source: JsonNode?,
-                cdcMetadataInjector: CdcMetadataInjector<*>,
-                emittedAt: Instant,
-                data: JsonNode?): AirbyteMessage {
+            source: JsonNode?,
+            cdcMetadataInjector: CdcMetadataInjector<*>,
+            emittedAt: Instant,
+            data: JsonNode?
+        ): AirbyteMessage {
             val streamNamespace = cdcMetadataInjector.namespace(source)
             val streamName = cdcMetadataInjector.name(source)
 
-            val airbyteRecordMessage = AirbyteRecordMessage()
+            val airbyteRecordMessage =
+                AirbyteRecordMessage()
                     .withStream(streamName)
                     .withNamespace(streamNamespace)
                     .withEmittedAt(emittedAt.toEpochMilli())
                     .withData(data)
 
             return AirbyteMessage()
-                    .withType(AirbyteMessage.Type.RECORD)
-                    .withRecord(airbyteRecordMessage)
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(airbyteRecordMessage)
         }
 
         fun addCdcMetadata(
-                baseNode: ObjectNode,
-                source: JsonNode,
-                cdcMetadataInjector: CdcMetadataInjector<*>,
-                isDelete: Boolean): JsonNode {
+            baseNode: ObjectNode,
+            source: JsonNode,
+            cdcMetadataInjector: CdcMetadataInjector<*>,
+            isDelete: Boolean
+        ): JsonNode {
             val transactionMillis = source["ts_ms"].asLong()
             val transactionTimestamp = Instant.ofEpochMilli(transactionMillis).toString()
 

@@ -10,45 +10,65 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.util.List
 import java.util.function.Consumer
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 class AirbyteDebeziumHandlerTest {
     @Test
     fun shouldUseCdcTestShouldReturnTrue() {
-        val catalog = AirbyteCatalog().withStreams(List.of(
-                CatalogHelpers.createAirbyteStream(
-                        "MODELS_STREAM_NAME",
-                        "MODELS_SCHEMA",
-                        Field.of("COL_ID", JsonSchemaType.NUMBER),
-                        Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
-                        Field.of("COL_MODEL", JsonSchemaType.STRING))
-                        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                        .withSourceDefinedPrimaryKey(List.of(listOf("COL_ID")))))
-        val configuredCatalog = CatalogHelpers
-                .toDefaultConfiguredCatalog(catalog)
+        val catalog =
+            AirbyteCatalog()
+                .withStreams(
+                    List.of(
+                        CatalogHelpers.createAirbyteStream(
+                                "MODELS_STREAM_NAME",
+                                "MODELS_SCHEMA",
+                                Field.of("COL_ID", JsonSchemaType.NUMBER),
+                                Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
+                                Field.of("COL_MODEL", JsonSchemaType.STRING)
+                            )
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                            )
+                            .withSourceDefinedPrimaryKey(List.of(listOf("COL_ID")))
+                    )
+                )
+        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         // set all streams to incremental.
-        configuredCatalog.streams.forEach(Consumer { s: ConfiguredAirbyteStream -> s.syncMode = SyncMode.INCREMENTAL })
+        configuredCatalog.streams.forEach(
+            Consumer { s: ConfiguredAirbyteStream -> s.syncMode = SyncMode.INCREMENTAL }
+        )
 
-        Assertions.assertTrue(AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode(configuredCatalog))
+        Assertions.assertTrue(
+            AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode(configuredCatalog)
+        )
     }
 
     @Test
     fun shouldUseCdcTestShouldReturnFalse() {
-        val catalog = AirbyteCatalog().withStreams(List.of(
-                CatalogHelpers.createAirbyteStream(
-                        "MODELS_STREAM_NAME",
-                        "MODELS_SCHEMA",
-                        Field.of("COL_ID", JsonSchemaType.NUMBER),
-                        Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
-                        Field.of("COL_MODEL", JsonSchemaType.STRING))
-                        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                        .withSourceDefinedPrimaryKey(List.of(listOf("COL_ID")))))
-        val configuredCatalog = CatalogHelpers
-                .toDefaultConfiguredCatalog(catalog)
+        val catalog =
+            AirbyteCatalog()
+                .withStreams(
+                    List.of(
+                        CatalogHelpers.createAirbyteStream(
+                                "MODELS_STREAM_NAME",
+                                "MODELS_SCHEMA",
+                                Field.of("COL_ID", JsonSchemaType.NUMBER),
+                                Field.of("COL_MAKE_ID", JsonSchemaType.NUMBER),
+                                Field.of("COL_MODEL", JsonSchemaType.STRING)
+                            )
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                            )
+                            .withSourceDefinedPrimaryKey(List.of(listOf("COL_ID")))
+                    )
+                )
+        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
 
-        Assertions.assertFalse(AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode(configuredCatalog))
+        Assertions.assertFalse(
+            AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode(configuredCatalog)
+        )
     }
 }

@@ -28,6 +28,9 @@ import io.airbyte.workers.internal.DefaultAirbyteSource
 import io.airbyte.workers.process.AirbyteIntegrationLauncher
 import io.airbyte.workers.process.DockerProcessFactory
 import io.airbyte.workers.process.ProcessFactory
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -36,9 +39,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.nio.file.Files
-import java.nio.file.Path
-import java.util.*
 
 /**
  * This abstract class contains helpful functionality and boilerplate for testing a source
@@ -50,56 +50,58 @@ abstract class AbstractSourceConnectorTest {
     protected var localRoot: Path? = null
     private var processFactory: ProcessFactory? = null
 
-    protected abstract val imageName: String?
-        /**
-         * Name of the docker image that the tests will run against.
-         *
-         * @return docker image name
-         */
-        get
+    /** Name of the docker image that the tests will run against. */
+    protected abstract val imageName: String
 
     @get:Throws(Exception::class)
     protected abstract val config: JsonNode?
         /**
-         * Configuration specific to the integration. Will be passed to integration where appropriate in
-         * each test. Should be valid.
+         * Configuration specific to the integration. Will be passed to integration where
+         * appropriate in each test. Should be valid.
          *
          * @return integration-specific configuration
          */
         get
 
     /**
-     * Function that performs any setup of external resources required for the test. e.g. instantiate a
-     * postgres database. This function will be called before EACH test.
+     * Function that performs any setup of external resources required for the test. e.g.
+     * instantiate a postgres database. This function will be called before EACH test.
      *
-     * @param environment - information about the test environment.
-     * @throws Exception - can throw any exception, test framework will handle.
+     * @param environment
+     * - information about the test environment.
+     * @throws Exception
+     * - can throw any exception, test framework will handle.
      */
     @Throws(Exception::class)
     protected abstract fun setupEnvironment(environment: TestDestinationEnv?)
 
     /**
-     * Function that performs any clean up of external resources required for the test. e.g. delete a
-     * postgres database. This function will be called after EACH test. It MUST remove all data in the
-     * destination so that there is no contamination across tests.
+     * Function that performs any clean up of external resources required for the test. e.g. delete
+     * a postgres database. This function will be called after EACH test. It MUST remove all data in
+     * the destination so that there is no contamination across tests.
      *
-     * @param testEnv - information about the test environment.
-     * @throws Exception - can throw any exception, test framework will handle.
+     * @param testEnv
+     * - information about the test environment.
+     * @throws Exception
+     * - can throw any exception, test framework will handle.
      */
-    @Throws(Exception::class)
-    protected abstract fun tearDown(testEnv: TestDestinationEnv?)
+    @Throws(Exception::class) protected abstract fun tearDown(testEnv: TestDestinationEnv?)
 
-    private var mAirbyteApiClient: AirbyteApiClient? = null
+    private lateinit var mAirbyteApiClient: AirbyteApiClient
 
-    private var mSourceApi: SourceApi? = null
+    private lateinit var mSourceApi: SourceApi
 
     private var mConnectorConfigUpdater: ConnectorConfigUpdater? = null
 
     protected val lastPersistedCatalog: AirbyteCatalog
-        get() = convertProtocolObject(
-                CatalogClientConverters.toAirbyteProtocol(discoverWriteRequest.value.catalog), AirbyteCatalog::class.java)
+        get() =
+            convertProtocolObject(
+                CatalogClientConverters.toAirbyteProtocol(discoverWriteRequest.value.catalog),
+                AirbyteCatalog::class.java
+            )
 
-    private val discoverWriteRequest: ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> = ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody::class.java)
+    private val discoverWriteRequest: ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> =
+        ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody::class.java)
 
     @BeforeEach
     @Throws(Exception::class)
@@ -115,16 +117,18 @@ abstract class AbstractSourceConnectorTest {
         mSourceApi = Mockito.mock(SourceApi::class.java)
         Mockito.`when`(mAirbyteApiClient.getSourceApi()).thenReturn(mSourceApi)
         Mockito.`when`(mSourceApi.writeDiscoverCatalogResult(ArgumentMatchers.any()))
-                .thenReturn(DiscoverCatalogResult().catalogId(CATALOG_ID))
+            .thenReturn(DiscoverCatalogResult().catalogId(CATALOG_ID))
         mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater::class.java)
         val envMap = HashMap(TestEnvConfigs().jobDefaultEnvMap)
         envMap[EnvVariableFeatureFlags.DEPLOYMENT_MODE] = featureFlags().deploymentMode()
-        processFactory = DockerProcessFactory(
+        processFactory =
+            DockerProcessFactory(
                 workspaceRoot,
                 workspaceRoot.toString(),
                 localRoot.toString(),
                 "host",
-                envMap)
+                envMap
+            )
 
         postSetup()
     }
@@ -133,9 +137,7 @@ abstract class AbstractSourceConnectorTest {
      * Override this method if you want to do any per-test setup that depends on being able to e.g.
      * [.runRead].
      */
-    @Throws(Exception::class)
-    protected fun postSetup() {
-    }
+    @Throws(Exception::class) protected fun postSetup() {}
 
     @AfterEach
     @Throws(Exception::class)
@@ -149,39 +151,87 @@ abstract class AbstractSourceConnectorTest {
 
     @Throws(TestHarnessException::class)
     protected fun runSpec(): ConnectorSpecification {
-        val spec = DefaultGetSpecTestHarness(
-                AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, imageName, processFactory, null, null, false,
-                        featureFlags()))
-                .run(JobGetSpecConfig().withDockerImage(imageName), jobRoot).spec
+        val spec =
+            DefaultGetSpecTestHarness(
+                    AirbyteIntegrationLauncher(
+                        JOB_ID,
+                        JOB_ATTEMPT,
+                        imageName,
+                        processFactory,
+                        null,
+                        null,
+                        false,
+                        featureFlags()
+                    )
+                )
+                .run(JobGetSpecConfig().withDockerImage(imageName), jobRoot)
+                .spec
         return convertProtocolObject(spec, ConnectorSpecification::class.java)
     }
 
     @Throws(Exception::class)
     protected fun runCheck(): StandardCheckConnectionOutput {
         return DefaultCheckConnectionTestHarness(
-                AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, imageName, processFactory, null, null, false,
-                        featureFlags()),
-                mConnectorConfigUpdater)
-                .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).checkConnection
+                AirbyteIntegrationLauncher(
+                    JOB_ID,
+                    JOB_ATTEMPT,
+                    imageName,
+                    processFactory,
+                    null,
+                    null,
+                    false,
+                    featureFlags()
+                ),
+                mConnectorConfigUpdater
+            )
+            .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
+            .checkConnection
     }
 
     @Throws(Exception::class)
     protected fun runCheckAndGetStatusAsString(config: JsonNode?): String {
         return DefaultCheckConnectionTestHarness(
-                AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, imageName, processFactory, null, null, false,
-                        featureFlags()),
-                mConnectorConfigUpdater)
-                .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).checkConnection.status.toString()
+                AirbyteIntegrationLauncher(
+                    JOB_ID,
+                    JOB_ATTEMPT,
+                    imageName,
+                    processFactory,
+                    null,
+                    null,
+                    false,
+                    featureFlags()
+                ),
+                mConnectorConfigUpdater
+            )
+            .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
+            .checkConnection
+            .status
+            .toString()
     }
 
     @Throws(Exception::class)
     protected fun runDiscover(): UUID {
-        val toReturn = DefaultDiscoverCatalogTestHarness(
-                mAirbyteApiClient,
-                AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, imageName, processFactory, null, null, false,
-                        featureFlags()),
-                mConnectorConfigUpdater)
-                .run(StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(config), jobRoot)
+        val toReturn =
+            DefaultDiscoverCatalogTestHarness(
+                    mAirbyteApiClient,
+                    AirbyteIntegrationLauncher(
+                        JOB_ID,
+                        JOB_ATTEMPT,
+                        imageName,
+                        processFactory,
+                        null,
+                        null,
+                        false,
+                        featureFlags()
+                    ),
+                    mConnectorConfigUpdater
+                )
+                .run(
+                    StandardDiscoverCatalogInput()
+                        .withSourceId(SOURCE_ID.toString())
+                        .withConnectionConfiguration(config),
+                    jobRoot
+                )
                 .discoverCatalogId
         Mockito.verify(mSourceApi).writeDiscoverCatalogResult(discoverWriteRequest.capture())
         return toReturn
@@ -189,12 +239,14 @@ abstract class AbstractSourceConnectorTest {
 
     @Throws(Exception::class)
     protected fun checkEntrypointEnvVariable() {
-        val entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
+        val entrypoint =
+            EntrypointEnvChecker.getEntrypointEnvVariable(
                 processFactory,
                 JOB_ID,
                 JOB_ATTEMPT,
                 jobRoot,
-                imageName)
+                imageName
+            )
 
         Assertions.assertNotNull(entrypoint)
         Assertions.assertFalse(entrypoint.isBlank())
@@ -207,20 +259,41 @@ abstract class AbstractSourceConnectorTest {
 
     // todo (cgardens) - assume no state since we are all full refresh right now.
     @Throws(Exception::class)
-    protected fun runRead(catalog: ConfiguredAirbyteCatalog?, state: JsonNode?): List<AirbyteMessage> {
-        val sourceConfig = WorkerSourceConfig()
+    protected fun runRead(
+        catalog: ConfiguredAirbyteCatalog?,
+        state: JsonNode?
+    ): List<AirbyteMessage> {
+        val sourceConfig =
+            WorkerSourceConfig()
                 .withSourceConnectionConfiguration(config)
                 .withState(if (state == null) null else State().withState(state))
-                .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java))
+                .withCatalog(
+                    convertProtocolObject(
+                        catalog,
+                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
+                    )
+                )
 
-        val source: AirbyteSource = DefaultAirbyteSource(
-                AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, imageName, processFactory, null, null, false,
-                        featureFlags()),
-                featureFlags())
+        val source: AirbyteSource =
+            DefaultAirbyteSource(
+                AirbyteIntegrationLauncher(
+                    JOB_ID,
+                    JOB_ATTEMPT,
+                    imageName,
+                    processFactory,
+                    null,
+                    null,
+                    false,
+                    featureFlags()
+                ),
+                featureFlags()
+            )
         val messages: MutableList<AirbyteMessage> = ArrayList()
         source.start(sourceConfig, jobRoot)
         while (!source.isFinished) {
-            source.attemptRead().ifPresent { m: io.airbyte.protocol.models.AirbyteMessage -> messages.add(convertProtocolObject(m, AirbyteMessage::class.java)) }
+            source.attemptRead().ifPresent { m: io.airbyte.protocol.models.AirbyteMessage ->
+                messages.add(convertProtocolObject(m, AirbyteMessage::class.java))
+            }
         }
         source.close()
 
@@ -228,20 +301,34 @@ abstract class AbstractSourceConnectorTest {
     }
 
     @Throws(Exception::class)
-    protected fun runReadVerifyNumberOfReceivedMsgs(catalog: ConfiguredAirbyteCatalog,
-                                                    state: JsonNode?,
-                                                    mapOfExpectedRecordsCount: MutableMap<String?, Int>): Map<String?, Int> {
-        val sourceConfig = WorkerSourceConfig()
+    protected fun runReadVerifyNumberOfReceivedMsgs(
+        catalog: ConfiguredAirbyteCatalog,
+        state: JsonNode?,
+        mapOfExpectedRecordsCount: MutableMap<String?, Int>
+    ): Map<String?, Int> {
+        val sourceConfig =
+            WorkerSourceConfig()
                 .withSourceConnectionConfiguration(config)
                 .withState(if (state == null) null else State().withState(state))
-                .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java))
+                .withCatalog(
+                    convertProtocolObject(
+                        catalog,
+                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
+                    )
+                )
 
         val source = prepareAirbyteSource()
         source.start(sourceConfig, jobRoot)
 
         while (!source.isFinished) {
-            val airbyteMessageOptional = source.attemptRead().map { m: io.airbyte.protocol.models.AirbyteMessage -> convertProtocolObject(m, AirbyteMessage::class.java) }
-            if (airbyteMessageOptional.isPresent && airbyteMessageOptional.get().type == AirbyteMessage.Type.RECORD) {
+            val airbyteMessageOptional =
+                source.attemptRead().map { m: io.airbyte.protocol.models.AirbyteMessage ->
+                    convertProtocolObject(m, AirbyteMessage::class.java)
+                }
+            if (
+                airbyteMessageOptional.isPresent &&
+                    airbyteMessageOptional.get().type == AirbyteMessage.Type.RECORD
+            ) {
                 val airbyteMessage = airbyteMessageOptional.get()
                 val record = airbyteMessage.record
 
@@ -254,7 +341,8 @@ abstract class AbstractSourceConnectorTest {
     }
 
     private fun prepareAirbyteSource(): AirbyteSource {
-        val integrationLauncher = AirbyteIntegrationLauncher(
+        val integrationLauncher =
+            AirbyteIntegrationLauncher(
                 JOB_ID,
                 JOB_ATTEMPT,
                 imageName,
@@ -262,12 +350,14 @@ abstract class AbstractSourceConnectorTest {
                 null,
                 null,
                 false,
-                featureFlags())
+                featureFlags()
+            )
         return DefaultAirbyteSource(integrationLauncher, featureFlags())
     }
 
     companion object {
-        protected val LOGGER: Logger = LoggerFactory.getLogger(AbstractSourceConnectorTest::class.java)
+        protected val LOGGER: Logger =
+            LoggerFactory.getLogger(AbstractSourceConnectorTest::class.java)
         private const val JOB_ID = 0L.toString()
         private const val JOB_ATTEMPT = 0
 

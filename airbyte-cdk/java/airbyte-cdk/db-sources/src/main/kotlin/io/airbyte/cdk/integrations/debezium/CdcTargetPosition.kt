@@ -25,8 +25,8 @@ interface CdcTargetPosition<T> {
     /**
      * Reads a position value (lsn) from a change event and compares it to target lsn
      *
-     * @param positionFromHeartbeat is the position extracted out of a heartbeat event (if the connector
-     * supports heartbeat)
+     * @param positionFromHeartbeat is the position extracted out of a heartbeat event (if the
+     * connector supports heartbeat)
      * @return true if heartbeat position is equal or greater than target position
      */
     fun reachedTargetPosition(positionFromHeartbeat: T): Boolean {
@@ -50,24 +50,28 @@ interface CdcTargetPosition<T> {
     fun extractPositionFromHeartbeatOffset(sourceOffset: Map<String?, *>?): T
 
     /**
-     * This function checks if the event we are processing in the loop is already behind the offset so
-     * the process can safety save the state.
+     * This function checks if the event we are processing in the loop is already behind the offset
+     * so the process can safety save the state.
      *
      * @param offset DB CDC offset
      * @param event Event from the CDC load
      * @return Returns `true` when the event is ahead of the offset. Otherwise, it returns `false`
      */
-    fun isEventAheadOffset(offset: Map<String?, String?>?, event: ChangeEventWithMetadata?): Boolean {
+    fun isEventAheadOffset(
+        offset: Map<String?, String?>?,
+        event: ChangeEventWithMetadata?
+    ): Boolean {
         return false
     }
 
     /**
-     * This function compares two offsets to make sure both are not pointing to the same position. The
-     * main purpose is to avoid sending same offset multiple times.
+     * This function compares two offsets to make sure both are not pointing to the same position.
+     * The main purpose is to avoid sending same offset multiple times.
      *
      * @param offsetA Offset to compare
      * @param offsetB Offset to compare
-     * @return Returns `true` if both offsets are at the same position. Otherwise, it returns `false`
+     * @return Returns `true` if both offsets are at the same position. Otherwise, it returns
+     * `false`
      */
     fun isSameOffset(offsetA: Map<String?, String?>?, offsetB: Map<String?, String?>?): Boolean {
         return false

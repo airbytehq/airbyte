@@ -9,7 +9,8 @@ object DebeziumIteratorConstants {
     const val SYNC_CHECKPOINT_DURATION_PROPERTY: String = "sync_checkpoint_seconds"
     const val SYNC_CHECKPOINT_RECORDS_PROPERTY: String = "sync_checkpoint_records"
 
-    // TODO: Move these variables to a separate class IteratorConstants, as they will be used in state
+    // TODO: Move these variables to a separate class IteratorConstants, as they will be used in
+    // state
     // iterators for non debezium cases too.
     val SYNC_CHECKPOINT_DURATION: Duration = Duration.ofMinutes(15)
     const val SYNC_CHECKPOINT_RECORDS: Int = 10000

@@ -3,16 +3,17 @@
  */
 package io.airbyte.cdk.integrations.standardtest.source
 
+import java.io.PrintWriter
+import java.nio.charset.StandardCharsets
 import org.junit.platform.engine.discovery.DiscoverySelectors
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
 import org.junit.platform.launcher.core.LauncherFactory
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener
-import java.io.PrintWriter
-import java.nio.charset.StandardCharsets
 
 object TestRunner {
     fun runTestClass(testClass: Class<*>?) {
-        val request = LauncherDiscoveryRequestBuilder.request()
+        val request =
+            LauncherDiscoveryRequestBuilder.request()
                 .selectors(DiscoverySelectors.selectClass(testClass))
                 .build()
 
@@ -29,8 +30,9 @@ object TestRunner {
 
         if (listener.summary.testsFailedCount > 0) {
             println(
-                    "There are failing tests. See https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/standard-source-tests " +
-                            "for more information about the standard source test suite.")
+                "There are failing tests. See https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/standard-source-tests " +
+                    "for more information about the standard source test suite."
+            )
             System.exit(1)
         }
     }

@@ -9,12 +9,18 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.Source
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.JDBCType
 import java.util.function.Supplier
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class JdbcSource : AbstractJdbcSource<JDBCType?>(DatabaseDriver.POSTGRESQL.driverClassName, Supplier { AdaptiveStreamingQueryConfig() }, JdbcUtils.defaultSourceOperations), Source {
+class JdbcSource :
+    AbstractJdbcSource<JDBCType>(
+        DatabaseDriver.POSTGRESQL.driverClassName,
+        Supplier { AdaptiveStreamingQueryConfig() },
+        JdbcUtils.defaultSourceOperations
+    ),
+    Source {
     // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
     override fun toDatabaseConfig(config: JsonNode): JsonNode {
         return config

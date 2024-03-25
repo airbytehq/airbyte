@@ -19,6 +19,11 @@ import io.airbyte.cdk.integrations.util.HostPortResolver.resolvePort
 import io.airbyte.cdk.testutils.TestDatabase
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import java.sql.JDBCType
+import java.util.List
+import java.util.Map
+import java.util.function.Supplier
+import java.util.stream.Stream
 import org.jooq.SQLDialect
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
@@ -27,20 +32,15 @@ import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.PostgreSQLContainer
-import java.sql.JDBCType
-import java.util.List
-import java.util.Map
-import java.util.function.Supplier
-import java.util.stream.Stream
 
 /**
  * Runs the acceptance tests in the source-jdbc test module. We want this module to run these tests
  * itself as a sanity check. The trade off here is that this class is duplicated from the one used
  * in source-postgres.
  */
-internal class DefaultJdbcSourceAcceptanceTest
-
-    : JdbcSourceAcceptanceTest<DefaultJdbcSourceAcceptanceTest.PostgresTestSource?, BareBonesTestDatabase?>() {
+internal class DefaultJdbcSourceAcceptanceTest :
+    JdbcSourceAcceptanceTest<
+        DefaultJdbcSourceAcceptanceTest.PostgresTestSource, BareBonesTestDatabase>() {
     override fun config(): JsonNode {
         return testdb!!.testConfigBuilder()!!.build()
     }
@@ -57,8 +57,13 @@ internal class DefaultJdbcSourceAcceptanceTest
         return true
     }
 
-    fun getConfigWithConnectionProperties(psqlDb: PostgreSQLContainer<*>?, dbName: String?, additionalParameters: String?): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.builder<Any, Any?>()
+    fun getConfigWithConnectionProperties(
+        psqlDb: PostgreSQLContainer<*>?,
+        dbName: String?,
+        additionalParameters: String?
+    ): JsonNode {
+        return Jsons.jsonNode(
+            ImmutableMap.builder<Any, Any?>()
                 .put(JdbcUtils.HOST_KEY, resolveHost(psqlDb))
                 .put(JdbcUtils.PORT_KEY, resolvePort(psqlDb))
                 .put(JdbcUtils.DATABASE_KEY, dbName)
@@ -66,17 +71,30 @@ internal class DefaultJdbcSourceAcceptanceTest
                 .put(JdbcUtils.USERNAME_KEY, psqlDb!!.username)
                 .put(JdbcUtils.PASSWORD_KEY, psqlDb.password)
                 .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParameters)
-                .build())
+                .build()
+        )
     }
 
-    class PostgresTestSource : AbstractJdbcSource<JDBCType?>(DRIVER_CLASS, Supplier { AdaptiveStreamingQueryConfig() }, JdbcUtils.defaultSourceOperations), Source {
+    class PostgresTestSource :
+        AbstractJdbcSource<JDBCType>(
+            DRIVER_CLASS,
+            Supplier { AdaptiveStreamingQueryConfig() },
+            JdbcUtils.defaultSourceOperations
+        ),
+        Source {
         override fun toDatabaseConfig(config: JsonNode): JsonNode {
-            val configBuilder = ImmutableMap.builder<Any, Any>()
+            val configBuilder =
+                ImmutableMap.builder<Any, Any>()
                     .put(JdbcUtils.USERNAME_KEY, config[JdbcUtils.USERNAME_KEY].asText())
-                    .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
+                    .put(
+                        JdbcUtils.JDBC_URL_KEY,
+                        String.format(
+                            DatabaseDriver.POSTGRESQL.urlFormatString,
                             config[JdbcUtils.HOST_KEY].asText(),
                             config[JdbcUtils.PORT_KEY].asInt(),
-                            config[JdbcUtils.DATABASE_KEY].asText()))
+                            config[JdbcUtils.DATABASE_KEY].asText()
+                        )
+                    )
 
             if (config.has(JdbcUtils.PASSWORD_KEY)) {
                 configBuilder.put(JdbcUtils.PASSWORD_KEY, config[JdbcUtils.PASSWORD_KEY].asText())
@@ -85,11 +103,12 @@ internal class DefaultJdbcSourceAcceptanceTest
             return Jsons.jsonNode(configBuilder.build())
         }
 
-        public override fun getExcludedInternalNameSpaces(): Set<String> {
-            return setOf("information_schema", "pg_catalog", "pg_internal", "catalog_history")
-        }
+        override val excludedInternalNameSpaces =
+            setOf("information_schema", "pg_catalog", "pg_internal", "catalog_history")
 
-        override fun getSupportedStateType(config: JsonNode): AirbyteStateMessage.AirbyteStateType {
+        override fun getSupportedStateType(
+            config: JsonNode?
+        ): AirbyteStateMessage.AirbyteStateType {
             return AirbyteStateMessage.AirbyteStateType.STREAM
         }
 
@@ -109,21 +128,37 @@ internal class DefaultJdbcSourceAcceptanceTest
         }
     }
 
-    class BareBonesTestDatabase
-    (container: PostgreSQLContainer<*>?) : TestDatabase<PostgreSQLContainer<*>?, BareBonesTestDatabase?, BareBonesConfigBuilder?>(container) {
+    class BareBonesTestDatabase(container: PostgreSQLContainer<*>) :
+        TestDatabase<PostgreSQLContainer<*>, BareBonesTestDatabase, BareBonesConfigBuilder>(
+            container
+        ) {
         override fun inContainerBootstrapCmd(): Stream<Stream<String?>?>? {
-            val sql = Stream.of(
+            val sql =
+                Stream.of(
                     String.format("CREATE DATABASE %s", databaseName),
                     String.format("CREATE USER %s PASSWORD '%s'", userName, password),
-                    String.format("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", databaseName, userName),
-                    String.format("ALTER USER %s WITH SUPERUSER", userName))
-            return Stream.of(Stream.concat(
-                    Stream.of("psql",
-                            "-d", container!!.databaseName,
-                            "-U", container.username,
-                            "-v", "ON_ERROR_STOP=1",
-                            "-a"),
-                    sql.flatMap { stmt: String? -> Stream.of("-c", stmt) }))
+                    String.format(
+                        "GRANT ALL PRIVILEGES ON DATABASE %s TO %s",
+                        databaseName,
+                        userName
+                    ),
+                    String.format("ALTER USER %s WITH SUPERUSER", userName)
+                )
+            return Stream.of(
+                Stream.concat(
+                    Stream.of(
+                        "psql",
+                        "-d",
+                        container!!.databaseName,
+                        "-U",
+                        container.username,
+                        "-v",
+                        "ON_ERROR_STOP=1",
+                        "-a"
+                    ),
+                    sql.flatMap { stmt: String? -> Stream.of("-c", stmt) }
+                )
+            )
         }
 
         override fun inContainerUndoBootstrapCmd(): Stream<String?>? {
@@ -140,35 +175,44 @@ internal class DefaultJdbcSourceAcceptanceTest
             return BareBonesConfigBuilder(this)
         }
 
-        class BareBonesConfigBuilder(testDatabase: BareBonesTestDatabase) : ConfigBuilder<BareBonesTestDatabase?, BareBonesConfigBuilder?>(testDatabase)
+        class BareBonesConfigBuilder(testDatabase: BareBonesTestDatabase) :
+            ConfigBuilder<BareBonesTestDatabase, BareBonesConfigBuilder>(testDatabase)
     }
 
     @Test
     fun testCustomParametersOverwriteDefaultParametersExpectException() {
         val connectionPropertiesUrl = "ssl=false"
-        val config = getConfigWithConnectionProperties(PSQL_CONTAINER, testdb!!.databaseName, connectionPropertiesUrl)
+        val config =
+            getConfigWithConnectionProperties(
+                PSQL_CONTAINER,
+                testdb!!.databaseName,
+                connectionPropertiesUrl
+            )
         val customParameters = parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&")
-        val defaultParameters = Map.of(
-                "ssl", "true",
-                "sslmode", "require")
+        val defaultParameters = Map.of("ssl", "true", "sslmode", "require")
         Assertions.assertThrows(IllegalArgumentException::class.java) {
-            JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(customParameters, defaultParameters)
+            JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(
+                customParameters,
+                defaultParameters
+            )
         }
     }
 
     companion object {
-        private var PSQL_CONTAINER: PostgreSQLContainer<*>? = null
+        private lateinit var PSQL_CONTAINER: PostgreSQLContainer<*>
 
+        @JvmStatic
         @BeforeAll
-        fun init() {
-            PSQL_CONTAINER = PostgreSQLContainer<SELF>("postgres:13-alpine")
+        fun init(): Unit {
+            PSQL_CONTAINER = PostgreSQLContainer("postgres:13-alpine")
             PSQL_CONTAINER!!.start()
             CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s BIT(3) NOT NULL);"
             INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(B'101');"
         }
 
+        @JvmStatic
         @AfterAll
-        fun cleanUp() {
+        fun cleanUp(): Unit {
             PSQL_CONTAINER!!.close()
         }
     }
