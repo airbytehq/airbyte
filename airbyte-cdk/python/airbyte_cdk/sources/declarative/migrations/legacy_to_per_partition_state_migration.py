@@ -39,6 +39,10 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         self._cursor = cursor
         self._config = config
         self._parameters = parameters
+        self._partition_key_field = InterpolatedString.create(
+            self._partition_router.parent_stream_configs[0].parent_key, parameters=self._parameters
+        ).eval(self._config)
+        self._cursor_field = InterpolatedString.create(self._cursor.cursor_field, parameters=self._parameters).eval(self._config)
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if _is_already_migrated(stream_state):
@@ -62,20 +66,11 @@ class LegacyToPerPartitionStateMigration(StateMigration):
                     if len(keys) != 1:
                         # The input partitioned state should only have one key
                         return False
-                    if keys[0] != self._cursor_field():
+                    if keys[0] != self._cursor_field:
                         # Unexpected key. Found {keys[0]}. Expected {self._cursor.cursor_field}
                         return False
         return True
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        partition_key_field = self._eval_partition_key()
-        states = [{"partition": {partition_key_field: key}, "cursor": value} for key, value in stream_state.items()]
+        states = [{"partition": {self._partition_key_field: key}, "cursor": value} for key, value in stream_state.items()]
         return {"states": states}
-
-    def _cursor_field(self) -> str:
-        cursor_field = InterpolatedString.create(self._cursor.cursor_field, parameters=self._parameters)
-        return str(cursor_field.eval(self._config))
-
-    def _eval_partition_key(self) -> str:
-        partition_key = InterpolatedString.create(self._partition_router.parent_stream_configs[0].parent_key, parameters=self._parameters)
-        return str(partition_key.eval(self._config))
