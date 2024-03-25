@@ -56,5 +56,5 @@ export const toc = [
     value: def.title,
     id: `/filters/${def.title}`,
     level: 3
-  })),
+  }))
 ];

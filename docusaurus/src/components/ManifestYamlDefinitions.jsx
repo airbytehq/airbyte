@@ -91,5 +91,17 @@ export default function ManifestYamlDefinitions() {
       </ul></>}
       <Examples examples={macro.examples} />
     </React.Fragment>)}
+
+    <Heading as="h2" id="filters">Interpolation filters</Heading>
+    <p>The following filters can be called as part of <a href="https://jinja.palletsprojects.com/en/3.0.x/templates/#expressions">jinja expressions</a>, for example like this: <code>{"{{  1 | string  }}"}</code>.</p>
+    {schema.interpolation.filters.map((filter) => <React.Fragment key={filter.title}>
+      <Heading as="h3" id={`/filters/${filter.title}`}>{filter.title}</Heading>
+      <Description text={filter.description} />
+      {Object.keys(filter.arguments).length > 0 && <>Arguments: <ul>{Object.entries(filter.arguments).map(([name, argument]) => <li key={name}>
+        <code>{name}</code>: {argument}
+      </li>)}
+      </ul></>}
+      <Examples examples={filter.examples} />
+    </React.Fragment>)}
   </>
 }
