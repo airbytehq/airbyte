@@ -10,8 +10,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from airbyte_protocol.models import SyncMode
 from requests import Response
 from source_amazon_ads.schemas import (
-    Keywords,
-    NegativeKeywords,
     ProductAd,
     ProductAdGroupBidRecommendations,
     ProductAdGroups,

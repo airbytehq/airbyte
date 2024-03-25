@@ -59,7 +59,7 @@ class SuggestedKeyword(CatalogModel):
 
 
 class ProductAdGroupSuggestedKeywords(CatalogModel):
-    adGroupId: str
+    adGroupId: int
     suggestedKeywords: List[SuggestedKeyword] = None
 
 
