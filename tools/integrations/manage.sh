@@ -186,9 +186,9 @@ cmd_publish() {
     echo "latest_image $latest_image"
   fi
 
-#  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
-#  # time building, running tests to realize this version is a duplicate.
-#  _error_if_tag_exists "$versioned_image"
+  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
+  # time building, running tests to realize this version is a duplicate.
+  _error_if_tag_exists "$versioned_image"
 
   # building the connector
   if [ "$path" != "airbyte-cdk/python" ]; then
@@ -196,8 +196,8 @@ cmd_publish() {
     cmd_build "$path" "$run_tests"
   fi
 
-#  # in case curing the build / tests someone this version has been published.
-#  _error_if_tag_exists "$versioned_image"
+  # in case curing the build / tests someone this version has been published.
+  _error_if_tag_exists "$versioned_image"
 
   if [[ "airbyte/normalization" == "${image_name}" ]]; then
     echo "Publishing normalization images (version: $versioned_image)"
@@ -254,7 +254,7 @@ cmd_publish() {
 
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"
-      docker buildx build -t $arch_versioned_image --platform $arch --load $path
+      docker buildx build -t $arch_versioned_image --platform $arch --push $path
       docker manifest create $versioned_image --amend $arch_versioned_image
 
       if [ "$pre_release" != "true" ]; then
@@ -263,16 +263,13 @@ cmd_publish() {
 
     done
 
-#    docker manifest push $versioned_image
-#    docker manifest rm $versioned_image
-#
-#    if [ "$pre_release" != "true" ]; then
-#      docker manifest push $latest_image
-#      docker manifest rm $latest_image
-#    fi
+    docker manifest push $versioned_image
+    docker manifest rm $versioned_image
 
-
-    echo "TESTING: got to docker push. Did not push"
+    if [ "$pre_release" != "true" ]; then
+      docker manifest push $latest_image
+      docker manifest rm $latest_image
+    fi
 
     # delete the temporary image tags made with arch_versioned_image
     sleep 10
