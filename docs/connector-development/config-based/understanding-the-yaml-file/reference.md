@@ -51,10 +51,10 @@ export const toc = [
     "value": "Interpolation filters:",
     "id": "filters",
     "level": 2
-    },
-    ...schema.interpolation.filters.map((def) => ({
+  },
+  ...schema.interpolation.filters.map((def) => ({
     value: def.title,
     id: `/filters/${def.title}`,
     level: 3
-    }))
+  })),
 ];
