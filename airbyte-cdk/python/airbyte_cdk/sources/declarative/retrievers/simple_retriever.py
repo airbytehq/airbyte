@@ -314,7 +314,6 @@ class SimpleRetriever(Retriever):
         # Fixing paginator types has a long tail of dependencies
         self._paginator.reset()
 
-        most_recent_record_from_slice = None
         record_generator = partial(
             self._parse_records,
             stream_state=self.state or {},
@@ -326,13 +325,10 @@ class SimpleRetriever(Retriever):
             if self.cursor and current_record:
                 self.cursor.observe(_slice, current_record)
 
-            # TODO this is just the most recent record *read*, not necessarily the most recent record *within slice boundaries*; once all
-            # cursors implement a meaningful `observe` method, it can be removed, both from here and the `Cursor.close_slice` method args
-            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, current_record, _slice)
             yield stream_data
 
         if self.cursor:
-            self.cursor.close_slice(_slice, most_recent_record_from_slice)
+            self.cursor.close_slice(_slice)
         return
 
     def _get_most_recent_record(
