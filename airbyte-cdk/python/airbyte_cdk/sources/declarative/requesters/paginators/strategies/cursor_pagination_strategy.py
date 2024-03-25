@@ -58,11 +58,13 @@ class CursorPaginationStrategy(PaginationStrategy):
         headers: Dict[str, Any] = dict(response.headers)
         headers["link"] = response.links
 
+        last_record = last_records[-1] if last_records else None
+
         if self._stop_condition:
-            should_stop = self._stop_condition.eval(self.config, response=decoded_response, headers=headers, last_records=last_records, last_record=last_records[-1], last_page_size=len(last_records))
+            should_stop = self._stop_condition.eval(self.config, response=decoded_response, headers=headers, last_records=last_records, last_record=last_record, last_page_size=len(last_records))
             if should_stop:
                 return None
-        token = self._cursor_value.eval(config=self.config, last_records=last_records, response=decoded_response, headers=headers, last_record=last_records[-1], last_page_size=len(last_records))
+        token = self._cursor_value.eval(config=self.config, last_records=last_records, response=decoded_response, headers=headers, last_record=last_record, last_page_size=len(last_records))
         return token if token else None
 
     def reset(self) -> None:
