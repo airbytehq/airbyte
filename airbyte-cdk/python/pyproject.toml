@@ -85,13 +85,11 @@ build = {sequence = ["generate", "build-package"], help = "Run all tasks to buil
 
 # Check tasks
 lint =  {cmd = "pflake8 --config ../../pyproject.toml ./", help = "Lint with flake8."}
-#Uncomment for local use.
-#TODO: find a version of the modified mypy check that works both locally and in CI.
-#type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modified files with mypy."}
+type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modified files with mypy."}
 unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report."}
-#check-local = {sequence = ["lint", "type-check", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
+# TODO: find a version of the modified mypy check that works both locally and in CI.
+check-local = {sequence = ["lint", "type-check", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
 check-ci = {sequence = ["lint", "unit-test-with-cov"], help = "Lint and run unit tests. Does not include type-checking."}
 
 # Build and check
-#Uncomment for local use.
-#pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
+pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
