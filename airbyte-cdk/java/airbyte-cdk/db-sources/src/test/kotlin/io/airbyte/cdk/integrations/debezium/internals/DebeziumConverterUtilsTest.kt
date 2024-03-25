@@ -4,15 +4,15 @@
 package io.airbyte.cdk.integrations.debezium.internals
 
 import io.debezium.spi.converter.RelationalColumn
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 
 internal class DebeziumConverterUtilsTest {
     @Test
@@ -21,7 +21,10 @@ internal class DebeziumConverterUtilsTest {
 
         Mockito.`when`(relationalColumn.isOptional).thenReturn(true)
         var actualColumnDefaultValue = DebeziumConverterUtils.convertDefaultValue(relationalColumn)
-        Assertions.assertNull(actualColumnDefaultValue, "Default value for optional relational column should be null")
+        Assertions.assertNull(
+            actualColumnDefaultValue,
+            "Default value for optional relational column should be null"
+        )
 
         Mockito.`when`(relationalColumn.isOptional).thenReturn(false)
         Mockito.`when`(relationalColumn.hasDefaultValue()).thenReturn(false)

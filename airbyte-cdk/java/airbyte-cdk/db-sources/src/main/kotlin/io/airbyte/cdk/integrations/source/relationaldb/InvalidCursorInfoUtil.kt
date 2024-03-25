@@ -7,19 +7,32 @@ import java.util.stream.Collectors
 
 object InvalidCursorInfoUtil {
     fun getInvalidCursorConfigMessage(tablesWithInvalidCursor: List<InvalidCursorInfo>): String {
-        return ("The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. "
-                + tablesWithInvalidCursor.stream().map { obj: InvalidCursorInfo -> obj.toString() }
+        return ("The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. " +
+            tablesWithInvalidCursor
+                .stream()
+                .map { obj: InvalidCursorInfo -> obj.toString() }
                 .collect(Collectors.joining(",")))
     }
 
-    class InvalidCursorInfo(tableName: String?, cursorColumnName: String, cursorSqlType: String, cause: String) {
+    class InvalidCursorInfo(
+        tableName: String?,
+        cursorColumnName: String,
+        cursorSqlType: String,
+        cause: String
+    ) {
         override fun toString(): String {
             return "{" +
-                    "tableName='" + tableName + '\'' +
-                    ", cursorColumnName='" + cursorColumnName + '\'' +
-                    ", cursorSqlType=" + cursorSqlType +
-                    ", cause=" + cause +
-                    '}'
+                "tableName='" +
+                tableName +
+                '\'' +
+                ", cursorColumnName='" +
+                cursorColumnName +
+                '\'' +
+                ", cursorSqlType=" +
+                cursorSqlType +
+                ", cause=" +
+                cause +
+                '}'
         }
 
         val tableName: String?
@@ -28,11 +41,6 @@ object InvalidCursorInfoUtil {
         val cause: String
 
         init {
-            this.streamName = streamName
-            this.primaryKey = primaryKey
-            this.keySequence = keySequence
-            this.syncCheckpointRecords = syncCheckpointRecords
-            this.syncCheckpointDuration = syncCheckpointDuration
             this.tableName = tableName
             this.cursorColumnName = cursorColumnName
             this.cursorSqlType = cursorSqlType

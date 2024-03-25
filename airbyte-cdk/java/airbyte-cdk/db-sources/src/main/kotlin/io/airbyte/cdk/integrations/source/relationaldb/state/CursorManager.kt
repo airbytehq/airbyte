@@ -6,31 +6,33 @@ package io.airbyte.cdk.integrations.source.relationaldb.state
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo
 import io.airbyte.protocol.models.v0.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.*
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.stream.Collectors
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Manages the map of streams to current cursor values for state management.
  *
  * @param <S> The type that represents the stream object which holds the current cursor information
- * in the state.
-</S> */
-class CursorManager<S>(catalog: ConfiguredAirbyteCatalog?,
-                       streamSupplier: Supplier<Collection<S>>,
-                       cursorFunction: Function<S, String?>?,
-                       cursorFieldFunction: Function<S, List<String?>?>?,
-                       cursorRecordCountFunction: Function<S, Long?>?,
-                       namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
-                       onlyIncludeIncrementalStreams: Boolean) {
+ * in the state. </S>
+ */
+class CursorManager<S : Any>(
+    catalog: ConfiguredAirbyteCatalog,
+    streamSupplier: Supplier<Collection<S>>,
+    cursorFunction: Function<S, String>?,
+    cursorFieldFunction: Function<S, List<String>>?,
+    cursorRecordCountFunction: Function<S, Long>?,
+    namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
+    onlyIncludeIncrementalStreams: Boolean
+) {
     /**
      * Map of streams (name/namespace tuple) to the current cursor information stored in the state.
      */
-    private val pairToCursorInfo: Map<AirbyteStreamNameNamespacePair?, CursorInfo>
+    val pairToCursorInfo: Map<AirbyteStreamNameNamespacePair, CursorInfo>
 
     /**
      * Constructs a new [CursorManager] based on the configured connector and current state
@@ -45,19 +47,25 @@ class CursorManager<S>(catalog: ConfiguredAirbyteCatalog?,
      * stored in the connector's state.
      * @param cursorRecordCountFunction A [Function] that extracts the cursor record count for a
      * stream stored in the connector's state.
-     * @param namespacePairFunction A [Function] that generates a
-     * [AirbyteStreamNameNamespacePair] that identifies each stream in the connector's
-     * state.
+     * @param namespacePairFunction A [Function] that generates a [AirbyteStreamNameNamespacePair]
+     * that identifies each stream in the connector's state.
      */
     init {
-        pairToCursorInfo = createCursorInfoMap(
-                catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction,
-                onlyIncludeIncrementalStreams)
+        pairToCursorInfo =
+            createCursorInfoMap(
+                catalog,
+                streamSupplier,
+                cursorFunction,
+                cursorFieldFunction,
+                cursorRecordCountFunction,
+                namespacePairFunction,
+                onlyIncludeIncrementalStreams
+            )
     }
 
     /**
-     * Creates the cursor information map that associates stream name/namespace tuples with the current
-     * cursor information for that stream as stored in the connector's state.
+     * Creates the cursor information map that associates stream name/namespace tuples with the
+     * current cursor information for that stream as stored in the connector's state.
      *
      * @param catalog The connector's configured catalog.
      * @param streamSupplier A [Supplier] that provides the cursor manager with the collection of
@@ -68,21 +76,22 @@ class CursorManager<S>(catalog: ConfiguredAirbyteCatalog?,
      * stored in the connector's state.
      * @param cursorRecordCountFunction A [Function] that extracts the cursor record count for a
      * stream stored in the connector's state.
-     * @param namespacePairFunction A [Function] that generates a
-     * [AirbyteStreamNameNamespacePair] that identifies each stream in the connector's
-     * state.
+     * @param namespacePairFunction A [Function] that generates a [AirbyteStreamNameNamespacePair]
+     * that identifies each stream in the connector's state.
      * @return A map of streams to current cursor information for the stream.
      */
     @VisibleForTesting
     protected fun createCursorInfoMap(
-            catalog: ConfiguredAirbyteCatalog?,
-            streamSupplier: Supplier<Collection<S>>,
-            cursorFunction: Function<S, String?>?,
-            cursorFieldFunction: Function<S, List<String?>?>?,
-            cursorRecordCountFunction: Function<S, Long?>?,
-            namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
-            onlyIncludeIncrementalStreams: Boolean): Map<AirbyteStreamNameNamespacePair?, CursorInfo> {
-        val allStreamNames = catalog!!.streams
+        catalog: ConfiguredAirbyteCatalog,
+        streamSupplier: Supplier<Collection<S>>,
+        cursorFunction: Function<S, String>?,
+        cursorFieldFunction: Function<S, List<String>>?,
+        cursorRecordCountFunction: Function<S, Long>?,
+        namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
+        onlyIncludeIncrementalStreams: Boolean
+    ): Map<AirbyteStreamNameNamespacePair, CursorInfo> {
+        val allStreamNames =
+            catalog.streams
                 .stream()
                 .filter { c: ConfiguredAirbyteStream ->
                     if (onlyIncludeIncrementalStreams) {
@@ -91,24 +100,52 @@ class CursorManager<S>(catalog: ConfiguredAirbyteCatalog?,
                     true
                 }
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
-                .map { stream: AirbyteStream? -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream) }
+                .map { stream: AirbyteStream? ->
+                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream)
+                }
                 .collect(Collectors.toSet())
-        allStreamNames.addAll(streamSupplier.get().stream().map(namespacePairFunction).filter { obj: AirbyteStreamNameNamespacePair? -> Objects.nonNull(obj) }.collect(Collectors.toSet()))
+        allStreamNames.addAll(
+            streamSupplier
+                .get()
+                .stream()
+                .map(namespacePairFunction)
+                .filter { obj: AirbyteStreamNameNamespacePair? -> Objects.nonNull(obj) }
+                .collect(Collectors.toSet())
+        )
 
-        val localMap: MutableMap<AirbyteStreamNameNamespacePair?, CursorInfo> = ConcurrentHashMap()
-        val pairToState = streamSupplier.get()
+        val localMap: MutableMap<AirbyteStreamNameNamespacePair, CursorInfo> = ConcurrentHashMap()
+        val pairToState =
+            streamSupplier
+                .get()
                 .stream()
                 .collect(Collectors.toMap(namespacePairFunction, Function.identity()))
-        val pairToConfiguredAirbyteStream = catalog.streams.stream()
-                .collect(Collectors.toMap(Function { stream: ConfiguredAirbyteStream? -> AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream) }, Function.identity()))
+        val pairToConfiguredAirbyteStream =
+            catalog.streams
+                .stream()
+                .collect(
+                    Collectors.toMap(
+                        Function { stream: ConfiguredAirbyteStream? ->
+                            AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)
+                        },
+                        Function.identity()
+                    )
+                )
 
         for (pair in allStreamNames) {
             val stateOptional: Optional<S> = Optional.ofNullable(pairToState[pair])
             val streamOptional = Optional.ofNullable(pairToConfiguredAirbyteStream[pair])
-            localMap[pair] = createCursorInfoForStream(pair, stateOptional, streamOptional, cursorFunction, cursorFieldFunction, cursorRecordCountFunction)
+            localMap[pair] =
+                createCursorInfoForStream(
+                    pair,
+                    stateOptional,
+                    streamOptional,
+                    cursorFunction,
+                    cursorFieldFunction,
+                    cursorRecordCountFunction
+                )
         }
 
-        return localMap
+        return localMap.toMap()
     }
 
     /**
@@ -118,27 +155,31 @@ class CursorManager<S>(catalog: ConfiguredAirbyteCatalog?,
      * @param pair A [AirbyteStreamNameNamespacePair] that identifies a specific stream managed by
      * the connector.
      * @param stateOptional [Optional] containing the current state associated with the stream.
-     * @param streamOptional [Optional] containing the [ConfiguredAirbyteStream] associated
+     * @param streamOptional [Optional] containing the [ConfiguredAirbyteStream] associated with the
+     * stream.
+     * @param cursorFunction A [Function] that provides the current cursor from the state associated
      * with the stream.
-     * @param cursorFunction A [Function] that provides the current cursor from the state
-     * associated with the stream.
      * @param cursorFieldFunction A [Function] that provides the cursor field name for the cursor
      * stored in the state associated with the stream.
      * @param cursorRecordCountFunction A [Function] that extracts the cursor record count for a
      * stream stored in the connector's state.
-     * @return A [CursorInfo] object based on the data currently stored in the connector's state
-     * for the given stream.
+     * @return A [CursorInfo] object based on the data currently stored in the connector's state for
+     * the given stream.
      */
-    @VisibleForTesting
-    protected fun createCursorInfoForStream(pair: AirbyteStreamNameNamespacePair?,
-                                            stateOptional: Optional<S>,
-                                            streamOptional: Optional<ConfiguredAirbyteStream>,
-                                            cursorFunction: Function<S, String?>?,
-                                            cursorFieldFunction: Function<S, List<String?>?>?,
-                                            cursorRecordCountFunction: Function<S, Long>?): CursorInfo {
-        val originalCursorField = stateOptional
+    internal fun createCursorInfoForStream(
+        pair: AirbyteStreamNameNamespacePair?,
+        stateOptional: Optional<S>,
+        streamOptional: Optional<ConfiguredAirbyteStream>,
+        cursorFunction: Function<S, String>?,
+        cursorFieldFunction: Function<S, List<String>>?,
+        cursorRecordCountFunction: Function<S, Long>?
+    ): CursorInfo {
+        val originalCursorField =
+            stateOptional
                 .map(cursorFieldFunction)
-                .flatMap { f: List<String?>? -> if (f!!.size > 0) Optional.of(f[0]!!) else Optional.empty() }
+                .flatMap { f: List<String> ->
+                    if (f.isNotEmpty()) Optional.of(f[0]) else Optional.empty()
+                }
                 .orElse(null)
         val originalCursor = stateOptional.map(cursorFunction).orElse(null)
         val originalCursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L)
@@ -148,75 +189,101 @@ class CursorManager<S>(catalog: ConfiguredAirbyteCatalog?,
         val cursorRecordCount: Long
 
         // if cursor field is set in catalog.
-        if (streamOptional.map<List<String>> { obj: ConfiguredAirbyteStream -> obj.cursorField }.isPresent) {
-            cursorField = streamOptional
+        if (
+            streamOptional
+                .map<List<String>> { obj: ConfiguredAirbyteStream -> obj.cursorField }
+                .isPresent
+        ) {
+            cursorField =
+                streamOptional
                     .map { obj: ConfiguredAirbyteStream -> obj.cursorField }
-                    .flatMap { f: List<String> -> if (f.size > 0) Optional.of(f[0]) else Optional.empty() }
+                    .flatMap { f: List<String> ->
+                        if (f.size > 0) Optional.of(f[0]) else Optional.empty()
+                    }
                     .orElse(null)
             // if cursor field is set in state.
             if (stateOptional.map<List<String?>?>(cursorFieldFunction).isPresent) {
                 // if cursor field in catalog and state are the same.
-                if (stateOptional.map<List<String?>?>(cursorFieldFunction) == streamOptional.map<List<String>> { obj: ConfiguredAirbyteStream -> obj.cursorField }) {
+                if (
+                    stateOptional.map<List<String?>?>(cursorFieldFunction) ==
+                        streamOptional.map<List<String>> { obj: ConfiguredAirbyteStream ->
+                            obj.cursorField
+                        }
+                ) {
                     cursor = stateOptional.map(cursorFunction).orElse(null)
                     cursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L)
-                    // If a matching cursor is found in the state, and it's value is null - this indicates a CDC stream
+                    // If a matching cursor is found in the state, and it's value is null - this
+                    // indicates a CDC stream
                     // and we shouldn't log anything.
                     if (cursor != null) {
-                        LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
-                                pair, cursorField, cursor, cursorRecordCount)
+                        LOGGER.info(
+                            "Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
+                            pair,
+                            cursorField,
+                            cursor,
+                            cursorRecordCount
+                        )
                     }
                     // if cursor field in catalog and state are different.
                 } else {
                     cursor = null
                     cursorRecordCount = 0L
                     LOGGER.info(
-                            "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {} (count {}). New Cursor Field: {}. Resetting cursor value.",
-                            pair, originalCursorField, originalCursorRecordCount, cursorField)
+                        "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {} (count {}). New Cursor Field: {}. Resetting cursor value.",
+                        pair,
+                        originalCursorField,
+                        originalCursorRecordCount,
+                        cursorField
+                    )
                 }
                 // if cursor field is not set in state but is set in catalog.
             } else {
-                LOGGER.info("No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value", pair,
-                        cursorField)
+                LOGGER.info(
+                    "No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value",
+                    pair,
+                    cursorField
+                )
                 cursor = null
                 cursorRecordCount = 0L
             }
             // if cursor field is not set in catalog.
         } else {
             LOGGER.info(
-                    "Cursor field set in state but not present in catalog. Stream: {}. Original Cursor Field: {}. Original value: {}. Resetting cursor.",
-                    pair, originalCursorField, originalCursor)
+                "Cursor field set in state but not present in catalog. Stream: {}. Original Cursor Field: {}. Original value: {}. Resetting cursor.",
+                pair,
+                originalCursorField,
+                originalCursor
+            )
             cursorField = null
             cursor = null
             cursorRecordCount = 0L
         }
 
-        return CursorInfo(originalCursorField, originalCursor, originalCursorRecordCount, cursorField, cursor, cursorRecordCount)
+        return CursorInfo(
+            originalCursorField,
+            originalCursor,
+            originalCursorRecordCount,
+            cursorField,
+            cursor,
+            cursorRecordCount
+        )
     }
 
     /**
-     * Retrieves a copy of the stream name/namespace tuple to current cursor information map.
-     *
-     * @return A copy of the stream name/namespace tuple to current cursor information map.
-     */
-    fun getPairToCursorInfo(): Map<AirbyteStreamNameNamespacePair?, CursorInfo> {
-        return java.util.Map.copyOf(pairToCursorInfo)
-    }
-
-    /**
-     * Retrieves an [Optional] possibly containing the current [CursorInfo] associated with
-     * the provided stream name/namespace tuple.
+     * Retrieves an [Optional] possibly containing the current [CursorInfo] associated with the
+     * provided stream name/namespace tuple.
      *
      * @param pair The [AirbyteStreamNameNamespacePair] which identifies a stream.
-     * @return An [Optional] possibly containing the current [CursorInfo] associated with
-     * the provided stream name/namespace tuple.
+     * @return An [Optional] possibly containing the current [CursorInfo] associated with the
+     * provided stream name/namespace tuple.
      */
     fun getCursorInfo(pair: AirbyteStreamNameNamespacePair?): Optional<CursorInfo> {
         return Optional.ofNullable(pairToCursorInfo[pair])
     }
 
     /**
-     * Retrieves an [Optional] possibly containing the cursor field name associated with the
-     * cursor tracked in the state associated with the provided stream name/namespace tuple.
+     * Retrieves an [Optional] possibly containing the cursor field name associated with the cursor
+     * tracked in the state associated with the provided stream name/namespace tuple.
      *
      * @param pair The [AirbyteStreamNameNamespacePair] which identifies a stream.
      * @return An [Optional] possibly containing the cursor field name associated with the cursor
@@ -227,8 +294,8 @@ class CursorManager<S>(catalog: ConfiguredAirbyteCatalog?,
     }
 
     /**
-     * Retrieves an [Optional] possibly containing the cursor value tracked in the state
-     * associated with the provided stream name/namespace tuple.
+     * Retrieves an [Optional] possibly containing the cursor value tracked in the state associated
+     * with the provided stream name/namespace tuple.
      *
      * @param pair The [AirbyteStreamNameNamespacePair] which identifies a stream.
      * @return An [Optional] possibly containing the cursor value tracked in the state associated

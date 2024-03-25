@@ -11,27 +11,25 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv
  * tests.
  */
 abstract class AbstractSourceBasePerformanceTest : AbstractSourceConnectorTest() {
+    /**
+     * The column name will be used for a test column in the test tables. Override it if default
+     * name is not valid for your source.
+     */
+    protected val testColumnName
+        get() = TEST_COLUMN_NAME
+    /**
+     * The stream name template will be used for a test tables. Override it if default name is not
+     * valid for your source.
+     */
+    protected val testStreamNameTemplate
+        get() = TEST_STREAM_NAME_TEMPLATE
     @Throws(Exception::class)
     override fun setupEnvironment(environment: TestDestinationEnv?) {
         // DO NOTHING. Mandatory to override. DB will be setup as part of each test
     }
 
     companion object {
-        protected val testColumnName: String = "test_column"
-            /**
-             * The column name will be used for a test column in the test tables. Override it if default name is
-             * not valid for your source.
-             *
-             * @return Test column name
-             */
-            get() = Companion.field
-        protected val testStreamNameTemplate: String = "test_%S"
-            /**
-             * The stream name template will be used for a test tables. Override it if default name is not valid
-             * for your source.
-             *
-             * @return Test steam name template
-             */
-            get() = Companion.field
+        protected const val TEST_COLUMN_NAME: String = "test_column"
+        protected const val TEST_STREAM_NAME_TEMPLATE: String = "test_%S"
     }
 }

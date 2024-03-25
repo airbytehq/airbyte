@@ -10,9 +10,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-/**
- * Factory class that creates [StateManager] instances based on the provided state.
- */
+/** Factory class that creates [StateManager] instances based on the provided state. */
 object StateManagerFactory {
     private val LOGGER: Logger = LoggerFactory.getLogger(StateManagerFactory::class.java)
 
@@ -28,61 +26,82 @@ object StateManagerFactory {
      * manager.
      * @return A newly created [StateManager] implementation based on the provided state.
      */
-    fun createStateManager(supportedStateType: AirbyteStateMessage.AirbyteStateType?,
-                           initialState: List<AirbyteStateMessage?>?,
-                           catalog: ConfiguredAirbyteCatalog?): StateManager {
+    fun createStateManager(
+        supportedStateType: AirbyteStateMessage.AirbyteStateType?,
+        initialState: List<AirbyteStateMessage>?,
+        catalog: ConfiguredAirbyteCatalog
+    ): StateManager {
         if (initialState != null && !initialState.isEmpty()) {
             val airbyteStateMessage = initialState[0]
             when (supportedStateType) {
                 AirbyteStateMessage.AirbyteStateType.LEGACY -> {
-                    LOGGER.info("Legacy state manager selected to manage state object with type {}.", airbyteStateMessage!!.type)
-                    @Suppress("deprecation") val retVal: StateManager = LegacyStateManager(Jsons.`object`(airbyteStateMessage.data, DbState::class.java), catalog)
+                    LOGGER.info(
+                        "Legacy state manager selected to manage state object with type {}.",
+                        airbyteStateMessage!!.type
+                    )
+                    @Suppress("deprecation")
+                    val retVal: StateManager =
+                        LegacyStateManager(
+                            Jsons.`object`(airbyteStateMessage.data, DbState::class.java),
+                            catalog
+                        )
                     return retVal
                 }
-
                 AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
-                    LOGGER.info("Global state manager selected to manage state object with type {}.", airbyteStateMessage!!.type)
+                    LOGGER.info(
+                        "Global state manager selected to manage state object with type {}.",
+                        airbyteStateMessage!!.type
+                    )
                     return GlobalStateManager(generateGlobalState(airbyteStateMessage), catalog)
                 }
-
                 AirbyteStateMessage.AirbyteStateType.STREAM -> {
-                    LOGGER.info("Stream state manager selected to manage state object with type {}.", airbyteStateMessage!!.type)
+                    LOGGER.info(
+                        "Stream state manager selected to manage state object with type {}.",
+                        airbyteStateMessage!!.type
+                    )
                     return StreamStateManager(generateStreamState(initialState), catalog)
                 }
-
                 else -> {
-                    LOGGER.info("Stream state manager selected to manage state object with type {}.", airbyteStateMessage!!.type)
+                    LOGGER.info(
+                        "Stream state manager selected to manage state object with type {}.",
+                        airbyteStateMessage!!.type
+                    )
                     return StreamStateManager(generateStreamState(initialState), catalog)
                 }
             }
         } else {
-            throw IllegalArgumentException("Failed to create state manager due to empty state list.")
+            throw IllegalArgumentException(
+                "Failed to create state manager due to empty state list."
+            )
         }
     }
 
     /**
-     * Handles the conversion between a different state type and the global state. This method handles
-     * the following transitions:
+     * Handles the conversion between a different state type and the global state. This method
+     * handles the following transitions:
      *
-     *  * Stream -> Global (not supported, results in [IllegalArgumentException]
-     *  * Legacy -> Global (supported)
-     *  * Global -> Global (supported/no conversion required)
-     *
+     * * Stream -> Global (not supported, results in [IllegalArgumentException]
+     * * Legacy -> Global (supported)
+     * * Global -> Global (supported/no conversion required)
      *
      * @param airbyteStateMessage The current state that is to be converted to global state.
      * @return The converted state message.
-     * @throws IllegalArgumentException if unable to convert between the given state type and global.
+     * @throws IllegalArgumentException if unable to convert between the given state type and
+     * global.
      */
-    private fun generateGlobalState(airbyteStateMessage: AirbyteStateMessage?): AirbyteStateMessage? {
+    private fun generateGlobalState(airbyteStateMessage: AirbyteStateMessage): AirbyteStateMessage {
         var globalStateMessage = airbyteStateMessage
 
         when (airbyteStateMessage!!.type) {
-            AirbyteStateMessage.AirbyteStateType.STREAM -> throw IllegalArgumentException("Unable to convert connector state from stream to global.  Please reset the connection to continue.")
+            AirbyteStateMessage.AirbyteStateType.STREAM ->
+                throw IllegalArgumentException(
+                    "Unable to convert connector state from stream to global.  Please reset the connection to continue."
+                )
             AirbyteStateMessage.AirbyteStateType.LEGACY -> {
-                globalStateMessage = StateGeneratorUtils.convertLegacyStateToGlobalState(airbyteStateMessage)
+                globalStateMessage =
+                    StateGeneratorUtils.convertLegacyStateToGlobalState(airbyteStateMessage)
                 LOGGER.info("Legacy state converted to global state.", airbyteStateMessage.type)
             }
-
             AirbyteStateMessage.AirbyteStateType.GLOBAL -> {}
             else -> {}
         }
@@ -90,24 +109,30 @@ object StateManagerFactory {
     }
 
     /**
-     * Handles the conversion between a different state type and the stream state. This method handles
-     * the following transitions:
+     * Handles the conversion between a different state type and the stream state. This method
+     * handles the following transitions:
      *
-     *  * Global -> Stream (not supported, results in [IllegalArgumentException]
-     *  * Legacy -> Stream (supported)
-     *  * Stream -> Stream (supported/no conversion required)
-     *
+     * * Global -> Stream (not supported, results in [IllegalArgumentException]
+     * * Legacy -> Stream (supported)
+     * * Stream -> Stream (supported/no conversion required)
      *
      * @param states The list of current states.
      * @return The converted state messages.
-     * @throws IllegalArgumentException if unable to convert between the given state type and stream.
+     * @throws IllegalArgumentException if unable to convert between the given state type and
+     * stream.
      */
-    private fun generateStreamState(states: List<AirbyteStateMessage?>): List<AirbyteStateMessage?> {
+    private fun generateStreamState(states: List<AirbyteStateMessage>): List<AirbyteStateMessage> {
         val airbyteStateMessage = states[0]
-        val streamStates: MutableList<AirbyteStateMessage?> = ArrayList()
+        val streamStates: MutableList<AirbyteStateMessage> = ArrayList()
         when (airbyteStateMessage!!.type) {
-            AirbyteStateMessage.AirbyteStateType.GLOBAL -> throw IllegalArgumentException("Unable to convert connector state from global to stream.  Please reset the connection to continue.")
-            AirbyteStateMessage.AirbyteStateType.LEGACY -> streamStates.addAll(StateGeneratorUtils.convertLegacyStateToStreamState(airbyteStateMessage))
+            AirbyteStateMessage.AirbyteStateType.GLOBAL ->
+                throw IllegalArgumentException(
+                    "Unable to convert connector state from global to stream.  Please reset the connection to continue."
+                )
+            AirbyteStateMessage.AirbyteStateType.LEGACY ->
+                streamStates.addAll(
+                    StateGeneratorUtils.convertLegacyStateToStreamState(airbyteStateMessage)
+                )
             AirbyteStateMessage.AirbyteStateType.STREAM -> streamStates.addAll(states)
             else -> streamStates.addAll(states)
         }

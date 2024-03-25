@@ -10,13 +10,15 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 
-class CursorStateMessageProducer(private val stateManager: StateManager?,
-                                 private val initialCursor: Optional<String?>) : SourceStateMessageProducer<AirbyteMessage> {
-    private var currentMaxCursor: Optional<String?>
+class CursorStateMessageProducer(
+    private val stateManager: StateManager?,
+    private val initialCursor: Optional<String>
+) : SourceStateMessageProducer<AirbyteMessage> {
+    private var currentMaxCursor: Optional<String>
 
     // We keep this field to mark `cursor_record_count` and also to control logging frequency.
     private var currentCursorRecordCount = 0
@@ -28,33 +30,43 @@ class CursorStateMessageProducer(private val stateManager: StateManager?,
         this.currentMaxCursor = initialCursor
     }
 
-    override fun generateStateMessageAtCheckpoint(stream: ConfiguredAirbyteStream?): AirbyteStateMessage? {
-        // At this stage intermediate state message should never be null; otherwise it would have been
+    override fun generateStateMessageAtCheckpoint(
+        stream: ConfiguredAirbyteStream?
+    ): AirbyteStateMessage? {
+        // At this stage intermediate state message should never be null; otherwise it would have
+        // been
         // blocked by shouldEmitStateMessage check.
         val message = intermediateStateMessage
         intermediateStateMessage = null
         if (cursorOutOfOrderDetected) {
-            LOGGER.warn("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
-                    + "data loss can occur.")
+            LOGGER.warn(
+                "Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, " +
+                    "data loss can occur."
+            )
         }
         return message
     }
 
     /**
-     * Note: We do not try to catch exception here. If error/exception happens, we should fail the sync,
-     * and since we have saved state message before, we should be able to resume it in next sync if we
-     * have fixed the underlying issue, of if the issue is transient.
+     * Note: We do not try to catch exception here. If error/exception happens, we should fail the
+     * sync, and since we have saved state message before, we should be able to resume it in next
+     * sync if we have fixed the underlying issue, of if the issue is transient.
      */
-    override fun processRecordMessage(stream: ConfiguredAirbyteStream, message: AirbyteMessage): AirbyteMessage {
+    override fun processRecordMessage(
+        stream: ConfiguredAirbyteStream,
+        message: AirbyteMessage
+    ): AirbyteMessage {
         val cursorField = getCursorField(stream)
         if (message.record.data.hasNonNull(cursorField)) {
             val cursorCandidate = getCursorCandidate(cursorField, message)
-            val cursorType = getCursorType(stream,
-                    cursorField)
-            val cursorComparison = compareCursors(currentMaxCursor.orElse(null), cursorCandidate, cursorType)
+            val cursorType = getCursorType(stream, cursorField)
+            val cursorComparison =
+                compareCursors(currentMaxCursor.orElse(null), cursorCandidate, cursorType)
             if (cursorComparison < 0) {
-                // Reset cursor but include current record message. This value will be used to create state message.
-                // Update the current max cursor only when current max cursor < cursor candidate from the message
+                // Reset cursor but include current record message. This value will be used to
+                // create state message.
+                // Update the current max cursor only when current max cursor < cursor candidate
+                // from the message
                 if (currentMaxCursor != initialCursor) {
                     // Only create an intermediate state when it is not the first record.
                     intermediateStateMessage = createStateMessage(stream)
@@ -75,9 +87,7 @@ class CursorStateMessageProducer(private val stateManager: StateManager?,
         return createStateMessage(stream)
     }
 
-    /**
-     * Only sends out state message when there is a state message to be sent out.
-     */
+    /** Only sends out state message when there is a state message to be sent out. */
     override fun shouldEmitStateMessage(stream: ConfiguredAirbyteStream?): Boolean {
         return intermediateStateMessage != null
     }
@@ -90,8 +100,20 @@ class CursorStateMessageProducer(private val stateManager: StateManager?,
      */
     private fun createStateMessage(stream: ConfiguredAirbyteStream): AirbyteStateMessage? {
         val pair = AirbyteStreamNameNamespacePair(stream.stream.name, stream.stream.namespace)
-        println("state message creation: " + pair + " " + currentMaxCursor.orElse(null) + " " + currentCursorRecordCount)
-        val stateMessage = stateManager!!.updateAndEmit(pair, currentMaxCursor.orElse(null), currentCursorRecordCount.toLong())
+        println(
+            "state message creation: " +
+                pair +
+                " " +
+                currentMaxCursor.orElse(null) +
+                " " +
+                currentCursorRecordCount
+        )
+        val stateMessage =
+            stateManager!!.updateAndEmit(
+                pair,
+                currentMaxCursor.orElse(null),
+                currentCursorRecordCount.toLong()
+            )
         val cursorInfo = stateManager.getCursorInfo(pair)
 
         // logging once every 100 messages to reduce log verbosity

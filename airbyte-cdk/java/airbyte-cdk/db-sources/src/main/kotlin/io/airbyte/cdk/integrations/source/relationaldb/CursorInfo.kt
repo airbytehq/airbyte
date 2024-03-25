@@ -5,16 +5,20 @@ package io.airbyte.cdk.integrations.source.relationaldb
 
 import java.util.*
 
-class CursorInfo(val originalCursorField: String?,
-                 val originalCursor: String?,
-                 val originalCursorRecordCount: Long,
-                 val cursorField: String?,
-                 var cursor: String?,
-                 var cursorRecordCount: Long) {
-    constructor(originalCursorField: String?,
-                originalCursor: String?,
-                cursorField: String?,
-                cursor: String?) : this(originalCursorField, originalCursor, 0L, cursorField, cursor, 0L)
+class CursorInfo(
+    val originalCursorField: String?,
+    val originalCursor: String?,
+    val originalCursorRecordCount: Long,
+    val cursorField: String?,
+    var cursor: String?,
+    var cursorRecordCount: Long
+) {
+    constructor(
+        originalCursorField: String?,
+        originalCursor: String?,
+        cursorField: String?,
+        cursor: String?
+    ) : this(originalCursorField, originalCursor, 0L, cursorField, cursor, 0L)
 
     fun setCursor(cursor: String?): CursorInfo {
         this.cursor = cursor
@@ -34,21 +38,45 @@ class CursorInfo(val originalCursorField: String?,
             return false
         }
         val that = o as CursorInfo
-        return originalCursorField == that.originalCursorField && originalCursor == that.originalCursor && originalCursorRecordCount == that.originalCursorRecordCount && cursorField == that.cursorField && cursor == that.cursor && cursorRecordCount == that.cursorRecordCount
+        return originalCursorField == that.originalCursorField &&
+            originalCursor == that.originalCursor &&
+            originalCursorRecordCount == that.originalCursorRecordCount &&
+            cursorField == that.cursorField &&
+            cursor == that.cursor &&
+            cursorRecordCount == that.cursorRecordCount
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(originalCursorField, originalCursor, originalCursorRecordCount, cursorField, cursor, cursorRecordCount)
+        return Objects.hash(
+            originalCursorField,
+            originalCursor,
+            originalCursorRecordCount,
+            cursorField,
+            cursor,
+            cursorRecordCount
+        )
     }
 
     override fun toString(): String {
         return "CursorInfo{" +
-                "originalCursorField='" + originalCursorField + '\'' +
-                ", originalCursor='" + originalCursor + '\'' +
-                ", originalCursorRecordCount='" + originalCursorRecordCount + '\'' +
-                ", cursorField='" + cursorField + '\'' +
-                ", cursor='" + cursor + '\'' +
-                ", cursorRecordCount='" + cursorRecordCount + '\'' +
-                '}'
+            "originalCursorField='" +
+            originalCursorField +
+            '\'' +
+            ", originalCursor='" +
+            originalCursor +
+            '\'' +
+            ", originalCursorRecordCount='" +
+            originalCursorRecordCount +
+            '\'' +
+            ", cursorField='" +
+            cursorField +
+            '\'' +
+            ", cursor='" +
+            cursor +
+            '\'' +
+            ", cursorRecordCount='" +
+            cursorRecordCount +
+            '\'' +
+            '}'
     }
 }

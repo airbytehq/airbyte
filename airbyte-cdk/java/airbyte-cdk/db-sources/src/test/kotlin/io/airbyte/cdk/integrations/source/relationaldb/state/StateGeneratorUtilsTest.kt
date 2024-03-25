@@ -7,9 +7,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-/**
- * Test suite for the [StateGeneratorUtils] class.
- */
+/** Test suite for the [StateGeneratorUtils] class. */
 class StateGeneratorUtilsTest {
     @Test
     fun testValidStreamDescriptor() {

@@ -14,15 +14,15 @@ import net.sourceforge.argparse4j.inf.Namespace
 object TestPythonSourceMain {
     @JvmStatic
     fun main(args: Array<String>) {
-        val parser = ArgumentParsers.newFor(TestPythonSourceMain::class.java.name).build()
+        val parser =
+            ArgumentParsers.newFor(TestPythonSourceMain::class.java.name)
+                .build()
                 .defaultHelp(true)
                 .description("Run standard source tests")
 
-        parser.addArgument("--imageName")
-                .help("Name of the integration image")
+        parser.addArgument("--imageName").help("Name of the integration image")
 
-        parser.addArgument("--pythonContainerName")
-                .help("Name of the python integration image")
+        parser.addArgument("--pythonContainerName").help("Name of the python integration image")
 
         var ns: Namespace? = null
         try {

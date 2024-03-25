@@ -50,7 +50,7 @@ object DataSourceFactory {
         password: String?,
         driverClassName: String,
         jdbcConnectionString: String?,
-        connectionProperties: Map<String?, String?>?,
+        connectionProperties: Map<String, String>?,
         connectionTimeout: Duration?
     ): DataSource {
         return DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
@@ -100,7 +100,7 @@ object DataSourceFactory {
         port: Int,
         database: String?,
         driverClassName: String,
-        connectionProperties: Map<String?, String?>?
+        connectionProperties: Map<String, String>?
     ): DataSource {
         return DataSourceBuilder(username, password, driverClassName, host, port, database)
             .withConnectionProperties(connectionProperties)
@@ -152,7 +152,7 @@ object DataSourceFactory {
         private var password: String?,
         private var driverClassName: String
     ) {
-        private var connectionProperties: Map<String?, String?> = java.util.Map.of()
+        private var connectionProperties: Map<String, String> = java.util.Map.of()
         private var database: String? = null
         private var host: String? = null
         private var jdbcUrl: String? = null
@@ -185,7 +185,7 @@ object DataSourceFactory {
         }
 
         fun withConnectionProperties(
-            connectionProperties: Map<String?, String?>?
+            connectionProperties: Map<String, String>?
         ): DataSourceBuilder {
             if (connectionProperties != null) {
                 this.connectionProperties = connectionProperties

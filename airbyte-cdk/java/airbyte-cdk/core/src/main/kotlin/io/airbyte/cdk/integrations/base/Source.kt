@@ -42,7 +42,7 @@ interface Source : Integration {
     @Throws(Exception::class)
     fun read(
         config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog?,
+        catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): AutoCloseableIterator<AirbyteMessage>
 
@@ -65,7 +65,7 @@ interface Source : Integration {
     @Throws(Exception::class)
     fun readStreams(
         config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog?,
+        catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {
         return List.of(read(config, catalog, state))

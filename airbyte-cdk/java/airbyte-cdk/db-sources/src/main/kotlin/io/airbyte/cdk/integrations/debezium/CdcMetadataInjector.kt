@@ -17,12 +17,16 @@ interface CdcMetadataInjector<T> {
      * https://debezium.io/documentation/reference/1.9/connectors/mysql.html#mysql-create-events
      *
      * @param event is the actual record which contains data and would be written to the destination
-     * @param source contains the metadata about the record and we need to extract that metadata and add
-     * it to the event before writing it to destination
+     * @param source contains the metadata about the record and we need to extract that metadata and
+     * add it to the event before writing it to destination
      */
     fun addMetaData(event: ObjectNode?, source: JsonNode?)
 
-    fun addMetaDataToRowsFetchedOutsideDebezium(record: ObjectNode?, transactionTimestamp: String?, metadataToAdd: T) {
+    fun addMetaDataToRowsFetchedOutsideDebezium(
+        record: ObjectNode?,
+        transactionTimestamp: String?,
+        metadataToAdd: T
+    ) {
         throw RuntimeException("Not Supported")
     }
 

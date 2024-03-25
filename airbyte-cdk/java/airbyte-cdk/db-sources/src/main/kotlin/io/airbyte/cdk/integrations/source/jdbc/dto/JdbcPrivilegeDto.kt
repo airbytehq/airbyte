@@ -5,10 +5,13 @@ package io.airbyte.cdk.integrations.source.jdbc.dto
 
 import com.google.common.base.Objects
 
-/**
- * The class to store values from privileges table
- */
-class JdbcPrivilegeDto(val grantee: String?, val tableName: String?, val schemaName: String?, val privilege: String?) {
+/** The class to store values from privileges table */
+class JdbcPrivilegeDto(
+    val grantee: String?,
+    val tableName: String?,
+    val schemaName: String?,
+    val privilege: String?
+) {
     class JdbcPrivilegeDtoBuilder {
         private var grantee: String? = null
         private var tableName: String? = null
@@ -48,8 +51,10 @@ class JdbcPrivilegeDto(val grantee: String?, val tableName: String?, val schemaN
             return false
         }
         val that = o as JdbcPrivilegeDto
-        return (Objects.equal(grantee, that.grantee) && Objects.equal(tableName, that.tableName)
-                && Objects.equal(schemaName, that.schemaName) && Objects.equal(privilege, that.privilege))
+        return (Objects.equal(grantee, that.grantee) &&
+            Objects.equal(tableName, that.tableName) &&
+            Objects.equal(schemaName, that.schemaName) &&
+            Objects.equal(privilege, that.privilege))
     }
 
     override fun hashCode(): Int {
@@ -58,11 +63,19 @@ class JdbcPrivilegeDto(val grantee: String?, val tableName: String?, val schemaN
 
     override fun toString(): String {
         return "JdbcPrivilegeDto{" +
-                "grantee='" + grantee + '\'' +
-                ", columnName='" + tableName + '\'' +
-                ", schemaName='" + schemaName + '\'' +
-                ", privilege='" + privilege + '\'' +
-                '}'
+            "grantee='" +
+            grantee +
+            '\'' +
+            ", columnName='" +
+            tableName +
+            '\'' +
+            ", schemaName='" +
+            schemaName +
+            '\'' +
+            ", privilege='" +
+            privilege +
+            '\'' +
+            '}'
     }
 
     companion object {

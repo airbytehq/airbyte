@@ -10,9 +10,6 @@ class StateEmitFrequency(syncCheckpointRecords: Long, syncCheckpointDuration: Du
     val syncCheckpointDuration: Duration
 
     init {
-        this.streamName = streamName
-        this.primaryKey = primaryKey
-        this.keySequence = keySequence
         this.syncCheckpointRecords = syncCheckpointRecords
         this.syncCheckpointDuration = syncCheckpointDuration
     }

@@ -6,14 +6,14 @@ package io.airbyte.cdk.integrations.debezium.internals
 import io.airbyte.cdk.db.DataTypeUtils.toISO8601String
 import io.airbyte.cdk.db.DataTypeUtils.toISO8601StringWithMicroseconds
 import io.debezium.spi.converter.RelationalColumn
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DebeziumConverterUtils private constructor() {
     init {
@@ -23,17 +23,16 @@ class DebeziumConverterUtils private constructor() {
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DebeziumConverterUtils::class.java)
 
-        /**
-         * TODO : Replace usage of this method with [io.airbyte.cdk.db.jdbc.DateTimeConverter]
-         */
+        /** TODO : Replace usage of this method with [io.airbyte.cdk.db.jdbc.DateTimeConverter] */
         fun convertDate(input: Any): String {
             /**
-             * While building this custom converter we were not sure what type debezium could return cause there
-             * is no mention of it in the documentation. Secondly if you take a look at
+             * While building this custom converter we were not sure what type debezium could return
+             * cause there is no mention of it in the documentation. Secondly if you take a look at
              * [io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter.converterFor]
-             * method, even it is handling multiple data types but its not clear under what circumstances which
-             * data type would be returned. I just went ahead and handled the data types that made sense.
-             * Secondly, we use LocalDateTime to handle this cause it represents DATETIME datatype in JAVA
+             * method, even it is handling multiple data types but its not clear under what
+             * circumstances which data type would be returned. I just went ahead and handled the
+             * data types that made sense. Secondly, we use LocalDateTime to handle this cause it
+             * represents DATETIME datatype in JAVA
              */
             if (input is LocalDateTime) {
                 return toISO8601String(input)
@@ -44,8 +43,7 @@ class DebeziumConverterUtils private constructor() {
             } else if (input is Timestamp) {
                 return toISO8601StringWithMicroseconds((input.toInstant()))
             } else if (input is Number) {
-                return toISO8601String(
-                        Timestamp(input.toLong()).toLocalDateTime())
+                return toISO8601String(Timestamp(input.toLong()).toLocalDateTime())
             } else if (input is Date) {
                 return toISO8601String(input)
             } else if (input is String) {
@@ -56,7 +54,10 @@ class DebeziumConverterUtils private constructor() {
                     return input.toString()
                 }
             }
-            LOGGER.warn("Uncovered date class type '{}'. Use default converter", input.javaClass.name)
+            LOGGER.warn(
+                "Uncovered date class type '{}'. Use default converter",
+                input.javaClass.name
+            )
             return input.toString()
         }
 

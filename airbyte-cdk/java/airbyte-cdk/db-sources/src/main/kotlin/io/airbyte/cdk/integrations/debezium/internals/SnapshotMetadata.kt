@@ -15,7 +15,8 @@ enum class SnapshotMetadata {
     NULL;
 
     companion object {
-        private val ENTRIES_OF_SNAPSHOT_EVENTS: Set<SnapshotMetadata?> = ImmutableSet.of(TRUE, FIRST, FIRST_IN_DATA_COLLECTION, LAST_IN_DATA_COLLECTION)
+        private val ENTRIES_OF_SNAPSHOT_EVENTS: Set<SnapshotMetadata?> =
+            ImmutableSet.of(TRUE, FIRST, FIRST_IN_DATA_COLLECTION, LAST_IN_DATA_COLLECTION)
         private val STRING_TO_ENUM: MutableMap<String, SnapshotMetadata> = HashMap(12)
 
         init {

@@ -5,19 +5,17 @@ package io.airbyte.cdk.integrations.debezium.internals
 
 import io.debezium.config.Configuration
 import io.debezium.embedded.KafkaConnectUtil
+import java.lang.Boolean
+import java.util.*
+import kotlin.String
 import org.apache.kafka.connect.json.JsonConverter
 import org.apache.kafka.connect.json.JsonConverterConfig
 import org.apache.kafka.connect.runtime.WorkerConfig
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.storage.FileOffsetBackingStore
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl
-import java.lang.Boolean
-import java.util.*
-import kotlin.String
 
-/**
- * Represents a utility class that assists with the parsing of Debezium offset state.
- */
+/** Represents a utility class that assists with the parsing of Debezium offset state. */
 interface DebeziumStateUtil {
     /**
      * Creates and starts a [FileOffsetBackingStore] that is used to store the tracked Debezium
@@ -38,8 +36,8 @@ interface DebeziumStateUtil {
 
     val keyConverter: JsonConverter?
         /**
-         * Creates and returns a [JsonConverter] that can be used to parse keys in the Debezium offset
-         * state storage.
+         * Creates and returns a [JsonConverter] that can be used to parse keys in the Debezium
+         * offset state storage.
          *
          * @return A [JsonConverter] for key conversion.
          */
@@ -56,12 +54,19 @@ interface DebeziumStateUtil {
      * @param fileOffsetBackingStore The [FileOffsetBackingStore] that contains the offset state
      * saved to disk.
      * @param properties The Debezium configuration properties for the selected Debezium connector.
-     * @return An [OffsetStorageReaderImpl] instance that can be used to load the offset state
-     * from the offset file storage.
+     * @return An [OffsetStorageReaderImpl] instance that can be used to load the offset state from
+     * the offset file storage.
      */
-    fun getOffsetStorageReader(fileOffsetBackingStore: FileOffsetBackingStore?, properties: Properties): OffsetStorageReaderImpl? {
-        return OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty(CONNECTOR_NAME_PROPERTY), keyConverter,
-                valueConverter)
+    fun getOffsetStorageReader(
+        fileOffsetBackingStore: FileOffsetBackingStore?,
+        properties: Properties
+    ): OffsetStorageReaderImpl? {
+        return OffsetStorageReaderImpl(
+            fileOffsetBackingStore,
+            properties.getProperty(CONNECTOR_NAME_PROPERTY),
+            keyConverter,
+            valueConverter
+        )
     }
 
     val valueConverter: JsonConverter?
@@ -79,13 +84,13 @@ interface DebeziumStateUtil {
 
     companion object {
         /**
-         * The name of the Debezium property that contains the unique name for the Debezium connector.
+         * The name of the Debezium property that contains the unique name for the Debezium
+         * connector.
          */
         const val CONNECTOR_NAME_PROPERTY: String = "name"
 
-        /**
-         * Configuration for offset state key/value converters.
-         */
-        val INTERNAL_CONVERTER_CONFIG: Map<String, String?> = java.util.Map.of(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, Boolean.FALSE.toString())
+        /** Configuration for offset state key/value converters. */
+        val INTERNAL_CONVERTER_CONFIG: Map<String, String?> =
+            java.util.Map.of(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, Boolean.FALSE.toString())
     }
 }

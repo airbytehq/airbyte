@@ -7,18 +7,19 @@ import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.debezium.engine.spi.OffsetCommitPolicy
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * The purpose of this class is to initialize and spawn the debezium engine with the right
  * properties to fetch records
  */
-class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPropertiesManager) : AutoCloseable {
+class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPropertiesManager) :
+    AutoCloseable {
     private val executor: ExecutorService = Executors.newSingleThreadExecutor()
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
     private val hasClosed = AtomicBoolean(false)
@@ -26,14 +27,23 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
     private val thrownError = AtomicReference<Throwable?>()
     private val engineLatch = CountDownLatch(1)
 
-    fun start(queue: BlockingQueue<ChangeEvent<String?, String?>>,
-              offsetManager: AirbyteFileOffsetBackingStore,
-              schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage?>) {
-        engine = DebeziumEngine.create(Json::class.java)
-                .using(debeziumPropertiesManager.getDebeziumProperties(offsetManager, schemaHistoryManager))
+    fun start(
+        queue: BlockingQueue<ChangeEvent<String?, String?>>,
+        offsetManager: AirbyteFileOffsetBackingStore,
+        schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
+    ) {
+        engine =
+            DebeziumEngine.create(Json::class.java)
+                .using(
+                    debeziumPropertiesManager.getDebeziumProperties(
+                        offsetManager,
+                        schemaHistoryManager
+                    )
+                )
                 .using(OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying { e: ChangeEvent<String?, String?> ->
-                    // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
+                    // debezium outputs a tombstone event that has a value of null. this is an
+                    // artifact of how it
                     // interacts with kafka. we want to ignore it.
                     // more on the tombstone:
                     // https://debezium.io/documentation/reference/2.2/transformations/event-flattening.html
@@ -47,13 +57,17 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                     }
                 }
                 .using { success: Boolean, message: String?, error: Throwable? ->
-                    LOGGER.info("Debezium engine shutdown. Engine terminated successfully : {}", success)
+                    LOGGER.info(
+                        "Debezium engine shutdown. Engine terminated successfully : {}",
+                        success
+                    )
                     LOGGER.info(message)
                     if (!success) {
                         if (error != null) {
                             thrownError.set(error)
                         } else {
-                            // There are cases where Debezium doesn't succeed but only fills the message field.
+                            // There are cases where Debezium doesn't succeed but only fills the
+                            // message field.
                             // In that case, we still want to fail loud and clear
                             thrownError.set(RuntimeException(message))
                         }

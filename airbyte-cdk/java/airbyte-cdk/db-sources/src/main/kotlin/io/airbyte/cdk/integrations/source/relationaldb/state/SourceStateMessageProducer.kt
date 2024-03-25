@@ -12,17 +12,13 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
  * generate state messages when needed. This interface defines how would those state messages be
  * generated, and how the incoming record messages will be processed.
  *
- * @param <T>
-</T> */
+ * @param <T> </T>
+ */
 interface SourceStateMessageProducer<T> {
-    /**
-     * Returns a state message that should be emitted at checkpoint.
-     */
+    /** Returns a state message that should be emitted at checkpoint. */
     fun generateStateMessageAtCheckpoint(stream: ConfiguredAirbyteStream?): AirbyteStateMessage?
 
-    /**
-     * For the incoming record message, this method defines how the connector will consume it.
-     */
+    /** For the incoming record message, this method defines how the connector will consume it. */
     fun processRecordMessage(stream: ConfiguredAirbyteStream, message: T): AirbyteMessage
 
     /**
@@ -34,9 +30,9 @@ interface SourceStateMessageProducer<T> {
     fun createFinalStateMessage(stream: ConfiguredAirbyteStream): AirbyteStateMessage?
 
     /**
-     * Determines if the iterator has reached checkpoint or not per connector's definition. By default
-     * iterator will check if the number of records processed is greater than the checkpoint interval or
-     * last state message has already passed syncCheckpointDuration.
+     * Determines if the iterator has reached checkpoint or not per connector's definition. By
+     * default iterator will check if the number of records processed is greater than the checkpoint
+     * interval or last state message has already passed syncCheckpointDuration.
      */
     fun shouldEmitStateMessage(stream: ConfiguredAirbyteStream?): Boolean
 }

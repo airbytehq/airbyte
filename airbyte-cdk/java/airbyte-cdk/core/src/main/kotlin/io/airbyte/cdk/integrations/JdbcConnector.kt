@@ -11,7 +11,7 @@ import java.util.*
 
 abstract class JdbcConnector
 protected constructor(@JvmField protected val driverClassName: String) : BaseConnector() {
-    protected fun getConnectionTimeout(connectionProperties: Map<String?, String?>): Duration {
+    protected fun getConnectionTimeout(connectionProperties: Map<String, String>): Duration {
         return getConnectionTimeout(connectionProperties, driverClassName)
     }
 
@@ -37,7 +37,7 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
          * @return DataSourceBuilder class used to create dynamic fields for DataSource
          */
         fun getConnectionTimeout(
-            connectionProperties: Map<String?, String?>,
+            connectionProperties: Map<String, String>,
             driverClassName: String?
         ): Duration {
             val parsedConnectionTimeout =
