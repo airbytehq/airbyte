@@ -77,22 +77,21 @@ vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
 [tool.poe.tasks]
 # Build tasks
-build-code-generator-image = "bin/build_code_generator_image.sh"
-generate-component-manifest-files = "bin/generate-component-manifest-files.sh"
-generate = ["build-code-generator-image", "generate-component-manifest-files"]
-build-package = "poetry build"
-build = ["generate", "build-package"]
+build-code-generator-image = {cmd = "bin/build_code_generator_image.sh", help = "Build the code generator docker image."}
+generate-component-manifest-files = {cmd = "bin/generate-component-manifest-files.sh", help = "Generate component manifest files."}
+generate = {sequence = ["build-code-generator-image", "generate-component-manifest-files"], help = "Run all code generation tasks."}
+build-package = {cmd = "poetry build", help = "Build the python package: source and wheels archives."}
+build = {sequence = ["generate", "build-package"], help = "Run all tasks to build the package."}
 
 # Check tasks
-flake-check = "pflake8 --config ../../pyproject.toml ./"
-lint = ["flake-check"]
+lint =  {cmd = "pflake8 --config ../../pyproject.toml ./", help = "Lint with flake8."}
 #Uncomment for local use.
 #TODO: find a version of the modified mypy check that works both locally and in CI.
-#type-check = "bin/run-mypy-on-modified-files.sh"
-unit-test-with-cov = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml"
-# check-local = ["flake-check", "type-check", "unit-test-with-cov"]
-check-ci = ["flake-check", "unit-test-with-cov"]
+#type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modified files with mypy."}
+unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report."}
+#check-local = {sequence = ["lint", "type-check", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
+check-ci = {sequence = ["lint", "unit-test-with-cov"], help = "Lint and run unit tests. Does not include type-checking."}
 
 # Build and check
 #Uncomment for local use.
-#pre-push = ["build", "check-local"]
+#pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
