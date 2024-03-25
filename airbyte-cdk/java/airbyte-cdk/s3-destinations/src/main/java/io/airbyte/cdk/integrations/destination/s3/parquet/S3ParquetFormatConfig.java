@@ -28,7 +28,8 @@ public class S3ParquetFormatConfig implements S3FormatConfig {
         S3FormatConfig.withDefault(formatConfig, "dictionary_page_size_kb", S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
 
     this.compressionCodec = CompressionCodecName
-        .valueOf(S3FormatConfig.withDefault(formatConfig, "compression_codec", S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
+        .valueOf(
+            S3FormatConfig.withDefault(formatConfig, "compression_codec", S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
     this.blockSize = blockSizeMb * 1024 * 1024;
     this.maxPaddingSize = maxPaddingSizeMb * 1024 * 1024;
     this.pageSize = pageSizeKb * 1024;
