@@ -553,7 +553,7 @@ class AsyncStreamConsumerTest {
         namespace: String,
         allRecords: List<AirbyteMessage>,
     ) {
-        val argumentCaptor = org.mockito.kotlin.argumentCaptor<Stream<PartialAirbyteMessage?>>()
+        val argumentCaptor = org.mockito.kotlin.argumentCaptor<Stream<PartialAirbyteMessage>>()
         Mockito.verify(flushFunction, Mockito.atLeast(1))
             .flush(
                 org.mockito.kotlin.eq(

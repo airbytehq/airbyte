@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.integrations.standardtest.destination
 
-import org.apache.commons.lang3.RandomStringUtils
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -12,6 +11,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import java.util.*
+import org.apache.commons.lang3.RandomStringUtils
 
 /**
  * This class is used to generate unique namespaces for tests that follow a convention so that we
@@ -19,9 +19,9 @@ import java.util.*
  * but there are exception cases that can prevent that from happening. We want to be able to
  * identify namespaces for which this has happened from their name, so we can take action.
  *
- *
  * The convention we follow is `<test-provided prefix>_test_YYYYMMDD_<8-character random suffix>`.
-</test-provided> */
+ * </test-provided>
+ */
 object TestingNamespaces {
     private val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
     private const val SUFFIX_LENGTH = 5
@@ -41,7 +41,11 @@ object TestingNamespaces {
     @JvmOverloads
     fun generate(prefix: String? = null): String {
         val userDefinedPrefix = if (prefix != null) prefix + "_" else ""
-        return userDefinedPrefix + STANDARD_PREFIX + FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC"))) + "_" + generateSuffix()
+        return userDefinedPrefix +
+            STANDARD_PREFIX +
+            FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC"))) +
+            "_" +
+            generateSuffix()
     }
 
     fun generateFromOriginal(toOverwrite: String?, oldPrefix: String?, newPrefix: String?): String {
@@ -60,8 +64,10 @@ object TestingNamespaces {
 
     private fun isOlderThan(namespace: String, timeMagnitude: Int, timeUnit: ChronoUnit): Boolean {
         return ifTestNamespaceGetDate(namespace)
-                .map { namespaceInstant: Instant -> namespaceInstant.isBefore(Instant.now().minus(timeMagnitude.toLong(), timeUnit)) }
-                .orElse(false)
+            .map { namespaceInstant: Instant ->
+                namespaceInstant.isBefore(Instant.now().minus(timeMagnitude.toLong(), timeUnit))
+            }
+            .orElse(false)
     }
 
     private fun ifTestNamespaceGetDate(namespace: String): Optional<Instant> {
@@ -81,7 +87,9 @@ object TestingNamespaces {
 
     private fun parseDateOrEmpty(dateCandidate: String): Optional<Instant> {
         return try {
-            Optional.ofNullable(LocalDate.parse(dateCandidate, FORMATTER).atStartOfDay().toInstant(ZoneOffset.UTC))
+            Optional.ofNullable(
+                LocalDate.parse(dateCandidate, FORMATTER).atStartOfDay().toInstant(ZoneOffset.UTC)
+            )
         } catch (e: DateTimeParseException) {
             Optional.empty()
         }

@@ -111,6 +111,10 @@ private constructor(
     }
 
     fun createAsync(): SerializedAirbyteMessageConsumer {
+        val typerDeduper = this.typerDeduper!!
+        val typerDeduperValve = this.typerDeduperValve!!
+        val stagingOperations = this.stagingOperations!!
+
         val writeConfigs: List<WriteConfig> =
             createWriteConfigs(
                 namingResolver,
@@ -135,7 +139,7 @@ private constructor(
         return AsyncStreamConsumer(
             outputRecordCollector!!,
             GeneralStagingFunctions.onStartFunction(
-                database,
+                database!!,
                 stagingOperations,
                 writeConfigs,
                 typerDeduper
@@ -170,13 +174,13 @@ private constructor(
         fun builder(
             outputRecordCollector: Consumer<AirbyteMessage>,
             database: JdbcDatabase?,
-            stagingOperations: StagingOperations?,
+            stagingOperations: StagingOperations,
             namingResolver: NamingConventionTransformer?,
             config: JsonNode?,
             catalog: ConfiguredAirbyteCatalog,
             purgeStagingData: Boolean,
-            typerDeduperValve: TypeAndDedupeOperationValve?,
-            typerDeduper: TyperDeduper?,
+            typerDeduperValve: TypeAndDedupeOperationValve,
+            typerDeduper: TyperDeduper,
             parsedCatalog: ParsedCatalog?,
             defaultNamespace: String?,
             useDestinationsV2Columns: Boolean
@@ -226,7 +230,15 @@ private constructor(
                 val message =
                     String.format(
                         "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-                        conflictingStreams.stream().map<String>(Function<WriteConfig, String> { config: WriteConfig -> config.namespace + "." + config.streamName }).collect(Collectors.joining(", ")))
+                        conflictingStreams
+                            .stream()
+                            .map<String>(
+                                Function<WriteConfig, String> { config: WriteConfig ->
+                                    config.namespace + "." + config.streamName
+                                }
+                            )
+                            .collect(Collectors.joining(", "))
+                    )
                 throw ConfigErrorException(message)
             }
             return streamDescToWriteConfig

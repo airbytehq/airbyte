@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
+import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.getRawNamespaceOverride
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
@@ -26,28 +27,24 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Strategy:
  *
- *
  * 1. Create a final table for each stream
  *
- *
  * 2. Accumulate records in a buffer. One buffer per stream
- *
  *
  * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records
  * before writing to avoid wasteful record-wise writes. In the case with slow syncs this will be
  * superseded with a periodic record flush from [BufferedStreamConsumer.periodicBufferFlush]
- *
  *
  * 4. Once all records have been written to buffer, flush the buffer and write any remaining records
  * to the database (regardless of how few are left)
@@ -56,50 +53,70 @@ object JdbcBufferedConsumerFactory {
     private val LOGGER: Logger = LoggerFactory.getLogger(JdbcBufferedConsumerFactory::class.java)
 
     @JvmOverloads
-    fun createAsync(outputRecordCollector: Consumer<AirbyteMessage?>?,
-                    database: JdbcDatabase,
-                    sqlOperations: SqlOperations,
-                    namingResolver: NamingConventionTransformer,
-                    config: JsonNode,
-                    catalog: ConfiguredAirbyteCatalog?,
-                    defaultNamespace: String?,
-                    typerDeduper: TyperDeduper,
-                    dataTransformer: StreamAwareDataTransformer? = IdentityDataTransformer()): SerializedAirbyteMessageConsumer {
-        val writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired)
+    fun createAsync(
+        outputRecordCollector: Consumer<AirbyteMessage>,
+        database: JdbcDatabase,
+        sqlOperations: SqlOperations,
+        namingResolver: NamingConventionTransformer,
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
+        defaultNamespace: String?,
+        typerDeduper: TyperDeduper,
+        dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer()
+    ): SerializedAirbyteMessageConsumer {
+        val writeConfigs =
+            createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired)
         return AsyncStreamConsumer(
-                outputRecordCollector,
-                onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
-                onCloseFunction(typerDeduper),
-                JdbcInsertFlushFunction(recordWriterFunction(database, sqlOperations, writeConfigs, catalog)),
-                catalog!!,
-                BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
-                FlushFailure(),
-                Optional.ofNullable(defaultNamespace),
-                Executors.newFixedThreadPool(2),
-                dataTransformer!!,
-                DeserializationUtil())
+            outputRecordCollector,
+            onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
+            onCloseFunction(typerDeduper),
+            JdbcInsertFlushFunction(
+                recordWriterFunction(database, sqlOperations, writeConfigs, catalog)
+            ),
+            catalog,
+            BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
+            FlushFailure(),
+            Optional.ofNullable(defaultNamespace),
+            Executors.newFixedThreadPool(2),
+            dataTransformer,
+            DeserializationUtil()
+        )
     }
 
-    private fun createWriteConfigs(namingResolver: NamingConventionTransformer,
-                                   config: JsonNode,
-                                   catalog: ConfiguredAirbyteCatalog?,
-                                   schemaRequired: Boolean): List<WriteConfig> {
+    private fun createWriteConfigs(
+        namingResolver: NamingConventionTransformer,
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog?,
+        schemaRequired: Boolean
+    ): List<WriteConfig> {
         if (schemaRequired) {
-            Preconditions.checkState(config.has("schema"), "jdbc destinations must specify a schema.")
+            Preconditions.checkState(
+                config.has("schema"),
+                "jdbc destinations must specify a schema."
+            )
         }
-        return catalog!!.streams.stream().map(toWriteConfig(namingResolver, config, schemaRequired)).collect(Collectors.toList())
+        return catalog!!
+            .streams
+            .stream()
+            .map(toWriteConfig(namingResolver, config, schemaRequired))
+            .collect(Collectors.toList())
     }
 
     private fun toWriteConfig(
-            namingResolver: NamingConventionTransformer,
-            config: JsonNode,
-            schemaRequired: Boolean): Function<ConfiguredAirbyteStream, WriteConfig> {
+        namingResolver: NamingConventionTransformer,
+        config: JsonNode,
+        schemaRequired: Boolean
+    ): Function<ConfiguredAirbyteStream, WriteConfig> {
         return Function { stream: ConfiguredAirbyteStream ->
-            Preconditions.checkNotNull(stream.destinationSyncMode, "Undefined destination sync mode")
+            Preconditions.checkNotNull(
+                stream.destinationSyncMode,
+                "Undefined destination sync mode"
+            )
             val abStream = stream.stream
 
-            val defaultSchemaName = if (schemaRequired) namingResolver.getIdentifier(config["schema"].asText())
-            else namingResolver.getIdentifier(config[JdbcUtils.DATABASE_KEY].asText())
+            val defaultSchemaName =
+                if (schemaRequired) namingResolver.getIdentifier(config["schema"].asText())
+                else namingResolver.getIdentifier(config[JdbcUtils.DATABASE_KEY].asText())
             // Method checks for v2
             val outputSchema = getOutputSchema(abStream, defaultSchemaName, namingResolver)
             val streamName = abStream.name
@@ -117,7 +134,15 @@ object JdbcBufferedConsumerFactory {
             }
             val syncMode = stream.destinationSyncMode
 
-            val writeConfig = WriteConfig(streamName, abStream.namespace, outputSchema, tmpTableName, tableName, syncMode)
+            val writeConfig =
+                WriteConfig(
+                    streamName,
+                    abStream.namespace,
+                    outputSchema,
+                    tmpTableName,
+                    tableName,
+                    syncMode
+                )
             LOGGER.info("Write config: {}", writeConfig)
             writeConfig
         }
@@ -127,58 +152,74 @@ object JdbcBufferedConsumerFactory {
      * Defer to the [AirbyteStream]'s namespace. If this is not set, use the destination's default
      * schema. This namespace is source-provided, and can be potentially empty.
      *
-     *
-     * The logic here matches the logic in the catalog_process.py for Normalization. Any modifications
-     * need to be reflected there and vice versa.
+     * The logic here matches the logic in the catalog_process.py for Normalization. Any
+     * modifications need to be reflected there and vice versa.
      */
-    private fun getOutputSchema(stream: AirbyteStream,
-                                defaultDestSchema: String,
-                                namingResolver: NamingConventionTransformer): String {
+    private fun getOutputSchema(
+        stream: AirbyteStream,
+        defaultDestSchema: String,
+        namingResolver: NamingConventionTransformer
+    ): String {
         return if (isDestinationV2) {
-            namingResolver
-                    .getNamespace(getRawNamespaceOverride(AbstractJdbcDestination.Companion.RAW_SCHEMA_OVERRIDE).orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE))
+            namingResolver.getNamespace(
+                getRawNamespaceOverride(AbstractJdbcDestination.Companion.RAW_SCHEMA_OVERRIDE)
+                    .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
+            )
         } else {
-            namingResolver.getNamespace(Optional.ofNullable<String>(stream.namespace).orElse(defaultDestSchema))
+            namingResolver.getNamespace(
+                Optional.ofNullable<String>(stream.namespace).orElse(defaultDestSchema)
+            )
         }
     }
 
     /**
      * Sets up destination storage through:
      *
-     *
      * 1. Creates Schema (if not exists)
      *
-     *
      * 2. Creates airybte_raw table (if not exists)
-     *
      *
      * 3. <Optional>Truncates table if sync mode is in OVERWRITE
      *
      * @param database JDBC database to connect to
      * @param sqlOperations interface for execution SQL queries
-     * @param writeConfigs settings for each stream
-    </Optional> */
-    private fun onStartFunction(database: JdbcDatabase,
-                                sqlOperations: SqlOperations,
-                                writeConfigs: Collection<WriteConfig>,
-                                typerDeduper: TyperDeduper): OnStartFunction {
+     * @param writeConfigs settings for each stream </Optional>
+     */
+    private fun onStartFunction(
+        database: JdbcDatabase,
+        sqlOperations: SqlOperations,
+        writeConfigs: Collection<WriteConfig>,
+        typerDeduper: TyperDeduper
+    ): OnStartFunction {
         return OnStartFunction {
             typerDeduper.prepareSchemasAndRunMigrations()
-            LOGGER.info("Preparing raw tables in destination started for {} streams", writeConfigs.size)
-            val queryList: MutableList<String?> = ArrayList()
+            LOGGER.info(
+                "Preparing raw tables in destination started for {} streams",
+                writeConfigs.size
+            )
+            val queryList: MutableList<String> = ArrayList()
             for (writeConfig in writeConfigs) {
                 val schemaName = writeConfig.outputSchemaName
                 val dstTableName = writeConfig.outputTableName
-                LOGGER.info("Preparing raw table in destination started for stream {}. schema: {}, table name: {}",
-                        writeConfig.streamName,
-                        schemaName,
-                        dstTableName)
+                LOGGER.info(
+                    "Preparing raw table in destination started for stream {}. schema: {}, table name: {}",
+                    writeConfig.streamName,
+                    schemaName,
+                    dstTableName
+                )
                 sqlOperations.createSchemaIfNotExists(database, schemaName)
                 sqlOperations.createTableIfNotExists(database, schemaName, dstTableName)
                 when (writeConfig.syncMode) {
-                    DestinationSyncMode.OVERWRITE -> queryList.add(sqlOperations.truncateTableQuery(database, schemaName, dstTableName))
-                    DestinationSyncMode.APPEND, DestinationSyncMode.APPEND_DEDUP -> {}
-                    else -> throw IllegalStateException("Unrecognized sync mode: " + writeConfig.syncMode)
+                    DestinationSyncMode.OVERWRITE ->
+                        queryList.add(
+                            sqlOperations.truncateTableQuery(database, schemaName, dstTableName)
+                        )
+                    DestinationSyncMode.APPEND,
+                    DestinationSyncMode.APPEND_DEDUP -> {}
+                    else ->
+                        throw IllegalStateException(
+                            "Unrecognized sync mode: " + writeConfig.syncMode
+                        )
                 }
             }
             sqlOperations.executeTransaction(database, queryList)
@@ -195,25 +236,39 @@ object JdbcBufferedConsumerFactory {
      * @param writeConfigs settings for each stream
      * @param catalog catalog of all streams to sync
      */
-    private fun recordWriterFunction(database: JdbcDatabase,
-                                     sqlOperations: SqlOperations,
-                                     writeConfigs: List<WriteConfig>,
-                                     catalog: ConfiguredAirbyteCatalog?): RecordWriter<PartialAirbyteMessage?> {
-        val pairToWriteConfig = writeConfigs.stream()
-                .collect(Collectors.toUnmodifiableMap(Function { obj: WriteConfig? -> toNameNamespacePair() }, Function.identity()))
+    private fun recordWriterFunction(
+        database: JdbcDatabase,
+        sqlOperations: SqlOperations,
+        writeConfigs: List<WriteConfig>,
+        catalog: ConfiguredAirbyteCatalog?
+    ): RecordWriter<PartialAirbyteMessage> {
+        val pairToWriteConfig: Map<AirbyteStreamNameNamespacePair, WriteConfig> =
+            writeConfigs.associateBy { toNameNamespacePair(it) }
 
-        return RecordWriter<PartialAirbyteMessage> { pair: AirbyteStreamNameNamespacePair, records: List<PartialAirbyteMessage?>? ->
-            require(pairToWriteConfig.containsKey(pair)) { String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)) }
-            val writeConfig = pairToWriteConfig[pair]
-            sqlOperations.insertRecords(database, ArrayList(records), writeConfig.getOutputSchemaName(), writeConfig.getOutputTableName())
+        return RecordWriter {
+            pair: AirbyteStreamNameNamespacePair,
+            records: List<PartialAirbyteMessage> ->
+            require(pairToWriteConfig.containsKey(pair)) {
+                String.format(
+                    "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
+                    Jsons.serialize(catalog)
+                )
+            }
+            val writeConfig = pairToWriteConfig.getValue(pair)
+            sqlOperations.insertRecords(
+                database,
+                ArrayList(records),
+                writeConfig.outputSchemaName,
+                writeConfig.outputTableName
+            )
         }
     }
 
-    /**
-     * Tear down functionality
-     */
+    /** Tear down functionality */
     private fun onCloseFunction(typerDeduper: TyperDeduper): OnCloseFunction {
-        return OnCloseFunction { hasFailed: Boolean?, streamSyncSummaries: Map<StreamDescriptor?, StreamSyncSummary?>? ->
+        return OnCloseFunction {
+            hasFailed: Boolean,
+            streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             try {
                 typerDeduper.typeAndDedupe(streamSyncSummaries)
                 typerDeduper.commitFinalTables()

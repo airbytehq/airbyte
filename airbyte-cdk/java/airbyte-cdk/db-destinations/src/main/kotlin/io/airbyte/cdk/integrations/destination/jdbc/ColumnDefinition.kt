@@ -3,8 +3,6 @@
  */
 package io.airbyte.cdk.integrations.destination.jdbc
 
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig.columns
-
 /**
  * Jdbc destination column definition representation
  *
@@ -19,7 +17,6 @@ class ColumnDefinition(name: String, type: String, columnSize: Int, isNullable: 
     val isNullable: Boolean
 
     init {
-        this.columns = columns
         this.name = name
         this.type = type
         this.columnSize = columnSize

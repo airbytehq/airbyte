@@ -4,12 +4,13 @@
 package io.airbyte.cdk.integrations.standardtest.destination.comparator
 
 import com.fasterxml.jackson.databind.JsonNode
+import java.util.function.Function
 import org.junit.jupiter.api.Assertions
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.function.Function
 
-class BasicTestDataComparator(private val nameResolver: Function<String?, List<String?>>) : TestDataComparator {
+class BasicTestDataComparator(private val nameResolver: Function<String?, List<String?>>) :
+    TestDataComparator {
     override fun assertSameData(expected: List<JsonNode>, actual: List<JsonNode>) {
         LOGGER.info("Expected data {}", expected)
         LOGGER.info("Actual data   {}", actual)
@@ -27,7 +28,8 @@ class BasicTestDataComparator(private val nameResolver: Function<String?, List<S
                 val expectedEntry = expectedDataIterator.next()
                 val expectedValue = expectedEntry.value
                 val key = expectedEntry.key
-                val actualValue = ComparatorUtils.getActualValueByExpectedKey(key, actualData, nameResolver)
+                val actualValue =
+                    ComparatorUtils.getActualValueByExpectedKey(key, actualData, nameResolver)
                 LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue)
                 assertSameValue(expectedValue, actualValue)
             }

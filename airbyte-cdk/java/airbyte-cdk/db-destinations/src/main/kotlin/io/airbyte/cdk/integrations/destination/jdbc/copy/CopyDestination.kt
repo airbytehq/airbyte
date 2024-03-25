@@ -16,14 +16,14 @@ import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import javax.sql.DataSource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.sql.DataSource
 
 abstract class CopyDestination : BaseConnector, Destination {
     /**
-     * The default database schema field in the destination config is "schema". To change it, pass the
-     * field name to the constructor.
+     * The default database schema field in the destination config is "schema". To change it, pass
+     * the field name to the constructor.
      */
     private var schemaFieldName = "schema"
 
@@ -34,11 +34,10 @@ abstract class CopyDestination : BaseConnector, Destination {
     }
 
     /**
-     * A self contained method for writing a file to the persistence for testing. This method should try
-     * to clean up after itself by deleting the file it creates.
+     * A self contained method for writing a file to the persistence for testing. This method should
+     * try to clean up after itself by deleting the file it creates.
      */
-    @Throws(Exception::class)
-    abstract fun checkPersistence(config: JsonNode?)
+    @Throws(Exception::class) abstract fun checkPersistence(config: JsonNode?)
 
     abstract val nameTransformer: StandardNameTransformer
 
@@ -54,11 +53,13 @@ abstract class CopyDestination : BaseConnector, Destination {
         } catch (e: Exception) {
             LOGGER.error("Exception attempting to access the staging persistence: ", e)
             return AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage("""
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(
+                    """
     Could not connect to the staging persistence with the provided configuration. 
     ${e.message}
-    """.trimIndent())
+    """.trimIndent()
+                )
         }
 
         val dataSource = getDataSource(config)
@@ -75,16 +76,18 @@ abstract class CopyDestination : BaseConnector, Destination {
             val message = getErrorMessage(ex.stateCode, ex.errorCode, ex.exceptionMessage, ex)
             emitConfigErrorTrace(ex, message)
             return AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage(message)
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(message)
         } catch (e: Exception) {
             LOGGER.error("Exception attempting to connect to the warehouse: ", e)
             return AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage("""
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(
+                    """
     Could not connect to the warehouse with the provided configuration. 
     ${e.message}
-    """.trimIndent())
+    """.trimIndent()
+                )
         } finally {
             try {
                 close(dataSource)
@@ -95,10 +98,18 @@ abstract class CopyDestination : BaseConnector, Destination {
     }
 
     @Throws(Exception::class)
-    protected fun performCreateInsertTestOnDestination(outputSchema: String?,
-                                                       database: JdbcDatabase,
-                                                       nameTransformer: NamingConventionTransformer) {
-        AbstractJdbcDestination.Companion.attemptTableOperations(outputSchema, database, nameTransformer, sqlOperations, true)
+    protected fun performCreateInsertTestOnDestination(
+        outputSchema: String?,
+        database: JdbcDatabase,
+        nameTransformer: NamingConventionTransformer
+    ) {
+        AbstractJdbcDestination.Companion.attemptTableOperations(
+            outputSchema,
+            database,
+            nameTransformer,
+            sqlOperations,
+            true
+        )
     }
 
     companion object {

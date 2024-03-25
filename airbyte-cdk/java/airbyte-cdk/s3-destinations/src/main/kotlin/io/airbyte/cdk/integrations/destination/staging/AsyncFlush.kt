@@ -30,9 +30,9 @@ internal class AsyncFlush(
     private val stagingOperations: StagingOperations?,
     private val database: JdbcDatabase?,
     private val catalog: ConfiguredAirbyteCatalog?,
-    private val typerDeduperValve: TypeAndDedupeOperationValve?,
-    private val typerDeduper:
-        TyperDeduper?, // In general, this size is chosen to improve the performance of lower memory
+    private val typerDeduperValve: TypeAndDedupeOperationValve,
+    private val typerDeduper: TyperDeduper,
+    // In general, this size is chosen to improve the performance of lower memory
     // connectors. With 1 Gi
     // of
     // resource the connector will usually at most fill up around 150 MB in a single queue. By
@@ -46,7 +46,7 @@ internal class AsyncFlush(
         streamDescToWriteConfig
 
     @Throws(Exception::class)
-    override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage?>) {
+    override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val writer: CsvSerializedBuffer
         try {
             writer =
@@ -94,26 +94,35 @@ internal class AsyncFlush(
         val schemaName: String = writeConfig.outputSchemaName
         val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.outputTableName)
         val stagingPath =
-                stagingOperations.getStagingPath(
-                        GeneralStagingFunctions.RANDOM_CONNECTION_ID,
-                        schemaName,
-                        writeConfig.streamName,
-                        writeConfig.outputTableName,
-                        writeConfig.writeDatetime)
+            stagingOperations.getStagingPath(
+                GeneralStagingFunctions.RANDOM_CONNECTION_ID,
+                schemaName,
+                writeConfig.streamName,
+                writeConfig.outputTableName,
+                writeConfig.writeDatetime
+            )
         try {
             val stagedFile =
                 stagingOperations.uploadRecordsToStage(
                     database,
-                    stageName,
-                    stagingPath,
-                    List.of(stagedFile),
-                    writeConfig.outputTableName,
+                    writer,
                     schemaName,
-                    stagingOperations,
-                    writeConfig.namespace,
-                    writeConfig.streamName,
-                    typerDeduperValve,
-                    typerDeduper)
+                    stageName,
+                    stagingPath
+                )
+            GeneralStagingFunctions.copyIntoTableFromStage(
+                database,
+                stageName,
+                stagingPath,
+                List.of(stagedFile),
+                writeConfig.outputTableName,
+                schemaName,
+                stagingOperations,
+                writeConfig.namespace,
+                writeConfig.streamName,
+                typerDeduperValve,
+                typerDeduper
+            )
         } catch (e: Exception) {
             logger.error("Failed to flush and commit buffer data into destination's raw table", e)
             throw RuntimeException("Failed to upload buffer to stage and commit to destination", e)

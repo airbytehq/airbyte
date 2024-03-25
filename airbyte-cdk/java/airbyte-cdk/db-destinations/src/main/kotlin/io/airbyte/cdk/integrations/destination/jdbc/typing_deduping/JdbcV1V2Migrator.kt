@@ -10,51 +10,70 @@ import io.airbyte.commons.exceptions.SQLRuntimeException
 import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV1V2Migrator
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import lombok.SneakyThrows
 import java.sql.DatabaseMetaData
 import java.sql.SQLException
 import java.util.*
+import lombok.SneakyThrows
 
 /**
  * Largely based on
  * [io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator].
  */
-class JdbcV1V2Migrator(private val namingConventionTransformer: NamingConventionTransformer, private val database: JdbcDatabase, private val databaseName: String) : BaseDestinationV1V2Migrator<TableDefinition?>() {
+class JdbcV1V2Migrator(
+    private val namingConventionTransformer: NamingConventionTransformer,
+    private val database: JdbcDatabase,
+    private val databaseName: String
+) : BaseDestinationV1V2Migrator<TableDefinition>() {
     @SneakyThrows
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
-        val retrievedSchema = database.executeMetadataQuery<String> { dbMetadata: DatabaseMetaData? ->
-            try {
-                dbMetadata!!.getSchemas(databaseName, streamConfig!!.id.rawNamespace).use { columns ->
-                    var schema: String? = ""
-                    while (columns.next()) {
-                        // Catalog can be null, so don't do anything with it.
-                        // columns.getString("TABLE_CATALOG");
-                        schema = columns.getString("TABLE_SCHEM")
+        val retrievedSchema =
+            database.executeMetadataQuery<String> { dbMetadata: DatabaseMetaData? ->
+                try {
+                    dbMetadata!!.getSchemas(databaseName, streamConfig!!.id.rawNamespace).use {
+                        columns ->
+                        var schema = ""
+                        while (columns.next()) {
+                            // Catalog can be null, so don't do anything with it.
+                            // columns.getString("TABLE_CATALOG");
+                            schema = columns.getString("TABLE_SCHEM")
+                        }
+                        return@executeMetadataQuery schema
                     }
-                    return@executeMetadataQuery schema
+                } catch (e: SQLException) {
+                    throw SQLRuntimeException(e)
                 }
-            } catch (e: SQLException) {
-                throw SQLRuntimeException(e)
             }
-        }
 
         return !retrievedSchema.isEmpty()
     }
 
-    override fun schemaMatchesExpectation(existingTable: TableDefinition, columns: Collection<String?>?): Boolean {
-        return existingTable.columns.keys.containsAll(columns!!)
+    override fun schemaMatchesExpectation(
+        existingTable: TableDefinition,
+        columns: Collection<String>
+    ): Boolean {
+        return existingTable.columns.keys.containsAll(columns)
     }
 
     @SneakyThrows
     @Throws(Exception::class)
-    override fun getTableIfExists(namespace: String?, tableName: String?): Optional<TableDefinition> {
-        return JdbcDestinationHandler.Companion.findExistingTable(database, databaseName, namespace, tableName)
+    override fun getTableIfExists(
+        namespace: String?,
+        tableName: String?
+    ): Optional<TableDefinition> {
+        return JdbcDestinationHandler.Companion.findExistingTable(
+            database,
+            databaseName,
+            namespace,
+            tableName
+        )
     }
 
-    override fun convertToV1RawName(streamConfig: StreamConfig?): NamespacedTableName {
-        @Suppress("deprecation") val tableName = namingConventionTransformer.getRawTableName(streamConfig!!.id.originalName!!)
+    override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {
+        @Suppress("deprecation")
+        val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName!!)
         return NamespacedTableName(
-                namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace!!),
-                tableName)
+            namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace!!),
+            tableName
+        )
     }
 }
