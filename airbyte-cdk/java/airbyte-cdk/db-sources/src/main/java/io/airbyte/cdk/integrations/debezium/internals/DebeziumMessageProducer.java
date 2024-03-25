@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +42,9 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
   private final HashMap<String, String> initialOffset, previousCheckpointOffset;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final CdcTargetPosition<T> targetPosition;
-  private final boolean trackSchemaHistory;
-  private final AirbyteSchemaHistoryStorage schemaHistoryManager;
+  private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
 
-  private boolean sendCheckpointMessage = false;
+  private boolean shouldEmitStateMessage = false;
 
   private final DebeziumEventConverter eventConverter;
 
@@ -53,30 +53,24 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
                                  final CdcTargetPosition targetPosition,
                                  final DebeziumEventConverter eventConverter,
                                  final AirbyteFileOffsetBackingStore offsetManager,
-                                 final boolean trackSchemaHistory,
-                                 final AirbyteSchemaHistoryStorage schemaHistoryManager) {
+                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     this.cdcStateHandler = cdcStateHandler;
     this.targetPosition = targetPosition;
     this.eventConverter = eventConverter;
     this.offsetManager = offsetManager;
-    this.trackSchemaHistory = trackSchemaHistory;
     this.schemaHistoryManager = schemaHistoryManager;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
     this.initialOffset = new HashMap<>(this.previousCheckpointOffset);
     resetCheckpointValues();
   }
 
-  /**
-   * @param stream
-   * @return
-   */
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint(ConfiguredAirbyteStream stream) {
     LOGGER.info("Sending CDC checkpoint state message.");
     final AirbyteStateMessage stateMessage = createStateMessage(checkpointOffsetToSend);
     previousCheckpointOffset.clear();
     previousCheckpointOffset.putAll(checkpointOffsetToSend);
-    sendCheckpointMessage = false;
+    shouldEmitStateMessage = false;
     return stateMessage;
   }
 
@@ -99,10 +93,9 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
       }
     }
 
-    if (checkpointOffsetToSend.size() == 1
-        && !message.isSnapshotEvent()) {
+    if (checkpointOffsetToSend.size() == 1 && !message.isSnapshotEvent()) {
       if (targetPosition.isEventAheadOffset(checkpointOffsetToSend, message)) {
-        sendCheckpointMessage = true;
+        shouldEmitStateMessage = true;
       } else {
         LOGGER.info("Encountered records with the same event offset.");
       }
@@ -111,27 +104,9 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
     return eventConverter.toAirbyteMessage(message);
   }
 
-  /**
-   * @param stream
-   * @return
-   */
   @Override
   public AirbyteStateMessage createFinalStateMessage(ConfiguredAirbyteStream stream) {
     final var syncFinishedOffset = (HashMap<String, String>) offsetManager.read();
-
-    System.out.println("initialoffset: " + initialOffset);
-    System.out.println("syncFinishedOffset: " + syncFinishedOffset);
-
-    if (targetPosition.isSameOffset(initialOffset, syncFinishedOffset)) {
-      // Edge case where no progress has been made: wrap up the
-      // sync by returning the initial offset instead of the
-      // current offset. We do this because we found that
-      // for some databases, heartbeats will cause Debezium to
-      // overwrite the offset file with a state which doesn't
-      // include all necessary data such as snapshot completion.
-      // This is the case for MS SQL Server, at least.
-      return createStateMessage(initialOffset);
-    }
     return createStateMessage(syncFinishedOffset);
   }
 
@@ -139,13 +114,9 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
     checkpointOffsetToSend.clear();
   }
 
-  /**
-   * @param stream
-   * @return
-   */
   @Override
   public boolean shouldEmitStateMessage(ConfiguredAirbyteStream stream) {
-    return cdcStateHandler.isCdcCheckpointEnabled() && sendCheckpointMessage;
+    return shouldEmitStateMessage;
   }
 
   /**
@@ -155,15 +126,12 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
    * @return {@link AirbyteStateMessage} which includes offset and schema history if used.
    */
   private AirbyteStateMessage createStateMessage(final Map<String, String> offset) {
-    if (trackSchemaHistory && schemaHistoryManager == null) {
-      throw new RuntimeException("Schema History Tracking is true but manager is not initialised");
-    }
     if (offsetManager == null) {
       throw new RuntimeException("Offset can not be null");
     }
 
     final AirbyteStateMessage message =
-        cdcStateHandler.saveState(offset, schemaHistoryManager != null ? schemaHistoryManager.read() : null).getState();
+        cdcStateHandler.saveState(offset, schemaHistoryManager.map(AirbyteSchemaHistoryStorage::read).orElse(null)).getState();
     return message;
   }
 

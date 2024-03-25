@@ -132,10 +132,10 @@ public class AirbyteDebeziumHandler<T> {
         targetPosition,
         eventConverter,
         offsetManager,
-        trackSchemaHistory,
-        schemaHistoryManager.orElse(null));
+        schemaHistoryManager);
 
-    // Stream is not used in this iterator.
+    // Usually sourceStateIterator requires airbyteStream as input. For DBZ iterator, stream is not used
+    // at all thus we will pass in null.
     SourceStateIterator iterator =
         new SourceStateIterator<>(eventIterator, null, messageProducer, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration));
     return AutoCloseableIterators.fromIterator(iterator);

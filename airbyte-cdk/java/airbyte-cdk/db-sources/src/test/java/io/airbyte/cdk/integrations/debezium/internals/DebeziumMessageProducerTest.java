@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,6 @@ public class DebeziumMessageProducerTest {
   CdcTargetPosition targetPosition;
   DebeziumEventConverter eventConverter;
   AirbyteFileOffsetBackingStore offsetManager;
-  boolean trackSchemaHistory;
   AirbyteSchemaHistoryStorage schemaHistoryManager;
 
   private static Map<String, String> OFFSET_MANAGER_READ = new HashMap<>(Map.of("key", "value"));
@@ -51,7 +51,7 @@ public class DebeziumMessageProducerTest {
     when(offsetManager.read()).thenReturn(OFFSET_MANAGER_READ);
     schemaHistoryManager = mock(AirbyteSchemaHistoryStorage.class);
     when(schemaHistoryManager.read()).thenReturn(SCHEMA);
-    producer = new DebeziumMessageProducer(cdcStateHandler, targetPosition, eventConverter, offsetManager, trackSchemaHistory, schemaHistoryManager);
+    producer = new DebeziumMessageProducer(cdcStateHandler, targetPosition, eventConverter, offsetManager, Optional.of(schemaHistoryManager));
   }
 
   @Test
