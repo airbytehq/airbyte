@@ -85,12 +85,14 @@ class ProductTargeting(CatalogModel):
     adGroupId: str
     extendedData: Optional[Dict[str, Any]]
 
+
 class SponsoredProductCampaignNegativeKeywordsModel(KeywordsBase):
     keywordId: str
     campaignId: str
     state: str
     keywordText: str
     extendedData: Optional[Dict[str, Any]]
+
 
 class SponsoredProductKeywordsModel(KeywordsBase):
     keywordId: str
@@ -100,6 +102,7 @@ class SponsoredProductKeywordsModel(KeywordsBase):
     adGroupId: str
     keywordText: str
     extendedData: Optional[Dict[str, Any]]
+
 
 class SponsoredProductNegativeKeywordsModel(KeywordsBase):
     keywordId: str

@@ -16,9 +16,9 @@ from source_amazon_ads.schemas import (
     ProductAdGroupSuggestedKeywords,
     ProductCampaign,
     ProductTargeting,
+    SponsoredProductCampaignNegativeKeywordsModel,
     SponsoredProductKeywordsModel,
     SponsoredProductNegativeKeywordsModel,
-    SponsoredProductCampaignNegativeKeywordsModel
 )
 from source_amazon_ads.streams.common import SubProfilesStream
 

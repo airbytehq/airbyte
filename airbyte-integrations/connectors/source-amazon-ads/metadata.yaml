@@ -42,7 +42,7 @@ data:
                 "sponsored_brands_campaigns",
                 "sponsored_brands_ad_groups",
                 "sponsored_product_campaigns",
-                "sponsored_product_ad_group_bid_recommendations"
+                "sponsored_product_ad_group_bid_recommendations",
               ]
       4.0.0:
         message: "Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now have updated schemas."
