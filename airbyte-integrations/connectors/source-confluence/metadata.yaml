@@ -4,7 +4,7 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-      - ${subdomain}.atlassian.net
+      - "*"
   remoteRegistries:
     pypi:
       enabled: true
