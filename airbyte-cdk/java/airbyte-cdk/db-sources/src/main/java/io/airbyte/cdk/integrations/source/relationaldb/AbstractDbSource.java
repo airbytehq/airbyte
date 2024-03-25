@@ -44,6 +44,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -519,7 +520,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                 .withNamespace(namespace)
                 .withEmittedAt(emittedAt)
                 .withData(airbyteRecordData.rawRowData())
-                .withMeta(airbyteRecordData.meta().getChanges().isEmpty() ? null : airbyteRecordData.meta())));
+                .withMeta(isMetaChangesEmptyOrNull(airbyteRecordData.meta()) ? null : airbyteRecordData.meta())));
+  }
+
+  private static boolean isMetaChangesEmptyOrNull(AirbyteRecordMessageMeta meta) {
+    return meta == null || meta.getChanges() == null || meta.getChanges().isEmpty();
   }
 
   /**

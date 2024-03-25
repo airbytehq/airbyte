@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -147,8 +148,12 @@ public class PostgresCtidHandler {
             .withNamespace(namespace)
             .withEmittedAt(emittedAt)
             .withData(r.recordData().rawRowData())
-            .withMeta(r.recordData().meta().getChanges().isEmpty() ? null : r.recordData().meta())),
+            .withMeta(isMetaChangesEmptyOrNull(r.recordData().meta()) ? null : r.recordData().meta())),
         r.ctid()));
+  }
+
+  private boolean isMetaChangesEmptyOrNull(AirbyteRecordMessageMeta meta) {
+    return meta == null || meta.getChanges() == null || meta.getChanges().isEmpty();
   }
 
   // Augments the given iterator with record count logs.
