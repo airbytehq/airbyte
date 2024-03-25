@@ -2399,7 +2399,7 @@ interpolation:
       examples:
         - "{{ 'ZmFrZSByZWZyZXNoX3Rva2VuIHZhbHVl' | base64decode }} -> 'fake refresh_token value'"
     - title: String
-      description: Converts the specified value to a string
+      description: Converts the specified value to a string.
       arguments: {}
       return_type: str
       examples:
