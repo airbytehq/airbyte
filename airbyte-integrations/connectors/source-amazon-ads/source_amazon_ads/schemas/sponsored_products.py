@@ -64,21 +64,21 @@ class ProductAdGroupSuggestedKeywords(CatalogModel):
 
 
 class ProductAd(CatalogModel):
-    adId: str
-    campaignId: str
+    adId: Decimal
+    campaignId: Decimal
     customText: str
     asin: str
     state: str
     sku: str
-    adGroupId: str
+    adGroupId: Decimal
     extendedData: Optional[Dict[str, Any]]
 
 
 class ProductTargeting(CatalogModel):
-    expression: list
+    expression: List[Dict[str, str]]
     targetId: str
-    resolvedExpression: list
-    campaignId: str
+    resolvedExpression: List[Dict[str, str]]
+    campaignId: Decimal
     expressionType: str
     state: str
     bid: float
