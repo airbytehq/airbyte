@@ -76,10 +76,20 @@ sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
 [tool.poe.tasks]
+# Build tasks
 build-code-generator-image = "bin/build_code_generator_image.sh"
 generate-component-manifest-files = "bin/generate-component-manifest-files.sh"
-build = ["build-code-generator-image", "generate-component-manifest-files"]
+generate = ["build-code-generator-image", "generate-component-manifest-files"]
+build-package = "poetry build"
+build = ["generate", "build-package"]
 
+# Check tasks
 flake-check = "pflake8 --config ../../pyproject.toml ./"
+lint = ["flake-check"]
+type-check = "bin/run-mypy-on-modified-files.sh"
 unit-test-with-cov = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml"
-check = ["flake-check", "unit-test-with-cov"]
+# This is a local command - in the CI we do the type checking separately, so we use `unit-test-with-cov` in the check CI.
+check = ["flake-check", "type-check", "unit-test-with-cov"]
+
+# Build and check
+pre-push = ["build", "check"]
