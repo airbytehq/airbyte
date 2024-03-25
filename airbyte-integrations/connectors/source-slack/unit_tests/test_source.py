@@ -26,6 +26,7 @@ def test_streams(conversations_list, config, is_valid):
     "status_code, response, is_connection_successful, error_msg",
     (
         (200, {"members": [{"id": 1, "name": "Abraham"}]}, True, None),
+        (200, {"ok": False, "error": "invalid_auth"}, False, "Authentication has failed, please update your credentials."),
         (
             400,
             "Bad request",
