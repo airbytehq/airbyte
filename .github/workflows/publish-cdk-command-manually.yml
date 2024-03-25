@@ -186,6 +186,9 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_REGISTRY_PASSWORD: ${{ secrets.PYPI_TOKEN }}
           PUBLISH_REGISTRY: "https://test.pypi.org/simple/"
+          PYTHON_VERSION: "3.10"
+          PACKAGE_DIRECTORY: "./airbyte-cdk/python"
+          BRANCH: ${{ github.event.inputs.gitref }}
 #      - name: Post failure to Slack channel dev-connectors-extensibility
 #        if: ${{ failure() }}
 #        uses: slackapi/slack-github-action@v1.23.0
