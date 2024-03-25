@@ -249,10 +249,6 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
 
         # Install the airbyte-cdk package from the local directory
         # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
-
-        # Once we enforce that all connectors are built using poetry, we should instead use something
-        # like `poetry add --path /{path_to_cdk}` to install the local cdk, to ensure we get the same
-        # dependencies we would get if we were to build the connector on a published version of this local cdk.
         connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
             ["pip", "install", "--no-deps", f"/{path_to_cdk}"], skip_entrypoint=True
         )
