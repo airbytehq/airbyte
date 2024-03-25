@@ -4,9 +4,9 @@
 
 package io.airbyte.commons.functional;
 
-@FunctionalInterface
-public interface CheckedFunction<T, R, E extends Throwable> {
+import org.apache.commons.lang3.function.FailableFunction;
 
-  R apply(T t) throws E;
+@FunctionalInterface
+public interface CheckedFunction<T, R, E extends Throwable> extends FailableFunction<T, R, E> {
 
 }
