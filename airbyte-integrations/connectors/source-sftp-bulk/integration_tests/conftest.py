@@ -9,7 +9,7 @@ import shutil
 import time
 import uuid
 from io import StringIO
-from typing import Any, Mapping, Union, Tuple
+from typing import Any, Mapping, Tuple, Union
 
 import docker
 import paramiko

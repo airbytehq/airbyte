@@ -27,8 +27,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          "This upgrade brings migration to File-Based CDK"
+        message: "This upgrade brings migration to File-Based CDK"
         upgradeDeadline: "2024-04-08"
   supportLevel: community
   tags:
