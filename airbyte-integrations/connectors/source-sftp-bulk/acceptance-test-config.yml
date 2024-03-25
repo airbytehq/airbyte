@@ -8,22 +8,22 @@ tests:
       backward_compatibility_tests_config:
         disable_for_version: 0.3.2 # `start_date` format changed to format: date-time
   connection:
-    - config_path: "integration_tests/valid_config.json"
+    - config_path: "integration_tests/configs/config_password.json"
       status: "succeed"
       timeout_seconds: 60
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
       timeout_seconds: 60
   discovery:
-    - config_path: "integration_tests/valid_config.json"
+    - config_path: "integration_tests/config_password.json"
   basic_read:
-    - config_path: "integration_tests/valid_config.json"
+    - config_path: "integration_tests/config_password.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: []
   incremental:
-    - config_path: "integration_tests/valid_config.json"
+    - config_path: "integration_tests/config_password.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    - config_path: "integration_tests/valid_config.json"
+    - config_path: "integration_tests/config_password.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
