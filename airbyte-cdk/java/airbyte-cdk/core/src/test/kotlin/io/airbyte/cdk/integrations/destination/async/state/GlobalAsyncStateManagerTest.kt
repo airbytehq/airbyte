@@ -7,9 +7,9 @@ package io.airbyte.cdk.integrations.destnation.async.state
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteStateMessage
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteStreamState
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteStateMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteStreamState
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
