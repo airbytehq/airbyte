@@ -1,6 +1,3 @@
-#
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
-#
 import json
 import time
 from abc import ABC
@@ -13,25 +10,20 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_protocol.models import SyncMode
-from requests.auth import AuthBase
-
-
-class CookiesAuthenticator(AuthBase):
-
-    def __init__(self, cookies: dict[str, any]):
-        # TODO: simplified authenticator for MVP
-        self._cookies: dict[str, any] = cookies
-
-    def get_cookies(self) -> dict[str, any]:
-        return self._cookies
+from source_wordstat.auth import CookiesAuthenticator
 
 
 class WordstatStream(HttpStream, ABC):
     url_base = "https://wordstat.yandex.ru/wordstat/api/"
 
-    def __init__(self, authenticator: CookiesAuthenticator):
+    def __init__(
+        self,
+        authenticator: CookiesAuthenticator,
+        config: Optional[Mapping[str, Any]] = None,
+    ):
         super().__init__()
         self._authenticator = authenticator
+        self._config = config
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -44,9 +36,39 @@ class WordstatStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield {}
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        attempts_count: int = 0
+        body = self.request_body_json(stream_state, stream_slice)
+        while attempts_count < 5:
+            try:
+                response: requests.Response = requests.post(
+                    self.url_base + self.path(),
+                    json=body,
+                    cookies=self._authenticator.get_cookies(),
+                )
+                if response.status_code != 200:
+                    raise ValueError
+
+                # If got captcha, wordstat returns status 200
+                # But json fails
+                response.json()
+            except Exception as ex:  # TODO: too broad exception
+                time.sleep(15)
+                attempts_count += 1
+                continue
+
+            for record in self.parse_response(response=response, stream_slice=stream_slice):
+                yield record
+            return
+
 
 class Search(WordstatStream):
-    http_method = "POST"
     primary_key = None
 
     def path(
@@ -58,56 +80,39 @@ class Search(WordstatStream):
         super().__init__(authenticator)
         self._config: Mapping[str, Any] = config
 
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for keyword in self._config["keywords"]:
+            yield {"keyword": keyword}
+
     def request_body_json(
         self,
         stream_state: Optional[Mapping[str, Any]],
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
-        # Since wordstat 2 has no public api, i will just replicate browser request
-        # Some of this fields may be useless
-
-        # TODO: нужна калибровка, но +- работает
         data: dict[str, any] = {
             "currentDevice": ",".join(self._config["device"]),
-            "currentGraphType": self._config["group_by"]["group_type"],
+            "currentGraphType": self._config["group_type"],
             "filters": {
                 "region": "all",  # TODO
                 "tableType": "popular",
             },
-            "searchValue": self._config["keyword"],
-            # "startDate": self._config["time_from_transformed"].strftime("%d.%m.%Y"),
-            # "endDate": self._config["time_to_transformed"].strftime("%d.%m.%Y"),
-            "startDate": "24.01.2024",  # TODO
-            "endDate": "23.03.2024",
+            "searchValue": stream_slice["keyword"],
+            "startDate": self._config["time_from_transformed"].strftime("%d.%m.%Y"),
+            "endDate": self._config["time_to_transformed"].strftime("%d.%m.%Y"),
         }
         return data
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        attempts_count: int = 0
-        while attempts_count < 5:
-            try:
-                response: requests.Response = requests.post(
-                    self.url_base + self.path(),
-                    json=self.request_body_json(stream_state, stream_slice),
-                    cookies=self._authenticator.get_cookies(),
-                )
-                response_json: dict[str, any] = response.json()
-            except Exception as ex:  # TODO: too broad exception
-                time.sleep(60)
-                continue
-
-            data: list[dict[str, any]] = response_json["graph"]["tableData"]
-            for record in data:
-                record["absoluteValue"] = int(record["absoluteValue"].replace(" ", ""))
-                yield record
-            return
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json: dict[str, any] = response.json()
+        stream_slice = kwargs["stream_slice"]
+        for record in response_json["graph"]["tableData"]:
+            record["absoluteValue"] = int(record["absoluteValue"].replace(" ", ""))
+            record["value"] = float(record["value"].replace(",", "."))
+            record["keyword"] = stream_slice["keyword"]
+            yield record
 
 
 class SourceWordstat(AbstractSource):
@@ -128,18 +133,12 @@ class SourceWordstat(AbstractSource):
         if date_range_type == "custom_date":
             time_from = pendulum.parse(date_range["date_from"])
             time_to = pendulum.parse(date_range["date_to"])
-        elif date_range_type == "from_start_date_to_today":
+        elif date_range_type == "from_start_date_to_yesterday":
             time_from = pendulum.parse(date_range["date_from"])
-            if date_range.get("should_load_today"):
-                time_to = today_date
-            else:
-                time_to = today_date.subtract(days=1)
+            time_to = today_date.subtract(days=1)
         elif date_range_type == "last_n_days":
             time_from = today_date.subtract(days=date_range.get("last_days_count"))
-            if date_range.get("should_load_today"):
-                time_to = today_date
-            else:
-                time_to = today_date.subtract(days=1)
+            time_to = today_date.subtract(days=1)
 
         config["time_from_transformed"], config["time_to_transformed"] = time_from, time_to
         return config
@@ -148,6 +147,19 @@ class SourceWordstat(AbstractSource):
     def transform_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
         config = SourceWordstat.transform_config_date_range(config)
         config["cookies"] = json.loads(config["cookies"])
+        config["group_type"] = config["group_by"]["group_type"]
+
+        del config["group_by"]
+
+        # Does not support too wide intervals
+        today_date: pendulum.datetime = pendulum.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        if config["group_type"] == "day":
+            config["time_from_transformed"] = max(config["time_from_transformed"], today_date.subtract(months=2))
+        elif config["group_type"] == "week":
+            config["time_from_transformed"] = max(config["time_from_transformed"], today_date.subtract(years=2))
+        elif config["group_type"] == "month":
+            config["time_from_transformed"] = max(config["time_from_transformed"], today_date.subtract(years=4))
+
         return config
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

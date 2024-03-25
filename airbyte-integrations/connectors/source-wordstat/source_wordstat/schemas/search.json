@@ -7,6 +7,12 @@
     },
     "absoluteValue" : {
       "type" : "integer"
+    },
+    "value": {
+      "type": "number"
+    },
+    "keyword": {
+      "type": "string"
     }
   }
 }

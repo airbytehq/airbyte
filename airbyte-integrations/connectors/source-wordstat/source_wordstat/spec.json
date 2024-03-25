@@ -8,7 +8,7 @@
       "cookies",
       "region",
       "device",
-      "keyword",
+      "keywords",
       "date_range",
       "group_by"
     ],
@@ -18,7 +18,7 @@
         "type" : "string",
         "title" : "Куки",
         "description" : "Куки, полученные из консоли разработчика в браузере в формате json",
-        "airbyre_secret" : true,
+        "airbyte_secret" : true,
         "order" : 0,
         "examples" : [
           "{\"yandexuid\":\"111222333\", \"Session_id\": \"10\"}"
@@ -54,26 +54,29 @@
         "order" : 2,
         "type" : "array",
         "items" : {
-          "enum": [
+          "enum" : [
             "desktop",
             "phone",
             "tablet"
           ]
         }
       },
-      "keyword" : {
-        "type" : "string",
-        "title" : "Ключевое слово",
-        "description" : "Ключевое слово для поиска",
+      "keywords" : {
+        "type" : "array",
+        "title" : "Ключевые слова",
+        "description" : "Ключевые слова для поиска",
         "order" : 3,
-        "examples" : [
-          "Холодильник",
-          "Купить квартиру"
-        ]
+        "items" : {
+          "type" : "string",
+          "examples" : [
+            "Холодильник",
+            "Купить квартиру"
+          ]
+        }
       },
       "date_range" : {
         "title" : "Диапазон дат поиска",
-        "description" : "Выбрать даты, за которые будет осуществляться поиск",
+        "description" : "Wordstat не поддерживает выгрузку за слишком большие временные интервалы, поэтому слишком старые даты могут отсекаться",
         "type" : "object",
         "order" : 4,
         "oneOf" : [
@@ -101,7 +104,7 @@
               "date_to" : {
                 "title" : "Дата конца",
                 "type" : "string",
-                "description" : "Дата конца в формате YYYY-MM-DD.",
+                "description" : "Дата конца в формате YYYY-MM-DD. Максимум - вчерашнее число",
                 "pattern" : "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
                 "examples" : [
                   "2023-01-30"
@@ -124,7 +127,6 @@
             "title" : "Последние N дней",
             "required" : [
               "last_days_count",
-              "should_load_today",
               "date_range_type"
             ],
             "properties" : {
@@ -139,13 +141,6 @@
                 ],
                 "order" : 0
               },
-              "should_load_today" : {
-                "title" : "Загружать сегодня?",
-                "type" : "boolean",
-                "description" : "Загружать данные за сегодня? Если нет, последней датой загрузки будет вчера",
-                "order" : 1,
-                "default" : false
-              },
               "date_range_type" : {
                 "type" : "string",
                 "title" : "Тип временного диапазона",
@@ -157,11 +152,10 @@
           },
           {
             "type" : "object",
-            "title" : "От начальной даты до сегодня",
-            "description" : "Загружать данные от начальной даты по сегодняшнее число",
+            "title" : "От начальной даты до вчерашнего дня",
+            "description" : "Загружать данные от начальной даты по вчерашнюю дату включительно",
             "required" : [
               "date_from",
-              "should_load_today",
               "date_range_type"
             ],
             "properties" : {
@@ -177,18 +171,11 @@
                 "format" : "date",
                 "order" : 0
               },
-              "should_load_today" : {
-                "title" : "Загружать сегодня?",
-                "type" : "boolean",
-                "description" : "Загружать данные за сегодня? Если нет, последней датой загрузки будет вчера",
-                "order" : 1,
-                "default" : false
-              },
               "date_range_type" : {
                 "type" : "string",
                 "title" : "Тип временного диапазона",
-                "description" : "От даты начала до сегодня",
-                "const" : "from_start_date_to_today",
+                "description" : "От даты начала до вчера",
+                "const" : "from_start_date_to_yesterday",
                 "order" : 2
               }
             }
