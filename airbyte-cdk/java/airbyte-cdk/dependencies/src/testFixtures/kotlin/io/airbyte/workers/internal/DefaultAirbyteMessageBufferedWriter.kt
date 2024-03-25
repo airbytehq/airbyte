@@ -8,7 +8,8 @@ import io.airbyte.protocol.models.AirbyteMessage
 import java.io.BufferedWriter
 import java.io.IOException
 
-class DefaultAirbyteMessageBufferedWriter(protected val writer: BufferedWriter) : AirbyteMessageBufferedWriter {
+class DefaultAirbyteMessageBufferedWriter(protected val writer: BufferedWriter) :
+    AirbyteMessageBufferedWriter {
     @Throws(IOException::class)
     override fun write(message: AirbyteMessage) {
         writer.write(Jsons.serialize(message))

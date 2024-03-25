@@ -13,10 +13,10 @@ import io.airbyte.api.client.model.generated.SourceIdRequestBody
 import io.airbyte.api.client.model.generated.SourceUpdate
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.Config
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Helper class for workers to persist updates to Source/Destination configs emitted from
@@ -26,28 +26,40 @@ import java.util.*
  * useful for migrating configuration to a new version or for enabling connectors that require
  * single-use or short-lived OAuth tokens.
  */
-class ConnectorConfigUpdater(private val sourceApi: SourceApi, private val destinationApi: DestinationApi) {
+class ConnectorConfigUpdater(
+    private val sourceApi: SourceApi,
+    private val destinationApi: DestinationApi
+) {
     /**
      * Updates the Source from a sync job ID with the provided Configuration. Secrets and OAuth
      * parameters will be masked when saving.
      */
     fun updateSource(sourceId: UUID?, config: Config) {
-        val source = AirbyteApiClient.retryWithJitter(
+        val source =
+            AirbyteApiClient.retryWithJitter(
                 { sourceApi.getSource(SourceIdRequestBody().sourceId(sourceId)) },
-                "get source")
+                "get source"
+            )
 
-        val updatedSource = AirbyteApiClient.retryWithJitter(
+        val updatedSource =
+            AirbyteApiClient.retryWithJitter(
                 {
-                    sourceApi
-                            .updateSource(SourceUpdate()
-                                    .sourceId(sourceId)
-                                    .name(source.name)
-                                    .connectionConfiguration(Jsons.jsonNode(config.additionalProperties)))
+                    sourceApi.updateSource(
+                        SourceUpdate()
+                            .sourceId(sourceId)
+                            .name(source.name)
+                            .connectionConfiguration(Jsons.jsonNode(config.additionalProperties))
+                    )
                 },
-                "update source")
+                "update source"
+            )
 
-        LOGGER.info("Persisted updated configuration for source {}. New config hash: {}.", sourceId,
-                Hashing.sha256().hashString(updatedSource.connectionConfiguration.asText(), StandardCharsets.UTF_8))
+        LOGGER.info(
+            "Persisted updated configuration for source {}. New config hash: {}.",
+            sourceId,
+            Hashing.sha256()
+                .hashString(updatedSource.connectionConfiguration.asText(), StandardCharsets.UTF_8)
+        )
     }
 
     /**
@@ -55,22 +67,38 @@ class ConnectorConfigUpdater(private val sourceApi: SourceApi, private val desti
      * parameters will be masked when saving.
      */
     fun updateDestination(destinationId: UUID?, config: Config) {
-        val destination = AirbyteApiClient.retryWithJitter(
-                { destinationApi.getDestination(DestinationIdRequestBody().destinationId(destinationId)) },
-                "get destination")
-
-        val updatedDestination = AirbyteApiClient.retryWithJitter(
+        val destination =
+            AirbyteApiClient.retryWithJitter(
                 {
-                    destinationApi
-                            .updateDestination(DestinationUpdate()
-                                    .destinationId(destinationId)
-                                    .name(destination.name)
-                                    .connectionConfiguration(Jsons.jsonNode(config.additionalProperties)))
+                    destinationApi.getDestination(
+                        DestinationIdRequestBody().destinationId(destinationId)
+                    )
                 },
-                "update destination")
+                "get destination"
+            )
 
-        LOGGER.info("Persisted updated configuration for destination {}. New config hash: {}.", destinationId,
-                Hashing.sha256().hashString(updatedDestination.connectionConfiguration.asText(), StandardCharsets.UTF_8))
+        val updatedDestination =
+            AirbyteApiClient.retryWithJitter(
+                {
+                    destinationApi.updateDestination(
+                        DestinationUpdate()
+                            .destinationId(destinationId)
+                            .name(destination.name)
+                            .connectionConfiguration(Jsons.jsonNode(config.additionalProperties))
+                    )
+                },
+                "update destination"
+            )
+
+        LOGGER.info(
+            "Persisted updated configuration for destination {}. New config hash: {}.",
+            destinationId,
+            Hashing.sha256()
+                .hashString(
+                    updatedDestination.connectionConfiguration.asText(),
+                    StandardCharsets.UTF_8
+                )
+        )
     }
 
     companion object {

@@ -61,7 +61,7 @@ abstract class BaseTypingDedupingTest {
     protected var streamName: String? = null
     private var streamsToTearDown: MutableList<AirbyteStreamNameNamespacePair>? = null
 
-    protected abstract val imageName: String?
+    protected abstract val imageName: String
         /** @return the docker image to run, e.g. `"airbyte/destination-bigquery:dev"`. */
         get
 
@@ -952,7 +952,7 @@ abstract class BaseTypingDedupingTest {
     protected fun runSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         messages: List<AirbyteMessage>,
-        imageName: String? = this.imageName,
+        imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
     ) {
         val destination = startSync(catalog, imageName, configTransformer)
@@ -973,7 +973,7 @@ abstract class BaseTypingDedupingTest {
                     val destinationMessages:
                         MutableList<io.airbyte.protocol.models.AirbyteMessage> =
                         ArrayList()
-                    while (!destination.isFinished) {
+                    while (!destination.isFinished()) {
                         // attemptRead isn't threadsafe, we read stdout fully here.
                         // i.e. we shouldn't call attemptRead anywhere else.
                         destination.attemptRead().ifPresent {
@@ -1000,7 +1000,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected fun startSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
-        imageName: String? = this.imageName,
+        imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
     ): AirbyteDestination {
         synchronized(this) {

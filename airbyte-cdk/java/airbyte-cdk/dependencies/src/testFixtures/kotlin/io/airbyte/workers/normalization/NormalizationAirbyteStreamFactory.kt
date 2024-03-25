@@ -10,41 +10,45 @@ import io.airbyte.commons.logging.MdcScope
 import io.airbyte.protocol.models.AirbyteLogMessage
 import io.airbyte.protocol.models.AirbyteMessage
 import io.airbyte.workers.internal.AirbyteStreamFactory
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.util.stream.Stream
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
  * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
  * assumed to be from dbt. dbt [error] messages are also parsed
  *
- *
- *
  * If a line starts with a AirbyteMessage and then has other characters after it, that
  * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
  * line, only the first will be parsed.
  */
-class NormalizationAirbyteStreamFactory internal constructor(private val logger: Logger, private val containerLogMdcBuilder: MdcScope.Builder) : AirbyteStreamFactory {
-    private val dbtErrors: MutableList<String> = ArrayList()
+class NormalizationAirbyteStreamFactory
+internal constructor(
+    private val logger: Logger,
+    private val containerLogMdcBuilder: MdcScope.Builder
+) : AirbyteStreamFactory {
+    val dbtErrors: MutableList<String> = ArrayList()
 
     constructor(containerLogMdcBuilder: MdcScope.Builder) : this(LOGGER, containerLogMdcBuilder)
 
-    override fun create(bufferedReader: BufferedReader): Stream<AirbyteMessage?> {
+    override fun create(bufferedReader: BufferedReader): Stream<AirbyteMessage> {
         return bufferedReader
-                .lines()
-                .flatMap { line: String -> this.filterOutAndHandleNonJsonLines(line) }
-                .flatMap { jsonLine: JsonNode -> this.filterOutAndHandleNonAirbyteMessageLines(jsonLine) } // so now we are just left with AirbyteMessages
-                .filter { airbyteMessage: AirbyteMessage? ->
-                    val isLog = airbyteMessage!!.type == AirbyteMessage.Type.LOG
-                    if (isLog) {
-                        containerLogMdcBuilder.build().use { mdcScope ->
-                            internalLog(airbyteMessage.log)
-                        }
+            .lines()
+            .flatMap { line: String -> this.filterOutAndHandleNonJsonLines(line) }
+            .flatMap { jsonLine: JsonNode ->
+                this.filterOutAndHandleNonAirbyteMessageLines(jsonLine)
+            } // so now we are just left with AirbyteMessages
+            .filter { airbyteMessage: AirbyteMessage ->
+                val isLog = airbyteMessage!!.type == AirbyteMessage.Type.LOG
+                if (isLog) {
+                    containerLogMdcBuilder.build().use { mdcScope ->
+                        internalLog(airbyteMessage.log)
                     }
-                    !isLog
                 }
+                !isLog
+            }
     }
 
     private fun filterOutAndHandleNonJsonLines(line: String): Stream<JsonNode> {
@@ -64,14 +68,16 @@ class NormalizationAirbyteStreamFactory internal constructor(private val logger:
         return jsonLine.stream()
     }
 
-    private fun filterOutAndHandleNonAirbyteMessageLines(jsonLine: JsonNode): Stream<AirbyteMessage?> {
+    private fun filterOutAndHandleNonAirbyteMessageLines(
+        jsonLine: JsonNode
+    ): Stream<AirbyteMessage> {
         val m = Jsons.tryObject(jsonLine, AirbyteMessage::class.java)
         if (m.isEmpty) {
             // valid JSON but not an AirbyteMessage, so we assume this is a dbt json log
             try {
-                val logLevel = if ((jsonLine.nodeType == JsonNodeType.NULL || jsonLine["level"].isNull)
-                ) ""
-                else jsonLine["level"].asText()
+                val logLevel =
+                    if ((jsonLine.nodeType == JsonNodeType.NULL || jsonLine["level"].isNull)) ""
+                    else jsonLine["level"].asText()
                 val logMsg = if (jsonLine["msg"].isNull) "" else jsonLine["msg"].asText()
                 containerLogMdcBuilder.build().use { mdcScope ->
                     when (logLevel) {
@@ -94,13 +100,10 @@ class NormalizationAirbyteStreamFactory internal constructor(private val logger:
         dbtErrors.add(logMsg)
     }
 
-    fun getDbtErrors(): List<String> {
-        return dbtErrors
-    }
-
     private fun internalLog(logMessage: AirbyteLogMessage) {
         when (logMessage.level) {
-            AirbyteLogMessage.Level.FATAL, AirbyteLogMessage.Level.ERROR -> logger.error(logMessage.message)
+            AirbyteLogMessage.Level.FATAL,
+            AirbyteLogMessage.Level.ERROR -> logger.error(logMessage.message)
             AirbyteLogMessage.Level.WARN -> logger.warn(logMessage.message)
             AirbyteLogMessage.Level.DEBUG -> logger.debug(logMessage.message)
             AirbyteLogMessage.Level.TRACE -> logger.trace(logMessage.message)
@@ -109,6 +112,7 @@ class NormalizationAirbyteStreamFactory internal constructor(private val logger:
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(NormalizationAirbyteStreamFactory::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(NormalizationAirbyteStreamFactory::class.java)
     }
 }

@@ -76,15 +76,16 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 import org.mockito.Mockito
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.test.assertNotNull
 
 abstract class DestinationAcceptanceTest {
     protected lateinit var TEST_SCHEMAS: HashSet<String>
 
     private lateinit var testEnv: TestDestinationEnv
 
-    private var jobRoot: Path? = null
-    private var processFactory: ProcessFactory? = null
-    private var mConnectorConfigUpdater: ConnectorConfigUpdater? = null
+    private lateinit var jobRoot: Path
+    private lateinit var processFactory: ProcessFactory
+    private lateinit var mConnectorConfigUpdater: ConnectorConfigUpdater
 
     protected var localRoot: Path? = null
     open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
@@ -131,8 +132,7 @@ abstract class DestinationAcceptanceTest {
         }
     }
 
-    protected val normalizationImageName: String?
-        get() {
+    protected fun getNormalizationImageName(): String? {
             val metadata = readMetadata()["data"] ?: return null
             val normalizationConfig = metadata["normalizationConfig"] ?: return null
             val normalizationRepository =
@@ -247,8 +247,7 @@ abstract class DestinationAcceptanceTest {
     protected val destinationDefinitionKey: String
         get() = imageNameWithoutTag
 
-    protected val normalizationIntegrationType: String?
-        get() {
+    protected fun getNormalizationIntegrationType(): String? {
             val metadata = readMetadata()["data"] ?: return null
             val normalizationConfig = metadata["normalizationConfig"] ?: return null
             val normalizationIntegrationType =
@@ -667,8 +666,8 @@ abstract class DestinationAcceptanceTest {
             try {
                 DefaultNormalizationRunner(
                     processFactory,
-                    normalizationImageName,
-                    normalizationIntegrationType
+                    getNormalizationImageName(),
+                        getNormalizationIntegrationType()
                 )
                 normalizationRunnerFactorySupportsDestinationImage = true
             } catch (e: IllegalStateException) {
@@ -1069,8 +1068,8 @@ abstract class DestinationAcceptanceTest {
                 processFactory,
                 DefaultNormalizationRunner(
                     processFactory,
-                    normalizationImageName,
-                    normalizationIntegrationType
+                        getNormalizationImageName(),
+                    getNormalizationIntegrationType()
                 )
             )
         runner.start()
@@ -1086,7 +1085,7 @@ abstract class DestinationAcceptanceTest {
                 // TODO once we're on DBT 1.x, switch this back to using the main branch
                 .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
                 .withGitRepoBranch("pre_dbt_upgrade")
-                .withDockerImage(normalizationImageName)
+                .withDockerImage(getNormalizationImageName())
         //
         // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
         //
@@ -1158,8 +1157,8 @@ abstract class DestinationAcceptanceTest {
                 processFactory,
                 DefaultNormalizationRunner(
                     processFactory,
-                    normalizationImageName,
-                    normalizationIntegrationType
+                        getNormalizationImageName(),
+                        getNormalizationIntegrationType()
                 )
             )
         runner.start()
@@ -1371,7 +1370,7 @@ abstract class DestinationAcceptanceTest {
                 imageName
             )
 
-        Assertions.assertNotNull(entrypoint)
+        assertNotNull(entrypoint)
         Assertions.assertFalse(entrypoint.isBlank())
     }
 
@@ -1666,7 +1665,7 @@ abstract class DestinationAcceptanceTest {
 
         val destinationOutput: MutableList<io.airbyte.protocol.models.v0.AirbyteMessage?> =
             ArrayList()
-        while (!destination.isFinished) {
+        while (!destination.isFinished()) {
             destination.attemptRead().ifPresent { m: io.airbyte.protocol.models.AirbyteMessage ->
                 destinationOutput.add(convertProtocolObject(m, AirbyteMessage::class.java))
             }
@@ -1681,8 +1680,8 @@ abstract class DestinationAcceptanceTest {
         val runner: NormalizationRunner =
             DefaultNormalizationRunner(
                 processFactory,
-                normalizationImageName,
-                normalizationIntegrationType
+                    getNormalizationImageName(),
+                getNormalizationIntegrationType()
             )
         runner.start()
         val normalizationRoot = Files.createDirectories(jobRoot!!.resolve("normalize"))

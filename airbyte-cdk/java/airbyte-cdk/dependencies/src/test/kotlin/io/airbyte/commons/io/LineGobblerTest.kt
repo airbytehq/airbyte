@@ -5,20 +5,22 @@ package io.airbyte.commons.io
 
 import com.google.common.collect.ImmutableMap
 import com.google.common.util.concurrent.MoreExecutors
-import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
+import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito
+import org.mockito.kotlin.mock
 
 internal class LineGobblerTest {
     @Test
     fun readAllLines() {
-        val consumer: Consumer<String> = Mockito.mock(Consumer::class.java)
-        val `is`: InputStream = ByteArrayInputStream("test\ntest2\n".toByteArray(StandardCharsets.UTF_8))
+        val consumer: Consumer<String> = mock()
+        val `is`: InputStream =
+            ByteArrayInputStream("test\ntest2\n".toByteArray(StandardCharsets.UTF_8))
         val executor: ExecutorService = Mockito.spy(MoreExecutors.newDirectExecutorService())
 
         executor.submit(LineGobbler(`is`, consumer, executor, ImmutableMap.of()))
@@ -30,8 +32,9 @@ internal class LineGobblerTest {
 
     @Test
     fun shutdownOnSuccess() {
-        val consumer: Consumer<String> = Mockito.mock(Consumer::class.java)
-        val `is`: InputStream = ByteArrayInputStream("test\ntest2\n".toByteArray(StandardCharsets.UTF_8))
+        val consumer: Consumer<String> = mock()
+        val `is`: InputStream =
+            ByteArrayInputStream("test\ntest2\n".toByteArray(StandardCharsets.UTF_8))
         val executor: ExecutorService = Mockito.spy(MoreExecutors.newDirectExecutorService())
 
         executor.submit(LineGobbler(`is`, consumer, executor, ImmutableMap.of()))
@@ -42,9 +45,12 @@ internal class LineGobblerTest {
 
     @Test
     fun shutdownOnError() {
-        val consumer: Consumer<String> = Mockito.mock(Consumer::class.java)
-        Mockito.doThrow(RuntimeException::class.java).`when`(consumer).accept(ArgumentMatchers.anyString())
-        val `is`: InputStream = ByteArrayInputStream("test\ntest2\n".toByteArray(StandardCharsets.UTF_8))
+        val consumer: Consumer<String> = mock()
+        Mockito.doThrow(RuntimeException::class.java)
+            .`when`(consumer)
+            .accept(ArgumentMatchers.anyString())
+        val `is`: InputStream =
+            ByteArrayInputStream("test\ntest2\n".toByteArray(StandardCharsets.UTF_8))
         val executor: ExecutorService = Mockito.spy(MoreExecutors.newDirectExecutorService())
 
         executor.submit(LineGobbler(`is`, consumer, executor, ImmutableMap.of()))

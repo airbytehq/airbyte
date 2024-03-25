@@ -13,12 +13,16 @@ import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.internal.AirbyteStreamFactory
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory
 import io.airbyte.workers.process.IntegrationLauncher
+import java.nio.file.Path
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.nio.file.Path
 
-class DefaultGetSpecTestHarness @JvmOverloads constructor(private val integrationLauncher: IntegrationLauncher,
-                                                          private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()) : GetSpecTestHarness {
+class DefaultGetSpecTestHarness
+@JvmOverloads
+constructor(
+    private val integrationLauncher: IntegrationLauncher,
+    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
+) : GetSpecTestHarness {
     private var process: Process? = null
 
     @Throws(TestHarnessException::class)
@@ -27,17 +31,25 @@ class DefaultGetSpecTestHarness @JvmOverloads constructor(private val integratio
             process = integrationLauncher.spec(jobRoot)
 
             val jobOutput = ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.SPEC)
-            LineGobbler.gobble(process!!.errorStream) { msg: String? -> LOGGER.error(msg) }
+            LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
-            val spec = messagesByType
-                    .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())!!.stream()
+            val spec =
+                messagesByType
+                    .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())!!
+                    .stream()
                     .map { obj: AirbyteMessage? -> obj!!.spec }
                     .findFirst()
 
-            val failureReason = TestHarnessUtils.getJobFailureReasonFromMessages(ConnectorJobOutput.OutputType.SPEC, messagesByType)
-            failureReason!!.ifPresent { failureReason: FailureReason? -> jobOutput.failureReason = failureReason }
+            val failureReason =
+                TestHarnessUtils.getJobFailureReasonFromMessages(
+                    ConnectorJobOutput.OutputType.SPEC,
+                    messagesByType
+                )
+            failureReason!!.ifPresent { failureReason: FailureReason? ->
+                jobOutput.failureReason = failureReason
+            }
 
             val exitCode = process!!.exitValue()
             if (exitCode != 0) {
@@ -47,12 +59,18 @@ class DefaultGetSpecTestHarness @JvmOverloads constructor(private val integratio
             if (spec.isPresent) {
                 jobOutput.spec = spec.get()
             } else if (failureReason.isEmpty) {
-                TestHarnessUtils.throwWorkerException("Integration failed to output a spec struct and did not output a failure reason", process)
+                TestHarnessUtils.throwWorkerException(
+                    "Integration failed to output a spec struct and did not output a failure reason",
+                    process
+                )
             }
 
             return jobOutput
         } catch (e: Exception) {
-            throw TestHarnessException(String.format("Error while getting spec from image %s", config.dockerImage), e)
+            throw TestHarnessException(
+                String.format("Error while getting spec from image %s", config.dockerImage),
+                e
+            )
         }
     }
 

@@ -18,8 +18,17 @@ internal class MdcScopeTest {
     fun testMDCModified() {
         MdcScope(modificationInMDC).use { ignored ->
             val mdcState = MDC.getCopyOfContextMap()
-            Assertions.assertThat(mdcState).containsExactlyInAnyOrderEntriesOf(
-                    java.util.Map.of("test", "entry", "new", "will be added", "testOverride", "will override"))
+            Assertions.assertThat(mdcState)
+                .containsExactlyInAnyOrderEntriesOf(
+                    java.util.Map.of(
+                        "test",
+                        "entry",
+                        "new",
+                        "will be added",
+                        "testOverride",
+                        "will override"
+                    )
+                )
         }
     }
 
@@ -33,8 +42,10 @@ internal class MdcScopeTest {
     }
 
     companion object {
-        private val originalMap: Map<String, String> = java.util.Map.of("test", "entry", "testOverride", "should be overrided")
+        private val originalMap: Map<String, String> =
+            java.util.Map.of("test", "entry", "testOverride", "should be overrided")
 
-        private val modificationInMDC: Map<String, String> = java.util.Map.of("new", "will be added", "testOverride", "will override")
+        private val modificationInMDC: Map<String, String> =
+            java.util.Map.of("new", "will be added", "testOverride", "will override")
     }
 }

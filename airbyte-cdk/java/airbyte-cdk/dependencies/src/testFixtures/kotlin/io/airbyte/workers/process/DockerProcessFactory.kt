@@ -15,21 +15,23 @@ import io.airbyte.configoss.AllowedHosts
 import io.airbyte.configoss.ResourceRequirements
 import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.exception.TestHarnessException
-import org.apache.commons.lang3.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
+import org.apache.commons.lang3.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class DockerProcessFactory(private val workspaceRoot: Path,
-                           private val workspaceMountSource: String?,
-                           private val localMountSource: String?,
-                           private val networkName: String?,
-                           private val envMap: Map<String, String>) : ProcessFactory {
+class DockerProcessFactory(
+    private val workspaceRoot: Path,
+    private val workspaceMountSource: String?,
+    private val localMountSource: String?,
+    private val networkName: String?,
+    private val envMap: Map<String, String>
+) : ProcessFactory {
     private val imageExistsScriptPath: Path
 
     /**
@@ -46,22 +48,24 @@ class DockerProcessFactory(private val workspaceRoot: Path,
     }
 
     @Throws(TestHarnessException::class)
-    override fun create(jobType: String?,
-                        jobId: String,
-                        attempt: Int,
-                        jobRoot: Path,
-                        imageName: String,
-                        usesIsolatedPool: Boolean,
-                        usesStdin: Boolean,
-                        files: Map<String?, String?>,
-                        entrypoint: String?,
-                        resourceRequirements: ResourceRequirements?,
-                        allowedHosts: AllowedHosts?,
-                        labels: Map<String?, String?>?,
-                        jobMetadata: Map<String, String>?,
-                        internalToExternalPorts: Map<Int?, Int?>?,
-                        additionalEnvironmentVariables: Map<String, String>?,
-                        vararg args: String?): Process? {
+    override fun create(
+        jobType: String?,
+        jobId: String,
+        attempt: Int,
+        jobRoot: Path,
+        imageName: String,
+        usesIsolatedPool: Boolean,
+        usesStdin: Boolean,
+        files: Map<String?, String?>,
+        entrypoint: String?,
+        resourceRequirements: ResourceRequirements?,
+        allowedHosts: AllowedHosts?,
+        labels: Map<String?, String?>?,
+        jobMetadata: Map<String, String>,
+        internalToExternalPorts: Map<Int?, Int?>?,
+        additionalEnvironmentVariables: Map<String, String>,
+        vararg args: String?
+    ): Process? {
         try {
             if (!checkImageExists(imageName)) {
                 throw TestHarnessException("Could not find image: $imageName")
@@ -75,18 +79,32 @@ class DockerProcessFactory(private val workspaceRoot: Path,
                 IOs.writeFile(jobRoot, key, value)
             }
 
-            val cmd: MutableList<String?> = Lists.newArrayList(
+            val cmd: MutableList<String?> =
+                Lists.newArrayList(
                     "docker",
                     "run",
                     "--rm",
                     "--init",
                     "-i",
                     "-w",
-                    rebasePath(jobRoot).toString(),  // rebases the job root on the job data mount
+                    rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
                     "--log-driver",
-                    "none")
-            val containerName: String = ProcessFactory.Companion.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT)
-            LOGGER.info("Creating docker container = {} with resources {} and allowedHosts {}", containerName, resourceRequirements, allowedHosts)
+                    "none"
+                )
+            val containerName: String =
+                ProcessFactory.Companion.createProcessName(
+                    imageName,
+                    jobType,
+                    jobId,
+                    attempt,
+                    DOCKER_NAME_LEN_LIMIT
+                )
+            LOGGER.info(
+                "Creating docker container = {} with resources {} and allowedHosts {}",
+                containerName,
+                resourceRequirements,
+                allowedHosts
+            )
             cmd.add("--name")
             cmd.add(containerName)
             cmd.addAll(localDebuggingOptions(containerName))
@@ -121,7 +139,9 @@ class DockerProcessFactory(private val workspaceRoot: Path,
                     cmd.add(String.format("--cpus=%s", resourceRequirements.cpuLimit))
                 }
                 if (!Strings.isNullOrEmpty(resourceRequirements.memoryRequest)) {
-                    cmd.add(String.format("--memory-reservation=%s", resourceRequirements.memoryRequest))
+                    cmd.add(
+                        String.format("--memory-reservation=%s", resourceRequirements.memoryRequest)
+                    )
                 }
                 if (!Strings.isNullOrEmpty(resourceRequirements.memoryLimit)) {
                     cmd.add(String.format("--memory=%s", resourceRequirements.memoryLimit))
@@ -149,8 +169,8 @@ class DockerProcessFactory(private val workspaceRoot: Path,
     fun checkImageExists(imageName: String?): Boolean {
         try {
             val process = ProcessBuilder(imageExistsScriptPath.toString(), imageName).start()
-            LineGobbler.gobble(process.errorStream) { msg: String? -> LOGGER.error(msg) }
-            LineGobbler.gobble(process.inputStream) { msg: String? -> LOGGER.info(msg) }
+            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
 
             TestHarnessUtils.gentleClose(process, 10, TimeUnit.MINUTES)
 
@@ -178,7 +198,9 @@ class DockerProcessFactory(private val workspaceRoot: Path,
                 val scriptContents = MoreResources.readResource(IMAGE_EXISTS_SCRIPT)
                 val scriptPath = IOs.writeFile(basePath, IMAGE_EXISTS_SCRIPT, scriptContents)
                 if (!scriptPath.toFile().setExecutable(true)) {
-                    throw RuntimeException(String.format("Could not set %s to executable", scriptPath))
+                    throw RuntimeException(
+                        String.format("Could not set %s to executable", scriptPath)
+                    )
                 }
                 return scriptPath
             } catch (e: IOException) {
@@ -187,10 +209,14 @@ class DockerProcessFactory(private val workspaceRoot: Path,
         }
 
         /**
-         * !! ONLY FOR DEBUGGING, SHOULD NOT BE USED IN PRODUCTION !! If you set the DEBUG_CONTAINER_IMAGE
-         * environment variable, and it matches the image name of a spawned container, this method will add
-         * the necessary params to connect a debugger. For example, to enable this for
-         * `destination-bigquery` start the services locally with: ``` VERSION="dev"
+         * !! ONLY FOR DEBUGGING, SHOULD NOT BE USED IN PRODUCTION !! If you set the
+         * DEBUG_CONTAINER_IMAGE environment variable, and it matches the image name of a spawned
+         * container, this method will add the necessary params to connect a debugger. For example,
+         * to enable this for `destination-bigquery` start the services locally with:
+         * ```
+         * ```
+         * VERSION="dev"
+         * ```
          * DEBUG_CONTAINER_IMAGE="destination-bigquery" docker compose -f docker-compose.yaml -f
          * docker-compose.debug.yaml up ``` Additionally you may have to update the image version of your
          * target image to 'dev' in the UI of your local airbyte platform. See the
@@ -198,14 +224,27 @@ class DockerProcessFactory(private val workspaceRoot: Path,
          *
          * @param containerName the name of the container which could be debugged.
          * @return A list with debugging arguments or an empty list
+         * ```
          */
         fun localDebuggingOptions(containerName: String): List<String?> {
-            val shouldAddDebuggerOptions = (
-                    Optional.ofNullable<String>(System.getenv("DEBUG_CONTAINER_IMAGE")).filter { cs: String? -> StringUtils.isNotEmpty(cs) }
-                            .map<Boolean>(Function<String, Boolean> { imageName: String? -> ProcessFactory.Companion.extractShortImageName(containerName).startsWith(imageName!!) }).orElse(false)
-                            && Optional.ofNullable<String>(System.getenv("DEBUG_CONTAINER_JAVA_OPTS")).isPresent)
+            val shouldAddDebuggerOptions =
+                (Optional.ofNullable<String>(System.getenv("DEBUG_CONTAINER_IMAGE"))
+                    .filter { cs: String? -> StringUtils.isNotEmpty(cs) }
+                    .map<Boolean>(
+                        Function<String, Boolean> { imageName: String? ->
+                            ProcessFactory.Companion.extractShortImageName(containerName)
+                                .startsWith(imageName!!)
+                        }
+                    )
+                    .orElse(false) &&
+                    Optional.ofNullable<String>(System.getenv("DEBUG_CONTAINER_JAVA_OPTS"))
+                        .isPresent)
             return if (shouldAddDebuggerOptions) {
-                java.util.List.of("-e", "JAVA_TOOL_OPTIONS=" + System.getenv("DEBUG_CONTAINER_JAVA_OPTS"), "-p5005:5005")
+                java.util.List.of(
+                    "-e",
+                    "JAVA_TOOL_OPTIONS=" + System.getenv("DEBUG_CONTAINER_JAVA_OPTS"),
+                    "-p5005:5005"
+                )
             } else {
                 emptyList<String>()
             }

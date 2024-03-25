@@ -4,34 +4,46 @@
 package io.airbyte.commons.concurrency
 
 import io.airbyte.commons.functional.Either
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 internal class CompletableFuturesTest {
     @Test
     fun testAllOf() {
         // Complete in random order
-        val futures = Arrays.asList<CompletionStage<Int>>(
+        val futures =
+            Arrays.asList<CompletionStage<Int>>(
                 returnSuccessWithDelay(1, 2000),
                 returnSuccessWithDelay(2, 200),
                 returnSuccessWithDelay(3, 500),
                 returnSuccessWithDelay(4, 100),
                 returnFailureWithDelay("Fail 5", 2000),
-                returnFailureWithDelay("Fail 6", 300))
+                returnFailureWithDelay("Fail 6", 300)
+            )
 
         val allOfResult = CompletableFutures.allOf(futures).toCompletableFuture()
         val result = allOfResult.join()
-        val success = result.stream().filter { obj: Either<out Exception, Int> -> obj.isRight }.toList()
-        Assertions.assertEquals(success, Arrays.asList(
+        val success =
+            result.stream().filter { obj: Either<out Exception, Int> -> obj.isRight() }.toList()
+        Assertions.assertEquals(
+            success,
+            Arrays.asList(
                 Either.right(1),
                 Either.right(2),
                 Either.right(3),
-                Either.right<Any, Int>(4)))
+                Either.right<Any, Int>(4)
+            )
+        )
         // Extract wrapped CompletionException messages.
-        val failureMessages = result.stream().filter { obj: Either<out Exception, Int> -> obj.isLeft }.map { either: Either<out Exception, Int> -> either.left.cause!!.message }.toList()
+        val failureMessages =
+            result
+                .stream()
+                .filter { obj: Either<out Exception, Int> -> obj.isLeft() }
+                .map { either: Either<out Exception, Int> -> either.left!!.cause!!.message }
+                .toList()
         Assertions.assertEquals(failureMessages, mutableListOf("Fail 5", "Fail 6"))
     }
 

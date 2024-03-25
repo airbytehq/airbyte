@@ -3,9 +3,9 @@
  */
 package io.airbyte.commons.lang
 
+import java.lang.Boolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.lang.Boolean
 
 internal class MoreBooleansTest {
     @Test

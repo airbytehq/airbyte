@@ -15,14 +15,19 @@ import java.util.function.Supplier
  *
  * It is ThreadSafe.
  */
-class HeartbeatMonitor @VisibleForTesting constructor(private val heartBeatFreshDuration: Duration?, private val nowSupplier: Supplier<Instant>) {
+class HeartbeatMonitor
+@VisibleForTesting
+constructor(
+    private val heartBeatFreshDuration: Duration?,
+    private val nowSupplier: Supplier<Instant>
+) {
     private val lastBeat = AtomicReference<Instant?>(null)
 
-    constructor(heartBeatFreshDuration: Duration?) : this(heartBeatFreshDuration, Supplier<Instant> { Instant.now() })
+    constructor(
+        heartBeatFreshDuration: Duration?
+    ) : this(heartBeatFreshDuration, Supplier<Instant> { Instant.now() })
 
-    /**
-     * Register a heartbeat
-     */
+    /** Register a heartbeat */
     fun beat() {
         lastBeat.set(nowSupplier.get())
     }
@@ -30,12 +35,13 @@ class HeartbeatMonitor @VisibleForTesting constructor(private val heartBeatFresh
     val isBeating: Boolean
         /**
          *
-         * @return true if the last heartbeat is still "fresh". i.e. time since last heartbeat is less than
-         * heartBeatFreshDuration. otherwise, false.
+         * @return true if the last heartbeat is still "fresh". i.e. time since last heartbeat is
+         * less than heartBeatFreshDuration. otherwise, false.
          */
         get() {
             val instantFetched = lastBeat.get()
             val now = nowSupplier.get()
-            return instantFetched != null && instantFetched.plus(heartBeatFreshDuration).isAfter(now)
+            return instantFetched != null &&
+                instantFetched.plus(heartBeatFreshDuration).isAfter(now)
         }
 }

@@ -10,95 +10,119 @@ import io.airbyte.protocol.models.*
 import java.time.Instant
 
 object AirbyteMessageUtils {
-    fun createRecordMessage(tableName: String?,
-                            record: JsonNode?,
-                            timeExtracted: Instant): AirbyteMessage {
+    fun createRecordMessage(
+        tableName: String?,
+        record: JsonNode?,
+        timeExtracted: Instant
+    ): AirbyteMessage {
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(AirbyteRecordMessage()
-                        .withData(record)
-                        .withStream(tableName)
-                        .withEmittedAt(timeExtracted.epochSecond))
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                AirbyteRecordMessage()
+                    .withData(record)
+                    .withStream(tableName)
+                    .withEmittedAt(timeExtracted.epochSecond)
+            )
     }
 
-    fun createLogMessage(level: AirbyteLogMessage.Level?,
-                         message: String?): AirbyteMessage {
+    fun createLogMessage(level: AirbyteLogMessage.Level?, message: String?): AirbyteMessage {
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.LOG)
-                .withLog(AirbyteLogMessage()
-                        .withLevel(level)
-                        .withMessage(message))
+            .withType(AirbyteMessage.Type.LOG)
+            .withLog(AirbyteLogMessage().withLevel(level).withMessage(message))
     }
 
-    fun createRecordMessage(tableName: String?,
-                            key: String,
-                            value: String): AirbyteMessage {
+    fun createRecordMessage(tableName: String?, key: String, value: String): AirbyteMessage {
         return createRecordMessage(tableName, ImmutableMap.of(key, value))
     }
 
-    fun createRecordMessage(tableName: String?,
-                            key: String,
-                            value: Int): AirbyteMessage {
+    fun createRecordMessage(tableName: String?, key: String, value: Int): AirbyteMessage {
         return createRecordMessage(tableName, ImmutableMap.of(key, value))
     }
 
-    fun createRecordMessage(tableName: String?,
-                            record: Map<String, *>?): AirbyteMessage {
+    fun createRecordMessage(tableName: String?, record: Map<String, *>?): AirbyteMessage {
         return createRecordMessage(tableName, Jsons.jsonNode(record), Instant.EPOCH)
     }
 
     fun createRecordMessage(streamName: String?, recordData: Int): AirbyteMessage {
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.RECORD)
-                .withRecord(AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(recordData)))
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                AirbyteRecordMessage().withStream(streamName).withData(Jsons.jsonNode(recordData))
+            )
     }
 
     fun createStateMessage(stateData: Int): AirbyteMessage {
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withData(Jsons.jsonNode(stateData)))
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(AirbyteStateMessage().withData(Jsons.jsonNode(stateData)))
     }
 
     fun createStateMessage(key: String, value: String): AirbyteMessage {
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))))
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))))
     }
 
     fun createStreamStateMessage(streamName: String?, stateData: Int): AirbyteStateMessage {
         return AirbyteStateMessage()
-                .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                .withStream(createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData)))
+            .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+            .withStream(createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData)))
     }
 
     fun createGlobalStateMessage(stateData: Int, vararg streamNames: String?): AirbyteMessage {
         val streamStates: MutableList<AirbyteStreamState> = ArrayList()
         for (streamName in streamNames) {
-            streamStates.add(createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData)))
+            streamStates.add(
+                createStreamState(streamName).withStreamState(Jsons.jsonNode(stateData))
+            )
         }
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.STATE)
-                .withState(AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL).withGlobal(AirbyteGlobalState().withStreamStates(streamStates)))
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(
+                AirbyteStateMessage()
+                    .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                    .withGlobal(AirbyteGlobalState().withStreamStates(streamStates))
+            )
     }
 
     fun createStreamState(streamName: String?): AirbyteStreamState {
         return AirbyteStreamState().withStreamDescriptor(StreamDescriptor().withName(streamName))
     }
 
-    fun createStreamEstimateMessage(name: String?, namespace: String?, byteEst: Long, rowEst: Long): AirbyteMessage {
-        return createEstimateMessage(AirbyteEstimateTraceMessage.Type.STREAM, name, namespace, byteEst, rowEst)
+    fun createStreamEstimateMessage(
+        name: String?,
+        namespace: String?,
+        byteEst: Long,
+        rowEst: Long
+    ): AirbyteMessage {
+        return createEstimateMessage(
+            AirbyteEstimateTraceMessage.Type.STREAM,
+            name,
+            namespace,
+            byteEst,
+            rowEst
+        )
     }
 
     fun createSyncEstimateMessage(byteEst: Long, rowEst: Long): AirbyteMessage {
-        return createEstimateMessage(AirbyteEstimateTraceMessage.Type.SYNC, null, null, byteEst, rowEst)
+        return createEstimateMessage(
+            AirbyteEstimateTraceMessage.Type.SYNC,
+            null,
+            null,
+            byteEst,
+            rowEst
+        )
     }
 
-    fun createEstimateMessage(type: AirbyteEstimateTraceMessage.Type?,
-                              name: String?,
-                              namespace: String?,
-                              byteEst: Long,
-                              rowEst: Long): AirbyteMessage {
-        val est = AirbyteEstimateTraceMessage()
+    fun createEstimateMessage(
+        type: AirbyteEstimateTraceMessage.Type?,
+        name: String?,
+        namespace: String?,
+        byteEst: Long,
+        rowEst: Long
+    ): AirbyteMessage {
+        val est =
+            AirbyteEstimateTraceMessage()
                 .withType(type)
                 .withByteEstimate(byteEst)
                 .withRowEstimate(rowEst)
@@ -111,22 +135,26 @@ object AirbyteMessageUtils {
         }
 
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.TRACE)
-                .withTrace(AirbyteTraceMessage().withType(AirbyteTraceMessage.Type.ESTIMATE)
-                        .withEstimate(est))
+            .withType(AirbyteMessage.Type.TRACE)
+            .withTrace(
+                AirbyteTraceMessage().withType(AirbyteTraceMessage.Type.ESTIMATE).withEstimate(est)
+            )
     }
 
     fun createErrorMessage(message: String?, emittedAt: Double?): AirbyteMessage {
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.TRACE)
-                .withTrace(createErrorTraceMessage(message, emittedAt))
+            .withType(AirbyteMessage.Type.TRACE)
+            .withTrace(createErrorTraceMessage(message, emittedAt))
     }
 
     @JvmOverloads
-    fun createErrorTraceMessage(message: String?,
-                                emittedAt: Double?,
-                                failureType: AirbyteErrorTraceMessage.FailureType? = null): AirbyteTraceMessage {
-        val msg = AirbyteTraceMessage()
+    fun createErrorTraceMessage(
+        message: String?,
+        emittedAt: Double?,
+        failureType: AirbyteErrorTraceMessage.FailureType? = null
+    ): AirbyteTraceMessage {
+        val msg =
+            AirbyteTraceMessage()
                 .withType(AirbyteTraceMessage.Type.ERROR)
                 .withError(AirbyteErrorTraceMessage().withMessage(message))
                 .withEmittedAt(emittedAt)
@@ -140,11 +168,12 @@ object AirbyteMessageUtils {
 
     fun createConfigControlMessage(config: Config?, emittedAt: Double?): AirbyteMessage {
         return AirbyteMessage()
-                .withType(AirbyteMessage.Type.CONTROL)
-                .withControl(AirbyteControlMessage()
-                        .withEmittedAt(emittedAt)
-                        .withType(AirbyteControlMessage.Type.CONNECTOR_CONFIG)
-                        .withConnectorConfig(AirbyteControlConnectorConfigMessage()
-                                .withConfig(config)))
+            .withType(AirbyteMessage.Type.CONTROL)
+            .withControl(
+                AirbyteControlMessage()
+                    .withEmittedAt(emittedAt)
+                    .withType(AirbyteControlMessage.Type.CONNECTOR_CONFIG)
+                    .withConnectorConfig(AirbyteControlConnectorConfigMessage().withConfig(config))
+            )
     }
 }

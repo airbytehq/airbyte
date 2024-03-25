@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test
 internal class VersionTest {
     @Test
     fun testJsonSerializationDeserialization() {
-        val jsonString = """
+        val jsonString =
+            """
                               {"version": "1.2.3"}
                               
                               """.trimIndent()
@@ -19,7 +20,8 @@ internal class VersionTest {
         val deserializedVersion = Jsons.deserialize(jsonString, Version::class.java)
         Assertions.assertEquals(expectedVersion, deserializedVersion)
 
-        val deserializedVersionLoop = Jsons.deserialize(Jsons.serialize(deserializedVersion), Version::class.java)
+        val deserializedVersionLoop =
+            Jsons.deserialize(Jsons.serialize(deserializedVersion), Version::class.java)
         Assertions.assertEquals(expectedVersion, deserializedVersionLoop)
     }
 }

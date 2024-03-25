@@ -17,11 +17,13 @@ internal class StringsTest {
     @Test
     fun testJoin() {
         Assertions.assertEquals(
-                "1, 2, 3, 4, 5",
-                Strings.join(Lists.newArrayList(1, 2, 3, 4, 5), ", "))
+            "1, 2, 3, 4, 5",
+            Strings.join(Lists.newArrayList(1, 2, 3, 4, 5), ", ")
+        )
 
         Assertions.assertEquals(
-                "id = 1, id = 2, id = 3",
-                Strings.join(Lists.newArrayList(JoinClass(1), JoinClass(2), JoinClass(3)), ", "))
+            "id = 1, id = 2, id = 3",
+            Strings.join(Lists.newArrayList(JoinClass(1), JoinClass(2), JoinClass(3)), ", ")
+        )
     }
 }

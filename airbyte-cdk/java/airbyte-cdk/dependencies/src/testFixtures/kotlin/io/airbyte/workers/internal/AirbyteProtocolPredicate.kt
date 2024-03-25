@@ -16,7 +16,8 @@ class AirbyteProtocolPredicate : Predicate<JsonNode?> {
     private val jsonSchemaValidator = JsonSchemaValidator()
 
     init {
-        val schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.file, "AirbyteMessage")
+        val schema =
+            JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.file, "AirbyteMessage")
         jsonSchemaValidator.initializeSchemaValidator(PROTOCOL_SCHEMA_NAME, schema)
     }
 

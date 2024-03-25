@@ -27,7 +27,9 @@ internal class ClisTest {
         val optionB = Option.builder("b").required(true).hasArg(true).build()
         val options = Options().addOption(optionA).addOption(optionB)
         val args = arrayOf("-a", ALPHA, "-b", BETA, "-c", "charlie")
-        Assertions.assertThrows(IllegalArgumentException::class.java) { Clis.parse(args, options, DefaultParser()) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            Clis.parse(args, options, DefaultParser())
+        }
     }
 
     @Test
@@ -36,7 +38,9 @@ internal class ClisTest {
         val optionB = Option.builder("b").required(true).hasArg(true).build()
         val options = Options().addOption(optionA).addOption(optionB)
         val args = arrayOf("-a", ALPHA, "-b", BETA, "-c", "charlie")
-        Assertions.assertThrows(IllegalArgumentException::class.java) { Clis.parse(args, options, DefaultParser(), "search") }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            Clis.parse(args, options, DefaultParser(), "search")
+        }
     }
 
     @Test

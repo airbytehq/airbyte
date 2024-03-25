@@ -5,18 +5,19 @@ package io.airbyte.commons.util
 
 import com.google.common.collect.Iterators
 import io.airbyte.commons.concurrency.VoidCallable
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.stream.Stream
 
 internal class AutoCloseableIteratorsTest {
     @Test
     @Throws(Exception::class)
     fun testFromIterator() {
         val onClose = Mockito.mock(VoidCallable::class.java)
-        val iterator = AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose, null)
+        val iterator =
+            AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose, null)
 
         assertNext(iterator, "a")
         assertNext(iterator, "b")
@@ -54,7 +55,8 @@ internal class AutoCloseableIteratorsTest {
         val onClose1 = Mockito.mock(VoidCallable::class.java)
         val onClose2 = Mockito.mock(VoidCallable::class.java)
 
-        val iterator = AutoCloseableIterators.fromIterator(MoreIterators.of(1, 2, 3), onClose1, null)
+        val iterator =
+            AutoCloseableIterators.fromIterator(MoreIterators.of(1, 2, 3), onClose1, null)
         val iteratorWithExtraClose = AutoCloseableIterators.appendOnClose(iterator, onClose2)
 
         iteratorWithExtraClose.close()
@@ -74,9 +76,14 @@ internal class AutoCloseableIteratorsTest {
         val onClose1 = Mockito.mock(VoidCallable::class.java)
         val onClose2 = Mockito.mock(VoidCallable::class.java)
 
-        val iterator: AutoCloseableIterator<String> = CompositeIterator(java.util.List.of(
-                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1, null),
-                AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2, null)), null)
+        val iterator: AutoCloseableIterator<String> =
+            CompositeIterator(
+                java.util.List.of(
+                    AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1, null),
+                    AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2, null)
+                ),
+                null
+            )
 
         assertOnCloseInvocations(listOf(), java.util.List.of(onClose1, onClose2))
         assertNext(iterator, "a")
@@ -93,7 +100,10 @@ internal class AutoCloseableIteratorsTest {
     }
 
     @Throws(Exception::class)
-    private fun assertOnCloseInvocations(haveClosed: List<VoidCallable>, haveNotClosed: List<VoidCallable>) {
+    private fun assertOnCloseInvocations(
+        haveClosed: List<VoidCallable>,
+        haveNotClosed: List<VoidCallable>
+    ) {
         for (voidCallable in haveClosed) {
             Mockito.verify(voidCallable).call()
         }

@@ -18,8 +18,6 @@ import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.WorkerConstants
 import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.process.IntegrationLauncher
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.BufferedWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -33,49 +31,90 @@ import kotlin.collections.Map
 import kotlin.collections.Set
 import kotlin.collections.contains
 import kotlin.collections.setOf
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class DefaultAirbyteDestination @JvmOverloads constructor(private val integrationLauncher: IntegrationLauncher,
-                                                          private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
-                                                          private val messageWriterFactory: AirbyteMessageBufferedWriterFactory = DefaultAirbyteMessageBufferedWriterFactory(),
-                                                          private val protocolSerializer: ProtocolSerializer = DefaultProtocolSerializer()) : AirbyteDestination {
+class DefaultAirbyteDestination
+@JvmOverloads
+constructor(
+    private val integrationLauncher: IntegrationLauncher,
+    private val streamFactory: AirbyteStreamFactory =
+        DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
+    private val messageWriterFactory: AirbyteMessageBufferedWriterFactory =
+        DefaultAirbyteMessageBufferedWriterFactory(),
+    private val protocolSerializer: ProtocolSerializer = DefaultProtocolSerializer()
+) : AirbyteDestination {
     private val inputHasEnded = AtomicBoolean(false)
 
     private var destinationProcess: Process? = null
     private var writer: AirbyteMessageBufferedWriter? = null
     private var messageIterator: Iterator<AirbyteMessage?>? = null
-    override var exitValue: Int? = null
-        get() {
-            Preconditions.checkState(destinationProcess != null, "Destination process is null, cannot retrieve exit value.")
-            Preconditions.checkState(!destinationProcess!!.isAlive, "Destination process is still alive, cannot retrieve exit value.")
 
-            if (field == null) {
-                field = destinationProcess!!.exitValue()
+    private var exitValueIsSet = false
+    private var exitValue: Int = 0
+    override fun getExitValue(): Int {
+            Preconditions.checkState(
+                destinationProcess != null,
+                "Destination process is null, cannot retrieve exit value."
+            )
+            Preconditions.checkState(
+                !destinationProcess!!.isAlive,
+                "Destination process is still alive, cannot retrieve exit value."
+            )
+
+            if (!exitValueIsSet) {
+                exitValueIsSet = true
+                exitValue = destinationProcess!!.exitValue()
             }
 
-            return field
+            return exitValue
         }
-        private set
 
     @Throws(IOException::class, TestHarnessException::class)
-    override fun start(destinationConfig: WorkerDestinationConfig, jobRoot: Path, additionalEnvironmentVariables: Map<String, String>?) {
+    override fun start(
+        destinationConfig: WorkerDestinationConfig,
+        jobRoot: Path,
+        additionalEnvironmentVariables: Map<String, String>
+    ) {
         Preconditions.checkState(destinationProcess == null)
 
         LOGGER.info("Running destination...")
-        destinationProcess = integrationLauncher.write(
+        destinationProcess =
+            integrationLauncher.write(
                 jobRoot,
                 WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
                 Jsons.serialize(destinationConfig.destinationConnectionConfiguration),
                 WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
                 protocolSerializer.serialize(destinationConfig.catalog),
-                additionalEnvironmentVariables)
+                additionalEnvironmentVariables
+            )
         // stdout logs are logged elsewhere since stdout also contains data
-        LineGobbler.gobble(destinationProcess!!.errorStream, { msg: String? -> LOGGER.error(msg) }, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER)
+        LineGobbler.gobble(
+            destinationProcess!!.errorStream,
+            { msg: String? -> LOGGER.error(msg) },
+            "airbyte-destination",
+            CONTAINER_LOG_MDC_BUILDER
+        )
 
-        writer = messageWriterFactory.createWriter(BufferedWriter(OutputStreamWriter(destinationProcess!!.outputStream, Charsets.UTF_8)))
+        writer =
+            messageWriterFactory.createWriter(
+                BufferedWriter(
+                    OutputStreamWriter(destinationProcess!!.outputStream, Charsets.UTF_8)
+                )
+            )
 
-        val acceptedMessageTypes = List.of(AirbyteMessage.Type.STATE, AirbyteMessage.Type.TRACE, AirbyteMessage.Type.CONTROL)
-        messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess!!.inputStream))
-                .filter { message: AirbyteMessage? -> acceptedMessageTypes.contains(message!!.type) }
+        val acceptedMessageTypes =
+            List.of(
+                AirbyteMessage.Type.STATE,
+                AirbyteMessage.Type.TRACE,
+                AirbyteMessage.Type.CONTROL
+            )
+        messageIterator =
+            streamFactory
+                .create(IOs.newBufferedReader(destinationProcess!!.inputStream))
+                .filter { message: AirbyteMessage? ->
+                    acceptedMessageTypes.contains(message!!.type)
+                }
                 .iterator()
     }
 
@@ -110,7 +149,8 @@ class DefaultAirbyteDestination @JvmOverloads constructor(private val integratio
         TestHarnessUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES)
         if (destinationProcess!!.isAlive || !IGNORED_EXIT_CODES.contains(exitValue)) {
             val message =
-                    if (destinationProcess!!.isAlive) "Destination has not terminated " else "Destination process exit with code " + exitValue
+                if (destinationProcess!!.isAlive) "Destination has not terminated "
+                else "Destination process exit with code " + exitValue
             throw TestHarnessException("$message. This warning is normal if the job was cancelled.")
         }
     }
@@ -128,30 +168,33 @@ class DefaultAirbyteDestination @JvmOverloads constructor(private val integratio
         }
     }
 
-    override val isFinished: Boolean
-        get() {
+    override fun isFinished(): Boolean {
             Preconditions.checkState(destinationProcess != null)
             /*
-     * As this check is done on every message read, it is important for this operation to be efficient.
-     * Short circuit early to avoid checking the underlying process. Note: hasNext is blocking.
-     */
+             * As this check is done on every message read, it is important for this operation to be efficient.
+             * Short circuit early to avoid checking the underlying process. Note: hasNext is blocking.
+             */
             return !messageIterator!!.hasNext() && !destinationProcess!!.isAlive
         }
 
     override fun attemptRead(): Optional<AirbyteMessage> {
         Preconditions.checkState(destinationProcess != null)
 
-        return Optional.ofNullable(if (messageIterator!!.hasNext()) messageIterator!!.next() else null)
+        return Optional.ofNullable(
+            if (messageIterator!!.hasNext()) messageIterator!!.next() else null
+        )
     }
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DefaultAirbyteDestination::class.java)
-        val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder = MdcScope.Builder()
+        val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder =
+            MdcScope.Builder()
                 .setLogPrefix("destination")
                 .setPrefixColor(LoggingHelper.Color.YELLOW_BACKGROUND)
-        val IGNORED_EXIT_CODES: Set<Int> = setOf(
-                0,  // Normal exit
+        val IGNORED_EXIT_CODES: Set<Int> =
+            setOf(
+                0, // Normal exit
                 143 // SIGTERM
-        )
+            )
     }
 }

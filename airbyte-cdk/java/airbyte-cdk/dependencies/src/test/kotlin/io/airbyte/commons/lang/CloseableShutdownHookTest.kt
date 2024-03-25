@@ -3,9 +3,9 @@
  */
 package io.airbyte.commons.lang
 
+import java.io.InputStream
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.io.InputStream
 
 internal class CloseableShutdownHookTest {
     @Test
@@ -15,7 +15,13 @@ internal class CloseableShutdownHookTest {
         val autoCloseable = Mockito.mock(CloseableQueue::class.java)
         val notCloseable = "Not closeable"
 
-        val thread = CloseableShutdownHook.buildShutdownHookThread(closeable, autoCloseable, notCloseable, null)
+        val thread =
+            CloseableShutdownHook.buildShutdownHookThread(
+                closeable,
+                autoCloseable,
+                notCloseable,
+                null
+            )
         thread.run()
 
         Mockito.verify(closeable, Mockito.times(1)).close()

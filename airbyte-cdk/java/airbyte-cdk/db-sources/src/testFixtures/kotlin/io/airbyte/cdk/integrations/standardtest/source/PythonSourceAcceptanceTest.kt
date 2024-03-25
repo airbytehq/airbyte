@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory
  * also add the ability to execute arbitrary scripts in the next version.
  */
 class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
-    private var testRoot: Path? = null
+    private lateinit var testRoot: Path
 
     @get:Throws(IOException::class)
     override val spec: ConnectorSpecification
@@ -117,7 +117,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
     }
 
     @Throws(IOException::class)
-    private fun runExecutableInternal(cmd: Command): Path? {
+    private fun runExecutableInternal(cmd: Command): Path {
         LOGGER.info("testRoot = $testRoot")
         val dockerCmd: List<String?> =
             Lists.newArrayList(
@@ -138,8 +138,8 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
             )
 
         val process = ProcessBuilder(dockerCmd).start()
-        LineGobbler.gobble(process.errorStream) { msg: String? -> LOGGER.error(msg) }
-        LineGobbler.gobble(process.inputStream) { msg: String? -> LOGGER.info(msg) }
+        LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
+        LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
 
         TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES)
 

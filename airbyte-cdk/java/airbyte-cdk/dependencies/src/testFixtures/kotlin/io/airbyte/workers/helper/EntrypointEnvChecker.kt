@@ -11,9 +11,7 @@ import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 
-/**
- * Should only be used by connector testing.
- */
+/** Should only be used by connector testing. */
 object EntrypointEnvChecker {
     /**
      * @param processFactory any process factory
@@ -25,12 +23,15 @@ object EntrypointEnvChecker {
      * @throws RuntimeException if there is ambiguous output from the container
      */
     @Throws(IOException::class, InterruptedException::class, TestHarnessException::class)
-    fun getEntrypointEnvVariable(processFactory: ProcessFactory,
-                                 jobId: String,
-                                 jobAttempt: Int,
-                                 jobRoot: Path,
-                                 imageName: String): String? {
-        val process = processFactory.create(
+    fun getEntrypointEnvVariable(
+        processFactory: ProcessFactory,
+        jobId: String,
+        jobAttempt: Int,
+        jobRoot: Path,
+        imageName: String
+    ): String? {
+        val process =
+            processFactory.create(
                 "entrypoint-checker",
                 jobId,
                 jobAttempt,
@@ -45,9 +46,11 @@ object EntrypointEnvChecker {
                 emptyMap(),
                 emptyMap(),
                 emptyMap(),
-                emptyMap())
+                emptyMap()
+            )
 
-        val stdout = BufferedReader(InputStreamReader(process!!.inputStream, StandardCharsets.UTF_8))
+        val stdout =
+            BufferedReader(InputStreamReader(process!!.inputStream, StandardCharsets.UTF_8))
 
         var outputLine: String? = null
 
@@ -64,7 +67,9 @@ object EntrypointEnvChecker {
         return if (outputLine != null) {
             val splits = outputLine.split("=".toRegex(), limit = 2).toTypedArray()
             if (splits.size != 2) {
-                throw RuntimeException("String could not be split into multiple segments: $outputLine")
+                throw RuntimeException(
+                    "String could not be split into multiple segments: $outputLine"
+                )
             } else {
                 splits[1].trim()
             }

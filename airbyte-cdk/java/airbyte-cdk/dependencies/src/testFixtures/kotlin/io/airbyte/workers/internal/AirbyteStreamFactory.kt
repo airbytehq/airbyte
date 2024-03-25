@@ -8,5 +8,5 @@ import java.io.BufferedReader
 import java.util.stream.Stream
 
 interface AirbyteStreamFactory {
-    fun create(bufferedReader: BufferedReader): Stream<AirbyteMessage?>
+    fun create(bufferedReader: BufferedReader): Stream<AirbyteMessage>
 }

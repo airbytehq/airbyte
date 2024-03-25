@@ -4,14 +4,14 @@
 package io.airbyte.commons.io
 
 import com.google.common.collect.Iterables
-import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import org.apache.commons.lang3.RandomStringUtils
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 
 internal class IOsTest {
     @Test
@@ -57,19 +57,12 @@ internal class IOsTest {
     fun testGetTailExists() {
         val stdoutFile = Files.createTempFile("job-history-handler-test", "stdout")
 
-        val head = listOf(
-                "line1",
-                "line2",
-                "line3",
-                "line4")
+        val head = listOf("line1", "line2", "line3", "line4")
 
-        val expectedTail = listOf(
-                "line5",
-                "line6",
-                "line7",
-                "line8")
+        val expectedTail = listOf("line5", "line6", "line7", "line8")
 
-        val writer: Writer = BufferedWriter(FileWriter(stdoutFile.toString(), StandardCharsets.UTF_8, true))
+        val writer: Writer =
+            BufferedWriter(FileWriter(stdoutFile.toString(), StandardCharsets.UTF_8, true))
 
         for (line in Iterables.concat(head, expectedTail)) {
             writer.write(line + "\n")

@@ -3,37 +3,32 @@
  */
 package io.airbyte.commons.util
 
+import java.util.*
+import java.util.function.Supplier
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.invocation.InvocationOnMock
-import java.util.*
-import java.util.function.Supplier
+import org.mockito.kotlin.mock
 
 internal class LazyAutoCloseableIteratorTest {
-    private var internalIterator: AutoCloseableIterator<String>? = null
-    private var iteratorSupplier: Supplier<AutoCloseableIterator<String>>? = null
+    private lateinit var internalIterator: AutoCloseableIterator<String>
+    private lateinit var iteratorSupplier: Supplier<AutoCloseableIterator<String>>
 
     @BeforeEach
     fun setup() {
-        internalIterator = Mockito.mock(AutoCloseableIterator::class.java) as AutoCloseableIterator<String>
-        iteratorSupplier = Mockito.mock(Supplier::class.java)
+        internalIterator = mock()
+        iteratorSupplier = mock()
         Mockito.`when`(iteratorSupplier.get()).thenReturn(internalIterator)
-    }
-
-    @Test
-    fun testNullInput() {
-        Assertions.assertThrows(NullPointerException::class.java) { LazyAutoCloseableIterator<Any>(null, null) }
-        val iteratorWithNullSupplier: AutoCloseableIterator<String> = LazyAutoCloseableIterator({ null }, null)
-        Assertions.assertThrows(NullPointerException::class.java) { iteratorWithNullSupplier.next() }
     }
 
     @Test
     @Throws(Exception::class)
     fun testEmptyInput() {
         mockInternalIteratorWith(Collections.emptyIterator())
-        val iterator: AutoCloseableIterator<String> = LazyAutoCloseableIterator(iteratorSupplier, null)
+        val iterator: AutoCloseableIterator<String> =
+            LazyAutoCloseableIterator(iteratorSupplier, null)
 
         Assertions.assertFalse(iterator.hasNext())
         iterator.close()
@@ -45,7 +40,8 @@ internal class LazyAutoCloseableIteratorTest {
     fun test() {
         mockInternalIteratorWith(MoreIterators.of("a", "b", "c"))
 
-        val iterator: AutoCloseableIterator<String> = LazyAutoCloseableIterator(iteratorSupplier, null)
+        val iterator: AutoCloseableIterator<String> =
+            LazyAutoCloseableIterator(iteratorSupplier, null)
         Mockito.verify(iteratorSupplier, Mockito.never()).get()
         assertNext(iterator, "a")
         Mockito.verify(iteratorSupplier).get()
@@ -60,13 +56,16 @@ internal class LazyAutoCloseableIteratorTest {
     @Throws(Exception::class)
     fun testCloseBeforeSupply() {
         mockInternalIteratorWith(MoreIterators.of("a", "b", "c"))
-        val iterator: AutoCloseableIterator<String> = LazyAutoCloseableIterator(iteratorSupplier, null)
+        val iterator: AutoCloseableIterator<String> =
+            LazyAutoCloseableIterator(iteratorSupplier, null)
         iterator.close()
         Mockito.verify(iteratorSupplier, Mockito.never()).get()
     }
 
     private fun mockInternalIteratorWith(iterator: Iterator<String>) {
-        Mockito.`when`(internalIterator!!.hasNext()).then { a: InvocationOnMock? -> iterator.hasNext() }
+        Mockito.`when`(internalIterator!!.hasNext()).then { a: InvocationOnMock? ->
+            iterator.hasNext()
+        }
         Mockito.`when`(internalIterator!!.next()).then { a: InvocationOnMock? -> iterator.next() }
     }
 

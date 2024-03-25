@@ -8,13 +8,6 @@ import io.airbyte.commons.logging.MdcScope
 import io.airbyte.protocol.models.AirbyteLogMessage
 import io.airbyte.protocol.models.AirbyteMessage
 import io.airbyte.workers.test_utils.AirbyteMessageUtils
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
-import org.slf4j.Logger
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -23,10 +16,17 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito
+import org.slf4j.Logger
 
 internal class DefaultAirbyteStreamFactoryTest {
-    private var protocolPredicate: AirbyteProtocolPredicate? = null
-    private var logger: Logger? = null
+    private lateinit var protocolPredicate: AirbyteProtocolPredicate
+    private lateinit var logger: Logger
 
     @BeforeEach
     fun setup() {
@@ -42,7 +42,10 @@ internal class DefaultAirbyteStreamFactoryTest {
         val messageStream = stringToMessageStream(Jsons.serialize(record1))
         val expectedStream = Stream.of(record1)
 
-        Assertions.assertEquals(expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()))
+        Assertions.assertEquals(
+            expectedStream.collect(Collectors.toList()),
+            messageStream.collect(Collectors.toList())
+        )
         Mockito.verifyNoInteractions(logger)
     }
 
@@ -59,7 +62,8 @@ internal class DefaultAirbyteStreamFactoryTest {
 
     @Test
     fun testLoggingLevel() {
-        val logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning")
+        val logMessage =
+            AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning")
 
         val messageStream = stringToMessageStream(Jsons.serialize(logMessage))
 
@@ -98,11 +102,19 @@ internal class DefaultAirbyteStreamFactoryTest {
     fun testFailsSize() {
         val record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green")
 
-        val inputStream: InputStream = ByteArrayInputStream(record1.toString().toByteArray(StandardCharsets.UTF_8))
+        val inputStream: InputStream =
+            ByteArrayInputStream(record1.toString().toByteArray(StandardCharsets.UTF_8))
         val bufferedReader = BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
 
         val messageStream =
-                DefaultAirbyteStreamFactory(protocolPredicate, logger, MdcScope.Builder(), Optional.of(RuntimeException::class.java), 1L).create(bufferedReader)
+            DefaultAirbyteStreamFactory(
+                    protocolPredicate,
+                    logger,
+                    MdcScope.Builder(),
+                    Optional.of(RuntimeException::class.java),
+                    1L
+                )
+                .create(bufferedReader)
 
         Assertions.assertThrows(RuntimeException::class.java) { messageStream.toList() }
     }
@@ -123,9 +135,16 @@ internal class DefaultAirbyteStreamFactoryTest {
     }
 
     private fun stringToMessageStream(inputString: String): Stream<AirbyteMessage> {
-        val inputStream: InputStream = ByteArrayInputStream(inputString.toByteArray(StandardCharsets.UTF_8))
+        val inputStream: InputStream =
+            ByteArrayInputStream(inputString.toByteArray(StandardCharsets.UTF_8))
         val bufferedReader = BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
-        return DefaultAirbyteStreamFactory(protocolPredicate, logger, MdcScope.Builder(), Optional.empty()).create(bufferedReader)
+        return DefaultAirbyteStreamFactory(
+                protocolPredicate,
+                logger,
+                MdcScope.Builder(),
+                Optional.empty()
+            )
+            .create(bufferedReader)
     }
 
     companion object {

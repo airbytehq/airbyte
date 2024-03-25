@@ -10,73 +10,164 @@ internal class AirbyteVersionTest {
     @Test
     fun testParseVersion() {
         val version = AirbyteVersion(VERSION_678)
-        Assertions.assertEquals("6", version.majorVersion)
-        Assertions.assertEquals("7", version.minorVersion)
-        Assertions.assertEquals("8", version.patchVersion)
+        Assertions.assertEquals("6", version.major)
+        Assertions.assertEquals("7", version.minor)
+        Assertions.assertEquals("8", version.patch)
     }
 
     @Test
     fun testParseVersionWithLabel() {
         val version = AirbyteVersion(VERSION_678_OMEGA)
-        Assertions.assertEquals("6", version.majorVersion)
-        Assertions.assertEquals("7", version.minorVersion)
-        Assertions.assertEquals("8", version.patchVersion)
+        Assertions.assertEquals("6", version.major)
+        Assertions.assertEquals("7", version.minor)
+        Assertions.assertEquals("8", version.patch)
     }
 
     @Test
     fun testCompatibleVersionCompareTo() {
-        Assertions.assertEquals(0, AirbyteVersion(VERSION_678_OMEGA).compatibleVersionCompareTo(AirbyteVersion(VERSION_678_GAMMA)))
-        Assertions.assertEquals(0, AirbyteVersion(VERSION_678_ALPHA).compatibleVersionCompareTo(AirbyteVersion(VERSION_679_ALPHA)))
-        Assertions.assertTrue(0 < AirbyteVersion(VERSION_680_ALPHA).compatibleVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(0 < AirbyteVersion("11.8.0-alpha").compatibleVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(0 < AirbyteVersion(VERSION_6110_ALPHA).compatibleVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(0 > AirbyteVersion("0.8.0-alpha").compatibleVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertEquals(0, AirbyteVersion(VERSION_123_PROD).compatibleVersionCompareTo(AirbyteVersion(DEV)))
-        Assertions.assertEquals(0, AirbyteVersion(DEV).compatibleVersionCompareTo(AirbyteVersion(VERSION_123_PROD)))
+        Assertions.assertEquals(
+            0,
+            AirbyteVersion(VERSION_678_OMEGA)
+                .compatibleVersionCompareTo(AirbyteVersion(VERSION_678_GAMMA))
+        )
+        Assertions.assertEquals(
+            0,
+            AirbyteVersion(VERSION_678_ALPHA)
+                .compatibleVersionCompareTo(AirbyteVersion(VERSION_679_ALPHA))
+        )
+        Assertions.assertTrue(
+            0 <
+                AirbyteVersion(VERSION_680_ALPHA)
+                    .compatibleVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            0 <
+                AirbyteVersion("11.8.0-alpha")
+                    .compatibleVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            0 <
+                AirbyteVersion(VERSION_6110_ALPHA)
+                    .compatibleVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            0 >
+                AirbyteVersion("0.8.0-alpha")
+                    .compatibleVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertEquals(
+            0,
+            AirbyteVersion(VERSION_123_PROD).compatibleVersionCompareTo(AirbyteVersion(DEV))
+        )
+        Assertions.assertEquals(
+            0,
+            AirbyteVersion(DEV).compatibleVersionCompareTo(AirbyteVersion(VERSION_123_PROD))
+        )
     }
 
     @Test
     fun testPatchVersionCompareTo() {
-        Assertions.assertEquals(0, AirbyteVersion(VERSION_678_OMEGA).patchVersionCompareTo(AirbyteVersion(VERSION_678_GAMMA)))
-        Assertions.assertTrue(0 > AirbyteVersion(VERSION_678_ALPHA).patchVersionCompareTo(AirbyteVersion(VERSION_679_ALPHA)))
-        Assertions.assertTrue(0 > AirbyteVersion(VERSION_678_ALPHA).patchVersionCompareTo(AirbyteVersion("6.7.11-alpha")))
-        Assertions.assertTrue(0 < AirbyteVersion(VERSION_680_ALPHA).patchVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(0 < AirbyteVersion(VERSION_6110_ALPHA).patchVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(0 > AirbyteVersion(VERSION_380_ALPHA).patchVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(0 > AirbyteVersion(VERSION_380_ALPHA).patchVersionCompareTo(AirbyteVersion("11.7.8-alpha")))
-        Assertions.assertEquals(0, AirbyteVersion(VERSION_123_PROD).patchVersionCompareTo(AirbyteVersion(DEV)))
-        Assertions.assertEquals(0, AirbyteVersion(DEV).patchVersionCompareTo(AirbyteVersion(VERSION_123_PROD)))
+        Assertions.assertEquals(
+            0,
+            AirbyteVersion(VERSION_678_OMEGA)
+                .patchVersionCompareTo(AirbyteVersion(VERSION_678_GAMMA))
+        )
+        Assertions.assertTrue(
+            0 >
+                AirbyteVersion(VERSION_678_ALPHA)
+                    .patchVersionCompareTo(AirbyteVersion(VERSION_679_ALPHA))
+        )
+        Assertions.assertTrue(
+            0 >
+                AirbyteVersion(VERSION_678_ALPHA)
+                    .patchVersionCompareTo(AirbyteVersion("6.7.11-alpha"))
+        )
+        Assertions.assertTrue(
+            0 <
+                AirbyteVersion(VERSION_680_ALPHA)
+                    .patchVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            0 <
+                AirbyteVersion(VERSION_6110_ALPHA)
+                    .patchVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            0 >
+                AirbyteVersion(VERSION_380_ALPHA)
+                    .patchVersionCompareTo(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            0 >
+                AirbyteVersion(VERSION_380_ALPHA)
+                    .patchVersionCompareTo(AirbyteVersion("11.7.8-alpha"))
+        )
+        Assertions.assertEquals(
+            0,
+            AirbyteVersion(VERSION_123_PROD).patchVersionCompareTo(AirbyteVersion(DEV))
+        )
+        Assertions.assertEquals(
+            0,
+            AirbyteVersion(DEV).patchVersionCompareTo(AirbyteVersion(VERSION_123_PROD))
+        )
     }
 
     @Test
     fun testGreaterThan() {
-        Assertions.assertFalse(AirbyteVersion(VERSION_678_OMEGA).greaterThan(AirbyteVersion(VERSION_678_GAMMA)))
-        Assertions.assertFalse(AirbyteVersion(VERSION_678_ALPHA).greaterThan(AirbyteVersion(VERSION_679_ALPHA)))
-        Assertions.assertFalse(AirbyteVersion(VERSION_678_ALPHA).greaterThan(AirbyteVersion("6.7.11-alpha")))
-        Assertions.assertTrue(AirbyteVersion(VERSION_680_ALPHA).greaterThan(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(AirbyteVersion(VERSION_6110_ALPHA).greaterThan(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertFalse(AirbyteVersion(VERSION_380_ALPHA).greaterThan(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertFalse(AirbyteVersion(VERSION_380_ALPHA).greaterThan(AirbyteVersion("11.7.8-alpha")))
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_678_OMEGA).greaterThan(AirbyteVersion(VERSION_678_GAMMA))
+        )
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_678_ALPHA).greaterThan(AirbyteVersion(VERSION_679_ALPHA))
+        )
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_678_ALPHA).greaterThan(AirbyteVersion("6.7.11-alpha"))
+        )
+        Assertions.assertTrue(
+            AirbyteVersion(VERSION_680_ALPHA).greaterThan(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            AirbyteVersion(VERSION_6110_ALPHA).greaterThan(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_380_ALPHA).greaterThan(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_380_ALPHA).greaterThan(AirbyteVersion("11.7.8-alpha"))
+        )
         Assertions.assertFalse(AirbyteVersion(VERSION_123_PROD).greaterThan(AirbyteVersion(DEV)))
         Assertions.assertFalse(AirbyteVersion(DEV).greaterThan(AirbyteVersion(VERSION_123_PROD)))
     }
 
     @Test
     fun testLessThan() {
-        Assertions.assertFalse(AirbyteVersion(VERSION_678_OMEGA).lessThan(AirbyteVersion(VERSION_678_GAMMA)))
-        Assertions.assertTrue(AirbyteVersion(VERSION_678_ALPHA).lessThan(AirbyteVersion(VERSION_679_ALPHA)))
-        Assertions.assertTrue(AirbyteVersion(VERSION_678_ALPHA).lessThan(AirbyteVersion("6.7.11-alpha")))
-        Assertions.assertFalse(AirbyteVersion(VERSION_680_ALPHA).lessThan(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertFalse(AirbyteVersion(VERSION_6110_ALPHA).lessThan(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(AirbyteVersion(VERSION_380_ALPHA).lessThan(AirbyteVersion(VERSION_678_ALPHA)))
-        Assertions.assertTrue(AirbyteVersion(VERSION_380_ALPHA).lessThan(AirbyteVersion("11.7.8-alpha")))
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_678_OMEGA).lessThan(AirbyteVersion(VERSION_678_GAMMA))
+        )
+        Assertions.assertTrue(
+            AirbyteVersion(VERSION_678_ALPHA).lessThan(AirbyteVersion(VERSION_679_ALPHA))
+        )
+        Assertions.assertTrue(
+            AirbyteVersion(VERSION_678_ALPHA).lessThan(AirbyteVersion("6.7.11-alpha"))
+        )
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_680_ALPHA).lessThan(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_6110_ALPHA).lessThan(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            AirbyteVersion(VERSION_380_ALPHA).lessThan(AirbyteVersion(VERSION_678_ALPHA))
+        )
+        Assertions.assertTrue(
+            AirbyteVersion(VERSION_380_ALPHA).lessThan(AirbyteVersion("11.7.8-alpha"))
+        )
         Assertions.assertFalse(AirbyteVersion(VERSION_123_PROD).lessThan(AirbyteVersion(DEV)))
         Assertions.assertFalse(AirbyteVersion(DEV).lessThan(AirbyteVersion(VERSION_123_PROD)))
     }
 
     @Test
     fun testInvalidVersions() {
-        Assertions.assertThrows(NullPointerException::class.java) { AirbyteVersion(null) }
         Assertions.assertThrows(IllegalArgumentException::class.java) { AirbyteVersion("0.6") }
     }
 
@@ -91,15 +182,29 @@ internal class AirbyteVersionTest {
     @Test
     fun testCheckVersion() {
         AirbyteVersion.assertIsCompatible(AirbyteVersion("3.2.1"), AirbyteVersion("3.2.1"))
-        Assertions.assertThrows(IllegalStateException::class.java) { AirbyteVersion.assertIsCompatible(AirbyteVersion("1.2.3"), AirbyteVersion("3.2.1")) }
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            AirbyteVersion.assertIsCompatible(AirbyteVersion("1.2.3"), AirbyteVersion("3.2.1"))
+        }
     }
 
     @Test
     fun testCheckOnlyPatchVersion() {
-        Assertions.assertFalse(AirbyteVersion(VERSION_678).checkOnlyPatchVersionIsUpdatedComparedTo(AirbyteVersion(VERSION_678)))
-        Assertions.assertFalse(AirbyteVersion("6.9.8").checkOnlyPatchVersionIsUpdatedComparedTo(AirbyteVersion("6.8.9")))
-        Assertions.assertFalse(AirbyteVersion("7.7.8").checkOnlyPatchVersionIsUpdatedComparedTo(AirbyteVersion("6.7.11")))
-        Assertions.assertTrue(AirbyteVersion("6.7.9").checkOnlyPatchVersionIsUpdatedComparedTo(AirbyteVersion(VERSION_678)))
+        Assertions.assertFalse(
+            AirbyteVersion(VERSION_678)
+                .checkOnlyPatchVersionIsUpdatedComparedTo(AirbyteVersion(VERSION_678))
+        )
+        Assertions.assertFalse(
+            AirbyteVersion("6.9.8")
+                .checkOnlyPatchVersionIsUpdatedComparedTo(AirbyteVersion("6.8.9"))
+        )
+        Assertions.assertFalse(
+            AirbyteVersion("7.7.8")
+                .checkOnlyPatchVersionIsUpdatedComparedTo(AirbyteVersion("6.7.11"))
+        )
+        Assertions.assertTrue(
+            AirbyteVersion("6.7.9")
+                .checkOnlyPatchVersionIsUpdatedComparedTo(AirbyteVersion(VERSION_678))
+        )
     }
 
     companion object {

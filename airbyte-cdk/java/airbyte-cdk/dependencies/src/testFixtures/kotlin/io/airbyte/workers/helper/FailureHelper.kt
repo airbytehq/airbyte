@@ -17,10 +17,10 @@ object FailureHelper {
 
     fun genericFailure(t: Throwable, jobId: Long, attemptNumber: Int): FailureReason {
         return FailureReason()
-                .withInternalMessage(t.message)
-                .withStacktrace(ExceptionUtils.getStackTrace(t))
-                .withTimestamp(System.currentTimeMillis())
-                .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber))
+            .withInternalMessage(t.message)
+            .withStacktrace(ExceptionUtils.getStackTrace(t))
+            .withTimestamp(System.currentTimeMillis())
+            .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber))
     }
 
     // Generate a FailureReason from an AirbyteTraceMessage.
@@ -43,84 +43,97 @@ object FailureHelper {
             }
         }
         return FailureReason()
-                .withInternalMessage(m.error.internalMessage)
-                .withExternalMessage(m.error.message)
-                .withStacktrace(m.error.stackTrace)
-                .withTimestamp(m.emittedAt.toLong())
-                .withFailureType(failureType)
-                .withMetadata(traceMessageMetadata(jobId, attemptNumber))
+            .withInternalMessage(m.error.internalMessage)
+            .withExternalMessage(m.error.message)
+            .withStacktrace(m.error.stackTrace)
+            .withTimestamp(m.emittedAt.toLong())
+            .withFailureType(failureType)
+            .withMetadata(traceMessageMetadata(jobId, attemptNumber))
     }
 
-    fun connectorCommandFailure(m: AirbyteTraceMessage,
-                                jobId: Long?,
-                                attemptNumber: Int?,
-                                connectorCommand: ConnectorCommand): FailureReason {
+    fun connectorCommandFailure(
+        m: AirbyteTraceMessage,
+        jobId: Long?,
+        attemptNumber: Int?,
+        connectorCommand: ConnectorCommand
+    ): FailureReason {
         val metadata = traceMessageMetadata(jobId, attemptNumber)
         metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString())
-        return genericFailure(m, jobId, attemptNumber)
-                .withMetadata(metadata)
+        return genericFailure(m, jobId, attemptNumber).withMetadata(metadata)
     }
 
-    fun connectorCommandFailure(t: Throwable,
-                                jobId: Long,
-                                attemptNumber: Int,
-                                connectorCommand: ConnectorCommand): FailureReason {
+    fun connectorCommandFailure(
+        t: Throwable,
+        jobId: Long,
+        attemptNumber: Int,
+        connectorCommand: ConnectorCommand
+    ): FailureReason {
         val metadata = jobAndAttemptMetadata(jobId, attemptNumber)
         metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString())
-        return genericFailure(t, jobId, attemptNumber)
-                .withMetadata(metadata)
+        return genericFailure(t, jobId, attemptNumber).withMetadata(metadata)
     }
 
     fun sourceFailure(t: Throwable, jobId: Long, attemptNumber: Int): FailureReason {
         return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.READ)
-                .withFailureOrigin(FailureReason.FailureOrigin.SOURCE)
-                .withExternalMessage("Something went wrong within the source connector")
+            .withFailureOrigin(FailureReason.FailureOrigin.SOURCE)
+            .withExternalMessage("Something went wrong within the source connector")
     }
 
     fun sourceFailure(m: AirbyteTraceMessage, jobId: Long?, attemptNumber: Int?): FailureReason {
         return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.READ)
-                .withFailureOrigin(FailureReason.FailureOrigin.SOURCE)
+            .withFailureOrigin(FailureReason.FailureOrigin.SOURCE)
     }
 
     fun destinationFailure(t: Throwable, jobId: Long, attemptNumber: Int): FailureReason {
         return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.WRITE)
-                .withFailureOrigin(FailureReason.FailureOrigin.DESTINATION)
-                .withExternalMessage("Something went wrong within the destination connector")
+            .withFailureOrigin(FailureReason.FailureOrigin.DESTINATION)
+            .withExternalMessage("Something went wrong within the destination connector")
     }
 
-    fun destinationFailure(m: AirbyteTraceMessage, jobId: Long?, attemptNumber: Int?): FailureReason {
+    fun destinationFailure(
+        m: AirbyteTraceMessage,
+        jobId: Long?,
+        attemptNumber: Int?
+    ): FailureReason {
         return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.WRITE)
-                .withFailureOrigin(FailureReason.FailureOrigin.DESTINATION)
+            .withFailureOrigin(FailureReason.FailureOrigin.DESTINATION)
     }
 
-    fun checkFailure(t: Throwable,
-                     jobId: Long,
-                     attemptNumber: Int,
-                     origin: FailureReason.FailureOrigin?): FailureReason {
+    fun checkFailure(
+        t: Throwable,
+        jobId: Long,
+        attemptNumber: Int,
+        origin: FailureReason.FailureOrigin?
+    ): FailureReason {
         return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.CHECK)
-                .withFailureOrigin(origin)
-                .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
-                .withRetryable(false)
-                .withExternalMessage(String.format("Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing", origin))
+            .withFailureOrigin(origin)
+            .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
+            .withRetryable(false)
+            .withExternalMessage(
+                String.format(
+                    "Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing",
+                    origin
+                )
+            )
     }
 
     fun unknownOriginFailure(t: Throwable, jobId: Long, attemptNumber: Int): FailureReason {
         return genericFailure(t, jobId, attemptNumber)
-                .withFailureOrigin(FailureReason.FailureOrigin.UNKNOWN)
-                .withExternalMessage("An unknown failure occurred")
+            .withFailureOrigin(FailureReason.FailureOrigin.UNKNOWN)
+            .withExternalMessage("An unknown failure occurred")
     }
 
     private fun jobAndAttemptMetadata(jobId: Long, attemptNumber: Int): Metadata {
         return Metadata()
-                .withAdditionalProperty(JOB_ID_METADATA_KEY, jobId)
-                .withAdditionalProperty(ATTEMPT_NUMBER_METADATA_KEY, attemptNumber)
+            .withAdditionalProperty(JOB_ID_METADATA_KEY, jobId)
+            .withAdditionalProperty(ATTEMPT_NUMBER_METADATA_KEY, attemptNumber)
     }
 
     private fun traceMessageMetadata(jobId: Long?, attemptNumber: Int?): Metadata {
         return Metadata()
-                .withAdditionalProperty(JOB_ID_METADATA_KEY, jobId)
-                .withAdditionalProperty(ATTEMPT_NUMBER_METADATA_KEY, attemptNumber)
-                .withAdditionalProperty(TRACE_MESSAGE_METADATA_KEY, true)
+            .withAdditionalProperty(JOB_ID_METADATA_KEY, jobId)
+            .withAdditionalProperty(ATTEMPT_NUMBER_METADATA_KEY, attemptNumber)
+            .withAdditionalProperty(TRACE_MESSAGE_METADATA_KEY, true)
     }
 
     /**
@@ -128,14 +141,21 @@ object FailureHelper {
      * that earlier failures come first.
      */
     fun orderedFailures(failures: Set<FailureReason>): List<FailureReason> {
-        val compareByIsTrace = Comparator.comparing { failureReason: FailureReason ->
-            val metadata: Any? = failureReason.metadata
-            if (metadata != null) {
-                return@comparing if (failureReason.metadata.additionalProperties.containsKey(TRACE_MESSAGE_METADATA_KEY)) 0 else 1
-            } else {
-                return@comparing 1
+        val compareByIsTrace =
+            Comparator.comparing { failureReason: FailureReason ->
+                val metadata: Any? = failureReason.metadata
+                if (metadata != null) {
+                    return@comparing if (
+                        failureReason.metadata.additionalProperties.containsKey(
+                            TRACE_MESSAGE_METADATA_KEY
+                        )
+                    )
+                        0
+                    else 1
+                } else {
+                    return@comparing 1
+                }
             }
-        }
         val compareByTimestamp = Comparator.comparing { obj: FailureReason -> obj.timestamp }
         val compareByTraceAndTimestamp = compareByIsTrace.thenComparing(compareByTimestamp)
         return failures.stream().sorted(compareByTraceAndTimestamp).toList()

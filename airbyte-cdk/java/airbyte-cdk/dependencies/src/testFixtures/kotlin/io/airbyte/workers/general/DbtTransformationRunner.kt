@@ -17,15 +17,17 @@ import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.normalization.NormalizationRunner
 import io.airbyte.workers.process.Metadata
 import io.airbyte.workers.process.ProcessFactory
-import org.apache.tools.ant.types.Commandline
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
+import org.apache.tools.ant.types.Commandline
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class DbtTransformationRunner(private val processFactory: ProcessFactory,
-                              private val normalizationRunner: NormalizationRunner) : AutoCloseable {
+class DbtTransformationRunner(
+    private val processFactory: ProcessFactory,
+    private val normalizationRunner: NormalizationRunner
+) : AutoCloseable {
     private var process: Process? = null
 
     @Throws(Exception::class)
@@ -34,66 +36,99 @@ class DbtTransformationRunner(private val processFactory: ProcessFactory,
     }
 
     /**
-     * The docker image used by the DbtTransformationRunner is provided by the User, so we can't ensure
-     * to have the right python, dbt, dependencies etc software installed to successfully run our
-     * transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend
-     * on the NormalizationRunner to configure the dbt project with the appropriate destination settings
-     * and pull the custom git repository into the workspace.
+     * The docker image used by the DbtTransformationRunner is provided by the User, so we can't
+     * ensure to have the right python, dbt, dependencies etc software installed to successfully run
+     * our transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we
+     * depend on the NormalizationRunner to configure the dbt project with the appropriate
+     * destination settings and pull the custom git repository into the workspace.
      *
-     *
-     * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
-     * provided by the user to execute whatever extra transformation has been implemented.
+     * Once the workspace folder/files is setup to run, we invoke the custom transformation command
+     * as provided by the user to execute whatever extra transformation has been implemented.
      */
     @Throws(Exception::class)
-    fun run(jobId: String,
-            attempt: Int,
-            jobRoot: Path,
-            config: JsonNode?,
-            resourceRequirements: ResourceRequirements?,
-            dbtConfig: OperatorDbt): Boolean {
-        if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
+    fun run(
+        jobId: String,
+        attempt: Int,
+        jobRoot: Path,
+        config: JsonNode?,
+        resourceRequirements: ResourceRequirements?,
+        dbtConfig: OperatorDbt
+    ): Boolean {
+        if (
+            !normalizationRunner.configureDbt(
+                jobId,
+                attempt,
+                jobRoot,
+                config,
+                resourceRequirements,
+                dbtConfig
+            )
+        ) {
             return false
         }
         return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)
     }
 
     @Throws(Exception::class)
-    fun transform(jobId: String,
-                  attempt: Int,
-                  jobRoot: Path,
-                  config: JsonNode?,
-                  resourceRequirements: ResourceRequirements?,
-                  dbtConfig: OperatorDbt): Boolean {
+    fun transform(
+        jobId: String,
+        attempt: Int,
+        jobRoot: Path,
+        config: JsonNode?,
+        resourceRequirements: ResourceRequirements?,
+        dbtConfig: OperatorDbt
+    ): Boolean {
         try {
-            val files: Map<String?, String?> = ImmutableMap.of(
-                    DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
-                    "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"))
+            val files: Map<String?, String?> =
+                ImmutableMap.of(
+                    DBT_ENTRYPOINT_SH,
+                    MoreResources.readResource("dbt_transformation_entrypoint.sh"),
+                    "sshtunneling.sh",
+                    MoreResources.readResource("sshtunneling.sh")
+                )
             val dbtArguments: MutableList<String> = ArrayList()
             dbtArguments.add(DBT_ENTRYPOINT_SH)
             if (Strings.isNullOrEmpty(dbtConfig.dbtArguments)) {
                 throw TestHarnessException("Dbt Arguments are required")
             }
-            Collections.addAll(dbtArguments, *Commandline.translateCommandline(dbtConfig.dbtArguments))
+            Collections.addAll(
+                dbtArguments,
+                *Commandline.translateCommandline(dbtConfig.dbtArguments)
+            )
             process =
-                    processFactory.create(
-                            Metadata.CUSTOM_STEP,
-                            jobId,
-                            attempt,
-                            jobRoot,
-                            dbtConfig.dockerImage,
-                            false,
-                            false,
-                            files,
-                            "/bin/bash",
-                            resourceRequirements,
-                            null,
-                            java.util.Map.of(Metadata.JOB_TYPE_KEY, Metadata.SYNC_JOB, Metadata.SYNC_STEP_KEY, Metadata.CUSTOM_STEP),
-                            emptyMap(),
-                            emptyMap(),
-                            emptyMap(),
-                            *dbtArguments.toTypedArray<String>())
-            LineGobbler.gobble(process!!.inputStream, { msg: String? -> LOGGER.info(msg) }, CONTAINER_LOG_MDC_BUILDER)
-            LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) }, CONTAINER_LOG_MDC_BUILDER)
+                processFactory.create(
+                    Metadata.CUSTOM_STEP,
+                    jobId,
+                    attempt,
+                    jobRoot,
+                    dbtConfig.dockerImage,
+                    false,
+                    false,
+                    files,
+                    "/bin/bash",
+                    resourceRequirements,
+                    null,
+                    java.util.Map.of(
+                        Metadata.JOB_TYPE_KEY,
+                        Metadata.SYNC_JOB,
+                        Metadata.SYNC_STEP_KEY,
+                        Metadata.CUSTOM_STEP
+                    ),
+                    emptyMap(),
+                    emptyMap(),
+                    emptyMap(),
+                    *dbtArguments.toTypedArray<String>()
+                )
+            LineGobbler.gobble(
+                process!!.inputStream,
+                { msg: String? -> LOGGER.info(msg) },
+                CONTAINER_LOG_MDC_BUILDER
+            )
+            LineGobbler.gobble(
+                process!!.errorStream,
+                { msg: String? -> LOGGER.error(msg) },
+                CONTAINER_LOG_MDC_BUILDER
+            )
 
             TestHarnessUtils.wait(process)
 
@@ -125,7 +160,8 @@ class DbtTransformationRunner(private val processFactory: ProcessFactory,
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DbtTransformationRunner::class.java)
         private const val DBT_ENTRYPOINT_SH = "entrypoint.sh"
-        private val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder = MdcScope.Builder()
+        private val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder =
+            MdcScope.Builder()
                 .setLogPrefix("dbt")
                 .setPrefixColor(LoggingHelper.Color.PURPLE_BACKGROUND)
     }

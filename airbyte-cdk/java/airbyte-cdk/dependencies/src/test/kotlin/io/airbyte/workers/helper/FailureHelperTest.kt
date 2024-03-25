@@ -8,16 +8,20 @@ import io.airbyte.configoss.Metadata
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.AirbyteTraceMessage
 import io.airbyte.workers.test_utils.AirbyteMessageUtils
+import java.util.Set
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.util.Set
 
 internal class FailureHelperTest {
     @Test
     @Throws(Exception::class)
     fun testGenericFailureFromTrace() {
-        val traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", 123.0,
-                AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+        val traceMessage =
+            AirbyteMessageUtils.createErrorTraceMessage(
+                "trace message error",
+                123.0,
+                AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR
+            )
         val failureReason = FailureHelper.genericFailure(traceMessage, 12345, 1)
         Assertions.assertEquals(FailureReason.FailureType.CONFIG_ERROR, failureReason.failureType)
     }
@@ -34,7 +38,13 @@ internal class FailureHelperTest {
         val t: Throwable = RuntimeException()
         val jobId = 12345L
         val attemptNumber = 1
-        val failureReason = FailureHelper.connectorCommandFailure(t, jobId, attemptNumber, FailureHelper.ConnectorCommand.CHECK)
+        val failureReason =
+            FailureHelper.connectorCommandFailure(
+                t,
+                jobId,
+                attemptNumber,
+                FailureHelper.ConnectorCommand.CHECK
+            )
 
         val metadata = failureReason.metadata.additionalProperties
         Assertions.assertEquals("check", metadata[CONNECTOR_COMMAND_KEY])
@@ -47,7 +57,13 @@ internal class FailureHelperTest {
     fun testConnectorCommandFailureFromTrace() {
         val jobId = 12345L
         val attemptNumber = 1
-        val failureReason = FailureHelper.connectorCommandFailure(TRACE_MESSAGE, jobId, attemptNumber, FailureHelper.ConnectorCommand.DISCOVER)
+        val failureReason =
+            FailureHelper.connectorCommandFailure(
+                TRACE_MESSAGE,
+                jobId,
+                attemptNumber,
+                FailureHelper.ConnectorCommand.DISCOVER
+            )
 
         val metadata = failureReason.metadata.additionalProperties
         Assertions.assertEquals("discover", metadata[CONNECTOR_COMMAND_KEY])
@@ -91,7 +107,10 @@ internal class FailureHelperTest {
         val jobId = 12345L
         val attemptNumber = 1
         val failureReason = FailureHelper.destinationFailure(t, jobId, attemptNumber)
-        Assertions.assertEquals(FailureReason.FailureOrigin.DESTINATION, failureReason.failureOrigin)
+        Assertions.assertEquals(
+            FailureReason.FailureOrigin.DESTINATION,
+            failureReason.failureOrigin
+        )
 
         val metadata = failureReason.metadata.additionalProperties
         Assertions.assertEquals("write", metadata[CONNECTOR_COMMAND_KEY])
@@ -105,7 +124,10 @@ internal class FailureHelperTest {
         val jobId = 12345L
         val attemptNumber = 1
         val failureReason = FailureHelper.destinationFailure(TRACE_MESSAGE, jobId, attemptNumber)
-        Assertions.assertEquals(FailureReason.FailureOrigin.DESTINATION, failureReason.failureOrigin)
+        Assertions.assertEquals(
+            FailureReason.FailureOrigin.DESTINATION,
+            failureReason.failureOrigin
+        )
 
         val metadata = failureReason.metadata.additionalProperties
         Assertions.assertEquals("write", metadata[CONNECTOR_COMMAND_KEY])
@@ -119,8 +141,17 @@ internal class FailureHelperTest {
         val t: Throwable = RuntimeException()
         val jobId = 12345L
         val attemptNumber = 1
-        val failureReason = FailureHelper.checkFailure(t, jobId, attemptNumber, FailureReason.FailureOrigin.DESTINATION)
-        Assertions.assertEquals(FailureReason.FailureOrigin.DESTINATION, failureReason.failureOrigin)
+        val failureReason =
+            FailureHelper.checkFailure(
+                t,
+                jobId,
+                attemptNumber,
+                FailureReason.FailureOrigin.DESTINATION
+            )
+        Assertions.assertEquals(
+            FailureReason.FailureOrigin.DESTINATION,
+            failureReason.failureOrigin
+        )
 
         val metadata = failureReason.metadata.additionalProperties
         Assertions.assertEquals("check", metadata[CONNECTOR_COMMAND_KEY])
@@ -133,7 +164,9 @@ internal class FailureHelperTest {
     @Throws(Exception::class)
     fun testOrderedFailures() {
         val failureReasonList =
-                FailureHelper.orderedFailures(Set.of(TRACE_FAILURE_REASON_2, TRACE_FAILURE_REASON, EXCEPTION_FAILURE_REASON))
+            FailureHelper.orderedFailures(
+                Set.of(TRACE_FAILURE_REASON_2, TRACE_FAILURE_REASON, EXCEPTION_FAILURE_REASON)
+            )
         Assertions.assertEquals(failureReasonList[0], TRACE_FAILURE_REASON)
     }
 
@@ -153,35 +186,46 @@ internal class FailureHelperTest {
         private const val JOB_ID_KEY = "jobId"
         private const val ATTEMPT_NUMBER_KEY = "attemptNumber"
 
-        private val TRACE_FAILURE_REASON: FailureReason = FailureReason()
+        private val TRACE_FAILURE_REASON: FailureReason =
+            FailureReason()
                 .withInternalMessage("internal message")
                 .withStacktrace("stack trace")
                 .withTimestamp(1111112)
-                .withMetadata(Metadata()
+                .withMetadata(
+                    Metadata()
                         .withAdditionalProperty(JOB_ID_KEY, 12345)
                         .withAdditionalProperty(ATTEMPT_NUMBER_KEY, 1)
-                        .withAdditionalProperty(FROM_TRACE_MESSAGE_KEY, true))
+                        .withAdditionalProperty(FROM_TRACE_MESSAGE_KEY, true)
+                )
 
-        private val TRACE_FAILURE_REASON_2: FailureReason = FailureReason()
+        private val TRACE_FAILURE_REASON_2: FailureReason =
+            FailureReason()
                 .withInternalMessage("internal message")
                 .withStacktrace("stack trace")
                 .withTimestamp(1111113)
-                .withMetadata(Metadata()
+                .withMetadata(
+                    Metadata()
                         .withAdditionalProperty(JOB_ID_KEY, 12345)
                         .withAdditionalProperty(ATTEMPT_NUMBER_KEY, 1)
-                        .withAdditionalProperty(FROM_TRACE_MESSAGE_KEY, true))
+                        .withAdditionalProperty(FROM_TRACE_MESSAGE_KEY, true)
+                )
 
-        private val EXCEPTION_FAILURE_REASON: FailureReason = FailureReason()
+        private val EXCEPTION_FAILURE_REASON: FailureReason =
+            FailureReason()
                 .withInternalMessage("internal message")
                 .withStacktrace("stack trace")
                 .withTimestamp(1111111)
-                .withMetadata(Metadata()
+                .withMetadata(
+                    Metadata()
                         .withAdditionalProperty(JOB_ID_KEY, 12345)
-                        .withAdditionalProperty(ATTEMPT_NUMBER_KEY, 1))
+                        .withAdditionalProperty(ATTEMPT_NUMBER_KEY, 1)
+                )
 
-        private val TRACE_MESSAGE: AirbyteTraceMessage = AirbyteMessageUtils.createErrorTraceMessage(
+        private val TRACE_MESSAGE: AirbyteTraceMessage =
+            AirbyteMessageUtils.createErrorTraceMessage(
                 "trace message error",
                 123.0,
-                AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
+                AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR
+            )
     }
 }

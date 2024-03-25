@@ -424,8 +424,8 @@ constructor(
 
         fun getInstance(
             config: JsonNode,
-            hostKey: List<String>?,
-            portKey: List<String>?
+            hostKey: List<String>,
+            portKey: List<String>
         ): SshTunnel {
             val tunnelMethod =
                 Jsons.getOptional(config, "tunnel_method", "tunnel_method")
@@ -490,7 +490,7 @@ constructor(
         }
 
         @Throws(Exception::class)
-        fun getInstance(config: JsonNode, endPointKey: String?): SshTunnel {
+        fun getInstance(config: JsonNode, endPointKey: String): SshTunnel {
             val tunnelMethod =
                 Jsons.getOptional(config, "tunnel_method", "tunnel_method")
                     .map { method: JsonNode ->
@@ -522,8 +522,8 @@ constructor(
         @Throws(Exception::class)
         fun sshWrap(
             config: JsonNode,
-            hostKey: List<String>?,
-            portKey: List<String>?,
+            hostKey: List<String>,
+            portKey: List<String>,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
             sshWrap<Any?>(config, hostKey, portKey) { configInTunnel: JsonNode? ->
@@ -535,7 +535,7 @@ constructor(
         @Throws(Exception::class)
         fun sshWrap(
             config: JsonNode,
-            endPointKey: String?,
+            endPointKey: String,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
             sshWrap<Any?>(config, endPointKey) { configInTunnel: JsonNode? ->
@@ -547,8 +547,8 @@ constructor(
         @Throws(Exception::class)
         fun <T> sshWrap(
             config: JsonNode,
-            hostKey: List<String>?,
-            portKey: List<String>?,
+            hostKey: List<String>,
+            portKey: List<String>,
             wrapped: CheckedFunction<JsonNode, T, Exception?>
         ): T {
             getInstance(config, hostKey, portKey).use { sshTunnel ->
@@ -559,7 +559,7 @@ constructor(
         @Throws(Exception::class)
         fun <T> sshWrap(
             config: JsonNode,
-            endPointKey: String?,
+            endPointKey: String,
             wrapped: CheckedFunction<JsonNode, T, Exception?>
         ): T {
             getInstance(config, endPointKey).use { sshTunnel ->

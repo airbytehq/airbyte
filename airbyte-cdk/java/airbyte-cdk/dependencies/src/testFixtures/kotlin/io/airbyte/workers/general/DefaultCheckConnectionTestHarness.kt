@@ -15,13 +15,17 @@ import io.airbyte.workers.helper.ConnectorConfigUpdater
 import io.airbyte.workers.internal.AirbyteStreamFactory
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory
 import io.airbyte.workers.process.IntegrationLauncher
+import java.nio.file.Path
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.nio.file.Path
 
-class DefaultCheckConnectionTestHarness @JvmOverloads constructor(private val integrationLauncher: IntegrationLauncher,
-                                                                  private val connectorConfigUpdater: ConnectorConfigUpdater,
-                                                                  private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()) : CheckConnectionTestHarness {
+class DefaultCheckConnectionTestHarness
+@JvmOverloads
+constructor(
+    private val integrationLauncher: IntegrationLauncher,
+    private val connectorConfigUpdater: ConnectorConfigUpdater,
+    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
+) : CheckConnectionTestHarness {
     private var process: Process? = null
 
     @Throws(TestHarnessException::class)
@@ -30,40 +34,60 @@ class DefaultCheckConnectionTestHarness @JvmOverloads constructor(private val in
 
         try {
             val inputConfig = input.connectionConfiguration
-            process = integrationLauncher.check(
+            process =
+                integrationLauncher.check(
                     jobRoot,
                     WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-                    Jsons.serialize(inputConfig))
+                    Jsons.serialize(inputConfig)
+                )
 
-            val jobOutput = ConnectorJobOutput()
-                    .withOutputType(ConnectorJobOutput.OutputType.CHECK_CONNECTION)
+            val jobOutput =
+                ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.CHECK_CONNECTION)
 
-            LineGobbler.gobble(process!!.errorStream) { msg: String? -> LOGGER.error(msg) }
+            LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
-            val connectionStatus = messagesByType
-                    .getOrDefault(AirbyteMessage.Type.CONNECTION_STATUS, ArrayList())!!.stream()
-                    .map { obj: AirbyteMessage? -> obj!!.connectionStatus }
+            val connectionStatus =
+                messagesByType
+                    .getOrDefault(AirbyteMessage.Type.CONNECTION_STATUS, ArrayList())!!
+                    .stream()
+                    .map { obj: AirbyteMessage -> obj!!.connectionStatus }
                     .findFirst()
 
             if (input.actorId != null && input.actorType != null) {
-                val optionalConfigMsg = TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
-                if (optionalConfigMsg!!.isPresent && TestHarnessUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
+                val optionalConfigMsg =
+                    TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
+                if (
+                    optionalConfigMsg!!.isPresent &&
+                        TestHarnessUtils.getDidControlMessageChangeConfig(
+                            inputConfig,
+                            optionalConfigMsg.get()
+                        )
+                ) {
                     when (input.actorType) {
-                        ActorType.SOURCE -> connectorConfigUpdater.updateSource(
+                        ActorType.SOURCE ->
+                            connectorConfigUpdater.updateSource(
                                 input.actorId,
-                                optionalConfigMsg.get().config)
-
-                        ActorType.DESTINATION -> connectorConfigUpdater.updateDestination(
+                                optionalConfigMsg.get().config
+                            )
+                        ActorType.DESTINATION ->
+                            connectorConfigUpdater.updateDestination(
                                 input.actorId,
-                                optionalConfigMsg.get().config)
+                                optionalConfigMsg.get().config
+                            )
                     }
                     jobOutput.connectorConfigurationUpdated = true
                 }
             }
 
-            val failureReason = TestHarnessUtils.getJobFailureReasonFromMessages(ConnectorJobOutput.OutputType.CHECK_CONNECTION, messagesByType)
-            failureReason!!.ifPresent { failureReason: FailureReason? -> jobOutput.failureReason = failureReason }
+            val failureReason =
+                TestHarnessUtils.getJobFailureReasonFromMessages(
+                    ConnectorJobOutput.OutputType.CHECK_CONNECTION,
+                    messagesByType
+                )
+            failureReason!!.ifPresent { failureReason: FailureReason? ->
+                jobOutput.failureReason = failureReason
+            }
 
             val exitCode = process!!.exitValue()
             if (exitCode != 0) {
@@ -71,13 +95,22 @@ class DefaultCheckConnectionTestHarness @JvmOverloads constructor(private val in
             }
 
             if (connectionStatus.isPresent) {
-                val output = StandardCheckConnectionOutput()
-                        .withStatus(Enums.convertTo(connectionStatus.get().status, StandardCheckConnectionOutput.Status::class.java))
+                val output =
+                    StandardCheckConnectionOutput()
+                        .withStatus(
+                            Enums.convertTo(
+                                connectionStatus.get().status,
+                                StandardCheckConnectionOutput.Status::class.java
+                            )
+                        )
                         .withMessage(connectionStatus.get().message)
                 LOGGER.info("Check connection job received output: {}", output)
                 jobOutput.checkConnection = output
             } else if (failureReason.isEmpty) {
-                TestHarnessUtils.throwWorkerException("Error checking connection status: no status nor failure reason were outputted", process)
+                TestHarnessUtils.throwWorkerException(
+                    "Error checking connection status: no status nor failure reason were outputted",
+                    process
+                )
             }
             LineGobbler.endSection("CHECK")
             return jobOutput
@@ -93,6 +126,7 @@ class DefaultCheckConnectionTestHarness @JvmOverloads constructor(private val in
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultCheckConnectionTestHarness::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(DefaultCheckConnectionTestHarness::class.java)
     }
 }

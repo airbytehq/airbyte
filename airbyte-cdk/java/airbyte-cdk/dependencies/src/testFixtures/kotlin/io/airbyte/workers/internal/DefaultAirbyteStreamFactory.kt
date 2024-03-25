@@ -9,8 +9,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.logging.MdcScope
 import io.airbyte.protocol.models.AirbyteLogMessage
 import io.airbyte.protocol.models.AirbyteMessage
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.lang.reflect.InvocationTargetException
 import java.nio.charset.StandardCharsets
@@ -19,13 +17,13 @@ import java.text.StringCharacterIterator
 import java.time.Instant
 import java.util.*
 import java.util.stream.Stream
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Creates a stream from an input stream. The produced stream attempts to parse each line of the
  * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
  * dropped. Each record MUST be new line separated.
- *
- *
  *
  * If a line starts with a AirbyteMessage and then has other characters after it, that
  * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
@@ -41,17 +39,27 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     private val exceptionClass: Optional<Class<out RuntimeException?>>
 
     @JvmOverloads
-    constructor(containerLogMdcBuilder: MdcScope.Builder = MdcScope.DEFAULT_BUILDER) : this(AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder, Optional.empty<Class<out RuntimeException?>>())
+    constructor(
+        containerLogMdcBuilder: MdcScope.Builder = MdcScope.DEFAULT_BUILDER
+    ) : this(
+        AirbyteProtocolPredicate(),
+        LOGGER,
+        containerLogMdcBuilder,
+        Optional.empty<Class<out RuntimeException?>>()
+    )
 
     /**
-     * Create a default airbyte stream, if a `messageSizeExceptionClass` is not empty, the message size
-     * will be checked and if it more than the available memory * MAX_SIZE_RATIO the sync will be failed
-     * by throwing the exception provided. The exception must have a constructor that accept a string.
+     * Create a default airbyte stream, if a `messageSizeExceptionClass` is not empty, the message
+     * size will be checked and if it more than the available memory * MAX_SIZE_RATIO the sync will
+     * be failed by throwing the exception provided. The exception must have a constructor that
+     * accept a string.
      */
-    internal constructor(protocolPredicate: AirbyteProtocolPredicate,
-                         logger: Logger,
-                         containerLogMdcBuilder: MdcScope.Builder,
-                         messageSizeExceptionClass: Optional<Class<out RuntimeException?>>) {
+    internal constructor(
+        protocolPredicate: AirbyteProtocolPredicate,
+        logger: Logger,
+        containerLogMdcBuilder: MdcScope.Builder,
+        messageSizeExceptionClass: Optional<Class<out RuntimeException?>>
+    ) {
         protocolValidator = protocolPredicate
         this.logger = logger
         this.containerLogMdcBuilder = containerLogMdcBuilder
@@ -60,11 +68,13 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     }
 
     @VisibleForTesting
-    internal constructor(protocolPredicate: AirbyteProtocolPredicate,
-                         logger: Logger,
-                         containerLogMdcBuilder: MdcScope.Builder,
-                         messageSizeExceptionClass: Optional<Class<out RuntimeException?>>,
-                         maxMemory: Long) {
+    internal constructor(
+        protocolPredicate: AirbyteProtocolPredicate,
+        logger: Logger,
+        containerLogMdcBuilder: MdcScope.Builder,
+        messageSizeExceptionClass: Optional<Class<out RuntimeException?>>,
+        maxMemory: Long
+    ) {
         protocolValidator = protocolPredicate
         this.logger = logger
         this.containerLogMdcBuilder = containerLogMdcBuilder
@@ -72,36 +82,41 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         this.maxMemory = maxMemory
     }
 
-    override fun create(bufferedReader: BufferedReader): Stream<AirbyteMessage?> {
+    override fun create(bufferedReader: BufferedReader): Stream<AirbyteMessage> {
         return bufferedReader
-                .lines()
-                .peek { str: String ->
-                    if (exceptionClass.isPresent) {
-                        val messageSize = str.toByteArray(StandardCharsets.UTF_8).size.toLong()
-                        if (messageSize > maxMemory * MAX_SIZE_RATIO) {
-                            try {
-                                val errorMessage = String.format(
-                                        "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
-                                        Instant.now(),
-                                        humanReadableByteCountSI(maxMemory),
-                                        humanReadableByteCountSI(messageSize))
-                                throw exceptionClass.get().getConstructor(String::class.java).newInstance(errorMessage)!!
-                            } catch (e: InstantiationException) {
-                                throw RuntimeException(e)
-                            } catch (e: IllegalAccessException) {
-                                throw RuntimeException(e)
-                            } catch (e: InvocationTargetException) {
-                                throw RuntimeException(e)
-                            } catch (e: NoSuchMethodException) {
-                                throw RuntimeException(e)
-                            }
+            .lines()
+            .peek { str: String ->
+                if (exceptionClass.isPresent) {
+                    val messageSize = str.toByteArray(StandardCharsets.UTF_8).size.toLong()
+                    if (messageSize > maxMemory * MAX_SIZE_RATIO) {
+                        try {
+                            val errorMessage =
+                                String.format(
+                                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
+                                    Instant.now(),
+                                    humanReadableByteCountSI(maxMemory),
+                                    humanReadableByteCountSI(messageSize)
+                                )
+                            throw exceptionClass
+                                .get()
+                                .getConstructor(String::class.java)
+                                .newInstance(errorMessage)!!
+                        } catch (e: InstantiationException) {
+                            throw RuntimeException(e)
+                        } catch (e: IllegalAccessException) {
+                            throw RuntimeException(e)
+                        } catch (e: InvocationTargetException) {
+                            throw RuntimeException(e)
+                        } catch (e: NoSuchMethodException) {
+                            throw RuntimeException(e)
                         }
                     }
                 }
-                .flatMap { line: String? -> this.parseJson(line) }
-                .filter { json: JsonNode? -> this.validate(json) }
-                .flatMap { json: JsonNode? -> this.toAirbyteMessage(json) }
-                .filter { message: AirbyteMessage? -> this.filterLog(message) }
+            }
+            .flatMap { line: String? -> this.parseJson(line) }
+            .filter { json: JsonNode? -> this.validate(json) }
+            .flatMap { json: JsonNode? -> this.toAirbyteMessage(json) }
+            .filter { message: AirbyteMessage -> this.filterLog(message) }
     }
 
     protected fun parseJson(line: String?): Stream<JsonNode?> {
@@ -110,9 +125,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
-            containerLogMdcBuilder.build().use { mdcScope ->
-                logger.info(line)
-            }
+            containerLogMdcBuilder.build().use { mdcScope -> logger.info(line) }
         }
         return jsonLine.stream()
     }
@@ -125,7 +138,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         return res
     }
 
-    protected fun toAirbyteMessage(json: JsonNode?): Stream<AirbyteMessage?> {
+    protected fun toAirbyteMessage(json: JsonNode?): Stream<AirbyteMessage> {
         val m = Jsons.tryObject(json, AirbyteMessage::class.java)
         if (m.isEmpty) {
             logger.error("Deserialization failed: {}", Jsons.serialize(json))
@@ -136,20 +149,21 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     protected fun filterLog(message: AirbyteMessage?): Boolean {
         val isLog = message!!.type == AirbyteMessage.Type.LOG
         if (isLog) {
-            containerLogMdcBuilder.build().use { mdcScope ->
-                internalLog(message.log)
-            }
+            containerLogMdcBuilder.build().use { mdcScope -> internalLog(message.log) }
         }
         return !isLog
     }
 
     protected fun internalLog(logMessage: AirbyteLogMessage) {
         val combinedMessage =
-                logMessage.message + (if (logMessage.stackTrace != null) (System.lineSeparator()
-                        + "Stack Trace: " + logMessage.stackTrace) else "")
+            logMessage.message +
+                (if (logMessage.stackTrace != null)
+                    (System.lineSeparator() + "Stack Trace: " + logMessage.stackTrace)
+                else "")
 
         when (logMessage.level) {
-            AirbyteLogMessage.Level.FATAL, AirbyteLogMessage.Level.ERROR -> logger.error(combinedMessage)
+            AirbyteLogMessage.Level.FATAL,
+            AirbyteLogMessage.Level.ERROR -> logger.error(combinedMessage)
             AirbyteLogMessage.Level.WARN -> logger.warn(combinedMessage)
             AirbyteLogMessage.Level.DEBUG -> logger.debug(combinedMessage)
             AirbyteLogMessage.Level.TRACE -> logger.trace(combinedMessage)
@@ -173,6 +187,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultAirbyteStreamFactory::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(DefaultAirbyteStreamFactory::class.java)
     }
 }

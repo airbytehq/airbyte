@@ -12,7 +12,10 @@ internal class NamesTest {
         Assertions.assertEquals("users", Names.toAlphanumericAndUnderscore("users"))
         Assertions.assertEquals("users123", Names.toAlphanumericAndUnderscore("users123"))
         Assertions.assertEquals("UsErS", Names.toAlphanumericAndUnderscore("UsErS"))
-        Assertions.assertEquals("users_USE_special_____", Names.toAlphanumericAndUnderscore("users USE special !@#$"))
+        Assertions.assertEquals(
+            "users_USE_special_____",
+            Names.toAlphanumericAndUnderscore("users USE special !@#$")
+        )
     }
 
     @Test

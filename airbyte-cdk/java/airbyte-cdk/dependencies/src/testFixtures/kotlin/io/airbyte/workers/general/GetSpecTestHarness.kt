@@ -7,4 +7,4 @@ import io.airbyte.configoss.ConnectorJobOutput
 import io.airbyte.configoss.JobGetSpecConfig
 import io.airbyte.workers.TestHarness
 
-interface GetSpecTestHarness : TestHarness<JobGetSpecConfig?, ConnectorJobOutput?>
+interface GetSpecTestHarness : TestHarness<JobGetSpecConfig, ConnectorJobOutput>

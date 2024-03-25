@@ -3,25 +3,28 @@
  */
 package io.airbyte.api.client
 
+import java.util.concurrent.Callable
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito
-import java.util.concurrent.Callable
 
 class AirbyteApiClientTest {
-    @Mock
-    private var mockCallable: Callable<*>? = null
-
     @Nested
     internal inner class RetryWithJitter {
         @Test
         @Throws(Exception::class)
         fun ifSucceedShouldNotRetry() {
-            mockCallable = Mockito.mock(Callable::class.java)
+            val mockCallable: Callable<Any> = Mockito.mock()
             Mockito.`when`(mockCallable.call()).thenReturn("Success!")
 
-            AirbyteApiClient.retryWithJitter<Any>(mockCallable, "test", TEST_JITTER_INTERVAL_SECS, TEST_FINAL_INTERVAL_SECS, TEST_MAX_RETRIES)
+            AirbyteApiClient.retryWithJitter<Any>(
+                mockCallable,
+                "test",
+                TEST_JITTER_INTERVAL_SECS,
+                TEST_FINAL_INTERVAL_SECS,
+                TEST_MAX_RETRIES
+            )
 
             Mockito.verify(mockCallable, Mockito.times(1)).call()
         }
@@ -29,10 +32,16 @@ class AirbyteApiClientTest {
         @Test
         @Throws(Exception::class)
         fun onlyRetryTillMaxRetries() {
-            mockCallable = Mockito.mock(Callable::class.java)
+            val mockCallable: Callable<Any> = Mockito.mock()
             Mockito.`when`(mockCallable.call()).thenThrow(RuntimeException("Bomb!"))
 
-            AirbyteApiClient.retryWithJitter<Any>(mockCallable, "test", TEST_JITTER_INTERVAL_SECS, TEST_FINAL_INTERVAL_SECS, TEST_MAX_RETRIES)
+            AirbyteApiClient.retryWithJitter<Any>(
+                mockCallable,
+                "test",
+                TEST_JITTER_INTERVAL_SECS,
+                TEST_FINAL_INTERVAL_SECS,
+                TEST_MAX_RETRIES
+            )
 
             Mockito.verify(mockCallable, Mockito.times(TEST_MAX_RETRIES)).call()
         }
@@ -40,13 +49,19 @@ class AirbyteApiClientTest {
         @Test
         @Throws(Exception::class)
         fun onlyRetryOnErrors() {
-            mockCallable = Mockito.mock(Callable::class.java)
+            val mockCallable: Callable<Any> = Mockito.mock()
             // Because we succeed on the second try, we should only call the method twice.
             Mockito.`when`(mockCallable.call())
-                    .thenThrow(RuntimeException("Bomb!"))
-                    .thenReturn("Success!")
+                .thenThrow(RuntimeException("Bomb!"))
+                .thenReturn("Success!")
 
-            AirbyteApiClient.retryWithJitter<Any>(mockCallable, "test", TEST_JITTER_INTERVAL_SECS, TEST_FINAL_INTERVAL_SECS, 3)
+            AirbyteApiClient.retryWithJitter<Any>(
+                mockCallable,
+                "test",
+                TEST_JITTER_INTERVAL_SECS,
+                TEST_FINAL_INTERVAL_SECS,
+                3
+            )
 
             Mockito.verify(mockCallable, Mockito.times(2)).call()
         }

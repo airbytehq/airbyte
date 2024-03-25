@@ -20,50 +20,75 @@ import io.airbyte.workers.helper.ConnectorConfigUpdater
 import io.airbyte.workers.internal.AirbyteStreamFactory
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory
 import io.airbyte.workers.process.IntegrationLauncher
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.*
 import kotlin.concurrent.Volatile
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class DefaultDiscoverCatalogTestHarness @JvmOverloads constructor(private val airbyteApiClient: AirbyteApiClient,
-                                                                  private val integrationLauncher: IntegrationLauncher,
-                                                                  private val connectorConfigUpdater: ConnectorConfigUpdater,
-                                                                  private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()) : DiscoverCatalogTestHarness {
-    @Volatile
-    private var process: Process? = null
+class DefaultDiscoverCatalogTestHarness
+@JvmOverloads
+constructor(
+    private val airbyteApiClient: AirbyteApiClient,
+    private val integrationLauncher: IntegrationLauncher,
+    private val connectorConfigUpdater: ConnectorConfigUpdater,
+    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
+) : DiscoverCatalogTestHarness {
+    @Volatile private var process: Process? = null
 
     @Throws(TestHarnessException::class)
-    override fun run(discoverSchemaInput: StandardDiscoverCatalogInput, jobRoot: Path): ConnectorJobOutput {
+    override fun run(
+        discoverSchemaInput: StandardDiscoverCatalogInput,
+        jobRoot: Path
+    ): ConnectorJobOutput {
         try {
             val inputConfig = discoverSchemaInput.connectionConfiguration
-            process = integrationLauncher.discover(
+            process =
+                integrationLauncher.discover(
                     jobRoot,
                     WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-                    Jsons.serialize(inputConfig))
+                    Jsons.serialize(inputConfig)
+                )
 
-            val jobOutput = ConnectorJobOutput()
+            val jobOutput =
+                ConnectorJobOutput()
                     .withOutputType(ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID)
 
-            LineGobbler.gobble(process!!.errorStream) { msg: String? -> LOGGER.error(msg) }
+            LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
-            val catalog = messagesByType
-                    .getOrDefault(AirbyteMessage.Type.CATALOG, ArrayList())!!.stream()
+            val catalog =
+                messagesByType
+                    .getOrDefault(AirbyteMessage.Type.CATALOG, ArrayList())!!
+                    .stream()
                     .map { obj: AirbyteMessage? -> obj!!.catalog }
                     .findFirst()
 
-            val optionalConfigMsg = TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
-            if (optionalConfigMsg!!.isPresent && TestHarnessUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
+            val optionalConfigMsg =
+                TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
+            if (
+                optionalConfigMsg!!.isPresent &&
+                    TestHarnessUtils.getDidControlMessageChangeConfig(
+                        inputConfig,
+                        optionalConfigMsg.get()
+                    )
+            ) {
                 connectorConfigUpdater.updateSource(
-                        UUID.fromString(discoverSchemaInput.sourceId),
-                        optionalConfigMsg.get().config)
+                    UUID.fromString(discoverSchemaInput.sourceId),
+                    optionalConfigMsg.get().config
+                )
                 jobOutput.connectorConfigurationUpdated = true
             }
 
-            val failureReason = TestHarnessUtils.getJobFailureReasonFromMessages(ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID, messagesByType)
-            failureReason!!.ifPresent { failureReason: FailureReason? -> jobOutput.failureReason = failureReason }
+            val failureReason =
+                TestHarnessUtils.getJobFailureReasonFromMessages(
+                    ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID,
+                    messagesByType
+                )
+            failureReason!!.ifPresent { failureReason: FailureReason? ->
+                jobOutput.failureReason = failureReason
+            }
 
             val exitCode = process!!.exitValue()
             if (exitCode != 0) {
@@ -72,14 +97,23 @@ class DefaultDiscoverCatalogTestHarness @JvmOverloads constructor(private val ai
 
             if (catalog.isPresent) {
                 val result =
-                        AirbyteApiClient.retryWithJitter({
-                            airbyteApiClient.sourceApi
-                                    .writeDiscoverCatalogResult(buildSourceDiscoverSchemaWriteRequestBody(discoverSchemaInput, catalog.get()))
+                    AirbyteApiClient.retryWithJitter(
+                        {
+                            airbyteApiClient.sourceApi.writeDiscoverCatalogResult(
+                                buildSourceDiscoverSchemaWriteRequestBody(
+                                    discoverSchemaInput,
+                                    catalog.get()
+                                )
+                            )
                         },
-                                WRITE_DISCOVER_CATALOG_LOGS_TAG)
+                        WRITE_DISCOVER_CATALOG_LOGS_TAG
+                    )
                 jobOutput.discoverCatalogId = result.catalogId
             } else if (failureReason.isEmpty) {
-                TestHarnessUtils.throwWorkerException("Integration failed to output a catalog struct and did not output a failure reason", process)
+                TestHarnessUtils.throwWorkerException(
+                    "Integration failed to output a catalog struct and did not output a failure reason",
+                    process
+                )
             }
             return jobOutput
         } catch (e: TestHarnessException) {
@@ -89,16 +123,20 @@ class DefaultDiscoverCatalogTestHarness @JvmOverloads constructor(private val ai
         }
     }
 
-    private fun buildSourceDiscoverSchemaWriteRequestBody(discoverSchemaInput: StandardDiscoverCatalogInput,
-                                                          catalog: AirbyteCatalog): SourceDiscoverSchemaWriteRequestBody {
-        return SourceDiscoverSchemaWriteRequestBody().catalog(
-                CatalogClientConverters.toAirbyteCatalogClientApi(catalog)).sourceId( // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
+    private fun buildSourceDiscoverSchemaWriteRequestBody(
+        discoverSchemaInput: StandardDiscoverCatalogInput,
+        catalog: AirbyteCatalog
+    ): SourceDiscoverSchemaWriteRequestBody {
+        return SourceDiscoverSchemaWriteRequestBody()
+            .catalog(CatalogClientConverters.toAirbyteCatalogClientApi(catalog))
+            .sourceId( // NOTE: sourceId is marked required in the OpenAPI config but the code
+                // generator doesn't enforce
                 // it, so we check again here.
-                if (discoverSchemaInput.sourceId == null) null else UUID.fromString(discoverSchemaInput.sourceId))
-                .connectorVersion(
-                        discoverSchemaInput.connectorVersion)
-                .configurationHash(
-                        discoverSchemaInput.configHash)
+                if (discoverSchemaInput.sourceId == null) null
+                else UUID.fromString(discoverSchemaInput.sourceId)
+            )
+            .connectorVersion(discoverSchemaInput.connectorVersion)
+            .configurationHash(discoverSchemaInput.configHash)
     }
 
     override fun cancel() {
@@ -106,7 +144,8 @@ class DefaultDiscoverCatalogTestHarness @JvmOverloads constructor(private val ai
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultDiscoverCatalogTestHarness::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(DefaultDiscoverCatalogTestHarness::class.java)
         private const val WRITE_DISCOVER_CATALOG_LOGS_TAG = "call to write discover schema result"
     }
 }

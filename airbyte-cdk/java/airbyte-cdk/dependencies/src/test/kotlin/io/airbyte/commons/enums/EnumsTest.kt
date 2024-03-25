@@ -3,9 +3,9 @@
  */
 package io.airbyte.commons.enums
 
+import java.util.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.util.*
 
 internal class EnumsTest {
     internal enum class E1 {
@@ -34,7 +34,9 @@ internal class EnumsTest {
 
     @Test
     fun testConversionFails() {
-        Assertions.assertThrows(IllegalArgumentException::class.java) { Enums.convertTo(E1.TEST2, E2::class.java) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            Enums.convertTo(E1.TEST2, E2::class.java)
+        }
     }
 
     @Test
@@ -74,12 +76,24 @@ internal class EnumsTest {
         Assertions.assertEquals(Optional.of(E1.TEST), Enums.toEnum("test", E1::class.java))
         Assertions.assertEquals(Optional.of(E5.VALUE_1), Enums.toEnum("VALUE_1", E5::class.java))
         Assertions.assertEquals(Optional.of(E5.VALUE_1), Enums.toEnum("value_1", E5::class.java))
-        Assertions.assertEquals(Optional.of(E5.VALUE_TWO), Enums.toEnum("VALUE_TWO", E5::class.java))
+        Assertions.assertEquals(
+            Optional.of(E5.VALUE_TWO),
+            Enums.toEnum("VALUE_TWO", E5::class.java)
+        )
         Assertions.assertEquals(Optional.of(E5.VALUE_TWO), Enums.toEnum("valuetwo", E5::class.java))
         Assertions.assertEquals(Optional.of(E5.VALUE_TWO), Enums.toEnum("valueTWO", E5::class.java))
-        Assertions.assertEquals(Optional.of(E5.VALUE_TWO), Enums.toEnum("valueTWO$", E5::class.java))
-        Assertions.assertEquals(Optional.of(E5.VALUE_TWO), Enums.toEnum("___valueTWO___", E5::class.java))
-        Assertions.assertEquals(Optional.of(E5.value_three), Enums.toEnum("VALUE_THREE", E5::class.java))
+        Assertions.assertEquals(
+            Optional.of(E5.VALUE_TWO),
+            Enums.toEnum("valueTWO$", E5::class.java)
+        )
+        Assertions.assertEquals(
+            Optional.of(E5.VALUE_TWO),
+            Enums.toEnum("___valueTWO___", E5::class.java)
+        )
+        Assertions.assertEquals(
+            Optional.of(E5.value_three),
+            Enums.toEnum("VALUE_THREE", E5::class.java)
+        )
         Assertions.assertEquals(Optional.of(E5.value_4), Enums.toEnum("VALUE_4", E5::class.java))
         Assertions.assertEquals(Optional.empty<Any>(), Enums.toEnum("VALUE_5", E5::class.java))
     }

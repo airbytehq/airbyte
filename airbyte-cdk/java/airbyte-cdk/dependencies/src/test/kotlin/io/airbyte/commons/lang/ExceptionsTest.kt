@@ -3,22 +3,26 @@
  */
 package io.airbyte.commons.lang
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.util.concurrent.Callable
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 internal class ExceptionsTest {
     @Test
     fun testToRuntime() {
         Assertions.assertEquals("hello", Exceptions.toRuntime<String> { callable("hello", false) })
-        Assertions.assertThrows(RuntimeException::class.java) { Exceptions.toRuntime(Callable { callable("goodbye", true) }) }
+        Assertions.assertThrows(RuntimeException::class.java) {
+            Exceptions.toRuntime(Callable { callable("goodbye", true) })
+        }
     }
 
     @Test
     fun testToRuntimeVoid() {
         val list: MutableList<String> = ArrayList()
-        Assertions.assertThrows(RuntimeException::class.java) { Exceptions.toRuntime { voidCallable(list, "hello", true) } }
+        Assertions.assertThrows(RuntimeException::class.java) {
+            Exceptions.toRuntime { voidCallable(list, "hello", true) }
+        }
         Assertions.assertEquals(0, list.size)
 
         Exceptions.toRuntime { voidCallable(list, "goodbye", false) }
@@ -28,12 +32,8 @@ internal class ExceptionsTest {
 
     @Test
     fun testSwallow() {
-        Exceptions.swallow {
-            throw RuntimeException()
-        }
-        Exceptions.swallow {
-            throw Exception()
-        }
+        Exceptions.swallow { throw RuntimeException() }
+        Exceptions.swallow { throw Exception() }
     }
 
     @Throws(IOException::class)

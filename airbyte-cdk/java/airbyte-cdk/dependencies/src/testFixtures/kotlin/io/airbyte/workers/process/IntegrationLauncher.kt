@@ -15,8 +15,7 @@ import java.nio.file.Path
  * as temporary file system storage.
  */
 interface IntegrationLauncher {
-    @Throws(TestHarnessException::class)
-    fun spec(jobRoot: Path): Process?
+    @Throws(TestHarnessException::class) fun spec(jobRoot: Path): Process?
 
     @Throws(TestHarnessException::class)
     fun check(jobRoot: Path, configFilename: String?, configContents: String?): Process?
@@ -25,28 +24,42 @@ interface IntegrationLauncher {
     fun discover(jobRoot: Path, configFilename: String?, configContents: String?): Process?
 
     @Throws(TestHarnessException::class)
-    fun read(jobRoot: Path,
-             configFilename: String?,
-             configContents: String?,
-             catalogFilename: String?,
-             catalogContents: String?,
-             stateFilename: String?,
-             stateContents: String?): Process?
+    fun read(
+        jobRoot: Path,
+        configFilename: String?,
+        configContents: String?,
+        catalogFilename: String?,
+        catalogContents: String?,
+        stateFilename: String?,
+        stateContents: String?
+    ): Process?
 
     @Throws(TestHarnessException::class)
-    fun read(jobRoot: Path,
-             configFilename: String?,
-             configContents: String?,
-             catalogFilename: String?,
-             catalogContents: String?): Process? {
-        return read(jobRoot, configFilename, configContents, catalogFilename, catalogContents, null, null)
+    fun read(
+        jobRoot: Path,
+        configFilename: String?,
+        configContents: String?,
+        catalogFilename: String?,
+        catalogContents: String?
+    ): Process? {
+        return read(
+            jobRoot,
+            configFilename,
+            configContents,
+            catalogFilename,
+            catalogContents,
+            null,
+            null
+        )
     }
 
     @Throws(TestHarnessException::class)
-    fun write(jobRoot: Path,
-              configFilename: String?,
-              configContents: String?,
-              catalogFilename: String?,
-              catalogContents: String?,
-              additionalEnvironmentVariables: Map<String, String>?): Process?
+    fun write(
+        jobRoot: Path,
+        configFilename: String?,
+        configContents: String?,
+        catalogFilename: String?,
+        catalogContents: String?,
+        additionalEnvironmentVariables: Map<String, String>
+    ): Process?
 }

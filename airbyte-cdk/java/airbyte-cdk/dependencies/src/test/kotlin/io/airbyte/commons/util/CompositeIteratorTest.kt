@@ -5,19 +5,22 @@ package io.airbyte.commons.util
 
 import com.google.common.collect.ImmutableList
 import io.airbyte.commons.concurrency.VoidCallable
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
+import java.util.function.Consumer
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import java.util.function.Consumer
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 
 internal class CompositeIteratorTest {
-    private var onClose1: VoidCallable? = null
-    private var onClose2: VoidCallable? = null
-    private var onClose3: VoidCallable? = null
-    private var airbyteStreamStatusConsumer: Consumer<*>? = null
+    private lateinit var onClose1: VoidCallable
+    private lateinit var onClose2: VoidCallable
+    private lateinit var onClose3: VoidCallable
+    private lateinit var airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>
     private var airbyteStream1: AirbyteStreamNameNamespacePair? = null
     private var airbyteStream2: AirbyteStreamNameNamespacePair? = null
     private var airbyteStream3: AirbyteStreamNameNamespacePair? = null
@@ -27,7 +30,7 @@ internal class CompositeIteratorTest {
         onClose1 = Mockito.mock(VoidCallable::class.java)
         onClose2 = Mockito.mock(VoidCallable::class.java)
         onClose3 = Mockito.mock(VoidCallable::class.java)
-        airbyteStreamStatusConsumer = Mockito.mock(Consumer::class.java)
+        airbyteStreamStatusConsumer = mock()
         airbyteStream1 = AirbyteStreamNameNamespacePair("stream1", "namespace")
         airbyteStream2 = AirbyteStreamNameNamespacePair("stream2", "namespace")
         airbyteStream3 = AirbyteStreamNameNamespacePair("stream3", "namespace")
@@ -35,24 +38,42 @@ internal class CompositeIteratorTest {
 
     @Test
     fun testNullInput() {
-        Assertions.assertThrows(NullPointerException::class.java) { CompositeIterator<Any?>(null, airbyteStreamStatusConsumer) }
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(0)).accept(ArgumentMatchers.any<Any>())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(0)).accept(any())
     }
 
     @Test
     fun testEmptyInput() {
-        val iterator: AutoCloseableIterator<String?> = CompositeIterator(emptyList<AutoCloseableIterator<Any?>>(), airbyteStreamStatusConsumer)
+        val iterator: AutoCloseableIterator<String?> =
+            CompositeIterator(emptyList<AutoCloseableIterator<String?>>(), airbyteStreamStatusConsumer)
         Assertions.assertFalse(iterator.hasNext())
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(0)).accept(ArgumentMatchers.any<Any>())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(0))
+            .accept(any())
     }
 
     @Test
     @Throws(Exception::class)
     fun testMultipleIterators() {
-        val iterator: AutoCloseableIterator<String?> = CompositeIterator<Any?>(ImmutableList.of(
-                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1, airbyteStream1),
-                AutoCloseableIterators.fromIterator(MoreIterators.of("d", "e", "f"), onClose2, airbyteStream2),
-                AutoCloseableIterators.fromIterator(MoreIterators.of("g", "h", "i"), onClose3, airbyteStream3)), airbyteStreamStatusConsumer)
+        val iterator: AutoCloseableIterator<String?> =
+            CompositeIterator<String?>(
+                ImmutableList.of(
+                    AutoCloseableIterators.fromIterator(
+                        MoreIterators.of("a", "b", "c"),
+                        onClose1,
+                        airbyteStream1
+                    ),
+                    AutoCloseableIterators.fromIterator(
+                        MoreIterators.of("d", "e", "f"),
+                        onClose2,
+                        airbyteStream2
+                    ),
+                    AutoCloseableIterators.fromIterator(
+                        MoreIterators.of("g", "h", "i"),
+                        onClose3,
+                        airbyteStream3
+                    )
+                ),
+                airbyteStreamStatusConsumer
+            )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2, onClose3))
         assertNext(iterator, "a")
@@ -75,16 +96,34 @@ internal class CompositeIteratorTest {
         Mockito.verify(onClose1, Mockito.times(1)).call()
         Mockito.verify(onClose2, Mockito.times(1)).call()
         Mockito.verify(onClose3, Mockito.times(1)).call()
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(9)).accept(ArgumentMatchers.any<Any>())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(9))
+            .accept(any())
     }
 
     @Test
     @Throws(Exception::class)
     fun testWithEmptyIterators() {
-        val iterator: AutoCloseableIterator<String?> = CompositeIterator<Any?>(ImmutableList.of(
-                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1, airbyteStream1),
-                AutoCloseableIterators.fromIterator(MoreIterators.of(), onClose2, airbyteStream2),
-                AutoCloseableIterators.fromIterator(MoreIterators.of("g", "h", "i"), onClose3, airbyteStream3)), airbyteStreamStatusConsumer)
+        val iterator: AutoCloseableIterator<String?> =
+            CompositeIterator<String?>(
+                ImmutableList.of(
+                    AutoCloseableIterators.fromIterator(
+                        MoreIterators.of("a", "b", "c"),
+                        onClose1,
+                        airbyteStream1
+                    ),
+                    AutoCloseableIterators.fromIterator(
+                        MoreIterators.of(),
+                        onClose2,
+                        airbyteStream2
+                    ),
+                    AutoCloseableIterators.fromIterator(
+                        MoreIterators.of("g", "h", "i"),
+                        onClose3,
+                        airbyteStream3
+                    )
+                ),
+                airbyteStreamStatusConsumer
+            )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2, onClose3))
         assertNext(iterator, "a")
@@ -96,14 +135,24 @@ internal class CompositeIteratorTest {
         assertNext(iterator, "i")
         Assertions.assertFalse(iterator.hasNext())
         assertOnCloseInvocations(ImmutableList.of(onClose1, onClose2, onClose3), ImmutableList.of())
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(8)).accept(ArgumentMatchers.any<Any>())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(8))
+            .accept(any())
     }
 
     @Test
     @Throws(Exception::class)
     fun testCloseBeforeUsingItUp() {
-        val iterator: AutoCloseableIterator<String?> = CompositeIterator<Any?>(ImmutableList.of(
-                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1, airbyteStream1)), airbyteStreamStatusConsumer)
+        val iterator: AutoCloseableIterator<String?> =
+            CompositeIterator<String?>(
+                ImmutableList.of(
+                    AutoCloseableIterators.fromIterator(
+                        MoreIterators.of("a", "b", "c"),
+                        onClose1,
+                        airbyteStream1
+                    )
+                ),
+                airbyteStreamStatusConsumer
+            )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1))
         assertNext(iterator, "a")
@@ -111,14 +160,24 @@ internal class CompositeIteratorTest {
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1))
         iterator.close()
         assertOnCloseInvocations(ImmutableList.of(onClose1), ImmutableList.of())
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2)).accept(ArgumentMatchers.any<Any>())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2))
+            .accept(any())
     }
 
     @Test
     @Throws(Exception::class)
     fun testCannotOperateAfterClosing() {
-        val iterator: AutoCloseableIterator<String?> = CompositeIterator<Any?>(ImmutableList.of(
-                AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1, airbyteStream1)), airbyteStreamStatusConsumer)
+        val iterator: AutoCloseableIterator<String?> =
+            CompositeIterator<String?>(
+                ImmutableList.of(
+                    AutoCloseableIterators.fromIterator(
+                        MoreIterators.of("a", "b", "c"),
+                        onClose1,
+                        airbyteStream1
+                    )
+                ),
+                airbyteStreamStatusConsumer
+            )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1))
         assertNext(iterator, "a")
@@ -127,7 +186,8 @@ internal class CompositeIteratorTest {
         Assertions.assertThrows(IllegalStateException::class.java) { iterator.hasNext() }
         Assertions.assertThrows(IllegalStateException::class.java) { iterator.next() }
         iterator.close() // still allowed to close again.
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2)).accept(ArgumentMatchers.any<Any>())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2))
+            .accept(any())
     }
 
     private fun assertNext(iterator: Iterator<String?>, value: String) {
@@ -136,7 +196,10 @@ internal class CompositeIteratorTest {
     }
 
     @Throws(Exception::class)
-    private fun assertOnCloseInvocations(haveClosed: List<VoidCallable?>, haveNotClosed: List<VoidCallable?>) {
+    private fun assertOnCloseInvocations(
+        haveClosed: List<VoidCallable>,
+        haveNotClosed: List<VoidCallable>
+    ) {
         for (voidCallable in haveClosed) {
             Mockito.verify(voidCallable).call()
         }

@@ -7,4 +7,5 @@ import io.airbyte.configoss.ConnectorJobOutput
 import io.airbyte.configoss.StandardCheckConnectionInput
 import io.airbyte.workers.TestHarness
 
-interface CheckConnectionTestHarness : TestHarness<StandardCheckConnectionInput?, ConnectorJobOutput?>
+interface CheckConnectionTestHarness :
+    TestHarness<StandardCheckConnectionInput, ConnectorJobOutput>

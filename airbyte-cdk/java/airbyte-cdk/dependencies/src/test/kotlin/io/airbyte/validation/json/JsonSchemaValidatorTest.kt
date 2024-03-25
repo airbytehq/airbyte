@@ -6,12 +6,12 @@ package io.airbyte.validation.json
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.json.Jsons
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Files
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 internal class JsonSchemaValidatorTest {
     @Test
@@ -33,17 +33,22 @@ internal class JsonSchemaValidatorTest {
 
         val object1 = Jsons.deserialize("{}")
         Assertions.assertFalse(validator.validate(VALID_SCHEMA, object1).isEmpty())
-        Assertions.assertThrows(JsonValidationException::class.java) { validator.ensure(VALID_SCHEMA, object1) }
+        Assertions.assertThrows(JsonValidationException::class.java) {
+            validator.ensure(VALID_SCHEMA, object1)
+        }
 
         val object2 = Jsons.deserialize("{\"host\":\"abc\", \"port\":9999999}")
         Assertions.assertFalse(validator.validate(VALID_SCHEMA, object2).isEmpty())
-        Assertions.assertThrows(JsonValidationException::class.java) { validator.ensure(VALID_SCHEMA, object2) }
+        Assertions.assertThrows(JsonValidationException::class.java) {
+            validator.ensure(VALID_SCHEMA, object2)
+        }
     }
 
     @Test
     @Throws(IOException::class)
     fun test() {
-        val schema = """{
+        val schema =
+            """{
   "${"$"}schema": "http://json-schema.org/draft-07/schema#",
   "title": "OuterObject",
   "type": "object",
@@ -65,14 +70,19 @@ internal class JsonSchemaValidatorTest {
 }
 """
 
-        val schemaFile = IOs.writeFile(Files.createTempDirectory("test"), "schema.json", schema).toFile()
+        val schemaFile =
+            IOs.writeFile(Files.createTempDirectory("test"), "schema.json", schema).toFile()
 
         // outer object
         Assertions.assertTrue(JsonSchemaValidator.getSchema(schemaFile)[PROPERTIES].has("field1"))
         Assertions.assertFalse(JsonSchemaValidator.getSchema(schemaFile)[PROPERTIES].has("field2"))
         // inner object
-        Assertions.assertTrue(JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field2"))
-        Assertions.assertFalse(JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field1"))
+        Assertions.assertTrue(
+            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field2")
+        )
+        Assertions.assertFalse(
+            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field1")
+        )
         // non-existent object
         Assertions.assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"))
     }
@@ -80,7 +90,8 @@ internal class JsonSchemaValidatorTest {
     @Test
     @Throws(IOException::class, URISyntaxException::class)
     fun testResolveReferences() {
-        val referencableSchemas = """
+        val referencableSchemas =
+            """
                                  {
                                    "definitions": {
                                      "ref1": {"type": "string"},
@@ -89,12 +100,20 @@ internal class JsonSchemaValidatorTest {
                                  }
                                  
                                  """.trimIndent()
-        val schemaFile = IOs.writeFile(Files.createTempDirectory("test"), "WellKnownTypes.json", referencableSchemas).toFile()
+        val schemaFile =
+            IOs.writeFile(
+                    Files.createTempDirectory("test"),
+                    "WellKnownTypes.json",
+                    referencableSchemas
+                )
+                .toFile()
         val jsonSchemaValidator =
-                JsonSchemaValidator(URI("file://" + schemaFile.parentFile.absolutePath + "/foo.json"))
+            JsonSchemaValidator(URI("file://" + schemaFile.parentFile.absolutePath + "/foo.json"))
 
-        val validationResult = jsonSchemaValidator.validate(
-                Jsons.deserialize("""
+        val validationResult =
+            jsonSchemaValidator.validate(
+                Jsons.deserialize(
+                    """
                           {
                             "type": "object",
                             "properties": {
@@ -103,14 +122,18 @@ internal class JsonSchemaValidatorTest {
                             }
                           }
                           
-                          """.trimIndent()),
-                Jsons.deserialize("""
+                          """.trimIndent()
+                ),
+                Jsons.deserialize(
+                    """
                           {
                             "prop1": "foo",
                             "prop2": "false"
                           }
                           
-                          """.trimIndent()))
+                          """.trimIndent()
+                )
+            )
 
         Assertions.assertEquals(setOf("$.prop2: string found, boolean expected"), validationResult)
     }
@@ -119,8 +142,12 @@ internal class JsonSchemaValidatorTest {
     fun testIntializedMethodsShouldErrorIfNotInitialised() {
         val validator = JsonSchemaValidator()
 
-        Assertions.assertThrows(NullPointerException::class.java) { validator.testInitializedSchema("uninitialised", Jsons.deserialize("{}")) }
-        Assertions.assertThrows(NullPointerException::class.java) { validator.ensureInitializedSchema("uninitialised", Jsons.deserialize("{}")) }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            validator.testInitializedSchema("uninitialised", Jsons.deserialize("{}"))
+        }
+        Assertions.assertThrows(NullPointerException::class.java) {
+            validator.ensureInitializedSchema("uninitialised", Jsons.deserialize("{}"))
+        }
     }
 
     @Test
@@ -136,13 +163,16 @@ internal class JsonSchemaValidatorTest {
 
         val badJson = Jsons.deserialize("{\"host\":1}")
         Assertions.assertFalse(validator.testInitializedSchema(schemaName, badJson))
-        Assertions.assertThrows(JsonValidationException::class.java) { validator.ensureInitializedSchema(schemaName, badJson) }
+        Assertions.assertThrows(JsonValidationException::class.java) {
+            validator.ensureInitializedSchema(schemaName, badJson)
+        }
     }
 
     companion object {
         private const val PROPERTIES = "properties"
 
-        private val VALID_SCHEMA: JsonNode = Jsons.deserialize(
+        private val VALID_SCHEMA: JsonNode =
+            Jsons.deserialize(
                 """{
     "${"$"}schema": "http://json-schema.org/draft-07/schema#",
     "title": "test",
@@ -158,6 +188,7 @@ internal class JsonSchemaValidatorTest {
         "minimum": 0,
         "maximum": 65536
       }    }
-  }""")
+  }"""
+            )
     }
 }

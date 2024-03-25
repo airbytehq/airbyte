@@ -10,9 +10,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-/**
- * Test suite for the [AirbyteStreamStatusHolder] class.
- */
+/** Test suite for the [AirbyteStreamStatusHolder] class. */
 internal class AirbyteStreamStatusHolderTest {
     @Test
     fun testToTraceMessage() {
@@ -25,9 +23,12 @@ internal class AirbyteStreamStatusHolderTest {
         Assertions.assertTrue(traceMessage.emittedAt >= startTime)
         Assertions.assertEquals(AirbyteTraceMessage.Type.STREAM_STATUS, traceMessage.type)
         Assertions.assertEquals(streamStatus, traceMessage.streamStatus.status)
-        Assertions.assertEquals(StreamDescriptor()
+        Assertions.assertEquals(
+            StreamDescriptor()
                 .withName(airbyteStreamNameAndNamespacePair.name)
-                .withNamespace(airbyteStreamNameAndNamespacePair.namespace), traceMessage.streamStatus.streamDescriptor)
+                .withNamespace(airbyteStreamNameAndNamespacePair.namespace),
+            traceMessage.streamStatus.streamDescriptor
+        )
     }
 
     @Test
@@ -41,8 +42,11 @@ internal class AirbyteStreamStatusHolderTest {
         Assertions.assertTrue(traceMessage.emittedAt >= startTime)
         Assertions.assertEquals(AirbyteTraceMessage.Type.STREAM_STATUS, traceMessage.type)
         Assertions.assertEquals(streamStatus, traceMessage.streamStatus.status)
-        Assertions.assertEquals(StreamDescriptor()
+        Assertions.assertEquals(
+            StreamDescriptor()
                 .withName(airbyteStreamNameAndNamespacePair.name)
-                .withNamespace(airbyteStreamNameAndNamespacePair.namespace), traceMessage.streamStatus.streamDescriptor)
+                .withNamespace(airbyteStreamNameAndNamespacePair.namespace),
+            traceMessage.streamStatus.streamDescriptor
+        )
     }
 }
