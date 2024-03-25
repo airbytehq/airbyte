@@ -8,7 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;

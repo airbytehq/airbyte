@@ -17,12 +17,14 @@ dependencies {
 
     implementation 'io.aesy:datasize:1.0.0'
 
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-
+    testFixturesCompileOnly libs.lombok
+    testFixturesAnnotationProcessor libs.lombok
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
+
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
 }

@@ -4,6 +4,7 @@ Airbyte's certified MongoDB connector offers the following features:
 
 * [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) via [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/)/[Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/).
 * Reliable replication of any collection size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of data reads.
+* ***NEW*** Full refresh syncing of collections.
 
 ## Quick Start
 
@@ -131,10 +132,16 @@ The source will test the connection to the MongoDB instance upon creation.
 ## Replication Methods
 
 The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
+In addtion MongoDB source now allows for syncing in a full refresh mode.
 
 ### CDC
 
 Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
+
+### Full Refresh
+The Full refresh sync mode added in v4.0.0 allows for reading a the entire contents of a collection, repeatedly.
+The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for netwrok error for example,
+Rather than starting over it will continue its full refresh read from a last known point.
 
 ### Schema Enforcement
 
@@ -214,6 +221,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 1.3.0   | 2024-03-15 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | Full refresh read of collections.                                                                         |
 | 1.2.16  | 2024-03-06 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | State message will now include record count.                                                              |
 | 1.2.15  | 2024-02-27 | [35673](https://github.com/airbytehq/airbyte/pull/35673) | Consume user provided connection string.                                                                  |
 | 1.2.14  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message.                                                                            |
