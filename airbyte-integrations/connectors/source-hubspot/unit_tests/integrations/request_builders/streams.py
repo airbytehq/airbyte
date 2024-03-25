@@ -98,6 +98,7 @@ class IncrementalCRMStreamRequestBuilder(CRMStreamRequestBuilder):
     def _query_params(self):
         return [
             self._limit,
+            self._after,
             self._dt_range,
             self._archived,
             self._associations,
@@ -107,6 +108,9 @@ class IncrementalCRMStreamRequestBuilder(CRMStreamRequestBuilder):
 
 class OwnersArchivedStreamRequestBuilder(AbstractRequestBuilder):
     URL = "https://api.hubapi.com/crm/v3/owners"
+
+    def __init__(self):
+        self._after = None
 
     @property
     def _limit(self):
@@ -118,10 +122,15 @@ class OwnersArchivedStreamRequestBuilder(AbstractRequestBuilder):
 
     @property
     def _query_params(self):
-        return [
+        return filter(None, [
             self._limit,
+            self._after,
             self._archived,
-        ]
+        ])
+
+    def with_page_token(self, next_page_token: Dict):
+        self._after = "&".join([f"{str(key)}={str(val)}" for key, val in next_page_token.items()])
+        return self
 
     def build(self):
         q = "&".join(filter(None, self._query_params))

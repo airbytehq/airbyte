@@ -39,6 +39,10 @@ class WebAnalyticsTestCase(HubspotTestCase):
     PARENT_CURSOR_FIELD = "updatedAt"
 
     @classmethod
+    def response_builder(cls, stream):
+        return HubspotStreamResponseBuilder.for_stream(stream)
+
+    @classmethod
     def web_analytics_request(
         cls,
         stream: str,
@@ -60,8 +64,7 @@ class WebAnalyticsTestCase(HubspotTestCase):
         }
 
         if not first_page:
-            response_builder = HubspotStreamResponseBuilder.for_stream(stream)
-            query.update(response_builder.pagination_strategy.NEXT_PAGE_TOKEN)
+            query.update(cls.response_builder(stream).pagination_strategy.NEXT_PAGE_TOKEN)
         return WebAnalyticsRequestBuilder().with_token(token).with_query(query).build()
 
     @classmethod
@@ -72,8 +75,7 @@ class WebAnalyticsTestCase(HubspotTestCase):
         record = cls.record_builder(stream, FieldPath(cls.CURSOR_FIELD)).with_field(FieldPath(cls.CURSOR_FIELD), updated_on)
         if id:
             record = record.with_field(FieldPath("objectId"), id)
-        response_builder = HubspotStreamResponseBuilder.for_stream(stream)
-        response = response_builder.with_record(record)
+        response = cls.response_builder(stream).with_record(record)
         if with_pagination:
             response = response.with_pagination()
         return response.build()
@@ -87,9 +89,11 @@ class WebAnalyticsTestCase(HubspotTestCase):
         stream_name: str,
         associations: List[str],
         properties: List[str],
+        first_page: bool = True,
+        with_pagination: bool = False,
         date_range: Optional[Tuple[str, ...]] = None,
     ):
-        response_builder = HubspotStreamResponseBuilder.for_stream(stream_name)
+        response_builder = cls.response_builder(stream_name)
         for object_id in object_ids:
             record = cls.record_builder(stream_name, FieldPath(cls.PARENT_CURSOR_FIELD)).with_field(
                 FieldPath(cls.PARENT_CURSOR_FIELD), cls.dt_str(cls.updated_at())
@@ -97,11 +101,13 @@ class WebAnalyticsTestCase(HubspotTestCase):
                 FieldPath("id"), object_id
             )
             response_builder = response_builder.with_record(record)
+        if with_pagination:
+            response_builder = response_builder.with_pagination()
 
-        http_mocker.get(
-            CRMStreamRequestBuilder().for_entity(object_type).with_associations(associations).with_properties(properties).build(),
-            response_builder.build()
-        )
+        request_builder = CRMStreamRequestBuilder().for_entity(object_type).with_associations(associations).with_properties(properties)
+        if not first_page:
+            request_builder = request_builder.with_page_token(response_builder.pagination_strategy.NEXT_PAGE_TOKEN)
+        http_mocker.get(request_builder.build(), response_builder.build())
 
 
 @freezegun.freeze_time("2024-03-03T14:42:00Z")
@@ -178,6 +184,44 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
+    def test_given_two_parent_pages_when_read_then_return_records(
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
+    ):
+        self.mock_custom_objects(http_mocker)
+        self.mock_properties(http_mocker, object_type, self.PROPERTIES)
+        self.mock_parent_object(
+            http_mocker,
+            [self.OBJECT_ID],
+            object_type,
+            parent_stream_name,
+            parent_stream_associations,
+            with_pagination=True,
+            properties=list(self.PROPERTIES.keys())
+        )
+        self.mock_parent_object(
+            http_mocker,
+            ["another_object_id"],
+            object_type,
+            parent_stream_name,
+            parent_stream_associations,
+            first_page=False,
+            properties=list(self.PROPERTIES.keys())
+        )
+        self.mock_response(
+            http_mocker,
+            self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
+            self.web_analytics_response(stream_name)
+        )
+        self.mock_response(
+            http_mocker,
+            self.web_analytics_request(stream_name, self.ACCESS_TOKEN, "another_object_id", object_type),
+            self.web_analytics_response(stream_name)
+        )
+        output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
+        assert len(output.records) == 2
+
+    @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
+    @HttpMocker()
     def test_given_wide_date_range_and_multiple_parent_records_when_read_then_return_records(
         self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
     ):
@@ -192,7 +236,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
             parent_stream_name,
             parent_stream_associations,
             list(self.PROPERTIES.keys()),
-            start_to_end
+            date_range=start_to_end
         )
         for dt_range in date_ranges:
             for _id in (self.OBJECT_ID, "another_object_id"):
@@ -205,7 +249,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
                 )
         config_start_dt = date_ranges[0][0]
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN, config_start_dt), stream_name, SyncMode.full_refresh)
-        assert len(output.records) == 4
+        assert len(output.records) == 4  # 2 parent objects * 2 datetime slices
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
@@ -328,6 +372,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         parent_stream_associations,
         http_mocker: HttpMocker
     ):
+        # validate that no filter is applied on the record set received from the API response
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
         self.mock_parent_object(
@@ -441,10 +486,12 @@ class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStream)
         stream_name: str,
         associations: List[str],
         properties: List[str],
+        first_page: bool = True,
+        with_pagination: bool = False,
         date_range: Optional[Tuple[str]] = None,
     ):
         date_range = date_range or (cls.dt_str(cls.start_date()), cls.dt_str(cls.now()))
-        response_builder = HubspotStreamResponseBuilder.for_stream(stream_name)
+        response_builder = cls.response_builder(stream_name)
         for object_id in object_ids:
             record = cls.record_builder(stream_name, FieldPath(cls.PARENT_CURSOR_FIELD)).with_field(
                 FieldPath(cls.PARENT_CURSOR_FIELD), cls.dt_str(cls.updated_at())
@@ -452,15 +499,22 @@ class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStream)
                 FieldPath("id"), object_id
             )
             response_builder = response_builder.with_record(record)
+        if with_pagination:
+            response_builder = response_builder.with_pagination()
 
         start, end = date_range
-        http_mocker.get(
-            IncrementalCRMStreamRequestBuilder().for_entity(object_type).with_associations(associations).with_dt_range(
-                ("startTimestamp", cls.dt_conversion(start)),
-                ("endTimestamp", cls.dt_conversion(end))
-            ).with_properties(properties).build(),
-            response_builder.build()
-        )
+        request_builder = IncrementalCRMStreamRequestBuilder().for_entity(
+            object_type
+        ).with_associations(
+            associations
+        ).with_dt_range(
+            ("startTimestamp", cls.dt_conversion(start)),
+            ("endTimestamp", cls.dt_conversion(end))
+        ).with_properties(properties)
+        if not first_page:
+            request_builder = request_builder.with_page_token(response_builder.pagination_strategy.NEXT_PAGE_TOKEN)
+
+        http_mocker.get(request_builder.build(), response_builder.build())
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
     def test_given_one_page_when_read_stream_oauth_then_return_records(
@@ -563,5 +617,13 @@ class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStream)
         self, stream_name, parent_stream_name, object_type, parent_stream_associations
     ):
         super().test_given_state_with_current_slice_when_read_then_state_is_updated(
+            stream_name, parent_stream_name, object_type, parent_stream_associations
+        )
+
+    @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
+    def test_given_two_parent_pages_when_read_then_return_records(
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations
+    ):
+        super().test_given_two_parent_pages_when_read_then_return_records(
             stream_name, parent_stream_name, object_type, parent_stream_associations
         )
