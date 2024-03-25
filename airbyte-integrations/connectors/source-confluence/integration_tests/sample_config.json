@@ -1,6 +1,6 @@
 {
   "api_token": "abcd",
-  "base_url": "example.atlassian.net",
+  "base_url": "https://example.atlassian.net",
   "email": "test@example.com",
   "confluence_server": false,
   "auth": "basic"
