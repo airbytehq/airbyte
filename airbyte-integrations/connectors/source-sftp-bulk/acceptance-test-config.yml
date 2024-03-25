@@ -15,15 +15,15 @@ tests:
       status: "failed"
       timeout_seconds: 60
   discovery:
-    - config_path: "integration_tests/config_password.json"
+    - config_path: "integration_tests/configs/config_password.json"
   basic_read:
-    - config_path: "integration_tests/config_password.json"
+    - config_path: "integration_tests/configs/config_password.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: []
   incremental:
-    - config_path: "integration_tests/config_password.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "integration_tests/configs/config_password.json"
+      configured_catalog_path: "integration_tests/configs/configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    - config_path: "integration_tests/config_password.json"
+    - config_path: "integration_tests/configs/config_password.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
