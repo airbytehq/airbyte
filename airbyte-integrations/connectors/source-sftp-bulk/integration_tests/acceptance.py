@@ -29,7 +29,7 @@ def connector_setup():
         "atmoz/sftp",
         "foo:pass",
         name=f"mysftpacceptance_{uuid.uuid4().hex}",
-        ports={22: 1122},
+        ports={22: 2222},
         volumes={
             f"{TMP_FOLDER}": {"bind": "/home/foo/files", "mode": "rw"},
         },
