@@ -186,7 +186,6 @@ jobs:
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
           python_version: "3.10"
-          repository_url: "https://test.pypi.org/simple/"
           package_directory: "airbyte-cdk/python"
 #      - name: Post failure to Slack channel dev-connectors-extensibility
 #        if: ${{ failure() }}
