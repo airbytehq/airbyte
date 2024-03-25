@@ -1,44 +1,95 @@
-# Defines Python build system settings.
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-build-backend = "setuptools.build_meta"
-
-[tool.coverage.report]
-fail_under = 0
-skip_empty = true
-sort = "-cover"
-omit = [
-    ".venv/*",
-    "main.py",
-    "setup.py",
-    "unit_tests/*",
-    "integration_tests/*",
-    "**/generated/*",
+[tool.poetry]
+name = "airbyte-cdk"
+version = "0.75.0"
+description = "A framework for writing Airbyte Connectors."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/airbytehq/airbyte"
+repository = "https://github.com/airbytehq/airbyte"
+documentation = "https://docs.airbyte.io/"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
 ]
+keywords = ["airbyte", "connector-development-kit", "cdk"]
 
-[tool.flake8]
-extend-exclude = [
-    "*/lib/*/site-packages",
-    ".venv",
-    "build",
-    "models",
-    ".eggs",
-    "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
-    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/__init__.py",
-    ".tox",
-    "airbyte_api_client",
-    "**/generated/*",
-]
-max-complexity = 20
-max-line-length = 140
+[tool.poetry.dependencies]
+python = "^3.9"
+airbyte-protocol-models = "0.5.1"
+backoff = "*"
+cachetools = "*"
+Deprecated = "~1.2"
+dpath = "~2.0.1"
+genson = "1.2.2"
+isodate = "~0.6.1"
+Jinja2 = "~3.1.2"
+jsonref = "~0.2"
+jsonschema = "~3.2.0"
+pendulum = "<3.0.0"
+pydantic = "^1.10.8"
+pyrate-limiter = "~3.1.0"
+python-dateutil = "*"
+PyYAML = "^6.0.1"
+requests = "*"
+requests_cache = "*"
+wcmatch = "8.4"
 
-extend-ignore = [
-    "E203",  # whitespace before ':' (conflicts with Black)
-    "E231",  # Bad trailing comma (conflicts with Black)
-    "E501",  # line too long (conflicts with Black)
-    "W503",  # line break before binary operator (conflicts with Black)
-]
+[tool.poetry.dev-dependencies]
+avro = "~1.11.2"
+cohere = "4.21"
+fastavro = "~1.8.0"
+freezegun = "*"
+langchain = "0.0.271"
+markdown = "*"
+mypy = "*"
+openai = { version = "0.27.9", extras = ["embeddings"] }
+pandas = "2.0.3"
+pdf2image = "1.16.3"
+"pdfminer.six" = "20221105"
+poethepoet = "^0.24.2"
+pyarrow = "~15.0.0"
+pyproject-flake8 = "^6.1.0"
+pytesseract = "0.3.10"
+pytest = "6.2.5"
+pytest-cov = "*"
+pytest-httpserver = "*"
+pytest-mock = "*"
+requests-mock = "*"
+Sphinx = "~4.2"
+sphinx-rtd-theme = "~1.0"
+tiktoken = "0.4.0"
+unstructured = { version = "0.10.27", extras = ["docx", "pptx"] }
+"unstructured.pytesseract" = ">=0.3.12"
+
+[tool.poetry.extras]
+file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown"]
+sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
+vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
+
+[tool.poe.tasks]
+# Build tasks
+build-code-generator-image = {cmd = "bin/build_code_generator_image.sh", help = "Build the code generator docker image."}
+generate-component-manifest-files = {cmd = "bin/generate-component-manifest-files.sh", help = "Generate component manifest files."}
+generate = {sequence = ["build-code-generator-image", "generate-component-manifest-files"], help = "Run all code generation tasks."}
+build-package = {cmd = "poetry build", help = "Build the python package: source and wheels archives."}
+build = {sequence = ["generate", "build-package"], help = "Run all tasks to build the package."}
+
+# Check tasks
+lint =  {cmd = "pflake8 --config ../../pyproject.toml ./", help = "Lint with flake8."}
+type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modified files with mypy."}
+unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report."}
+# TODO: find a version of the modified mypy check that works both locally and in CI.
+check-local = {sequence = ["lint", "type-check", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
+check-ci = {sequence = ["lint", "unit-test-with-cov"], help = "Lint and run unit tests. Does not include type-checking."}
+
+# Build and check
+pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
