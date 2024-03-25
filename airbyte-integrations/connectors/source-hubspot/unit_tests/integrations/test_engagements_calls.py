@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import http
+from typing import Dict, Optional
 
 import freezegun
 import mock
@@ -8,7 +9,6 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_protocol.models import SyncMode
 
-from typing import Dict, Optional
 from . import HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder
 from .response_builder.streams import HubspotStreamResponseBuilder
