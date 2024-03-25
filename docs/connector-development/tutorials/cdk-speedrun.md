@@ -14,8 +14,7 @@ detail, check it out below.
 
 1. Python &gt;= 3.9
 2. [Poetry](https://python-poetry.org/)
-2. Docker
-3. NodeJS
+3. Docker
 
 #### Generate the Template
 
@@ -27,7 +26,7 @@ cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
-Select the `Python HTTP API Source` and name it `python-http-example`.
+Select the `Python CDK Source` and name it `python-http-example`.
 
 #### Create Dev Environment
 
