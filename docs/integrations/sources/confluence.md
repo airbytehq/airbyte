@@ -13,18 +13,25 @@ This page contains the setup guide and reference information for the
 
 ### Step 1: Create an API Token
 
-For detailed instructions on creating an Atlassian API Token, please refer to the
+For detailed instructions on creating an Atlassian API Token for Confluence Cloud, please refer to the
 [official documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
+For detailed instructions on creating a PAT (Personal Access Token), which can be used as an API token for Confluence server, please refer to [this documentation](https://confluence.atlassian.com/bitbucketserver076/personal-access-tokens-1026534797.html). Please refer to [this document](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html) for instructions on using a PAT.
 
 ### Step 2: Set up the Confluence connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
 3. Enter a **Source name** of your choosing.
-4. In the **API Token** field, enter your Atlassian API Token.
-5. In the **Domain name** field, enter your Confluence domain name.
+4. In the **API Token** field, enter your Atlassian API Token or PAT.
+5. In the **Base URL** field, enter your Confluence base URL
+   1. Confluence Cloud example: https://my-confluence.atlassian.net
+   2. Confluence Server example: https://my.company.domain/confluence
 6. In the **Email** field, enter your Confluence login email.
-7. Click **Set up source** and wait for the tests to complete.
+7. In the **Authentication** field:
+   1. Choose _basic_ for Confluence Cloud
+   2. Choose _bearer_ for Confluence Server
+8. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -50,7 +57,7 @@ The `audit` stream requires a Standard or Premium plan.
 
 ## Data type mapping
 
-The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) and [Confluence Server REST API](https://docs.atlassian.com/ConfluenceServer/rest/8.8.1/) use the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
 ## Performance considerations
 
@@ -60,6 +67,7 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.0.0   | 2024-03-25 | TBD                                                      | Added Confluence Server support
 | 0.2.0   | 2023-08-14 | [29125](https://github.com/airbytehq/airbyte/pull/29125) | Migrate Confluence Source Connector to Low Code                |
 | 0.1.3   | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body, add check for stream Audit |
 | 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec           |
