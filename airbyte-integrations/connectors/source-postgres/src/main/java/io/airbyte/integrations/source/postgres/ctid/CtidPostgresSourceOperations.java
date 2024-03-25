@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.postgres.ctid;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresSourceOperations;
