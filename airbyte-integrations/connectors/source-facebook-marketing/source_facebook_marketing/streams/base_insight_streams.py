@@ -314,6 +314,10 @@ class AdsInsights(FBMarketingIncrementalStream):
                 start_date = min(start_date, refresh_date)
             else:
                 start_date = self._start_date
+
+            if start_date < self._start_date:
+                logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
+            start_date = max(start_date, self._start_date)
             if start_date < oldest_date:
                 logger.warning(
                     f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}."

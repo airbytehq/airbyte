@@ -148,7 +148,10 @@ class Stream(ABC):
                     hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD
                 ):
                     record_data = record_data_or_message if isinstance(record_data_or_message, Mapping) else record_data_or_message.record
-                    stream_state = self.get_updated_state(stream_state, record_data)
+                    if self.cursor_field:
+                        # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
+                        # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
+                        stream_state = self.get_updated_state(stream_state, record_data)
                     record_counter += 1
 
                     if sync_mode == SyncMode.incremental:
