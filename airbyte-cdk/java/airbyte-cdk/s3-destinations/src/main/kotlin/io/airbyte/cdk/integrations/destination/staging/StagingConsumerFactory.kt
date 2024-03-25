@@ -226,24 +226,14 @@ private constructor(
                 val message =
                     String.format(
                         "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-                        conflictingStreams
-                            .stream()
-                            .map<String>(
-                                Function<WriteConfig, String> { config: WriteConfig ->
-                                    config.getNamespace() + "." + config.getStreamName()
-                                }
-                            )
-                            .collect(Collectors.joining(", "))
-                    )
+                        conflictingStreams.stream().map<String>(Function<WriteConfig, String> { config: WriteConfig -> config.namespace + "." + config.streamName }).collect(Collectors.joining(", ")))
                 throw ConfigErrorException(message)
             }
             return streamDescToWriteConfig
         }
 
         private fun toStreamDescriptor(config: WriteConfig): StreamDescriptor {
-            return StreamDescriptor()
-                .withName(config.getStreamName())
-                .withNamespace(config.getNamespace())
+            return StreamDescriptor().withName(config.streamName).withNamespace(config.namespace)
         }
 
         /**

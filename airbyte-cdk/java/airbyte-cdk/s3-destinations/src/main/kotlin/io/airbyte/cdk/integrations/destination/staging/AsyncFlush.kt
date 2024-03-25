@@ -91,39 +91,29 @@ internal class AsyncFlush(
         }
 
         val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(decs)
-        val schemaName: String = writeConfig.getOutputSchemaName()
-        val stageName =
-            stagingOperations!!.getStageName(schemaName, writeConfig.getOutputTableName())
+        val schemaName: String = writeConfig.outputSchemaName
+        val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.outputTableName)
         val stagingPath =
-            stagingOperations.getStagingPath(
-                GeneralStagingFunctions.RANDOM_CONNECTION_ID,
-                schemaName,
-                writeConfig.getStreamName(),
-                writeConfig.getOutputTableName(),
-                writeConfig.getWriteDatetime()
-            )
+                stagingOperations.getStagingPath(
+                        GeneralStagingFunctions.RANDOM_CONNECTION_ID,
+                        schemaName,
+                        writeConfig.streamName,
+                        writeConfig.outputTableName,
+                        writeConfig.writeDatetime)
         try {
             val stagedFile =
                 stagingOperations.uploadRecordsToStage(
                     database,
-                    writer,
-                    schemaName,
                     stageName,
-                    stagingPath
-                )
-            GeneralStagingFunctions.copyIntoTableFromStage(
-                database,
-                stageName,
-                stagingPath,
-                List.of(stagedFile),
-                writeConfig.getOutputTableName(),
-                schemaName,
-                stagingOperations,
-                writeConfig.getNamespace(),
-                writeConfig.getStreamName(),
-                typerDeduperValve,
-                typerDeduper
-            )
+                    stagingPath,
+                    List.of(stagedFile),
+                    writeConfig.outputTableName,
+                    schemaName,
+                    stagingOperations,
+                    writeConfig.namespace,
+                    writeConfig.streamName,
+                    typerDeduperValve,
+                    typerDeduper)
         } catch (e: Exception) {
             logger.error("Failed to flush and commit buffer data into destination's raw table", e)
             throw RuntimeException("Failed to upload buffer to stage and commit to destination", e)
