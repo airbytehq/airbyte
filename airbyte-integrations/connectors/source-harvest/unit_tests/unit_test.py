@@ -4,14 +4,12 @@
 
 import requests
 from freezegun import freeze_time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_harvest.source import SourceHarvest
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
-    NestedPath,
     RecordBuilder,
     create_record_builder,
     create_response_builder,
@@ -19,10 +17,9 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 import json
 from unittest import TestCase
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
-from airbyte_cdk.test.mock_http import HttpRequest
+from airbyte_protocol.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
 from config import ConfigBuilder
 from pagination import HarvestPaginationStrategy
