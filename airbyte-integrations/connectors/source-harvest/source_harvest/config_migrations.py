@@ -13,6 +13,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 
 logger = logging.getLogger("airbyte_logger")
 
+
 class MigrateAuthType:
     """
     This class stands for migrating the config at runtime.

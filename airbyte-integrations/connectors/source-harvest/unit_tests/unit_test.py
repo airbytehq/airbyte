@@ -24,6 +24,7 @@ from pagination import HarvestPaginationStrategy
 from request_builder import HarvestRequestBuilder
 from source_harvest.source import SourceHarvest
 
+
 def _a_record(stream_name: str, data_path: str, primary_key: str) -> RecordBuilder:
     return create_record_builder(
         find_template(stream_name, __file__),

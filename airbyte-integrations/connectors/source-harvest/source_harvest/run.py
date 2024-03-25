@@ -7,6 +7,7 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 from source_harvest import SourceHarvest
+
 from .config_migrations import MigrateAuthType
 
 
