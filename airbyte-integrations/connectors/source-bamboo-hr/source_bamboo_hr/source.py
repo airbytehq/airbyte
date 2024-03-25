@@ -6,7 +6,18 @@
 import base64
 import logging
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, NamedTuple, Union, Dict
+from typing import (
+    Any,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    NamedTuple,
+    Union,
+    Dict,
+)
+from typing import cast
 
 import requests
 from requests.exceptions import HTTPError
@@ -35,11 +46,11 @@ class BambooHrStream(HttpStream, ABC):
             f"https://api.bamboohr.com/api/gateway.php/{self.config['subdomain']}/v1/"
         )
 
-    def request_headers(
+    def request_headers( # type: ignore
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] | None = None,
-        next_page_token: Mapping[str, Any] | None = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
@@ -53,14 +64,16 @@ class BambooHrStream(HttpStream, ABC):
 
 
 class MetaTablesStream(BambooHrStream):
-    primary_key = None
+    primary_key = None # type: ignore
 
-    def path(self, **kwargs) -> str:
+    def path(self, **kwargs) -> str:  # type: ignore
         return "meta/tables"
 
     def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+        self,
+        response: requests.Response,
+        **kwarg,  # type: ignore
+    ) -> Iterable[Mapping[str, Any]]:
         yield from response.json()
 
 
@@ -76,14 +89,16 @@ class BambooMetaField(NamedTuple):
 
 
 class MetaFieldsStream(BambooHrStream):
-    primary_key = None
+    primary_key = None # type: ignore
 
-    def path(self, **kwargs) -> str:
+    def path(self, **kwargs) -> str:  # type: ignore
         return "meta/fields"
 
     def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+        self,
+        response: requests.Response,
+        **kwargs,  # type: ignore
+    ) -> Iterable[Mapping[str, Any]]:
         yield from response.json()
 
 
@@ -106,8 +121,8 @@ class BambooMetaTable(NamedTuple):
 
 
 class TablesStream(BambooHrStream):
-    primary_key = None
-    raise_on_http_errors = False
+    primary_key = None # type: ignore
+    raise_on_http_errors = False # type: ignore
     skip_http_status_codes = [
         requests.codes.NOT_FOUND,
     ]
@@ -120,9 +135,10 @@ class TablesStream(BambooHrStream):
         Converts a raw meta table to a typed BambooMetaTable.
         """
         return BambooMetaTable(
-            alias=raw_meta_table.get("alias",""),
+            alias=raw_meta_table.get("alias", ""),
             fields=[
-                BambooMetaTableField(**field) for field in raw_meta_table.get("fields",[])
+                BambooMetaTableField(**field)
+                for field in raw_meta_table.get("fields", [])
             ],
         )
 
@@ -141,12 +157,14 @@ class TablesStream(BambooHrStream):
                 # If the record is empty, skip it.
                 # This may occur if parse_response yields an empty record,
                 # which can happen if the response is not 2xx.
-                if record == {}:
+                if record == {} or not isinstance(record,Mapping):
+                    self.logger.warn(
+                        f"Empty record or non-map record encountered in TablesStream.  Record: {record}")
                     continue
                 else:
                     # Augment the record for easier lookup/better
                     # performance in the destination.
-                    new_record = {
+                    new_record : Mapping[str,Any] = {
                         "id": record["id"],
                         "employee_id": record["employeeId"],
                         "table_name": table_name,
@@ -157,15 +175,17 @@ class TablesStream(BambooHrStream):
             self.logger.error("Stream slice is None in TablesStream.")
             return iter([])
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]: # type: ignore
         # Each table has an 'alias' field that we use to grab
         # all values.  See `path` method for how it's used in the URL.
-        available_tables : List[BambooMetaTable] = self.config.get("available_tables", [])
+        available_tables: List[BambooMetaTable] = self.config.get(
+            "available_tables", []
+        )
         for meta_table in available_tables:  # Add default value of empty list
             table = meta_table.alias
             yield {"table": table}
 
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str: # type: ignore
         target_table = stream_slice["table"]
         return f"employees/all/tables/{target_table}"
 
@@ -174,7 +194,7 @@ class TablesStream(BambooHrStream):
         response: requests.Response,
         stream_state: Mapping[str, Any] | None = None,
         stream_slice: Mapping[str, Any] | None = None,
-        **kwargs,
+        **kwargs, # type: ignore
     ) -> Iterable[Mapping[str, Any]]:
         try:
             # This will raise an exception if the response is not 2xx
@@ -197,17 +217,17 @@ class TablesStream(BambooHrStream):
 
 
 class CustomReportsStream(BambooHrStream):
-    primary_key = None
+    primary_key = None # type: ignore
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs): # type: ignore
+        super().__init__(*args, **kwargs) # type: ignore
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        available_fields : List[str] = self.config.get("available_fields", [])
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]: # type: ignore
+        available_fields: List[str] = self.config.get("available_fields", [])
         for fields in chunk_iterable(available_fields, 100):
             yield {"fields": fields}
 
-    def path(self, **kwargs) -> str:
+    def path(self, **kwargs) -> str: # type: ignore
         return "reports/custom"
 
     def read_records(
@@ -221,7 +241,8 @@ class CustomReportsStream(BambooHrStream):
             sync_mode, cursor_field, stream_slice, stream_state
         ):
             # Augment the record with the table name.
-            if record == {}:
+            if record == {} or not isinstance(record,Mapping):
+                self.logger.warn("Empty record or non-map record encountered in CustomReportsStream.")
                 continue
             else:
                 new_record = {
@@ -333,16 +354,19 @@ class CustomReportsStream(BambooHrStream):
         else:
             return field.alias
 
-
-    def request_body_json(
-        self, stream_slice: Mapping[str, Any] | None = None, **kwargs
-    ) -> Optional[Mapping]:
-        fields = stream_slice["fields"] if stream_slice is not None else []
+    def request_body_json( # type: ignore
+        self,
+        stream_slice: Mapping[str, Any] | None = None,
+        **kwargs,  # type: ignore
+    ) -> Optional[Mapping[str, Any]]:
+        fields: List[str] = stream_slice["fields"] if stream_slice is not None else []
         return {"title": "Airbyte", "fields": fields}
 
     def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+        self,
+        response: requests.Response,
+        **kwargs,  # type: ignore
+    ) -> Iterable[Mapping[str, Any]]:
         yield from response.json()["employees"]
 
 
@@ -352,20 +376,22 @@ class EmployeesDirectoryStream(BambooHrStream):
     https://documentation.bamboohr.com/reference/get-employees-directory-1
     """
 
-    primary_key = "id"
+    primary_key = "id" # type: ignore
 
     def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+        self,
+        response: requests.Response,
+        **kwargs,  # type: ignore
+    ) -> Iterable[Mapping[str, Any]]:
         yield from response.json()["employees"]
 
-    def path(self, **kwargs) -> str:
+    def path(self, **kwargs) -> str:  # type: ignore
         return "employees/directory"
 
 
 class SourceBambooHr(AbstractSource):
     @staticmethod
-    def _get_authenticator(api_key):
+    def _get_authenticator(api_key: str):
         """
         Returns a TokenAuthenticator.
 
@@ -386,12 +412,14 @@ class SourceBambooHr(AbstractSource):
         return config
 
     def check_connection(
-        self, logger: logging.Logger, config: Dict[str, Any]
+        self, logger: logging.Logger, config: Mapping[str, Any]
     ) -> Tuple[bool, Optional[Any]]:
         """
         Verifies the config and attempts to fetch the fields from the meta/fields endpoint.
         """
-        config = SourceBambooHr.add_authenticator_to_config(config)
+        config = SourceBambooHr.add_authenticator_to_config(
+            cast(Dict[str, Any], config)
+        )
 
         available_fields = MetaFieldsStream(config).read_records(
             sync_mode=SyncMode.full_refresh
@@ -399,24 +427,39 @@ class SourceBambooHr(AbstractSource):
 
         try:
             # Check to see that we get some fields back.
-            next(available_fields)
+            next(available_fields)  # type: ignore
             return True, None
         except StopIteration:
             return False, AvailableFieldsAccessDeniedError()
 
-    def streams(self, config: Dict[str, Any]) -> List[Stream]:
-        config = SourceBambooHr.add_authenticator_to_config(config)
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = SourceBambooHr.add_authenticator_to_config(
+            cast(Dict[str, Any], config)
+        )
 
         # Grabbing these early on and sending them through the config seemed
         # simpler than passing them along as parent streams.
-        available_fields : List[str]= list(map(
-            lambda field: CustomReportsStream.convert_field_to_id(BambooMetaField(**field)),
-            MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh)
-        )) + CustomReportsStream.get_default_bamboo_fields()
+        available_fields: List[str] = (
+            list(
+                map(
+                    lambda field: CustomReportsStream.convert_field_to_id(
+                        BambooMetaField(**field) # type: ignore
+                    ),  
+                    MetaFieldsStream(config).read_records(
+                        sync_mode=SyncMode.full_refresh
+                    ),
+                )
+            )
+            + CustomReportsStream.get_default_bamboo_fields()
+        )
 
         available_tables = list(
-            map(lambda meta_table: TablesStream.convert_raw_meta_table_to_typed(meta_table),
-                MetaTablesStream(config).read_records(sync_mode=SyncMode.full_refresh))
+            map(
+                lambda meta_table: TablesStream.convert_raw_meta_table_to_typed(
+                    meta_table # type: ignore
+                ),  
+                MetaTablesStream(config).read_records(sync_mode=SyncMode.full_refresh),
+            )
         )
 
         """
