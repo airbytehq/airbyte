@@ -7,11 +7,9 @@ from abc import ABC
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.streams.http import HttpSubStream
 from airbyte_protocol.models import SyncMode
 from requests import Response
 from source_amazon_ads.schemas import (
-    CampaignNegativeKeywords,
     Keywords,
     NegativeKeywords,
     ProductAd,
@@ -20,8 +18,11 @@ from source_amazon_ads.schemas import (
     ProductAdGroupSuggestedKeywords,
     ProductCampaign,
     ProductTargeting,
+    SponsoredProductKeywordsModel,
+    SponsoredProductNegativeKeywordsModel,
+    SponsoredProductCampaignNegativeKeywordsModel
 )
-from source_amazon_ads.streams.common import AmazonAdsStream, SubProfilesStream
+from source_amazon_ads.streams.common import SubProfilesStream
 
 
 class SponsoredProductsV3(SubProfilesStream):
@@ -239,7 +240,7 @@ class SponsoredProductKeywords(SponsoredProductsV3):
     primary_key = "keywordId"
     data_field = "keywords"
     content_type = "application/vnd.spKeyword.v3+json"
-    model = Keywords
+    model = SponsoredProductKeywordsModel
 
     def path(self, **kwargs) -> str:
         return "sp/keywords/list"
@@ -254,7 +255,7 @@ class SponsoredProductNegativeKeywords(SponsoredProductsV3):
     primary_key = "keywordId"
     data_field = "negativeKeywords"
     content_type = "application/vnd.spNegativeKeyword.v3+json"
-    model = NegativeKeywords
+    model = SponsoredProductNegativeKeywordsModel
 
     def path(self, **kwargs) -> str:
         return "sp/negativeKeywords/list"
@@ -269,7 +270,7 @@ class SponsoredProductCampaignNegativeKeywords(SponsoredProductsV3):
     primary_key = "keywordId"
     data_field = "campaignNegativeKeywords"
     content_type = "application/vnd.spCampaignNegativeKeyword.v3+json"
-    model = CampaignNegativeKeywords
+    model = SponsoredProductCampaignNegativeKeywordsModel
 
     def path(self, **kwargs) -> str:
         return "sp/campaignNegativeKeywords/list"

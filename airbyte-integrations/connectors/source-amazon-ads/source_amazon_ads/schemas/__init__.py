@@ -7,7 +7,6 @@ from .common import (
     Keywords,
     MetricsReport,
     NegativeKeywords,
-    CampaignNegativeKeywords,
     Portfolio
 )
 from .profile import Profile
@@ -23,6 +22,9 @@ from .sponsored_products import (
     ProductAdGroupSuggestedKeywords,
     ProductCampaign,
     ProductTargeting,
+    SponsoredProductCampaignNegativeKeywordsModel,
+    SponsoredProductKeywordsModel,
+    SponsoredProductNegativeKeywordsModel
 )
 
 __all__ = [
@@ -48,4 +50,7 @@ __all__ = [
     "ProductTargeting",
     "Profile",
     "AttributionReportModel",
+    "SponsoredProductCampaignNegativeKeywordsModel",
+    "SponsoredProductKeywordsModel",
+    "SponsoredProductNegativeKeywordsModel"
 ]
