@@ -27,7 +27,7 @@ class Creative(CatalogModel):
 
 
 class BrandsCampaign(CatalogModel):
-    campaignId: Decimal
+    campaignId: str
     name: str
     tags: Dict[str, str]
     budget: Decimal
@@ -46,8 +46,8 @@ class BrandsCampaign(CatalogModel):
 
 
 class BrandsAdGroup(CatalogModel):
-    campaignId: Decimal
-    adGroupId: Decimal
+    campaignId: str
+    adGroupId: str
     name: str
     state: str
     extendedData: Dict[str, Any]

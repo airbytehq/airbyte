@@ -19,8 +19,8 @@ class Bidding(CatalogModel):
 
 
 class ProductCampaign(CatalogModel):
-    portfolioId: int
-    campaignId: Decimal
+    portfolioId: str
+    campaignId: str
     name: str
     tags: Dict[str, str]
     targetingType: str
@@ -59,18 +59,18 @@ class SuggestedKeyword(CatalogModel):
 
 
 class ProductAdGroupSuggestedKeywords(CatalogModel):
-    adGroupId: Decimal
+    adGroupId: str
     suggestedKeywords: List[SuggestedKeyword] = None
 
 
 class ProductAd(CatalogModel):
-    adId: Decimal
-    campaignId: Decimal
+    adId: str
+    campaignId: str
     customText: str
     asin: str
     state: str
     sku: str
-    adGroupId: Decimal
+    adGroupId: str
     extendedData: Optional[Dict[str, Any]]
 
 
@@ -78,7 +78,7 @@ class ProductTargeting(CatalogModel):
     expression: List[Dict[str, str]]
     targetId: str
     resolvedExpression: List[Dict[str, str]]
-    campaignId: Decimal
+    campaignId: str
     expressionType: str
     state: str
     bid: float
