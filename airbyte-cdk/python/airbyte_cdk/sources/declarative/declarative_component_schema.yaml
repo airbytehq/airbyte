@@ -2403,5 +2403,5 @@ interpolation:
       arguments: {}
       return_type: str
       examples:
-        - "{{ 1 | string }} -> \"1\""
-        - "{{ [\"hello\", \"world\" | string }} -> \"[\"hello\", \"world\"]\""
+        - '{{ 1 | string }} -> "1"'
+        - '{{ ["hello", "world" | string }} -> "["hello", "world"]"'
