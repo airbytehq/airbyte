@@ -1,21 +1,22 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 import unittest
 from unittest.mock import Mock, patch
 
 import pytest
-import json
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.models import FailureType, Status, SyncMode, ConfiguredAirbyteCatalog
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
+from airbyte_cdk.utils import AirbyteTracedException
 from config import ConfigBuilder
 from requests import HTTPError
 from source_harvest import SourceHarvest
+
 
 def _a_response_with_error_code(status_code: int) -> HttpResponse:
     return HttpResponse(json.dumps(find_template(str(status_code), __file__)), status_code)

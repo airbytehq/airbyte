@@ -22,7 +22,7 @@ definitions:
       - type: DefaultErrorHandler
         backoff_strategies:
           - type: WaitTimeFromHeader
-            header:  Retry-After
+            header: Retry-After
         response_filters:
           - http_codes: [401]
             action: IGNORE
@@ -112,7 +112,7 @@ spec:
                 order: 0
               api_token:
                 title: "Personal Access Token"
-                description: "Log into Harvest and then create new <a href=\"https://id.getharvest.com/developers\"> personal access token</a>."
+                description: 'Log into Harvest and then create new <a href="https://id.getharvest.com/developers"> personal access token</a>.'
                 type: string
                 airbyte_secret: true
 type: DeclarativeSource
