@@ -54,7 +54,7 @@ jobs:
         run: poetry run poe build
       - name: Check Python CDK
         working-directory: airbyte-cdk/python
-        run: poetry run poe check
+        run: poetry run poe check-ci
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
