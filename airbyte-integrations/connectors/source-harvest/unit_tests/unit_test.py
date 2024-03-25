@@ -6,8 +6,6 @@ import json
 from datetime import datetime, timedelta
 from unittest import TestCase
 
-import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -25,8 +23,6 @@ from freezegun import freeze_time
 from pagination import HarvestPaginationStrategy
 from request_builder import HarvestRequestBuilder
 from source_harvest.source import SourceHarvest
-
-logger = AirbyteLogger()
 
 def _a_record(stream_name: str, data_path: str, primary_key: str) -> RecordBuilder:
     return create_record_builder(
@@ -150,6 +146,6 @@ class UnitTest(TestCase):
 
             replication_start_datetime = end_datetime + timedelta(days=1)
 
-        output = read(SourceHarvest(), config=config, catalog=CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build())
+        output = read(SourceHarvest(), config=config, catalog=CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build())
 
         assert len(output.records) == 4
