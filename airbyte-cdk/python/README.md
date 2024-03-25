@@ -99,8 +99,6 @@ In order to get a local Python connector running your local CDK, do the followin
 
 First, make sure you have your connector's virtual environment active:
 
-TODO: Handle pip and poetry here?
-
 ```bash
 # from the `airbyte/airbyte-integrations/connectors/<connector-directory>` directory
 source .venv/bin/activate

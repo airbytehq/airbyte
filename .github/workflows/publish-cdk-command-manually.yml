@@ -131,8 +131,9 @@ jobs:
         id: bumpversion
         run: |
           cd airbyte-cdk/python
-          # Bump docker imageversion
+          # Bump docker image version
           # TODO: this should not be necessary, as it's the source-declarative-manifest one which should be published separately
+          pip install bumpversion
           bumpversion ${{ github.event.inputs.release-type }}
           # Bump package version
           poetry version ${{ github.event.inputs.release-type }}

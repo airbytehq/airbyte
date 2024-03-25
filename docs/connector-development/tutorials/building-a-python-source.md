@@ -43,8 +43,6 @@ to install Python 3 before beginning.
 Each step of the Creating a Source checklist is explained in more detail below.
 :::
 
-# TODO: check rest of this doc
-
 ### Submitting a Source to Airbyte
 
 - If you need help with any step of the process, feel free to submit a PR with your progress and any
