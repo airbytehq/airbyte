@@ -10,6 +10,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
 from typesense import Client
+import time
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
@@ -19,9 +20,8 @@ def get_client(config: Mapping[str, Any]) -> Client:
         "protocol": config.get("protocol") or "https"
     }
     path = config.get("path")
-    if path {
+    if path:
         node["path"] = path
-    }
     client = Client({"api_key": config.get("api_key"), "nodes": [node], "connection_timeout_seconds": 3600})
 
     return client
