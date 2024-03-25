@@ -11,7 +11,6 @@ import java.util.function.Consumer
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -44,10 +43,12 @@ internal class CompositeIteratorTest {
     @Test
     fun testEmptyInput() {
         val iterator: AutoCloseableIterator<String?> =
-            CompositeIterator(emptyList<AutoCloseableIterator<String?>>(), airbyteStreamStatusConsumer)
+            CompositeIterator(
+                emptyList<AutoCloseableIterator<String?>>(),
+                airbyteStreamStatusConsumer
+            )
         Assertions.assertFalse(iterator.hasNext())
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(0))
-            .accept(any())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(0)).accept(any())
     }
 
     @Test
@@ -96,8 +97,7 @@ internal class CompositeIteratorTest {
         Mockito.verify(onClose1, Mockito.times(1)).call()
         Mockito.verify(onClose2, Mockito.times(1)).call()
         Mockito.verify(onClose3, Mockito.times(1)).call()
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(9))
-            .accept(any())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(9)).accept(any())
     }
 
     @Test
@@ -135,8 +135,7 @@ internal class CompositeIteratorTest {
         assertNext(iterator, "i")
         Assertions.assertFalse(iterator.hasNext())
         assertOnCloseInvocations(ImmutableList.of(onClose1, onClose2, onClose3), ImmutableList.of())
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(8))
-            .accept(any())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(8)).accept(any())
     }
 
     @Test
@@ -160,8 +159,7 @@ internal class CompositeIteratorTest {
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1))
         iterator.close()
         assertOnCloseInvocations(ImmutableList.of(onClose1), ImmutableList.of())
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2))
-            .accept(any())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2)).accept(any())
     }
 
     @Test
@@ -186,8 +184,7 @@ internal class CompositeIteratorTest {
         Assertions.assertThrows(IllegalStateException::class.java) { iterator.hasNext() }
         Assertions.assertThrows(IllegalStateException::class.java) { iterator.next() }
         iterator.close() // still allowed to close again.
-        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2))
-            .accept(any())
+        Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2)).accept(any())
     }
 
     private fun assertNext(iterator: Iterator<String?>, value: String) {

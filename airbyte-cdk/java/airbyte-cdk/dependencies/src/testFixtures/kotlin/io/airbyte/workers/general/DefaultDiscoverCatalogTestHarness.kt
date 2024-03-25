@@ -107,7 +107,7 @@ constructor(
                             )
                         },
                         WRITE_DISCOVER_CATALOG_LOGS_TAG
-                    )
+                    )!!
                 jobOutput.discoverCatalogId = result.catalogId
             } else if (failureReason.isEmpty) {
                 TestHarnessUtils.throwWorkerException(

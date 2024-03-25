@@ -112,27 +112,27 @@ internal class YamlListToStandardDefinitionsTest {
 
     companion object {
         private const val DESTINATION_DEFINITION_ID =
-                "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
+            "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
         private const val DESTINATION_NAME = "  name: Local JSON\n"
         private const val DOCKER_REPO = "  dockerRepository: airbyte/destination-local-json\n"
         private const val DOCKER_IMAGE_TAG = "  dockerImageTag: 0.1.4\n"
         private const val GOOD_DES_DEF_YAML =
-                (DESTINATION_DEFINITION_ID +
-                        DESTINATION_NAME +
-                        DOCKER_REPO +
-                        DOCKER_IMAGE_TAG +
-                        "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json")
+            (DESTINATION_DEFINITION_ID +
+                DESTINATION_NAME +
+                DOCKER_REPO +
+                DOCKER_IMAGE_TAG +
+                "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json")
         private const val DUPLICATE_ID =
-                """$DESTINATION_DEFINITION_ID$DESTINATION_NAME$DOCKER_REPO$DOCKER_IMAGE_TAG  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json$DESTINATION_DEFINITION_ID  name: JSON 2
+            """$DESTINATION_DEFINITION_ID$DESTINATION_NAME$DOCKER_REPO$DOCKER_IMAGE_TAG  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json$DESTINATION_DEFINITION_ID  name: JSON 2
 $DOCKER_REPO$DOCKER_IMAGE_TAG  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json"""
         private const val DUPLICATE_NAME =
-                """$DESTINATION_DEFINITION_ID$DESTINATION_NAME$DOCKER_REPO$DOCKER_IMAGE_TAG  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json
+            """$DESTINATION_DEFINITION_ID$DESTINATION_NAME$DOCKER_REPO$DOCKER_IMAGE_TAG  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json
 - destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
 $DESTINATION_NAME  dockerRepository: airbyte/destination-csv
   dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-csv"""
         private const val BAD_DATA =
-                """$DESTINATION_DEFINITION_ID$DESTINATION_NAME$DOCKER_REPO  dockerImageTag: 0.1.8
+            """$DESTINATION_DEFINITION_ID$DESTINATION_NAME$DOCKER_REPO  dockerImageTag: 0.1.8
   documentationUrl"""
         private const val ID_NAME = "destinationDefinitionId"
     }

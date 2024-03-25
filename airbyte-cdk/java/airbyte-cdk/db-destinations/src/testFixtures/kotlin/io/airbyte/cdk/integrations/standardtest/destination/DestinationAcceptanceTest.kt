@@ -67,6 +67,7 @@ import java.util.stream.Stream
 import kotlin.Comparator
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
+import kotlin.test.assertNotNull
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
@@ -76,7 +77,6 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 import org.mockito.Mockito
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.test.assertNotNull
 
 abstract class DestinationAcceptanceTest {
     protected lateinit var TEST_SCHEMAS: HashSet<String>
@@ -133,12 +133,11 @@ abstract class DestinationAcceptanceTest {
     }
 
     protected fun getNormalizationImageName(): String? {
-            val metadata = readMetadata()["data"] ?: return null
-            val normalizationConfig = metadata["normalizationConfig"] ?: return null
-            val normalizationRepository =
-                normalizationConfig["normalizationRepository"] ?: return null
-            return normalizationRepository.asText() + ":" + NORMALIZATION_VERSION
-        }
+        val metadata = readMetadata()["data"] ?: return null
+        val normalizationConfig = metadata["normalizationConfig"] ?: return null
+        val normalizationRepository = normalizationConfig["normalizationRepository"] ?: return null
+        return normalizationRepository.asText() + ":" + NORMALIZATION_VERSION
+    }
 
     /**
      * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -248,12 +247,12 @@ abstract class DestinationAcceptanceTest {
         get() = imageNameWithoutTag
 
     protected fun getNormalizationIntegrationType(): String? {
-            val metadata = readMetadata()["data"] ?: return null
-            val normalizationConfig = metadata["normalizationConfig"] ?: return null
-            val normalizationIntegrationType =
-                normalizationConfig["normalizationIntegrationType"] ?: return null
-            return normalizationIntegrationType.asText()
-        }
+        val metadata = readMetadata()["data"] ?: return null
+        val normalizationConfig = metadata["normalizationConfig"] ?: return null
+        val normalizationIntegrationType =
+            normalizationConfig["normalizationIntegrationType"] ?: return null
+        return normalizationIntegrationType.asText()
+    }
 
     /**
      * Detects if a destination implements append dedup mode from the spec.json that should include
@@ -421,7 +420,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
-    fun testSync(messagesFilename: String?, catalogFilename: String?) {
+    fun testSync(messagesFilename: String, catalogFilename: String) {
         val catalog =
             Jsons.deserialize(
                 MoreResources.readResource(catalogFilename),
@@ -450,7 +449,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
-    fun testSyncWithLargeRecordBatch(messagesFilename: String?, catalogFilename: String?) {
+    fun testSyncWithLargeRecordBatch(messagesFilename: String, catalogFilename: String) {
         val catalog =
             Jsons.deserialize(
                 MoreResources.readResource(catalogFilename),
@@ -667,7 +666,7 @@ abstract class DestinationAcceptanceTest {
                 DefaultNormalizationRunner(
                     processFactory,
                     getNormalizationImageName(),
-                        getNormalizationIntegrationType()
+                    getNormalizationIntegrationType()
                 )
                 normalizationRunnerFactorySupportsDestinationImage = true
             } catch (e: IllegalStateException) {
@@ -866,7 +865,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
-    fun testSyncWithNormalization(messagesFilename: String?, catalogFilename: String?) {
+    fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
         if (!normalizationFromDefinition()) {
             return
         }
@@ -1068,7 +1067,7 @@ abstract class DestinationAcceptanceTest {
                 processFactory,
                 DefaultNormalizationRunner(
                     processFactory,
-                        getNormalizationImageName(),
+                    getNormalizationImageName(),
                     getNormalizationIntegrationType()
                 )
             )
@@ -1157,8 +1156,8 @@ abstract class DestinationAcceptanceTest {
                 processFactory,
                 DefaultNormalizationRunner(
                     processFactory,
-                        getNormalizationImageName(),
-                        getNormalizationIntegrationType()
+                    getNormalizationImageName(),
+                    getNormalizationIntegrationType()
                 )
             )
         runner.start()
@@ -1680,7 +1679,7 @@ abstract class DestinationAcceptanceTest {
         val runner: NormalizationRunner =
             DefaultNormalizationRunner(
                 processFactory,
-                    getNormalizationImageName(),
+                getNormalizationImageName(),
                 getNormalizationIntegrationType()
             )
         runner.start()
@@ -1982,8 +1981,8 @@ abstract class DestinationAcceptanceTest {
     @ArgumentsSource(DataTypeTestArgumentProvider::class)
     @Throws(Exception::class)
     fun testDataTypeTestWithNormalization(
-        messagesFilename: String?,
-        catalogFilename: String?,
+        messagesFilename: String,
+        catalogFilename: String,
         testCompatibility: DataTypeTestArgumentProvider.TestCompatibility
     ) {
         if (!checkTestCompatibility(testCompatibility)) {
@@ -2319,7 +2318,7 @@ abstract class DestinationAcceptanceTest {
             get() = SpecialNumericTypes()
 
         @Throws(IOException::class)
-        private fun readCatalogFromFile(catalogFilename: String?): AirbyteCatalog {
+        private fun readCatalogFromFile(catalogFilename: String): AirbyteCatalog {
             return Jsons.deserialize(
                 MoreResources.readResource(catalogFilename),
                 AirbyteCatalog::class.java
@@ -2328,7 +2327,7 @@ abstract class DestinationAcceptanceTest {
 
         @Throws(IOException::class)
         private fun readMessagesFromFile(
-            messagesFilename: String?
+            messagesFilename: String
         ): List<io.airbyte.protocol.models.v0.AirbyteMessage> {
             return MoreResources.readResource(messagesFilename).lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)

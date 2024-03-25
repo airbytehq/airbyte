@@ -39,8 +39,7 @@ internal class JsonSchemasTest {
     fun testTraverse() {
         val jsonWithAllTypes =
             Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_all_types.json"))
-        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> =
-            mock()
+        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 
         JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock)
         val inOrder = Mockito.inOrder(mock)
@@ -121,8 +120,7 @@ internal class JsonSchemasTest {
             MoreResources.readResource("json_schemas/composite_json_schema.json")
                 .replace("<composite-placeholder>".toRegex(), compositeKeyword!!)
         val jsonWithAllTypes = Jsons.deserialize(jsonSchemaString)
-        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> =
-            mock()
+        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 
         JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock)
 
@@ -165,8 +163,7 @@ internal class JsonSchemasTest {
             Jsons.deserialize(
                 MoreResources.readResource("json_schemas/json_with_array_type_fields.json")
             )
-        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> =
-            mock()
+        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 
         JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock)
         val inOrder = Mockito.inOrder(mock)
@@ -202,8 +199,7 @@ internal class JsonSchemasTest {
                     "json_schemas/json_with_array_type_fields_with_composites.json"
                 )
             )
-        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> =
-            mock()
+        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 
         JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock)
 
@@ -243,8 +239,7 @@ internal class JsonSchemasTest {
             Jsons.deserialize(
                 MoreResources.readResource("json_schemas/json_with_array_type_fields_no_items.json")
             )
-        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> =
-            mock()
+        val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 
         JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock)
     }

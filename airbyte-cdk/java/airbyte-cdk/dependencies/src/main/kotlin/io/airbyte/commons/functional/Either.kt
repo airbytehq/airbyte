@@ -3,8 +3,10 @@
  */
 package io.airbyte.commons.functional
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * A class that represents a value of one of two possible types (a disjoint union). An instance of
  * Either is an instance of Left or Right.
@@ -44,10 +46,19 @@ class Either<Error, Result> private constructor(left: Error?, right: Result?) {
 
     companion object {
         fun <Error, Result> left(error: Error): Either<Error, Result> {
-            return Either(error, null)
+            if (error == null) {
+                LOGGER.warn("Either.left called with a null!")
+            }
+            return Either(error!!, null)
         }
 
         fun <Error, Result> right(result: Result): Either<Error, Result> {
+            if (result == null) {
+                // I ran into this when declaring a functional class of <Void>.
+                // In java, we must return null because Void has no instanciation
+                // In kotlin, though, we should change the return type to <Unit> and return Unit
+                LOGGER.warn { "Either.right called with a null!" }
+            }
             return Either(null, result)
         }
     }

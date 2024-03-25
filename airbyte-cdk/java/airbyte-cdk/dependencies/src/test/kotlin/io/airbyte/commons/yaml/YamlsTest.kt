@@ -25,25 +25,29 @@ internal class YamlsTest {
             Yamls.serialize(ToClass(ABC, 999, 888L))
         )
 
-        Assertions.assertEquals("${LINE_BREAK}test: \"abc\"\ntest2: \"def\"\n",
+        Assertions.assertEquals(
+            "${LINE_BREAK}test: \"abc\"\ntest2: \"def\"\n",
             Yamls.serialize(ImmutableMap.of("test", ABC, "test2", "def"))
         )
     }
 
     @Test
     fun testSerializeWithoutQuotes() {
-        Assertions.assertEquals("${LINE_BREAK}str: abc\nnum: 999\nnumLong: 888\n",
+        Assertions.assertEquals(
+            "${LINE_BREAK}str: abc\nnum: 999\nnumLong: 888\n",
             Yamls.serializeWithoutQuotes(ToClass(ABC, 999, 888L))
         )
 
-        Assertions.assertEquals("${LINE_BREAK}test: abc\ntest2: def\n",
+        Assertions.assertEquals(
+            "${LINE_BREAK}test: abc\ntest2: def\n",
             Yamls.serializeWithoutQuotes(ImmutableMap.of("test", ABC, "test2", "def"))
         )
     }
 
     @Test
     fun testSerializeJsonNode() {
-        Assertions.assertEquals("$LINE_BREAK${STR_ABC}num: 999\nnumLong: 888\n",
+        Assertions.assertEquals(
+            "$LINE_BREAK${STR_ABC}num: 999\nnumLong: 888\n",
             Yamls.serialize(Jsons.jsonNode(ToClass(ABC, 999, 888L)))
         )
 
@@ -73,10 +77,7 @@ internal class YamlsTest {
 
         Assertions.assertEquals(
             "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
-            Yamls.deserialize(
-                    "$LINE_BREAK- str: \"abc\"\n- str: \"abc\"\n"
-                )
-                .toString()
+            Yamls.deserialize("$LINE_BREAK- str: \"abc\"\n- str: \"abc\"\n").toString()
         )
     }
 
@@ -91,8 +92,7 @@ internal class YamlsTest {
 
         Mockito.verify(writer).close()
 
-        val deserialize: List<*> =
-            Yamls.deserialize(writer.toString(), MutableList::class.java)
+        val deserialize: List<*> = Yamls.deserialize(writer.toString(), MutableList::class.java)
         Assertions.assertEquals(values, deserialize)
     }
 

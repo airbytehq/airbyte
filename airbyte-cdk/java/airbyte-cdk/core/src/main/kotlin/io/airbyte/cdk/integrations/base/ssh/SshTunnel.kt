@@ -422,11 +422,7 @@ constructor(
 
         const val TIMEOUT_MILLIS: Int = 15000 // 15 seconds
 
-        fun getInstance(
-            config: JsonNode,
-            hostKey: List<String>,
-            portKey: List<String>
-        ): SshTunnel {
+        fun getInstance(config: JsonNode, hostKey: List<String>, portKey: List<String>): SshTunnel {
             val tunnelMethod =
                 Jsons.getOptional(config, "tunnel_method", "tunnel_method")
                     .map { method: JsonNode ->

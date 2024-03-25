@@ -54,7 +54,7 @@ class AirbyteApiClient(apiClient: ApiClient) {
          * Default to 4 retries with a randomised 1 - 10 seconds interval between the first two
          * retries and an 10-minute wait for the last retry.
          */
-        fun <T> retryWithJitter(call: Callable<T>, desc: String?): T {
+        fun <T> retryWithJitter(call: Callable<T>, desc: String?): T? {
             return retryWithJitter(
                 call,
                 desc,
@@ -87,7 +87,7 @@ class AirbyteApiClient(apiClient: ApiClient) {
             jitterMaxIntervalSecs: Int,
             finalIntervalSecs: Int,
             maxTries: Int
-        ): T {
+        ): T? {
             var currRetries = 0
             var keepTrying = true
 
@@ -118,7 +118,7 @@ class AirbyteApiClient(apiClient: ApiClient) {
                     }
                 }
             }
-            throw RuntimeException()
+            return null
         }
     }
 }

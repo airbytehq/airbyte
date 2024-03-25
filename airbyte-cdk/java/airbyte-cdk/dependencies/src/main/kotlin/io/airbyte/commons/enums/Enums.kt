@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.enums
 
 import com.google.common.base.Preconditions
@@ -5,7 +9,6 @@ import com.google.common.collect.Maps
 import com.google.common.collect.Sets
 import java.util.*
 import java.util.concurrent.ConcurrentMap
-import java.util.function.Function
 import java.util.stream.Collectors
 
 class Enums {
@@ -42,7 +45,7 @@ class Enums {
             }
 
             return Optional.ofNullable<T>(
-                NORMALIZED_ENUMS.getValue(enumClass).getValue(normalizeName(value)) as T
+                NORMALIZED_ENUMS.getValue(enumClass)[normalizeName(value)] as T?
             )
         }
 
@@ -68,9 +71,12 @@ class Enums {
             ies: List<T1>,
             oe: Class<T2>
         ): List<T2> {
-            return ies.stream()
-                .map<T2>(Function<T1, T2> { ie: T1 -> Enums.convertTo<T1, T2>(ie, oe) })
-                .collect(Collectors.toList<T2>())
+            val retVal: List<T2> = mutableListOf()
+            for (ie in ies) {
+                val convertedValue = convertTo(ie, oe)
+                retVal.addLast(convertedValue)
+            }
+            return retVal
         }
     }
 }

@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.integrations.standardtest.source
 
-import com.google.common.base.Preconditions
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.map.MoreMaps
 import io.airbyte.commons.version.AirbyteVersion
@@ -89,8 +88,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                             Function { obj: Map.Entry<String, Function<TestEnvConfigs, String>> ->
                                 obj.key
                             },
-                            Function { entry: Map.Entry<String, Function<TestEnvConfigs, String>>
-                                ->
+                            Function { entry: Map.Entry<String, Function<TestEnvConfigs, String>> ->
                                 Exceptions.swallowWithDefault(
                                     { Objects.requireNonNullElse(entry.value.apply(this), "") },
                                     ""
@@ -130,7 +128,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
 
     fun getEnsureEnv(name: String): String {
         val value = getEnv(name)
-        checkNotNull(value != null) {"$name environment variable cannot be null"}
+        checkNotNull(value != null) { "$name environment variable cannot be null" }
 
         return value!!
     }

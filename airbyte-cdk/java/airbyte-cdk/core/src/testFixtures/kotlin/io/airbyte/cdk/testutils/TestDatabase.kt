@@ -189,7 +189,12 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
         }
         try {
             LOGGER!!.info(
-                formatLogLine(String.format("executing command %s", Strings.join(cmd.toList().asIterable(), " ")))
+                formatLogLine(
+                    String.format(
+                        "executing command %s",
+                        Strings.join(cmd.toList().asIterable(), " ")
+                    )
+                )
             )
             val exec = container!!.execInContainer(*cmd.toTypedArray<String?>())
             if (exec!!.exitCode == 0) {

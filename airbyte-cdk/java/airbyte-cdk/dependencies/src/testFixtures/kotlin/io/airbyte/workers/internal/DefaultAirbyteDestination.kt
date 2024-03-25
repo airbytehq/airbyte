@@ -53,22 +53,22 @@ constructor(
     private var exitValueIsSet = false
     private var exitValue: Int = 0
     override fun getExitValue(): Int {
-            Preconditions.checkState(
-                destinationProcess != null,
-                "Destination process is null, cannot retrieve exit value."
-            )
-            Preconditions.checkState(
-                !destinationProcess!!.isAlive,
-                "Destination process is still alive, cannot retrieve exit value."
-            )
+        Preconditions.checkState(
+            destinationProcess != null,
+            "Destination process is null, cannot retrieve exit value."
+        )
+        Preconditions.checkState(
+            !destinationProcess!!.isAlive,
+            "Destination process is still alive, cannot retrieve exit value."
+        )
 
-            if (!exitValueIsSet) {
-                exitValueIsSet = true
-                exitValue = destinationProcess!!.exitValue()
-            }
-
-            return exitValue
+        if (!exitValueIsSet) {
+            exitValueIsSet = true
+            exitValue = destinationProcess!!.exitValue()
         }
+
+        return exitValue
+    }
 
     @Throws(IOException::class, TestHarnessException::class)
     override fun start(
@@ -169,13 +169,13 @@ constructor(
     }
 
     override fun isFinished(): Boolean {
-            Preconditions.checkState(destinationProcess != null)
-            /*
-             * As this check is done on every message read, it is important for this operation to be efficient.
-             * Short circuit early to avoid checking the underlying process. Note: hasNext is blocking.
-             */
-            return !messageIterator!!.hasNext() && !destinationProcess!!.isAlive
-        }
+        Preconditions.checkState(destinationProcess != null)
+        /*
+         * As this check is done on every message read, it is important for this operation to be efficient.
+         * Short circuit early to avoid checking the underlying process. Note: hasNext is blocking.
+         */
+        return !messageIterator!!.hasNext() && !destinationProcess!!.isAlive
+    }
 
     override fun attemptRead(): Optional<AirbyteMessage> {
         Preconditions.checkState(destinationProcess != null)

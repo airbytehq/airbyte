@@ -161,7 +161,8 @@ object CatalogClientConverters {
                 Enums.convertTo(
                     stream.supportedSyncModes!![0],
                     io.airbyte.api.client.model.generated.SyncMode::class.java
-                ))
+                )
+            )
         } else {
             result.syncMode = io.airbyte.api.client.model.generated.SyncMode.INCREMENTAL
         }

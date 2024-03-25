@@ -18,7 +18,7 @@ object IOs {
         return writeFile(filePath, contents)
     }
 
-    fun writeFile(filePath: Path, contents: ByteArray?): Path {
+    fun writeFile(filePath: Path, contents: ByteArray): Path {
         try {
             Files.write(filePath, contents)
             return filePath
@@ -90,7 +90,7 @@ object IOs {
         }
     }
 
-    fun inputStream(path: Path?): InputStream {
+    fun inputStream(path: Path): InputStream {
         try {
             return Files.newInputStream(path)
         } catch (e: IOException) {
@@ -106,7 +106,7 @@ object IOs {
         }
     }
 
-    fun newBufferedReader(inputStream: InputStream?): BufferedReader {
+    fun newBufferedReader(inputStream: InputStream): BufferedReader {
         return BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
     }
 }

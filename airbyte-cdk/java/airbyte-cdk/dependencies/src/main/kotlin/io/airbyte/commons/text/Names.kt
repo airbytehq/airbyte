@@ -16,7 +16,7 @@ object Names {
      * @param s string to convert
      * @return cleaned string
      */
-    fun toAlphanumericAndUnderscore(s: String?): String {
+    fun toAlphanumericAndUnderscore(s: String): String {
         return Normalizer.normalize(s, Normalizer.Form.NFKD)
             .replace(
                 "\\p{M}".toRegex(),

@@ -1,6 +1,6 @@
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
     id "com.github.eirnym.js2p" version "1.0"

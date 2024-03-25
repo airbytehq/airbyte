@@ -33,7 +33,7 @@ class DataArgumentsProvider : ArgumentsProvider {
     }
 
     open class CatalogMessageTestConfigPair(val catalogFile: String, val messageFile: String) {
-        fun getCatalogFileVersion(protocolVersion: ProtocolVersion): String? {
+        fun getCatalogFileVersion(protocolVersion: ProtocolVersion): String {
             return ArgumentProviderUtil.prefixFileNameByVersion(catalogFile, protocolVersion)
         }
 

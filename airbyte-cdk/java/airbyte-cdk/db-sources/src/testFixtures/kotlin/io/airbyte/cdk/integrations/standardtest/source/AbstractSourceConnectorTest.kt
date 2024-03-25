@@ -31,6 +31,7 @@ import io.airbyte.workers.process.ProcessFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
+import kotlin.test.assertNotNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -39,7 +40,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.test.assertNotNull
 
 /**
  * This abstract class contains helpful functionality and boilerplate for testing a source

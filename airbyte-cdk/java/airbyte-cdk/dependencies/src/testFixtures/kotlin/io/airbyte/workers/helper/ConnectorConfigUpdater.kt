@@ -39,7 +39,7 @@ class ConnectorConfigUpdater(
             AirbyteApiClient.retryWithJitter(
                 { sourceApi.getSource(SourceIdRequestBody().sourceId(sourceId)) },
                 "get source"
-            )
+            )!!
 
         val updatedSource =
             AirbyteApiClient.retryWithJitter(
@@ -52,7 +52,7 @@ class ConnectorConfigUpdater(
                     )
                 },
                 "update source"
-            )
+            )!!
 
         LOGGER.info(
             "Persisted updated configuration for source {}. New config hash: {}.",
@@ -75,7 +75,7 @@ class ConnectorConfigUpdater(
                     )
                 },
                 "get destination"
-            )
+            )!!
 
         val updatedDestination =
             AirbyteApiClient.retryWithJitter(
@@ -88,7 +88,7 @@ class ConnectorConfigUpdater(
                     )
                 },
                 "update destination"
-            )
+            )!!
 
         LOGGER.info(
             "Persisted updated configuration for destination {}. New config hash: {}.",

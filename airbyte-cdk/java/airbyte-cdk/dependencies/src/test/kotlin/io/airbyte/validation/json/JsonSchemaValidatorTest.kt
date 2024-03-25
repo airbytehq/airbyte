@@ -84,7 +84,9 @@ internal class JsonSchemaValidatorTest {
             JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field1")
         )
         // non-existent object
-        Assertions.assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"))
+        Assertions.assertThrows(NullPointerException::class.java) {
+            JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject")
+        }
     }
 
     @Test

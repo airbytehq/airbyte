@@ -20,7 +20,7 @@ import org.slf4j.MDC
 class LineGobbler
 @JvmOverloads
 internal constructor(
-    `is`: InputStream?,
+    `is`: InputStream,
     private val consumer: Consumer<String>,
     private val executor: ExecutorService,
     private val mdc: Map<String?, String?>?,
@@ -30,7 +30,7 @@ internal constructor(
     private val `is`: BufferedReader? = IOs.newBufferedReader(`is`)
 
     internal constructor(
-        `is`: InputStream?,
+        `is`: InputStream,
         consumer: Consumer<String>,
         executor: ExecutorService,
         mdc: Map<String?, String?>?,
@@ -93,7 +93,7 @@ internal constructor(
         }
 
         fun gobble(
-            `is`: InputStream?,
+            `is`: InputStream,
             consumer: Consumer<String>,
             mdcScopeBuilder: MdcScope.Builder
         ) {
@@ -102,7 +102,7 @@ internal constructor(
 
         @JvmOverloads
         fun gobble(
-            `is`: InputStream?,
+            `is`: InputStream,
             consumer: Consumer<String>,
             caller: String = GENERIC,
             mdcScopeBuilder: MdcScope.Builder = MdcScope.Companion.DEFAULT_BUILDER

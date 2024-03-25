@@ -20,25 +20,25 @@ object MoreResources {
 
     @JvmStatic
     @Throws(IOException::class)
-    fun readResource(name: String?): String {
+    fun readResource(name: String): String {
         val resource = Resources.getResource(name)
         return Resources.toString(resource, StandardCharsets.UTF_8)
     }
 
     @Throws(IOException::class)
-    fun readResource(klass: Class<*>?, name: String): String {
+    fun readResource(klass: Class<*>, name: String): String {
         val rootedName = if (!name.startsWith("/")) String.format("/%s", name) else name
         val url = Resources.getResource(klass, rootedName)
         return Resources.toString(url, StandardCharsets.UTF_8)
     }
 
     @Throws(URISyntaxException::class)
-    fun readResourceAsFile(name: String?): File {
+    fun readResourceAsFile(name: String): File {
         return File(Resources.getResource(name).toURI())
     }
 
     @Throws(IOException::class)
-    fun readBytes(name: String?): ByteArray {
+    fun readBytes(name: String): ByteArray {
         val resource = Resources.getResource(name)
         return Resources.toByteArray(resource)
     }

@@ -58,7 +58,7 @@ abstract class BaseTypingDedupingTest {
     protected var config: JsonNode? = null
         private set
     protected var streamNamespace: String? = null
-    protected var streamName: String? = null
+    protected var streamName: String = "dummy"
     private var streamsToTearDown: MutableList<AirbyteStreamNameNamespacePair>? = null
 
     protected abstract val imageName: String
@@ -124,10 +124,7 @@ abstract class BaseTypingDedupingTest {
      * streamNamespace may be null, in which case you should query from the default namespace.
      */
     @Throws(Exception::class)
-    abstract fun dumpFinalTableRecords(
-        streamNamespace: String?,
-        streamName: String?
-    ): List<JsonNode>
+    abstract fun dumpFinalTableRecords(streamNamespace: String?, streamName: String): List<JsonNode>
 
     /**
      * Delete any resources in the destination associated with this stream AND its namespace. We
@@ -927,7 +924,7 @@ abstract class BaseTypingDedupingTest {
         expectedRawRecords: List<JsonNode>,
         expectedFinalRecords: List<JsonNode>,
         streamNamespace: String?,
-        streamName: String?,
+        streamName: String,
         disableFinalTableComparison: Boolean
     ) {
         val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
@@ -1065,7 +1062,7 @@ abstract class BaseTypingDedupingTest {
         destination.close()
     }
 
-    protected fun readMessages(filename: String?): List<AirbyteMessage> {
+    protected fun readMessages(filename: String): List<AirbyteMessage> {
         return Companion.readMessages(filename, streamNamespace, streamName)
     }
 
@@ -1082,7 +1079,7 @@ abstract class BaseTypingDedupingTest {
         }
 
         @Throws(IOException::class)
-        fun readRecords(filename: String?): List<JsonNode> {
+        fun readRecords(filename: String): List<JsonNode> {
             return MoreResources.readResource(filename)
                 .lines()
                 .map { obj: String -> obj.trim { it <= ' ' } }
@@ -1094,7 +1091,7 @@ abstract class BaseTypingDedupingTest {
 
         @Throws(IOException::class)
         protected fun readMessages(
-            filename: String?,
+            filename: String,
             streamNamespace: String?,
             streamName: String?
         ): List<AirbyteMessage> {

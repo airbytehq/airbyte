@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
 internal class FeatureFlagHelperTest {
-   private lateinit var featureFlags: FeatureFlags
+    private lateinit var featureFlags: FeatureFlags
 
     @BeforeEach
     fun beforeEach() {
@@ -19,92 +19,92 @@ internal class FeatureFlagHelperTest {
 
     @Test
     fun isFieldSelectionEnabledForWorkspaceWithEmptyString() {
-            Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces()).thenReturn("")
+        Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces()).thenReturn("")
 
-            Assertions.assertFalse(
-                FeatureFlagHelper.isWorkspaceIncludedInFlag(
-                    featureFlags,
-                    { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
-                    UUID.randomUUID(),
-                    null
-                )
+        Assertions.assertFalse(
+            FeatureFlagHelper.isWorkspaceIncludedInFlag(
+                featureFlags,
+                { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
+                UUID.randomUUID(),
+                null
             )
-        }
+        )
+    }
 
     @Test
     fun isFieldSelectionEnabledForNullWorkspaceWithEmptyString() {
-            Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces()).thenReturn("")
+        Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces()).thenReturn("")
 
-            Assertions.assertFalse(
-                FeatureFlagHelper.isWorkspaceIncludedInFlag(
-                    featureFlags,
-                    { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
-                    null,
-                    null
-                )
+        Assertions.assertFalse(
+            FeatureFlagHelper.isWorkspaceIncludedInFlag(
+                featureFlags,
+                { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
+                null,
+                null
             )
-        }
+        )
+    }
 
     @Test
     fun isFieldSelectionEnabledForWorkspaceWithSpaceString() {
-            Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces()).thenReturn(" ")
+        Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces()).thenReturn(" ")
 
-            Assertions.assertFalse(
-                FeatureFlagHelper.isWorkspaceIncludedInFlag(
-                    featureFlags,
-                    { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
-                    UUID.randomUUID(),
-                    null
-                )
+        Assertions.assertFalse(
+            FeatureFlagHelper.isWorkspaceIncludedInFlag(
+                featureFlags,
+                { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
+                UUID.randomUUID(),
+                null
             )
-        }
+        )
+    }
 
     @Test
     fun isFieldSelectionEnabledForWorkspaceWithNullString() {
-            Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces()).thenReturn(null)
+        Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces()).thenReturn(null)
 
-            Assertions.assertFalse(
-                FeatureFlagHelper.isWorkspaceIncludedInFlag(
-                    featureFlags,
-                    { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
-                    UUID.randomUUID(),
-                    null
-                )
+        Assertions.assertFalse(
+            FeatureFlagHelper.isWorkspaceIncludedInFlag(
+                featureFlags,
+                { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
+                UUID.randomUUID(),
+                null
             )
-        }
+        )
+    }
 
     @Test
     fun isFieldSelectionEnabledForWorkspaceWithSomeIdsAndAMatch() {
-            val workspaceId = UUID.randomUUID()
-            val randomId = UUID.randomUUID()
-            Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces())
-                .thenReturn("$randomId,$workspaceId")
+        val workspaceId = UUID.randomUUID()
+        val randomId = UUID.randomUUID()
+        Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces())
+            .thenReturn("$randomId,$workspaceId")
 
-            Assertions.assertTrue(
-                FeatureFlagHelper.isWorkspaceIncludedInFlag(
-                    featureFlags,
-                    { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
-                    workspaceId,
-                    null
-                )
+        Assertions.assertTrue(
+            FeatureFlagHelper.isWorkspaceIncludedInFlag(
+                featureFlags,
+                { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
+                workspaceId,
+                null
             )
-        }
+        )
+    }
 
     @Test
     fun isFieldSelectionEnabledForWorkspaceWithSomeIdsAndNoMatch() {
-            val workspaceId = UUID.randomUUID()
-            val randomId1 = UUID.randomUUID()
-            val randomId2 = UUID.randomUUID()
-            Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces())
-                .thenReturn("$randomId1,$randomId2")
+        val workspaceId = UUID.randomUUID()
+        val randomId1 = UUID.randomUUID()
+        val randomId2 = UUID.randomUUID()
+        Mockito.`when`(featureFlags!!.fieldSelectionWorkspaces())
+            .thenReturn("$randomId1,$randomId2")
 
-            Assertions.assertFalse(
-                FeatureFlagHelper.isWorkspaceIncludedInFlag(
-                    featureFlags,
-                    { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
-                    workspaceId,
-                    null
-                )
+        Assertions.assertFalse(
+            FeatureFlagHelper.isWorkspaceIncludedInFlag(
+                featureFlags,
+                { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
+                workspaceId,
+                null
             )
-        }
+        )
+    }
 }

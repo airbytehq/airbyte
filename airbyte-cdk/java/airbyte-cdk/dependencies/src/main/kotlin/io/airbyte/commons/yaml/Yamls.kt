@@ -21,7 +21,6 @@ import io.airbyte.commons.util.AutoCloseableIterators
 import java.io.IOException
 import java.io.InputStream
 import java.io.Writer
-import java.util.concurrent.Callable
 
 object Yamls {
     private val YAML_FACTORY = YAMLFactory()
@@ -131,7 +130,8 @@ object Yamls {
     }
 
     class YamlConsumer<T>(writer: Writer?, objectMapper: ObjectMapper) : CloseableConsumer<T> {
-        private val sequenceWriter: SequenceWriter = toRuntime(callable = { objectMapper.writer().writeValuesAsArray(writer) })
+        private val sequenceWriter: SequenceWriter =
+            toRuntime(callable = { objectMapper.writer().writeValuesAsArray(writer) })
 
         override fun accept(t: T) {
             try {

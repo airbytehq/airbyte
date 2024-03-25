@@ -37,7 +37,8 @@ class DefaultNormalizationRunner(
     private val normalizationIntegrationType: String?
 ) : NormalizationRunner {
     private val streamFactory = NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER)
-    private var airbyteMessagesByType: MutableMap<AirbyteMessage.Type, List<AirbyteMessage>> = HashMap()
+    private var airbyteMessagesByType: MutableMap<AirbyteMessage.Type, List<AirbyteMessage>> =
+        HashMap()
     private var dbtErrorStack: String? = null
 
     private var process: Process? = null

@@ -30,8 +30,7 @@ internal class StreamStatusUtilsTest {
 
     @Test
     fun testCreateStreamStatusConsumerWrapper() {
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-                mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val streamStatusEmitter = Optional.empty<Consumer<AirbyteStreamStatusHolder>>()
         val messageConsumer: Consumer<AirbyteMessage> = mock()
 
@@ -48,8 +47,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testStreamStatusConsumerWrapperProduceStreamStatus() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-                mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
         val messageConsumer: Consumer<AirbyteMessage> = mock()
@@ -82,8 +80,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testEmitRunningStreamStatusIterator() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-                mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
 
@@ -101,8 +98,7 @@ internal class StreamStatusUtilsTest {
 
     @Test
     fun testEmitRunningStreamStatusIteratorEmptyAirbyteStream() {
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-                mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
 
@@ -118,8 +114,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testEmitRunningStreamStatusIteratorEmptyStatusEmitter() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-                mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val streamStatusEmitter = Optional.empty<Consumer<AirbyteStreamStatusHolder>>()
 
         Mockito.`when`(stream.airbyteStream).thenReturn(Optional.of(airbyteStream))
@@ -220,8 +215,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testEmitStartedStreamStatusIterator() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
 
@@ -239,8 +233,7 @@ internal class StreamStatusUtilsTest {
 
     @Test
     fun testEmitStartedStreamStatusIteratorEmptyAirbyteStream() {
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
 
@@ -256,8 +249,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testEmitStartedStreamStatusIteratorEmptyStatusEmitter() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val streamStatusEmitter = Optional.empty<Consumer<AirbyteStreamStatusHolder>>()
 
         Mockito.`when`(stream.airbyteStream).thenReturn(Optional.of(airbyteStream))
@@ -355,8 +347,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testEmitCompleteStreamStatusIterator() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
 
@@ -374,8 +365,7 @@ internal class StreamStatusUtilsTest {
 
     @Test
     fun testEmitCompleteStreamStatusIteratorEmptyAirbyteStream() {
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
 
@@ -391,8 +381,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testEmitCompleteStreamStatusIteratorEmptyStatusEmitter() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val streamStatusEmitter = Optional.empty<Consumer<AirbyteStreamStatusHolder>>()
 
         Mockito.`when`(stream.airbyteStream).thenReturn(Optional.of(airbyteStream))
@@ -493,8 +482,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testEmitIncompleteStreamStatusIterator() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
 
@@ -512,8 +500,7 @@ internal class StreamStatusUtilsTest {
 
     @Test
     fun testEmitIncompleteStreamStatusIteratorEmptyAirbyteStream() {
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val statusEmitter: Consumer<AirbyteStreamStatusHolder> = mock()
         val streamStatusEmitter = Optional.of(statusEmitter)
 
@@ -529,8 +516,7 @@ internal class StreamStatusUtilsTest {
     @Test
     fun testEmitIncompleteStreamStatusIteratorEmptyStatusEmitter() {
         val airbyteStream = AirbyteStreamNameNamespacePair(NAME, NAMESPACE)
-        val stream: AutoCloseableIterator<AirbyteMessage> =
-            mock()
+        val stream: AutoCloseableIterator<AirbyteMessage> = mock()
         val streamStatusEmitter = Optional.empty<Consumer<AirbyteStreamStatusHolder>>()
 
         Mockito.`when`(stream.airbyteStream).thenReturn(Optional.of(airbyteStream))

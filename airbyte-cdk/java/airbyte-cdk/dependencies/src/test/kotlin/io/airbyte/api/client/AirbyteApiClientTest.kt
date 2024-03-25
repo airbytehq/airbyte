@@ -6,7 +6,6 @@ package io.airbyte.api.client
 import java.util.concurrent.Callable
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mock
 import org.mockito.Mockito
 
 class AirbyteApiClientTest {
