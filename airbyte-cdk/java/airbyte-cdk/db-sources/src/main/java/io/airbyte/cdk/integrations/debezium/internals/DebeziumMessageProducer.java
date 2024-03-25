@@ -58,10 +58,12 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
     this.targetPosition = targetPosition;
     this.eventConverter = eventConverter;
     this.offsetManager = offsetManager;
+    if (offsetManager == null) {
+      throw new RuntimeException("Offset manager cannot be null");
+    }
     this.schemaHistoryManager = schemaHistoryManager;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
     this.initialOffset = new HashMap<>(this.previousCheckpointOffset);
-    resetCheckpointValues();
   }
 
   @Override
@@ -70,6 +72,7 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
     final AirbyteStateMessage stateMessage = createStateMessage(checkpointOffsetToSend);
     previousCheckpointOffset.clear();
     previousCheckpointOffset.putAll(checkpointOffsetToSend);
+    checkpointOffsetToSend.clear();
     shouldEmitStateMessage = false;
     return stateMessage;
   }
@@ -106,12 +109,19 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(ConfiguredAirbyteStream stream) {
-    final var syncFinishedOffset = (HashMap<String, String>) offsetManager.read();
-    return createStateMessage(syncFinishedOffset);
-  }
 
-  private void resetCheckpointValues() {
-    checkpointOffsetToSend.clear();
+    final var syncFinishedOffset = (HashMap<String, String>) offsetManager.read();
+    if (targetPosition.isSameOffset(initialOffset, syncFinishedOffset)) {
+      // Edge case where no progress has been made: wrap up the
+      // sync by returning the initial offset instead of the
+      // current offset. We do this because we found that
+      // for some databases, heartbeats will cause Debezium to
+      // overwrite the offset file with a state which doesn't
+      // include all necessary data such as snapshot completion.
+      // This is the case for MS SQL Server, at least.
+      return createStateMessage(initialOffset);
+    }
+    return createStateMessage(syncFinishedOffset);
   }
 
   @Override
@@ -126,10 +136,6 @@ public class DebeziumMessageProducer<T> implements SourceStateMessageProducer<Ch
    * @return {@link AirbyteStateMessage} which includes offset and schema history if used.
    */
   private AirbyteStateMessage createStateMessage(final Map<String, String> offset) {
-    if (offsetManager == null) {
-      throw new RuntimeException("Offset can not be null");
-    }
-
     final AirbyteStateMessage message =
         cdcStateHandler.saveState(offset, schemaHistoryManager.map(AirbyteSchemaHistoryStorage::read).orElse(null)).getState();
     return message;
