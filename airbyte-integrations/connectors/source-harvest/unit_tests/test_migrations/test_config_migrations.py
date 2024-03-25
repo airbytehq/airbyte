@@ -6,13 +6,12 @@
 import json
 import os
 from typing import Any, Mapping
-import pytest
 
+import pytest
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
 from source_harvest.config_migrations import MigrateAuthType
 from source_harvest.source import SourceHarvest
-
 
 # BASE ARGS
 CMD = "check"
