@@ -3,52 +3,155 @@
 #
 
 import requests
+from freezegun import freeze_time
+from datetime import datetime, timedelta, timezone
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_harvest.source import SourceHarvest
+from airbyte_cdk.test.mock_http.response_builder import (
+    FieldPath,
+    HttpResponseBuilder,
+    NestedPath,
+    RecordBuilder,
+    create_record_builder,
+    create_response_builder,
+    find_template,
+)
+import json
+from unittest import TestCase
+from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.test.mock_http import HttpRequest
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.mock_http import HttpMocker
+from config import ConfigBuilder
+from pagination import HarvestPaginationStrategy
+from request_builder import HarvestRequestBuilder
 
 logger = AirbyteLogger()
 
+def _a_record(stream_name: str, data_path: str, primary_key: str) -> RecordBuilder:
+    return create_record_builder(
+        find_template(stream_name, __file__),
+        records_path=FieldPath(data_path),
+        record_id_path=FieldPath(primary_key),
+        record_cursor_path=None
+    )
 
-def test_streams(config):
-    streams = SourceHarvest().streams(config)
+def _a_response(stream_name: str, data_path: str) -> HttpResponseBuilder:
+    return create_response_builder(
+        find_template(stream_name, __file__),
+        records_path=FieldPath(data_path),
+        pagination_strategy=HarvestPaginationStrategy()
+    )
 
-    assert len(streams) == 32
+@freeze_time("2024-03-24")
+class UnitTest(TestCase):
 
+    def setUp(self) -> None:
+        self._config = ConfigBuilder().build()
 
-def test_next_page_token(config, mocker):
-    next_page = 2
-    expected = {"page": next_page}
+    def test_streams(self):
+        streams = SourceHarvest().streams(self._config)
+        assert len(streams) == 32
 
-    instance = HarvestStream(authenticator=NoAuth())
+    @HttpMocker()
+    def test_next_page_token(self, http_mocker: HttpMocker):
 
-    response = mocker.Mock(spec=requests.Response, request=mocker.Mock(spec=requests.Request))
-    response.json.return_value = {"next_page": next_page}
+        catalog = CatalogBuilder().with_stream("invoices", SyncMode.full_refresh).build()
 
-    assert instance.next_page_token(response) == expected
+        stream_name = "invoices"
+        stream_pk = "id"
 
+        http_mocker.get(
+            HarvestRequestBuilder.invoices_endpoint("account_id").with_per_page(50).with_updated_since("2021-01-01T00:00:00Z").build(),
+            _a_response(stream_name="invoices", data_path="invoices").with_record(_a_record(stream_name=stream_name, data_path=stream_name, primary_key=stream_pk)).with_pagination().build()
+        )
 
-def test_child_stream_slices(config, replication_start_date, mock_stream):
-    object_id = 1
-    mock_stream("invoices", response={"invoices": [{"id": object_id}]})
-    mock_stream(f"invoices/{object_id}/payments", {"invoice_payments": [{"id": object_id}]})
+        http_mocker.get(
+            HarvestRequestBuilder.invoices_endpoint("account_id").with_page(2).with_per_page(50).with_updated_since("2021-01-01T00:00:00Z").build(),
+            _a_response(stream_name="invoices", data_path="invoices").with_record(_a_record(stream_name=stream_name, data_path=stream_name, primary_key=stream_pk)).build()
+        )
 
-    invoice_payments_instance = InvoicePayments(authenticator=NoAuth(), replication_start_date=replication_start_date)
-    stream_slice = next(invoice_payments_instance.stream_slices(sync_mode=None))
-    invoice_payments = invoice_payments_instance.read_records(sync_mode=None, stream_slice=stream_slice)
+        output = read(SourceHarvest(), config=self._config, catalog=catalog)
+        len(output.records) == 2
 
-    assert next(invoice_payments)
+    @HttpMocker()
+    def test_child_stream_partitions(self, http_mocker: HttpMocker):
 
+        stream_name = "invoices"
+        stream_pk = "id"
 
-def test_report_base_stream(config, from_date, mock_stream):
-    mock_stream("reports/expenses/clients", response={"results": [{"client_id": 1}]})
+        http_mocker.get(
+            HarvestRequestBuilder.invoices_endpoint("account_id").with_any_query_params().build(),
+            [_a_response(stream_name=stream_name, data_path=stream_name).with_record(_a_record(stream_name=stream_name, data_path=stream_name, primary_key=stream_pk).with_field(FieldPath(stream_pk), 1)).with_record(_a_record(stream_name=stream_name, data_path=stream_name, primary_key=stream_pk).with_field(FieldPath(stream_pk), 2)).build()]
+        )
 
-    expenses_clients_instance = ExpensesClients(authenticator=NoAuth(), from_date=from_date)
-    stream_slice = next(expenses_clients_instance.stream_slices(sync_mode=None))
-    invoice_payments = expenses_clients_instance.read_records(sync_mode=None, stream_slice=stream_slice)
+        output_1 = read(SourceHarvest(), config=self._config, catalog=CatalogBuilder().with_stream("invoices", SyncMode.full_refresh).build())
 
-    assert next(invoice_payments)
+        invoice_1_id = json.loads(output_1.records[0].json())["record"]["data"]["id"]
+        invoice_2_id = json.loads(output_1.records[1].json())["record"]["data"]["id"]
 
-def test_report_base_stream_stream_slices(config, from_date, mock_stream):
-    # TODO
-    pass
+        stream_name = "invoice_messages"
+
+        http_mocker.get(
+            HarvestRequestBuilder.invoice_messages_endpoint("account_id", invoice_1_id).with_any_query_params().build(),
+            _a_response(stream_name=stream_name, data_path=stream_name).with_record(_a_record(stream_name=stream_name, data_path=stream_name, primary_key=stream_pk)).build()
+        )
+
+        http_mocker.get(
+            HarvestRequestBuilder.invoice_messages_endpoint("account_id", invoice_2_id).with_any_query_params().build(),
+            _a_response(stream_name=stream_name, data_path=stream_name).with_record(_a_record(stream_name=stream_name, data_path=stream_name, primary_key=stream_pk)).build()
+        )
+
+        read(SourceHarvest(), config=self._config, catalog=CatalogBuilder().with_stream("invoice_messages", SyncMode.full_refresh).build())
+        # Http Matcher test
+
+    @HttpMocker()
+    def test_report_based_stream(self, http_mocker: HttpMocker):
+
+        stream_name = "expenses_clients"
+        stream_pk = "client_id"
+        data_path = "results"
+
+        http_mocker.get(
+            HarvestRequestBuilder.expenses_clients_endpoint("account_id").with_any_query_params().build(),
+            _a_response(stream_name=stream_name, data_path=data_path).with_record(_a_record(stream_name, data_path, stream_pk)).build()
+        )
+
+        output = read(SourceHarvest(), config=self._config, catalog=CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build())
+
+        len(output.records) == 1
+
+    @HttpMocker()
+    def test_report_based_stream_slices(self, http_mocker: HttpMocker):
+
+        stream_name = "expenses_clients"
+        stream_pk = "client_id"
+        data_path = "results"
+
+        replication_start_date = "2021-01-01T00:00:00Z"
+        replication_start_datetime = datetime.strptime(replication_start_date, "%Y-%m-%dT%H:%M:%SZ")
+
+        config = ConfigBuilder().with_replication_start_date(replication_start_datetime).build()
+
+        while replication_start_datetime < datetime.now():
+
+            # Adds 364 days to create a 365-day-long duration, which is max for Harvest API
+            if replication_start_datetime + timedelta(days=364) < datetime.now():
+                end_datetime = replication_start_datetime + timedelta(days=364)
+            else:
+                end_datetime = datetime.now()
+
+            end_datetime = replication_start_datetime + timedelta(days=364) if replication_start_datetime + timedelta(days=364) < datetime.now() else datetime.now()
+
+            http_mocker.get(
+                HarvestRequestBuilder.expenses_clients_endpoint("account_id").with_per_page(50).with_from(replication_start_datetime).with_to(end_datetime).build(),
+                _a_response(stream_name=stream_name, data_path=data_path).with_record(_a_record(stream_name, data_path, stream_pk)).build()
+            )
+
+            replication_start_datetime = end_datetime + timedelta(days=1)
+
+        output = read(SourceHarvest(), config=config, catalog=CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build())
+
+        assert len(output.records) == 4
