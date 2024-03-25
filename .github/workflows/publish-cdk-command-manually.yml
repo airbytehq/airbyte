@@ -172,6 +172,7 @@ jobs:
 #          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   publish-cdk:
+    name: Publish Python CDK to PyPi
     needs: bump-version
     runs-on: ubuntu-latest
     steps:
@@ -180,15 +181,13 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-      - name: Publish PyPi package
-        uses: code-specialist/pypi-poetry-publish@v1
+      - name: Build and publish to pypi
+        uses: JRubics/poetry-publish@v2.0
         with:
-          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_REGISTRY_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-          PUBLISH_REGISTRY: "https://test.pypi.org/simple/"
-          PYTHON_VERSION: "3.10"
-          PACKAGE_DIRECTORY: "./airbyte-cdk/python"
-          BRANCH: ${{ github.event.inputs.gitref }}
+          pypi_token: ${{ secrets.PYPI_TOKEN }}
+          python_version: "3.10"
+          repository_url: "https://test.pypi.org/simple/"
+          package_directory: "airbyte-cdk/python"
 #      - name: Post failure to Slack channel dev-connectors-extensibility
 #        if: ${{ failure() }}
 #        uses: slackapi/slack-github-action@v1.23.0
