@@ -623,6 +623,27 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CustomStateMigration:
+    title: Custom State Migration
+    description: Apply a custom transformation on the input state.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomStateMigration]
+      class_name:
+        title: Class Name
+        description: Fully-qualified name of the class that will be implementing the custom state migration. The format is `source_<name>.<package>.<class_name>`.
+        type: string
+        examples:
+          - "source_railz.components.MyCustomStateMigration"
+      $parameters:
+        type: object
+        additionalProperties: true
   CustomTransformation:
     title: Custom Transformation
     description: Transformation component whose behavior is derived from a custom code implementation of the connector.
@@ -644,6 +665,29 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  LegacyToPerPartitionStateMigration:
+    title: Legacy To Per-partition-state Migration
+    description:
+      'Transforms the input state for per-partitioned streams from the legacy format to the low-code format.
+      The cursor field and partition ID fields are automatically extracted from the stream''s DatetimebasedCursor and SubstreamPartitionRouter.
+
+      Example input state:
+      {
+      "13506132": {
+      "last_changed": "2022-12-27T08:34:39+00:00"
+      }
+      Example output state:
+      {
+      "partition": {"id": "13506132"},
+      "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
+      }
+      '
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+        enum: [LegacyToPerPartitionStateMigration]
   DatetimeBasedCursor:
     title: Datetime Based Cursor
     description: Cursor to provide incremental capabilities over datetime.
@@ -1006,6 +1050,15 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
+      state_migrations:
+        title: State Migrations
+        description: Array of state migrations to be applied on the input state
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/LegacyToPerPartitionStateMigration"
+            - "$ref": "#/definitions/CustomStateMigration"
+        default: []
       $parameters:
         type: object
         additional_properties: true
