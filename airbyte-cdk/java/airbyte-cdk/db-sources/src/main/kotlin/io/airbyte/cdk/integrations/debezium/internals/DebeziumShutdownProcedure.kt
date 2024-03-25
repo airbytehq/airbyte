@@ -5,18 +5,20 @@ package io.airbyte.cdk.integrations.debezium.internals
 
 import io.airbyte.commons.concurrency.VoidCallable
 import io.airbyte.commons.lang.MoreBooleans
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.concurrent.*
 import java.util.function.Supplier
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * This class has the logic for shutting down Debezium Engine in graceful manner. We made it Generic
  * to allow us to write tests easily.
  */
-class DebeziumShutdownProcedure<T>(private val sourceQueue: LinkedBlockingQueue<T>,
-                                   private val debeziumThreadRequestClose: VoidCallable,
-                                   private val publisherStatusSupplier: Supplier<Boolean>) {
+class DebeziumShutdownProcedure<T>(
+    private val sourceQueue: LinkedBlockingQueue<T>,
+    private val debeziumThreadRequestClose: VoidCallable,
+    private val publisherStatusSupplier: Supplier<Boolean>
+) {
     private val targetQueue = LinkedBlockingQueue<T>()
     private val executorService: ExecutorService
     private var exception: Throwable? = null
@@ -24,13 +26,13 @@ class DebeziumShutdownProcedure<T>(private val sourceQueue: LinkedBlockingQueue<
 
     init {
         this.hasTransferThreadShutdown = false
-        this.executorService = Executors.newSingleThreadExecutor { r: Runnable? ->
-            val thread = Thread(r, "queue-data-transfer-thread")
-            thread.uncaughtExceptionHandler = Thread.UncaughtExceptionHandler { t: Thread?, e: Throwable? ->
-                exception = e
+        this.executorService =
+            Executors.newSingleThreadExecutor { r: Runnable? ->
+                val thread = Thread(r, "queue-data-transfer-thread")
+                thread.uncaughtExceptionHandler =
+                    Thread.UncaughtExceptionHandler { t: Thread?, e: Throwable? -> exception = e }
+                thread
             }
-            thread
-        }
     }
 
     private fun transfer(): Runnable {
@@ -60,19 +62,21 @@ class DebeziumShutdownProcedure<T>(private val sourceQueue: LinkedBlockingQueue<
     val recordsRemainingAfterShutdown: LinkedBlockingQueue<T>
         get() {
             if (!hasTransferThreadShutdown) {
-                LOGGER.warn("Queue transfer thread has not shut down, some records might be missing.")
+                LOGGER.warn(
+                    "Queue transfer thread has not shut down, some records might be missing."
+                )
             }
             return targetQueue
         }
 
     /**
-     * This method triggers the shutdown of Debezium Engine. When we trigger Debezium shutdown, the main
-     * thread pauses, as a result we stop reading data from the [sourceQueue] and since the queue
-     * is of fixed size, if it's already at capacity, Debezium won't be able to put remaining records in
-     * the queue. So before we trigger Debezium shutdown, we initiate a transfer of the records from the
-     * [sourceQueue] to a new queue i.e. [targetQueue]. This allows Debezium to continue to
-     * put records in the [sourceQueue] and once done, gracefully shutdown. After the shutdown is
-     * complete we just have to read the remaining records from the [targetQueue]
+     * This method triggers the shutdown of Debezium Engine. When we trigger Debezium shutdown, the
+     * main thread pauses, as a result we stop reading data from the [sourceQueue] and since the
+     * queue is of fixed size, if it's already at capacity, Debezium won't be able to put remaining
+     * records in the queue. So before we trigger Debezium shutdown, we initiate a transfer of the
+     * records from the [sourceQueue] to a new queue i.e. [targetQueue]. This allows Debezium to
+     * continue to put records in the [sourceQueue] and once done, gracefully shutdown. After the
+     * shutdown is complete we just have to read the remaining records from the [targetQueue]
      */
     fun initiateShutdownProcedure() {
         if (hasEngineShutDown()) {

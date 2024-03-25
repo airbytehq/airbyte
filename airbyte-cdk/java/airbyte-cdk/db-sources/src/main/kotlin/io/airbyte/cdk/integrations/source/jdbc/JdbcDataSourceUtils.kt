@@ -18,10 +18,15 @@ object JdbcDataSourceUtils {
      * @param defaultParameters connection properties map as specified by each Jdbc source
      * @throws IllegalArgumentException
      */
-    fun assertCustomParametersDontOverwriteDefaultParameters(customParameters: Map<String, String>,
-                                                             defaultParameters: Map<String, String>) {
+    fun assertCustomParametersDontOverwriteDefaultParameters(
+        customParameters: Map<String, String>,
+        defaultParameters: Map<String, String>
+    ) {
         for (key in defaultParameters.keys) {
-            require(!(customParameters.containsKey(key) && customParameters[key] != defaultParameters[key])) { "Cannot overwrite default JDBC parameter $key" }
+            require(
+                !(customParameters.containsKey(key) &&
+                    customParameters[key] != defaultParameters[key])
+            ) { "Cannot overwrite default JDBC parameter $key" }
         }
     }
 
@@ -32,12 +37,13 @@ object JdbcDataSourceUtils {
      * @param config A configuration used to check Jdbc connection
      * @return A mapping of connection properties
      */
-    fun getConnectionProperties(config: JsonNode?): Map<String, String> {
+    fun getConnectionProperties(config: JsonNode): Map<String, String> {
         return getConnectionProperties(config, DEFAULT_JDBC_PARAMETERS_DELIMITER)
     }
 
-    fun getConnectionProperties(config: JsonNode?, parameterDelimiter: String?): Map<String, String> {
-        val customProperties = parseJdbcParameters(config!!, JdbcUtils.JDBC_URL_PARAMS_KEY, parameterDelimiter!!)
+    fun getConnectionProperties(config: JsonNode, parameterDelimiter: String): Map<String, String> {
+        val customProperties =
+            parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY, parameterDelimiter)
         val defaultProperties = getDefaultConnectionProperties(config)
         assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties)
         return MoreMaps.merge(customProperties, defaultProperties)
@@ -51,8 +57,12 @@ object JdbcDataSourceUtils {
      * @param config A configuration used to check Jdbc connection
      * @return A mapping of the default connection properties
      */
-    fun getDefaultConnectionProperties(config: JsonNode?): Map<String, String> {
+    fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
         // NOTE that Postgres returns an empty map for some reason?
-        return parseJdbcParameters(config!!, "connection_properties", DEFAULT_JDBC_PARAMETERS_DELIMITER)
+        return parseJdbcParameters(
+            config,
+            "connection_properties",
+            DEFAULT_JDBC_PARAMETERS_DELIMITER
+        )
     }
 }

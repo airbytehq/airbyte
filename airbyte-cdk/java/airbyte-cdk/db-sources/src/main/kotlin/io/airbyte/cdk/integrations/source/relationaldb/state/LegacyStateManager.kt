@@ -10,71 +10,84 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Legacy implementation (pre-per-stream state support) of the [StateManager] interface.
  *
- * This implementation assumes that the state matches the [DbState] object and effectively
- * tracks state as global across the streams managed by a connector.
- *
+ * This implementation assumes that the state matches the [DbState] object and effectively tracks
+ * state as global across the streams managed by a connector.
  */
-@Deprecated("""This manager may be removed in the future if/once all connectors support per-stream
-              state management.""")
-class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog?) : AbstractStateManager<DbState?, DbStreamState?>(catalog,
+@Deprecated(
+    """This manager may be removed in the future if/once all connectors support per-stream
+              state management."""
+)
+class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
+    AbstractStateManager<DbState?, DbStreamState>(
+        catalog,
         Supplier { dbState.streams },
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
         CURSOR_RECORD_COUNT_FUNCTION,
-        NAME_NAMESPACE_PAIR_FUNCTION) {
-    /**
-     * Tracks whether the connector associated with this state manager supports CDC.
-     */
+        NAME_NAMESPACE_PAIR_FUNCTION
+    ) {
+    /** Tracks whether the connector associated with this state manager supports CDC. */
     private var isCdc: Boolean
 
-    /**
-     * [CdcStateManager] used to manage state for connectors that support CDC.
-     */
-    override val cdcStateManager: CdcStateManager = CdcStateManager(dbState.cdcState, AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog), null)
+    /** [CdcStateManager] used to manage state for connectors that support CDC. */
+    override val cdcStateManager: CdcStateManager =
+        CdcStateManager(
+            dbState.cdcState,
+            AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog),
+            null
+        )
 
     /**
-     * Constructs a new [LegacyStateManager] that is seeded with the provided [DbState]
-     * instance.
+     * Constructs a new [LegacyStateManager] that is seeded with the provided [DbState] instance.
      *
      * @param dbState The initial state represented as an [DbState] instance.
      * @param catalog The [ConfiguredAirbyteCatalog] for the connector associated with this state
      * manager.
      */
     init {
-        this.isCdc = dbState.cdc
-        if (dbState.cdc == null) {
-            this.isCdc = false
-        }
+        this.isCdc = dbState.cdc ?: false
     }
 
     override val rawStateMessages: List<AirbyteStateMessage?>?
         get() {
-            throw UnsupportedOperationException("Raw state retrieval not supported by global state manager.")
+            throw UnsupportedOperationException(
+                "Raw state retrieval not supported by global state manager."
+            )
         }
 
-    override fun toState(pair: Optional<AirbyteStreamNameNamespacePair?>): AirbyteStateMessage? {
-        val dbState = StateGeneratorUtils.generateDbState(pairToCursorInfoMap)
+    override fun toState(pair: Optional<AirbyteStreamNameNamespacePair>): AirbyteStateMessage {
+        val dbState =
+            StateGeneratorUtils.generateDbState(pairToCursorInfoMap)
                 .withCdc(isCdc)
                 .withCdcState(cdcStateManager.cdcState)
 
         LOGGER.debug("Generated legacy state for {} streams", dbState.streams.size)
-        return AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState))
+        return AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
+            .withData(Jsons.jsonNode(dbState))
     }
 
-    override fun updateAndEmit(pair: AirbyteStreamNameNamespacePair, cursor: String?): AirbyteStateMessage? {
+    override fun updateAndEmit(
+        pair: AirbyteStreamNameNamespacePair,
+        cursor: String?
+    ): AirbyteStateMessage? {
         return updateAndEmit(pair, cursor, 0L)
     }
 
-    override fun updateAndEmit(pair: AirbyteStreamNameNamespacePair, cursor: String?, cursorRecordCount: Long): AirbyteStateMessage? {
+    override fun updateAndEmit(
+        pair: AirbyteStreamNameNamespacePair,
+        cursor: String?,
+        cursorRecordCount: Long
+    ): AirbyteStateMessage? {
         // cdc file gets updated by debezium so the "update" part is a no op.
         if (!isCdc) {
             return super.updateAndEmit(pair, cursor, cursorRecordCount)
@@ -86,21 +99,20 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog?) :
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(LegacyStateManager::class.java)
 
-        /**
-         * [Function] that extracts the cursor from the stream state.
-         */
-        private val CURSOR_FUNCTION = Function { obj: DbStreamState? -> obj!!.cursor }
+        /** [Function] that extracts the cursor from the stream state. */
+        private val CURSOR_FUNCTION = DbStreamState::getCursor
 
-        /**
-         * [Function] that extracts the cursor field(s) from the stream state.
-         */
-        private val CURSOR_FIELD_FUNCTION = Function { obj: DbStreamState? -> obj!!.cursorField }
+        /** [Function] that extracts the cursor field(s) from the stream state. */
+        private val CURSOR_FIELD_FUNCTION = DbStreamState::getCursorField
 
-        private val CURSOR_RECORD_COUNT_FUNCTION = Function { stream: DbStreamState? -> Objects.requireNonNullElse(stream!!.cursorRecordCount, 0L) }
+        private val CURSOR_RECORD_COUNT_FUNCTION = Function { stream: DbStreamState ->
+            Objects.requireNonNullElse(stream.cursorRecordCount, 0L)
+        }
 
-        /**
-         * [Function] that creates an [AirbyteStreamNameNamespacePair] from the stream state.
-         */
-        private val NAME_NAMESPACE_PAIR_FUNCTION = Function { s: DbStreamState? -> AirbyteStreamNameNamespacePair(s!!.streamName, s.streamNamespace) }
+        /** [Function] that creates an [AirbyteStreamNameNamespacePair] from the stream state. */
+        private val NAME_NAMESPACE_PAIR_FUNCTION =
+            Function<DbStreamState, AirbyteStreamNameNamespacePair?> { s: DbStreamState ->
+                AirbyteStreamNameNamespacePair(s!!.streamName, s.streamNamespace)
+            }
     }
 }

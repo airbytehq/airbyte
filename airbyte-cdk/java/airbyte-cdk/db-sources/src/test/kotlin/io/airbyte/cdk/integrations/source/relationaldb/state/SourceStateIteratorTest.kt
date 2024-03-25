@@ -4,40 +4,49 @@
 package io.airbyte.cdk.integrations.source.relationaldb.state
 
 import io.airbyte.protocol.models.v0.*
+import java.time.Duration
 import org.junit.Assert
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import java.time.Duration
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 class SourceStateIteratorTest {
-    var mockProducer: SourceStateMessageProducer<*>? = null
-    var messageIterator: Iterator<AirbyteMessage>? = null
-    var stream: ConfiguredAirbyteStream? = null
+    lateinit var mockProducer: SourceStateMessageProducer<AirbyteMessage>
+    lateinit var messageIterator: Iterator<AirbyteMessage>
+    lateinit var stream: ConfiguredAirbyteStream
 
-    var sourceStateIterator: SourceStateIterator<*>? = null
+    var sourceStateIterator: SourceStateIteratorForTest<*>? = null
 
     @BeforeEach
     fun setup() {
-        mockProducer = Mockito.mock(SourceStateMessageProducer::class.java)
-        stream = Mockito.mock(ConfiguredAirbyteStream::class.java)
-        messageIterator = Mockito.mock<Iterator<*>>(MutableIterator::class.java)
+        mockProducer = mock()
+        stream = mock()
+        messageIterator = mock()
         val stateEmitFrequency = StateEmitFrequency(1L, Duration.ofSeconds(100L))
-        sourceStateIterator = SourceStateIterator<Any?>(messageIterator, stream, mockProducer, stateEmitFrequency)
+        sourceStateIterator =
+            SourceStateIteratorForTest(messageIterator, stream, mockProducer, stateEmitFrequency)
     }
 
-    // Provides a way to generate a record message and will verify corresponding spied functions have
+    // Provides a way to generate a record message and will verify corresponding spied functions
+    // have
     // been called.
     fun processRecordMessage() {
         Mockito.doReturn(true).`when`(messageIterator).hasNext()
-        Mockito.doReturn(false).`when`(mockProducer).shouldEmitStateMessage(ArgumentMatchers.eq(stream))
-        val message = AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(AirbyteRecordMessage())
-        Mockito.doReturn(message).`when`(mockProducer).processRecordMessage(ArgumentMatchers.eq(stream), ArgumentMatchers.any<Any>())
+        Mockito.doReturn(false)
+            .`when`(mockProducer)
+            .shouldEmitStateMessage(ArgumentMatchers.eq(stream))
+        val message =
+            AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(AirbyteRecordMessage())
+        Mockito.doReturn(message).`when`(mockProducer).processRecordMessage(eq(stream), any())
         Mockito.doReturn(message).`when`(messageIterator).next()
 
         Assert.assertEquals(message, sourceStateIterator!!.computeNext())
-        Mockito.verify(mockProducer, Mockito.atLeastOnce()).processRecordMessage(ArgumentMatchers.eq(stream), ArgumentMatchers.eq(message))
+        Mockito.verify(mockProducer, Mockito.atLeastOnce())
+            .processRecordMessage(eq(stream), eq(message))
     }
 
     @Test
@@ -48,10 +57,13 @@ class SourceStateIteratorTest {
     @Test
     fun testShouldEmitStateMessage() {
         processRecordMessage()
-        Mockito.doReturn(true).`when`(mockProducer).shouldEmitStateMessage(ArgumentMatchers.eq(stream))
+        Mockito.doReturn(true)
+            .`when`(mockProducer)
+            .shouldEmitStateMessage(ArgumentMatchers.eq(stream))
         val stateMessage = AirbyteStateMessage()
         Mockito.doReturn(stateMessage).`when`(mockProducer).generateStateMessageAtCheckpoint(stream)
-        val expectedMessage = AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
+        val expectedMessage =
+            AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
         expectedMessage.state.withSourceStats(AirbyteStateStats().withRecordCount(1.0))
         Assert.assertEquals(expectedMessage, sourceStateIterator!!.computeNext())
     }
@@ -63,7 +75,8 @@ class SourceStateIteratorTest {
         Mockito.doReturn(false).`when`(messageIterator).hasNext()
         val stateMessage = AirbyteStateMessage()
         Mockito.doReturn(stateMessage).`when`(mockProducer).createFinalStateMessage(stream)
-        val expectedMessage = AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
+        val expectedMessage =
+            AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
         expectedMessage.state.withSourceStats(AirbyteStateStats().withRecordCount(2.0))
         Assert.assertEquals(expectedMessage, sourceStateIterator!!.computeNext())
     }
@@ -82,7 +95,9 @@ class SourceStateIteratorTest {
     @Test
     fun testShouldRethrowExceptions() {
         processRecordMessage()
-        Mockito.doThrow(ArrayIndexOutOfBoundsException("unexpected error")).`when`(messageIterator).hasNext()
+        Mockito.doThrow(ArrayIndexOutOfBoundsException("unexpected error"))
+            .`when`(messageIterator)
+            .hasNext()
         Assert.assertThrows(RuntimeException::class.java) { sourceStateIterator!!.computeNext() }
     }
 }

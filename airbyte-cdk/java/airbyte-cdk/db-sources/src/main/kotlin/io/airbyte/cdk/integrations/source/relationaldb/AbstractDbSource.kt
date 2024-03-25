@@ -4,7 +4,6 @@
 package io.airbyte.cdk.integrations.source.relationaldb
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import datadog.trace.api.Trace
 import io.airbyte.cdk.db.AbstractDatabase
@@ -13,6 +12,7 @@ import io.airbyte.cdk.db.IncrementalUtils.getCursorFieldOptional
 import io.airbyte.cdk.db.IncrementalUtils.getCursorType
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.JdbcConnector
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility.emitConfigErrorTrace
 import io.airbyte.cdk.integrations.base.Source
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage
@@ -25,7 +25,6 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.lang.Exceptions
-import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.commons.stream.AirbyteStreamUtils
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
@@ -33,8 +32,6 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.CommonField
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.SQLException
 import java.time.Duration
 import java.time.Instant
@@ -43,19 +40,18 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Function
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a DB
  * source of both non-relational and relational type
  */
-abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protected constructor(driverClassName: String?) : JdbcConnector(driverClassName!!), Source, AutoCloseable {
+abstract class AbstractDbSource<DataType, Database : AbstractDatabase?>
+protected constructor(driverClassName: String) :
+    JdbcConnector(driverClassName), Source, AutoCloseable {
     // TODO: Remove when the flag is not use anymore
     protected var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
-
-    @VisibleForTesting
-    fun setFeatureFlags(featureFlags: FeatureFlags) {
-        this.featureFlags = featureFlags
-    }
 
     @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
@@ -69,18 +65,22 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (ex: ConnectionErrorException) {
             addExceptionToTrace(ex)
-            val message = getErrorMessage(ex.stateCode, ex.errorCode,
-                    ex.exceptionMessage, ex)
+            val message = getErrorMessage(ex.stateCode, ex.errorCode, ex.exceptionMessage, ex)
             emitConfigErrorTrace(ex, message)
             return AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage(message)
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(message)
         } catch (e: Exception) {
             addExceptionToTrace(e)
             LOGGER.info("Exception while checking connection: ", e)
             return AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                    .withMessage(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.message))
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(
+                    String.format(
+                        ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
+                        e.message
+                    )
+                )
         } finally {
             close()
         }
@@ -92,32 +92,43 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
         try {
             val database = createDatabase(config)
             val tableInfos = discoverWithoutSystemTables(database)
-            val fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(
-                    database, tableInfos)
-            return DbSourceDiscoverUtil.convertTableInfosToAirbyteCatalog(tableInfos, fullyQualifiedTableNameToPrimaryKeys) { columnType: DataType -> this.getAirbyteType(columnType) }
+            val fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(database, tableInfos)
+            return DbSourceDiscoverUtil.convertTableInfosToAirbyteCatalog(
+                tableInfos,
+                fullyQualifiedTableNameToPrimaryKeys
+            ) { columnType: DataType -> this.getAirbyteType(columnType) }
         } finally {
             close()
         }
     }
 
     /**
-     * Creates a list of AirbyteMessageIterators with all the streams selected in a configured catalog
+     * Creates a list of AirbyteMessageIterators with all the streams selected in a configured
+     * catalog
      *
-     * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+     * @param config
+     * - integration-specific configuration object as json. e.g. { "username": "airbyte",
      * "password": "super secure" }
-     * @param catalog - schema of the incoming messages.
-     * @param state - state of the incoming messages.
+     * @param catalog
+     * - schema of the incoming messages.
+     * @param state
+     * - state of the incoming messages.
      * @return AirbyteMessageIterator with all the streams that are to be synced
      * @throws Exception
      */
     @Throws(Exception::class)
-    override fun read(config: JsonNode,
-                      catalog: ConfiguredAirbyteCatalog?,
-                      state: JsonNode?): AutoCloseableIterator<AirbyteMessage> {
+    override fun read(
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
+        state: JsonNode?
+    ): AutoCloseableIterator<AirbyteMessage> {
         val supportedStateType = getSupportedStateType(config)
         val stateManager =
-                StateManagerFactory.createStateManager(supportedStateType,
-                        StateGeneratorUtils.deserializeInitialState(state, supportedStateType), catalog)
+            StateManagerFactory.createStateManager(
+                supportedStateType,
+                StateGeneratorUtils.deserializeInitialState(state, supportedStateType),
+                catalog
+            )
         val emittedAt = Instant.now()
 
         val database = createDatabase(config)
@@ -125,49 +136,77 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
         logPreSyncDebugData(database, catalog)
 
         val fullyQualifiedTableNameToInfo =
-                discoverWithoutSystemTables(database)
-                        .stream()
-                        .collect(Collectors.toMap(Function { t: TableInfo<CommonField<DataType>> -> String.format("%s.%s", t.nameSpace, t.name) },
-                                Function
-                                        .identity()))
+            discoverWithoutSystemTables(database)
+                .stream()
+                .collect(
+                    Collectors.toMap(
+                        Function { t: TableInfo<CommonField<DataType>> ->
+                            String.format("%s.%s", t.nameSpace, t.name)
+                        },
+                        Function.identity()
+                    )
+                )
 
         validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database)
 
-        DbSourceDiscoverUtil.logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog) { columnType: DataType -> this.getAirbyteType(columnType) }
+        DbSourceDiscoverUtil.logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog) {
+            columnType: DataType ->
+            this.getAirbyteType(columnType)
+        }
 
         val incrementalIterators =
-                getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
-                        emittedAt)
+            getIncrementalIterators(
+                database,
+                catalog,
+                fullyQualifiedTableNameToInfo,
+                stateManager,
+                emittedAt
+            )
         val fullRefreshIterators =
-                getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
-                        emittedAt)
-        val iteratorList = Stream
-                .of(incrementalIterators, fullRefreshIterators)
-                .flatMap(Function<List<AutoCloseableIterator<AirbyteMessage?>>, Stream<out AutoCloseableIterator<AirbyteMessage>>> { obj: List<AutoCloseableIterator<AirbyteMessage>> -> obj.stream() })
+            getFullRefreshIterators(
+                database,
+                catalog,
+                fullyQualifiedTableNameToInfo,
+                stateManager,
+                emittedAt
+            )
+        val iteratorList =
+            Stream.of(incrementalIterators, fullRefreshIterators)
+                .flatMap(Collection<AutoCloseableIterator<AirbyteMessage>>::stream)
                 .collect(Collectors.toList())
 
-        return AutoCloseableIterators
-                .appendOnClose<AirbyteMessage>(AutoCloseableIterators.concatWithEagerClose<AirbyteMessage>(iteratorList) { obj: AirbyteStreamStatusHolder -> obj.emitStreamStatusTrace() }) {
-                    LOGGER.info("Closing database connection pool.")
-                    Exceptions.toRuntime { this.close() }
-                    LOGGER.info("Closed database connection pool.")
-                }
+        return AutoCloseableIterators.appendOnClose(
+            AutoCloseableIterators.concatWithEagerClose(
+                iteratorList,
+                AirbyteTraceMessageUtility::emitStreamStatusTrace
+            )
+        ) {
+            LOGGER.info("Closing database connection pool.")
+            Exceptions.toRuntime { this.close() }
+            LOGGER.info("Closed database connection pool.")
+        }
     }
 
     @Throws(SQLException::class)
     protected fun validateCursorFieldForIncrementalTables(
-            tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
-            catalog: ConfiguredAirbyteCatalog?,
-            database: Database) {
-        val tablesWithInvalidCursor: MutableList<InvalidCursorInfoUtil.InvalidCursorInfo> = ArrayList()
-        for (airbyteStream in catalog!!.streams) {
+        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        catalog: ConfiguredAirbyteCatalog,
+        database: Database
+    ) {
+        val tablesWithInvalidCursor: MutableList<InvalidCursorInfoUtil.InvalidCursorInfo> =
+            ArrayList()
+        for (airbyteStream in catalog.streams) {
             val stream = airbyteStream.stream
-            val fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.namespace,
-                    stream.name)
-            val hasSourceDefinedCursor = (
-                    !Objects.isNull(airbyteStream.stream.sourceDefinedCursor)
-                            && airbyteStream.stream.sourceDefinedCursor)
-            if (!tableNameToTable.containsKey(fullyQualifiedTableName) || airbyteStream.syncMode != SyncMode.INCREMENTAL || hasSourceDefinedCursor) {
+            val fullyQualifiedTableName =
+                DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.namespace, stream.name)
+            val hasSourceDefinedCursor =
+                (!Objects.isNull(airbyteStream.stream.sourceDefinedCursor) &&
+                    airbyteStream.stream.sourceDefinedCursor)
+            if (
+                !tableNameToTable.containsKey(fullyQualifiedTableName) ||
+                    airbyteStream.syncMode != SyncMode.INCREMENTAL ||
+                    hasSourceDefinedCursor
+            ) {
                 continue
             }
 
@@ -176,7 +215,9 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
             if (cursorField.isEmpty) {
                 continue
             }
-            val cursorType = table.fields.stream()
+            val cursorType =
+                table.fields!!
+                    .stream()
                     .filter { info: CommonField<DataType> -> info.name == cursorField.get() }
                     .map { obj: CommonField<DataType> -> obj.type }
                     .findFirst()
@@ -184,21 +225,39 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
 
             if (!isCursorType(cursorType)) {
                 tablesWithInvalidCursor.add(
-                        InvalidCursorInfoUtil.InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(),
-                                cursorType.toString(), "Unsupported cursor type"))
+                    InvalidCursorInfoUtil.InvalidCursorInfo(
+                        fullyQualifiedTableName,
+                        cursorField.get(),
+                        cursorType.toString(),
+                        "Unsupported cursor type"
+                    )
+                )
                 continue
             }
 
-            if (!verifyCursorColumnValues(database, stream.namespace, stream.name, cursorField.get())) {
+            if (
+                !verifyCursorColumnValues(
+                    database,
+                    stream.namespace,
+                    stream.name,
+                    cursorField.get()
+                )
+            ) {
                 tablesWithInvalidCursor.add(
-                        InvalidCursorInfoUtil.InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(),
-                                cursorType.toString(), "Cursor column contains NULL value"))
+                    InvalidCursorInfoUtil.InvalidCursorInfo(
+                        fullyQualifiedTableName,
+                        cursorField.get(),
+                        cursorType.toString(),
+                        "Cursor column contains NULL value"
+                    )
+                )
             }
         }
 
         if (!tablesWithInvalidCursor.isEmpty()) {
             throw ConfigErrorException(
-                    InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor))
+                InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor)
+            )
         }
     }
 
@@ -210,68 +269,86 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @throws SQLException exception
      */
     @Throws(SQLException::class)
-    protected fun verifyCursorColumnValues(database: Database, schema: String?, tableName: String?, columnName: String?): Boolean {
+    protected fun verifyCursorColumnValues(
+        database: Database,
+        schema: String?,
+        tableName: String?,
+        columnName: String?
+    ): Boolean {
         /* no-op */
         return true
     }
 
     /**
-     * Estimates the total volume (rows and bytes) to sync and emits a
-     * [AirbyteEstimateTraceMessage] associated with the full refresh stream.
+     * Estimates the total volume (rows and bytes) to sync and emits a [AirbyteEstimateTraceMessage]
+     * associated with the full refresh stream.
      *
      * @param database database
      */
-    protected fun estimateFullRefreshSyncSize(database: Database,
-                                              configuredAirbyteStream: ConfiguredAirbyteStream?) {
+    protected fun estimateFullRefreshSyncSize(
+        database: Database,
+        configuredAirbyteStream: ConfiguredAirbyteStream?
+    ) {
         /* no-op */
     }
 
     @Throws(Exception::class)
-    protected fun discoverWithoutSystemTables(database: Database): List<TableInfo<CommonField<DataType>>> {
+    protected fun discoverWithoutSystemTables(
+        database: Database
+    ): List<TableInfo<CommonField<DataType>>> {
         val systemNameSpaces = excludedInternalNameSpaces
         val systemViews = excludedViews
         val discoveredTables = discoverInternal(database)
         return (if (systemNameSpaces == null || systemNameSpaces.isEmpty()) discoveredTables
-        else discoveredTables.stream()
-                .filter { table: TableInfo<CommonField<DataType>> -> !systemNameSpaces.contains(table.nameSpace) && !systemViews.contains(table.name) }.collect(
-                        Collectors.toList()))
+        else
+            discoveredTables
+                .stream()
+                .filter { table: TableInfo<CommonField<DataType>> ->
+                    !systemNameSpaces.contains(table.nameSpace) && !systemViews.contains(table.name)
+                }
+                .collect(Collectors.toList()))
     }
 
     protected fun getFullRefreshIterators(
-            database: Database,
-            catalog: ConfiguredAirbyteCatalog?,
-            tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
-            stateManager: StateManager?,
-            emittedAt: Instant): List<AutoCloseableIterator<AirbyteMessage?>> {
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog,
+        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        stateManager: StateManager?,
+        emittedAt: Instant
+    ): List<AutoCloseableIterator<AirbyteMessage>> {
         return getSelectedIterators(
-                database,
-                catalog,
-                tableNameToTable,
-                stateManager,
-                emittedAt,
-                SyncMode.FULL_REFRESH)
+            database,
+            catalog,
+            tableNameToTable,
+            stateManager,
+            emittedAt,
+            SyncMode.FULL_REFRESH
+        )
     }
 
     protected fun getIncrementalIterators(
-            database: Database,
-            catalog: ConfiguredAirbyteCatalog?,
-            tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
-            stateManager: StateManager?,
-            emittedAt: Instant): List<AutoCloseableIterator<AirbyteMessage?>> {
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog,
+        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        stateManager: StateManager?,
+        emittedAt: Instant
+    ): List<AutoCloseableIterator<AirbyteMessage>> {
         return getSelectedIterators(
-                database,
-                catalog,
-                tableNameToTable,
-                stateManager,
-                emittedAt,
-                SyncMode.INCREMENTAL)
+            database,
+            catalog,
+            tableNameToTable,
+            stateManager,
+            emittedAt,
+            SyncMode.INCREMENTAL
+        )
     }
 
     /**
      * Creates a list of read iterators for each stream within an ConfiguredAirbyteCatalog
      *
      * @param database Source Database
-     * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync mode
+     * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync
+     * mode
      * @param tableNameToTable Mapping of table name to table
      * @param stateManager Manager used to track the state of data synced by the connector
      * @param emittedAt Time when data was emitted from the Source database
@@ -279,31 +356,30 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @return List of AirbyteMessageIterators containing all iterators for a catalog
      */
     private fun getSelectedIterators(
-            database: Database,
-            catalog: ConfiguredAirbyteCatalog?,
-            tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
-            stateManager: StateManager?,
-            emittedAt: Instant,
-            syncMode: SyncMode): List<AutoCloseableIterator<AirbyteMessage?>> {
-        val iteratorList: MutableList<AutoCloseableIterator<AirbyteMessage?>> = ArrayList()
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog?,
+        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        stateManager: StateManager?,
+        emittedAt: Instant,
+        syncMode: SyncMode
+    ): List<AutoCloseableIterator<AirbyteMessage>> {
+        val iteratorList: MutableList<AutoCloseableIterator<AirbyteMessage>> = ArrayList()
         for (airbyteStream in catalog!!.streams) {
             if (airbyteStream.syncMode == syncMode) {
                 val stream = airbyteStream.stream
-                val fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.namespace,
-                        stream.name)
+                val fullyQualifiedTableName =
+                    DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.namespace, stream.name)
                 if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
-                    LOGGER
-                            .info("Skipping stream {} because it is not in the source", fullyQualifiedTableName)
+                    LOGGER.info(
+                        "Skipping stream {} because it is not in the source",
+                        fullyQualifiedTableName
+                    )
                     continue
                 }
 
                 val table = tableNameToTable[fullyQualifiedTableName]!!
-                val tableReadIterator = createReadIterator(
-                        database,
-                        airbyteStream,
-                        table,
-                        stateManager,
-                        emittedAt)
+                val tableReadIterator =
+                    createReadIterator(database, airbyteStream, table, stateManager, emittedAt)
                 iteratorList.add(tableReadIterator)
             }
         }
@@ -321,17 +397,20 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @param emittedAt Time when data was emitted from the Source database
      * @return
      */
-    private fun createReadIterator(database: Database,
-                                   airbyteStream: ConfiguredAirbyteStream,
-                                   table: TableInfo<CommonField<DataType>>,
-                                   stateManager: StateManager?,
-                                   emittedAt: Instant): AutoCloseableIterator<AirbyteMessage?> {
+    private fun createReadIterator(
+        database: Database,
+        airbyteStream: ConfiguredAirbyteStream,
+        table: TableInfo<CommonField<DataType>>,
+        stateManager: StateManager?,
+        emittedAt: Instant
+    ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
-        val pair = io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(streamName,
-                namespace)
+        val pair =
+            io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(streamName, namespace)
         val selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream)
-        val selectedDatabaseFields = table.fields
+        val selectedDatabaseFields =
+            table.fields
                 .stream()
                 .map { obj: CommonField<DataType> -> obj.name }
                 .filter { o: String -> selectedFieldsInCatalog.contains(o) }
@@ -345,48 +424,82 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
             val cursorInfo = stateManager!!.getCursorInfo(pair)
 
             val airbyteMessageIterator: AutoCloseableIterator<AirbyteMessage?>
-            if (cursorInfo!!.map<String?> { obj: CursorInfo? -> obj.getCursor() }.isPresent) {
-                airbyteMessageIterator = getIncrementalStream(
+            if (cursorInfo!!.map { it.cursor }.isPresent) {
+                airbyteMessageIterator =
+                    getIncrementalStream(
                         database,
                         airbyteStream,
                         selectedDatabaseFields,
                         table,
                         cursorInfo.get(),
-                        emittedAt)
+                        emittedAt
+                    )
             } else {
-                // if no cursor is present then this is the first read for is the same as doing a full refresh read.
+                // if no cursor is present then this is the first read for is the same as doing a
+                // full refresh read.
                 estimateFullRefreshSyncSize(database, airbyteStream)
-                airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace,
-                        selectedDatabaseFields, table, emittedAt, SyncMode.INCREMENTAL, Optional.of(cursorField))
+                airbyteMessageIterator =
+                    getFullRefreshStream(
+                        database,
+                        streamName,
+                        namespace,
+                        selectedDatabaseFields,
+                        table,
+                        emittedAt,
+                        SyncMode.INCREMENTAL,
+                        Optional.of(cursorField)
+                    )
             }
 
-            val cursorType = getCursorType(airbyteStream,
-                    cursorField)
+            val cursorType = getCursorType(airbyteStream, cursorField)
 
-            val messageProducer = CursorStateMessageProducer(
-                    stateManager,
-                    cursorInfo.map { obj: CursorInfo? -> obj.getCursor() })
+            val messageProducer =
+                CursorStateMessageProducer(stateManager, cursorInfo.map { it.cursor })
 
-            iterator = AutoCloseableIterators.transform(
-                    { autoCloseableIterator: AutoCloseableIterator<AirbyteMessage?> ->
-                        SourceStateIterator<Any?>(autoCloseableIterator, airbyteStream, messageProducer,
-                                StateEmitFrequency(stateEmissionFrequency.toLong(),
-                                        Duration.ZERO))
+            iterator =
+                AutoCloseableIterators.transform(
+                    { autoCloseableIterator: AutoCloseableIterator<AirbyteMessage> ->
+                        SourceStateIterator(
+                            autoCloseableIterator,
+                            airbyteStream,
+                            messageProducer,
+                            StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO)
+                        )
                     },
                     airbyteMessageIterator,
-                    AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace))
+                    AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace)
+                )
         } else if (airbyteStream.syncMode == SyncMode.FULL_REFRESH) {
             estimateFullRefreshSyncSize(database, airbyteStream)
-            iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
-                    table, emittedAt, SyncMode.FULL_REFRESH, Optional.empty())
-        } else requireNotNull(airbyteStream.syncMode) { String.format("%s requires a source sync mode", this.javaClass) }
-        throw IllegalArgumentException(
-                String.format("%s does not support sync mode: %s.", this.javaClass,
-                        airbyteStream.syncMode))
+            iterator =
+                getFullRefreshStream(
+                    database,
+                    streamName,
+                    namespace,
+                    selectedDatabaseFields,
+                    table,
+                    emittedAt,
+                    SyncMode.FULL_REFRESH,
+                    Optional.empty()
+                )
+        } else if (airbyteStream.syncMode == null) {
+            throw IllegalArgumentException(
+                String.format("%s requires a source sync mode", this.javaClass)
+            )
+        } else {
+            throw IllegalArgumentException(
+                String.format(
+                    "%s does not support sync mode: %s.",
+                    this.javaClass,
+                    airbyteStream.syncMode
+                )
+            )
+        }
 
         val recordCount = AtomicLong()
-        return AutoCloseableIterators.transform<AirbyteMessage?, AirbyteMessage?>(iterator,
-                AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace)
+        return AutoCloseableIterators.transform<AirbyteMessage?, AirbyteMessage?>(
+            iterator,
+            AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace)
         ) { r: AirbyteMessage? ->
             val count = recordCount.incrementAndGet()
             if (count % 10000 == 0L) {
@@ -405,32 +518,39 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @param emittedAt Time when data was emitted from the Source database
      * @return AirbyteMessage Iterator that
      */
-    private fun getIncrementalStream(database: Database,
-                                     airbyteStream: ConfiguredAirbyteStream,
-                                     selectedDatabaseFields: List<String>,
-                                     table: TableInfo<CommonField<DataType>>,
-                                     cursorInfo: CursorInfo,
-                                     emittedAt: Instant): AutoCloseableIterator<AirbyteMessage?> {
+    private fun getIncrementalStream(
+        database: Database,
+        airbyteStream: ConfiguredAirbyteStream,
+        selectedDatabaseFields: List<String>,
+        table: TableInfo<CommonField<DataType>>,
+        cursorInfo: CursorInfo,
+        emittedAt: Instant
+    ): AutoCloseableIterator<AirbyteMessage?> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
         val cursorField = getCursorField(airbyteStream)
-        val cursorType = table.fields.stream()
+        val cursorType =
+            table.fields
+                .stream()
                 .filter { info: CommonField<DataType> -> info.name == cursorField }
                 .map { obj: CommonField<DataType> -> obj.type }
                 .findFirst()
                 .orElseThrow()
 
         Preconditions.checkState(
-                table.fields.stream().anyMatch { f: CommonField<DataType> -> f.name == cursorField },
-                String.format("Could not find cursor field %s in table %s", cursorField, table.name))
+            table.fields.stream().anyMatch { f: CommonField<DataType> -> f.name == cursorField },
+            String.format("Could not find cursor field %s in table %s", cursorField, table.name)
+        )
 
-        val queryIterator = queryTableIncremental(
+        val queryIterator =
+            queryTableIncremental(
                 database,
                 selectedDatabaseFields,
                 table.nameSpace,
                 table.name,
                 cursorInfo,
-                cursorType)
+                cursorType
+            )
 
         return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli())
     }
@@ -439,8 +559,8 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * Creates a AirbyteMessageIterator that contains all records for a database source connection
      *
      * @param database Source Database
-     * @param streamName name of an individual stream in which a stream represents a source (e.g. API
-     * endpoint or database table)
+     * @param streamName name of an individual stream in which a stream represents a source (e.g.
+     * API endpoint or database table)
      * @param namespace Namespace of the database (e.g. public)
      * @param selectedDatabaseFields List of all interested database column names
      * @param table information in tabular format
@@ -448,37 +568,48 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @param syncMode The sync mode that this full refresh stream should be associated with.
      * @return AirbyteMessageIterator with all records for a database source
      */
-    private fun getFullRefreshStream(database: Database,
-                                     streamName: String,
-                                     namespace: String,
-                                     selectedDatabaseFields: List<String>,
-                                     table: TableInfo<CommonField<DataType>>,
-                                     emittedAt: Instant,
-                                     syncMode: SyncMode,
-                                     cursorField: Optional<String?>): AutoCloseableIterator<AirbyteMessage?> {
+    private fun getFullRefreshStream(
+        database: Database,
+        streamName: String,
+        namespace: String,
+        selectedDatabaseFields: List<String>,
+        table: TableInfo<CommonField<DataType>>,
+        emittedAt: Instant,
+        syncMode: SyncMode,
+        cursorField: Optional<String>
+    ): AutoCloseableIterator<AirbyteMessage?> {
         val queryStream =
-                queryTableFullRefresh(database, selectedDatabaseFields, table.nameSpace,
-                        table.name, syncMode, cursorField)
+            queryTableFullRefresh(
+                database,
+                selectedDatabaseFields,
+                table.nameSpace,
+                table.name,
+                syncMode,
+                cursorField
+            )
         return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli())
     }
 
     /**
-     * @param database - The database where from privileges for tables will be consumed
-     * @param schema - The schema where from privileges for tables will be consumed
-     * @return Set with privileges for tables for current DB-session user The method is responsible for
-     * SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
-     * Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its
-     * owner).
+     * @param database
+     * - The database where from privileges for tables will be consumed
+     * @param schema
+     * - The schema where from privileges for tables will be consumed
+     * @return Set with privileges for tables for current DB-session user The method is responsible
+     * for SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
+     * Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its owner).
      */
     @Throws(SQLException::class)
-    protected fun <T> getPrivilegesTableForCurrentUser(database: JdbcDatabase?,
-                                                       schema: String?): Set<T> {
+    protected fun <T> getPrivilegesTableForCurrentUser(
+        database: JdbcDatabase?,
+        schema: String?
+    ): Set<T> {
         return emptySet()
     }
 
     /**
-     * Map a database implementation-specific configuration to json object that adheres to the database
-     * config spec. See resources/spec.json.
+     * Map a database implementation-specific configuration to json object that adheres to the
+     * database config spec. See resources/spec.json.
      *
      * @param config database implementation-specific configuration.
      * @return database spec config
@@ -495,19 +626,21 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      */
     @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
-    protected abstract fun createDatabase(config: JsonNode?): Database
+    protected abstract fun createDatabase(config: JsonNode): Database
 
     /**
-     * Gets and logs relevant and useful database metadata such as DB product/version, index names and
-     * definition. Called before syncing data. Any logged information should be scoped to the configured
-     * catalog and database.
+     * Gets and logs relevant and useful database metadata such as DB product/version, index names
+     * and definition. Called before syncing data. Any logged information should be scoped to the
+     * configured catalog and database.
      *
      * @param database given database instance.
      * @param catalog configured catalog.
      */
     @Throws(Exception::class)
-    protected open fun logPreSyncDebugData(database: Database, catalog: ConfiguredAirbyteCatalog?) {
-    }
+    protected open fun logPreSyncDebugData(
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog?
+    ) {}
 
     /**
      * Configures a list of operations that can be used to check the connection to the source.
@@ -515,7 +648,9 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @return list of consumers that run queries for the check command.
      */
     @Throws(Exception::class)
-    protected abstract fun getCheckOperations(config: JsonNode?): List<CheckedConsumer<Database, Exception>>
+    protected abstract fun getCheckOperations(
+        config: JsonNode?
+    ): List<CheckedConsumer<Database, Exception>>
 
     /**
      * Map source types to Airbyte types
@@ -527,7 +662,8 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
 
     protected abstract val excludedInternalNameSpaces: Set<String>
         /**
-         * Get list of system namespaces(schemas) in order to exclude them from the `discover` result list.
+         * Get list of system namespaces(schemas) in order to exclude them from the `discover`
+         * result list.
          *
          * @return set of system namespaces(schemas) to be excluded
          */
@@ -551,20 +687,25 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
     @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
     protected abstract fun discoverInternal(
-            database: Database): List<TableInfo<CommonField<DataType>>>
+        database: Database
+    ): List<TableInfo<CommonField<DataType>>>
 
     /**
      * Discovers all available tables within a schema in the source database.
      *
-     * @param database - source database
-     * @param schema - source schema
+     * @param database
+     * - source database
+     * @param schema
+     * - source schema
      * @return list of source tables
-     * @throws Exception - access to the database might lead to exceptions.
+     * @throws Exception
+     * - access to the database might lead to exceptions.
      */
     @Throws(Exception::class)
     protected abstract fun discoverInternal(
-            database: Database,
-            schema: String?): List<TableInfo<CommonField<DataType>>>
+        database: Database,
+        schema: String?
+    ): List<TableInfo<CommonField<DataType>>>
 
     /**
      * Discover Primary keys for each table and @return a map of namespace.table name to their
@@ -574,8 +715,10 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @param tableInfos list of tables
      * @return map of namespace.table and primary key fields.
      */
-    protected abstract fun discoverPrimaryKeys(database: Database,
-                                               tableInfos: List<TableInfo<CommonField<DataType>>>): Map<String, MutableList<String>>
+    protected abstract fun discoverPrimaryKeys(
+        database: Database,
+        tableInfos: List<TableInfo<CommonField<DataType>>>
+    ): Map<String, MutableList<String>>
 
     protected abstract val quoteString: String?
         /**
@@ -595,41 +738,43 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @param syncMode The sync mode that this full refresh stream should be associated with.
      * @return iterator with read data
      */
-    protected abstract fun queryTableFullRefresh(database: Database,
-                                                 columnNames: List<String>,
-                                                 schemaName: String?,
-                                                 tableName: String,
-                                                 syncMode: SyncMode,
-                                                 cursorField: Optional<String?>): AutoCloseableIterator<JsonNode?>?
+    protected abstract fun queryTableFullRefresh(
+        database: Database,
+        columnNames: List<String>,
+        schemaName: String?,
+        tableName: String,
+        syncMode: SyncMode,
+        cursorField: Optional<String>
+    ): AutoCloseableIterator<JsonNode>?
 
     /**
      * Read incremental data from a table. Incremental read should return only records where cursor
-     * column value is bigger than cursor. Note that if the connector needs to emit intermediate state
-     * (i.e. [AbstractDbSource.getStateEmissionFrequency] > 0), the incremental query must be
+     * column value is bigger than cursor. Note that if the connector needs to emit intermediate
+     * state (i.e. [AbstractDbSource.getStateEmissionFrequency] > 0), the incremental query must be
      * sorted by the cursor field.
      *
      * @return iterator with read data
      */
-    protected abstract fun queryTableIncremental(database: Database,
-                                                 columnNames: List<String>,
-                                                 schemaName: String?,
-                                                 tableName: String,
-                                                 cursorInfo: CursorInfo,
-                                                 cursorFieldType: DataType): AutoCloseableIterator<JsonNode?>?
+    protected abstract fun queryTableIncremental(
+        database: Database,
+        columnNames: List<String>,
+        schemaName: String?,
+        tableName: String,
+        cursorInfo: CursorInfo,
+        cursorFieldType: DataType
+    ): AutoCloseableIterator<JsonNode>?
 
     protected val stateEmissionFrequency: Int
         /**
-         * When larger than 0, the incremental iterator will emit intermediate state for every N records.
-         * Please note that if intermediate state emission is enabled, the incremental query must be ordered
-         * by the cursor field.
+         * When larger than 0, the incremental iterator will emit intermediate state for every N
+         * records. Please note that if intermediate state emission is enabled, the incremental
+         * query must be ordered by the cursor field.
          *
          * TODO: Return an optional value instead of 0 to make it easier to understand.
          */
         get() = 0
 
-    /**
-     * @return list of fields that could be used as cursors
-     */
+    /** @return list of fields that could be used as cursors */
     protected abstract fun isCursorType(type: DataType): Boolean
 
     /**
@@ -638,7 +783,9 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
      * @param config The connector configuration.
      * @return A [AirbyteStateType] representing the state supported by this connector.
      */
-    protected open fun getSupportedStateType(config: JsonNode?): AirbyteStateMessage.AirbyteStateType {
+    protected open fun getSupportedStateType(
+        config: JsonNode?
+    ): AirbyteStateMessage.AirbyteStateType {
         return AirbyteStateMessage.AirbyteStateType.STREAM
     }
 
@@ -650,20 +797,24 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?> protecte
         private val LOGGER: Logger = LoggerFactory.getLogger(AbstractDbSource::class.java)
 
         private fun getMessageIterator(
-                recordIterator: AutoCloseableIterator<JsonNode?>?,
-                streamName: String,
-                namespace: String,
-                emittedAt: Long): AutoCloseableIterator<AirbyteMessage?> {
-            return AutoCloseableIterators.transform(recordIterator,
-                    AirbyteStreamNameNamespacePair(streamName, namespace)
+            recordIterator: AutoCloseableIterator<JsonNode>?,
+            streamName: String,
+            namespace: String,
+            emittedAt: Long
+        ): AutoCloseableIterator<AirbyteMessage?> {
+            return AutoCloseableIterators.transform(
+                recordIterator,
+                AirbyteStreamNameNamespacePair(streamName, namespace)
             ) { r: JsonNode? ->
                 AirbyteMessage()
-                        .withType(AirbyteMessage.Type.RECORD)
-                        .withRecord(AirbyteRecordMessage()
-                                .withStream(streamName)
-                                .withNamespace(namespace)
-                                .withEmittedAt(emittedAt)
-                                .withData(r))
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage()
+                            .withStream(streamName)
+                            .withNamespace(namespace)
+                            .withEmittedAt(emittedAt)
+                            .withData(r)
+                    )
             }
         }
     }

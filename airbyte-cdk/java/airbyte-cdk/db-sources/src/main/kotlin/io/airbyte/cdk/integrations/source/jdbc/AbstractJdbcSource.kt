@@ -9,10 +9,29 @@ import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Sets
 import datadog.trace.api.Trace
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
 import io.airbyte.cdk.db.SqlDatabase
 import io.airbyte.cdk.db.factory.DataSourceFactory.close
 import io.airbyte.cdk.db.factory.DataSourceFactory.create
+import io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE
+import io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE
+import io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS
+import io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE
+import io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_DATABASE_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_DATA_TYPE
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_DECIMAL_DIGITS
+import io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE
+import io.airbyte.cdk.db.jdbc.JdbcConstants.KEY_SEQ
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.db.jdbc.JdbcUtils.getFullyQualifiedTableName
@@ -37,9 +56,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
-import org.apache.commons.lang3.tuple.ImmutablePair
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -51,16 +67,24 @@ import java.util.function.Predicate
 import java.util.function.Supplier
 import java.util.stream.Collectors
 import javax.sql.DataSource
+import org.apache.commons.lang3.tuple.ImmutablePair
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
-abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
-                                            protected val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
-                                            sourceOperations: JdbcCompatibleSourceOperations<Datatype>) : AbstractDbSource<Datatype, JdbcDatabase>(driverClass), Source {
-    protected val sourceOperations: JdbcCompatibleSourceOperations<Datatype?>
+// This is onoly here because spotbugs complains about aggregatePrimateKeys and I wasn't able to
+// figure out what it's complaining about
+@SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+abstract class AbstractJdbcSource<Datatype>(
+    driverClass: String,
+    protected val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
+    sourceOperations: JdbcCompatibleSourceOperations<Datatype>
+) : AbstractDbSource<Datatype, JdbcDatabase>(driverClass), Source {
+    protected val sourceOperations: JdbcCompatibleSourceOperations<Datatype>
 
     override var quoteString: String? = null
     protected var dataSources: MutableCollection<DataSource> = ArrayList()
@@ -69,28 +93,56 @@ abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
         this.sourceOperations = sourceOperations
     }
 
-    override fun queryTableFullRefresh(database: JdbcDatabase,
-                                       columnNames: List<String>,
-                                       schemaName: String?,
-                                       tableName: String,
-                                       syncMode: SyncMode,
-                                       cursorField: Optional<String?>): AutoCloseableIterator<JsonNode?>? {
+    override fun queryTableFullRefresh(
+        database: JdbcDatabase,
+        columnNames: List<String>,
+        schemaName: String?,
+        tableName: String,
+        syncMode: SyncMode,
+        cursorField: Optional<String>
+    ): AutoCloseableIterator<JsonNode>? {
         LOGGER.info("Queueing query for table: {}", tableName)
-        // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records
+        val quoteString = this.quoteString!!
+        // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the
+        // records
         // matters
         // as intermediate state messages are emitted (if the connector emits intermediate state).
         if (syncMode == SyncMode.INCREMENTAL && stateEmissionFrequency > 0) {
-            val quotedCursorField = RelationalDbQueryUtils.enquoteIdentifier(cursorField.get(), quoteString)
-            return RelationalDbQueryUtils.queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
+            val quotedCursorField =
+                RelationalDbQueryUtils.enquoteIdentifier(cursorField.get(), quoteString)
+            return RelationalDbQueryUtils.queryTable(
+                database,
+                String.format(
+                    "SELECT %s FROM %s ORDER BY %s ASC",
                     RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString),
-                    RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(schemaName, tableName, quoteString), quotedCursorField),
-                    tableName, schemaName)
+                    RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(
+                        schemaName,
+                        tableName,
+                        quoteString
+                    ),
+                    quotedCursorField
+                ),
+                tableName,
+                schemaName
+            )
         } else {
-            // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+            // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care
+            // about ordering
             // of the records.
-            return RelationalDbQueryUtils.queryTable(database, String.format("SELECT %s FROM %s",
+            return RelationalDbQueryUtils.queryTable(
+                database,
+                String.format(
+                    "SELECT %s FROM %s",
                     RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString),
-                    RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(schemaName, tableName, quoteString)), tableName, schemaName)
+                    RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(
+                        schemaName,
+                        tableName,
+                        quoteString
+                    )
+                ),
+                tableName,
+                schemaName
+            )
         }
     }
 
@@ -101,73 +153,127 @@ abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
      */
     @Trace(operationName = AbstractDbSource.Companion.CHECK_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
-    override fun getCheckOperations(config: JsonNode?): List<CheckedConsumer<JdbcDatabase, Exception>> {
-        return ImmutableList.of(CheckedConsumer { database: JdbcDatabase ->
-            LOGGER.info("Attempting to get metadata from the database to see if we can connect.")
-            database.bufferedResultSetQuery(CheckedFunction { connection: Connection -> connection.metaData.catalogs }, CheckedFunction { queryResult: ResultSet? -> sourceOperations.rowToJson(queryResult!!) })
-        })
+    override fun getCheckOperations(
+        config: JsonNode?
+    ): List<CheckedConsumer<JdbcDatabase, Exception>> {
+        return ImmutableList.of(
+            CheckedConsumer { database: JdbcDatabase ->
+                LOGGER.info(
+                    "Attempting to get metadata from the database to see if we can connect."
+                )
+                database.bufferedResultSetQuery(
+                    CheckedFunction { connection: Connection -> connection.metaData.catalogs },
+                    CheckedFunction { queryResult: ResultSet? ->
+                        sourceOperations.rowToJson(queryResult!!)
+                    }
+                )
+            }
+        )
     }
 
     private fun getCatalog(database: SqlDatabase): String? {
-        return (if (database.sourceConfig!!.has(JdbcUtils.DATABASE_KEY)) database.sourceConfig!![JdbcUtils.DATABASE_KEY].asText() else null)
+        return (if (database.sourceConfig!!.has(JdbcUtils.DATABASE_KEY))
+            database.sourceConfig!![JdbcUtils.DATABASE_KEY].asText()
+        else null)
     }
 
     @Throws(Exception::class)
-    override fun discoverInternal(database: JdbcDatabase, schema: String?): List<TableInfo<CommonField<Datatype>>> {
+    override fun discoverInternal(
+        database: JdbcDatabase,
+        schema: String?
+    ): List<TableInfo<CommonField<Datatype>>> {
         val internalSchemas: Set<String?> = HashSet(excludedInternalNameSpaces)
         LOGGER.info("Internal schemas to exclude: {}", internalSchemas)
-        val tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser<JdbcPrivilegeDto>(database, schema)
-        return database.bufferedResultSetQuery<JsonNode>( // retrieve column metadata from the database
-                { connection: Connection -> connection.metaData.getColumns(getCatalog(database), schema, null, null) },  // store essential column metadata to a Json object from the result set about each column
-                { resultSet: ResultSet -> this.getColumnMetadata(resultSet) })
-                .stream()
-                .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege)) // group by schema and table name to handle the case where a table with the same name exists in
-                // multiple schemas.
-                .collect(Collectors.groupingBy<JsonNode, ImmutablePair<String, String>>(Function<JsonNode, ImmutablePair<String, String>> { t: JsonNode -> ImmutablePair.of<String, String>(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText()) }))
-                .values
-                .stream()
-                .map<TableInfo<CommonField<Datatype>>> { fields: List<JsonNode> ->
-                    TableInfo.builder<CommonField<Datatype>>()
-                            .nameSpace(fields[0].get(INTERNAL_SCHEMA_NAME).asText())
-                            .name(fields[0].get(INTERNAL_TABLE_NAME).asText())
-                            .fields(fields.stream() // read the column metadata Json object, and determine its type
-                                    .map { f: JsonNode ->
-                                        val datatype = sourceOperations.getDatabaseFieldType(f)
-                                        val jsonType = getAirbyteType(datatype)
-                                        LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
-                                                fields[0].get(INTERNAL_TABLE_NAME).asText(),
-                                                f.get(INTERNAL_COLUMN_NAME).asText(),
-                                                f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
-                                                f.get(INTERNAL_COLUMN_SIZE).asInt(),
-                                                f.get(INTERNAL_IS_NULLABLE).asBoolean(),
-                                                jsonType)
-                                        object : CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {}
-                                    }
-                                    .collect(Collectors.toList<CommonField<Datatype>>()))
-                            .cursorFields(extractCursorFields(fields))
-                            .build()
-                }
-                .collect(Collectors.toList<TableInfo<CommonField<Datatype>>>())
+        val tablesWithSelectGrantPrivilege =
+            getPrivilegesTableForCurrentUser<JdbcPrivilegeDto>(database, schema)
+        return database
+            .bufferedResultSetQuery<JsonNode>( // retrieve column metadata from the database
+                { connection: Connection ->
+                    connection.metaData.getColumns(getCatalog(database), schema, null, null)
+                }, // store essential column metadata to a Json object from the result set about
+                // each column
+                { resultSet: ResultSet -> this.getColumnMetadata(resultSet) }
+            )
+            .stream()
+            .filter(
+                excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege)
+            ) // group by schema and table name to handle the case where a table with the same name
+            // exists in
+            // multiple schemas.
+            .collect(
+                Collectors.groupingBy<JsonNode, ImmutablePair<String, String>>(
+                    Function<JsonNode, ImmutablePair<String, String>> { t: JsonNode ->
+                        ImmutablePair.of<String, String>(
+                            t.get(INTERNAL_SCHEMA_NAME).asText(),
+                            t.get(INTERNAL_TABLE_NAME).asText()
+                        )
+                    }
+                )
+            )
+            .values
+            .stream()
+            .map<TableInfo<CommonField<Datatype>>> { fields: List<JsonNode> ->
+                TableInfo<CommonField<Datatype>>(
+                    nameSpace = fields[0].get(INTERNAL_SCHEMA_NAME).asText(),
+                    name = fields[0].get(INTERNAL_TABLE_NAME).asText(),
+                    fields =
+                        fields
+                            .stream() // read the column metadata Json object, and determine its
+                            // type
+                            .map { f: JsonNode ->
+                                val datatype = sourceOperations.getDatabaseFieldType(f)
+                                val jsonType = getAirbyteType(datatype)
+                                LOGGER.debug(
+                                    "Table {} column {} (type {}[{}], nullable {}) -> {}",
+                                    fields[0].get(INTERNAL_TABLE_NAME).asText(),
+                                    f.get(INTERNAL_COLUMN_NAME).asText(),
+                                    f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
+                                    f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                                    f.get(INTERNAL_IS_NULLABLE).asBoolean(),
+                                    jsonType
+                                )
+                                object :
+                                    CommonField<Datatype>(
+                                        f.get(INTERNAL_COLUMN_NAME).asText(),
+                                        datatype
+                                    ) {}
+                            }
+                            .collect(Collectors.toList<CommonField<Datatype>>()),
+                    cursorFields = extractCursorFields(fields)
+                )
+            }
+            .collect(Collectors.toList<TableInfo<CommonField<Datatype>>>())
     }
 
     private fun extractCursorFields(fields: List<JsonNode>): List<String> {
-        return fields.stream()
-                .filter { field: JsonNode? -> isCursorType(sourceOperations.getDatabaseFieldType(field!!)) }
-                .map<String>(Function<JsonNode, String> { field: JsonNode -> field.get(INTERNAL_COLUMN_NAME).asText() })
-                .collect(Collectors.toList<String>())
+        return fields
+            .stream()
+            .filter { field: JsonNode ->
+                isCursorType(sourceOperations.getDatabaseFieldType(field))
+            }
+            .map<String>(
+                Function<JsonNode, String> { field: JsonNode ->
+                    field.get(INTERNAL_COLUMN_NAME).asText()
+                }
+            )
+            .collect(Collectors.toList<String>())
     }
 
-    protected fun excludeNotAccessibleTables(internalSchemas: Set<String?>,
-                                             tablesWithSelectGrantPrivilege: Set<JdbcPrivilegeDto?>?): Predicate<JsonNode> {
+    protected fun excludeNotAccessibleTables(
+        internalSchemas: Set<String?>,
+        tablesWithSelectGrantPrivilege: Set<JdbcPrivilegeDto>?
+    ): Predicate<JsonNode> {
         return Predicate<JsonNode> { jsonNode: JsonNode ->
             if (tablesWithSelectGrantPrivilege!!.isEmpty()) {
                 return@Predicate isNotInternalSchema(jsonNode, internalSchemas)
             }
-            (tablesWithSelectGrantPrivilege.stream()
-                    .anyMatch { e: JdbcPrivilegeDto? -> e.getSchemaName() == jsonNode.get(INTERNAL_SCHEMA_NAME).asText() }
-                    && tablesWithSelectGrantPrivilege.stream()
-                    .anyMatch { e: JdbcPrivilegeDto? -> e.getTableName() == jsonNode.get(INTERNAL_TABLE_NAME).asText() }
-                    && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
+            (tablesWithSelectGrantPrivilege.stream().anyMatch { e: JdbcPrivilegeDto ->
+                e.schemaName == jsonNode.get(INTERNAL_SCHEMA_NAME).asText()
+            } &&
+                tablesWithSelectGrantPrivilege.stream().anyMatch { e: JdbcPrivilegeDto ->
+                    e.tableName == jsonNode.get(INTERNAL_TABLE_NAME).asText()
+                } &&
+                !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
         }
     }
 
@@ -179,14 +285,21 @@ abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
 
     /**
      * @param resultSet Description of a column available in the table catalog.
-     * @return Essential information about a column to determine which table it belongs to and its type.
+     * @return Essential information about a column to determine which table it belongs to and its
+     * type.
      */
     @Throws(SQLException::class)
     private fun getColumnMetadata(resultSet: ResultSet): JsonNode {
-        val fieldMap = ImmutableMap.builder<String, Any>() // we always want a namespace, if we cannot get a schema, use db name.
-                .put(INTERNAL_SCHEMA_NAME,
-                        if (resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null) resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
-                        else resultSet.getObject(JDBC_COLUMN_DATABASE_NAME))
+        val fieldMap =
+            ImmutableMap.builder<
+                    String, Any
+                >() // we always want a namespace, if we cannot get a schema, use db name.
+                .put(
+                    INTERNAL_SCHEMA_NAME,
+                    if (resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null)
+                        resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
+                    else resultSet.getObject(JDBC_COLUMN_DATABASE_NAME)
+                )
                 .put(INTERNAL_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
                 .put(INTERNAL_COLUMN_NAME, resultSet.getString(JDBC_COLUMN_COLUMN_NAME))
                 .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
@@ -200,7 +313,9 @@ abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
     }
 
     @Throws(Exception::class)
-    public override fun discoverInternal(database: JdbcDatabase): List<TableInfo<CommonField<Datatype>>> {
+    public override fun discoverInternal(
+        database: JdbcDatabase
+    ): List<TableInfo<CommonField<Datatype>>> {
         return discoverInternal(database, null)
     }
 
@@ -210,144 +325,269 @@ abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
 
     @VisibleForTesting
     @JvmRecord
-    data class PrimaryKeyAttributesFromDb(val streamName: String,
-                                          val primaryKey: String,
-                                          val keySequence: Int)
+    data class PrimaryKeyAttributesFromDb(
+        val streamName: String,
+        val primaryKey: String,
+        val keySequence: Int
+    )
 
-    override fun discoverPrimaryKeys(database: JdbcDatabase,
-                                     tableInfos: List<TableInfo<CommonField<Datatype>>>): Map<String, MutableList<String>> {
-        LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map { obj: TableInfo<CommonField<Datatype>> -> obj.name }.collect(
-                Collectors.toSet()))
+    override fun discoverPrimaryKeys(
+        database: JdbcDatabase,
+        tableInfos: List<TableInfo<CommonField<Datatype>>>
+    ): Map<String, MutableList<String>> {
+        LOGGER.info(
+            "Discover primary keys for tables: " +
+                tableInfos
+                    .stream()
+                    .map { obj: TableInfo<CommonField<Datatype>> -> obj.name }
+                    .collect(Collectors.toSet())
+        )
         try {
             // Get all primary keys without specifying a table name
-            val tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery<PrimaryKeyAttributesFromDb>(
-                    { connection: Connection -> connection.metaData.getPrimaryKeys(getCatalog(database), null, null) },
-                    { r: ResultSet ->
-                        val schemaName: String =
-                                if (r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null) r.getString(JDBC_COLUMN_SCHEMA_NAME) else r.getString(JDBC_COLUMN_DATABASE_NAME)
-                        val streamName = getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME))
-                        val primaryKey: String = r.getString(JDBC_COLUMN_COLUMN_NAME)
-                        val keySeq: Int = r.getInt(KEY_SEQ)
-                        PrimaryKeyAttributesFromDb(streamName, primaryKey, keySeq)
-                    }))
+            val tablePrimaryKeys =
+                aggregatePrimateKeys(
+                    database.bufferedResultSetQuery<PrimaryKeyAttributesFromDb>(
+                        { connection: Connection ->
+                            connection.metaData.getPrimaryKeys(getCatalog(database), null, null)
+                        },
+                        { r: ResultSet ->
+                            val schemaName: String =
+                                if (r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null)
+                                    r.getString(JDBC_COLUMN_SCHEMA_NAME)
+                                else r.getString(JDBC_COLUMN_DATABASE_NAME)
+                            val streamName =
+                                getFullyQualifiedTableName(
+                                    schemaName,
+                                    r.getString(JDBC_COLUMN_TABLE_NAME)
+                                )
+                            val primaryKey: String = r.getString(JDBC_COLUMN_COLUMN_NAME)
+                            val keySeq: Int = r.getInt(KEY_SEQ)
+                            PrimaryKeyAttributesFromDb(streamName, primaryKey, keySeq)
+                        }
+                    )
+                )
             if (!tablePrimaryKeys.isEmpty()) {
                 return tablePrimaryKeys
             }
         } catch (e: SQLException) {
-            LOGGER.debug(String.format("Could not retrieve primary keys without a table name (%s), retrying", e))
+            LOGGER.debug(
+                String.format(
+                    "Could not retrieve primary keys without a table name (%s), retrying",
+                    e
+                )
+            )
         }
         // Get primary keys one table at a time
-        return tableInfos.stream()
-                .collect(Collectors.toMap<TableInfo<CommonField<Datatype>>, String, MutableList<String>>(
-                        Function<TableInfo<CommonField<Datatype>>, String> { tableInfo: TableInfo<CommonField<Datatype>> -> getFullyQualifiedTableName(tableInfo.nameSpace, tableInfo.name) },
-                        Function<TableInfo<CommonField<Datatype>>, MutableList<String>> { tableInfo: TableInfo<CommonField<Datatype>> ->
-                            val streamName = getFullyQualifiedTableName(tableInfo.nameSpace, tableInfo.name)
-                            try {
-                                val primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery<PrimaryKeyAttributesFromDb>(
-                                        { connection: Connection -> connection.metaData.getPrimaryKeys(getCatalog(database), tableInfo.nameSpace, tableInfo.name) },
-                                        { r: ResultSet -> PrimaryKeyAttributesFromDb(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME), r.getInt(KEY_SEQ)) }))
-                                return@toMap primaryKeys.getOrDefault(streamName, emptyList<String>())
-                            } catch (e: SQLException) {
-                                LOGGER.error(String.format("Could not retrieve primary keys for %s: %s", streamName, e))
-                                return@toMap emptyList<String>()
-                            }
-                        }))
+        return tableInfos
+            .stream()
+            .collect(
+                Collectors.toMap<TableInfo<CommonField<Datatype>>, String, MutableList<String>>(
+                    Function<TableInfo<CommonField<Datatype>>, String> {
+                        tableInfo: TableInfo<CommonField<Datatype>> ->
+                        getFullyQualifiedTableName(tableInfo.nameSpace, tableInfo.name)
+                    },
+                    Function<TableInfo<CommonField<Datatype>>, MutableList<String>> toMap@{
+                        tableInfo: TableInfo<CommonField<Datatype>> ->
+                        val streamName =
+                            getFullyQualifiedTableName(tableInfo.nameSpace, tableInfo.name)
+                        try {
+                            val primaryKeys =
+                                aggregatePrimateKeys(
+                                    database.bufferedResultSetQuery<PrimaryKeyAttributesFromDb>(
+                                        { connection: Connection ->
+                                            connection.metaData.getPrimaryKeys(
+                                                getCatalog(database),
+                                                tableInfo.nameSpace,
+                                                tableInfo.name
+                                            )
+                                        },
+                                        { r: ResultSet ->
+                                            PrimaryKeyAttributesFromDb(
+                                                streamName,
+                                                r.getString(JDBC_COLUMN_COLUMN_NAME),
+                                                r.getInt(KEY_SEQ)
+                                            )
+                                        }
+                                    )
+                                )
+                            return@toMap primaryKeys.getOrDefault(
+                                streamName,
+                                mutableListOf<String>()
+                            )
+                        } catch (e: SQLException) {
+                            LOGGER.error(
+                                String.format(
+                                    "Could not retrieve primary keys for %s: %s",
+                                    streamName,
+                                    e
+                                )
+                            )
+                            return@toMap mutableListOf<String>()
+                        }
+                    }
+                )
+            )
     }
 
     public override fun isCursorType(type: Datatype): Boolean {
         return sourceOperations.isCursorType(type)
     }
 
-    public override fun queryTableIncremental(database: JdbcDatabase,
-                                              columnNames: List<String>,
-                                              schemaName: String?,
-                                              tableName: String,
-                                              cursorInfo: CursorInfo,
-                                              cursorFieldType: Datatype): AutoCloseableIterator<JsonNode?>? {
+    public override fun queryTableIncremental(
+        database: JdbcDatabase,
+        columnNames: List<String>,
+        schemaName: String?,
+        tableName: String,
+        cursorInfo: CursorInfo,
+        cursorFieldType: Datatype
+    ): AutoCloseableIterator<JsonNode>? {
         LOGGER.info("Queueing query for table: {}", tableName)
-        val airbyteStream =
-                AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
-        return AutoCloseableIterators.lazyIterator({
-            try {
-                val stream = database.unsafeQuery(
-                        CheckedFunction<Connection, PreparedStatement, SQLException> { connection: Connection ->
-                            LOGGER.info("Preparing query for table: {}", tableName)
-                            val fullTableName = RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(schemaName, tableName, quoteString)
-                            val quotedCursorField = RelationalDbQueryUtils.enquoteIdentifier(cursorInfo.cursorField, quoteString)
+        val airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
+        return AutoCloseableIterators.lazyIterator(
+            {
+                val quoteString = this.quoteString!!
+                try {
+                    val stream =
+                        database.unsafeQuery(
+                            CheckedFunction<Connection, PreparedStatement, SQLException?> {
+                                connection: Connection ->
+                                LOGGER.info("Preparing query for table: {}", tableName)
+                                val fullTableName =
+                                    RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(
+                                        schemaName,
+                                        tableName,
+                                        quoteString
+                                    )
+                                val quotedCursorField =
+                                    RelationalDbQueryUtils.enquoteIdentifier(
+                                        cursorInfo.cursorField,
+                                        quoteString
+                                    )
 
-                            val operator: String
-                            if (cursorInfo.cursorRecordCount <= 0L) {
-                                operator = ">"
-                            } else {
-                                val actualRecordCount = getActualCursorRecordCount(
-                                        connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.cursor)
-                                LOGGER.info("Table {} cursor count: expected {}, actual {}", tableName, cursorInfo.cursorRecordCount, actualRecordCount)
-                                operator = if (actualRecordCount == cursorInfo.cursorRecordCount) {
-                                    ">"
+                                val operator: String
+                                if (cursorInfo.cursorRecordCount <= 0L) {
+                                    operator = ">"
                                 } else {
-                                    ">="
+                                    val actualRecordCount =
+                                        getActualCursorRecordCount(
+                                            connection,
+                                            fullTableName,
+                                            quotedCursorField,
+                                            cursorFieldType,
+                                            cursorInfo.cursor
+                                        )
+                                    LOGGER.info(
+                                        "Table {} cursor count: expected {}, actual {}",
+                                        tableName,
+                                        cursorInfo.cursorRecordCount,
+                                        actualRecordCount
+                                    )
+                                    operator =
+                                        if (actualRecordCount == cursorInfo.cursorRecordCount) {
+                                            ">"
+                                        } else {
+                                            ">="
+                                        }
                                 }
-                            }
 
-                            val wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName)
-                            val sql = StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
-                                    wrappedColumnNames,
-                                    fullTableName,
-                                    quotedCursorField,
-                                    operator))
-                            // if the connector emits intermediate states, the incremental query must be sorted by the cursor
-                            // field
-                            if (stateEmissionFrequency > 0) {
-                                sql.append(String.format(" ORDER BY %s ASC", quotedCursorField))
-                            }
+                                val wrappedColumnNames =
+                                    getWrappedColumnNames(
+                                        database,
+                                        connection,
+                                        columnNames,
+                                        schemaName,
+                                        tableName
+                                    )
+                                val sql =
+                                    StringBuilder(
+                                        String.format(
+                                            "SELECT %s FROM %s WHERE %s %s ?",
+                                            wrappedColumnNames,
+                                            fullTableName,
+                                            quotedCursorField,
+                                            operator
+                                        )
+                                    )
+                                // if the connector emits intermediate states, the incremental query
+                                // must be sorted by the cursor
+                                // field
+                                if (stateEmissionFrequency > 0) {
+                                    sql.append(String.format(" ORDER BY %s ASC", quotedCursorField))
+                                }
 
-                            val preparedStatement = connection.prepareStatement(sql.toString())
-                            LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement)
-                            sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.cursor)
-                            preparedStatement
-                        },
-                        CheckedFunction<ResultSet, JsonNode, SQLException> { queryResult: ResultSet? -> sourceOperations.rowToJson(queryResult!!) })
-                return@lazyIterator AutoCloseableIterators.fromStream<JsonNode>(stream, airbyteStream)
-            } catch (e: SQLException) {
-                throw RuntimeException(e)
-            }
-        }, airbyteStream)
+                                val preparedStatement = connection.prepareStatement(sql.toString())
+                                LOGGER.info(
+                                    "Executing query for table {}: {}",
+                                    tableName,
+                                    preparedStatement
+                                )
+                                sourceOperations.setCursorField(
+                                    preparedStatement,
+                                    1,
+                                    cursorFieldType,
+                                    cursorInfo.cursor
+                                )
+                                preparedStatement
+                            },
+                            CheckedFunction<ResultSet, JsonNode, SQLException?> {
+                                queryResult: ResultSet? ->
+                                sourceOperations.rowToJson(queryResult!!)
+                            }
+                        )
+                    return@lazyIterator AutoCloseableIterators.fromStream<JsonNode>(
+                        stream,
+                        airbyteStream
+                    )
+                } catch (e: SQLException) {
+                    throw RuntimeException(e)
+                }
+            },
+            airbyteStream
+        )
     }
 
-    /**
-     * Some databases need special column names in the query.
-     */
+    /** Some databases need special column names in the query. */
     @Throws(SQLException::class)
-    protected fun getWrappedColumnNames(database: JdbcDatabase?,
-                                        connection: Connection?,
-                                        columnNames: List<String>,
-                                        schemaName: String?,
-                                        tableName: String?): String? {
-        return RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString)
+    protected fun getWrappedColumnNames(
+        database: JdbcDatabase?,
+        connection: Connection?,
+        columnNames: List<String>,
+        schemaName: String?,
+        tableName: String?
+    ): String? {
+        return RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString!!)
     }
 
     protected val countColumnName: String
         get() = "record_count"
 
     @Throws(SQLException::class)
-    protected fun getActualCursorRecordCount(connection: Connection,
-                                             fullTableName: String?,
-                                             quotedCursorField: String?,
-                                             cursorFieldType: Datatype,
-                                             cursor: String?): Long {
+    protected fun getActualCursorRecordCount(
+        connection: Connection,
+        fullTableName: String?,
+        quotedCursorField: String?,
+        cursorFieldType: Datatype,
+        cursor: String?
+    ): Long {
         val columnName = countColumnName
         val cursorRecordStatement: PreparedStatement
         if (cursor == null) {
-            val cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
+            val cursorRecordQuery =
+                String.format(
+                    "SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
                     columnName,
                     fullTableName,
-                    quotedCursorField)
+                    quotedCursorField
+                )
             cursorRecordStatement = connection.prepareStatement(cursorRecordQuery)
         } else {
-            val cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s = ?",
+            val cursorRecordQuery =
+                String.format(
+                    "SELECT COUNT(*) AS %s FROM %s WHERE %s = ?",
                     columnName,
                     fullTableName,
-                    quotedCursorField)
+                    quotedCursorField
+                )
             cursorRecordStatement = connection.prepareStatement(cursorRecordQuery)
 
             sourceOperations.setCursorField(cursorRecordStatement, 1, cursorFieldType, cursor)
@@ -361,31 +601,37 @@ abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
     }
 
     @Throws(SQLException::class)
-    public override fun createDatabase(sourceConfig: JsonNode?): JdbcDatabase {
+    public override fun createDatabase(sourceConfig: JsonNode): JdbcDatabase {
         return createDatabase(sourceConfig, JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER)
     }
 
     @Throws(SQLException::class)
-    fun createDatabase(sourceConfig: JsonNode?, delimiter: String?): JdbcDatabase {
-        val jdbcConfig = toDatabaseConfig(sourceConfig!!)
-        val connectionProperties = JdbcDataSourceUtils.getConnectionProperties(sourceConfig, delimiter)
+    fun createDatabase(sourceConfig: JsonNode, delimiter: String): JdbcDatabase {
+        val jdbcConfig = toDatabaseConfig(sourceConfig)
+        val connectionProperties =
+            JdbcDataSourceUtils.getConnectionProperties(sourceConfig, delimiter)
         // Create the data source
-        val dataSource = create(
-                if (jdbcConfig!!.has(JdbcUtils.USERNAME_KEY)) jdbcConfig[JdbcUtils.USERNAME_KEY].asText() else null,
-                if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY)) jdbcConfig[JdbcUtils.PASSWORD_KEY].asText() else null,
+        val dataSource =
+            create(
+                if (jdbcConfig!!.has(JdbcUtils.USERNAME_KEY))
+                    jdbcConfig[JdbcUtils.USERNAME_KEY].asText()
+                else null,
+                if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
+                    jdbcConfig[JdbcUtils.PASSWORD_KEY].asText()
+                else null,
                 driverClassName,
                 jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 connectionProperties,
-                getConnectionTimeout(connectionProperties!!))
+                getConnectionTimeout(connectionProperties!!)
+            )
         // Record the data source so that it can be closed.
         dataSources.add(dataSource)
 
-        val database: JdbcDatabase = StreamingJdbcDatabase(
-                dataSource,
-                sourceOperations,
-                streamingQueryConfigProvider)
+        val database: JdbcDatabase =
+            StreamingJdbcDatabase(dataSource, sourceOperations, streamingQueryConfigProvider)
 
-        quoteString = (if (quoteString == null) database.metaData.identifierQuoteString else quoteString)
+        quoteString =
+            (if (quoteString == null) database.metaData.identifierQuoteString else quoteString)
         database.sourceConfig = sourceConfig
         database.databaseConfig = jdbcConfig
         return database
@@ -400,38 +646,53 @@ abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
      */
     @Throws(SQLException::class)
     override fun logPreSyncDebugData(database: JdbcDatabase, catalog: ConfiguredAirbyteCatalog?) {
-        LOGGER.info("Data source product recognized as {}:{}",
-                database.metaData.databaseProductName,
-                database.metaData.databaseProductVersion)
+        LOGGER.info(
+            "Data source product recognized as {}:{}",
+            database.metaData.databaseProductName,
+            database.metaData.databaseProductVersion
+        )
     }
 
     override fun close() {
-        dataSources.forEach(Consumer { d: DataSource? ->
-            try {
-                close(d)
-            } catch (e: Exception) {
-                LOGGER.warn("Unable to close data source.", e)
+        dataSources.forEach(
+            Consumer { d: DataSource? ->
+                try {
+                    close(d)
+                } catch (e: Exception) {
+                    LOGGER.warn("Unable to close data source.", e)
+                }
             }
-        })
+        )
         dataSources.clear()
     }
 
-    protected fun identifyStreamsToSnapshot(catalog: ConfiguredAirbyteCatalog, stateManager: StateManager): List<ConfiguredAirbyteStream> {
+    protected fun identifyStreamsToSnapshot(
+        catalog: ConfiguredAirbyteCatalog,
+        stateManager: StateManager
+    ): List<ConfiguredAirbyteStream> {
         val alreadySyncedStreams = stateManager.cdcStateManager.initialStreamsSynced
-        if (alreadySyncedStreams!!.isEmpty() && (stateManager.cdcStateManager.cdcState == null
-                        || stateManager.cdcStateManager.cdcState.state == null)) {
+        if (
+            alreadySyncedStreams!!.isEmpty() &&
+                (stateManager.cdcStateManager.cdcState?.state == null)
+        ) {
             return emptyList()
         }
 
         val allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog)
 
-        val newlyAddedStreams: Set<AirbyteStreamNameNamespacePair> = HashSet(Sets.difference(allStreams, alreadySyncedStreams))
+        val newlyAddedStreams: Set<AirbyteStreamNameNamespacePair> =
+            HashSet(Sets.difference(allStreams, alreadySyncedStreams))
 
-        return catalog.streams.stream()
-                .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
-                .filter { stream: ConfiguredAirbyteStream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)) }
-                .map { `object`: ConfiguredAirbyteStream? -> Jsons.clone(`object`) }
-                .collect(Collectors.toList())
+        return catalog.streams
+            .stream()
+            .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
+            .filter { stream: ConfiguredAirbyteStream ->
+                newlyAddedStreams.contains(
+                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
+                )
+            }
+            .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
+            .collect(Collectors.toList())
     }
 
     companion object {
@@ -443,14 +704,19 @@ abstract class AbstractJdbcSource<Datatype>(driverClass: String?,
          * @return a map by StreamName to associated list of primary keys
          */
         @VisibleForTesting
-        fun aggregatePrimateKeys(entries: List<PrimaryKeyAttributesFromDb>): Map<String, MutableList<String>> {
+        fun aggregatePrimateKeys(
+            entries: List<PrimaryKeyAttributesFromDb>
+        ): Map<String, MutableList<String>> {
             val result: MutableMap<String, MutableList<String>> = HashMap()
-            entries.stream().sorted(Comparator.comparingInt(PrimaryKeyAttributesFromDb::keySequence)).forEach { entry: PrimaryKeyAttributesFromDb ->
-                if (!result.containsKey(entry.streamName)) {
-                    result[entry.streamName] = ArrayList()
+            entries
+                .stream()
+                .sorted(Comparator.comparingInt(PrimaryKeyAttributesFromDb::keySequence))
+                .forEach { entry: PrimaryKeyAttributesFromDb ->
+                    if (!result.containsKey(entry.streamName)) {
+                        result[entry.streamName] = ArrayList()
+                    }
+                    result[entry.streamName]!!.add(entry.primaryKey)
                 }
-                result[entry.streamName]!!.add(entry.primaryKey)
-            }
             return result
         }
     }

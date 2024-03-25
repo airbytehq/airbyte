@@ -11,20 +11,25 @@ import io.airbyte.commons.util.MoreIterators
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap
 import java.sql.SQLException
 import java.time.Duration
 import java.util.*
 import java.util.List
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap
 
 internal class CursorStateMessageProducerTest {
     private fun createExceptionIterator(): Iterator<AirbyteMessage> {
-        return object : MutableIterator<AirbyteMessage?> {
-            val internalMessageIterator: Iterator<AirbyteMessage> = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2,
-                    RECORD_MESSAGE_2, RECORD_MESSAGE_3)
+        return object : Iterator<AirbyteMessage> {
+            val internalMessageIterator: Iterator<AirbyteMessage> =
+                MoreIterators.of(
+                    RECORD_MESSAGE_1,
+                    RECORD_MESSAGE_2,
+                    RECORD_MESSAGE_2,
+                    RECORD_MESSAGE_3
+                )
 
             override fun hasNext(): Boolean {
                 return true
@@ -34,10 +39,16 @@ internal class CursorStateMessageProducerTest {
                 if (internalMessageIterator.hasNext()) {
                     return internalMessageIterator.next()
                 } else {
-                    // this line throws a RunTimeException wrapped around a SQLException to mimic the flow of when a
+                    // this line throws a RunTimeException wrapped around a SQLException to mimic
+                    // the flow of when a
                     // SQLException is thrown and wrapped in
                     // StreamingJdbcDatabase#tryAdvance
-                    throw RuntimeException(SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"))
+                    throw RuntimeException(
+                        SQLException(
+                            "Connection marked broken because of SQLSTATE(080006)",
+                            "08006"
+                        )
+                    )
                 }
             }
         }
@@ -48,23 +59,31 @@ internal class CursorStateMessageProducerTest {
     @BeforeEach
     fun setup() {
         val airbyteStream = AirbyteStream().withNamespace(NAMESPACE).withName(STREAM_NAME)
-        val configuredAirbyteStream = ConfiguredAirbyteStream()
+        val configuredAirbyteStream =
+            ConfiguredAirbyteStream()
                 .withStream(airbyteStream)
                 .withCursorField(listOf(UUID_FIELD_NAME))
 
-        stateManager = StreamStateManager(emptyList(),
-                ConfiguredAirbyteCatalog().withStreams(listOf(configuredAirbyteStream)))
+        stateManager =
+            StreamStateManager(
+                emptyList(),
+                ConfiguredAirbyteCatalog().withStreams(listOf(configuredAirbyteStream))
+            )
     }
 
     @Test
     fun testWithoutInitialCursor() {
         messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2)
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.empty())
+        val producer = CursorStateMessageProducer(stateManager, Optional.empty())
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageIterator, STREAM, producer, StateEmitFrequency(0, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(0, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -74,16 +93,21 @@ internal class CursorStateMessageProducerTest {
 
     @Test
     fun testWithInitialCursor() {
-        // record 1 and 2 has smaller cursor value, so at the end, the initial cursor is emitted with 0
+        // record 1 and 2 has smaller cursor value, so at the end, the initial cursor is emitted
+        // with 0
         // record count
 
         messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2)
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.of(RECORD_VALUE_5))
+        val producer = CursorStateMessageProducer(stateManager, Optional.of(RECORD_VALUE_5))
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageIterator, STREAM, producer, StateEmitFrequency(0, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(0, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -97,11 +121,15 @@ internal class CursorStateMessageProducerTest {
         (recordMessage.record.data as ObjectNode).remove(UUID_FIELD_NAME)
         val messageStream = MoreIterators.of(recordMessage)
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.empty())
+        val producer = CursorStateMessageProducer(stateManager, Optional.empty())
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageStream, STREAM, producer, StateEmitFrequency(0, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageStream,
+                STREAM,
+                producer,
+                StateEmitFrequency(0, Duration.ZERO)
+            )
 
         Assertions.assertEquals(recordMessage, iterator.next())
         // null because no records with a cursor field were replicated for the stream.
@@ -113,22 +141,29 @@ internal class CursorStateMessageProducerTest {
     fun testIteratorCatchesExceptionWhenEmissionFrequencyNonZero() {
         val exceptionIterator = createExceptionIterator()
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.of(RECORD_VALUE_1))
+        val producer = CursorStateMessageProducer(stateManager, Optional.of(RECORD_VALUE_1))
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(exceptionIterator, STREAM, producer, StateEmitFrequency(1, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                exceptionIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(1, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
-        // continues to emit RECORD_MESSAGE_2 since cursorField has not changed thus not satisfying the
+        // continues to emit RECORD_MESSAGE_2 since cursorField has not changed thus not satisfying
+        // the
         // condition of "ready"
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_3, iterator.next())
-        // emits the first state message since the iterator has changed cursorFields (2 -> 3) and met the
+        // emits the first state message since the iterator has changed cursorFields (2 -> 3) and
+        // met the
         // frequency minimum of 1 record
         Assertions.assertEquals(createStateMessage(RECORD_VALUE_2, 2, 4.0), iterator.next())
-        // no further records to read since Exception was caught above and marked iterator as endOfData()
+        // no further records to read since Exception was caught above and marked iterator as
+        // endOfData()
         Assertions.assertThrows(FailedRecordIteratorException::class.java) { iterator.hasNext() }
     }
 
@@ -136,11 +171,15 @@ internal class CursorStateMessageProducerTest {
     fun testIteratorCatchesExceptionWhenEmissionFrequencyZero() {
         val exceptionIterator = createExceptionIterator()
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.of(RECORD_VALUE_1))
+        val producer = CursorStateMessageProducer(stateManager, Optional.of(RECORD_VALUE_1))
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(exceptionIterator, STREAM, producer, StateEmitFrequency(0, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                exceptionIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(0, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -152,12 +191,15 @@ internal class CursorStateMessageProducerTest {
 
     @Test
     fun testEmptyStream() {
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.empty())
+        val producer = CursorStateMessageProducer(stateManager, Optional.empty())
 
         val iterator: SourceStateIterator<*> =
-                SourceStateIterator(Collections.emptyIterator<Any>(), STREAM, producer, StateEmitFrequency(1, Duration.ZERO))
+            SourceStateIterator(
+                Collections.emptyIterator(),
+                STREAM,
+                producer,
+                StateEmitFrequency(1, Duration.ZERO)
+            )
 
         Assertions.assertEquals(EMPTY_STATE_MESSAGE, iterator.next())
         Assertions.assertFalse(iterator.hasNext())
@@ -171,11 +213,15 @@ internal class CursorStateMessageProducerTest {
         // UTF8 null \u0000 is removed from the cursor value in the state message
         messageIterator = MoreIterators.of(recordMessageWithNull)
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.empty())
+        val producer = CursorStateMessageProducer(stateManager, Optional.empty())
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageIterator, STREAM, producer, StateEmitFrequency(0, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(0, Duration.ZERO)
+            )
 
         Assertions.assertEquals(recordMessageWithNull, iterator.next())
         Assertions.assertEquals(createStateMessage(RECORD_VALUE_1, 1, 1.0), iterator.next())
@@ -184,13 +230,24 @@ internal class CursorStateMessageProducerTest {
 
     @Test
     fun testStateEmissionFrequency1() {
-        messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5)
+        messageIterator =
+            MoreIterators.of(
+                RECORD_MESSAGE_1,
+                RECORD_MESSAGE_2,
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_4,
+                RECORD_MESSAGE_5
+            )
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.empty())
+        val producer = CursorStateMessageProducer(stateManager, Optional.empty())
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageIterator, STREAM, producer, StateEmitFrequency(1, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(1, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
         // should emit state 1, but it is unclear whether there will be more
@@ -212,13 +269,24 @@ internal class CursorStateMessageProducerTest {
 
     @Test
     fun testStateEmissionFrequency2() {
-        messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5)
+        messageIterator =
+            MoreIterators.of(
+                RECORD_MESSAGE_1,
+                RECORD_MESSAGE_2,
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_4,
+                RECORD_MESSAGE_5
+            )
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.empty())
+        val producer = CursorStateMessageProducer(stateManager, Optional.empty())
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageIterator, STREAM, producer, StateEmitFrequency(2, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(2, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -235,13 +303,18 @@ internal class CursorStateMessageProducerTest {
 
     @Test
     fun testStateEmissionWhenInitialCursorIsNotNull() {
-        messageIterator = MoreIterators.of(RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5)
+        messageIterator =
+            MoreIterators.of(RECORD_MESSAGE_2, RECORD_MESSAGE_3, RECORD_MESSAGE_4, RECORD_MESSAGE_5)
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.of(RECORD_VALUE_1))
+        val producer = CursorStateMessageProducer(stateManager, Optional.of(RECORD_VALUE_1))
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageIterator, STREAM, producer, StateEmitFrequency(1, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(1, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_3, iterator.next())
@@ -254,47 +327,51 @@ internal class CursorStateMessageProducerTest {
     }
 
     /**
-     * Incremental syncs will sort the table with the cursor field, and emit the max cursor for every N
-     * records. The purpose is to emit the states frequently, so that if any transient failure occurs
-     * during a long sync, the next run does not need to start from the beginning, but can resume from
-     * the last successful intermediate state committed on the destination. The next run will start with
-     * `cursorField > cursor`. However, it is possible that there are multiple records with the same
-     * cursor value. If the intermediate state is emitted before all these records have been synced to
-     * the destination, some of these records may be lost.
-     *
+     * Incremental syncs will sort the table with the cursor field, and emit the max cursor for
+     * every N records. The purpose is to emit the states frequently, so that if any transient
+     * failure occurs during a long sync, the next run does not need to start from the beginning,
+     * but can resume from the last successful intermediate state committed on the destination. The
+     * next run will start with `cursorField > cursor`. However, it is possible that there are
+     * multiple records with the same cursor value. If the intermediate state is emitted before all
+     * these records have been synced to the destination, some of these records may be lost.
      *
      * Here is an example:
      *
-     * <pre>
-     * | Record ID | Cursor Field | Other Field | Note                          |
-     * | --------- | ------------ | ----------- | ----------------------------- |
-     * | 1         | F1=16        | F2="abc"    |                               |
-     * | 2         | F1=16        | F2="def"    | <- state emission and failure |
-     * | 3         | F1=16        | F2="ghi"    |                               |
-    </pre> *
+     * <pre> | Record ID | Cursor Field | Other Field | Note | | --------- | ------------ |
+     * ----------- | ----------------------------- | | 1 | F1=16 | F2="abc" | | | 2 | F1=16 |
+     * F2="def" | <- state emission and failure | | 3 | F1=16 | F2="ghi" | | </pre> *
      *
-     * If the intermediate state is emitted for record 2 and the sync fails immediately such that the
-     * cursor value `16` is committed, but only record 1 and 2 are actually synced, the next run will
-     * start with `F1 > 16` and skip record 3.
+     * If the intermediate state is emitted for record 2 and the sync fails immediately such that
+     * the cursor value `16` is committed, but only record 1 and 2 are actually synced, the next run
+     * will start with `F1 > 16` and skip record 3.
      *
-     *
-     * So intermediate state emission should only happen when all records with the same cursor value has
-     * been synced to destination. Reference:
+     * So intermediate state emission should only happen when all records with the same cursor value
+     * has been synced to destination. Reference:
      * [link](https://github.com/airbytehq/airbyte/issues/15427)
      */
     @Test
     fun testStateEmissionForRecordsSharingSameCursorValue() {
-        messageIterator = MoreIterators.of(
-                RECORD_MESSAGE_2, RECORD_MESSAGE_2,
-                RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3,
+        messageIterator =
+            MoreIterators.of(
+                RECORD_MESSAGE_2,
+                RECORD_MESSAGE_2,
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_3,
                 RECORD_MESSAGE_4,
-                RECORD_MESSAGE_5, RECORD_MESSAGE_5)
+                RECORD_MESSAGE_5,
+                RECORD_MESSAGE_5
+            )
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.of(RECORD_VALUE_1))
+        val producer = CursorStateMessageProducer(stateManager, Optional.of(RECORD_VALUE_1))
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageIterator, STREAM, producer, StateEmitFrequency(1, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(1, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -315,18 +392,30 @@ internal class CursorStateMessageProducerTest {
 
     @Test
     fun testStateEmissionForRecordsSharingSameCursorValueButDifferentStatsCount() {
-        messageIterator = MoreIterators.of(
-                RECORD_MESSAGE_2, RECORD_MESSAGE_2,
-                RECORD_MESSAGE_2, RECORD_MESSAGE_2,
-                RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3,
+        messageIterator =
+            MoreIterators.of(
+                RECORD_MESSAGE_2,
+                RECORD_MESSAGE_2,
+                RECORD_MESSAGE_2,
+                RECORD_MESSAGE_2,
                 RECORD_MESSAGE_3,
-                RECORD_MESSAGE_3, RECORD_MESSAGE_3, RECORD_MESSAGE_3)
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_3,
+                RECORD_MESSAGE_3
+            )
 
-        val producer = CursorStateMessageProducer(
-                stateManager,
-                Optional.of(RECORD_VALUE_1))
+        val producer = CursorStateMessageProducer(stateManager, Optional.of(RECORD_VALUE_1))
 
-        val iterator: SourceStateIterator<*> = SourceStateIterator<Any?>(messageIterator, STREAM, producer, StateEmitFrequency(10, Duration.ZERO))
+        val iterator: SourceStateIterator<*> =
+            SourceStateIterator(
+                messageIterator,
+                STREAM,
+                producer,
+                StateEmitFrequency(10, Duration.ZERO)
+            )
 
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -351,10 +440,12 @@ internal class CursorStateMessageProducerTest {
         private const val STREAM_NAME = "shoes"
         private const val UUID_FIELD_NAME = "ascending_inventory_uuid"
 
-        private val STREAM: ConfiguredAirbyteStream = CatalogHelpers.createConfiguredAirbyteStream(
-                STREAM_NAME,
-                NAMESPACE,
-                Field.of(UUID_FIELD_NAME, JsonSchemaType.STRING))
+        private val STREAM: ConfiguredAirbyteStream =
+            CatalogHelpers.createConfiguredAirbyteStream(
+                    STREAM_NAME,
+                    NAMESPACE,
+                    Field.of(UUID_FIELD_NAME, JsonSchemaType.STRING)
+                )
                 .withCursorField(List.of(UUID_FIELD_NAME))
 
         private val EMPTY_STATE_MESSAGE = createEmptyStateMessage(0.0)
@@ -376,13 +467,20 @@ internal class CursorStateMessageProducerTest {
 
         private fun createRecordMessage(recordValue: String): AirbyteMessage {
             return AirbyteMessage()
-                    .withType(AirbyteMessage.Type.RECORD)
-                    .withRecord(AirbyteRecordMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, recordValue))))
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, recordValue)))
+                )
         }
 
-        private fun createStateMessage(recordValue: String, cursorRecordCount: Long, statsRecordCount: Double): AirbyteMessage {
-            val dbStreamState = DbStreamState()
+        private fun createStateMessage(
+            recordValue: String,
+            cursorRecordCount: Long,
+            statsRecordCount: Double
+        ): AirbyteMessage {
+            val dbStreamState =
+                DbStreamState()
                     .withCursorField(listOf(UUID_FIELD_NAME))
                     .withCursor(recordValue)
                     .withStreamName(STREAM_NAME)
@@ -392,34 +490,51 @@ internal class CursorStateMessageProducerTest {
             }
             val dbState = DbState().withCdc(false).withStreams(listOf(dbStreamState))
             return AirbyteMessage()
-                    .withType(AirbyteMessage.Type.STATE)
-                    .withState(AirbyteStateMessage()
-                            .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                            .withStream(AirbyteStreamState()
-                                    .withStreamDescriptor(StreamDescriptor().withName(STREAM_NAME).withNamespace(NAMESPACE))
-                                    .withStreamState(Jsons.jsonNode(dbStreamState)))
-                            .withData(Jsons.jsonNode(dbState))
-                            .withSourceStats(AirbyteStateStats().withRecordCount(statsRecordCount)))
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    StreamDescriptor()
+                                        .withName(STREAM_NAME)
+                                        .withNamespace(NAMESPACE)
+                                )
+                                .withStreamState(Jsons.jsonNode(dbStreamState))
+                        )
+                        .withData(Jsons.jsonNode(dbState))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(statsRecordCount))
+                )
         }
 
         private fun createEmptyStateMessage(statsRecordCount: Double): AirbyteMessage {
-            val dbStreamState = DbStreamState()
+            val dbStreamState =
+                DbStreamState()
                     .withCursorField(listOf(UUID_FIELD_NAME))
                     .withStreamName(STREAM_NAME)
                     .withStreamNamespace(NAMESPACE)
 
             val dbState = DbState().withCdc(false).withStreams(listOf(dbStreamState))
             return AirbyteMessage()
-                    .withType(AirbyteMessage.Type.STATE)
-                    .withState(AirbyteStateMessage()
-                            .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                            .withStream(AirbyteStreamState()
-                                    .withStreamDescriptor(StreamDescriptor().withName(STREAM_NAME).withNamespace(NAMESPACE))
-                                    .withStreamState(Jsons.jsonNode(dbStreamState)))
-                            .withData(Jsons.jsonNode(dbState))
-                            .withSourceStats(AirbyteStateStats().withRecordCount(statsRecordCount)))
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    StreamDescriptor()
+                                        .withName(STREAM_NAME)
+                                        .withNamespace(NAMESPACE)
+                                )
+                                .withStreamState(Jsons.jsonNode(dbStreamState))
+                        )
+                        .withData(Jsons.jsonNode(dbState))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(statsRecordCount))
+                )
         }
 
-        private var messageIterator: Iterator<AirbyteMessage>? = null
+        private lateinit var messageIterator: Iterator<AirbyteMessage>
     }
 }

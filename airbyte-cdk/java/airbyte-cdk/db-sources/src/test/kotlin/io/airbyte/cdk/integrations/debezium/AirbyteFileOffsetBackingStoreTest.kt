@@ -7,12 +7,12 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingSt
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 internal class AirbyteFileOffsetBackingStoreTest {
     @Test
@@ -41,7 +41,9 @@ internal class AirbyteFileOffsetBackingStoreTest {
         // verify that, after a round trip through the offset store, we get back the same data.
         Assertions.assertEquals(stateFromOffsetStore2, stateFromOffsetStore3)
         // verify that the file written by the offset store is identical to the template file.
-        Assertions.assertTrue(com.google.common.io.Files.equal(secondWriteFilePath.toFile(), writeFilePath.toFile()))
+        Assertions.assertTrue(
+            com.google.common.io.Files.equal(secondWriteFilePath.toFile(), writeFilePath.toFile())
+        )
     }
 
     @Test
@@ -70,6 +72,8 @@ internal class AirbyteFileOffsetBackingStoreTest {
         // verify that, after a round trip through the offset store, we get back the same data.
         Assertions.assertEquals(stateFromOffsetStore2, stateFromOffsetStore3)
         // verify that the file written by the offset store is identical to the template file.
-        Assertions.assertTrue(com.google.common.io.Files.equal(secondWriteFilePath.toFile(), writeFilePath.toFile()))
+        Assertions.assertTrue(
+            com.google.common.io.Files.equal(secondWriteFilePath.toFile(), writeFilePath.toFile())
+        )
     }
 }

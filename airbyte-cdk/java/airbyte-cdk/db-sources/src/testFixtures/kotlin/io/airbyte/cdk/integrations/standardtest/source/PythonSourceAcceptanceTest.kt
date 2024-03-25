@@ -13,15 +13,15 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.workers.TestHarnessUtils
-import org.junit.jupiter.api.Assertions
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import org.junit.jupiter.api.Assertions
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
@@ -48,19 +48,41 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
 
     @Throws(IOException::class)
     override fun assertFullRefreshMessages(allMessages: List<AirbyteMessage?>?) {
-        val regexTests = Streams.stream(runExecutable(Command.GET_REGEX_TESTS).withArray<JsonNode>("tests").elements())
-                .map { obj: JsonNode -> obj.textValue() }.toList()
-        val stringMessages = allMessages!!.stream().map { `object`: AirbyteMessage? -> Jsons.serialize(`object`) }.toList()
+        val regexTests =
+            Streams.stream(
+                    runExecutable(Command.GET_REGEX_TESTS).withArray<JsonNode>("tests").elements()
+                )
+                .map { obj: JsonNode -> obj.textValue() }
+                .toList()
+        val stringMessages =
+            allMessages!!
+                .stream()
+                .map { `object`: AirbyteMessage? -> Jsons.serialize(`object`) }
+                .toList()
         LOGGER.info("Running " + regexTests.size + " regex tests...")
-        regexTests.forEach(Consumer { regex: String ->
-            LOGGER.info("Looking for [$regex]")
-            Assertions.assertTrue(stringMessages.stream().anyMatch { line: String -> line.matches(regex.toRegex()) }, "Failed to find regex: $regex")
-        })
+        regexTests.forEach(
+            Consumer { regex: String ->
+                LOGGER.info("Looking for [$regex]")
+                Assertions.assertTrue(
+                    stringMessages.stream().anyMatch { line: String ->
+                        line.matches(regex.toRegex())
+                    },
+                    "Failed to find regex: $regex"
+                )
+            }
+        )
     }
+
+    override val imageName: String
+        get() = IMAGE_NAME
 
     @Throws(Exception::class)
     override fun setupEnvironment(environment: TestDestinationEnv?) {
-        testRoot = Files.createTempDirectory(Files.createDirectories(Path.of("/tmp/standard_test")), "pytest")
+        testRoot =
+            Files.createTempDirectory(
+                Files.createDirectories(Path.of("/tmp/standard_test")),
+                "pytest"
+            )
         runExecutableVoid(Command.SETUP)
     }
 
@@ -98,21 +120,22 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
     private fun runExecutableInternal(cmd: Command): Path? {
         LOGGER.info("testRoot = $testRoot")
         val dockerCmd: List<String?> =
-                Lists.newArrayList(
-                        "docker",
-                        "run",
-                        "--rm",
-                        "-i",
-                        "-v",
-                        String.format("%s:%s", testRoot, "/test_root"),
-                        "-w",
-                        testRoot.toString(),
-                        "--network",
-                        "host",
-                        PYTHON_CONTAINER_NAME,
-                        cmd.toString().lowercase(Locale.getDefault()),
-                        "--out",
-                        "/test_root")
+            Lists.newArrayList(
+                "docker",
+                "run",
+                "--rm",
+                "-i",
+                "-v",
+                String.format("%s:%s", testRoot, "/test_root"),
+                "-w",
+                testRoot.toString(),
+                "--network",
+                "host",
+                PYTHON_CONTAINER_NAME,
+                cmd.toString().lowercase(Locale.getDefault()),
+                "--out",
+                "/test_root"
+            )
 
         val process = ProcessBuilder(dockerCmd).start()
         LineGobbler.gobble(process.errorStream) { msg: String? -> LOGGER.error(msg) }
@@ -132,8 +155,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         private val LOGGER: Logger = LoggerFactory.getLogger(PythonSourceAcceptanceTest::class.java)
         private const val OUTPUT_FILENAME = "output.json"
 
-        protected var imageName: String? = null
-            get() = Companion.field
+        lateinit var IMAGE_NAME: String
         var PYTHON_CONTAINER_NAME: String? = null
     }
 }

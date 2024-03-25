@@ -10,7 +10,8 @@ import io.debezium.engine.ChangeEvent
 class ChangeEventWithMetadata(private val event: ChangeEvent<String?, String?>) {
     private val eventKeyAsJson: JsonNode = Jsons.deserialize(event.key())
     private val eventValueAsJson: JsonNode = Jsons.deserialize(event.value())
-    private val snapshotMetadata: SnapshotMetadata? = SnapshotMetadata.Companion.fromString(eventValueAsJson["source"]["snapshot"].asText())
+    private val snapshotMetadata: SnapshotMetadata? =
+        SnapshotMetadata.Companion.fromString(eventValueAsJson["source"]["snapshot"].asText())
 
     fun event(): ChangeEvent<String?, String?> {
         return event

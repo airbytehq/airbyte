@@ -23,11 +23,12 @@ object DebugUtil {
     fun debug(debugSource: Source) {
         val debugConfig = config
         val configuredAirbyteCatalog = catalog
-        var state = try {
-            state
-        } catch (e: Exception) {
-            null
-        }
+        var state =
+            try {
+                state
+            } catch (e: Exception) {
+                null
+            }
 
         debugSource.check(debugConfig)
         debugSource.discover(debugConfig)
@@ -39,8 +40,10 @@ object DebugUtil {
     @get:Throws(Exception::class)
     private val config: JsonNode
         get() {
-            val originalConfig = ObjectMapper().readTree(MoreResources.readResource("debug_resources/config.json"))
-            val debugConfig: JsonNode = (originalConfig.deepCopy<JsonNode>() as ObjectNode).put("debug_mode", true)
+            val originalConfig =
+                ObjectMapper().readTree(MoreResources.readResource("debug_resources/config.json"))
+            val debugConfig: JsonNode =
+                (originalConfig.deepCopy<JsonNode>() as ObjectNode).put("debug_mode", true)
             return debugConfig
         }
 
@@ -54,7 +57,11 @@ object DebugUtil {
     @get:Throws(Exception::class)
     private val state: JsonNode
         get() {
-            val message = Jsons.deserialize(MoreResources.readResource("debug_resources/state.json"), AirbyteStateMessage::class.java)
+            val message =
+                Jsons.deserialize(
+                    MoreResources.readResource("debug_resources/state.json"),
+                    AirbyteStateMessage::class.java
+                )
             return Jsons.jsonNode(listOf(message))
         }
 }

@@ -19,7 +19,10 @@ internal class DatabaseConnectionHelperTest {
         val dataSource = createDataSource(container)
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource!!.javaClass)
-        Assertions.assertEquals(10, (dataSource as HikariDataSource?)!!.hikariConfigMXBean.maximumPoolSize)
+        Assertions.assertEquals(
+            10,
+            (dataSource as HikariDataSource?)!!.hikariConfigMXBean.maximumPoolSize
+        )
     }
 
     @Test
@@ -36,8 +39,10 @@ internal class DatabaseConnectionHelperTest {
         protected var container: PostgreSQLContainer<*>? = null
 
         @BeforeAll
+        @JvmStatic
         fun dbSetup() {
-            container = PostgreSQLContainer<SELF>("postgres:13-alpine")
+            container =
+                PostgreSQLContainer("postgres:13-alpine")
                     .withDatabaseName(DATABASE_NAME)
                     .withUsername("docker")
                     .withPassword("docker")
@@ -45,6 +50,7 @@ internal class DatabaseConnectionHelperTest {
         }
 
         @AfterAll
+        @JvmStatic
         fun dbDown() {
             container!!.close()
         }

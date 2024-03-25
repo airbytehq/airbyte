@@ -11,7 +11,10 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
  * which suits them. Also, it adds some utils to verify CDC event status.
  */
 interface CdcStateHandler {
-    fun saveState(offset: Map<String?, String?>?, dbHistory: AirbyteSchemaHistoryStorage.SchemaHistory<String?>?): AirbyteMessage?
+    fun saveState(
+        offset: Map<String?, String?>?,
+        dbHistory: AirbyteSchemaHistoryStorage.SchemaHistory<String>?
+    ): AirbyteMessage?
 
     fun saveStateAfterCompletionOfSnapshotOfNewStreams(): AirbyteMessage?
 
@@ -21,10 +24,11 @@ interface CdcStateHandler {
 
     val isCdcCheckpointEnabled: Boolean
         /**
-         * This function is used as feature flag for sending state messages as checkpoints in CDC syncs.
+         * This function is used as feature flag for sending state messages as checkpoints in CDC
+         * syncs.
          *
-         * @return Returns `true` if checkpoint state messages are enabled for CDC syncs. Otherwise, it
-         * returns `false`
+         * @return Returns `true` if checkpoint state messages are enabled for CDC syncs. Otherwise,
+         * it returns `false`
          */
         get() = false
 }
