@@ -60,6 +60,7 @@ class DestinationTypesense(Destination):
             client = get_client(config=config)
             client.collections.create({"name": "_airbyte", "fields": [{"name": "title", "type": "string"}]})
             client.collections["_airbyte"].documents.create({"id": "1", "title": "The Hunger Games"})
+            time.sleep(3)
             client.collections["_airbyte"].documents["1"].retrieve()
             client.collections["_airbyte"].delete()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
