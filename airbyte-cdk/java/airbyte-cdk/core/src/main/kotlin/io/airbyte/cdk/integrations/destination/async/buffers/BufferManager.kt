@@ -16,8 +16,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import org.apache.commons.io.FileUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -42,10 +40,9 @@ constructor(
      * reading unnecessarily, but small enough we apply back pressure before OOMing.
      */
     init {
-        LOGGER.info(
-            "Max 'memory' available for buffer allocation {}",
-            FileUtils.byteCountToDisplaySize(maxMemory),
-        )
+        logger.info {
+            "Max 'memory' available for buffer allocation ${FileUtils.byteCountToDisplaySize(maxMemory)}"
+        }
         memoryManager = GlobalMemoryManager(maxMemory)
         this.stateManager = GlobalAsyncStateManager(memoryManager)
         buffers = ConcurrentHashMap()
@@ -73,42 +70,26 @@ constructor(
 
     private fun printQueueInfo() {
         val queueInfo = StringBuilder().append("[ASYNC QUEUE INFO] ")
-        val messages = ArrayList<String>()
+        val messages = mutableListOf<String>()
 
         messages.add(
-            String.format(
-                "Global: max: %s, allocated: %s (%s MB), %% used: %s",
-                AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes),
-                AirbyteFileUtils.byteCountToDisplaySize(
-                    memoryManager.currentMemoryBytes.get(),
-                ),
-                memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024,
-                memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes,
-            ),
+            "Global: max: ${ AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes)}, allocated: ${AirbyteFileUtils.byteCountToDisplaySize(memoryManager.currentMemoryBytes.get())} (${memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024} MB), %% used: ${memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes}",
         )
 
         for ((key, queue) in buffers) {
             messages.add(
-                String.format(
-                    "Queue `%s`, num records: %d, num bytes: %s, allocated bytes: %s",
-                    key.name,
-                    queue.size(),
-                    AirbyteFileUtils.byteCountToDisplaySize(queue.currentMemoryUsage),
-                    AirbyteFileUtils.byteCountToDisplaySize(queue.maxMemoryUsage),
-                ),
+                "Queue `${key.name}`, num records: ${queue.size()}, num bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.currentMemoryUsage)}, allocated bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.maxMemoryUsage)}"
             )
         }
 
         messages.add(stateManager.memoryUsageMessage)
 
-        queueInfo.append(java.lang.String.join(" | ", messages))
+        queueInfo.append(messages.joinToString(separator = " | "))
 
         logger.info { queueInfo.toString() }
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BufferManager::class.java)
-
         private const val DEBUG_PERIOD_SECS = 60L
 
         const val MEMORY_LIMIT_RATIO: Double = 0.7
