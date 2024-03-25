@@ -245,6 +245,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .toList();
     final Field<?> rawTableChangesArray =
         field("ARRAY(SELECT jsonb_array_elements_text({0}#>'{changes}'))::jsonb[]", field(name(COLUMN_NAME_AB_META)));
+
+    // Jooq is inferring and casting as int[] for empty fields array call. So explicitly casting it to jsonb[] on empty array
     final Field<?> finalTableChangesArray = dataFieldErrors.isEmpty() ? field("ARRAY[]::jsonb[]")
         : function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors).cast(JSONB_TYPE.getArrayDataType()), val((String) null));
     return jsonBuildObject(val(AB_META_COLUMN_CHANGES_KEY),

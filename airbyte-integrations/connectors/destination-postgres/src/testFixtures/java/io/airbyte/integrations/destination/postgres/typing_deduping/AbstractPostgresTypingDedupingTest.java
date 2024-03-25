@@ -101,8 +101,8 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     assertEquals(5, rawActualRecords.size());
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
     runSync(catalog, messages2);
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_mixedcase_expectedrecords_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_mixedcase_expectedrecords_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
