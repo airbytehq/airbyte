@@ -18,28 +18,45 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migrat
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
 
 class AbstractJdbcDestinationTest {
     private fun buildConfigNoJdbcParameters(): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.of(
-                JdbcUtils.HOST_KEY, "localhost",
-                JdbcUtils.PORT_KEY, 1337,
-                JdbcUtils.USERNAME_KEY, "user",
-                JdbcUtils.DATABASE_KEY, "db"))
+        return Jsons.jsonNode(
+            ImmutableMap.of(
+                JdbcUtils.HOST_KEY,
+                "localhost",
+                JdbcUtils.PORT_KEY,
+                1337,
+                JdbcUtils.USERNAME_KEY,
+                "user",
+                JdbcUtils.DATABASE_KEY,
+                "db"
+            )
+        )
     }
 
     private fun buildConfigWithExtraJdbcParameters(extraParam: String): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.of(
-                JdbcUtils.HOST_KEY, "localhost",
-                JdbcUtils.PORT_KEY, 1337,
-                JdbcUtils.USERNAME_KEY, "user",
-                JdbcUtils.DATABASE_KEY, "db",
-                JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam))
+        return Jsons.jsonNode(
+            ImmutableMap.of(
+                JdbcUtils.HOST_KEY,
+                "localhost",
+                JdbcUtils.PORT_KEY,
+                1337,
+                JdbcUtils.USERNAME_KEY,
+                "user",
+                JdbcUtils.DATABASE_KEY,
+                "db",
+                JdbcUtils.JDBC_URL_PARAMS_KEY,
+                extraParam
+            )
+        )
     }
 
     @Test
     fun testNoExtraParamsNoDefault() {
-        val connectionProperties = TestJdbcDestination().getConnectionProperties(buildConfigNoJdbcParameters())
+        val connectionProperties =
+            TestJdbcDestination().getConnectionProperties(buildConfigNoJdbcParameters())
 
         val expectedProperties: Map<String, String> = ImmutableMap.of()
         Assertions.assertEquals(expectedProperties, connectionProperties)
@@ -49,8 +66,9 @@ class AbstractJdbcDestinationTest {
     fun testNoExtraParamsWithDefault() {
         val defaultProperties: Map<String, String> = ImmutableMap.of("A_PARAMETER", "A_VALUE")
 
-        val connectionProperties = TestJdbcDestination(defaultProperties).getConnectionProperties(
-                buildConfigNoJdbcParameters())
+        val connectionProperties =
+            TestJdbcDestination(defaultProperties)
+                .getConnectionProperties(buildConfigNoJdbcParameters())
 
         Assertions.assertEquals(defaultProperties, connectionProperties)
     }
@@ -58,12 +76,11 @@ class AbstractJdbcDestinationTest {
     @Test
     fun testExtraParamNoDefault() {
         val extraParam = "key1=value1&key2=value2&key3=value3"
-        val connectionProperties = TestJdbcDestination().getConnectionProperties(
-                buildConfigWithExtraJdbcParameters(extraParam))
-        val expectedProperties: Map<String, String> = ImmutableMap.of(
-                "key1", "value1",
-                "key2", "value2",
-                "key3", "value3")
+        val connectionProperties =
+            TestJdbcDestination()
+                .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam))
+        val expectedProperties: Map<String, String> =
+            ImmutableMap.of("key1", "value1", "key2", "value2", "key3", "value3")
         Assertions.assertEquals(expectedProperties, connectionProperties)
     }
 
@@ -71,13 +88,20 @@ class AbstractJdbcDestinationTest {
     fun testExtraParamWithDefault() {
         val defaultProperties: Map<String, String> = ImmutableMap.of("A_PARAMETER", "A_VALUE")
         val extraParam = "key1=value1&key2=value2&key3=value3"
-        val connectionProperties = TestJdbcDestination(defaultProperties).getConnectionProperties(
-                buildConfigWithExtraJdbcParameters(extraParam))
-        val expectedProperties: Map<String, String> = ImmutableMap.of(
-                "A_PARAMETER", "A_VALUE",
-                "key1", "value1",
-                "key2", "value2",
-                "key3", "value3")
+        val connectionProperties =
+            TestJdbcDestination(defaultProperties)
+                .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam))
+        val expectedProperties: Map<String, String> =
+            ImmutableMap.of(
+                "A_PARAMETER",
+                "A_VALUE",
+                "key1",
+                "value1",
+                "key2",
+                "value2",
+                "key3",
+                "value3"
+            )
         Assertions.assertEquals(expectedProperties, connectionProperties)
     }
 
@@ -85,12 +109,11 @@ class AbstractJdbcDestinationTest {
     fun testExtraParameterEqualToDefault() {
         val defaultProperties: Map<String, String> = ImmutableMap.of("key1", "value1")
         val extraParam = "key1=value1&key2=value2&key3=value3"
-        val connectionProperties = TestJdbcDestination(defaultProperties).getConnectionProperties(
-                buildConfigWithExtraJdbcParameters(extraParam))
-        val expectedProperties: Map<String, String> = ImmutableMap.of(
-                "key1", "value1",
-                "key2", "value2",
-                "key3", "value3")
+        val connectionProperties =
+            TestJdbcDestination(defaultProperties)
+                .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam))
+        val expectedProperties: Map<String, String> =
+            ImmutableMap.of("key1", "value1", "key2", "value2", "key3", "value3")
         Assertions.assertEquals(expectedProperties, connectionProperties)
     }
 
@@ -100,19 +123,28 @@ class AbstractJdbcDestinationTest {
         val extraParam = "key1=value1&key2=value2&key3=value3"
 
         Assertions.assertThrows(IllegalArgumentException::class.java) {
-            TestJdbcDestination(defaultProperties).getConnectionProperties(
-                    buildConfigWithExtraJdbcParameters(extraParam))
+            TestJdbcDestination(defaultProperties)
+                .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam))
         }
     }
 
     @Test
     fun testInvalidExtraParam() {
         val extraParam = "key1=value1&sdf&"
-        Assertions.assertThrows(ConfigErrorException::class.java
-        ) { TestJdbcDestination().getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam)) }
+        Assertions.assertThrows(ConfigErrorException::class.java) {
+            TestJdbcDestination()
+                .getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam))
+        }
     }
 
-    internal class TestJdbcDestination @JvmOverloads constructor(private val defaultProperties: Map<String, String> = HashMap()) : AbstractJdbcDestination<MinimumDestinationState.Impl?>("", StandardNameTransformer(), TestJdbcSqlOperations()) {
+    internal class TestJdbcDestination
+    @JvmOverloads
+    constructor(private val defaultProperties: Map<String, String> = HashMap()) :
+        AbstractJdbcDestination<MinimumDestinationState.Impl>(
+            "",
+            StandardNameTransformer(),
+            TestJdbcSqlOperations()
+        ) {
         override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
             return defaultProperties
         }
@@ -121,20 +153,26 @@ class AbstractJdbcDestinationTest {
             return config
         }
 
-        override fun getSqlGenerator(): JdbcSqlGenerator {
-            // TODO do we need to populate this?
-            return null
+        override val sqlGenerator: JdbcSqlGenerator = mock()
+
+        override fun getDestinationHandler(
+            databaseName: String,
+            database: JdbcDatabase,
+            rawTableSchema: String
+        ): JdbcDestinationHandler<MinimumDestinationState.Impl> {
+            return mock()
         }
 
-        override fun getDestinationHandler(databaseName: String, database: JdbcDatabase, rawTableSchema: String): JdbcDestinationHandler<MinimumDestinationState.Impl?>? {
-            return null
-        }
-
-        protected override fun getMigrations(database: JdbcDatabase,
-                                             databaseName: String,
-                                             sqlGenerator: SqlGenerator,
-                                             destinationHandler: DestinationHandler<MinimumDestinationState.Impl>): List<Migration<MinimumDestinationState.Impl>> {
+        override fun getMigrations(
+            database: JdbcDatabase,
+            databaseName: String,
+            sqlGenerator: SqlGenerator,
+            destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
+        ): List<Migration<MinimumDestinationState.Impl>> {
             return emptyList()
         }
+
+        public override fun getConnectionProperties(config: JsonNode): Map<String, String> =
+            super.getConnectionProperties(config)
     }
 }

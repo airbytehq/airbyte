@@ -5,10 +5,10 @@ package io.airbyte.cdk.integrations.standardtest.destination
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.jooq.Field
-import org.jooq.Record
 import java.util.*
 import java.util.function.Function
+import org.jooq.Field
+import org.jooq.Record
 
 abstract class JdbcDestinationAcceptanceTest : DestinationAcceptanceTest() {
     protected val mapper: ObjectMapper = ObjectMapper()
@@ -17,7 +17,10 @@ abstract class JdbcDestinationAcceptanceTest : DestinationAcceptanceTest() {
         return getJsonFromRecord(record, Function { x: Any? -> Optional.empty() })
     }
 
-    protected fun getJsonFromRecord(record: Record, valueParser: Function<Any?, Optional<String?>>): JsonNode {
+    protected fun getJsonFromRecord(
+        record: Record,
+        valueParser: Function<Any?, Optional<String>>
+    ): JsonNode {
         val node = mapper.createObjectNode()
 
         Arrays.stream(record.fields()).forEach { field: Field<*> ->
@@ -27,11 +30,18 @@ abstract class JdbcDestinationAcceptanceTest : DestinationAcceptanceTest() {
                 node.put(field.name, parsedValue.get())
             } else {
                 when (field.dataType.typeName) {
-                    "varchar", "nvarchar", "jsonb", "json", "other" -> {
+                    "varchar",
+                    "nvarchar",
+                    "jsonb",
+                    "json",
+                    "other" -> {
                         val stringValue = (value?.toString())
-                        DestinationAcceptanceTestUtils.putStringIntoJson(stringValue, field.name, node)
+                        DestinationAcceptanceTestUtils.putStringIntoJson(
+                            stringValue,
+                            field.name,
+                            node
+                        )
                     }
-
                     else -> node.put(field.name, (value?.toString()))
                 }
             }

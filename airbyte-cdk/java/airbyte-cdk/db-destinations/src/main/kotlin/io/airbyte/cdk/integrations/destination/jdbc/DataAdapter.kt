@@ -14,10 +14,15 @@ class DataAdapter
  * process text value with \u0000 unicode. You can describe filter condition for a value node and
  * function which adapts filtered value nodes.
  *
- * @param filterValueNode - filter condition which decide which value node should be adapted
- * @param valueNodeAdapter - transformation function which returns adapted value node
- */(private val filterValueNode: Predicate<JsonNode>,
-    private val valueNodeAdapter: Function<JsonNode, JsonNode>) {
+ * @param filterValueNode
+ * - filter condition which decide which value node should be adapted
+ * @param valueNodeAdapter
+ * - transformation function which returns adapted value node
+ */
+(
+    private val filterValueNode: Predicate<JsonNode>,
+    private val valueNodeAdapter: Function<JsonNode, JsonNode>
+) {
     fun adapt(messageData: JsonNode?) {
         if (messageData != null) {
             adaptAllValueNodes(messageData)
@@ -29,9 +34,9 @@ class DataAdapter
     }
 
     /**
-     * The method inspects json node. In case, it's a value node we check the node by CheckFunction and
-     * apply ValueNodeAdapter. Filtered nodes will be updated by adapted version. If element is an array
-     * or an object, this we run the method recursively for them.
+     * The method inspects json node. In case, it's a value node we check the node by CheckFunction
+     * and apply ValueNodeAdapter. Filtered nodes will be updated by adapted version. If element is
+     * an array or an object, this we run the method recursively for them.
      *
      * @param fieldName Name of a json node
      * @param node Json node
@@ -44,9 +49,13 @@ class DataAdapter
                 (parentNode as ObjectNode?)!!.set<JsonNode>(fieldName, adaptedNode)
             } else throw RuntimeException("Unexpected value node without fieldName. Node: $node")
         } else if (node.isArray) {
-            node.elements().forEachRemaining { arrayNode: JsonNode -> adaptValueNodes(null, arrayNode, node) }
+            node.elements().forEachRemaining { arrayNode: JsonNode ->
+                adaptValueNodes(null, arrayNode, node)
+            }
         } else {
-            node.fields().forEachRemaining { stringJsonNodeEntry: Map.Entry<String?, JsonNode> -> adaptValueNodes(stringJsonNodeEntry.key, stringJsonNodeEntry.value, node) }
+            node.fields().forEachRemaining { stringJsonNodeEntry: Map.Entry<String?, JsonNode> ->
+                adaptValueNodes(stringJsonNodeEntry.key, stringJsonNodeEntry.value, node)
+            }
         }
     }
 }

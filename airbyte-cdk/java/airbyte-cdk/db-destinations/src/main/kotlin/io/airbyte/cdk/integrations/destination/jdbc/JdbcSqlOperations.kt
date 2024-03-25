@@ -10,8 +10,6 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
 import java.io.File
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -20,6 +18,8 @@ import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
 
 abstract class JdbcSqlOperations : SqlOperations {
     // this adapter modifies record message before inserting them to the destination
@@ -48,8 +48,8 @@ abstract class JdbcSqlOperations : SqlOperations {
 
     /**
      * When an exception occurs, we may recognize it as an issue with the users permissions or other
-     * configuration options. In these cases, we can wrap the exception in a
-     * [ConfigErrorException] which will exclude the error from our on-call paging/reporting
+     * configuration options. In these cases, we can wrap the exception in a [ConfigErrorException]
+     * which will exclude the error from our on-call paging/reporting
      *
      * @param e the exception to check.
      * @return A ConfigErrorException with a message with actionable feedback to the user.
@@ -59,9 +59,13 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     @Throws(SQLException::class)
-    override fun createTableIfNotExists(database: JdbcDatabase?, schemaName: String?, tableName: String?) {
+    override fun createTableIfNotExists(
+        database: JdbcDatabase,
+        schemaName: String?,
+        tableName: String?
+    ) {
         try {
-            database!!.execute(createTableQuery(database, schemaName, tableName))
+            database.execute(createTableQuery(database, schemaName, tableName))
             for (postCreateSql in postCreateTableQueries(schemaName, tableName)) {
                 database.execute(postCreateSql)
             }
@@ -70,7 +74,11 @@ abstract class JdbcSqlOperations : SqlOperations {
         }
     }
 
-    override fun createTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String? {
+    override fun createTableQuery(
+        database: JdbcDatabase?,
+        schemaName: String?,
+        tableName: String?
+    ): String? {
         return if (isDestinationV2) {
             createTableQueryV2(schemaName, tableName)
         } else {
@@ -79,9 +87,9 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     /**
-     * Some subclasses may want to execute additional SQL statements after creating the raw table. For
-     * example, Postgres does not support index definitions within a CREATE TABLE statement, so we need
-     * to run CREATE INDEX statements after creating the table.
+     * Some subclasses may want to execute additional SQL statements after creating the raw table.
+     * For example, Postgres does not support index definitions within a CREATE TABLE statement, so
+     * we need to run CREATE INDEX statements after creating the table.
      */
     protected fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
         return listOf()
@@ -89,7 +97,7 @@ abstract class JdbcSqlOperations : SqlOperations {
 
     protected fun createTableQueryV1(schemaName: String?, tableName: String?): String {
         return String.format(
-                """
+            """
         CREATE TABLE IF NOT EXISTS %s.%s (
           %s VARCHAR PRIMARY KEY,
           %s JSONB,
@@ -97,14 +105,20 @@ abstract class JdbcSqlOperations : SqlOperations {
         );
         
         """.trimIndent(),
-                schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+            schemaName,
+            tableName,
+            JavaBaseConstants.COLUMN_NAME_AB_ID,
+            JavaBaseConstants.COLUMN_NAME_DATA,
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+        )
     }
 
     protected fun createTableQueryV2(schemaName: String?, tableName: String?): String {
-        // Note that Meta is the last column in order, there was a time when tables didn't have meta,
+        // Note that Meta is the last column in order, there was a time when tables didn't have
+        // meta,
         // we issued Alter to add that column so it should be the last column.
         return String.format(
-                """
+            """
         CREATE TABLE IF NOT EXISTS %s.%s (
           %s VARCHAR PRIMARY KEY,
           %s JSONB,
@@ -114,13 +128,14 @@ abstract class JdbcSqlOperations : SqlOperations {
         );
         
         """.trimIndent(),
-                schemaName,
-                tableName,
-                JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-                JavaBaseConstants.COLUMN_NAME_DATA,
-                JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-                JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-                JavaBaseConstants.COLUMN_NAME_AB_META)
+            schemaName,
+            tableName,
+            JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+            JavaBaseConstants.COLUMN_NAME_DATA,
+            JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+            JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+            JavaBaseConstants.COLUMN_NAME_AB_META
+        )
     }
 
     // TODO: This method seems to be used by Postgres and others while staging to local temp files.
@@ -131,11 +146,14 @@ abstract class JdbcSqlOperations : SqlOperations {
             CSVPrinter(writer, CSVFormat.DEFAULT).use { csvPrinter ->
                 for (record in records) {
                     val uuid = UUID.randomUUID().toString()
-                    // TODO we only need to do this is formatData is overridden. If not, we can just do jsonData =
+                    // TODO we only need to do this is formatData is overridden. If not, we can just
+                    // do jsonData =
                     // record.getSerialized()
-                    val jsonData = Jsons.serialize(formatData(Jsons.deserializeExact(record.serialized)))
+                    val jsonData =
+                        Jsons.serialize(formatData(Jsons.deserializeExact(record.serialized)))
                     val airbyteMeta = Jsons.serialize(record.record!!.meta)
-                    val extractedAt = Timestamp.from(Instant.ofEpochMilli(record.record!!.emittedAt))
+                    val extractedAt =
+                        Timestamp.from(Instant.ofEpochMilli(record.record!!.emittedAt))
                     if (isDestinationV2) {
                         csvPrinter.printRecord(uuid, jsonData, extractedAt, null, airbyteMeta)
                     } else {
@@ -150,29 +168,48 @@ abstract class JdbcSqlOperations : SqlOperations {
         return data
     }
 
-    override fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String? {
+    override fun truncateTableQuery(
+        database: JdbcDatabase?,
+        schemaName: String?,
+        tableName: String?
+    ): String {
         return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName)
     }
 
-    override fun insertTableQuery(database: JdbcDatabase?, schemaName: String?, srcTableName: String?, dstTableName: String?): String? {
-        return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName)
+    override fun insertTableQuery(
+        database: JdbcDatabase?,
+        schemaName: String?,
+        srcTableName: String?,
+        dstTableName: String?
+    ): String? {
+        return String.format(
+            "INSERT INTO %s.%s SELECT * FROM %s.%s;\n",
+            schemaName,
+            dstTableName,
+            schemaName,
+            srcTableName
+        )
     }
 
     @Throws(Exception::class)
-    override fun executeTransaction(database: JdbcDatabase?, queries: List<String?>?) {
+    override fun executeTransaction(database: JdbcDatabase, queries: List<String>) {
         val appendedQueries = StringBuilder()
         appendedQueries.append("BEGIN;\n")
-        for (query in queries!!) {
+        for (query in queries) {
             appendedQueries.append(query)
         }
         appendedQueries.append("COMMIT;")
-        database!!.execute(appendedQueries.toString())
+        database.execute(appendedQueries.toString())
     }
 
     @Throws(SQLException::class)
-    override fun dropTableIfExists(database: JdbcDatabase?, schemaName: String?, tableName: String?) {
+    override fun dropTableIfExists(
+        database: JdbcDatabase,
+        schemaName: String?,
+        tableName: String?
+    ) {
         try {
-            database!!.execute(dropTableIfExistsQuery(schemaName, tableName))
+            database.execute(dropTableIfExistsQuery(schemaName, tableName))
         } catch (e: SQLException) {
             throw checkForKnownConfigExceptions(e).orElseThrow { e }
         }
@@ -190,16 +227,20 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     @Throws(Exception::class)
-    override fun insertRecords(database: JdbcDatabase?,
-                               records: List<PartialAirbyteMessage?>?,
-                               schemaName: String?,
-                               tableName: String?) {
+    override fun insertRecords(
+        database: JdbcDatabase,
+        records: List<PartialAirbyteMessage>,
+        schemaName: String?,
+        tableName: String?
+    ) {
         dataAdapter.ifPresent { adapter: DataAdapter ->
-            records!!.forEach(Consumer { airbyteRecordMessage: PartialAirbyteMessage? ->
-                val data = Jsons.deserializeExact(airbyteRecordMessage!!.serialized)
-                adapter.adapt(data)
-                airbyteRecordMessage.serialized = Jsons.serialize(data)
-            })
+            records!!.forEach(
+                Consumer { airbyteRecordMessage: PartialAirbyteMessage? ->
+                    val data = Jsons.deserializeExact(airbyteRecordMessage!!.serialized)
+                    adapter.adapt(data)
+                    airbyteRecordMessage.serialized = Jsons.serialize(data)
+                }
+            )
         }
         if (isDestinationV2) {
             insertRecordsInternalV2(database, records, schemaName, tableName)
@@ -209,16 +250,20 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     @Throws(Exception::class)
-    protected abstract fun insertRecordsInternal(database: JdbcDatabase?,
-                                                 records: List<PartialAirbyteMessage?>?,
-                                                 schemaName: String?,
-                                                 tableName: String?)
+    protected abstract fun insertRecordsInternal(
+        database: JdbcDatabase,
+        records: List<PartialAirbyteMessage>,
+        schemaName: String?,
+        tableName: String?
+    )
 
     @Throws(Exception::class)
-    protected abstract fun insertRecordsInternalV2(database: JdbcDatabase?,
-                                                   records: List<PartialAirbyteMessage?>?,
-                                                   schemaName: String?,
-                                                   tableName: String?)
+    protected abstract fun insertRecordsInternalV2(
+        database: JdbcDatabase,
+        records: List<PartialAirbyteMessage>,
+        schemaName: String?,
+        tableName: String?
+    )
 
     companion object {
         protected const val SHOW_SCHEMAS: String = "show schemas;"

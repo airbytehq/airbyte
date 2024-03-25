@@ -22,11 +22,19 @@ class LocalAirbyteDestination(private val dest: Destination) : AirbyteDestinatio
     private var isClosed = false
 
     @Throws(Exception::class)
-    override fun start(destinationConfig: WorkerDestinationConfig, jobRoot: Path, additionalEnvironmentVariables: Map<String, String>) {
+    override fun start(
+        destinationConfig: WorkerDestinationConfig,
+        jobRoot: Path,
+        additionalEnvironmentVariables: Map<String, String>
+    ) {
         consumer =
-                dest.getConsumer(destinationConfig.destinationConnectionConfiguration,
-                        Jsons.`object`(Jsons.jsonNode(destinationConfig.catalog), ConfiguredAirbyteCatalog::class.java)
-                ) { obj: AirbyteMessage? -> Destination.defaultOutputRecordCollector() }
+            dest.getConsumer(
+                destinationConfig.destinationConnectionConfiguration,
+                Jsons.`object`(
+                    Jsons.jsonNode(destinationConfig.catalog),
+                    ConfiguredAirbyteCatalog::class.java
+                )
+            ) { Destination::defaultOutputRecordCollector }
         consumer!!.start()
     }
 

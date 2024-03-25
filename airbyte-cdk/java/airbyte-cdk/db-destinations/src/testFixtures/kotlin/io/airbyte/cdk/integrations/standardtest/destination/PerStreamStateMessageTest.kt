@@ -9,9 +9,9 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.function.Consumer
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.util.function.Consumer
 
 abstract class PerStreamStateMessageTest {
     protected abstract val mockedConsumer: Consumer<AirbyteMessage>
@@ -23,9 +23,12 @@ abstract class PerStreamStateMessageTest {
     @Test
     @Throws(Exception::class)
     fun ensureAllStateMessageAreEmitted() {
-        val airbyteMessage1 = AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one")
-        val airbyteMessage2 = AirbyteMessageCreator.createStreamStateMessage("name_two", "state_two")
-        val airbyteMessage3 = AirbyteMessageCreator.createStreamStateMessage("name_three", "state_three")
+        val airbyteMessage1 =
+            AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one")
+        val airbyteMessage2 =
+            AirbyteMessageCreator.createStreamStateMessage("name_two", "state_two")
+        val airbyteMessage3 =
+            AirbyteMessageCreator.createStreamStateMessage("name_three", "state_three")
         val messageConsumer = messageConsumer
 
         messageConsumer.accept(airbyteMessage1)
@@ -43,16 +46,16 @@ abstract class PerStreamStateMessageTest {
     internal object AirbyteMessageCreator {
         fun createStreamStateMessage(name: String?, value: String): AirbyteMessage {
             return AirbyteMessage()
-                    .withType(AirbyteMessage.Type.STATE)
-                    .withState(
-                            AirbyteStateMessage()
-                                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                                    .withStream(
-                                            AirbyteStreamState()
-                                                    .withStreamDescriptor(
-                                                            StreamDescriptor()
-                                                                    .withName(name))
-                                                    .withStreamState(Jsons.jsonNode(value))))
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(StreamDescriptor().withName(name))
+                                .withStreamState(Jsons.jsonNode(value))
+                        )
+                )
         }
     }
 }

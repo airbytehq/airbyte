@@ -9,9 +9,9 @@ import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import java.util.function.Consumer
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 
 internal class SwitchingDestinationTest {
     internal enum class SwitchingEnum {
@@ -19,48 +19,70 @@ internal class SwitchingDestinationTest {
         COPY
     }
 
-    private var insertDestination: Destination? = null
-    private var copyDestination: Destination? = null
-    private var destinationMap: Map<SwitchingEnum, Destination?>? = null
+    private lateinit var insertDestination: Destination
+    private lateinit var copyDestination: Destination
+    private lateinit var destinationMap: Map<SwitchingEnum, Destination>
 
     @BeforeEach
     fun setUp() {
         insertDestination = Mockito.mock(Destination::class.java)
         copyDestination = Mockito.mock(Destination::class.java)
-        destinationMap = ImmutableMap.of(
-                SwitchingEnum.INSERT, insertDestination,
-                SwitchingEnum.COPY, copyDestination)
+        destinationMap =
+            ImmutableMap.of(
+                SwitchingEnum.INSERT,
+                insertDestination,
+                SwitchingEnum.COPY,
+                copyDestination
+            )
     }
 
     @Test
     @Throws(Exception::class)
     fun testInsert() {
-        val switchingDestination = SwitchingDestination(SwitchingEnum::class.java, { c: JsonNode? -> SwitchingEnum.INSERT }, destinationMap)
+        val switchingDestination =
+            SwitchingDestination(
+                SwitchingEnum::class.java,
+                { c: JsonNode? -> SwitchingEnum.INSERT },
+                destinationMap
+            )
 
-        switchingDestination.getConsumer(Mockito.mock(JsonNode::class.java), Mockito.mock(ConfiguredAirbyteCatalog::class.java), Mockito.mock(Consumer::class.java))
+        switchingDestination.getConsumer(
+            Mockito.mock(JsonNode::class.java),
+            Mockito.mock(ConfiguredAirbyteCatalog::class.java),
+            mock()
+        )
 
-        Mockito.verify(insertDestination, Mockito.times(1)).getConsumer(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        Mockito.verify(copyDestination, Mockito.times(0)).getConsumer(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(insertDestination, Mockito.times(1)).getConsumer(any(), any(), any())
+        Mockito.verify(copyDestination, Mockito.times(0)).getConsumer(any(), any(), any())
 
         switchingDestination.check(Mockito.mock(JsonNode::class.java))
 
-        Mockito.verify(insertDestination, Mockito.times(1)).check(ArgumentMatchers.any())
-        Mockito.verify(copyDestination, Mockito.times(0)).check(ArgumentMatchers.any())
+        Mockito.verify(insertDestination, Mockito.times(1)).check(any())
+        Mockito.verify(copyDestination, Mockito.times(0)).check(any())
     }
 
     @Test
     @Throws(Exception::class)
     fun testCopy() {
-        val switchingDestination = SwitchingDestination(SwitchingEnum::class.java, { c: JsonNode? -> SwitchingEnum.COPY }, destinationMap)
+        val switchingDestination =
+            SwitchingDestination(
+                SwitchingEnum::class.java,
+                { c: JsonNode? -> SwitchingEnum.COPY },
+                destinationMap
+            )
 
-        switchingDestination.getConsumer(Mockito.mock(JsonNode::class.java), Mockito.mock(ConfiguredAirbyteCatalog::class.java), Mockito.mock(Consumer::class.java))
+        switchingDestination.getConsumer(
+            Mockito.mock(JsonNode::class.java),
+            Mockito.mock(ConfiguredAirbyteCatalog::class.java),
+            Mockito.mock()
+        )
 
-        Mockito.verify(insertDestination, Mockito.times(0)).getConsumer(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        Mockito.verify(copyDestination, Mockito.times(1)).getConsumer(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(insertDestination, Mockito.times(0)).getConsumer(any(), any(), any())
+        Mockito.verify(copyDestination, Mockito.times(1)).getConsumer(any(), any(), any())
 
         switchingDestination.check(Mockito.mock(JsonNode::class.java))
 
-        Mockito.verify(insertDestination, Mockito.times(0)).check(ArgumentMatchers.any())
-        Mockito.verify(copyDestination, Mockito.times(1)).check(ArgumentMatchers.any())
+        Mockito.verify(insertDestination, Mockito.times(0)).check(any())
+        Mockito.verify(copyDestination, Mockito.times(1)).check(any())
     }
 }

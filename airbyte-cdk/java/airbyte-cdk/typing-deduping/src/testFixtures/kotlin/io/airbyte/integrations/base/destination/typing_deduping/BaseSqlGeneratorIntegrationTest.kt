@@ -259,7 +259,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     private fun getDestinationInitialState(
         streamConfig: StreamConfig?
     ): DestinationInitialStatus<DestinationState> {
-        val initialState = destinationHandler!!.gatherInitialState(java.util.List.of(streamConfig))
+        val initialState =
+            destinationHandler!!.gatherInitialState(java.util.List.of(streamConfig!!))
         Assertions.assertEquals(
             1,
             initialState!!.size,
@@ -276,7 +277,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Test
     @Throws(Exception::class)
     fun detectNoSchemaChange() {
-        val createTable = generator!!.createTable(incrementalDedupStream, "", false)
+        val createTable = generator!!.createTable(incrementalDedupStream!!, "", false)
         destinationHandler!!.execute(createTable)
         val destinationInitialStatus = getDestinationInitialState(incrementalDedupStream)
         Assertions.assertFalse(
@@ -289,7 +290,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Test
     @Throws(Exception::class)
     fun detectColumnAdded() {
-        val createTable = generator!!.createTable(incrementalDedupStream, "", false)
+        val createTable = generator!!.createTable(incrementalDedupStream!!, "", false)
         destinationHandler!!.execute(createTable)
         incrementalDedupStream!!
             .columns!!
@@ -305,7 +306,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Test
     @Throws(Exception::class)
     fun detectColumnRemoved() {
-        val createTable = generator!!.createTable(incrementalDedupStream, "", false)
+        val createTable = generator!!.createTable(incrementalDedupStream!!, "", false)
         destinationHandler!!.execute(createTable)
         incrementalDedupStream!!.columns!!.remove(generator!!.buildColumnId("string"))
         val destinationInitialStatus = getDestinationInitialState(incrementalDedupStream)
@@ -319,7 +320,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Test
     @Throws(Exception::class)
     fun detectColumnChanged() {
-        val createTable = generator!!.createTable(incrementalDedupStream, "", false)
+        val createTable = generator!!.createTable(incrementalDedupStream!!, "", false)
         destinationHandler!!.execute(createTable)
         incrementalDedupStream!!
             .columns!!
@@ -409,7 +410,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         var initialState =
             getOnly(
-                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream))
+                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!))
             )
         Assertions.assertTrue(
             initialState!!.isFinalTableEmpty,
@@ -432,7 +433,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
         initialState =
             getOnly(
-                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream))
+                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!))
             )
         Assertions.assertFalse(
             initialState!!.isFinalTableEmpty,
@@ -455,7 +456,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         var initialState =
             getOnly(
-                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream))
+                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!))
             )
         Assertions.assertTrue(
             initialState!!.isFinalTableEmpty,
@@ -463,12 +464,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
 
         // Instead of using the full T+D transaction, explicitly run with useSafeCasting=false.
-        val unsafeSql = generator!!.updateTable(incrementalDedupStream, "", Optional.empty(), false)
+        val unsafeSql =
+            generator!!.updateTable(incrementalDedupStream!!, "", Optional.empty(), false)
         destinationHandler!!.execute(unsafeSql)
 
         initialState =
             getOnly(
-                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream))
+                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!))
             )
         Assertions.assertFalse(
             initialState!!.isFinalTableEmpty,
@@ -478,7 +480,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Throws(Exception::class)
     private fun getInitialRawTableState(streamConfig: StreamConfig?): InitialRawTableStatus {
-        val initialStates = destinationHandler!!.gatherInitialState(java.util.List.of(streamConfig))
+        val initialStates =
+            destinationHandler!!.gatherInitialState(java.util.List.of(streamConfig!!))
         Assertions.assertEquals(1, initialStates!!.size)
         return initialStates.first!!.initialRawTableStatus
     }
@@ -1509,10 +1512,10 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         migrationAssertions(v1RawRecords, v2RawRecords)
 
         // And then run T+D on the migrated raw data
-        val createTable = generator!!.createTable(incrementalDedupStream, "", false)
+        val createTable = generator!!.createTable(incrementalDedupStream!!, "", false)
         destinationHandler!!.execute(createTable)
         val updateTable =
-            generator!!.updateTable(incrementalDedupStream, "", Optional.empty(), true)
+            generator!!.updateTable(incrementalDedupStream!!, "", Optional.empty(), true)
         destinationHandler!!.execute(updateTable)
         verifyRecords(
             "sqlgenerator/alltypes_v1v2_expectedrecords_raw.jsonl",
@@ -1537,7 +1540,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // indexing/partitioning/etc.
         val createOldTempTable =
             generator!!.createTable(
-                incrementalAppendStream,
+                incrementalDedupStream!!,
                 TypeAndDedupeTransaction.SOFT_RESET_SUFFIX,
                 false
             )
@@ -1605,8 +1608,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Test
     @Throws(Exception::class)
     fun testCreateTableForce() {
-        val createTableNoForce = generator!!.createTable(incrementalDedupStream, "", false)
-        val createTableForce = generator!!.createTable(incrementalDedupStream, "", true)
+        val createTableNoForce = generator!!.createTable(incrementalDedupStream!!, "", false)
+        val createTableForce = generator!!.createTable(incrementalDedupStream!!, "", true)
 
         destinationHandler!!.execute(createTableNoForce)
         Assertions.assertThrows(Exception::class.java) {
@@ -1624,7 +1627,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // Fetch state from an empty destination. This should not throw an error.
         val initialState =
             destinationHandler!!
-                .gatherInitialState(java.util.List.of((incrementalDedupStream)))!!
+                .gatherInitialState(java.util.List.of((incrementalDedupStream!!)))!!
                 .first
         // The initial state should not need a soft reset.
         Assertions.assertFalse(
@@ -1641,7 +1644,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
         val updatedState =
             destinationHandler!!
-                .gatherInitialState(java.util.List.of((incrementalDedupStream)))!!
+                .gatherInitialState(java.util.List.of((incrementalDedupStream!!)))!!
                 .first
         // When we re-fetch the state, it should now need a soft reset.
         Assertions.assertTrue(
@@ -1660,7 +1663,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // Verify that we can still retrieve the state for the original stream
         val refetchedState =
             destinationHandler!!
-                .gatherInitialState(java.util.List.of((incrementalDedupStream)))!!
+                .gatherInitialState(java.util.List.of((incrementalDedupStream!!)))!!
                 .first
         // When we re-fetch the state, it should now need a soft reset.
         Assertions.assertTrue(
@@ -1671,7 +1674,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Throws(Exception::class)
     protected fun createFinalTable(stream: StreamConfig?, suffix: String?) {
-        val createTable = generator!!.createTable(stream, suffix, false)
+        val createTable = generator!!.createTable(stream!!, suffix!!, false)
         destinationHandler!!.execute(createTable)
     }
 
@@ -1749,7 +1752,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
          * final table.
          */
         @JvmField
-        protected val FINAL_TABLE_COLUMN_NAMES: List<String> =
+        val FINAL_TABLE_COLUMN_NAMES: List<String> =
             listOf(
                 "_airbyte_raw_id",
                 "_airbyte_extracted_at",
