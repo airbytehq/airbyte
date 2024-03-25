@@ -227,6 +227,13 @@ class CustomStateMigration(BaseModel):
         extra = Extra.allow
 
     type: Literal['CustomStateMigration']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom state migration. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomStateMigration'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class CustomTransformation(BaseModel):
@@ -1223,7 +1230,11 @@ class DeclarativeStream(BaseModel):
     )
     state_migrations: Optional[
         List[Union[LegacyToPerPartitionStateMigration, CustomStateMigration]]
-    ] = []
+    ] = Field(
+        [],
+        description='Array of state migrations to be applied on the input state',
+        title='State Migrations',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
