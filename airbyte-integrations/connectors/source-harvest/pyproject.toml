@@ -18,7 +18,6 @@ include = "source_harvest"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "^0"
-freezegun = "^1.4.0"
 
 [tool.poetry.scripts]
 source-harvest = "source_harvest.run:run"
@@ -27,3 +26,4 @@ source-harvest = "source_harvest.run:run"
 requests-mock = "^1.11.0"
 pytest-mock = "^3.6.1"
 pytest = "^6.1"
+freezegun = "^1.4.0"
