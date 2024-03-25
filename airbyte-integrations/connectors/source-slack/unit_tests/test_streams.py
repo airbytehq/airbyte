@@ -42,9 +42,9 @@ def test_threads_stream_slices(requests_mock, token_config):
     threads_stream = get_stream_by_name("threads", token_config)
     slices = threads_stream.stream_slices(stream_state=None, sync_mode=SyncMode.full_refresh)
 
-    expected = [{"ts": 1710093600, "channel": "airbyte-for-beginners", "start_time": "1709236800", "end_time": "1710093600"},
-                {"ts": 1709323200, "channel": "airbyte-for-beginners", "start_time": "1709236800", "end_time": "1710093600"},
-                {"ts": 1710093600, "channel": "good-reads", "start_time": "1709236800", "end_time": "1710093600"},
-                {"ts": 1709323200, "channel": "good-reads", "start_time": "1709236800", "end_time": "1710093600"}]
+    expected = [{"float_ts": 1710093600, "channel": "airbyte-for-beginners", "start_time": "1709236800", "end_time": "1710093600"},
+                {"float_ts": 1709323200, "channel": "airbyte-for-beginners", "start_time": "1709236800", "end_time": "1710093600"},
+                {"float_ts": 1710093600, "channel": "good-reads", "start_time": "1709236800", "end_time": "1710093600"},
+                {"float_ts": 1709323200, "channel": "good-reads", "start_time": "1709236800", "end_time": "1710093600"}]
 
     assert list(slices) == expected
