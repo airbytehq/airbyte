@@ -12,6 +12,6 @@ This system is responsible for the following:
 
 ## Subsystems
 
-- [Metadata Lib](./lib) responsible for preparing connector metadata.
+- [Metadata Lib](./lib) responsible for preparing and validating connector metadata.
 - [Metadata Orchestrator](./orchestrator) responsible for gathering metadata into the registry,
   using Dagster.
