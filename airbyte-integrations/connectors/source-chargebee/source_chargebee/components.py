@@ -120,8 +120,8 @@ class IncrementalSingleSliceCursor(Cursor):
             cursor_field = self.cursor_field.eval(self.config)
             self._state[cursor_field] = latest_record[cursor_field]
 
-    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
-        yield {}
+    def stream_slices(self) -> "Iterable[Mapping[str, Any]]":
+        yield StreamSlice(partition={}, cursor_slice={})
 
     def should_be_synced(self, record: Record) -> bool:
         """
