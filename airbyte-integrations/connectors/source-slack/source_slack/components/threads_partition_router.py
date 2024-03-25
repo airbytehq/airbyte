@@ -1,13 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, Union
+from typing import Any, Iterable, Mapping, Optional, Union
 
 import dpath.util
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.models import ParentStreamConfig
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 @dataclass
@@ -15,6 +16,36 @@ class ThreadsPartitionRouter(SubstreamPartitionRouter):
     """Overwrite SubstreamPartitionRouter to be able to pass more than one value
     from parent stream to stream_slices
     """
+
+    def _get_threads_request_params(
+        self, channel: str, stream_slice: Optional[StreamSlice] = None, stream_state: Optional[StreamState] = None
+    ) -> Mapping[str, Any]:
+        """
+        Validates that the request params are >= than current state values for incremental syncs.
+        Threads request should be performed only for float_ts from slice >= current float ts from state.
+        """
+        if stream_state:
+            for state in stream_state["states"]:
+                if state["partition"]["channel"] == channel:
+                    float_ts = state["cursor"]["float_ts"]
+                    if float(stream_slice.partition["float_ts"]) >= float(float_ts):
+                        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
+                    else:
+                        return {}
+
+        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
+
+    def get_request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        channel = stream_slice.partition.get("channel") if stream_slice else None
+        if channel:
+            return self._get_threads_request_params(channel, stream_slice, stream_state)
+
+        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
 
     def _get_parent_field(self, parent_stream_config: ParentStreamConfig) -> str:
         parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore # parent_key is always casted to an interpolated string
