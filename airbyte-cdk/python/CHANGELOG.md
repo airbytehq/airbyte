@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.76.0
+Migrate Python CDK to Poetry
+
 ## 0.75.0
 low-code: Add StateMigration component
 
