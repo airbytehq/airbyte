@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["object"],
+  "required": ["id", "name", "type"],
+  "properties": {
+    "id": {
+      "type": ["string","integer"]
+    },
+    "name": {
+      "type": ["string"]
+    },
+    "type": {
+      "type": ["string"]
+    },
+    "alias": {
+      "type": ["string"]
+    },
+    "deprecated": {
+      "type": ["boolean"]
+    }
+  }
+}
