@@ -259,7 +259,6 @@ class CustomReportsStream(BambooHrStream):
     def get_default_bamboo_fields() -> List[str]:
         # As per https://documentation.bamboohr.com/docs/list-of-field-names
         return [
-            "acaStatus"
             "acaStatusCategory"
             "address1"
             "address2"

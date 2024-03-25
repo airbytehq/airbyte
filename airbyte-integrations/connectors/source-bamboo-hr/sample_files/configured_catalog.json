@@ -67,12 +67,6 @@
           ],
           "required": [],
           "properties": {
-            "acaStatus": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
             "acaStatusCategory": {
               "type": [
                 "null",
