@@ -119,9 +119,15 @@ columns are created using Quoted identifiers preserving the case sensitivity.
 4. Enter a name for your source.
 5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
    Postgres database.
-6. List the **Default Schemas**. :::note The schema names are case sensitive. The 'public' schema is
-   set by default. Multiple schemas may be used at one time. No schemas set explicitly - will sync
-   all of existing. :::
+6. List the **Default Schemas**.
+
+:::note
+
+The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
+used at one time. No schemas set explicitly - will sync all of existing.
+
+:::
+
 7. For **User** and **Password**, enter the username and password you created in
    [Step 1](#step-1-optional-create-a-dedicated-read-only-user).
 8. For Airbyte Open Source, toggle the switch to connect using SSL. For Airbyte Cloud uses SSL by
@@ -150,8 +156,11 @@ columns are created using Quoted identifiers preserving the case sensitivity.
     **Note:** Do not use the following keys in JDBC URL Params field as they will be overwritten by
     Airbyte: `currentSchema`, `user`, `password`, `ssl`, and `sslmode`.
 
-    :::warning This is an advanced configuration option. Users are advised to use it with caution.
-    :::
+:::warning
+
+This is an advanced configuration option. Users are advised to use it with caution.
+
+:::
 
 11. For SSH Tunnel Method, select:
 
@@ -160,9 +169,13 @@ columns are created using Quoted identifiers preserving the case sensitivity.
       tunnel
     - **Password Authentication** to use a password as your secret for establishing the SSH tunnel
 
-    :::warning Since Airbyte Cloud requires encrypted communication, select **SSH Key
-    Authentication** or **Password Authentication** if you selected **disable**, **allow**, or
-    **prefer** as the **SSL Mode**; otherwise, the connection will fail. :::
+:::warning
+
+Since Airbyte Cloud requires encrypted communication, select **SSH Key Authentication** or
+**Password Authentication** if you selected **disable**, **allow**, or **prefer** as the **SSL
+Mode**; otherwise, the connection will fail.
+
+:::
 
 12. Click **Set up destination**.
 
