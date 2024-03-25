@@ -5,7 +5,7 @@
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from .common import CatalogModel, Targeting
+from .common import CatalogModel, KeywordsBase
 
 
 class Adjustments(CatalogModel):
@@ -19,17 +19,17 @@ class Bidding(CatalogModel):
 
 
 class ProductCampaign(CatalogModel):
-    portfolioId: str
-    campaignId: str
+    portfolioId: int
+    campaignId: Decimal
     name: str
     tags: Dict[str, str]
     targetingType: str
     state: str
-    dynamicBidding: dict
+    dynamicBidding: Dict[str, Any]
     startDate: str
     endDate: str
-    budget: dict
-    extendedData: dict
+    budget: Dict[str, Any]
+    extendedData: Optional[Dict[str, Any]]
 
 
 class ProductAdGroups(CatalogModel):
@@ -42,8 +42,8 @@ class ProductAdGroups(CatalogModel):
 
 
 class BidRecommendations(CatalogModel):
-    bidValues: List[dict[str, str]]
-    targetingExpression: dict[str, str]
+    bidValues: List[Dict[str, str]]
+    targetingExpression: Dict[str, str]
 
 
 class ProductAdGroupBidRecommendations(CatalogModel):
@@ -71,7 +71,7 @@ class ProductAd(CatalogModel):
     state: str
     sku: str
     adGroupId: str
-    extendedData: dict
+    extendedData: Optional[Dict[str, Any]]
 
 
 class ProductTargeting(CatalogModel):
@@ -83,4 +83,29 @@ class ProductTargeting(CatalogModel):
     state: str
     bid: float
     adGroupId: str
-    extendedData: dict
+    extendedData: Optional[Dict[str, Any]]
+
+class CampaignNegativeKeywords(KeywordsBase):
+    keywordId: str
+    campaignId: str
+    state: str
+    keywordText: str
+    extendedData: Optional[Dict[str, Any]]
+
+class SponsoredproductKeywords(KeywordsBase):
+    keywordId: str
+    nativeLanguageLocale: str
+    campaignId: str
+    state: str
+    adGroupId: str
+    keywordText: str
+    extendedData: Optional[Dict[str, Any]]
+
+class NegativeKeywords(KeywordsBase):
+    keywordId: str
+    nativeLanguageLocale: str
+    campaignId: str
+    state: str
+    adGroupId: str
+    keywordText: str
+    extendedData: Optional[Dict[str, Any]]

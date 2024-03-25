@@ -197,11 +197,6 @@ class SponsoredProductAdGroupBidRecommendations(SponsoredProductAdGroupWithSlice
 
 class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlicesABC):
     """Docs:
-    Latest API:
-        https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#/Keyword%20Targets/getRankedKeywordRecommendation
-        POST /sp/targets/keywords/recommendations
-        Note: does not work, always get "403 Forbidden"
-
     V2 API:
         https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Suggested%20keywords
         GET /v2/sp/adGroups/{{adGroupId}}>/suggested/keywords
