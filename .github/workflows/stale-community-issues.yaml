@@ -23,4 +23,4 @@ jobs:
             It's possible it has already been fixed. It is being marked as stale and will be closed in 20 days if there is no activity.
             To keep it open, please comment to let us know why it is important to you and if it is still reproducible on recent versions of Airbyte.
           close-issue-message: "This issue was closed because it has been inactive for 20 days since being marked as stale."
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
