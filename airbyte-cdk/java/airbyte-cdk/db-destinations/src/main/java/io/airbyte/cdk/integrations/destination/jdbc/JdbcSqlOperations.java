@@ -25,23 +25,13 @@ import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public abstract class JdbcSqlOperations implements SqlOperations {
 
   protected static final String SHOW_SCHEMAS = "show schemas;";
   protected static final String NAME = "name";
-
-  // this adapter modifies record message before inserting them to the destination
-  protected final Optional<DataAdapter> dataAdapter;
   protected final Set<String> schemaSet = new HashSet<>();
 
-  protected JdbcSqlOperations() {
-    this.dataAdapter = Optional.empty();
-  }
-
-  protected JdbcSqlOperations(final DataAdapter dataAdapter) {
-    this.dataAdapter = Optional.of(dataAdapter);
-  }
+  protected JdbcSqlOperations() {}
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
@@ -138,9 +128,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
       for (final PartialAirbyteMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
-        // TODO we only need to do this is formatData is overridden. If not, we can just do jsonData =
-        // record.getSerialized()
-        final var jsonData = Jsons.serialize(formatData(Jsons.deserializeExact(record.getSerialized())));
+        final var jsonData = record.getSerialized();
         final var airbyteMeta = Jsons.serialize(record.getRecord().getMeta());
         final var extractedAt = Timestamp.from(Instant.ofEpochMilli(record.getRecord().getEmittedAt()));
         if (TypingAndDedupingFlag.isDestinationV2()) {
@@ -150,10 +138,6 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         }
       }
     }
-  }
-
-  protected JsonNode formatData(final JsonNode data) {
-    return data;
   }
 
   @Override
@@ -206,11 +190,6 @@ public abstract class JdbcSqlOperations implements SqlOperations {
                                   final String schemaName,
                                   final String tableName)
       throws Exception {
-    dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> {
-      final JsonNode data = Jsons.deserializeExact(airbyteRecordMessage.getSerialized());
-      adapter.adapt(data);
-      airbyteRecordMessage.setSerialized(Jsons.serialize(data));
-    }));
     if (TypingAndDedupingFlag.isDestinationV2()) {
       insertRecordsInternalV2(database, records, schemaName, tableName);
     } else {
