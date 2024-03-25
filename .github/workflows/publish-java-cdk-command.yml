@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 # Usage: This workflow can be invoked manually or by a slash command.
 #
 # To invoke via GitHub UI, go to Actions tab, select the workflow, and click "Run workflow".
@@ -8,6 +10,11 @@
 #    /publish-java-cdk force=true     # Force-publish if needing to replace an already published version
 name: Publish Java CDK
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
   workflow_dispatch:
     inputs:
       repo:
@@ -27,6 +34,11 @@ on:
         required: true
         type: boolean
         default: false
+      remove-useLocalCdk:
+        description: "Once the CDK is published, set useLocalCdk to false for all connectors where it is true"
+        required: true
+        type: boolean
+        default: false
       gitref:
         description: "The git ref to check out from the specified repository."
         required: true
@@ -41,11 +53,13 @@ concurrency:
 env:
   # Use the provided GITREF or default to the branch triggering the workflow.
   GITREF: ${{ github.event.inputs.gitref || github.ref }}
-  FORCE: "${{ github.event.inputs.force == null && 'false' || github.event.inputs.force }}"
+  FORCE: "${{ github.event_name == 'push' || github.event.inputs.force == null && 'false' ||  github.event.inputs.force }}"
   DRY_RUN: "${{ github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
+  REMOVE_USELOCALCDK: "${{ github.event_name == 'push' || github.event.inputs.remove-useLocalCdk == null && 'false' || github.event.inputs.remove-useLocalCdk }}"
   CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
   S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+  AIRBYTE_CI_CONTEXT: "${{ github.event_name == 'push' && 'master' || 'manual' }}
 
 jobs:
   publish-cdk:
@@ -101,7 +115,8 @@ jobs:
           arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkBuild
 
       - name: Check for Existing Version
-        if: ${{ !(env.FORCE == 'true') }}
+        # we only check existing version if it's a manual trigger and FORCE is set to false
+        if: ${{ (env.FORCE != 'true') }}
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
@@ -126,6 +141,19 @@ jobs:
           execution-only-caches: true
           gradle-distribution-sha-256-sum-warning: false
           arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkPublish
+
+      - name: remove usages of useLocalCdk
+        if: ${{ env.DRY_RUN == 'false' && env.REMOVE_USELOCALCDK != 'false' }}
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: ${{ env.AIRBYTE_CI_CONTEXT }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "connectors --with-use-local-cdk upgrade_cdk"
 
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()

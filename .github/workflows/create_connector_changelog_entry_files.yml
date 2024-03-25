@@ -1,0 +1,24 @@
+name: Create connector changelog entry files
+run-name: Create connector changelog entry files
+on:
+  pull_request:
+    types:[opened, edited, synchronize]
+
+env:
+  GITREF: ${{ github.event.inputs.gitref || github.ref }}
+
+
+jobs:
+  create-connector-changelog-entry-files:
+    # IMPORTANT: This name must match the require check name on the branch protection settings
+    name: "Delete existing files for the current PR"
+    runs-on: tooling-test-small
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.GITREF }}
+
+      - name: Write PR body to file
+
+      - name: Create Changelog Entry Files
