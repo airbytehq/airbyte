@@ -3,7 +3,12 @@
 This page guides you through the process of setting up the Postgres destination connector.
 
 :::caution
-Postgres, while an excellent relational database, is not a data warehouse. Postgres is likely to perform poorly with large data volumes. Even postgres-compatible destinations (e.g. AWS Aurora) are not immune to slowdowns when dealing with large writes or updates over ~500GB. Especially when using normalization with `destination-postgres`, be sure to monitor your database's memory and CPU usage during your syncs. It is possible for your destination to 'lock up', and incur high usage costs with large sync volumes.
+
+Postgres, while an excellent relational database, is not a data warehouse. 
+
+1. Postgres is likely to perform poorly with large data volumes. Even postgres-compatible destinations (e.g. AWS Aurora) are not immune to slowdowns when dealing with large writes or updates over ~500GB. Especially when using normalization with `destination-postgres`, be sure to monitor your database's memory and CPU usage during your syncs. It is possible for your destination to 'lock up', and incur high usage costs with large sync volumes.
+2. Postgres column size limitations are likley to cause colisions when used as a destination reciving data from highly-nested and flattened sources. 
+
 :::
 
 ## Prerequisites
