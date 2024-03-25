@@ -237,7 +237,7 @@ definitions:
         fields:
           - path:
               - float_ts
-            value: "{{ record.ts|int }}"
+            value: "{{ record.ts|float }}"
           - path:
               - channel_id
             value: "{{ stream_partition.get('channel') }}"
@@ -268,7 +268,7 @@ definitions:
             stream:
               $ref: "#/definitions/channel_messages_stream"
             parent_key: ts
-            partition_field: ts
+            partition_field: float_ts
             request_option:
               type: RequestOption
               field_name: "ts"
@@ -289,7 +289,7 @@ definitions:
         fields:
           - path:
               - float_ts
-            value: "{{ record['ts']|int }}"
+            value: "{{ record['ts']|float }}"
           - path:
               - channel_id
             value: "{{ stream_slice.get('channel') }}"
