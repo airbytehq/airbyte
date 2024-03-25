@@ -11,6 +11,7 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.commons.text.Names
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
 import javax.sql.DataSource
@@ -23,7 +24,7 @@ import org.jooq.impl.DSL
  * anything. At some point we might (?) want to do a refactor to combine them.
  */
 abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
-    private var database: JdbcDatabase? = null
+    protected var database: JdbcDatabase? = null
     private var dataSource: DataSource? = null
 
     protected abstract val baseConfig: ObjectNode
@@ -83,7 +84,11 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
-        val tableName = concatenateRawTableName(streamNamespace, streamName!!)
+        val tableName =
+            concatenateRawTableName(
+                streamNamespace,
+                Names.toAlphanumericAndUnderscore(streamName!!)
+            )
         val schema = rawSchema
         return database!!.queryJsons(DSL.selectFrom(DSL.name(schema, tableName)).sql)
     }
@@ -97,7 +102,10 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
-        return database!!.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, streamName)).sql)
+        return database!!.queryJsons(
+            DSL.selectFrom(DSL.name(streamNamespace, Names.toAlphanumericAndUnderscore(streamName)))
+                .sql
+        )
     }
 
     @Throws(Exception::class)

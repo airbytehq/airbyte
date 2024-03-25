@@ -17,22 +17,13 @@ import java.sql.SQLException
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
-import java.util.function.Consumer
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
 abstract class JdbcSqlOperations : SqlOperations {
-    // this adapter modifies record message before inserting them to the destination
-    protected val dataAdapter: Optional<DataAdapter>
     protected val schemaSet: MutableSet<String?> = HashSet()
 
-    protected constructor() {
-        this.dataAdapter = Optional.empty()
-    }
-
-    protected constructor(dataAdapter: DataAdapter) {
-        this.dataAdapter = Optional.of(dataAdapter)
-    }
+    protected constructor() {}
 
     @Throws(Exception::class)
     override fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String?) {
@@ -146,11 +137,8 @@ abstract class JdbcSqlOperations : SqlOperations {
             CSVPrinter(writer, CSVFormat.DEFAULT).use { csvPrinter ->
                 for (record in records) {
                     val uuid = UUID.randomUUID().toString()
-                    // TODO we only need to do this is formatData is overridden. If not, we can just
-                    // do jsonData =
-                    // record.getSerialized()
-                    val jsonData =
-                        Jsons.serialize(formatData(Jsons.deserializeExact(record.serialized)))
+
+                    val jsonData = record.serialized
                     val airbyteMeta = Jsons.serialize(record.record!!.meta)
                     val extractedAt =
                         Timestamp.from(Instant.ofEpochMilli(record.record!!.emittedAt))
@@ -233,15 +221,6 @@ abstract class JdbcSqlOperations : SqlOperations {
         schemaName: String?,
         tableName: String?
     ) {
-        dataAdapter.ifPresent { adapter: DataAdapter ->
-            records!!.forEach(
-                Consumer { airbyteRecordMessage: PartialAirbyteMessage? ->
-                    val data = Jsons.deserializeExact(airbyteRecordMessage!!.serialized)
-                    adapter.adapt(data)
-                    airbyteRecordMessage.serialized = Jsons.serialize(data)
-                }
-            )
-        }
         if (isDestinationV2) {
             insertRecordsInternalV2(database, records, schemaName, tableName)
         } else {
