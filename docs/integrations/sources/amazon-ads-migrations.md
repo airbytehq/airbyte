@@ -7,13 +7,16 @@ The following streams have updated schemas due to a change with the Amazon Ads A
 * `SponsoredBrandsCampaigns`
 * `SponsoredBrandsAdGroups`
 * `SponsoredProductsCampaigns`
-* `SponsoredProductsAdGroups`
 * `SponsoredProductsAdGroupBidRecommendations`
-* `SponsoredProductKeywords`
-* `SponsoredProductNegativeKeywords`
-* `SponsoredProductCampaignNegativeKeywords`
-* `SponsoredProductAds`
-* `SponsoredProductTargetings`
+
+### Schema Changes - Removed/Added Fields
+
+| Stream Name                                     | Removed Fields              | Added Fields             |
+|-------------------------------------------------|-----------------------------|--------------------------|
+| `SponsoredBrandsCampaigns`                      | `serviceStatus`, `bidOptimization`, `bidMultiplier`, `adFormat`, `bidAdjustments`, `creative`, `landingPage`, `supplySource`  | `ruleBasedBudget`, `bidding`, `productLocation`, `costType`, `smartDefault`, `extendedData`  |
+| `SponsoredBrandsAdGroups`                       | `bid`, `keywordId`, `keywordText`, `nativeLanuageKeyword`, `matchType`  | `extendedData`  |
+| `SponsoredProductsCampaigns`                    | `campaignType`, `dailyBudget`, `ruleBasedBudget`, `premiumBidAdjustment`, `networks`  | `dynamicBidding`, `budget`, `extendedData`  |
+| `SponsoredProductsAdGroupBidRecommendations`    | `suggestedBid`  | `theme`, `bidRecommendationsForTargetingExpressions`  |
 
 ### Refresh affected schemas and reset data
 
