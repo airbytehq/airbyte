@@ -1,0 +1,84 @@
+{
+  "documentationUrl" : "https://docs.airbyte.io/connector-development",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Arsenkin Spec",
+    "type" : "object",
+    "required" : [
+      "token",
+      "keywords",
+      "device",
+      "region_yandex"
+    ],
+    "additionalProperties" : false,
+    "properties" : {
+      "token" : {
+        "type" : "string",
+        "title" : "Access Token",
+        "description" : "Arsenkin API token",
+        "airbyre_secret" : true,
+        "order" : 0
+      },
+      "region_yandex" : {
+        "type" : "string",
+        "title" : "Yandex search region",
+        "description" : "Location for advertisement parsing",
+        "order" : 1,
+        "default" : 213,
+        "examples" : [
+          213
+        ]
+      },
+      "device" : {
+        "title" : "Device type",
+        "order" : 2,
+        "type" : "object",
+        "oneOf" : [
+          {
+            "title" : "Desktop",
+            "description" : "Parse ads from desktop",
+            "properties" : {
+              "device_type" : {
+                "type" : "string",
+                "const" : "desktop",
+                "order" : 0
+              }
+            },
+            "required" : [
+              "device_type"
+            ]
+          },
+          {
+            "title" : "Mobile",
+            "description" : "Parse ads from smartphone",
+            "properties" : {
+              "device_type" : {
+                "type" : "string",
+                "const" : "mobile",
+                "order" : 0
+              }
+            },
+            "required" : [
+              "device_type"
+            ]
+          }
+        ]
+      },
+      "keywords" : {
+        "type" : "array",
+        "title" : "Parsing keywords",
+        "description" : "List of search keywords",
+        "order" : 3,
+        "items" : {
+          "type" : "string",
+          "title" : "Keyword",
+          "description" : "Single search keyword",
+          "examples" : [
+            "Купить холодильник",
+            "Автомобиль БУ"
+          ]
+        }
+      }
+    }
+  }
+}
