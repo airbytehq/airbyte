@@ -238,23 +238,26 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
-    final Field<?>[] dataFieldErrors = columns
+    final List<Field<Object>> dataFieldErrors = columns
         .entrySet()
         .stream()
         .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
-        .toArray(Field<?>[]::new);
+        .toList();
+    final Field<?> rawTableChangesArray =
+        field("ARRAY(SELECT jsonb_array_elements_text({0}#>'{changes}'))::jsonb[]", field(name(COLUMN_NAME_AB_META)));
+    final Field<?> finalTableChangesArray = dataFieldErrors.isEmpty() ? field("ARRAY[]::jsonb[]")
+        : function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors).cast(JSONB_TYPE.getArrayDataType()), val((String) null));
     return jsonBuildObject(val(AB_META_COLUMN_CHANGES_KEY),
-                    function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors), val((String) null))).as(COLUMN_NAME_AB_META);
+        field("ARRAY_CAT({0}, {1})", finalTableChangesArray, rawTableChangesArray)).as(COLUMN_NAME_AB_META);
   }
 
   private Field<?> nulledChangeObject(String fieldName) {
     return jsonBuildObject(val(AB_META_CHANGES_FIELD_KEY), val(fieldName),
-                           val(AB_META_CHANGES_CHANGE_KEY), val(Change.NULLED),
-                           val(AB_META_CHANGES_REASON_KEY), val(Reason.DESTINATION_TYPECAST_ERROR)
-    );
+        val(AB_META_CHANGES_CHANGE_KEY), val(Change.NULLED),
+        val(AB_META_CHANGES_REASON_KEY), val(Reason.DESTINATION_TYPECAST_ERROR));
   }
 
-  private Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
+  private Field<Object> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
     final Field<Object> extract = extractColumnAsJson(column);
 
     // If this field is a struct, verify that the raw data is an object or null.
@@ -274,7 +277,9 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
           when (airbyteProtocolType == AirbyteProtocolType.UNKNOWN || airbyteProtocolType == AirbyteProtocolType.STRING) ->
           cast(val((Object) null), JSONB_TYPE);
       default -> field(CASE_STATEMENT_SQL_TEMPLATE,
-                            extract.isNotNull().and(jsonTypeof(extract).ne("null")),
+                            extract.isNotNull()
+                                .and(jsonTypeof(extract).ne("null"))
+                                .and(castedField(extract, type, true).isNull()),
                             nulledChangeObject(column.originalName()),
                             cast(val((Object) null), JSONB_TYPE));
     };

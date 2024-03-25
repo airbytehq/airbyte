@@ -85,17 +85,19 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
-                            .withNamespace(streamNamespace)
-                            .withName(streamName)
-                            .withJsonSchema(SCHEMA))));
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
     runSync(catalog, messages1, "airbyte/destination-postgres:0.6.3");
     // Special case to retrieve raw records pre DV2 using the same logic as actual code.
-    final List<JsonNode> rawActualRecords = database.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, "_airbyte_raw_"+ Names.toAlphanumericAndUnderscore(streamName).toLowerCase())).getSQL());
-    // Just verify the size of raw pre DV2, postgres was lower casing the MixedCaseSchema so above retrieval should give 5 records from sync1
+    final List<JsonNode> rawActualRecords = database.queryJsons(
+        DSL.selectFrom(DSL.name(streamNamespace, "_airbyte_raw_" + Names.toAlphanumericAndUnderscore(streamName).toLowerCase())).getSQL());
+    // Just verify the size of raw pre DV2, postgres was lower casing the MixedCaseSchema so above
+    // retrieval should give 5 records from sync1
     assertEquals(5, rawActualRecords.size());
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
     runSync(catalog, messages2);

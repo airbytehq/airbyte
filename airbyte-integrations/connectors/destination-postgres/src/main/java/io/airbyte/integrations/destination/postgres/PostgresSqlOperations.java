@@ -51,11 +51,11 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
                                          final String tableName)
       throws Exception {
     insertRecordsInternal(database, records, schemaName, tableName,
-                          COLUMN_NAME_AB_RAW_ID,
-                          COLUMN_NAME_DATA,
-                          COLUMN_NAME_AB_EXTRACTED_AT,
-                          COLUMN_NAME_AB_LOADED_AT,
-                          COLUMN_NAME_AB_META);
+        COLUMN_NAME_AB_RAW_ID,
+        COLUMN_NAME_DATA,
+        COLUMN_NAME_AB_EXTRACTED_AT,
+        COLUMN_NAME_AB_LOADED_AT,
+        COLUMN_NAME_AB_META);
   }
 
   @Override
