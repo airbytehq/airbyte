@@ -31,7 +31,7 @@ abstract class SpecModifyingDestination(private val destination: Destination) : 
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
         return destination.getConsumer(config, catalog, outputRecordCollector)
     }
@@ -40,7 +40,7 @@ abstract class SpecModifyingDestination(private val destination: Destination) : 
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         return destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)
     }

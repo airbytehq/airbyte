@@ -94,7 +94,7 @@ class SshWrappedDestination : Destination {
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
         val tunnel = getTunnelInstance(config)
 
@@ -120,7 +120,7 @@ class SshWrappedDestination : Destination {
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         val clone = Jsons.clone(config)
         val connectionOptionsConfig: Optional<JsonNode> =

@@ -19,28 +19,32 @@ import org.jooq.SQLDialect
  * TyperDeduper classes. This implementation appeases that requirement but does not implement any
  * "final" table operations.
  */
-class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransformer) :
+class RawOnlySqlGenerator(namingTransformer: NamingConventionTransformer) :
     JdbcSqlGenerator(namingTransformer) {
-    override fun getStructType(): DataType<*>? {
-        throw NotImplementedError("This Destination does not support final tables")
-    }
+    override val structType: DataType<*>
+        get() {
+            throw NotImplementedError("This Destination does not support final tables")
+        }
 
-    override fun getArrayType(): DataType<*>? {
-        throw NotImplementedError("This Destination does not support final tables")
-    }
+    override val arrayType: DataType<*>?
+        get() {
+            throw NotImplementedError("This Destination does not support final tables")
+        }
 
-    override fun getWidestType(): DataType<*>? {
-        throw NotImplementedError("This Destination does not support final tables")
-    }
+    override val widestType: DataType<*>?
+        get() {
+            throw NotImplementedError("This Destination does not support final tables")
+        }
 
-    override fun getDialect(): SQLDialect? {
-        throw NotImplementedError("This Destination does not support final tables")
-    }
+    override val dialect: SQLDialect?
+        get() {
+            throw NotImplementedError("This Destination does not support final tables")
+        }
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
         useExpensiveSaferCasting: Boolean,
-    ): List<Field<*>>? {
+    ): MutableList<Field<*>> {
         throw NotImplementedError("This Destination does not support final tables")
     }
 
@@ -53,9 +57,9 @@ class RawOnlySqlGenerator(private val namingTransformer: NamingConventionTransfo
     }
 
     override fun getRowNumber(
-        primaryKey: List<ColumnId>,
+        primaryKey: List<ColumnId?>?,
         cursorField: Optional<ColumnId>,
-    ): Field<Int>? {
+    ): Field<Int> {
         throw NotImplementedError("This Destination does not support final tables")
     }
 }

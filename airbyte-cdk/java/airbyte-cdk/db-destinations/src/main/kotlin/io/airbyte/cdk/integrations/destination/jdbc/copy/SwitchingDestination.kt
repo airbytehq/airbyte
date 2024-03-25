@@ -12,11 +12,11 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Multiple configs may allow you to sync data to the destination in multiple ways.
@@ -28,7 +28,11 @@ import java.util.function.Function
  * This class exists to make it easy to define a destination in terms of multiple other destination
  * implementations, switching between them based on the config provided.
  */
-class SwitchingDestination<T : Enum<T>?>(enumClass: Class<T>, configToType: Function<JsonNode, T>, typeToDestination: Map<T, Destination>) : BaseConnector(), Destination {
+class SwitchingDestination<T : Enum<T>>(
+    enumClass: Class<T>,
+    configToType: Function<JsonNode, T>,
+    typeToDestination: Map<T, Destination>
+) : BaseConnector(), Destination {
     private val configToType: Function<JsonNode, T>
     private val typeToDestination: Map<T, Destination>
 
@@ -51,21 +55,33 @@ class SwitchingDestination<T : Enum<T>?>(enumClass: Class<T>, configToType: Func
     }
 
     @Throws(Exception::class)
-    override fun getConsumer(config: JsonNode,
-                             catalog: ConfiguredAirbyteCatalog?,
-                             outputRecordCollector: Consumer<AirbyteMessage?>?): AirbyteMessageConsumer? {
+    override fun getConsumer(
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
+        outputRecordCollector: Consumer<AirbyteMessage>
+    ): AirbyteMessageConsumer? {
         val destinationType = configToType.apply(config)
         LOGGER.info("Using destination type: " + destinationType!!.name)
-        return typeToDestination[destinationType]!!.getConsumer(config, catalog, outputRecordCollector)
+        return typeToDestination[destinationType]!!.getConsumer(
+            config,
+            catalog,
+            outputRecordCollector
+        )
     }
 
     @Throws(Exception::class)
-    override fun getSerializedMessageConsumer(config: JsonNode,
-                                              catalog: ConfiguredAirbyteCatalog?,
-                                              outputRecordCollector: Consumer<AirbyteMessage?>?): SerializedAirbyteMessageConsumer? {
+    override fun getSerializedMessageConsumer(
+        config: JsonNode,
+        catalog: ConfiguredAirbyteCatalog,
+        outputRecordCollector: Consumer<AirbyteMessage>
+    ): SerializedAirbyteMessageConsumer? {
         val destinationType = configToType.apply(config)
         LOGGER.info("Using destination type: " + destinationType!!.name)
-        return typeToDestination[destinationType]!!.getSerializedMessageConsumer(config, catalog, outputRecordCollector)
+        return typeToDestination[destinationType]!!.getSerializedMessageConsumer(
+            config,
+            catalog,
+            outputRecordCollector
+        )
     }
 
     companion object {

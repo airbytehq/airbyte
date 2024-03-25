@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 
 class DefaultTyperDeduperTest {
     private var parsedCatalog: ParsedCatalog? = null
@@ -51,7 +52,7 @@ class DefaultTyperDeduperTest {
     private lateinit var destinationHandler: DestinationHandler<MockState>
 
     private lateinit var initialStates: List<DestinationInitialStatus<MockState>>
-    private lateinit var updatedStates: MutableMap<StreamId?, MockState>
+    private lateinit var updatedStates: MutableMap<StreamId, MockState>
 
     private lateinit var migrator: DestinationV1V2Migrator
     private lateinit var typerDeduper: TyperDeduper
@@ -206,7 +207,7 @@ class DefaultTyperDeduperTest {
         Mockito.clearInvocations(destinationHandler)
 
         typerDeduper!!.commitFinalTables()
-        Mockito.verify(destinationHandler, Mockito.never()).execute(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler, Mockito.never()).execute(any())
     }
 
     /**
@@ -314,7 +315,7 @@ class DefaultTyperDeduperTest {
         Mockito.clearInvocations(destinationHandler)
 
         typerDeduper!!.prepareFinalTables()
-        Mockito.verify(destinationHandler, Mockito.never()).execute(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler, Mockito.never()).execute(any())
     }
 
     /**
@@ -466,9 +467,7 @@ class DefaultTyperDeduperTest {
     @Test
     @Throws(Exception::class)
     fun failedSetup() {
-        Mockito.doThrow(RuntimeException("foo"))
-            .`when`(destinationHandler)
-            .execute(ArgumentMatchers.any())
+        Mockito.doThrow(RuntimeException("foo")).`when`(destinationHandler).execute(any())
 
         Assertions.assertThrows(Exception::class.java) { typerDeduper!!.prepareFinalTables() }
         Mockito.clearInvocations(destinationHandler)
@@ -636,7 +635,7 @@ class DefaultTyperDeduperTest {
                     MockState(true, true, true)
                 )
             )
-        Mockito.verify(destinationHandler).gatherInitialState(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
             .execute(
                 separately(
@@ -756,7 +755,7 @@ class DefaultTyperDeduperTest {
                     MockState(true, true, true)
                 )
             )
-        Mockito.verify(destinationHandler).gatherInitialState(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
             .execute(
                 separately(
@@ -865,7 +864,7 @@ class DefaultTyperDeduperTest {
                     MockState(true, false, false)
                 )
             )
-        Mockito.verify(destinationHandler).gatherInitialState(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
             .execute(
                 separately(

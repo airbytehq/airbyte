@@ -11,12 +11,10 @@ object ArgumentProviderUtil {
 
     /**
      * This method use
-     * [io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion.getPrefix] to
-     * prefix the file name.
-     *
+     * [io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion.getPrefix] to prefix
+     * the file name.
      *
      * example:
-     *
      *
      * filename.json -> v0/filename.json
      *
@@ -24,13 +22,12 @@ object ArgumentProviderUtil {
      * @param protocolVersion supported protocol version
      * @return filename with protocol version prefix
      */
-    fun prefixFileNameByVersion(fileName: String?, protocolVersion: ProtocolVersion?): String {
-        return String.format("%s/%s", protocolVersion.getPrefix(), fileName)
+    fun prefixFileNameByVersion(fileName: String?, protocolVersion: ProtocolVersion): String {
+        return String.format("%s/%s", protocolVersion.prefix, fileName)
     }
 
     /**
      * This method use reflection to get protocol version method from provided test context.
-     *
      *
      * NOTE: getProtocolVersion method should be public.
      *

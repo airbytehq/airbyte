@@ -58,7 +58,7 @@ protected constructor(
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
         val s3Config = configFactory.getS3DestinationConfig(config, storageProvider())
         return S3ConsumerFactory()
