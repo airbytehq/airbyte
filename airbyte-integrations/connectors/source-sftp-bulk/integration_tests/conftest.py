@@ -1,20 +1,20 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 
-import json
 import logging
 import os
-import re
 import shutil
 import time
 import uuid
 from io import StringIO
-from typing import Any, Mapping, Tuple, Union
+from typing import Any, Mapping, Tuple
 
 import docker
 import paramiko
 import pytest
+
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from .utils import load_config, get_docker_ip
 
 logger = logging.getLogger("airbyte")
 
@@ -23,24 +23,6 @@ TMP_FOLDER = "/tmp/test_sftp_source"
 
 
 # HELPERS
-def load_config(config_path: str) -> Mapping[str, Any]:
-    with open(f"{os.path.dirname(__file__)}/configs/{config_path}", "r") as config:
-        return json.load(config)
-
-
-def get_docker_ip() -> Union[str, Any]:
-    # When talking to the Docker daemon via a UNIX socket, route all TCP
-    # traffic to docker containers via the TCP loopback interface.
-    docker_host = os.environ.get("DOCKER_HOST", "").strip()
-    if not docker_host or docker_host.startswith("unix://"):
-        return "127.0.0.1"
-
-    match = re.match(r"^tcp://(.+?):\d+$", docker_host)
-    if not match:
-        raise ValueError('Invalid value for DOCKER_HOST: "%s".' % (docker_host,))
-    return match.group(1)
-
-
 def generate_ssh_keys() -> Tuple[str, str]:
     key = paramiko.RSAKey.generate(2048)
     privateString = StringIO()
@@ -69,9 +51,7 @@ def connector_setup_fixture(docker_client) -> None:
     pub_key_path = ssh_path + "/id_rsa.pub"
     with open(pub_key_path, "w") as f:
         f.write(public_key)
-    available_port = 2222
-    config = load_config("config_password.json") | {"port": available_port}
-    config["host"] = get_docker_ip()
+    config = load_config("config_password.json")
     container = docker_client.containers.run(
         "atmoz/sftp",
         f"{config['username']}:{config['credentials']['password']}",
