@@ -258,6 +258,28 @@ definitions:
         $ref: "#/definitions/order_id_partition_router"
     incremental_sync:
       $ref: "#/definitions/base_id_incremental_sync"
+  order_coupons_stream:
+    type: DeclarativeStream
+    name: order_coupons
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: v2/orders/{{ stream_partition.order_id }}/coupons
+        request_parameters:
+          sort: date_modified:asc
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        $ref: "#/definitions/order_id_partition_router"
+    incremental_sync:
+      $ref: "#/definitions/base_id_incremental_sync"
   brands_stream:
     type: DeclarativeStream
     name: brands
