@@ -118,6 +118,7 @@
             "type": "object",
             "order": 2,
             "required": ["access_token", "refresh_token"],
+            "airbyte_hidden": true,
             "properties": {
               "auth_type": {
                 "type": "string",
