@@ -1,15 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import logging
 import re
 from collections import namedtuple
 from unittest.mock import Mock, call, patch, MagicMock
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from pendulum import today
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
@@ -140,7 +138,7 @@ def test_read_missing_stream(config, mock_get_customers):
     )
 
     try:
-        list(source.read(AirbyteLogger(), config=config, catalog=catalog))
+        list(source.read(logging.getLogger('airbyte'), config=config, catalog=catalog))
     except KeyError as error:
         pytest.fail(str(error))
 
@@ -385,7 +383,7 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     source = SourceGoogleAds()
     source.get_customers = lambda *args, **kwargs: [CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="123")] * 100
     check_successful, message = source.check_connection(
-        AirbyteLogger(),
+        logging.getLogger('airbyte'),
         {
             "credentials": {
                 "developer_token": "fake_developer_token",
