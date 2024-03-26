@@ -31,6 +31,7 @@ class CheckConnectorUsesHTTPSOnly(SecurityCheck):
         "acceptance_tests_logs",
         ".hypothesis",
         ".ruff_cache",
+        "htmlcov",
     }
 
     ignored_file_name_pattern_for_https_checks = {
