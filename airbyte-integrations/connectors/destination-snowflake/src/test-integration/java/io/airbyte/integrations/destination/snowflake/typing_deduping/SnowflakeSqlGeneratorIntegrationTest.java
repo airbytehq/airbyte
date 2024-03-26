@@ -1326,4 +1326,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         this.dumpFinalTableRecords(this.streamId, ""));
   }
 
+  // Disable state handling test because we disabled state handling.
+  @Override
+  @Disabled
+  @Test
+  public void testStateHandling() throws Exception {
+    super.testStateHandling();
+  }
+
 }
