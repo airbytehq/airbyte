@@ -101,6 +101,8 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
+          # TODO: remove this once we validate the new airbyte-ci binary works for the gradle cache issue
+          airbyte_ci_binary_url: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/df5f805/airbyte-ci
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/run-airbyte-ci
@@ -118,3 +120,5 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
           subcommand: "connectors --execute-timeout=18000 --modified  test"
+          # TODO: remove this once we validate the new airbyte-ci binary works for the gradle cache issue
+          airbyte_ci_binary_url: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/df5f805/airbyte-ci
