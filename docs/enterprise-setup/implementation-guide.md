@@ -73,6 +73,69 @@ Sensitive credentials such as AWS access keys are required to be made available 
 
 You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using `kubectl` directly. If your Kubernetes cluster already has permissions to make requests to an external entity via an instance profile, credentials are not required. For example, if your Amazon EKS cluster has been assigned a sufficient AWS IAM role to make requests to AWS S3, you do not need to specify access keys.
 
+Attached is a template secret manifest as a starting point. By default, the secret is expected to be named `airbyte-config-secrets`:
+
+<details>
+<summary>Template secrets.yml file</summary>
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+  # External Database
+  external-postgres-username: # e.g. airbyte
+  external-postgres-password: # e.g. wJalrXUtnFEMI
+  # S3
+  s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
+  s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  # External Secrets Manager
+  aws-secret-manager-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
+  aws-secret-manager-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+```
+
+Each of the subsections below contain details pertaining to the specifics of your deployment. Once you've completed your `secrets.yml` file, to apply all configured secrets to your cluster, run the following:
+
+```sh
+kubectl apply -f secrets.yml --namespace airbyte
+```
+
+</details>
+
+#### External Database
+
+For Self-Managed Enterprise deployments, we recommend using a dedicated database instance such as AWS RDS or GCP Cloud SQL instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
+
+<details>
+<summary>Secrets for External Database Storage</summary>
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+## Database Secrets
+  external-postgres-username: # e.g. airbyte
+  external-postgres-password: # e.g. wJalrXUtnFEMI
+```
+
+Overriding `external-postgres-username` or `external-postgres-username` allows you to store these secrets in the location of your choice. If you do this, you will also need to specify the secret location in the database config for your `values.yml` file.
+
+Using `kubectl` to create the secret directly:
+
+```sh
+kubectl create secret generic airbyte-config-secrets \
+  --from-literal=external-postgres-username='' \
+  --from-literal=external-postgres-password='' \
+  --namespace airbyte
+```
+
+</details>
+
 #### External Log Storage
 
 For Self-Managed Enterprise deployments, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS instead of against using the default internal Minio storage (`airbyte/minio`).
@@ -304,34 +367,21 @@ We assume in the following that you've already configured a Postgres instance:
 <details>
 <summary>External database setup steps</summary>
 
-1. Add external database details to your `values.yml` file. This disables the default internal Postgres database (`airbyte/db`), and configures the external Postgres database:
+Ensure you've already created a Kubernetes secret containing both your Postgres username and password. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `external-postgres-username` and `external-postgres-password` keys. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
+
+Then, add external database details to your `values.yml` file. This disables the default internal Postgres database (`airbyte/db`), and configures the external Postgres database:
 
 ```yaml
-postgresql:
-    enabled: false
-
-externalDatabase:   
-    host: ## Database host
-    user: ## Non-root username for the Airbyte database
-    database: db-airbyte ## Database name
-    port: 5432 ## Database port number 
+global:
+  database:
+    type: postgresExternal
+    databaseSecretName: airbyte-config-secrets
+    host: ## Database host, e.g. 127.0.0.1
+    port: ## Database port number, e.g. 5432
+    dbName: ## Database name, e.g. db-airbyte
 ```
 
-2. For the non-root user's password which has database access, you may use `password`, `existingSecret` or `jdbcUrl`. We recommend using `existingSecret`, or injecting sensitive fields from your own external secret store. Each of these parameters is mutually exclusive: 
-
-```yaml
-postgresql:
-    enabled: false
-
-externalDatabase:
-    ...
-    password: ## Password for non-root database user
-    existingSecret: ## The name of an existing Kubernetes secret containing the password.
-    existingSecretPasswordKey: ## The Kubernetes secret key containing the password.
-    jdbcUrl: "jdbc:postgresql://<user>:<password>@localhost:5432/db-airbyte" ## Full database JDBC URL. You can also add additional arguments.
-```
-
-The optional `jdbcUrl` field should be entered in the following format: `jdbc:postgresql://localhost:5432/db-airbyte`. We recommend against using this unless you need to add additional extra arguments can be passed to the JDBC driver at this time (e.g. to handle SSL).
+You may also choose to use an optional `jdbcUrl` field. This should be entered in the following format: `jdbc:postgresql://localhost:5432/db-airbyte`. We recommend against using this unless you need to add additional extra arguments can be passed to the JDBC driver at this time (e.g. to handle SSL).
 
 </details>
 
