@@ -188,6 +188,19 @@ class SemiIncrementalKlaviyoStream(KlaviyoStream, ABC):
             if starting_point and record[self.cursor_field] > starting_point or not starting_point:
                 yield record
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        next_page_token = self.next_page_token(response)
+        for record in super().parse_response(response, **kwargs):
+            record[self.next_page_token_state_key] = next_page_token
+            yield record
+
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
+        state = super().get_updated_state(current_stream_state, latest_record)
+        state[self.next_page_token_state_key] = latest_record[self.next_page_token_state_key]
+        return state
+
 
 class ArchivedRecordsStream(IncrementalKlaviyoStream):
     def __init__(self, path: str, cursor_field: str, start_date: Optional[str] = None, api_revision: Optional[str] = None, **kwargs):
