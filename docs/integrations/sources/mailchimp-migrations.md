@@ -2,7 +2,7 @@
 
 ## Upgrading to 2.0.0
 
-Version 2.0.0 introduces state changes to some incremental streams and new primary key for stream `Segment Members`.
+Version 2.0.0 introduces state changes to some incremental streams and new primary key for streams `Segment Members` and `List Members`.
 
 We're continuously striving to enhance the quality and reliability of our connectors at Airbyte. As part of our commitment to delivering
 exceptional service, we are transitioning source Mailchimp from the Python Connector Development Kit (CDK) to our innovative low-code
