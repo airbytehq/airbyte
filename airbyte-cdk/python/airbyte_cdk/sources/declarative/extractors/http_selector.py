@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState

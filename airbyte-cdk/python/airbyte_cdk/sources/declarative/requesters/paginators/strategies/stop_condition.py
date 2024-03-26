@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.incremental import Cursor

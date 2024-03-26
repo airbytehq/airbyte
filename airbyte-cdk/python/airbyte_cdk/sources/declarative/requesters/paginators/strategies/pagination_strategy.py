@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.types import Record
