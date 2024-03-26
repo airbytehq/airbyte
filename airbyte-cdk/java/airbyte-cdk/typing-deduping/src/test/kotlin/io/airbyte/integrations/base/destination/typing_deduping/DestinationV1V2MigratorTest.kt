@@ -9,7 +9,6 @@ import java.util.*
 import java.util.stream.Stream
 import lombok.SneakyThrows
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
@@ -21,7 +20,6 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.spy
 
-@Disabled
 class DestinationV1V2MigratorTest {
     class ShouldMigrateTestArgumentProvider : ArgumentsProvider {
         @Throws(Exception::class)
