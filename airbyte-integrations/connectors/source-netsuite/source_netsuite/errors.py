@@ -13,6 +13,9 @@ NETSUITE_ERRORS_MAPPING: dict = {
     403: {
         "INSUFFICIENT_PERMISSION": "not enough permissions to access the object",
     },
+    429: {
+        "CONCURRENCY_LIMIT_EXCEEDED": "concurrency limit exceeded. Retrying after 5 second wait"
+    },
 }
 
 

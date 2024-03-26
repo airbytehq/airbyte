@@ -5,6 +5,7 @@
 
 from abc import ABC
 from datetime import date, datetime, timedelta
+from time import sleep
 from json import JSONDecodeError
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
@@ -33,11 +34,13 @@ class NetsuiteStream(HttpStream, ABC):
         object_name: str,
         base_url: str,
         start_datetime: str,
+        end_datetime: str,
         window_in_days: int,
     ):
         self.object_name = object_name
         self.base_url = base_url
         self.start_datetime = start_datetime
+        self.end_datetime = end_datetime or date.today()
         self.window_in_days = window_in_days
         self.schemas = {}  # store subschemas to reduce API calls
         super().__init__(authenticator=auth)
@@ -178,6 +181,12 @@ class NetsuiteStream(HttpStream, ABC):
                 if error_code in known_error.keys():
                     setattr(self, "raise_on_http_errors", False)
 
+                    # handle 429 CONCURRENCY_LIMIT_EXCEEDED by trying again after short break
+                    # NetSuite sometimes just has a hickup here and that shouldn't stop it all 
+                    if "CONCURRENCY_LIMIT_EXCEEDED" in error_code and self.retry_concurrency_limit is True:
+                        sleep(5)
+                        return True
+
                     # handle data-format error
                     if "INVALID_PARAMETER" in error_code and "failed with date format" in detail_message:
                         self.logger.warn(f"Stream `{self.name}`: cannot read using date format `{self.default_datetime_format}")
@@ -271,12 +280,15 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         slices = []
         state = self.get_state_value(stream_state)
         start = datetime.strptime(state, NETSUITE_OUTPUT_DATETIME_FORMAT).date()
+        end = datetime.strptime(self.end_datetime, NETSUITE_OUTPUT_DATETIME_FORMAT).date()
+
         # handle abnormal state values
         if start > date.today():
             return slices
         else:
-            while start <= date.today():
+            while start < end:
                 next_day = start + timedelta(days=self.window_in_days)
+                next_day = end if end < next_day else next_day
                 slice_start = start.strftime(self.default_datetime_format)
                 slice_end = next_day.strftime(self.default_datetime_format)
                 yield {"start": slice_start, "end": slice_end}
