@@ -393,7 +393,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["plan.created", "plan.updated", "plan.deleted"],
                 **args,
             ),
-            IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
+            IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], expand_items=["data.tiers"], **args),
             IncrementalStripeStream(
                 name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args
             ),
