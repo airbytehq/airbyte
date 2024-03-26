@@ -8,7 +8,7 @@ check: #TODO implement custom check for https://github.com/airbytehq/airbyte/blo
 
 definitions:
   schema_loader:
-    type: BambooHRSchemaLoader
+    type: CustomSchemaLoader
     class_name: source_bamboo_hr.components.BambooHRSchemaLoader
   
   requester:
