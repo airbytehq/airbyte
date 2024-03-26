@@ -1,0 +1,17 @@
+{
+  "json_schema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "workspace_id": {
+        "type": "string"
+      },
+      "pipeline_id": {
+        "type": "string"
+      },
+      "pipeline_name": {
+        "type": "string"
+      }
+    }
+  }
+}

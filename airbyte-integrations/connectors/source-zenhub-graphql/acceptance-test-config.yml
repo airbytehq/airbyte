@@ -1,0 +1,48 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-zenhub-graphql:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_zenhub_graphql/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams: []
+        # expect_records:
+        #   path: "integration_tests/expected_records.jsonl"
+        #   extra_fields: no
+        #   exact_order: no
+        #   extra_records: yes
+        # ignored_fields:
+        #   zenhub_issues:
+        #     - name: updatedAt
+        #       bypass_reason: "Dates could change"
+        #     - name: title
+        #       bypass_reason: "Could have changes in the title"
+        #     - name: body
+        #       bypass_reason: "The content will be changing constantly"
+        #     - name: state
+        #       bypass_reason: "The state changes over time (e.g Open to Closed)"
+        #     - name: pipeline_name
+        #       bypass_reason: "The state changes over time (e.g Open to Closed)"
+        #     - name: priority_name
+        #       bypass_reason: "The priority changes depending on th eurgency of the task"
+
+  incremental: 
+    bypass_reason: "This connector does not implement incremental sync"
+
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
