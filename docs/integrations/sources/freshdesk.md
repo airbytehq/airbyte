@@ -68,7 +68,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 3.0.8   | 2024-03-25 | [36451](https://github.com/airbytehq/airbyte/pull/36451) | Unpin CDK version                                                                     |
+| 3.1.0   | 2024-03-26 | [36451](https://github.com/airbytehq/airbyte/pull/36451) | Unpin CDK version, add record counts to state messages                                |
 | 3.0.7   | 2024-02-12 | [35187](https://github.com/airbytehq/airbyte/pull/35187) | Manage dependencies with Poetry                                                       |
 | 3.0.6   | 2024-01-10 | [34101](https://github.com/airbytehq/airbyte/pull/34101) | Base image migration: remove Dockerfile and use the python-connector-base image       |
 | 3.0.5   | 2023-11-30 | [33000](https://github.com/airbytehq/airbyte/pull/33000) | Base image migration: remove Dockerfile and use the python-connector-base image       |
