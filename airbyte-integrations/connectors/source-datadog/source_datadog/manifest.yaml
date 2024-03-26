@@ -78,10 +78,10 @@ definitions:
     cursor_granularity: "PT0.000001S"
     lookback_window: "P31D"
     start_datetime:
-      datetime: "{{ config['start_date'] }}"
+      datetime: "{{ config['start_date'] or now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_datetime:
-      datetime: "{{ config['end_date'] }}"
+      datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_time_option:
       type: RequestOption
@@ -137,13 +137,35 @@ definitions:
       path: "monitor"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page_size"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: "{{ config['max_records_per_request'] }}"
+          start_from_page: 0
+          inject_on_first_request: true
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+      requester:
+        $ref: "#/definitions/requester_v1"
+        request_parameters:
+          group_states: "{{ config['monitors__group_states'] }}"
+          name: "{{ config['monitors__name'] }}"
+          tags: "{{ config['monitors__tags'] }}"
+          monitor_tags: "{{ config['monitors_monitor__tags'] }}"
+          with_downtimes: "{{ config['monitors__with_downtimes'] }}"
       record_selector:
         $ref: "#/definitions/selector"
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
-
   service_level_objectives_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -152,12 +174,80 @@ definitions:
       path: "slo"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: "{{ config['max_records_per_request'] }}"
+        page_token_option:
+          type: "RequestOption"
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        $ref: "#/definitions/requester_v1"
+        request_parameters:
+          ids: "{{ config['service_level_objectives__ids'] }}"
+          query: "{{ config['service_level_objectives__query'] }}"
+          tags_query: "{{ config['service_level_objectives__tags_query'] }}"
+          metrics_query: "{{ config['service_level_objectives__metrics_query'] }}"
       record_selector:
         $ref: "#/definitions/selector"
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: ["data"]
+  service_level_objectives_history_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "service_level_objectives_history"
+      primary_key: "to_ts"
+      path: "slo/{{ stream_partition.slo_id }}/history"
+    incremental_sync:
+      # The SLO History API only extends back three months
+      type: "DatetimeBasedCursor"
+      start_datetime:
+        datetime: "{{ max(
+          (config['start_date'] or (now_utc() - duration('P1D')).strftime('%Y-%m-%dT%H:%M:%SZ')),
+          (now_utc() - duration('P3M')).strftime('%Y-%m-%dT%H:%M:%SZ'))
+        }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: "{{ config['service_level_objectives_history__incremental__step'] | default('P1W') }}"
+      lookback_window: "{{ config['service_level_objectives_history__incremental__lookback_window'] | default('P1W') }}"
+      datetime_format: "%s"
+      cursor_granularity: "PT1S"
+      cursor_field: "to_ts"
+      cursor_datetime_formats:
+        - "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: from_ts
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to_ts
+        inject_into: request_parameter
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester_v1"
+        request_parameters:
+          target: "{{ config['service_level_objectives_history__target'] }}"
+          apply_correction: "{{ config['service_level_objectives_history__apply_correction'] }}"
+      record_selector:
+        $ref: "#/definitions/data_selector"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/service_level_objectives_stream"
+            parent_key: "id"
+            partition_field: slo_id
 
   audit_logs_stream:
     $ref: "#/definitions/base_stream"
@@ -183,7 +273,9 @@ definitions:
       requester:
         $ref: "#/definitions/requester_v2"
         request_parameters:
-          filter[query]: "{{ config['query'] }}"
+          filter[query]: "{{ config['logs__query'] }}"
+          filter[indexes]: "{{ config['logs__indexes'] }}"
+          filter[storage_tier]: "{{ config['logs__storage_tier'] }}"
       paginator:
         $ref: "#/definitions/base_after_paginator"
     incremental_sync:
@@ -243,20 +335,206 @@ streams:
   - "#/definitions/metrics_stream"
   - "#/definitions/monitors_stream"
   - "#/definitions/service_level_objectives_stream"
+  - "#/definitions/service_level_objectives_history_stream"
   - "#/definitions/synthetic_tests_stream"
   - "#/definitions/users_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "audit_logs"
     - "dashboards"
     - "downtimes"
-    - "incident_teams"
     - "incidents"
-    - "logs"
-    - "metrics"
     - "monitors"
     - "service_level_objectives"
     - "synthetic_tests"
     - "users"
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Datadog Source Spec
+    type: object
+    required:
+      - site
+      - api_key
+      - application_key
+    additionalProperties: true
+    groups:
+      - id: connection
+        title: Connection
+      - id: incremental
+        title: Incremental
+      - id: monitors
+        title: Monitors
+      - id: logs
+        title: Logs
+      - id: service_level_objectives
+        title: Service Level Objectives
+      - id: service_level_objectives_history
+        title: Service Level Objectives History
+    properties:
+      site:
+        title: Site
+        description: The site where Datadog data resides in.
+        type: string
+        enum:
+          [
+            "datadoghq.com",
+            "us3.datadoghq.com",
+            "us5.datadoghq.com",
+            "datadoghq.eu",
+            "ddog-gov.com",
+          ]
+        default: "datadoghq.com"
+        order: 1
+        group: auth
+      api_key:
+        title: API Key
+        description: Datadog API key
+        type: string
+        airbyte_secret: true
+        order: 2
+        group: auth
+      application_key:
+        title: Application Key
+        description: Datadog application key
+        type: string
+        airbyte_secret: true
+        order: 3
+        group: auth
+      max_records_per_request:
+        type: integer
+        title: Max records per requests
+        default: 5000
+        minimum: 1
+        maximum: 5000
+        description: Maximum number of records to collect per request.
+        order: 4
+        group: auth
+      start_date:
+        title: Start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will
+          not be replicated. This just applies to Incremental syncs.
+        type: string
+        examples:
+          - "2022-10-01T00:00:00Z"
+        order: 1
+        group: incremental
+      end_date:
+        title: End date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Data after this date will
+          not be replicated. An empty value will represent the current datetime for each
+          execution. This just applies to Incremental syncs.
+        examples:
+          - "2022-10-01T00:00:00Z"
+        type: string
+        order: 2
+        group: incremental
+      logs__query:
+        title: Query
+        description: Search query following logs syntax.
+        type: string
+        order: 1
+        group: logs
+      logs__indexes:
+        title: Indexes
+        description: For customers with multiple indexes, the indexes to search. Defaults to '*' which means all indexes
+        type: string
+        order: 2
+        group: logs
+      logs__storage_tier:
+        title: Storage Tier
+        description: Specifies the storage type to be used
+        type: string
+        order: 3
+        group: logs
+      monitors__group_states:
+        title: Group States
+        description: When specified, shows additional information about the group states. Choose one or more from all, alert, warn, and no data.
+        type: string
+        order: 1
+        group: monitors
+      monitors__name:
+        title: Name
+        description: A string to filter monitors by name.
+        type: string
+        order: 2
+        group: monitors
+      monitors__tags:
+        title: Tags
+        description: A comma separated list indicating what tags, if any, should be used to filter the list of monitors by scope. For example, host:host0.
+        type: string
+        order: 3
+        group: monitors
+      monitors__monitor_tags:
+        title: Monitor Tags
+        description: A comma separated list indicating what service and/or custom tags, if any, should be used to filter the list of monitors. Tags created in the Datadog UI automatically have the service key prepended. For example, service:my-app.
+        type: string
+        order: 4
+        group: monitors
+      monitors__with_downtimes:
+        title: With Downtimes
+        description: If this argument is set to true, then the returned data includes all current active downtimes for each monitor.
+        type: string
+        order: 5
+        group: monitors
+      service_level_objectives__ids:
+        title: IDs
+        description: A comma separated list of the IDs of the service level objectives objects.
+        type: string
+        order: 1
+        group: service_level_objectives
+      service_level_objectives__query:
+        title: Query
+        description: The query string to filter results based on SLO names.
+        type: string
+        order: 2
+        group: service_level_objectives
+      service_level_objectives__tags_query:
+        title: Tags Query
+        description: The query string to filter results based on a single SLO tag.
+        type: string
+        order: 3
+        group: service_level_objectives
+      service_level_objectives__metrics_query:
+        title: Metrics Query
+        description: The query string to filter results based on SLO numerator and denominator.
+        type: string
+        order: 4
+        group: service_level_objectives
+      service_level_objectives_history__target:
+        title: Target
+        description: The SLO target. If target is passed in, the response will include the remaining error budget and a timeframe value of custom.
+        type: string
+        order: 1
+        group: service_level_objectives_history
+      service_level_objectives_history__apply_correction:
+        title: Apply Correction
+        description: Defaults to true. If any SLO corrections are applied and this parameter is set to false, then the corrections will not be applied and the SLI values will not be affected.
+        type: boolean
+        default: true
+        order: 2
+        group: service_level_objectives_history
+      service_level_objectives_history__incremental__step:
+        title: Incremental step
+        description: The step to use for incremental updates. Defaults to P1W.
+        pattern: ^P(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?$
+        type: string
+        default: P1W
+        order: 3
+        group: service_level_objectives_history
+      service_level_objectives_history__incremental__lookback_window:
+        title: Incremental lookback window
+        description: The lookback window for incremental updates. Defaults to P1W.
+        pattern: ^P(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?$
+        type: string
+        default: P1W
+        order: 4
+        group: service_level_objectives_history

@@ -1,0 +1,25 @@
+{
+    "streams": [
+      {
+        "stream": {
+          "name": "service_level_objectives",
+          "json_schema": {},
+          "supported_sync_modes": ["full_refresh"]
+        },
+        "sync_mode": "full_refresh",
+        "destination_sync_mode": "overwrite"
+      },
+      {
+        "stream": {
+          "name": "service_level_objectives_history",
+          "json_schema": {},
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ]
+        },
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite"
+      }
+    ]
+  }
