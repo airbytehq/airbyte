@@ -25,7 +25,6 @@ import static io.airbyte.cdk.db.jdbc.JdbcConstants.KEY_SEQ;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -36,6 +35,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
@@ -104,29 +104,43 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   @Override
-  protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
-                                                                  final List<String> columnNames,
-                                                                  final String schemaName,
-                                                                  final String tableName,
-                                                                  final SyncMode syncMode,
-                                                                  final Optional<String> cursorField) {
+  protected AutoCloseableIterator<AirbyteRecordData> queryTableFullRefresh(final JdbcDatabase database,
+                                                                           final List<String> columnNames,
+                                                                           final String schemaName,
+                                                                           final String tableName,
+                                                                           final SyncMode syncMode,
+                                                                           final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records
-    // matters
-    // as intermediate state messages are emitted (if the connector emits intermediate state).
-    if (syncMode.equals(SyncMode.INCREMENTAL) && getStateEmissionFrequency() > 0) {
-      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
-      return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
-          enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField),
-          tableName, schemaName);
-    } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
-      // of the records.
-      return queryTable(database, String.format("SELECT %s FROM %s",
-          enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())), tableName, schemaName);
-    }
+    final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
+        AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
+    return AutoCloseableIterators.lazyIterator(() -> {
+      try {
+        final Stream<AirbyteRecordData> stream = database.unsafeQuery(
+            connection -> {
+              LOGGER.info("Preparing query for table: {}", tableName);
+              final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
+
+              final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
+              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s",
+                  wrappedColumnNames,
+                  fullTableName));
+              // if the connector emits intermediate states, the incremental query must be sorted by the cursor
+              // field
+              if (syncMode.equals(SyncMode.INCREMENTAL) && getStateEmissionFrequency() > 0) {
+                final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
+                sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
+              }
+
+              final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+              LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+              return preparedStatement;
+            },
+            sourceOperations::convertDatabaseRowToAirbyteRecordData);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
+      } catch (final SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }, airbyteStream);
   }
 
   /**
@@ -322,18 +336,18 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final CursorInfo cursorInfo,
-                                                               final Datatype cursorFieldType) {
+  public AutoCloseableIterator<AirbyteRecordData> queryTableIncremental(final JdbcDatabase database,
+                                                                        final List<String> columnNames,
+                                                                        final String schemaName,
+                                                                        final String tableName,
+                                                                        final CursorInfo cursorInfo,
+                                                                        final Datatype cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
     final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
         AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.unsafeQuery(
+        final Stream<AirbyteRecordData> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
@@ -370,7 +384,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
               return preparedStatement;
             },
-            sourceOperations::rowToJson);
+            sourceOperations::convertDatabaseRowToAirbyteRecordData);
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
