@@ -63,6 +63,7 @@ def test_cursor_pagination_strategy(test_name, template_string, stop_condition, 
     assert expected_token == token
     assert page_size == strategy.get_page_size()
 
+
 def test_last_record_points_to_the_last_item_in_last_records_array():
     last_records = [{"id": 0, "more_records": True}, {"id": 1, "more_records": True}]
     strategy = CursorPaginationStrategy(
