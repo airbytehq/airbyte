@@ -138,7 +138,6 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
 streams:
-  - "#/definitions/pages_stream"
   - "#/definitions/subscribers_stream"
   - "#/definitions/subscribers_histogram_by_state_stream"
   - "#/definitions/incident_templates_stream"
@@ -147,4 +146,4 @@ streams:
   - "#/definitions/metrics_stream"
 check:
   stream_names:
-    - "pages"
+    - "subscribers"
