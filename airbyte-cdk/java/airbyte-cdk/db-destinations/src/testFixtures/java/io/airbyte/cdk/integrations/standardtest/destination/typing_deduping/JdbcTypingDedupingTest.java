@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.List;
@@ -26,7 +27,7 @@ import org.jooq.impl.DSL;
  */
 public abstract class JdbcTypingDedupingTest extends BaseTypingDedupingTest {
 
-  private JdbcDatabase database;
+  protected JdbcDatabase database;
   private DataSource dataSource;
 
   /**
@@ -83,7 +84,7 @@ public abstract class JdbcTypingDedupingTest extends BaseTypingDedupingTest {
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema(getConfig());
     }
-    final String tableName = StreamId.concatenateRawTableName(streamNamespace, streamName);
+    final String tableName = StreamId.concatenateRawTableName(streamNamespace, Names.toAlphanumericAndUnderscore(streamName));
     final String schema = getRawSchema();
     return database.queryJsons(DSL.selectFrom(DSL.name(schema, tableName)).getSQL());
   }
@@ -93,7 +94,7 @@ public abstract class JdbcTypingDedupingTest extends BaseTypingDedupingTest {
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema(getConfig());
     }
-    return database.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, streamName)).getSQL());
+    return database.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, Names.toAlphanumericAndUnderscore(streamName))).getSQL());
   }
 
   @Override

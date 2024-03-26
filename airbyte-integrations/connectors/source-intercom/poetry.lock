@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.71.0"
+version = "0.74.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "airbyte-cdk-0.71.0.tar.gz", hash = "sha256:110959840681b770e9378f9bcbca7a4b50c75b11de74e9fb809112407c4f50fa"},
-    {file = "airbyte_cdk-0.71.0-py3-none-any.whl", hash = "sha256:730365365e826311d88dc0a8a5ebbd6227cc41b3dc342ef1525061b6d93f889c"},
+    {file = "airbyte-cdk-0.74.0.tar.gz", hash = "sha256:74241a055c205403a951383f43801067b7f451370e14d553d13d0cc476cbfff7"},
+    {file = "airbyte_cdk-0.74.0-py3-none-any.whl", hash = "sha256:7e5b201d69ec0e7daab7e627dbc6add4dbba4a2f779132e86aaf6713650ff4d5"},
 ]
 
 [package.dependencies]
@@ -662,17 +662,17 @@ testing = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygm
 
 [[package]]
 name = "pytest-mock"
-version = "3.12.0"
+version = "3.14.0"
 description = "Thin-wrapper around the mock package for easier use with pytest"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-mock-3.12.0.tar.gz", hash = "sha256:31a40f038c22cad32287bb43932054451ff5583ff094bca6f675df2f8bc1a6e9"},
-    {file = "pytest_mock-3.12.0-py3-none-any.whl", hash = "sha256:0972719a7263072da3a21c7f4773069bcc7486027d7e8e1f81d98a47e701bc4f"},
+    {file = "pytest-mock-3.14.0.tar.gz", hash = "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0"},
+    {file = "pytest_mock-3.14.0-py3-none-any.whl", hash = "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f"},
 ]
 
 [package.dependencies]
-pytest = ">=5.0"
+pytest = ">=6.2.5"
 
 [package.extras]
 dev = ["pre-commit", "pytest-asyncio", "tox"]
