@@ -74,12 +74,11 @@ def test_last_record_points_to_the_last_item_in_last_records_array():
     )
 
     response = requests.Response()
-    next_page_token = strategy.next_page_token(response, last_records)
+    next_page_token = strategy.next_page_token(response, 2, last_records[-1])
     assert next_page_token == 1
 
 
 def test_last_record_is_node_if_no_records():
-    last_records = []
     strategy = CursorPaginationStrategy(
         page_size=1,
         cursor_value="{{ last_record.id }}",
@@ -88,5 +87,5 @@ def test_last_record_is_node_if_no_records():
     )
 
     response = requests.Response()
-    next_page_token = strategy.next_page_token(response, last_records)
+    next_page_token = strategy.next_page_token(response, 0, None)
     assert next_page_token is None
