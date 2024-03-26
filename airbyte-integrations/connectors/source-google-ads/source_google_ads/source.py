@@ -185,8 +185,9 @@ class SourceGoogleAds(AbstractSource):
 
         customers = self.get_customers(google_api, config)
         logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
+        is_not_none = functools.partial(operator.is_not, None)
         # Use only two accounts for validation: one manager account and one non-manager account
-        validate_customers = list(filter(functools.partial(operator.is_not, None), [
+        validate_customers = list(filter(is_not_none, [
             next(filter(lambda c: c.is_manager_account, customers), None),
             next(filter(lambda c: not c.is_manager_account, customers), None),
         ]))
