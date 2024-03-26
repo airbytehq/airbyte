@@ -2,7 +2,9 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d7e23ea6-d741-4314-9209-a33c91a2e945
-  dockerImageTag: 0.1.0
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-trustpilot
   githubIssueLabel: source-trustpilot
   icon: trustpilot.svg
@@ -12,6 +14,11 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-trustpilot
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-01-15"
+        message: "The verison migrates the TrustPilot connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `private_reviews` stream. If you are using the incremental sync mode for this stream, you will need to reset the affected connection after upgrading to prevent sync failures. Additionally, authentication has been streamlined to only support API keys and secrets."
   registries:
     cloud:
       enabled: true
