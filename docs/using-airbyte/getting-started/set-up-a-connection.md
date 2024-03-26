@@ -13,7 +13,7 @@ On the left side of your main Airbyte dashboard, select **Connections**. You wil
 
 ## Configure the connection
 
-Once you've chosen your source and destination, you'll be able to configure the connection. You'll first be asked a few questions about how your data should sync. These questions correlate to our sync modes, which you can read more about on [this page](/cloud/managing-airbyte-cloud/configuring-connections.md).
+Once you've chosen your source and destination you can configure the connection. You'll first be asked a few questions about how your data should sync, these correlate to our sync modes which you can read more about on [this page](/cloud/managing-airbyte-cloud/configuring-connections.md).
 
 Most users select "Mirror Source", which will simply copy the data from the source to the destination where you'll see one row in the destination for each row in the source. If you prefer to Append Historical Changes or take a Full Snapshot with each sync, you can optionally select those options, but keep in mind those will create duplicate records in your destination. The sync mode we choose for all the enabled streams will reflect your selection here.
 
