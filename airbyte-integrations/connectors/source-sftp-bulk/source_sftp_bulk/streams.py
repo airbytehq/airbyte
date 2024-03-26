@@ -76,4 +76,5 @@ class FTPStream(Stream, IncrementalMixin):
                 if self._cursor_value and cursor > self._cursor_value:
                     self._cursor_value = cursor
 
-            yield from records
+            for record_set in records:
+                yield from record_set
