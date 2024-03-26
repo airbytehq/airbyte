@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Utility class to generate human-readable diffs between expected and actual records. Assumes 1s1t
@@ -432,10 +433,29 @@ public class RecordDiffer {
     }
   }
 
-  // Generics? Never heard of 'em. (I'm sorry)
-  private static Comparable extract(final JsonNode node, final String field, final AirbyteType type) {
+  private static class Field implements Comparable<Field> {
+
+    private final String stringValue;
+    private final Class<?> realType;
+
+    Field(Comparable<?> f) {
+      this.stringValue = f.toString();
+      this.realType = f.getClass();
+    }
+
+    @Override
+    public int compareTo(@NotNull RecordDiffer.Field o) {
+      if (realType.getCanonicalName().equals(o.realType.getCanonicalName())) {
+        return stringValue.compareTo(o.stringValue);
+      }
+      return realType.getCanonicalName().compareTo(o.realType.getCanonicalName());
+    }
+
+  }
+
+  private static Field extract(final JsonNode node, final String field, final AirbyteType type) {
     if (type instanceof final AirbyteProtocolType t) {
-      return switch (t) {
+      return new Field(switch (t) {
         case STRING -> asString(node.get(field));
         case NUMBER -> asNumber(node.get(field));
         case INTEGER -> asInt(node.get(field));
@@ -446,9 +466,9 @@ public class RecordDiffer {
         case TIME_WITHOUT_TIMEZONE -> asTimeWithoutTimezone(node.get(field));
         case DATE -> asDate(node.get(field));
         case UNKNOWN -> node.toString();
-      };
+      });
     } else {
-      return node.toString();
+      return new Field(node.toString());
     }
   }
 
