@@ -255,7 +255,7 @@ airbyte-lib-validate-source = "airbyte_lib.validate:run"
 test = "pytest tests"
 
 [tool.airbyte_ci]
-extra_poetry_groups = ["dev"]
+optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]
 required_environment_variables = ["GCP_GSM_CREDENTIALS"]
 side_car_docker_engine = true

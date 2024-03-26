@@ -32,5 +32,5 @@ ci_credentials = "ci_credentials.main:ci_credentials"
 test = "pytest tests"
 
 [tool.airbyte_ci]
-extra_poetry_groups = ["dev"]
+optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]
