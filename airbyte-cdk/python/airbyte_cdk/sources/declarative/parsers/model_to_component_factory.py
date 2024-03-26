@@ -30,6 +30,8 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TR
 from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
+from airbyte_cdk.sources.declarative.models import CustomStateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
@@ -66,6 +68,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
+)
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel,
 )
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
@@ -167,6 +172,7 @@ class ModelToComponentFactory:
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
             CustomSchemaLoader: self.create_custom_component,
+            CustomStateMigration: self.create_custom_component,
             CustomPaginationStrategyModel: self.create_custom_component,
             CustomPartitionRouterModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
@@ -182,6 +188,7 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
+            LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
             ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
             NoAuthModel: self.create_no_auth,
@@ -307,6 +314,22 @@ class ModelToComponentFactory:
             config=config,
             parameters=model.parameters or {},
         )
+
+    def create_legacy_to_per_partition_state_migration(
+        self,
+        model: LegacyToPerPartitionStateMigrationModel,
+        config: Mapping[str, Any],
+        declarative_stream: DeclarativeStreamModel,
+    ) -> LegacyToPerPartitionStateMigration:
+        if not isinstance(declarative_stream.retriever, SimpleRetrieverModel):
+            raise ValueError(
+                f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(declarative_stream.retriever)}"
+            )
+        if not isinstance(declarative_stream.retriever.partition_router, SubstreamPartitionRouterModel):
+            raise ValueError(
+                f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(declarative_stream.retriever.partition_router)}"
+            )
+        return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
@@ -586,6 +609,14 @@ class ModelToComponentFactory:
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
+        if model.state_migrations:
+            state_transformations = [
+                self._create_component_from_model(state_migration, config, declarative_stream=model)
+                for state_migration in model.state_migrations
+            ]
+        else:
+            state_transformations = []
+
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
         else:
@@ -600,6 +631,7 @@ class ModelToComponentFactory:
             retriever=retriever,
             schema_loader=schema_loader,
             stream_cursor_field=cursor_field or "",
+            state_migrations=state_transformations,
             config=config,
             parameters=model.parameters or {},
         )
