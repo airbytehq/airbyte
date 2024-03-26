@@ -1,20 +1,23 @@
 # Connectors QA
 
 This package has two main purposes:
-* Running QA checks on connectors.
-* Generating the QA checks documentation that are run on connectors.
+
+- Running assets and metadata verification checks on connectors.
+- Generating the QA checks documentation that are run on connectors.
 
 ## Usage
 
 ### Install
 
+Connectors QA is an internal Airbyte package that is not published to PyPI. To install it, run the
+following command from this directory:
+
 ```bash
 pipx install .
 ```
 
-This will make `connectors-qa` available in your `PATH`.
-
-Feel free to run `connectors-qa --help` to see the available commands and options.
+This will make `connectors-qa` available in your `PATH`. Run `connectors-qa --help` to see the
+available commands and options.
 
 ### Examples
 
@@ -24,6 +27,7 @@ Feel free to run `connectors-qa --help` to see the available commands and option
 # This command must run from the root of the Airbyte repo
 connectors-qa run --name=source-faker --name=source-google-sheets
 ```
+
 #### Running QA checks on all connectors:
 
 ```bash
@@ -63,15 +67,21 @@ poetry install
 ```
 
 ### Dependencies
+
 This package uses two local dependencies:
-* [`connector_ops`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connector_ops): To interact with the `Connector` object.
-* [`metadata_service/lib`]((https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/metadata_service/lib)): To validate the metadata of the connectors.
+
+- [`connector_ops`](../connector_ops): To interact with the `Connector` object.
+- [`metadata_service/lib`](../metadata_service/lib): To validate the metadata of the connectors.
 
 ### Adding a new QA check
 
-To add a new QA check, you have to create add new class in one of the `checks` module. This class must inherit from `models.Check` and implement the `_run` method. Then, you need to add an instance of this class to the `ENABLED_CHECKS` list of the module.
+To add a new QA check, you have to create add new class in one of the `checks` module. This class
+must inherit from `models.Check` and implement the `_run` method. Then, you need to add an instance
+of this class to the `ENABLED_CHECKS` list of the module.
 
-**Please run the `generate-documentation` command to update the documentation with the new check and commit it in your PR.**:
+**Please run the `generate-documentation` command to update the documentation with the new check and
+commit it in your PR.**:
+
 ```bash
 # From airbyte repo root
 connectors-qa generate-documentation docs/contributing-to-airbyte/resources/qa-checks.md
@@ -98,14 +108,19 @@ poe lint
 ## Changelog
 
 ### 1.0.3
-Disable `CheckDocumentationStructure` for now. 
+
+Disable `CheckDocumentationStructure` for now.
 
 ### 1.0.2
+
 Fix access to connector types: it should be accessed from the `Connector.connector_type` attribute.
 
 ### 1.0.1
-* Add `applies_to_connector_types` attribute to `Check` class to specify the connector types that the check applies to.
-* Make `CheckPublishToPyPiIsEnabled` run on source connectors only.
+
+- Add `applies_to_connector_types` attribute to `Check` class to specify the connector types that
+  the check applies to.
+- Make `CheckPublishToPyPiIsEnabled` run on source connectors only.
 
 ### 1.0.0
+
 Initial release of `connectors-qa` package.
