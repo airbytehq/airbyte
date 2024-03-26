@@ -6,8 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_okta import SourceOkta
-
+from .source import SourceOkta
 
 def run():
     source = SourceOkta()

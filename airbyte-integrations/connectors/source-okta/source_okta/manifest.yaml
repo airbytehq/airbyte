@@ -1,0 +1,658 @@
+version: 0.65.0
+type: DeclarativeSource
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_okta/schemas/{{ parameters['name'] }}.json"
+
+  custom_oauth_authenticator:
+    type: CustomAuthenticator
+    class_name: source_okta.custom_authenticators.CustomOauth2Authenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    refresh_request_body: {}
+    token_refresh_endpoint: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
+    grant_type: refresh_token
+
+  custom_bearer_authenticator:
+    type: CustomAuthenticator
+    class_name: source_okta.custom_authenticators.CustomBearerAuthenticator
+
+
+  selective_authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2.0: "#/definitions/custom_oauth_authenticator"
+      api_token: "#/definitions/custom_bearer_authenticator"
+
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestPath
+    page_size_option:
+      inject_into: request_parameter
+      type: RequestOption
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 200
+      cursor_value: "{{ headers['link']['next']['url'] }}"
+      stop_condition: >-
+        {{ headers.link.next is not defined or not headers.link.next or
+        (headers.link.self is defined and headers.link.self and
+        headers.link.next.url == headers.link.self.url) }}
+
+  error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitUntilTimeFromHeader
+            header: X-Rate-Limit-Reset
+            min_wait: "60"
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+streams:
+  - type: DeclarativeStream
+    name: groups
+    $parameters:
+      name: "groups"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/groups
+        http_method: GET
+        request_parameters:
+          filter: >-
+            lastUpdated gt "{{ format_datetime(stream_interval.start_time,
+            '%Y-%m-%dT%H:%M:%S') }}.000Z"
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: lastUpdated
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  - type: DeclarativeStream
+    name: group_members
+    $parameters:
+      name: "group_members"
+    primary_key:
+      - type
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/groups/{{ stream_partition['parent_id'] }}/users
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: groups
+                $parameters:
+                  name: "groups"
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['domain'] }}.okta.com
+                    path: /api/v1/groups
+                    http_method: GET
+                    request_parameters:
+                      filter: >-
+                        lastUpdated gt "{{ format_datetime(stream_interval.start_time,
+                        '%Y-%m-%dT%H:%M:%S') }}.000Z"
+                    authenticator:
+                      $ref: "#/definitions/selective_authenticator"
+                    error_handler:
+                      $ref: "#/definitions/error_handler"
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    $ref: "#/definitions/paginator"
+                  partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: lastUpdated
+                  cursor_datetime_formats:
+                    - "%Y-%m-%dT%H:%M:%S.%fZ"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: "{{ config['start_date'] }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  - type: DeclarativeStream
+    name: group_role_assignments
+    $parameters:
+      name: "group_role_assignments"
+    primary_key:
+      - id
+      - role
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/groups/{{ stream_partition['parent_id'] }}/roles
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: groups
+                $parameters:
+                  name: "groups"
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['domain'] }}.okta.com
+                    path: /api/v1/groups
+                    http_method: GET
+                    request_parameters:
+                      filter: >-
+                        lastUpdated gt "{{ format_datetime(stream_interval.start_time,
+                        '%Y-%m-%dT%H:%M:%S') }}.000Z"
+                    authenticator:
+                      $ref: "#/definitions/selective_authenticator"
+                    error_handler:
+                      $ref: "#/definitions/error_handler"
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    $ref: "#/definitions/paginator"
+                  partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: lastUpdated
+                  cursor_datetime_formats:
+                    - "%Y-%m-%dT%H:%M:%S.%fZ"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: "{{ config['start_date'] }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  - type: DeclarativeStream
+    name: logs
+    $parameters:
+      name: "logs"
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/logs
+        http_method: GET
+        request_parameters:
+          since: >-
+            {{ stream_state.published if stream_state else config['start_date']
+            }}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitUntilTimeFromHeader
+                  header: X-Rate-Limit-Reset
+                  min_wait: "60"
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  predicate: "{{ response.errorCode == 'E0000001' }}"
+                  http_codes:
+                    - 400
+                  error_message: "{{ response.errorSummary }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - published
+            value: "{{ format_datetime(record['published'], '%Y-%m-%dT%H:%M:%SZ') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: published
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  - type: DeclarativeStream
+    name: users
+    $parameters:
+      name: "users"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/users
+        http_method: GET
+        request_parameters:
+          filter: >-
+            lastUpdated gt "{{ format_datetime(stream_interval.start_time,
+            '%Y-%m-%dT%H:%M:%S') }}.000Z" and (status eq "ACTIVE" or status eq
+            "DEPROVISIONED" or status eq "LOCKED_OUT" or status eq
+            "PASSWORD_EXPIRED" or status eq "PROVISIONED" or status eq
+            "RECOVERY" or status eq "STAGED" or status eq "SUSPENDED")
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+            $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: lastUpdated
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  - type: DeclarativeStream
+    name: resource_sets
+    $parameters:
+      name: "resource_sets"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/iam/resource-sets
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - resource-sets
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 200
+          cursor_value: "{{ response['_links']['next']['href'] }}"
+          stop_condition: >-
+            {{ response._links.next is not defined or not response._links.next
+            or (response._links.self is defined and response._links.self and
+            response._links.next.url == response._links.self.url) }}
+      partition_router: []
+
+  - type: DeclarativeStream
+    name: custom_roles
+    $parameters:
+      name: "custom_roles"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/iam/roles
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - roles
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router: []
+
+  - type: DeclarativeStream
+    name: user_role_assignments
+    $parameters:
+      name: "user_role_assignments"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/users/{{ stream_partition['parent_id'] }}/roles
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: users
+                $parameters:
+                  name: "users"
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['domain'] }}.okta.com
+                    path: /api/v1/users
+                    http_method: GET
+                    request_parameters:
+                      filter: >-
+                        lastUpdated gt "{{ format_datetime(stream_interval.start_time,
+                        '%Y-%m-%dT%H:%M:%S') }}.000Z" and (status eq "ACTIVE" or status eq
+                        "DEPROVISIONED" or status eq "LOCKED_OUT" or status eq
+                        "PASSWORD_EXPIRED" or status eq "PROVISIONED" or status eq
+                        "RECOVERY" or status eq "STAGED" or status eq "SUSPENDED")
+                    authenticator:
+                      $ref: "#/definitions/selective_authenticator"
+                    error_handler:
+                        $ref: "#/definitions/error_handler"
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    $ref: "#/definitions/paginator"
+                  partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: lastUpdated
+                  cursor_datetime_formats:
+                    - "%Y-%m-%dT%H:%M:%S.%fZ"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: "{{ config['start_date'] }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  - type: DeclarativeStream
+    name: permissions
+    $parameters:
+      name: "permissions"
+    primary_key:
+      - label
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/iam/roles/{{ stream_partition['parent_id'] }}/permissions
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - permissions
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: custom_roles
+                $parameters:
+                  name: "custom_roles"
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['domain'] }}.okta.com
+                    path: /api/v1/iam/roles
+                    http_method: GET
+                    request_parameters: {}
+                    authenticator:
+                      $ref: "#/definitions/selective_authenticator"
+                    error_handler:
+                      $ref: "#/definitions/error_handler"
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - roles
+                  paginator:
+                    $ref: "#/definitions/paginator"
+                  partition_router: []
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - start_date
+    properties:
+      credentials:
+        title: Authorization Method
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your OAuth application.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your OAuth application.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh Token to obtain new Access Token, when it's expired.
+                airbyte_secret: true
+          - type: object
+            title: API Token
+            required:
+              - auth_type
+              - api_token
+            properties:
+              auth_type:
+                type: string
+                const: api_token
+                order: 0
+              api_token:
+                type: string
+                title: Personal API Token
+                description: >-
+                  An Okta token. See the <a
+                  href="https://docs.airbyte.com/integrations/sources/okta">docs</a>
+                  for instructions on how to generate it.
+                airbyte_secret: true
+        order: 0
+      domain:
+        type: string
+        title: Okta domain
+        description: >-
+          The Okta domain. See the <a
+          href="https://docs.airbyte.com/integrations/sources/okta">docs</a> for
+          instructions on how to find it.
+        airbyte_secret: false
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Any data before
+          this date will not be replicated.
+        examples:
+          - "2022-07-22T00:00:00Z"
+        order: 2
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    groups: false
+    group_members: false
+    group_role_assignments: false
+    logs: false
+    users: false
+    resource_sets: false
+    custom_roles: false
+    user_role_assignments: false
+    permissions: false
