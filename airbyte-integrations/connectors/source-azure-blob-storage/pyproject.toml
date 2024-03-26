@@ -22,13 +22,11 @@ pytz = "==2024.1"
 [tool.poetry.scripts]
 source-azure-blob-storage = "source_azure_blob_storage.run:run"
 
+[tool.poetry.dependencies]
+airbyte-cdk = {version = "0.75", extras = ["file-based"]}
 [tool.poetry.dependencies.smart-open]
 extras = [ "azure",]
 version = "==6.4.0"
-
-[tool.poetry.dependencies.airbyte-cdk]
-extras = [ "file-based",]
-version = "==0.61.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
