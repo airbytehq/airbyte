@@ -30,7 +30,7 @@ public class SnowflakeInternalStagingCaseInsensitiveTypingDedupingTest extends A
           record.fields().forEachRemaining(entry -> {
             mutatedRecord.set(entry.getKey().toLowerCase(), entry.getValue());
           });
-          return (JsonNode)mutatedRecord;
+          return (JsonNode) mutatedRecord;
         })
         .toList();
   }

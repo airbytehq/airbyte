@@ -227,7 +227,7 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
           // For example - Snowflake with QUOTED_IDENTIFIERS_IGNORE_CASE=TRUE.
           final ObjectNode record = (ObjectNode) recordJson;
           final Map<String, JsonNode> newFields = new HashMap<>();
-          for (Iterator<String> it = record.fieldNames(); it.hasNext(); ) {
+          for (Iterator<String> it = record.fieldNames(); it.hasNext();) {
             String fieldName = it.next();
             // We can't directly call record.set here, because that will raise a
             // ConcurrentModificationException on the fieldnames iterator.
