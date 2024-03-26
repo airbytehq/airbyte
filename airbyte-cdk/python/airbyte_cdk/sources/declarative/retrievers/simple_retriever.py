@@ -396,6 +396,13 @@ class SimpleRetriever(Retriever):
     def must_deduplicate_query_params(self) -> bool:
         return True
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        """
+        Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        """
+        return self.requester.max_retries
+
 
 @dataclass
 class SimpleRetrieverTestReadDecorator(SimpleRetriever):

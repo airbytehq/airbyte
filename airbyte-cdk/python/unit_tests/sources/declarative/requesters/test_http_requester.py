@@ -111,6 +111,7 @@ def test_http_requester():
     assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
     assert requester.interpret_response_status(requests.Response()) == response_status
+    assert requester.max_retries == 10
 
 
 @pytest.mark.parametrize(

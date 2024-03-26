@@ -99,7 +99,7 @@ class Requester(RequestOptionsProvider):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Union[Mapping[str, Any], str]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
 
@@ -117,7 +117,7 @@ class Requester(RequestOptionsProvider):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         """
         Specifies how to populate the body of the request with a JSON payload.
 
@@ -143,4 +143,12 @@ class Requester(RequestOptionsProvider):
         If header, params and body are set, they are merged with the ones configured on the requester itself.
 
         If a log formatter is provided, it's used to log the performed request and response. If it's not provided, no logging is performed.
+        """
+
+    @property
+    @abstractmethod
+    def max_retries(self) -> Optional[int]:
+        """
+        Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        :return:
         """
