@@ -126,7 +126,7 @@ definitions:
             partition_field: id
     $parameters:
       name: "list_members"
-      primary_key: "id"
+      primary_key: ["id", "list_id"]
       path: "/lists/{{ stream_slice.id }}/members"
       data_field: "members"
       cursor_field: "last_changed"
