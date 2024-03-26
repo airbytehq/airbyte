@@ -99,7 +99,7 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{response.result.summary_info.page}}"
-          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
+          stop_condition: "{{response.error.code==32017 or response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
   - type: DeclarativeStream
     name: Domains summary
     primary_key:
@@ -296,7 +296,7 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{response.result.summary_info.page}}"
-          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
+          stop_condition: "{{response.error.code==32017 or response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
   - type: DeclarativeStream
     name: Domain keywords by region
     primary_key:
@@ -539,7 +539,7 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{response.result.summary_info.page}}"
-          stop_condition: "{{response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
+          stop_condition: "{{response.error.code==32017 or response.result.summary_info.page > config['pages_to_fetch'] - 1}}"
 
 metadata:
   autoImportSchema:
