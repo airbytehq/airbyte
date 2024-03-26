@@ -294,7 +294,7 @@ definitions:
   conversations:
     $ref: "#/definitions/stream_incremental_search"
     retriever:
-      $ref: "#/definitions/stream_full_refresh/retriever"
+      $ref: "#/definitions/stream_incremental_search/retriever"
       requester:
         $ref: "#/definitions/requester_incremental_search"
         request_headers:

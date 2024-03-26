@@ -50,6 +50,8 @@ extend-ignore = [
   "E231",  # Bad trailing comma (conflicts with Black)
   "E501",  # line too long (conflicts with Black)
   "W503",  # line break before binary operator (conflicts with Black)
+  "E721", # TODO: ella fix after pflake8 version update
+  "F811", # TODO: ella fix after pflake8 version update
 ]
 
 [tool.isort]

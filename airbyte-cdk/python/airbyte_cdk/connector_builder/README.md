@@ -30,10 +30,8 @@ Note:
 
 First, make sure you build the latest Docker image:
 ```
-./gradlew airbyte-cdk:python:airbyteDocker
+docker build -t airbyte/source-declarative-manifest:dev .
 ```
-
-The docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in the Dockerfile.
 
 #### Run
 

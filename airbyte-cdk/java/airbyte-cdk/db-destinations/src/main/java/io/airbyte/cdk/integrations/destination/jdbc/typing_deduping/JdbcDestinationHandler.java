@@ -17,6 +17,7 @@ import static org.jooq.impl.DSL.selectOne;
 import static org.jooq.impl.DSL.table;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
@@ -217,7 +218,14 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)),
             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE))).from(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
             .getSQL())
-        .stream().collect(toMap(
+        .stream()
+        .peek(recordJson -> {
+          // Forcibly downcase all key names.
+          // This is to handle any destinations that upcase the column names.
+          // For example - Snowflake with QUOTED_IDENTIFIERS_IGNORE_CASE=TRUE.
+          ObjectNode record = (ObjectNode) recordJson;
+          record.fieldNames().forEachRemaining(fieldName -> record.set(fieldName.toLowerCase(), record.get(fieldName)));
+        }).collect(toMap(
             record -> {
               final JsonNode nameNode = record.get(DESTINATION_STATE_TABLE_COLUMN_NAME);
               final JsonNode namespaceNode = record.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE);
