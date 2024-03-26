@@ -246,7 +246,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
         if stream_state and stream_state.get(self.cursor_field):
             start_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%d')
 
-        start_date = start_date - timedelta(days=5)
+        start_date = start_date - timedelta(days=7)
 
         num_days = (end_date - start_date).days
         dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(num_days + 1)]
