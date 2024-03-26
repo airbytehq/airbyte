@@ -25,7 +25,6 @@ def get_gcs_blobs(config):
     return blobs
 
 
-
 def get_stream_name(blob):
     blob_name = blob.name
     # Remove path from stream name

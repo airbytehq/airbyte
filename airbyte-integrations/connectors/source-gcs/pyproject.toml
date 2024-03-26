@@ -19,17 +19,13 @@ include = "source_gcs"
 python = "^3.9,<3.12"
 pytz = "==2024.1"
 google-cloud-storage = "==2.12.0"
-smart-open = "5.1.0"
+smart-open = {extras = ["gcs"], version = "==5.1.0"}
+airbyte-cdk = {extras = ["file-based"], version = "^0"}
 
 [tool.poetry.scripts]
 source-gcs = "source_gcs.run:run"
 
-[tool.poetry.dependencies.airbyte-cdk]
-extras = [ "file-based",]
-version = "==0.61.0"
-
-
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-pytest = "^6.2"
-pytest-mock = "^3.6.1"
+pytest-mock = "^3.12.0"
+requests-mock = "^1.11.0"
+pytest = "^7.4"
