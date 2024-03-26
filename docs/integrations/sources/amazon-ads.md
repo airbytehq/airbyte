@@ -1,8 +1,34 @@
 # Amazon Ads
 This page contains the setup guide and reference information for the Amazon Ads source connector.
 
-## Prerequisites
+# Setup guide
 
+<!-- env:cloud -->
+
+## For Airbyte Cloud
+
+##### Prerequisites
+* Airbyte Cloud account
+* Amazon account
+* Amazon Ads account 
+
+## Step 1: Set up Amazon Ads
+
+1. Create an [Amazon account](https://www.amazon.com/).
+2. Register your [Amazon Ads](https://advertising.amazon.com/) account using your Amazon account email.
+
+> [!NOTE]  
+> For existing Amazon.com users, register your Amazon Ads account using your Amazon account email.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+## For Airbyte Open Source
+
+##### Prerequisites
+* Git
+* Docker for desktop
 * Client ID
 * Client Secret
 * Refresh Token
@@ -11,48 +37,75 @@ This page contains the setup guide and reference information for the Amazon Ads 
 * Profile IDs (Optional)
 * Marketplace IDs (Optional)
 
-## Setup guide
-### Step 1: Set up Amazon Ads
-Create an [Amazon user](https://www.amazon.com) with access to an [Amazon Ads account](https://advertising.amazon.com).
 
-<!-- env:oss -->
-**For Airbyte Open Source:**
-To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get the Amazon client application's `Client ID`, `Client Secret` and `Refresh Token`.
+
+To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us/reference/api-overview),  you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all the steps you will have to get the Amazon client application's:
+* `Client ID`
+* `Client Secret`
+* `Refresh Token`
+
 <!-- /env:oss -->
 
-### Step 2: Set up the Amazon Ads connector in Airbyte
+## Step 2: Set up the Amazon Ads connector in Airbyte
 
 <!-- env:cloud -->
-**For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
-4. Click **Authenticate your Amazon Ads account**.
-5. Log in and Authorize to the Amazon account.
-6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
-8. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
-10. Click **Set up source**.
+## For Airbyte Cloud
+
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. From the left menu, click **Sources**. 
+3. On the source setup page, select **Amazon Ads** from the list
+4. Click **Authenticate your Amazon Ads account**.
+5. Log in to your Amazon account and authorize access to Airbyte.
+6. From the **Create a source** panel, click the **Optional fields** drop-down menu
+7. Click the [Region](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) drop-down to select where to pull data from:
+    * North America (NA)
+    * Europe (EU)
+    * Far East (FE)
+8. Start Date (Optional) is used for generating reports starting from the specified start date. This should be in `YYYY-MM-DD` format and not more than 60 days in the past. 
+> [!NOTE]  
+> If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+9. **Profile IDs** (Optional) you want to fetch data for. See docs for more details. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+10. **Marketplace IDs** (Optional) you want to fetch data for.
+> [!IMPORTANT]  
+> If Profile IDs are also selected, profiles will be selected if they match the **Profile ID** OR the **Marketplace ID**.
+11. Click **Set up source**.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-**For Airbyte Open Source:**
+
+## For Airbyte Open Source
+
+Install Airbyte on your [local machine](https://docs.airbyte.com/deploying-airbyte/local-deployment).
 
 1. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 3. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
-4. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
-6. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-7. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
+4. Select [Region](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints):
+    * North America (NA)
+    * Europe (EU)
+    * Far East (FE)
+5. **Start Date (Optional)** generates reports starting from the specified start date. This should be in `YYYY-MM-DD` format and not more than 60 days in the past.
+> [!NOTE]  
+> If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+6. **Profile IDs** (Optional) you want to fetch data for.
+7. **Marketplace IDs (Optional)** you want to fetch data for.
+> [!IMPORTANT]  
+> If Profile IDs are also selected, profiles will be selected if they match the **Profile ID** OR the **Marketplace ID**.
+
+Follow the Amazon Ads guidelines to [interact with the API](https://advertising.amazon.com/API/docs/en-us/reference/api-overview). 
+
+
 <!-- /env:oss -->
 
 ## Supported sync modes
-The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/using-airbyte/core-concepts/sync-modes/):
  - Full Refresh
  - Incremental
+
+> [!TIP]
+> If you encounter AWS service quota limit issues, request a [quota limit increase](https://docs.aws.amazon.com/datasync/latest/userguide/datasync-limits.html#request-quota-increase).
 
 ## Supported Streams
 This source is capable of syncing the following streams:
@@ -67,7 +120,7 @@ This source is capable of syncing the following streams:
 * [Sponsored Display Product Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Product%20ads)
 * [Sponsored Display Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Targeting)
 * [Sponsored Display Creatives](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Creatives)
-* [Sponsored Display Budget Rules](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi/prod#/BudgetRules/GetSDBudgetRulesForAdvertiser)
+* [Sponsored Display Budget Rules](https://advertising.amazon.com/API/docs/en-us/guides/sponsored-display/overview)
 * [Sponsored Products Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns)
 * [Sponsored Products Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Ad%20groups)
 * [Sponsored Products Ad Group Bid Recommendations](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Bid%20recommendations/getAdGroupBidRecommendations)
