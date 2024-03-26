@@ -21,6 +21,9 @@ logger = getLogger("airbyte")
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
 CONFIG_DEFAULT_SCHEMA = "main"
 
+DUCKDB_CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_token"
+DUCKDB_CONFIG_CUSTOM_USER_AGENT = "custom_user_agent"
+
 
 def validated_sql_name(sql_name: Any) -> str:
     """Return the input if it is a valid SQL name, otherwise raise an exception."""
@@ -83,8 +86,8 @@ class DestinationDuckdb(Destination):
         motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
         duckdb_config = {}
         if motherduck_api_key:
-            duckdb_config["motherduck_token"] = motherduck_api_key
-            duckdb_config["custom_user_agent"] = "airbyte"
+            duckdb_config[DUCKDB_CONFIG_MOTHERDUCK_API_KEY] = motherduck_api_key
+            duckdb_config[DUCKDB_CONFIG_CUSTOM_USER_AGENT] = "airbyte"
 
         con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
 
@@ -179,8 +182,8 @@ class DestinationDuckdb(Destination):
 
             duckdb_config = {}
             if CONFIG_MOTHERDUCK_API_KEY in config:
-                duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
-                duckdb_config["custom_user_agent"] = "airbyte"
+                duckdb_config[DUCKDB_CONFIG_MOTHERDUCK_API_KEY] = str(config[CONFIG_MOTHERDUCK_API_KEY])
+                duckdb_config[DUCKDB_CONFIG_CUSTOM_USER_AGENT] = "airbyte"
 
             con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
             con.execute("SELECT 1;")
