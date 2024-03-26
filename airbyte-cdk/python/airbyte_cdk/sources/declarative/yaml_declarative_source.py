@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import errno
+import os
 import pkgutil
 
 import yaml
@@ -21,11 +23,17 @@ class YamlDeclarativeSource(ManifestDeclarativeSource):
         super().__init__(source_config, debug)
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file) -> ConnectionDefinition:
-        package = self.__class__.__module__.split(".")[0]
-
-        yaml_config = pkgutil.get_data(package, path_to_yaml_file)
-        decoded_yaml = yaml_config.decode()
-        return self._parse(decoded_yaml)
+        try:
+            package = self.__class__.__module__.split(".")[0]
+            yaml_config = pkgutil.get_data(package, path_to_yaml_file)
+            decoded_yaml = yaml_config.decode()
+            return self._parse(decoded_yaml)
+        except FileNotFoundError as pkg_file_error:
+            try:
+                with open(path_to_yaml_file) as f:
+                    return self._parse(f.read())
+            except FileNotFoundError as open_file_error:
+                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), f"{pkg_file_error.filename} or {open_file_error.filename}")
 
     def _emit_manifest_debug_message(self, extra_args: dict):
         extra_args["path_to_yaml"] = self._path_to_yaml
