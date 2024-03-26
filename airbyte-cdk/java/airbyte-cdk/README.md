@@ -16,7 +16,6 @@ This page will walk through the process of developing with the Java CDK.
       * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
       * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
       * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-   * [Common Debugging Tips](#common-debugging-tips)
    * [Changelog](#changelog)
       * [Java CDK](#java-cdk)
 
@@ -145,7 +144,10 @@ Maven and Gradle will automatically reference the correct (pinned) version of th
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.27.5  | 2024-03-25 | [\#36461](https://github.com/airbytehq/airbyte/pull/36461) | Destinations: Handle case-sensitive columns in destination state handling.                                                                                     |
 | 0.27.4  | 2024-03-25 | [\#36333](https://github.com/airbytehq/airbyte/pull/36333) | Sunset DebeziumSourceDecoratingIterator.                                                                                                                       |
+| 0.27.1  | 2024-03-22 | [\#36296](https://github.com/airbytehq/airbyte/pull/36296) | Destinations: (async framework) Do not log invalid message data.                                                                                               |
+| 0.27.0  | 2024-03-21 | [\#36364](https://github.com/airbytehq/airbyte/pull/36364) | Sources: Increase debezium initial record wait time to 40 minute.                                                                                              |
 | 0.26.1  | 2024-03-19 | [\#35599](https://github.com/airbytehq/airbyte/pull/35599) | Sunset SourceDecoratingIterator.                                                                                                                               |
 | 0.26.0  | 2024-03-19 | [\#36263](https://github.com/airbytehq/airbyte/pull/36263) | Improve conversion of debezium Date type for some edge case in mssql.                                                                                          |
 | 0.25.0  | 2024-03-18 | [\#36203](https://github.com/airbytehq/airbyte/pull/36203) | Wiring of Transformer to StagingConsumerFactory and JdbcBufferedConsumerFactory; import changes for Kotlin conversion; State message logs to debug             |
