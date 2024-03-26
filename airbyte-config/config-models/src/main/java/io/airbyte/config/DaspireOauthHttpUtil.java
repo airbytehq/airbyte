@@ -7,6 +7,7 @@ package io.airbyte.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -46,23 +47,30 @@ public class DaspireOauthHttpUtil {
     return null;
   }
 
-  public static JsonNode getDaspireOauthConfig(String workspaceId, String actorDefinitionId, String token) {
+  public static JsonNode getDaspireOauthConfig(String workspaceId, String actorDefinitionId, String token) throws IOException {
     try {
       Configs configs = new EnvConfigs();
       Map<String, Object> param = Map.of("workspaceId", workspaceId,
           "actorDefinitionId", actorDefinitionId,
-          "token", token); 
+          "token", token);
       String jsonString = post(configs.getDaspireUrl() + GET_DASPIRE_OAUTH_CONFIG, param);
+
       if (ObjectUtils.isNotEmpty(jsonString)) {
         JsonNode responseObject = new ObjectMapper().readTree(jsonString);
         if ("200".equals(responseObject.get("code").toString())) {
-          return new ObjectMapper().readTree(responseObject.get("data").asText());
+          if (responseObject.get("data") != null && !responseObject.get("data").isNull()) {
+            return new ObjectMapper().readTree(responseObject.get("data").asText());
+          } else {
+            return null;
+          }
+        } else {
+          log.error("Daspire config API returns responses other than 200. responseObject :" + responseObject);
         }
       }
     } catch (JsonProcessingException e) {
       log.error("Rpc：msg:{}", e.getMessage());
     }
-    return null;
+    throw new IOException("Failed to load Daspire OAuth Config");
   }
 
 }
