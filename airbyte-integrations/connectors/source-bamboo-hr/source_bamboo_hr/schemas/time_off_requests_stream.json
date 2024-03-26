@@ -1,0 +1,28 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "employeeId": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "start": {
+            "type": "string",
+            "default": ""
+        },
+        "end": {
+            "type": "string",
+            "default": ""
+        },
+        "created": {
+            "type": "string",
+            "default": ""
+        }
+    }
+}

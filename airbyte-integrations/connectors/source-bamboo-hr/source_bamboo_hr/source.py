@@ -6,17 +6,20 @@
 import base64
 import logging
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Callable, MutableMapping
+
 
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.core import Stream, StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .exception import AvailableFieldsAccessDeniedError, CustomFieldsAccessDeniedError, NullFieldsError
-from .utils import convert_custom_reports_fields_to_list, validate_custom_fields
+from .utils import convert_custom_reports_fields_to_list, validate_custom_fields, generate_dates_to_today
 
 
 class BambooHrStream(HttpStream, ABC):
@@ -39,6 +42,22 @@ class BambooHrStream(HttpStream, ABC):
         """
         pass
 
+class BambooHrIncrementalStream(BambooHrStream):
+    cursor_field = "created"
+
+    def __init__(self, config: Mapping[str, Any]) -> None:
+        super().__init__(config)
+        self.start_date = self.config["start_date"]
+        
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+    
 
 class MetaFieldsStream(BambooHrStream):
     primary_key = None
@@ -123,6 +142,61 @@ class CustomReportsStream(BambooHrStream):
         yield from response.json()["employees"]
 
 
+class TimeOffRequestsStream(BambooHrIncrementalStream):
+
+    primary_key = "id"
+
+    # def get_json_schema(self) -> Mapping[str, Any]:
+    #     report_schema_name = "time_off_requests_stream"
+    #     return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(report_schema_name)
+
+    # def fields(self, **kwargs) -> List[str]:
+    #     """List of fields that we want to query, for now just all properties from stream's schema"""
+    #     if self._fields:
+    #         return self._fields
+    #     self._saved_fields = list(self.get_json_schema().get("properties", {}).keys())
+    #     return self._saved_fields
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()
+
+
+    def path(self, date_from, **kwargs):
+        return f"time_off/requests/?start={date_from}&end={date_from}"
+    
+    def _fetch_next_page(
+        self,
+        start_date: str,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Tuple[requests.PreparedRequest, requests.Response]:
+        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request = self._create_prepared_request(
+            path=self.path(date_from =start_date,stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        )
+        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        response = self._send_request(request, request_kwargs)
+        return request, response
+    
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        stream_state = stream_state or {}
+        for start_date in generate_dates_to_today(self.start_date):
+            request, response = self._fetch_next_page(start_date, stream_slice, stream_state, None)
+            yield from records_generator_fn(request, response, stream_state, stream_slice)
+    
+
 class SourceBambooHr(AbstractSource):
     @staticmethod
     def _get_authenticator(api_key):
@@ -168,4 +242,6 @@ class SourceBambooHr(AbstractSource):
         config = SourceBambooHr.add_authenticator_to_config(config)
         return [
             CustomReportsStream(config),
+            EmployeesDirectoryStream(config),
+            TimeOffRequestsStream(config)
         ]

@@ -4,7 +4,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Bamboo HR Spec",
     "type": "object",
-    "required": ["subdomain", "api_key"],
+    "required": [
+      "subdomain",
+      "api_key"
+    ],
     "additionalProperties": true,
     "properties": {
       "subdomain": {
@@ -25,6 +28,10 @@
         "type": "boolean",
         "default": true,
         "description": "If true, the custom reports endpoint will include the default fields defined here: https://documentation.bamboohr.com/docs/list-of-field-names."
+      },
+      "start_date": {
+        "type": "string",
+        "description": "Start date"
       }
     }
   }
