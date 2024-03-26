@@ -31,6 +31,8 @@ USLESS_SCHEMA_ELEMENTS: list = [
     "nullable",
 ]
 
+FILTERABLE_PROPS_SCHEMA_PATH: str = "x-ns-filterable"
+
 # PREDEFINE SCHEMA HEADER
 SCHEMA_HEADERS: dict = {"Accept": "application/schema+json"}
 
