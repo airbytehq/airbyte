@@ -13,28 +13,39 @@ This page contains the setup guide and reference information for the Amazon Ads 
 
 ## Setup guide
 ### Step 1: Set up Amazon Ads
-Create an [Amazon user](https://www.amazon.com) with access to an [Amazon Ads account](https://advertising.amazon.com).
+Create an [Amazon user](https://www.amazon.com) with access to an [Amazon Ads account](https://advertising.amazon.com/register).
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
-To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get the Amazon client application's `Client ID`, `Client Secret` and `Refresh Token`.
+To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has many steps and may take several days to complete. After you complete the steps, you need the Amazon client application's `Client ID`, `Client Secret` and `Refresh Token`.
 <!-- /env:oss -->
 
-### Step 2: Set up the Amazon Ads connector in Airbyte
+### Step 2: Configure the Amazon Ads connector in Airbyte
 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. Click the **Amazon Ads** tile or use the search field.
+3. On the **New Source** page, enter a name for the source in the **Source name** field.
 4. Click **Authenticate your Amazon Ads account**.
-5. Log in and Authorize to the Amazon account.
-6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
-8. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
-10. Click **Set up source**.
+5. Enter your Amazon credentials and click **Allow** to authenticate your Amazon Ads account.
+6. Click the **Optional fields** caret to display Optional fields. 
+7. In the **Region (Optional)** dropdown, select the region to pull data from: **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
+8. **Start Date (Optional)** is used to generate reports starting from a specified start date. This value is in the YYYY-MM-DD format. The specified start date is limited to the past 60 days. If no date is provided, the default value is the current date. The date is derived from the timezone of the authenticated user requesting the report. 
+9. In the **Profile IDs (Optional)** field, enter the IDs to fetch their corresponding data. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+10. In the **Marketplace IDs (Optional)** field, enter the IDs to fetch their corresponding data.
+ 
+:::note
+
+If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID.
+
+:::
+
+11. In the **State Filter (Optional)** field, select enabled, paused, or archived from the dropdown. This status reflects the state of the Display, Product, and Brand Campaign streams. This field is ignored if no value is selected.
+12. In the **Look Back Window (Optional)** field, define the number of days to go back in time to get the updated data from Amazon Ads.
+13. In the **Report Record Types (Optional)** field, select the configuration which accepts an array of strings for record types. If no value is submitted, the default behavior is to pull all report types. Use this config option to pull specific report type(s). See [Report types](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/report-types) for more details.
+14. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -44,9 +55,15 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 3. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 4. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
-6. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-7. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
+5. **Start Date (Optional)** is used to generate reports starting from a specified start date. This value is in the YYYY-MM-DD format. The specified start date is limited to the past 60 days. If no date is provided, the default value is the current date. The date is derived from the timezone of the authenticated user requesting the report. 
+6. In the **Profile IDs (Optional)** field, enter the IDs to fetch their corresponding data. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+7. In the **Marketplace IDs (Optional)** field, enter the IDs to fetch their corresponding data.
+
+:::note
+
+If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID.
+
+:::
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -54,8 +71,8 @@ The Amazon Ads source connector supports the following [sync modes](https://docs
  - Full Refresh
  - Incremental
 
-## Supported Streams
-This source is capable of syncing the following streams:
+## Supported streams
+Amazon Ads source is capable of syncing the following streams:
 
 * [Profiles](https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles)
 * [Portfolios](https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios#/Portfolios%20extended)
@@ -89,17 +106,17 @@ As of connector version 5.0.0, the `Sponsored Products Ad Group Bid Recommendati
 
 ## Connector-specific features and highlights
 
-All the reports are generated relative to the target profile's timezone.
+The time zone for reports is specified by the profile used to request the report.
 
-Campaign reports may sometimes have no data or may not be presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
+Campaign reports sometimes display no data or may not be present in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
 
 Report data synchronization only covers the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
 
 ## Performance considerations
 
-Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
+Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-taking-so-long-to-generate).
 
-### Data type mapping
+## Data type mapping
 
 | Integration Type         | Airbyte Type |
 |:-------------------------|:-------------|
