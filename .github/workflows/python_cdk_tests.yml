@@ -48,7 +48,7 @@ jobs:
       - name: Install Dependencies
         id: install_dependencies
         working-directory: airbyte-cdk/python
-        run: poetry install
+        run: poetry install --all-extras
       - name: Build CDK Package
         working-directory: airbyte-cdk/python
         run: poetry run poe build

@@ -11,8 +11,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: succeed
-      - config_path: "secrets/old_config.json"
-        status: succeed
       - config_path: "integration_tests/invalid_config.json"
         status: exception
   discovery:
@@ -21,11 +19,7 @@ acceptance_tests:
         timeout_seconds: 2400
   basic_read:
     tests:
-      - config_path: "secrets/old_config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        expect_trace_message_on_failure: false
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_trace_message_on_failure: false
   incremental:
     tests:

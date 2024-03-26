@@ -33,13 +33,11 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.postgresql.PGStatement;
@@ -76,21 +74,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   static {
     Arrays.stream(PostgresType.class.getEnumConstants()).forEach(c -> POSTGRES_TYPE_DICT.put(c.type, c));
-  }
-
-  @Override
-  public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    // the first call communicates with the database, after that the result is cached.
-    final ResultSetMetaData metadata = queryContext.getMetaData();
-    final int columnCount = metadata.getColumnCount();
-    final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-
-    for (int i = 1; i <= columnCount; i++) {
-      // convert to java types that will convert into reasonable json.
-      copyToJsonField(queryContext, i, jsonNode);
-    }
-
-    return jsonNode;
   }
 
   @Override

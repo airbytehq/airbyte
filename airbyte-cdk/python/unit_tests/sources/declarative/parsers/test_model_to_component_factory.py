@@ -1725,10 +1725,10 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
 
     if incremental and partition_router:
         assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
-        if type(partition_router) == list and len(partition_router) > 1:
-            assert type(stream.retriever.stream_slicer._partition_router) == CartesianProductStreamSlicer
+        if isinstance(partition_router, list) and len(partition_router) > 1:
+            assert isinstance(stream.retriever.stream_slicer._partition_router, CartesianProductStreamSlicer)
             assert len(stream.retriever.stream_slicer._partition_router.stream_slicers) == len(partition_router)
-    elif partition_router and type(partition_router) == list and len(partition_router) > 1:
+    elif partition_router and isinstance(partition_router, list) and len(partition_router) > 1:
         assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
         assert len(stream.retriever.stream_slicer.stream_slicerS) == len(partition_router)
 

@@ -10,9 +10,10 @@ As a part of connection setup, you select where in the destination you want to w
 
 | Destination Namespace | Description                |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Destination default | All streams will be replicated to the single default namespace defined in the Destination's settings.  |
-| Mirror source structure | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.  |
-| Custom format | All streams will be replicated to a single user-defined namespace. See<a href="/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details | 
+| Custom | All streams will be replicated to a single user-defined namespace. See<a href="/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details | 
+| Destination-defined | All streams will be replicated to the single default namespace defined in the Destination's settings.  |
+| Source-defined | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.  |
+
 
 Most of our destinations support this feature. To learn if your connector supports this, head to the individual connector page to learn more. If your desired destination doesn't support it, you can ignore this feature.
 
@@ -26,7 +27,19 @@ In a source, the namespace is the location from where the data is replicated to 
 
 Airbyte supports namespaces and allows Sources to define namespaces, and Destinations to write to various namespaces. In Airbyte, the following options are available and are set on each individual connection.
 
-### Destination default
+### Custom
+
+When replicating multiple sources into the same destination, you may create table conflicts where tables are overwritten by different syncs. This is where using a custom namespace will ensure data is synced accurately. 
+
+For example, a Github source can be replicated into a `github` schema. However, you may have multiple connections writing from different GitHub repositories \(common in multi-tenant scenarios\).
+
+:::tip
+To write more than 1 table with the same name to your destination, Airbyte recommends writing the connections to unique namespaces to avoid mixing data from the different GitHub repositories. 
+:::
+
+You can enter plain text (most common) or additionally add a dynamic parameter `${SOURCE_NAMESPACE}`, which uses the namespace provided by the source if available.
+
+### Destination-defined
 
 All streams will be replicated and stored in the default namespace defined on the destination settings page, which is typically defined when the destination was set up. Depending on your destination, the namespace refers to:
 
@@ -45,21 +58,9 @@ All streams will be replicated and stored in the default namespace defined on th
 If you prefer to replicate multiple sources into the same namespace, use the `Stream Prefix` configuration to differentiate data from these sources to ensure no streams collide when writing to the destination. 
 :::
 
-### Mirror source structure
+### Source-Defined
 
-Some sources \(such as databases based on JDBC\) provide namespace information from which a stream has been extracted. Whenever a source is able to fill this field in the catalog.json file, the destination will try to write to exactly the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will fall back to the "Destination default". Most APIs do not provide namespace information.
-
-### Custom format
-
-When replicating multiple sources into the same destination, you may create table conflicts where tables are overwritten by different syncs. This is where using a custom namespace will ensure data is synced accurately. 
-
-For example, a Github source can be replicated into a `github` schema. However, you may have multiple connections writing from different GitHub repositories \(common in multi-tenant scenarios\).
-
-:::tip
-To write more than 1 table with the same name to your destination, Airbyte recommends writing the connections to unique namespaces to avoid mixing data from the different GitHub repositories. 
-:::
-
-You can enter plain text (most common) or additionally add a dynamic parameter `${SOURCE_NAMESPACE}`, which uses the namespace provided by the source if available.
+Some sources \(such as databases based on JDBC\) provide namespace information from which a stream has been extracted. Whenever a source is able to fill this field in the catalog.json file, the destination will try to write to exactly the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will fall back to the default namespace defined in the destination configuration. Most APIs do not provide namespace information.
 
 ### Examples
 

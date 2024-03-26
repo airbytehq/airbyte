@@ -13,6 +13,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -28,18 +32,47 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.chrono.IsoEra;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
+import org.slf4j.LoggerFactory;
 
 /**
  * Source operation skeleton for JDBC compatible databases.
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
 
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations.class);
+
   /**
    * A Date representing the earliest date in CE. Any date before this is in BCE.
    */
   private static final Date ONE_CE = Date.valueOf("0001-01-01");
+
+  public AirbyteRecordData convertDatabaseRowToAirbyteRecordData(final ResultSet queryContext) throws SQLException {
+    // the first call communicates with the database. after that the result is cached.
+    final int columnCount = queryContext.getMetaData().getColumnCount();
+    final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+    final List<AirbyteRecordMessageMetaChange> metaChanges = new ArrayList<>();
+
+    for (int i = 1; i <= columnCount; i++) {
+      final String columnName = queryContext.getMetaData().getColumnName(i);
+      try {
+        // convert to java types that will convert into reasonable json.
+        copyToJsonField(queryContext, i, jsonNode);
+      } catch (Exception e) {
+        LOGGER.info("Failed to serialize column: {}, with error {}", columnName, e.getMessage());
+        metaChanges.add(
+            new AirbyteRecordMessageMetaChange()
+                .withField(columnName)
+                .withChange(Change.NULLED)
+                .withReason(Reason.SOURCE_SERIALIZATION_ERROR));
+      }
+    }
+
+    return new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta().withChanges(metaChanges));
+  }
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
