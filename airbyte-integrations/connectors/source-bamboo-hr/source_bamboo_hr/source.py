@@ -152,24 +152,20 @@ class TimeOffRequestsStream(BambooHrIncrementalStream):
 
     def path(self, date_from, **kwargs):
         return f"time_off/requests/?start={date_from}&end={date_from}"
-    
+        
+
     def send_request(
         self,
         start_date: str,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Tuple[requests.PreparedRequest, requests.Response]:
+    ) -> Tuple[requests.PreparedRequest, requests.Response]:        
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(date_from =start_date,stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        response = self._send_request(request, request_kwargs)
+        path = self.path(date_from =start_date,stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        headers = dict(request_headers, **self.authenticator.get_auth_header())
+        request = self._create_prepared_request(path= path, headers= headers)
+        response = self._send_request(request, {})
         return request, response
     
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
