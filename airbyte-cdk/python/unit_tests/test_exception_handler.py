@@ -58,7 +58,7 @@ def test_uncaught_exception_handler():
     assert not err.value.stderr, "nothing on the stderr"
 
     stdout_lines = err.value.output.decode("utf-8").strip().split("\n")
-    assert len(stdout_lines) == 2
+    assert len(stdout_lines) == 4
 
     log_output, trace_output = stdout_lines
 
