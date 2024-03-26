@@ -379,7 +379,10 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     mock_google_api_class = Mock(return_value=mock_google_api_client)
     mocker.patch("source_google_ads.source.GoogleAds", mock_google_api_class)
     source = SourceGoogleAds()
-    source.get_customers = lambda *args, **kwargs: [CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="123")] * 100
+    source.get_customers = lambda *args, **kwargs: [
+                                                       CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="123"),
+                                                       CustomerModel(is_manager_account=True, time_zone="Europe/Berlin", id="123"),
+                                                   ] * 100
     check_successful, message = source.check_connection(
         logging.getLogger('airbyte'),
         {
@@ -416,7 +419,7 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     )
     assert check_successful
     assert message is None
-    assert mock_google_api_client.send_request.call_count == 30
+    assert mock_google_api_client.send_request.call_count == 5
 
 
 def test_end_date_is_not_in_the_future(customers):

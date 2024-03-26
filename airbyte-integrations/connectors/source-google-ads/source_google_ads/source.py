@@ -1,11 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import functools
 import logging
+import operator
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
-import random
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -48,7 +47,6 @@ from .streams import (
 )
 from .utils import GAQL, logger, traced_exception
 
-DEFAULT_VALIDATION_SAMPLE_SIZE = 10
 
 class SourceGoogleAds(AbstractSource):
     # Skip exceptions on missing streams
@@ -187,10 +185,11 @@ class SourceGoogleAds(AbstractSource):
 
         customers = self.get_customers(google_api, config)
         logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
-        validate_customers = random.sample(customers, min(
-            config.get("validation_sample_size", DEFAULT_VALIDATION_SAMPLE_SIZE),
-            len(customers)
-        ))
+        # Use only two accounts for validation: one manager account and one non-manager account
+        validate_customers = list(filter(functools.partial(operator.is_not, None), [
+            next(filter(lambda c: c.is_manager_account, customers), None),
+            next(filter(lambda c: not c.is_manager_account, customers), None),
+        ]))
         logger.info(f"Using {len(validate_customers)} customers for validation: {[customer.id for customer in validate_customers]}")
         # Check custom query request validity by sending metric request with non-existent time window
         for customer in validate_customers:
