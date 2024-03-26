@@ -5,6 +5,7 @@
 
 import logging
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
+import random
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -185,9 +186,10 @@ class SourceGoogleAds(AbstractSource):
 
         customers = self.get_customers(google_api, config)
         logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
-
+        validate_customers = random.sample(customers, min(config.get(""), len(customers)))
+        logger.info(f"Using {len(validate_customers)} customers for validation: {[customer.id for customer in validate_customers]}")
         # Check custom query request validity by sending metric request with non-existent time window
-        for customer in customers:
+        for customer in validate_customers:
             for query in config.get("custom_queries_array", []):
                 table_name = query["table_name"]
                 query = query["query"]

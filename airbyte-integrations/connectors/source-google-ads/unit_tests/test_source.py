@@ -5,7 +5,7 @@
 
 import re
 from collections import namedtuple
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch, MagicMock
 
 import pendulum
 import pytest
@@ -379,8 +379,11 @@ def test_google_type_conversion(mock_fields_meta_data, customers):
 
 
 def test_check_connection_should_pass_when_config_valid(mocker):
-    mocker.patch("source_google_ads.source.GoogleAds", MockGoogleAdsClient)
+    mock_google_api_client = MagicMock()
+    mock_google_api_class = Mock(return_value=mock_google_api_client)
+    mocker.patch("source_google_ads.source.GoogleAds", mock_google_api_class)
     source = SourceGoogleAds()
+    source.get_customers = lambda *args, **kwargs: [CustomerModel(is_manager_account=False, time_zone="Europe/Berlin", id="123")] * 100
     check_successful, message = source.check_connection(
         AirbyteLogger(),
         {
@@ -417,6 +420,7 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     )
     assert check_successful
     assert message is None
+    assert mock_google_api_client.send_request.call_count == 30
 
 
 def test_end_date_is_not_in_the_future(customers):
