@@ -71,11 +71,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     // To keep it consistent when querying raw table in T+D query, convert it to lowercase.
     // TODO: This logic should be unified across Raw and final table operations in a single class
     // operating on a StreamId.
+    final String streamName = namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase();
     return new StreamId(
         namingTransformer.getNamespace(namespace),
         namingTransformer.convertStreamName(name),
         namingTransformer.getNamespace(rawNamespaceOverride).toLowerCase(),
-        namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase(),
+        streamName.length() > 63 ? streamName.substring(0, 63) : streamName,
         namespace,
         name);
   }
@@ -246,7 +247,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     final Field<?> rawTableChangesArray =
         field("ARRAY(SELECT jsonb_array_elements_text({0}#>'{changes}'))::jsonb[]", field(name(COLUMN_NAME_AB_META)));
 
-    // Jooq is inferring and casting as int[] for empty fields array call. So explicitly casting it to jsonb[] on empty array
+    // Jooq is inferring and casting as int[] for empty fields array call. So explicitly casting it to
+    // jsonb[] on empty array
     final Field<?> finalTableChangesArray = dataFieldErrors.isEmpty() ? field("ARRAY[]::jsonb[]")
         : function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors).cast(JSONB_TYPE.getArrayDataType()), val((String) null));
     return jsonBuildObject(val(AB_META_COLUMN_CHANGES_KEY),

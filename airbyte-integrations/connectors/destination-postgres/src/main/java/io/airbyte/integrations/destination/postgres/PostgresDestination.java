@@ -31,6 +31,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDataTransformer;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresState;
 import java.net.URLEncoder;
@@ -145,7 +146,7 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
                                                          String databaseName,
                                                          SqlGenerator sqlGenerator,
                                                          DestinationHandler<PostgresState> destinationHandler) {
-    return List.of();
+    return List.of(new PostgresRawTableAirbyteMetaMigration(database, databaseName));
   }
 
   @Override

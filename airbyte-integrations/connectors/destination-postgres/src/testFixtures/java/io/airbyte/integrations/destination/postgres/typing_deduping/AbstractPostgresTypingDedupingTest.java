@@ -78,7 +78,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
-  public void testMixedCaseRawTableMigration() throws Exception {
+  public void testMixedCaseRawTableV1V2Migration() throws Exception {
     streamName = "Mixed Case Table" + streamName;
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
@@ -103,6 +103,54 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     runSync(catalog, messages2);
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_mixedcase_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_mixedcase_expectedrecords_fullrefresh_append_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+  }
+
+  @Test
+  public void testRawTableMetaMigration_append() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // First sync without _airbyte_meta
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+    runSync(catalog, messages1, "airbyte/destination-postgres:2.0.4");
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages_after_meta.jsonl");
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_mixed_meta_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_mixed_meta_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+  }
+
+  @Test
+  public void testRawTableMetaMigration_incrementalDedupe() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // First sync without _airbyte_meta
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+    runSync(catalog, messages1, "airbyte/destination-postgres:2.0.4");
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages_after_meta.jsonl");
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_mixed_meta_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_meta_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
