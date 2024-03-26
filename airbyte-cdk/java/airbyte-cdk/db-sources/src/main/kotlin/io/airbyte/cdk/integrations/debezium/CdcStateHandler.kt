@@ -12,7 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
  */
 interface CdcStateHandler {
     fun saveState(
-        offset: Map<String?, String?>?,
+        offset: Map<String, String>,
         dbHistory: AirbyteSchemaHistoryStorage.SchemaHistory<String>?
     ): AirbyteMessage?
 

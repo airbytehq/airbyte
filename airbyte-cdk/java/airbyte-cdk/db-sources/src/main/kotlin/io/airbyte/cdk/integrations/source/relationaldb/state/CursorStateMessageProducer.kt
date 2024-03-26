@@ -53,10 +53,10 @@ class CursorStateMessageProducer(
      * sync if we have fixed the underlying issue, of if the issue is transient.
      */
     override fun processRecordMessage(
-        stream: ConfiguredAirbyteStream,
+        stream: ConfiguredAirbyteStream?,
         message: AirbyteMessage
     ): AirbyteMessage {
-        val cursorField = getCursorField(stream)
+        val cursorField = getCursorField(stream!!)
         if (message.record.data.hasNonNull(cursorField)) {
             val cursorCandidate = getCursorCandidate(cursorField, message)
             val cursorType = getCursorType(stream, cursorField)
@@ -83,8 +83,8 @@ class CursorStateMessageProducer(
         return message
     }
 
-    override fun createFinalStateMessage(stream: ConfiguredAirbyteStream): AirbyteStateMessage? {
-        return createStateMessage(stream)
+    override fun createFinalStateMessage(stream: ConfiguredAirbyteStream?): AirbyteStateMessage? {
+        return createStateMessage(stream!!)
     }
 
     /** Only sends out state message when there is a state message to be sent out. */

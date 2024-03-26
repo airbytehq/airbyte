@@ -6,6 +6,8 @@ package io.airbyte.cdk.integrations.debezium
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.debezium.internals.*
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -14,13 +16,14 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
 
 /**
  * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
@@ -118,19 +121,19 @@ class AirbyteDebeziumHandler<T>(
             if (config.has(DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY))
                 config[DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY].asLong()
             else DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS.toLong()
-        return AutoCloseableIterators.fromIterator(
-            DebeziumStateDecoratingIterator(
-                eventIterator,
-                cdcStateHandler,
+
+        val messageProducer: DebeziumMessageProducer<T> = DebeziumMessageProducer<T>(cdcStateHandler,
                 targetPosition,
                 eventConverter,
                 offsetManager,
-                trackSchemaHistory,
-                schemaHistoryManager.orElse(null),
-                syncCheckpointDuration,
-                syncCheckpointRecords
-            )
-        )
+                schemaHistoryManager)
+
+
+        // Usually sourceStateIterator requires airbyteStream as input. For DBZ iterator, stream is not used
+        // at all thus we will pass in null.
+        val iterator: SourceStateIterator<ChangeEventWithMetadata> =
+                SourceStateIterator<ChangeEventWithMetadata>(eventIterator, null, messageProducer!!, StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration))
+        return AutoCloseableIterators.fromIterator<AirbyteMessage>(iterator)
     }
 
     companion object {
