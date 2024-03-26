@@ -1,0 +1,1609 @@
+version: 0.71.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+streams:
+  - type: DeclarativeStream
+    name: projects
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          account_id:
+            type: number
+          atom_enabled:
+            type: boolean
+          automatic_planning:
+            type: boolean
+          bugs_and_chores_are_estimatable:
+            type: boolean
+          created_at:
+            type: string
+          current_iteration_number:
+            type: number
+          enable_following:
+            type: boolean
+          enable_incoming_emails:
+            type: boolean
+          enable_tasks:
+            type: boolean
+          has_google_domain:
+            type: boolean
+          id:
+            type: number
+          initial_velocity:
+            type: number
+          iteration_length:
+            type: number
+          kind:
+            type: string
+          name:
+            type: string
+          number_of_done_iterations_to_show:
+            type: number
+          point_scale:
+            type: string
+          point_scale_is_custom:
+            type: boolean
+          profile_content:
+            type: string
+          project_type:
+            type: string
+          public:
+            type: boolean
+          show_priority_icon:
+            type: boolean
+          show_priority_icon_in_all_panels:
+            type: boolean
+          show_story_priority:
+            type: boolean
+          start_time:
+            type: string
+          time_zone:
+            properties:
+              kind:
+                type: string
+              offset:
+                type: string
+              olson_name:
+                type: string
+            type: object
+          updated_at:
+            type: string
+          velocity_averaged_over:
+            type: number
+          version:
+            type: number
+          week_start_day:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        path: projects
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_token''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-TrackerToken
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response['headers',
+            'X-Tracker-Pagination-Offset']+response['headers',
+            'X-Tracker-Pagination-Limit' ]}}
+          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+  - type: DeclarativeStream
+    name: stories
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          accepted_at:
+            type: string
+          created_at:
+            type: string
+          current_state:
+            type: string
+          deadline:
+            type: string
+          description:
+            type: string
+          estimate:
+            type: number
+          id:
+            type: number
+          kind:
+            type: string
+          labels:
+            items:
+              properties:
+                created_at:
+                  type: string
+                id:
+                  type: number
+                kind:
+                  type: string
+                name:
+                  type: string
+                project_id:
+                  type: number
+                updated_at:
+                  type: string
+              type: object
+            type: array
+          name:
+            type: string
+          owned_by_id:
+            type: number
+          owner_ids:
+            items:
+              type: number
+            type: array
+          project_id:
+            type: number
+          requested_by_id:
+            type: number
+          story_priority:
+            type: string
+          story_type:
+            type: string
+          updated_at:
+            type: string
+          url:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        path: projects/{{ stream_slice['project_id'] }}/stories
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_token''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-TrackerToken
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response['headers',
+            'X-Tracker-Pagination-Offset']+response['headers',
+            'X-Tracker-Pagination-Limit' ]}}
+          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      account_id:
+                        type: number
+                      atom_enabled:
+                        type: boolean
+                      automatic_planning:
+                        type: boolean
+                      bugs_and_chores_are_estimatable:
+                        type: boolean
+                      created_at:
+                        type: string
+                      current_iteration_number:
+                        type: number
+                      enable_following:
+                        type: boolean
+                      enable_incoming_emails:
+                        type: boolean
+                      enable_tasks:
+                        type: boolean
+                      has_google_domain:
+                        type: boolean
+                      id:
+                        type: number
+                      initial_velocity:
+                        type: number
+                      iteration_length:
+                        type: number
+                      kind:
+                        type: string
+                      name:
+                        type: string
+                      number_of_done_iterations_to_show:
+                        type: number
+                      point_scale:
+                        type: string
+                      point_scale_is_custom:
+                        type: boolean
+                      profile_content:
+                        type: string
+                      project_type:
+                        type: string
+                      public:
+                        type: boolean
+                      show_priority_icon:
+                        type: boolean
+                      show_priority_icon_in_all_panels:
+                        type: boolean
+                      show_story_priority:
+                        type: boolean
+                      start_time:
+                        type: string
+                      time_zone:
+                        properties:
+                          kind:
+                            type: string
+                          offset:
+                            type: string
+                          olson_name:
+                            type: string
+                        type: object
+                      updated_at:
+                        type: string
+                      velocity_averaged_over:
+                        type: number
+                      version:
+                        type: number
+                      week_start_day:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    path: projects
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: '{{ config[''api_token''] }}'
+                      inject_into:
+                        type: RequestOption
+                        inject_into: header
+                        field_name: X-TrackerToken
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: >-
+                        {{ response['headers',
+                        'X-Tracker-Pagination-Offset']+response['headers',
+                        'X-Tracker-Pagination-Limit' ]}}
+                      stop_condition: >-
+                        {{ 'X-Tracker-Pagination-Total' not in
+                        response['headers'] }}
+  - type: DeclarativeStream
+    name: project_memberships
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: string
+          favorite:
+            type: boolean
+          id:
+            type: number
+          kind:
+            type: string
+          last_viewed_at:
+            type: string
+          person:
+            properties:
+              email:
+                type: string
+              id:
+                type: number
+              initials:
+                type: string
+              kind:
+                type: string
+              name:
+                type: string
+              username:
+                type: string
+            type: object
+          project_color:
+            type: string
+          project_id:
+            type: number
+          role:
+            type: string
+          updated_at:
+            type: string
+          wants_comment_notification_emails:
+            type: boolean
+          will_receive_mention_notifications_or_emails:
+            type: boolean
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        path: projects/{{ stream_slice['project_id'] }}/memberships
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_token''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-TrackerToken
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response['headers',
+            'X-Tracker-Pagination-Offset']+response['headers',
+            'X-Tracker-Pagination-Limit' ]}}
+          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      account_id:
+                        type: number
+                      atom_enabled:
+                        type: boolean
+                      automatic_planning:
+                        type: boolean
+                      bugs_and_chores_are_estimatable:
+                        type: boolean
+                      created_at:
+                        type: string
+                      current_iteration_number:
+                        type: number
+                      enable_following:
+                        type: boolean
+                      enable_incoming_emails:
+                        type: boolean
+                      enable_tasks:
+                        type: boolean
+                      has_google_domain:
+                        type: boolean
+                      id:
+                        type: number
+                      initial_velocity:
+                        type: number
+                      iteration_length:
+                        type: number
+                      kind:
+                        type: string
+                      name:
+                        type: string
+                      number_of_done_iterations_to_show:
+                        type: number
+                      point_scale:
+                        type: string
+                      point_scale_is_custom:
+                        type: boolean
+                      profile_content:
+                        type: string
+                      project_type:
+                        type: string
+                      public:
+                        type: boolean
+                      show_priority_icon:
+                        type: boolean
+                      show_priority_icon_in_all_panels:
+                        type: boolean
+                      show_story_priority:
+                        type: boolean
+                      start_time:
+                        type: string
+                      time_zone:
+                        properties:
+                          kind:
+                            type: string
+                          offset:
+                            type: string
+                          olson_name:
+                            type: string
+                        type: object
+                      updated_at:
+                        type: string
+                      velocity_averaged_over:
+                        type: number
+                      version:
+                        type: number
+                      week_start_day:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    path: projects
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: '{{ config[''api_token''] }}'
+                      inject_into:
+                        type: RequestOption
+                        inject_into: header
+                        field_name: X-TrackerToken
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: >-
+                        {{ response['headers',
+                        'X-Tracker-Pagination-Offset']+response['headers',
+                        'X-Tracker-Pagination-Limit' ]}}
+                      stop_condition: >-
+                        {{ 'X-Tracker-Pagination-Total' not in
+                        response['headers'] }}
+  - type: DeclarativeStream
+    name: labels
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: string
+          id:
+            type: number
+          kind:
+            type: string
+          name:
+            type: string
+          project_id:
+            type: number
+          updated_at:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        path: projects/{{ stream_slice['project_id'] }}/labels
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_token''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-TrackerToken
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response['headers',
+            'X-Tracker-Pagination-Offset']+response['headers',
+            'X-Tracker-Pagination-Limit' ]}}
+          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      account_id:
+                        type: number
+                      atom_enabled:
+                        type: boolean
+                      automatic_planning:
+                        type: boolean
+                      bugs_and_chores_are_estimatable:
+                        type: boolean
+                      created_at:
+                        type: string
+                      current_iteration_number:
+                        type: number
+                      enable_following:
+                        type: boolean
+                      enable_incoming_emails:
+                        type: boolean
+                      enable_tasks:
+                        type: boolean
+                      has_google_domain:
+                        type: boolean
+                      id:
+                        type: number
+                      initial_velocity:
+                        type: number
+                      iteration_length:
+                        type: number
+                      kind:
+                        type: string
+                      name:
+                        type: string
+                      number_of_done_iterations_to_show:
+                        type: number
+                      point_scale:
+                        type: string
+                      point_scale_is_custom:
+                        type: boolean
+                      profile_content:
+                        type: string
+                      project_type:
+                        type: string
+                      public:
+                        type: boolean
+                      show_priority_icon:
+                        type: boolean
+                      show_priority_icon_in_all_panels:
+                        type: boolean
+                      show_story_priority:
+                        type: boolean
+                      start_time:
+                        type: string
+                      time_zone:
+                        properties:
+                          kind:
+                            type: string
+                          offset:
+                            type: string
+                          olson_name:
+                            type: string
+                        type: object
+                      updated_at:
+                        type: string
+                      velocity_averaged_over:
+                        type: number
+                      version:
+                        type: number
+                      week_start_day:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    path: projects
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: '{{ config[''api_token''] }}'
+                      inject_into:
+                        type: RequestOption
+                        inject_into: header
+                        field_name: X-TrackerToken
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: >-
+                        {{ response['headers',
+                        'X-Tracker-Pagination-Offset']+response['headers',
+                        'X-Tracker-Pagination-Limit' ]}}
+                      stop_condition: >-
+                        {{ 'X-Tracker-Pagination-Total' not in
+                        response['headers'] }}
+  - type: DeclarativeStream
+    name: releases
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          accepted_at:
+            type: string
+          created_at:
+            type: string
+          current_state:
+            type: string
+          deadline:
+            type: string
+          id:
+            type: number
+          kind:
+            type: string
+          labels:
+            items:
+              properties:
+                created_at:
+                  type: string
+                id:
+                  type: number
+                kind:
+                  type: string
+                name:
+                  type: string
+                project_id:
+                  type: number
+                updated_at:
+                  type: string
+              type: object
+            type: array
+          name:
+            type: string
+          project_id:
+            type: number
+          updated_at:
+            type: string
+          url:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        path: projects/{{ stream_slice['project_id'] }}/releases
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_token''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-TrackerToken
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response['headers',
+            'X-Tracker-Pagination-Offset']+response['headers',
+            'X-Tracker-Pagination-Limit' ]}}
+          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      account_id:
+                        type: number
+                      atom_enabled:
+                        type: boolean
+                      automatic_planning:
+                        type: boolean
+                      bugs_and_chores_are_estimatable:
+                        type: boolean
+                      created_at:
+                        type: string
+                      current_iteration_number:
+                        type: number
+                      enable_following:
+                        type: boolean
+                      enable_incoming_emails:
+                        type: boolean
+                      enable_tasks:
+                        type: boolean
+                      has_google_domain:
+                        type: boolean
+                      id:
+                        type: number
+                      initial_velocity:
+                        type: number
+                      iteration_length:
+                        type: number
+                      kind:
+                        type: string
+                      name:
+                        type: string
+                      number_of_done_iterations_to_show:
+                        type: number
+                      point_scale:
+                        type: string
+                      point_scale_is_custom:
+                        type: boolean
+                      profile_content:
+                        type: string
+                      project_type:
+                        type: string
+                      public:
+                        type: boolean
+                      show_priority_icon:
+                        type: boolean
+                      show_priority_icon_in_all_panels:
+                        type: boolean
+                      show_story_priority:
+                        type: boolean
+                      start_time:
+                        type: string
+                      time_zone:
+                        properties:
+                          kind:
+                            type: string
+                          offset:
+                            type: string
+                          olson_name:
+                            type: string
+                        type: object
+                      updated_at:
+                        type: string
+                      velocity_averaged_over:
+                        type: number
+                      version:
+                        type: number
+                      week_start_day:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    path: projects
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: '{{ config[''api_token''] }}'
+                      inject_into:
+                        type: RequestOption
+                        inject_into: header
+                        field_name: X-TrackerToken
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: >-
+                        {{ response['headers',
+                        'X-Tracker-Pagination-Offset']+response['headers',
+                        'X-Tracker-Pagination-Limit' ]}}
+                      stop_condition: >-
+                        {{ 'X-Tracker-Pagination-Total' not in
+                        response['headers'] }}
+  - type: DeclarativeStream
+    name: epics
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          created_at:
+            type: string
+          description:
+            type: string
+          id:
+            type: number
+          kind:
+            type: string
+          label:
+            properties:
+              created_at:
+                type: string
+              id:
+                type: number
+              kind:
+                type: string
+              name:
+                type: string
+              project_id:
+                type: number
+              updated_at:
+                type: string
+            type: object
+          name:
+            type: string
+          project_id:
+            type: number
+          updated_at:
+            type: string
+          url:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        path: projects/{{ stream_slice['project_id'] }}/epics
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_token''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-TrackerToken
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response['headers',
+            'X-Tracker-Pagination-Offset']+response['headers',
+            'X-Tracker-Pagination-Limit' ]}}
+          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      account_id:
+                        type: number
+                      atom_enabled:
+                        type: boolean
+                      automatic_planning:
+                        type: boolean
+                      bugs_and_chores_are_estimatable:
+                        type: boolean
+                      created_at:
+                        type: string
+                      current_iteration_number:
+                        type: number
+                      enable_following:
+                        type: boolean
+                      enable_incoming_emails:
+                        type: boolean
+                      enable_tasks:
+                        type: boolean
+                      has_google_domain:
+                        type: boolean
+                      id:
+                        type: number
+                      initial_velocity:
+                        type: number
+                      iteration_length:
+                        type: number
+                      kind:
+                        type: string
+                      name:
+                        type: string
+                      number_of_done_iterations_to_show:
+                        type: number
+                      point_scale:
+                        type: string
+                      point_scale_is_custom:
+                        type: boolean
+                      profile_content:
+                        type: string
+                      project_type:
+                        type: string
+                      public:
+                        type: boolean
+                      show_priority_icon:
+                        type: boolean
+                      show_priority_icon_in_all_panels:
+                        type: boolean
+                      show_story_priority:
+                        type: boolean
+                      start_time:
+                        type: string
+                      time_zone:
+                        properties:
+                          kind:
+                            type: string
+                          offset:
+                            type: string
+                          olson_name:
+                            type: string
+                        type: object
+                      updated_at:
+                        type: string
+                      velocity_averaged_over:
+                        type: number
+                      version:
+                        type: number
+                      week_start_day:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    path: projects
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: '{{ config[''api_token''] }}'
+                      inject_into:
+                        type: RequestOption
+                        inject_into: header
+                        field_name: X-TrackerToken
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: >-
+                        {{ response['headers',
+                        'X-Tracker-Pagination-Offset']+response['headers',
+                        'X-Tracker-Pagination-Limit' ]}}
+                      stop_condition: >-
+                        {{ 'X-Tracker-Pagination-Total' not in
+                        response['headers'] }}
+  - type: DeclarativeStream
+    name: activity
+    primary_key:
+      - guid
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          changes:
+            items:
+              properties:
+                change_type:
+                  type: string
+                id:
+                  type: number
+                kind:
+                  type: string
+                name:
+                  type: string
+                new_values:
+                  properties:
+                    accepted_at:
+                      type: string
+                    after_id:
+                      type: number
+                    attachment_ids:
+                      type: array
+                    before_id:
+                      type: number
+                    blocked_story_ids:
+                      type: array
+                    completed_at:
+                      type:
+                        - 'null'
+                        - number
+                    counts:
+                      properties:
+                        kind:
+                          type: string
+                        number_of_stories_by_state:
+                          properties:
+                            accepted:
+                              type: number
+                            delivered:
+                              type: number
+                            finished:
+                              type: number
+                            kind:
+                              type: string
+                            planned:
+                              type: number
+                            rejected:
+                              type: number
+                            started:
+                              type: number
+                            unscheduled:
+                              type: number
+                            unstarted:
+                              type: number
+                          type: object
+                        number_of_zero_point_stories_by_state:
+                          properties:
+                            accepted:
+                              type: number
+                            delivered:
+                              type: number
+                            finished:
+                              type: number
+                            kind:
+                              type: string
+                            planned:
+                              type: number
+                            rejected:
+                              type: number
+                            started:
+                              type: number
+                            unscheduled:
+                              type: number
+                            unstarted:
+                              type: number
+                          type: object
+                        sum_of_story_estimates_by_state:
+                          properties:
+                            accepted:
+                              type: number
+                            delivered:
+                              type: number
+                            finished:
+                              type: number
+                            kind:
+                              type: string
+                            planned:
+                              type: number
+                            rejected:
+                              type: number
+                            started:
+                              type: number
+                            unscheduled:
+                              type: number
+                            unstarted:
+                              type: number
+                          type: object
+                      type: object
+                    created_at:
+                      type: string
+                    current_state:
+                      type: string
+                    deadline:
+                      type: string
+                    file_attachment_ids:
+                      type: array
+                    file_attachments:
+                      type: array
+                    follower_ids:
+                      items:
+                        type: number
+                      type: array
+                    google_attachment_ids:
+                      type: array
+                    google_attachments:
+                      type: array
+                    id:
+                      type: number
+                    label_ids:
+                      items:
+                        type: number
+                      type: array
+                    labels:
+                      items:
+                        type: string
+                      type: array
+                    name:
+                      type: string
+                    owned_by_id:
+                      type: number
+                    owner_ids:
+                      items:
+                        type: number
+                      type: array
+                    person_id:
+                      type: number
+                    profile_content:
+                      type: string
+                    project_id:
+                      type: number
+                    requested_by_id:
+                      type: number
+                    review_type_id:
+                      type: number
+                    status:
+                      type: string
+                    story_id:
+                      type: number
+                    story_priority:
+                      type: string
+                    story_type:
+                      type: string
+                    text:
+                      type: string
+                    updated_at:
+                      type: string
+                    version:
+                      type: number
+                  type: object
+                original_values:
+                  properties:
+                    completed_at:
+                      type:
+                        - 'null'
+                        - number
+                    counts:
+                      properties:
+                        kind:
+                          type: string
+                        number_of_stories_by_state:
+                          properties:
+                            accepted:
+                              type: number
+                            delivered:
+                              type: number
+                            finished:
+                              type: number
+                            kind:
+                              type: string
+                            planned:
+                              type: number
+                            rejected:
+                              type: number
+                            started:
+                              type: number
+                            unscheduled:
+                              type: number
+                            unstarted:
+                              type: number
+                          type: object
+                        number_of_zero_point_stories_by_state:
+                          properties:
+                            accepted:
+                              type: number
+                            delivered:
+                              type: number
+                            finished:
+                              type: number
+                            kind:
+                              type: string
+                            planned:
+                              type: number
+                            rejected:
+                              type: number
+                            started:
+                              type: number
+                            unscheduled:
+                              type: number
+                            unstarted:
+                              type: number
+                          type: object
+                        sum_of_story_estimates_by_state:
+                          properties:
+                            accepted:
+                              type: number
+                            delivered:
+                              type: number
+                            finished:
+                              type: number
+                            kind:
+                              type: string
+                            planned:
+                              type: number
+                            rejected:
+                              type: number
+                            started:
+                              type: number
+                            unscheduled:
+                              type: number
+                            unstarted:
+                              type: number
+                          type: object
+                      type: object
+                    current_state:
+                      type: string
+                    follower_ids:
+                      type: array
+                    owner_ids:
+                      type: array
+                    status:
+                      type: string
+                    updated_at:
+                      type: string
+                  type: object
+                story_priority:
+                  type: string
+                story_type:
+                  type: string
+              type: object
+            type: array
+          guid:
+            type: string
+          highlight:
+            type: string
+          kind:
+            type: string
+          message:
+            type: string
+          occurred_at:
+            type: string
+          performed_by:
+            properties:
+              id:
+                type: number
+              initials:
+                type: string
+              kind:
+                type: string
+              name:
+                type: string
+            type: object
+          primary_resources:
+            items:
+              properties:
+                id:
+                  type: number
+                kind:
+                  type: string
+                name:
+                  type: string
+                story_priority:
+                  type: string
+                story_type:
+                  type: string
+                url:
+                  type: string
+              type: object
+            type: array
+          project:
+            properties:
+              id:
+                type: number
+              kind:
+                type: string
+              name:
+                type: string
+            type: object
+          project_version:
+            type: number
+          secondary_resources:
+            type: array
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://www.pivotaltracker.com/services/v5/
+        path: projects/{{ stream_slice['project_id'] }}/activity?limit=10
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_token''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-TrackerToken
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: >-
+            {{ response['headers',
+            'X-Tracker-Pagination-Offset']+response['headers',
+            'X-Tracker-Pagination-Limit' ]}}
+          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                type: DeclarativeStream
+                name: projects
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      account_id:
+                        type: number
+                      atom_enabled:
+                        type: boolean
+                      automatic_planning:
+                        type: boolean
+                      bugs_and_chores_are_estimatable:
+                        type: boolean
+                      created_at:
+                        type: string
+                      current_iteration_number:
+                        type: number
+                      enable_following:
+                        type: boolean
+                      enable_incoming_emails:
+                        type: boolean
+                      enable_tasks:
+                        type: boolean
+                      has_google_domain:
+                        type: boolean
+                      id:
+                        type: number
+                      initial_velocity:
+                        type: number
+                      iteration_length:
+                        type: number
+                      kind:
+                        type: string
+                      name:
+                        type: string
+                      number_of_done_iterations_to_show:
+                        type: number
+                      point_scale:
+                        type: string
+                      point_scale_is_custom:
+                        type: boolean
+                      profile_content:
+                        type: string
+                      project_type:
+                        type: string
+                      public:
+                        type: boolean
+                      show_priority_icon:
+                        type: boolean
+                      show_priority_icon_in_all_panels:
+                        type: boolean
+                      show_story_priority:
+                        type: boolean
+                      start_time:
+                        type: string
+                      time_zone:
+                        properties:
+                          kind:
+                            type: string
+                          offset:
+                            type: string
+                          olson_name:
+                            type: string
+                        type: object
+                      updated_at:
+                        type: string
+                      velocity_averaged_over:
+                        type: number
+                      version:
+                        type: number
+                      week_start_day:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://www.pivotaltracker.com/services/v5/
+                    path: projects
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: '{{ config[''api_token''] }}'
+                      inject_into:
+                        type: RequestOption
+                        inject_into: header
+                        field_name: X-TrackerToken
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    pagination_strategy:
+                      type: CursorPagination
+                      cursor_value: >-
+                        {{ response['headers',
+                        'X-Tracker-Pagination-Offset']+response['headers',
+                        'X-Tracker-Pagination-Limit' ]}}
+                      stop_condition: >-
+                        {{ 'X-Tracker-Pagination-Total' not in
+                        response['headers'] }}
+spec:
+  connection_specification:
+    title: Pivotal Tracker Spec
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: Pivotal Tracker API token
+        examples:
+        - 5c054d0de3440452190fdc5d5a04d871
+        airbyte_secret: true
+    additionalProperties: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/pivotal-tracker
+  type: Spec
+metadata:
+  autoImportSchema:
+    projects: true
+    stories: true
+    project_memberships: true
+    labels: true
+    releases: true
+    epics: true
+    activity: true
