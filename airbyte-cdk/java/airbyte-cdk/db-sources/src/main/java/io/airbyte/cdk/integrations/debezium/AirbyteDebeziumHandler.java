@@ -9,6 +9,8 @@ import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.internals.*;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -125,16 +127,18 @@ public class AirbyteDebeziumHandler<T> {
     final Long syncCheckpointRecords = config.has(SYNC_CHECKPOINT_RECORDS_PROPERTY)
         ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : SYNC_CHECKPOINT_RECORDS;
-    return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator<>(
-        eventIterator,
-        cdcStateHandler,
+
+    DebeziumMessageProducer messageProducer = new DebeziumMessageProducer(cdcStateHandler,
         targetPosition,
         eventConverter,
         offsetManager,
-        trackSchemaHistory,
-        schemaHistoryManager.orElse(null),
-        syncCheckpointDuration,
-        syncCheckpointRecords));
+        schemaHistoryManager);
+
+    // Usually sourceStateIterator requires airbyteStream as input. For DBZ iterator, stream is not used
+    // at all thus we will pass in null.
+    SourceStateIterator iterator =
+        new SourceStateIterator<>(eventIterator, null, messageProducer, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration));
+    return AutoCloseableIterators.fromIterator(iterator);
   }
 
   public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {

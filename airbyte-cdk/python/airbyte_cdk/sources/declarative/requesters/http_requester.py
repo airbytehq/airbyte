@@ -336,8 +336,8 @@ class HttpRequester(Requester):
             raise ValueError("Request params cannot be a string")
 
         for k, v in options.items():
-            if isinstance(v, (list, dict)):
-                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object.")
+            if isinstance(v, (dict,)):
+                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an object.")
 
         return options
 

@@ -128,7 +128,7 @@ one
 -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```bash
- poetry run source-<name> --config secrets/config.json --catalog sample_files/configured_catalog.json
+ poetry run source-<name> read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 you should see some output lines, one of which is a record from the API:

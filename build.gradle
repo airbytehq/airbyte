@@ -16,6 +16,8 @@ allprojects {
     apply plugin: 'java-test-fixtures'
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'idea'
+
 
     // By default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
@@ -93,6 +95,13 @@ allprojects {
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
+        }
+    }
+
+    idea {
+        module {
+            downloadJavadoc = true
+            downloadSources = true
         }
     }
 
