@@ -60,7 +60,7 @@ If you prefer to replicate multiple sources into the same namespace, use the `St
 
 ### Source-Defined
 
-Some sources \(such as databases based on JDBC\) provide namespace information from which a stream has been extracted. Whenever a source is able to fill this field in the catalog.json file, the destination will try to write to exactly the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will fall back to the "Destination default". Most APIs do not provide namespace information.
+Some sources \(such as databases based on JDBC\) provide namespace information from which a stream has been extracted. Whenever a source is able to fill this field in the catalog.json file, the destination will try to write to exactly the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will fall back to the default namespace defined in the destination configuration. Most APIs do not provide namespace information.
 
 ### Examples
 

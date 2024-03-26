@@ -7,7 +7,7 @@ import TabItem from "@theme/TabItem";
 
 # Set up a Connection
 
-Now that you've learned how to set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the job by creating your very first connection!
+Now that you've learned how to set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the setup by creating your very first connection!
 
 On the left side of your main Airbyte dashboard, select **Connections**. You will be prompted to choose which source and destination to use for this connection. For this example, we'll use the **Google Sheets** source and the destination you previously set up, either **Local JSON**  or **Google Sheets**.
 
