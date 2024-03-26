@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 @VisibleForTesting
 public class MongodbNameTransformer extends StandardNameTransformer {

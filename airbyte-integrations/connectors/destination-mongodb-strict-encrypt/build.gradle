@@ -1,7 +1,11 @@
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.19.0'
+    features = ['db-destinations', 'datastore-mongo']
+    useLocalCdk = false
 }
 
 application {
@@ -10,18 +14,5 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation libs.airbyte.protocol
-
     implementation project(':airbyte-integrations:connectors:destination-mongodb')
-    implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
-
-    testImplementation libs.connectors.testcontainers.mongodb
-
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mongodb-strict-encrypt')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

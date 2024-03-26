@@ -5,12 +5,12 @@
 package io.airbyte.integrations.source.postgres.cursor_based;
 
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;

@@ -6,6 +6,15 @@
     "id": {
       "type": "integer"
     },
+    "assignedTeams": {
+      "type": ["null", "array"]
+    },
+    "assignedUsers": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
+    },
     "amount": {
       "type": ["null", "integer"]
     },
@@ -470,12 +479,21 @@
     "custom99": {
       "type": ["null", "string"]
     },
+    "defaultPluginMapping": {
+      "type": ["null", "array"]
+    },
     "description": {
       "type": ["null", "string"]
+    },
+    "externalCreator": {
+      "type": ["null", "array"]
     },
     "externalCreatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "favorites": {
+      "type": ["null", "array"]
     },
     "healthCategory": {
       "type": ["null", "string"]
@@ -490,7 +508,7 @@
       "type": ["null", "string"]
     },
     "mapNumberOfOverdueTasks": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "mapStatus": {
       "type": ["null", "string"]
@@ -501,8 +519,17 @@
     "nextStep": {
       "type": ["null", "string"]
     },
+    "opportunityHealthFactors": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
+    },
     "opportunityType": {
       "type": ["null", "string"]
+    },
+    "primaryProspect": {
+      "type": ["null", "array"]
     },
     "probability": {
       "type": ["null", "integer"]

@@ -46,7 +46,15 @@ class TestMyFacebookAdsApi:
         ],
     )
     def test__compute_pause_interval(
-        self, mocker, fb_api, max_rate, max_pause_interval, min_pause_interval, usage, pause_interval, expected_pause_interval
+        self,
+        mocker,
+        fb_api,
+        max_rate,
+        max_pause_interval,
+        min_pause_interval,
+        usage,
+        pause_interval,
+        expected_pause_interval,
     ):
         mocker.patch.object(fb_api, "MAX_RATE", max_rate)
         mocker.patch.object(fb_api, "MAX_PAUSE_INTERVAL", max_pause_interval)
@@ -59,12 +67,18 @@ class TestMyFacebookAdsApi:
         [
             (
                 pendulum.duration(minutes=1),  # min_pause_interval
-                [(5, pendulum.duration(minutes=6)), (7, pendulum.duration(minutes=5))],  # usages_pause_intervals
+                [
+                    (5, pendulum.duration(minutes=6)),
+                    (7, pendulum.duration(minutes=5)),
+                ],  # usages_pause_intervals
                 (7, pendulum.duration(minutes=6)),  # expected_output
             ),
             (
                 pendulum.duration(minutes=10),  # min_pause_interval
-                [(5, pendulum.duration(minutes=6)), (7, pendulum.duration(minutes=5))],  # usages_pause_intervals
+                [
+                    (5, pendulum.duration(minutes=6)),
+                    (7, pendulum.duration(minutes=5)),
+                ],  # usages_pause_intervals
                 (7, pendulum.duration(minutes=10)),  # expected_output
             ),
             (
@@ -85,9 +99,21 @@ class TestMyFacebookAdsApi:
             ),
         ],
     )
-    def test__get_max_usage_pause_interval_from_batch(self, mocker, fb_api, min_pause_interval, usages_pause_intervals, expected_output):
+    def test__get_max_usage_pause_interval_from_batch(
+        self,
+        mocker,
+        fb_api,
+        min_pause_interval,
+        usages_pause_intervals,
+        expected_output,
+    ):
         records = [
-            {"headers": [{"name": "USAGE", "value": usage}, {"name": "PAUSE_INTERVAL", "value": pause_interval}]}
+            {
+                "headers": [
+                    {"name": "USAGE", "value": usage},
+                    {"name": "PAUSE_INTERVAL", "value": pause_interval},
+                ]
+            }
             for usage, pause_interval in usages_pause_intervals
         ]
 
@@ -97,7 +123,10 @@ class TestMyFacebookAdsApi:
 
         output = fb_api._get_max_usage_pause_interval_from_batch(records)
         fb_api._parse_call_rate_header.assert_called_with(
-            {"usage": usages_pause_intervals[-1][0], "pause_interval": usages_pause_intervals[-1][1]}
+            {
+                "usage": usages_pause_intervals[-1][0],
+                "pause_interval": usages_pause_intervals[-1][1],
+            }
         )
         assert output == expected_output
 
@@ -117,8 +146,16 @@ class TestMyFacebookAdsApi:
         mock_response = mocker.Mock()
 
         mocker.patch.object(fb_api, "MIN_RATE", min_rate)
-        mocker.patch.object(fb_api, "_get_max_usage_pause_interval_from_batch", mocker.Mock(return_value=(usage, pause_interval)))
-        mocker.patch.object(fb_api, "_parse_call_rate_header", mocker.Mock(return_value=(usage, pause_interval)))
+        mocker.patch.object(
+            fb_api,
+            "_get_max_usage_pause_interval_from_batch",
+            mocker.Mock(return_value=(usage, pause_interval)),
+        )
+        mocker.patch.object(
+            fb_api,
+            "_parse_call_rate_header",
+            mocker.Mock(return_value=(usage, pause_interval)),
+        )
         mocker.patch.object(fb_api, "_compute_pause_interval")
         mocker.patch.object(source_facebook_marketing.api, "logger")
         mocker.patch.object(source_facebook_marketing.api, "sleep")
@@ -135,7 +172,11 @@ class TestMyFacebookAdsApi:
             )
 
     def test_find_account(self, api, account_id, requests_mock):
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", [{"json": {"id": "act_test"}}])
-        account = api._find_account(account_id)
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/",
+            [{"json": {"id": "act_test"}}],
+        )
+        account = api.get_account(account_id)
         assert isinstance(account, AdAccount)
         assert account.get_id() == "act_test"

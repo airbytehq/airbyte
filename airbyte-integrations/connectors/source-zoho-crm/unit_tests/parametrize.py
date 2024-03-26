@@ -6,7 +6,9 @@ from collections import namedtuple
 
 import pytest
 
-TestCase = namedtuple("TestCase", ("json_type", "data_type", "length", "decimal_place", "api_name", "pick_list_values", "autonumber", "expected_values"))
+TestCase = namedtuple(
+    "TestCase", ("json_type", "data_type", "length", "decimal_place", "api_name", "pick_list_values", "autonumber", "expected_values")
+)
 
 
 datatype_inputs = pytest.mark.parametrize(
@@ -171,7 +173,7 @@ datatype_inputs = pytest.mark.parametrize(
             "Field",
             [],
             None,
-            {"items": {"airbyte_type": "big_integer", "type": "string"}, "title": "Field", "type": "array"}
+            {"items": {"airbyte_type": "big_integer", "type": "string"}, "title": "Field", "type": "array"},
         ),
         TestCase(
             "jsonarray",
@@ -236,8 +238,8 @@ datatype_inputs = pytest.mark.parametrize(
             "Field",
             [],
             {
-                'prefix': 'prefix',
-                'suffix': 'suffix',
+                "prefix": "prefix",
+                "suffix": "suffix",
             },
             {
                 "format": "string",

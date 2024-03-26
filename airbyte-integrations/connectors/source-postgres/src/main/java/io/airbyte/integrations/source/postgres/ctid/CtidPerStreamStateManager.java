@@ -29,12 +29,12 @@ public class CtidPerStreamStateManager extends CtidStateManager {
       .withType(AirbyteStateType.STREAM)
       .withStream(new AirbyteStreamState());
 
-  public CtidPerStreamStateManager(final List<AirbyteStateMessage> stateMessages, final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
-    super(createPairToCtidStatusMap(stateMessages, fileNodes));
+  public CtidPerStreamStateManager(final List<AirbyteStateMessage> stateMessages, final FileNodeHandler fileNodeHandler) {
+    super(createPairToCtidStatusMap(stateMessages, fileNodeHandler));
   }
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> createPairToCtidStatusMap(final List<AirbyteStateMessage> stateMessages,
-                                                                                           final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+                                                                                           final FileNodeHandler fileNodeHandler) {
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
@@ -50,7 +50,7 @@ public class CtidPerStreamStateManager extends CtidStateManager {
           } catch (final IllegalArgumentException e) {
             throw new ConfigErrorException("Invalid per-stream state");
           }
-          if (validateRelationFileNode(ctidStatus, pair, fileNodes)) {
+          if (validateRelationFileNode(ctidStatus, pair, fileNodeHandler)) {
             localMap.put(pair, ctidStatus);
           } else {
             LOGGER.warn(
@@ -65,6 +65,7 @@ public class CtidPerStreamStateManager extends CtidStateManager {
 
   @Override
   public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
+    pairToCtidStatus.put(pair, ctidStatus);
     final AirbyteStreamState airbyteStreamState =
         new AirbyteStreamState()
             .withStreamDescriptor(

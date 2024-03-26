@@ -3,11 +3,7 @@
 #
 
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_s3 import SourceS3
+from source_s3.run import run
 
 if __name__ == "__main__":
-    source = SourceS3()
-    launch(source, sys.argv[1:])
+    run()

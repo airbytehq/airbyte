@@ -6,9 +6,9 @@ package io.airbyte.integrations.destination.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;

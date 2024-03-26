@@ -22,6 +22,7 @@ Note:
 *See [ConnectionSpecification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#actor-specification) for details on the `"config"` key if needed.
 
 - When the `__command` is `resolve_manifest`, the argument to `catalog` should be an empty string.
+- The config can optionally contain an object under the `__test_read_config` key which can define custom test read limits with `max_records`, `max_slices`, and `max_pages_per_slice` properties. All custom limits are optional; a default will be used for any limit that is not provided.
 
 ### Locally running the docker image
 
@@ -29,10 +30,8 @@ Note:
 
 First, make sure you build the latest Docker image:
 ```
-./gradlew airbyte-cdk:python:airbyteDocker
+docker build -t airbyte/source-declarative-manifest:dev .
 ```
-
-The docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in the Dockerfile.
 
 #### Run
 

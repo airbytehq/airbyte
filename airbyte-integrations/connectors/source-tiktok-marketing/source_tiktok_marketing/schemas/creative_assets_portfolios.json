@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "creative_portfolio_id": {
+      "type": ["null", "string"]
+    },
+    "creative_portfolio_type": {
+      "type": ["null", "string"]
+    },
+    "creative_portfolio_preview_url": {
+      "type": ["null", "string"]
+    }
+  }
+}

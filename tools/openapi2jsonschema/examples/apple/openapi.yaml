@@ -132,7 +132,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related subcategories returned (when they are
+        - description:
+            maximum number of related subcategories returned (when they are
             included)
           in: query
           name: limit[subcategories]
@@ -193,7 +194,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related subcategories returned (when they are
+        - description:
+            maximum number of related subcategories returned (when they are
             included)
           in: query
           name: limit[subcategories]
@@ -998,7 +1000,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related appInfoLocalizations returned (when they
+        - description:
+            maximum number of related appInfoLocalizations returned (when they
             are included)
           in: query
           name: limit[appInfoLocalizations]
@@ -1865,7 +1868,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related appPreviews returned (when they are
+        - description:
+            maximum number of related appPreviews returned (when they are
             included)
           in: query
           name: limit[appPreviews]
@@ -2542,7 +2546,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related pricePoints returned (when they are
+        - description:
+            maximum number of related pricePoints returned (when they are
             included)
           in: query
           name: limit[pricePoints]
@@ -2615,7 +2620,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related pricePoints returned (when they are
+        - description:
+            maximum number of related pricePoints returned (when they are
             included)
           in: query
           name: limit[pricePoints]
@@ -2905,7 +2911,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related appScreenshots returned (when they are
+        - description:
+            maximum number of related appScreenshots returned (when they are
             included)
           in: query
           name: limit[appScreenshots]
@@ -3575,7 +3582,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related appStoreReviewAttachments returned (when
+        - description:
+            maximum number of related appStoreReviewAttachments returned (when
             they are included)
           in: query
           name: limit[appStoreReviewAttachments]
@@ -3894,7 +3902,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related appPreviewSets returned (when they are
+        - description:
+            maximum number of related appPreviewSets returned (when they are
             included)
           in: query
           name: limit[appPreviewSets]
@@ -3903,7 +3912,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related appScreenshotSets returned (when they are
+        - description:
+            maximum number of related appScreenshotSets returned (when they are
             included)
           in: query
           name: limit[appScreenshotSets]
@@ -4759,7 +4769,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related appStoreVersionLocalizations returned
+        - description:
+            maximum number of related appStoreVersionLocalizations returned
             (when they are included)
           in: query
           name: limit[appStoreVersionLocalizations]
@@ -5599,7 +5610,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -5969,7 +5981,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related appStoreVersions returned (when they are
+        - description:
+            maximum number of related appStoreVersions returned (when they are
             included)
           in: query
           name: limit[appStoreVersions]
@@ -5978,7 +5991,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related availableTerritories returned (when they
+        - description:
+            maximum number of related availableTerritories returned (when they
             are included)
           in: query
           name: limit[availableTerritories]
@@ -5987,7 +6001,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related betaAppLocalizations returned (when they
+        - description:
+            maximum number of related betaAppLocalizations returned (when they
             are included)
           in: query
           name: limit[betaAppLocalizations]
@@ -5996,7 +6011,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related betaGroups returned (when they are
+        - description:
+            maximum number of related betaGroups returned (when they are
             included)
           in: query
           name: limit[betaGroups]
@@ -6013,7 +6029,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related gameCenterEnabledVersions returned (when
+        - description:
+            maximum number of related gameCenterEnabledVersions returned (when
             they are included)
           in: query
           name: limit[gameCenterEnabledVersions]
@@ -6022,7 +6039,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related inAppPurchases returned (when they are
+        - description:
+            maximum number of related inAppPurchases returned (when they are
             included)
           in: query
           name: limit[inAppPurchases]
@@ -6031,7 +6049,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related preReleaseVersions returned (when they
+        - description:
+            maximum number of related preReleaseVersions returned (when they
             are included)
           in: query
           name: limit[preReleaseVersions]
@@ -6418,7 +6437,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related appStoreVersions returned (when they are
+        - description:
+            maximum number of related appStoreVersions returned (when they are
             included)
           in: query
           name: limit[appStoreVersions]
@@ -6427,7 +6447,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related availableTerritories returned (when they
+        - description:
+            maximum number of related availableTerritories returned (when they
             are included)
           in: query
           name: limit[availableTerritories]
@@ -6436,7 +6457,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related betaAppLocalizations returned (when they
+        - description:
+            maximum number of related betaAppLocalizations returned (when they
             are included)
           in: query
           name: limit[betaAppLocalizations]
@@ -6445,7 +6467,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related betaGroups returned (when they are
+        - description:
+            maximum number of related betaGroups returned (when they are
             included)
           in: query
           name: limit[betaGroups]
@@ -6462,7 +6485,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related gameCenterEnabledVersions returned (when
+        - description:
+            maximum number of related gameCenterEnabledVersions returned (when
             they are included)
           in: query
           name: limit[gameCenterEnabledVersions]
@@ -6471,7 +6495,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related inAppPurchases returned (when they are
+        - description:
+            maximum number of related inAppPurchases returned (when they are
             included)
           in: query
           name: limit[inAppPurchases]
@@ -6480,7 +6505,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related preReleaseVersions returned (when they
+        - description:
+            maximum number of related preReleaseVersions returned (when they
             are included)
           in: query
           name: limit[preReleaseVersions]
@@ -7558,7 +7584,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -7702,7 +7729,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -9679,7 +9707,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -9826,7 +9855,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related betaTesters returned (when they are
+        - description:
+            maximum number of related betaTesters returned (when they are
             included)
           in: query
           name: limit[betaTesters]
@@ -10055,7 +10085,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related betaTesters returned (when they are
+        - description:
+            maximum number of related betaTesters returned (when they are
             included)
           in: query
           name: limit[betaTesters]
@@ -11009,7 +11040,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -11164,7 +11196,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related betaGroups returned (when they are
+        - description:
+            maximum number of related betaGroups returned (when they are
             included)
           in: query
           name: limit[betaGroups]
@@ -11401,7 +11434,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related betaGroups returned (when they are
+        - description:
+            maximum number of related betaGroups returned (when they are
             included)
           in: query
           name: limit[betaGroups]
@@ -12467,7 +12501,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -12753,7 +12788,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related betaBuildLocalizations returned (when
+        - description:
+            maximum number of related betaBuildLocalizations returned (when
             they are included)
           in: query
           name: limit[betaBuildLocalizations]
@@ -12770,7 +12806,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related individualTesters returned (when they are
+        - description:
+            maximum number of related individualTesters returned (when they are
             included)
           in: query
           name: limit[individualTesters]
@@ -13065,7 +13102,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related betaBuildLocalizations returned (when
+        - description:
+            maximum number of related betaBuildLocalizations returned (when
             they are included)
           in: query
           name: limit[betaBuildLocalizations]
@@ -13082,7 +13120,8 @@ paths:
             maximum: 50
             type: integer
           style: form
-        - description: maximum number of related individualTesters returned (when they are
+        - description:
+            maximum number of related individualTesters returned (when they are
             included)
           in: query
           name: limit[individualTesters]
@@ -14289,7 +14328,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -14421,7 +14461,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related bundleIdCapabilities returned (when they
+        - description:
+            maximum number of related bundleIdCapabilities returned (when they
             are included)
           in: query
           name: limit[bundleIdCapabilities]
@@ -14633,7 +14674,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related bundleIdCapabilities returned (when they
+        - description:
+            maximum number of related bundleIdCapabilities returned (when they
             are included)
           in: query
           name: limit[bundleIdCapabilities]
@@ -14980,7 +15022,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -15232,7 +15275,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -15593,7 +15637,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related territories returned (when they are
+        - description:
+            maximum number of related territories returned (when they are
             included)
           in: query
           name: limit[territories]
@@ -15849,7 +15894,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -15972,7 +16018,8 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GameCenterEnabledVersionCompatibleVersionsLinkagesR\
+              $ref:
+                "#/components/schemas/GameCenterEnabledVersionCompatibleVersionsLinkagesR\
                 equest"
         description: List of related linkages
         required: true
@@ -16014,7 +16061,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GameCenterEnabledVersionCompatibleVersionsLinkagesR\
+                $ref:
+                  "#/components/schemas/GameCenterEnabledVersionCompatibleVersionsLinkagesR\
                   esponse"
           description: List of related linkages
         "400":
@@ -16051,7 +16099,8 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GameCenterEnabledVersionCompatibleVersionsLinkagesR\
+              $ref:
+                "#/components/schemas/GameCenterEnabledVersionCompatibleVersionsLinkagesR\
                 equest"
         description: List of related linkages
         required: true
@@ -16084,7 +16133,8 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GameCenterEnabledVersionCompatibleVersionsLinkagesR\
+              $ref:
+                "#/components/schemas/GameCenterEnabledVersionCompatibleVersionsLinkagesR\
                 equest"
         description: List of related linkages
         required: true
@@ -16378,7 +16428,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -16873,7 +16924,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -16991,7 +17043,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related certificates returned (when they are
+        - description:
+            maximum number of related certificates returned (when they are
             included)
           in: query
           name: limit[certificates]
@@ -17191,7 +17244,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related certificates returned (when they are
+        - description:
+            maximum number of related certificates returned (when they are
             included)
           in: query
           name: limit[certificates]
@@ -17801,7 +17855,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -17889,7 +17944,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related visibleApps returned (when they are
+        - description:
+            maximum number of related visibleApps returned (when they are
             included)
           in: query
           name: limit[visibleApps]
@@ -18055,7 +18111,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related visibleApps returned (when they are
+        - description:
+            maximum number of related visibleApps returned (when they are
             included)
           in: query
           name: limit[visibleApps]
@@ -18227,7 +18284,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: comma-separated list of sort expressions; resources will be sorted
+        - description:
+            comma-separated list of sort expressions; resources will be sorted
             as specified
           explode: false
           in: query
@@ -18314,7 +18372,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related visibleApps returned (when they are
+        - description:
+            maximum number of related visibleApps returned (when they are
             included)
           in: query
           name: limit[visibleApps]
@@ -18443,7 +18502,8 @@ paths:
               type: string
             type: array
           style: form
-        - description: maximum number of related visibleApps returned (when they are
+        - description:
+            maximum number of related visibleApps returned (when they are
             included)
           in: query
           name: limit[visibleApps]

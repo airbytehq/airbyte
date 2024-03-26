@@ -5,6 +5,9 @@
     "id": {
       "type": "object",
       "properties": {
+        "entityId": {
+          "type": ["null", "string"]
+        },
         "name": {
           "type": "string",
           "description": "The name of the workflow."
@@ -140,6 +143,14 @@
           }
         }
       }
+    },
+    "created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   },
   "readOnly": true

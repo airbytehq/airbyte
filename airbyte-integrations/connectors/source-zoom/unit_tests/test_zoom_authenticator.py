@@ -20,27 +20,26 @@ class TestOAuthClient(unittest.TestCase):
             "account_id": "rc-asdfghjkl",
             "client_id": "rc-123456789",
             "client_secret": "rc-test-secret",
-            "authorization_endpoint": "https://example.zoom.com/oauth/token",
-            "grant_type": "account_credentials"
+            "authorization_endpoint": "https://example.zoom.com/oauth/token"
         }
         parameters = config
-        client = ServerToServerOauthAuthenticator(config=config,
-                                                  account_id=config["account_id"],
-                                                  client_id=config["client_id"],
-                                                  client_secret=config["client_secret"],
-                                                  grant_type=config["grant_type"],
-                                                  authorization_endpoint=config["authorization_endpoint"],
-                                                  parameters=parameters)
+        client = ServerToServerOauthAuthenticator(
+            config=config,
+            account_id=config["account_id"],
+            client_id=config["client_id"],
+            client_secret=config["client_secret"],
+            authorization_endpoint=config["authorization_endpoint"],
+            parameters=parameters,
+        )
 
         # Encode the client credentials in base64
-        token = base64.b64encode(f'{config.get("client_id")}:{config.get("client_secret")}'.encode('ascii')).decode('utf-8')
+        token = base64.b64encode(f'{config.get("client_id")}:{config.get("client_secret")}'.encode("ascii")).decode("utf-8")
 
         # Define the headers that should be sent in the request
-        headers = {'Authorization': f'Basic {token}',
-                   'Content-type': 'application/json'}
+        headers = {"Authorization": f"Basic {token}", "Content-type": "application/json"}
 
         # Define the URL containing the grant_type and account_id as query parameters
-        url = f'{config.get("authorization_endpoint")}?grant_type={config.get("grant_type")}&account_id={config.get("account_id")}'
+        url = f'{config.get("authorization_endpoint")}?grant_type=account_credentials&account_id={config.get("account_id")}'
 
         with requests_mock.Mocker() as m:
             # Mock the requests.post call with the expected URL, headers and token response

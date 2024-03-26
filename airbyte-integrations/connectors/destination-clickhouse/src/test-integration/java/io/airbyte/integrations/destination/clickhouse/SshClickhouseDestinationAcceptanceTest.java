@@ -6,19 +6,20 @@ package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -85,7 +86,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   @Override
   protected JsonNode getConfig() throws Exception {
     return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, DB_NAME)
-        .put("schema", DB_NAME), false);
+        .put("schema", DB_NAME), true);
   }
 
   @Override
@@ -109,7 +110,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+    return retrieveRecordsFromTable(StreamId.concatenateRawTableName(namespace, streamName), "airbyte_internal")
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -122,7 +123,8 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
         JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           final JdbcDatabase database = getDatabase(mangledConfig);
-          final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+          final String query = String.format("SELECT * FROM `%s`.`%s` ORDER BY %s ASC", schemaName, namingResolver.convertStreamName(tableName),
+              JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
           return database.queryJsons(query);
         });
   }

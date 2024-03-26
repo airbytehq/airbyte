@@ -32,24 +32,20 @@ def test_next_page_token(patch_base_class):
     pagination_token = json.dumps(inputs)
     response = requests.Response()
     response.status_code = 200
-    response.headers['content-type'] = 'application/json'
-    response._content = pagination_token.encode('utf-8')
-    expected_token = {'offset': 51}
+    response.headers["content-type"] = "application/json"
+    response._content = pagination_token.encode("utf-8")
+    expected_token = {"offset": 51}
     assert stream.next_page_token(response) == expected_token
 
 
 def test_parse_response(patch_base_class):
     stream = OutbrainAmplifyStream()
-    mock_response = {
-        "campaigns": [],
-        "totalCount": 5,
-        "count": 0
-    }
+    mock_response = {"campaigns": [], "totalCount": 5, "count": 0}
     mock_response = json.dumps(mock_response)
     response = requests.Response()
     response.status_code = 200
-    response.headers['Content-Type'] = 'application/json'
-    response._content = mock_response.encode('utf-8')
+    response.headers["Content-Type"] = "application/json"
+    response._content = mock_response.encode("utf-8")
     result = stream.parse_response(response)
     expected_result = True
     assert inspect.isgenerator(result) == expected_result

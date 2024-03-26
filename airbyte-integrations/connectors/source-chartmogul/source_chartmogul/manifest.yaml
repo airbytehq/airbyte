@@ -1,7 +1,7 @@
-version: "0.29.0"
+version: "0.51.0"
 
 definitions:
-  selector:
+  entries_selector:
     extractor:
       field_path: ["entries"]
   requester:
@@ -12,9 +12,10 @@ definitions:
       username: "{{ config['api_key'] }}"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "#/definitions/entries_selector"
     requester:
       $ref: "#/definitions/requester"
+
   customers_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -35,6 +36,7 @@ definitions:
       name: "customers"
       primary_key: "id"
       path: "/v1/customers"
+
   activities_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -60,7 +62,8 @@ definitions:
       name: "activities"
       primary_key: "uuid"
       path: "/v1/activities"
-  customer_count_stream:
+
+  customer_daily_count_stream:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -68,18 +71,61 @@ definitions:
         request_body_data:
           start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
           end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
-          interval: "{{ config['interval'] }}"
-      paginator:
-        type: NoPagination
+          interval: day
     $parameters:
-      name: "customer_count"
+      name: "customer_daily_count"
+      primary_key: "date"
+      path: "/v1/metrics/customer-count"
+
+  customer_weekly_count_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_body_data:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: week
+    $parameters:
+      name: "customer_weekly_count"
+      primary_key: "date"
+      path: "/v1/metrics/customer-count"
+
+  customer_monthly_count_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_body_data:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: month
+    $parameters:
+      name: "customer_monthly_count"
+      primary_key: "date"
+      path: "/v1/metrics/customer-count"
+
+  customer_quarterly_count_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_body_data:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: quarter
+    $parameters:
+      name: "customer_quarterly_count"
       primary_key: "date"
       path: "/v1/metrics/customer-count"
 
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/activities_stream"
-  - "#/definitions/customer_count_stream"
+  - "#/definitions/customer_daily_count_stream"
+  - "#/definitions/customer_weekly_count_stream"
+  - "#/definitions/customer_monthly_count_stream"
+  - "#/definitions/customer_quarterly_count_stream"
 
 check:
   stream_names:

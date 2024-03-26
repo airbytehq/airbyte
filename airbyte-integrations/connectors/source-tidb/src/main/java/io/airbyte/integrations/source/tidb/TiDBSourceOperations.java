@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.tidb;
 
 import static com.mysql.cj.MysqlType.*;
-import static io.airbyte.db.jdbc.JdbcConstants.*;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
@@ -13,9 +13,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
 import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.result.Field;
-import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.SourceOperations;
-import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.DataTypeUtils;
+import io.airbyte.cdk.db.SourceOperations;
+import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

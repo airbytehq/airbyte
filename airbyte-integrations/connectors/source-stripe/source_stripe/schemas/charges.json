@@ -348,6 +348,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "order": {
       "type": ["null", "string"]
     },

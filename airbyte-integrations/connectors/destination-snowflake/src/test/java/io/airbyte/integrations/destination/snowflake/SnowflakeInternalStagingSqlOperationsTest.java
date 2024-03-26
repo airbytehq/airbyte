@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.snowflake;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.DestinationConfig;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ class SnowflakeInternalStagingSqlOperationsTest {
   void copyIntoTmpTableFromStage() {
     final String expectedQuery =
         """
-        COPY INTO schemaName.tableName FROM '@stageName/stagePath/2022/'
+        COPY INTO "schemaName"."tableName" FROM '@stageName/stagePath/2022/'
         file_format = (
           type = csv
           compression = auto
@@ -63,6 +63,7 @@ class SnowflakeInternalStagingSqlOperationsTest {
           skip_header = 0
           FIELD_OPTIONALLY_ENCLOSED_BY = '"'
           NULL_IF=('')
+          error_on_column_count_mismatch=false
         ) files = ('filename1','filename2');""";
     final String actualCopyQuery =
         snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);

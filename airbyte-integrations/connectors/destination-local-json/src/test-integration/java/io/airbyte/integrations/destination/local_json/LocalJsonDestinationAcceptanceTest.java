@@ -8,12 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;

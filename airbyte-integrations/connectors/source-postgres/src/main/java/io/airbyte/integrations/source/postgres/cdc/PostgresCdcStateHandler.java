@@ -5,10 +5,11 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.debezium.CdcStateHandler;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -32,7 +33,7 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> ignored) {
     final JsonNode asJson = Jsons.jsonNode(offset);
     LOGGER.info("debezium state: {}", asJson);
     final CdcState cdcState = new CdcState().withState(asJson);
@@ -49,7 +50,7 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
    * Here we just want to emit the state to update the list of streams in the database to mark the
    * completion of snapshot of new added streams. The addition of new streams in the state is done
    * here
-   * {@link io.airbyte.integrations.source.relationaldb.state.GlobalStateManager#toState(Optional)}
+   * {@link io.airbyte.cdk.integrations.source.relationaldb.state.GlobalStateManager#toState(Optional)}
    * which is called inside the {@link StateManager#emit(Optional)} method which is being triggered
    * below. The toState method adds all the streams present in the catalog in the state. Since there
    * is no change in the CDC state value, whatever was present in the database will again be stored.

@@ -5,6 +5,7 @@
 
 import pytest
 from source_shopify.auth import NotImplementedAuth, ShopifyAuthenticator
+from source_shopify.source import ConnectionCheckTest
 
 TEST_ACCESS_TOKEN = "test_access_token"
 TEST_API_PASSWORD = "test_api_password"
@@ -23,6 +24,11 @@ def config_api_password():
 @pytest.fixture
 def config_not_implemented_auth_method():
     return {"credentials": {"auth_method": "not_implemented_auth_method"}}
+
+
+@pytest.fixture
+def config_missing_access_token():
+    return {"shop": "SHOP_NAME", "credentials": {"auth_method": "oauth2.0", "access_token": None}}
 
 
 @pytest.fixture
@@ -47,6 +53,14 @@ def test_shopify_authenticator_api_password(config_api_password, expected_auth_h
 
 def test_raises_notimplemented_auth(config_not_implemented_auth_method):
     authenticator = ShopifyAuthenticator(config=(config_not_implemented_auth_method))
-    with pytest.raises(NotImplementedAuth) as not_implemented_exc:
-        print(not_implemented_exc)
+    with pytest.raises(NotImplementedAuth):
         authenticator.get_auth_header()
+
+
+def test_raises_missing_access_token(config_missing_access_token):
+    config_missing_access_token["authenticator"] = ShopifyAuthenticator(config=(config_missing_access_token))
+    failed_check = ConnectionCheckTest(config_missing_access_token).test_connection()
+    assert failed_check == (
+        False,
+        "Authentication was unsuccessful. Please verify your authentication credentials or login is correct.",
+    )

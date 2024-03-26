@@ -4,7 +4,7 @@
 
 The Snowflake source allows you to sync data from Snowflake. It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Snowflake source connector is built on top of the source-jdbc code base and is configured to rely on JDBC 3.13.22 [Snowflake driver](https://github.com/snowflakedb/snowflake-jdbc) as described in Snowflake [documentation](https://docs.snowflake.com/en/user-guide/jdbc.html).
+This Snowflake source connector is built on top of the source-jdbc code base and is configured to rely on JDBC 3.14.1 [Snowflake driver](https://github.com/snowflakedb/snowflake-jdbc) as described in Snowflake [documentation](https://docs.snowflake.com/en/user-guide/jdbc.html).
 
 #### Resulting schema
 
@@ -111,18 +111,27 @@ To determine whether a network policy is set on your account or for a specific u
 
 **Account**
 
-        SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+```
+SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+```
 
 **User**
 
-        SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+```
+SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+```
 
 To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.1 | 2024-02-13 | [35220](https://github.com/airbytehq/airbyte/pull/35220) | Adopt CDK 0.20.4 |
+| 0.3.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
+| 0.3.0   | 2023-12-18 | [33484](https://github.com/airbytehq/airbyte/pull/33484) | Remove LEGACY state                                                                                                                       |
+| 0.2.2   | 2023-10-20 | [31613](https://github.com/airbytehq/airbyte/pull/31613) | Fixed handling of TIMESTAMP_TZ columns. upgrade                                                                                           |
+| 0.2.1   | 2023-10-11 | [31252](https://github.com/airbytehq/airbyte/pull/31252) | Snowflake JDBC version upgrade                                                                                                            |
 | 0.2.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                                                      |
 | 0.1.36  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                  |
 | 0.1.35  | 2023-06-14 | [27335](https://github.com/airbytehq/airbyte/pull/27335) | Remove noisy debug logs                                                                                                                   |

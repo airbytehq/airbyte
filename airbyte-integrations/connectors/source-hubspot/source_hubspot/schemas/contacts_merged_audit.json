@@ -54,6 +54,33 @@
         }
       }
     },
+    "merged_from_email_source-vids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "merged_from_email_updated-by-user-id": {
+      "type": ["null", "integer"]
+    },
+    "merged_from_email_source-label": {
+      "type": ["null", "string"]
+    },
+    "merged_from_email_source-type": {
+      "type": ["null", "string"]
+    },
+    "merged_from_email_value": {
+      "type": ["null", "string"]
+    },
+    "merged_from_email_source-id": {
+      "type": ["null", "string"]
+    },
+    "merged_from_email_selected": {
+      "type": ["null", "boolean"]
+    },
+    "merged_from_email_timestamp": {
+      "type": ["null", "integer"]
+    },
     "merged_to_email": {
       "type": ["null", "object"],
       "additionalProperties": true,
@@ -80,6 +107,27 @@
           "type": ["null", "integer"]
         }
       }
+    },
+    "merged_to_email_updated-by-user-id": {
+      "type": ["null", "integer"]
+    },
+    "merged_to_email_source-label": {
+      "type": ["null", "string"]
+    },
+    "merged_to_email_source-type": {
+      "type": ["null", "string"]
+    },
+    "merged_to_email_value": {
+      "type": ["null", "string"]
+    },
+    "merged_to_email_source-id": {
+      "type": ["null", "string"]
+    },
+    "merged_to_email_selected": {
+      "type": ["null", "boolean"]
+    },
+    "merged_to_email_timestamp": {
+      "type": ["null", "integer"]
     },
     "first-name": {
       "type": ["null", "string"]

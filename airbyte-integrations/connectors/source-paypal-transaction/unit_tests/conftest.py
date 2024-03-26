@@ -1,102 +1,53 @@
-#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
 
+# conftest.py
 import json
-import pathlib
+from datetime import datetime
+from unittest.mock import patch
 
 import pytest
-from source_paypal_transaction.source import PayPalOauth2Authenticator, SourcePaypalTransaction
+from source_paypal_transaction import SourcePaypalTransaction
 
 
-@pytest.fixture()
-def api_endpoint():
-    return "https://api-m.paypal.com"
-
-
-@pytest.fixture()
-def sandbox_api_endpoint():
-    return "https://api-m.sandbox.paypal.com"
-
-
-@pytest.fixture(autouse=True)
-def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
-
-
-@pytest.fixture(autouse=True)
-def transactions(request):
-    file = pathlib.Path(request.node.fspath.strpath)
-    transaction = file.with_name("transaction.json")
-    with transaction.open() as fp:
-        return json.load(fp)
-
-
-@pytest.fixture()
-def prod_config():
-    """
-    Credentials for oauth2.0 authorization
-    """
+@pytest.fixture(name="config")
+def config_fixture():
+    #From File test
+    # with open('../secrets/config.json') as f:
+    #     return json.load(f)
+    #Mock test
     return {
-        "client_id": "some_client_id",
-        "client_secret": "some_secret",
-        "start_date": "2021-07-01T00:00:00+00:00",
-        "end_date": "2021-07-10T00:00:00+00:00",
-        "is_sandbox": False,
+            "client_id": "your_client_id",
+            "client_secret": "your_client_secret",
+            "start_date": "2024-01-30T00:00:00Z",
+            "end_date":   "2024-02-01T00:00:00Z",
+            "dispute_start_date": "2024-02-01T00:00:00.000Z",
+            "dispute_end_date": "2024-02-05T23:59:00.000Z",
+            "buyer_username": "Your Buyer email",
+            "buyer_password": "Your Buyer Password",
+            "payer_id": "ypur ACCOUNT ID",
+            "is_sandbox": True
     }
 
 
-@pytest.fixture()
-def sandbox_config():
-    """
-    Credentials for oauth2.0 authorization
-    """
-    return {
-        "client_id": "some_client_id",
-        "client_secret": "some_secret",
-        "start_date": "2021-07-01T00:00:00+00:00",
-        "end_date": "2021-07-10T00:00:00+00:00",
-        "is_sandbox": True,
-    }
-
-
-@pytest.fixture()
-def new_prod_config():
-    """
-    Credentials for oauth2.0 authorization
-    """
-    return {
-        "credentials": {
-            "auth_type": "oauth2.0",
-            "client_id": "some_client_id",
-            "client_secret": "some_client_secret",
-            "refresh_token": "some_refresh_token",
-        },
-        "start_date": "2021-07-01T00:00:00+00:00",
-        "end_date": "2021-07-10T00:00:00+00:00",
-        "is_sandbox": False,
-    }
-
-
-@pytest.fixture()
-def error_while_refreshing_access_token():
-    """
-    Error raised when using incorrect access token
-    """
-    return "Error while refreshing access token: 'access_token'"
-
-
-@pytest.fixture()
-def authenticator_instance(prod_config):
-    return PayPalOauth2Authenticator(prod_config)
-
-
-@pytest.fixture()
-def new_format_authenticator_instance(new_prod_config):
-    return PayPalOauth2Authenticator(new_prod_config)
-
-
-@pytest.fixture()
-def source_instance():
+@pytest.fixture(name="source")
+def source_fixture():
     return SourcePaypalTransaction()
+
+def validate_date_format(date_str, format):
+    try:
+        datetime.strptime(date_str, format)
+        return True
+    except ValueError:
+        return False
+    
+def test_date_formats_in_config(config):
+    start_date_format = "%Y-%m-%dT%H:%M:%SZ"
+    dispute_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    assert validate_date_format(config['start_date'], start_date_format), "Start date format is incorrect"
+    assert validate_date_format(config['end_date'], start_date_format), "End date format is incorrect"
+    assert validate_date_format(config['dispute_start_date'], dispute_date_format), "Dispute start date format is incorrect"
+    assert validate_date_format(config['dispute_end_date'], dispute_date_format), "Dispute end date format is incorrect"
+
+@pytest.fixture(name="logger_mock")
+def logger_mock_fixture():
+    return patch("source_paypal_transactions.source.AirbyteLogger")

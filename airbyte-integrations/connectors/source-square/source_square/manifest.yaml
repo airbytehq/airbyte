@@ -74,6 +74,9 @@ definitions:
       start_time_option:
         field_name: begin_time
         inject_into: body_json
+      end_time_option:
+        field_name: end_time
+        inject_into: body_json
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -114,6 +117,9 @@ definitions:
       cursor_field: "updated_at"
       start_time_option:
         field_name: begin_time
+        inject_into: body_json
+      end_time_option:
+        field_name: end_time
         inject_into: body_json
     retriever:
       $ref: "#/definitions/retriever"
@@ -184,6 +190,24 @@ definitions:
       primary_key: "id"
       path: "/team-members/search"
 
+  inventory_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "inventory"
+      primary_key: "catalog_object_id"
+      path: "/inventory/counts/batch-retrieve"
+    retriever:
+      $ref: "#/definitions/base_stream_page_json_limit/retriever"
+      requester:
+        $ref: "#/definitions/base_stream_page_json_limit/retriever/requester"
+        http_method: "POST"
+        request_body_json:
+          limit: "{{ 500 }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          field_path: ["counts"]
+
   team_member_wages_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -206,6 +230,32 @@ definitions:
       name: "locations"
       primary_key: "id"
       path: "/locations"
+
+  locations_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/locations_stream"
+        parent_key: "id"
+        partition_field: "location_id"
+
+  cash_drawers_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "cash_drawers"
+      primary_key: "id"
+      path: "/cash-drawers/shifts"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/locations_partition_router"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          location_id: "{{ stream_partition.location_id }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          field_path: ["cash_drawer_shifts"]
 
   categories_stream:
     $ref: "#/definitions/base_catalog_objects_stream"
@@ -260,6 +310,24 @@ definitions:
     retriever:
       $ref: "#/definitions/base_incremental_stream/retriever"
 
+  loyalty_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "loyalty"
+      primary_key: "id"
+      path: "/loyalty/accounts/search"
+    retriever:
+      $ref: "#/definitions/base_stream_page_json_limit/retriever"
+      requester:
+        $ref: "#/definitions/base_stream_page_json_limit/retriever/requester"
+        http_method: "POST"
+        request_body_json:
+          limit: "{{ 200 }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          field_path: ["loyalty_accounts"]
+
   orders_stream:
     $ref: "#/definitions/base_stream_page_json_limit"
     $parameters:
@@ -289,6 +357,13 @@ definitions:
         request_body_json:
           limit: "{{ 500 }}"
 
+  bank_accounts_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "bank_accounts"
+      primary_key: "id"
+      path: "/bank-accounts"
+
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/locations_stream"
@@ -301,8 +376,12 @@ streams:
   - "#/definitions/taxes_stream"
   - "#/definitions/modifier_list_stream"
   - "#/definitions/refunds_stream"
+  - "#/definitions/inventory_stream"
   - "#/definitions/payments_stream"
   - "#/definitions/orders_stream"
+  - "#/definitions/bank_accounts_stream"
+  - "#/definitions/cash_drawers_stream"
+  - "#/definitions/loyalty_stream"
 
 check:
   stream_names:

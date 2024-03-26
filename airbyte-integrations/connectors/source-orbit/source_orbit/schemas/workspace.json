@@ -1,36 +1,74 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "attributes": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "slug": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "updated_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "created_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "members_count": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "activities_count": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "tags": {
-          "type": "object"
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {}
+        }
+      }
+    },
+    "relationships": {
+      "type": "object",
+      "properties": {
+        "last_member": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": ["null", "object"]
+            }
+          }
+        },
+        "last_activity": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": ["null", "object"]
+            }
+          }
+        },
+        "repositories": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": ["null", "array"]
+            }
+          }
         }
       }
     }

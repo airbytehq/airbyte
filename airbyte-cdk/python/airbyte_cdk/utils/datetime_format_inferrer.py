@@ -36,10 +36,14 @@ class DatetimeFormatInferrer:
         This is the case if the value is a string or an integer between 1_000_000_000 and 2_000_000_000 for seconds
         or between 1_000_000_000_000 and 2_000_000_000_000 for milliseconds.
         This is separate from the format check for performance reasons"""
-        for timestamp_range in self._timestamp_heuristic_ranges:
-            if isinstance(value, str) and (not value.isdecimal() or int(value) in timestamp_range):
-                return True
-            if isinstance(value, int) and value in timestamp_range:
+        if isinstance(value, (str, int)):
+            try:
+                value_as_int = int(value)
+                for timestamp_range in self._timestamp_heuristic_ranges:
+                    if value_as_int in timestamp_range:
+                        return True
+            except ValueError:
+                # given that it's not parsable as an int, it can represent a datetime with one of the self._formats
                 return True
         return False
 

@@ -9,11 +9,11 @@ import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.fin
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -67,6 +67,11 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
     propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
     return originalSpec;
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
   }
 
   public static void main(final String[] args) throws Exception {

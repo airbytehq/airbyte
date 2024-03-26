@@ -39,7 +39,7 @@ acceptance_tests:
             bypass_reason: Test account does not have permissions
           - name: purchase_orders
             bypass_reason: Test account does not have permissions
-  incremental: 
+  incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"

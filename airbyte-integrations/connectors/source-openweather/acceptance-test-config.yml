@@ -1,18 +1,26 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-openweather:dev
-tests:
-  spec:
-    - spec_path: "source_openweather/spec.json"
+acceptance_tests:
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.6"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
+    bypass_reason: "This connector does not implement incremental sync"
+#    tests:
+#      - config_path: "secrets/config.json"
+#        configured_catalog_path: "integration_tests/configured_catalog.json"
+#        future_state:
+#          future_state_path: "integration_tests/abnormal_state.json"

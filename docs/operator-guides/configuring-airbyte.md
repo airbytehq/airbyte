@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Configuring Airbyte
 
 This section covers how to configure Airbyte, and the various configuration Airbyte accepts.
@@ -15,14 +19,12 @@ If you want to manage your own docker files, please refer to Airbyte's docker fi
 
 ## Kubernetes Deployments
 
-The recommended way to run an Airbyte Kubernetes deployment is via the `Kustomize` overlays.
+The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/on-kubernetes-via-helm.md) is via the `Helm Charts`.
 
-We recommend using the overlays in the `stable` directory as these have preset resource limits.
+To configure the  Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/on-kubernetes-via-helm.md#custom-deployment).
+Each application will consume the appropriate values from that file.
 
-To configure the default Airbyte Kubernetes deployment, modify the `.env` in the respective directory. Each application will consume the appropriate
-env var from a generated configmap.
-
-If you want to manage your own Kube manifests, please refer to the various `Kustomize` overlays for examples.
+If you want to manage your own Kube manifests, please refer to the `Helm Chart`.
 
 ## Reference
 
@@ -44,14 +46,6 @@ The following variables are relevant to both Docker and Kubernetes.
 4. `CONFIG_ROOT` - Defines the configs directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 5. `WORKSPACE_ROOT` - Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 
-#### Access
-
-Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
-
-1. BASIC_AUTH_USERNAME=airbyte
-2. BASIC_AUTH_PASSWORD=password
-3. BASIC_AUTH_PROXY_TIMEOUT=600 - Defines the proxy timeout time for requests to Airbyte Server. Main use should be for dynamic discover when creating a connection (S3, JDBC, etc) that takes a long time.
-
 #### Secrets
 
 1. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to AWS_SECRET_MANAGER to use AWS Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
@@ -63,6 +57,8 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 7. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
 8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager.
 9. `AWS_SECRET_ACCESS_KEY`- Defines aws_secret_access_key to use for the AWS Secret Manager.
+10. `AWS_KMS_KEY_ARN` - Optional param that defines the KMS Encryption key used for the AWS Secret Manager.
+11. `AWS_SECRET_MANAGER_SECRET_TAGS` - Defines the tags that will be included to all writes to the AWS Secret Manager. The format should be "key1=value1,key2=value2".
 
 #### Database
 
@@ -80,7 +76,7 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 1. `TEMPORAL_HOST` - Define the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
 2. `INTERNAL_API_HOST` - Define the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
-3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information.
+3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
 
 #### Jobs
 
@@ -128,6 +124,14 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 2. `DOCKER_NETWORK` - Defines the docker network the new Scheduler launches jobs on.
 3. `LOCAL_DOCKER_MOUNT` - Defines the name of the docker mount that is used for local file handling. On Docker, this allows connector pods to interact with a volume for "local file" operations.
 
+#### Access
+
+Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
+
+1. `BASIC_AUTH_USERNAME=airbyte`
+2. `BASIC_AUTH_PASSWORD=password`
+3. `BASIC_AUTH_PROXY_TIMEOUT=600` - Defines the proxy timeout time for requests to Airbyte Server. Main use should be for dynamic discover when creating a connection (S3, JDBC, etc) that takes a long time.
+
 ### Kubernetes-Only
 
 #### Jobs
@@ -156,7 +160,7 @@ A job specific variable overwrites the default sync job variable defined above.
 
 #### Worker
 
-1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.
+1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Helm Chart.
 
 #### Logging
 

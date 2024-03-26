@@ -3,44 +3,37 @@
   "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
-    "business_phones": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        {
-          "type": "null"
-        }
-      ]
+    "businessPhones": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
-    "display_name": {
+    "displayName": {
       "type": ["null", "string"]
     },
-    "given_name": {
+    "givenName": {
       "type": ["null", "string"]
     },
-    "job_title": {
+    "jobTitle": {
       "type": ["null", "string"]
     },
     "mail": {
       "type": ["null", "string"]
     },
-    "mobile_phone": {
+    "mobilePhone": {
       "type": ["null", "string"]
     },
-    "office_location": {
+    "officeLocation": {
       "type": ["null", "string"]
     },
-    "preferred_language": {
+    "preferredLanguage": {
       "type": ["null", "string"]
     },
     "surname": {
       "type": ["null", "string"]
     },
-    "user_principal_name": {
+    "userPrincipalName": {
       "type": ["null", "string"]
     },
     "id": {

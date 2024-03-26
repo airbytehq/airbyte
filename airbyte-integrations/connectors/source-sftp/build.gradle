@@ -1,8 +1,11 @@
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
 }
 
 application {
@@ -10,14 +13,8 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.2'
     implementation 'com.jcraft:jsch:0.1.55'
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-sftp')
-    testImplementation libs.connectors.testcontainers
+    testImplementation 'org.testcontainers:testcontainers:1.19.4'
 }

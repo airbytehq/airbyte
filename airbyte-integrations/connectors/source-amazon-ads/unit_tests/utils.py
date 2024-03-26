@@ -11,6 +11,7 @@ from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from source_amazon_ads.config_migrations import MigrateStartDate
 
 
 def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, Any]) -> Iterator[dict]:
@@ -41,6 +42,7 @@ def read_full_refresh(stream_instance: Stream):
 def command_check(source: Source, config):
     logger = mock.MagicMock()
     connector_config, _ = split_config(config)
+    connector_config = MigrateStartDate.modify_and_save("unit_tests/config.json", source, connector_config)
     if source.check_config_against_spec:
         source_spec: ConnectorSpecification = source.spec(logger)
         check_config_against_spec_or_exit(connector_config, source_spec)

@@ -1,0 +1,30 @@
+{
+  "title": "Rapid Retail Analytics Inventory Report",
+  "description": "This report shares inventory data at an ASIN level, aggregated to an hourly granularity. Requests can span multiple date range periods, including the current day.",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "startTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "endTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "asin": {
+      "type": ["null", "string"]
+    },
+    "highlyAvailableInventory": {
+      "type": ["null", "integer"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

@@ -6,15 +6,17 @@ package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Set;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +62,13 @@ public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination i
     return super.check(config);
   }
 
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(PSQLException.class);
     final Destination destination = new PostgresDestinationStrictEncrypt();
     LOGGER.info("starting destination: {}", PostgresDestinationStrictEncrypt.class);
     new IntegrationRunner(destination).run(args);

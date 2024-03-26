@@ -1,0 +1,3 @@
+Type,Status,Id,Parent Id,Campaign,Ad Group,Client Id,Modified Time,Title,Text,Display Url,Destination Url,Promotion,Device Preference,Name,App Platform,App Id,Final Url,Mobile Final Url,Tracking Template,Final Url Suffix,Custom Parameter
+Format Version,,,,,,,,,,,,,,6.0,,,,,,,
+App Install Ad,Active,,-1111,ParentCampaignNameGoesHere,AdGroupNameGoesHere,ClientIdGoesHere,,Contoso Quick Setup,Find New Customers & Increase Sales!,,,,All,,Android,AppStoreIdGoesHere,FinalUrlGoesHere,,,,{_promoCode}=PROMO1; {_season}=summer

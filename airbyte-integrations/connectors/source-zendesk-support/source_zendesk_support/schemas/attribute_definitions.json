@@ -1,4 +1,6 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Attribute Definitions",
   "type": ["null", "object"],
   "properties": {
     "title": {
@@ -55,6 +57,21 @@
     },
     "condition": {
       "type": ["null", "string"]
+    },
+    "confition": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "collection_key": {
+          "type": ["null", "string"]
+        },
+        "item_key": {
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true
     }
   }
 }

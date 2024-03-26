@@ -1,13 +1,27 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
-  "required": ["capture_id", "sale_date", "capture_date", "order_id"],
   "properties": {
     "amount": {
       "description": "Total amount of the specific transaction, in minor units",
       "example": 2000,
       "type": "integer",
       "format": "int64"
+    },
+    "merchant_id": {
+      "type": ["null", "string"]
+    },
+    "shipping_address_country": {
+      "type": ["null", "string"]
+    },
+    "consumer_vat": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {}
+      }
     },
     "capture_id": {
       "description": "The Klarna assigned id reference of a specific capture",
@@ -186,6 +200,5 @@
       "description": "ISO 4217 Currency Code of the country you are registered in.",
       "example": "EUR"
     }
-  },
-  "$schema": "http://json-schema.org/schema#"
+  }
 }

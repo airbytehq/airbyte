@@ -64,9 +64,46 @@ definitions:
       path: "subscriptions.json"
       field_path: "subscription"
 
+  invoices_stream:
+    name: "invoices"
+    type: DeclarativeStream
+    primary_key: "uid"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "invoices"
+      paginator:
+        $ref: "#/definitions/paginator"
+      requester:
+        $ref: "#/definitions/requester"
+    $parameters:
+      path: "invoices.json"
+      field_path: "invoices"
+
+  coupons_stream:
+    $ref: "#/definitions/base_stream"
+    name: "coupons"
+    $parameters:
+      path: "coupons.json"
+      field_path: "coupon"
+
+  transactions_stream:
+    $ref: "#/definitions/base_stream"
+    name: "transactions"
+    $parameters:
+      path: "transactions.json"
+      field_path: "transaction"
+
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/subscriptions_stream"
+  - "#/definitions/invoices_stream"
+  - "#/definitions/coupons_stream"
+  - "#/definitions/transactions_stream"
 
 check:
   type: CheckStream

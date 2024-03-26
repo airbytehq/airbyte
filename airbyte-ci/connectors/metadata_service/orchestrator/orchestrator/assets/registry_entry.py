@@ -17,7 +17,7 @@ from google.cloud import storage
 from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from metadata_service.spec_cache import get_cached_spec, list_cached_specs
+from metadata_service.spec_cache import SpecCache
 from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGISTRIES, get_public_url_for_gcs_file
 from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
@@ -45,19 +45,16 @@ class MissingCachedSpecError(Exception):
 
 
 @sentry_sdk.trace
-def apply_spec_to_registry_entry(registry_entry: dict, cached_specs: OutputDataFrame) -> dict:
-    cached_connector_version = {
-        (cached_spec["docker_repository"], cached_spec["docker_image_tag"]): cached_spec["spec_cache_path"]
-        for cached_spec in cached_specs.to_dict(orient="records")
-    }
-
-    try:
-        spec_path = cached_connector_version[(registry_entry["dockerRepository"], registry_entry["dockerImageTag"])]
-        entry_with_spec = copy.deepcopy(registry_entry)
-        entry_with_spec["spec"] = get_cached_spec(spec_path)
-        return entry_with_spec
-    except KeyError:
+def apply_spec_to_registry_entry(registry_entry: dict, spec_cache: SpecCache, registry_name: str) -> dict:
+    cached_spec = spec_cache.find_spec_cache_with_fallback(
+        registry_entry["dockerRepository"], registry_entry["dockerImageTag"], registry_name
+    )
+    if cached_spec is None:
         raise MissingCachedSpecError(f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}")
+
+    entry_with_spec = copy.deepcopy(registry_entry)
+    entry_with_spec["spec"] = spec_cache.download_spec(cached_spec)
+    return entry_with_spec
 
 
 def calculate_migration_documentation_url(releases_or_breaking_change: dict, documentation_url: str, version: Optional[str] = None) -> str:
@@ -217,13 +214,30 @@ def get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegist
         raise Exception("Could not determine connector type from registry entry")
 
 
-def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_name: str):
-    metadata_path = metadata_entry.file_path
+def _get_latest_entry_write_path(metadata_path: Optional[str], registry_name: str) -> str:
+    """Get the write path for the registry entry, assuming the metadata entry is the latest version."""
     if metadata_path is None:
         raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
 
     metadata_folder = os.path.dirname(metadata_path)
     return os.path.join(metadata_folder, registry_name)
+
+
+def get_registry_entry_write_path(
+    registry_entry: Optional[PolymorphicRegistryEntry], metadata_entry: LatestMetadataEntry, registry_name: str
+) -> str:
+    """Get the write path for the registry entry."""
+    if metadata_entry.is_latest_version_path:
+        # if the metadata entry is the latest version, write the registry entry to the same path as the metadata entry
+        return _get_latest_entry_write_path(metadata_entry.file_path, registry_name)
+    else:
+        if registry_entry is None:
+            raise Exception(f"Could not determine write path for registry entry {registry_entry} because it is None")
+
+        # if the metadata entry is not the latest version, write the registry entry to its own version specific path
+        # this is handle the case when a dockerImageTag is overridden
+
+        return HACKS.construct_registry_entry_write_path(registry_entry, registry_name)
 
 
 @sentry_sdk.trace
@@ -244,17 +258,16 @@ def persist_registry_entry_to_json(
     Returns:
         GCSFileHandle: The registry_entry directory manager.
     """
-    registry_entry_write_path = get_registry_entry_write_path(metadata_entry, registry_name)
+    registry_entry_write_path = get_registry_entry_write_path(registry_entry, metadata_entry, registry_name)
     registry_entry_json = registry_entry.json(exclude_none=True)
     file_handle = registry_directory_manager.write_data(registry_entry_json.encode("utf-8"), ext="json", key=registry_entry_write_path)
-    HACKS.write_registry_to_overrode_file_paths(registry_entry, registry_name, metadata_entry, registry_directory_manager)
     return file_handle
 
 
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
     metadata_entry: LatestMetadataEntry,
-    cached_specs: OutputDataFrame,
+    spec_cache: SpecCache,
     metadata_directory_manager: GCSFileManager,
     registry_name: str,
 ) -> str:
@@ -269,7 +282,7 @@ def generate_and_persist_registry_entry(
         Output[ConnectorRegistryV0]: The registry.
     """
     raw_entry_dict = metadata_to_registry_entry(metadata_entry, registry_name)
-    registry_entry_with_spec = apply_spec_to_registry_entry(raw_entry_dict, cached_specs)
+    registry_entry_with_spec = apply_spec_to_registry_entry(raw_entry_dict, spec_cache, registry_name)
 
     _, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_with_spec)
 
@@ -306,14 +319,14 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
     return valid_enabled_registries, valid_disabled_registries
 
 
-def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, metadata_directory_manager: GCSFileManager) -> str:
+def delete_registry_entry(registry_name, metadata_entry: LatestMetadataEntry, metadata_directory_manager: GCSFileManager) -> str:
     """Delete the given registry entry from GCS.
 
     Args:
-        registry_entry (LatestMetadataEntry): The registry entry.
+        metadata_entry (LatestMetadataEntry): The registry entry.
         metadata_directory_manager (GCSFileManager): The metadata directory manager.
     """
-    registry_entry_write_path = get_registry_entry_write_path(registry_entry, registry_name)
+    registry_entry_write_path = get_registry_entry_write_path(None, metadata_entry, registry_name)
     file_handle = metadata_directory_manager.delete_by_key(key=registry_entry_write_path, ext="json")
     return file_handle.public_url if file_handle else None
 
@@ -436,20 +449,25 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
         f"Generating registry entry for {metadata_entry.file_path}",
     )
 
-    cached_specs = pd.DataFrame(list_cached_specs())
+    spec_cache = SpecCache()
 
     root_metadata_directory_manager = context.resources.root_metadata_directory_manager
     enabled_registries, disabled_registries = get_registry_status_lists(metadata_entry)
 
     persisted_registry_entries = {
-        registry_name: generate_and_persist_registry_entry(metadata_entry, cached_specs, root_metadata_directory_manager, registry_name)
+        registry_name: generate_and_persist_registry_entry(metadata_entry, spec_cache, root_metadata_directory_manager, registry_name)
         for registry_name in enabled_registries
     }
 
-    deleted_registry_entries = {
-        registry_name: delete_registry_entry(registry_name, metadata_entry, root_metadata_directory_manager)
-        for registry_name in disabled_registries
-    }
+    # Only delete the registry entry if it is the latest version
+    # This is to preserve any registry specific overrides even if they were removed
+    deleted_registry_entries = {}
+    if metadata_entry.is_latest_version_path:
+        context.log.debug(f"Deleting previous registry entries enabled {metadata_entry.file_path}")
+        deleted_registry_entries = {
+            registry_name: delete_registry_entry(registry_name, metadata_entry, root_metadata_directory_manager)
+            for registry_name in disabled_registries
+        }
 
     dagster_metadata_persist = {
         f"create_{registry_name}": MetadataValue.url(registry_url) for registry_name, registry_url in persisted_registry_entries.items()

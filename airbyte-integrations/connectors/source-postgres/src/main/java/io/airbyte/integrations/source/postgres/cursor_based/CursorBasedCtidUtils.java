@@ -9,10 +9,10 @@ import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.getStreamsF
 import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.identifyNewlyAddedStreams;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.CtidStreams;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -100,7 +100,7 @@ public class CursorBasedCtidUtils {
    * @param streamPair stream to reclassify
    */
   public static void reclassifyCategorisedCtidStream(final StreamsCategorised<CursorBasedStreams> categorisedStreams,
-                                                     AirbyteStreamNameNamespacePair streamPair) {
+                                                     final AirbyteStreamNameNamespacePair streamPair) {
     final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
         .ctidStreams()
         .streamsForCtidSync().stream().filter(c -> Objects.equals(
@@ -128,7 +128,7 @@ public class CursorBasedCtidUtils {
   }
 
   public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<CursorBasedStreams> categorisedStreams,
-                                                      List<AirbyteStreamNameNamespacePair> streamPairs) {
+                                                      final List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
 

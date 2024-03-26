@@ -1,0 +1,30 @@
+{
+  "title": "Vendor Traffic Report",
+  "description": "This report shares data on the customer traffic to the detail pages of the vendor's items both at an aggregated level (across the vendor's entire catalog of items) and at a per-ASIN level. Data is available for different date range aggregation levels: DAY, WEEK, MONTH, QUARTER, YEAR. Requests can span multiple date range periods.",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "startDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "endDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "asin": {
+      "type": ["null", "string"]
+    },
+    "glanceViews": {
+      "type": ["null", "integer"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

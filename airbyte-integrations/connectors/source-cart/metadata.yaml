@@ -2,21 +2,26 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-cart
   githubIssueLabel: source-cart
   icon: cart.svg
   license: MIT
   name: Cart.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-cart
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/cart
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100

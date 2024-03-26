@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
     "id": {
@@ -9,8 +9,24 @@
     "name": {
       "type": ["null", "string"]
     },
+    "tags": {
+      "type": ["null", "array"],
+      "properties": {
+        "sticker": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "properties": {
+        "mprc": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "related_resource": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "assignee_id": {
       "type": ["null", "integer"]
@@ -26,19 +42,6 @@
     },
     "date_modified": {
       "type": ["null", "integer"]
-    },
-    "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "additionalProperties": true
-      }
-    },
-    "tags": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
     }
   }
 }

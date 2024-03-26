@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
+    "label.id": {
+      "type": ["null", "integer"]
+    },
+    "campaign.resource_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_label.resource_name": {
+      "type": ["null", "string"]
+    },
+    "label.name": {
+      "type": ["null", "string"]
+    },
+    "label.resource_name": {
+      "type": ["null", "string"]
+    }
+  }
+}

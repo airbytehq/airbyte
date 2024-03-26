@@ -7,15 +7,17 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.zaxxer.hikari.HikariDataSource;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled("The provided refresh token is invalid.")
 public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptanceTest {
 
   @Override

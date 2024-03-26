@@ -160,6 +160,36 @@
     "metadata": {
       "type": ["null", "string"]
     },
+    "defaultCategory": {
+      "type": ["null", "string"]
+    },
+    "categoryGroups": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "customers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "budgetCategories": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "private": {
+      "type": ["null", "boolean"]
+    },
+    "billable": {
+      "type": ["null", "boolean"]
+    },
+    "fixedCosts": {
+      "type": ["null", "array"]
+    },
     "customFields": {
       "items": {
         "properties": {

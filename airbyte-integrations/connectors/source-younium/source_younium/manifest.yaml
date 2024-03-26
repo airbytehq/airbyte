@@ -1,0 +1,124 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - data
+  requester:
+    type: HttpRequester
+    url_base: "{{ 'https://apisandbox.younium.com' if config['playground'] else 'https://api.younium.com' }}"
+    http_method: "GET"
+
+    authenticator:
+      class_name: source_younium.components.CustomYouniumAuthenticator
+      username: "{{ config['username'] }}"
+      password: "{{ config['password'] }}"
+      legal_entity: "{{ config['legal_entity'] }}"
+      grant_type: password
+      client_id: apiclient
+      scope: openid youniumapi profile
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestPath
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 100
+        cursor_value: '{{ response.get("nextPage", {}) }}'
+        stop_condition: '{{ not response.get("nextPage", {}) }}'
+      page_size_option:
+        inject_into: request_parameter
+        type: RequestOption
+        field_name: PageSize
+
+    requester:
+      $ref: "#/definitions/requester"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  account_stream:
+    $ref: "#/definitions/base_stream"
+    name: account
+    $parameters:
+      path: Accounts
+
+  booking_stream:
+    $ref: "#/definitions/base_stream"
+    name: booking
+    $parameters:
+      path: Bookings
+
+  invoice_stream:
+    $ref: "#/definitions/base_stream"
+    name: invoice
+    $parameters:
+      path: Invoices
+
+  product_stream:
+    $ref: "#/definitions/base_stream"
+    name: product
+    $parameters:
+      path: Products
+
+  subscription_stream:
+    $ref: "#/definitions/base_stream"
+    name: subscription
+    $parameters:
+      path: Subscriptions
+
+streams:
+  - "#/definitions/account_stream"
+  - "#/definitions/booking_stream"
+  - "#/definitions/invoice_stream"
+  - "#/definitions/product_stream"
+  - "#/definitions/subscription_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - account
+    - booking
+    - invoice
+    - product
+    - subscription
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/younium
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Younium Spec
+    type: object
+    additionalProperties: true
+    required:
+      - username
+      - password
+      - legal_entity
+    properties:
+      username:
+        title: Username
+        type: string
+        description: Username for Younium account
+      password:
+        title: Password
+        type: string
+        description: Account password for younium account API key
+        airbyte_secret: true
+      legal_entity:
+        title: Legal Entity
+        type: string
+        description: Legal Entity that data should be pulled from
+      playground:
+        title: Playground environment
+        type: boolean
+        description: Property defining if connector is used against playground or production environment
+        default: false

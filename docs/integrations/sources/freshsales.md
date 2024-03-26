@@ -69,6 +69,7 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------|
+| 1.0.0   | 2023-10-21 | [31685](https://github.com/airbytehq/airbyte/pull/31685) | Migrate to Low-Code CDK |
 | 0.1.4   | 2023-03-23 | [24396](https://github.com/airbytehq/airbyte/pull/24396) | Certify to Beta |
 | 0.1.3   | 2023-03-16 | [24155](https://github.com/airbytehq/airbyte/pull/24155) | Set `additionalProperties` to `True` in `spec` to support BC |
 | 0.1.2   | 2022-07-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Tune the `get_view_id` function |

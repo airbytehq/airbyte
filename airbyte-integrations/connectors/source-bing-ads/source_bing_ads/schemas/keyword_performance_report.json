@@ -22,7 +22,8 @@
       "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "CurrencyCode": {
       "type": ["null", "string"]
@@ -62,18 +63,6 @@
     },
     "KeywordStatus": {
       "type": ["null", "string"]
-    },
-    "HistoricalExpectedCtr": {
-      "type": ["null", "number"]
-    },
-    "HistoricalAdRelevance": {
-      "type": ["null", "number"]
-    },
-    "HistoricalLandingPageExperience": {
-      "type": ["null", "number"]
-    },
-    "HistoricalQualityScore": {
-      "type": ["null", "number"]
     },
     "Impressions": {
       "type": ["null", "integer"]

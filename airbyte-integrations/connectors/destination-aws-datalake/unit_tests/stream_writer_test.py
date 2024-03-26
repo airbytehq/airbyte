@@ -4,14 +4,16 @@
 
 import json
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, Mapping
 
+import numpy as np
 import pandas as pd
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
 from destination_aws_datalake.config_reader import ConnectorConfig
-from destination_aws_datalake.stream_writer import StreamWriter
+from destination_aws_datalake.stream_writer import DictEncoder, StreamWriter
 
 
 def get_config() -> Mapping[str, Any]:
@@ -196,6 +198,109 @@ def get_big_schema_configured_stream():
     )
 
 
+def get_camelcase_configured_stream():
+    stream_name = "append_camelcase"
+    stream_schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["null", "object"],
+        "properties": {
+            "TaxRateRef": {
+                "properties": {"name": {"type": ["null", "string"]}, "value": {"type": ["null", "string"]}},
+                "type": ["null", "object"],
+            },
+            "DocNumber": {"type": ["null", "string"]},
+            "CurrencyRef": {
+                "properties": {"name": {"type": ["null", "string"]}, "value": {"type": ["null", "string"]}},
+                "type": ["null", "object"],
+            },
+            "Id": {"type": ["null", "string"]},
+            "domain": {"type": ["null", "string"]},
+            "SyncToken": {"type": ["null", "string"]},
+            "Line": {
+                "items": {
+                    "properties": {
+                        "Id": {"type": ["null", "string"]},
+                        "Amount": {"type": ["null", "number"]},
+                        "JournalEntryLineDetail": {
+                            "properties": {
+                                "AccountRef": {
+                                    "properties": {"name": {"type": ["null", "string"]}, "value": {"type": ["null", "string"]}},
+                                    "type": ["null", "object"],
+                                },
+                                "PostingType": {"type": ["null", "string"]},
+                            },
+                            "type": ["null", "object"],
+                        },
+                        "DetailType": {"type": ["null", "string"]},
+                        "Description": {"type": ["null", "string"]},
+                    },
+                    "type": ["null", "object"],
+                },
+                "type": ["null", "array"],
+            },
+            "TxnDate": {"format": "date", "type": ["null", "string"]},
+            "TxnTaxDetail": {
+                "type": ["null", "object"],
+                "properties": {
+                    "TotalTax": {"type": ["null", "number"]},
+                    "TxnTaxCodeRef": {
+                        "type": ["null", "object"],
+                        "properties": {"value": {"type": ["null", "string"]}, "name": {"type": ["null", "string"]}},
+                    },
+                    "TaxLine": {
+                        "type": ["null", "array"],
+                        "items": {
+                            "type": ["null", "object"],
+                            "properties": {
+                                "DetailType": {"type": ["null", "string"]},
+                                "Amount": {"type": ["null", "number"]},
+                                "TaxLineDetail": {
+                                    "type": ["null", "object"],
+                                    "properties": {
+                                        "TaxPercent": {"type": ["null", "number"]},
+                                        "OverrideDeltaAmount": {"type": ["null", "number"]},
+                                        "TaxInclusiveAmount": {"type": ["null", "number"]},
+                                        "PercentBased": {"type": ["null", "boolean"]},
+                                        "NetAmountTaxable": {"type": ["null", "number"]},
+                                        "TaxRateRef": {
+                                            "type": ["null", "object"],
+                                            "properties": {"name": {"type": ["null", "string"]}, "value": {"type": ["null", "string"]}},
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            "PrivateNote": {"type": ["null", "string"]},
+            "ExchangeRate": {"type": ["null", "number"]},
+            "MetaData": {
+                "properties": {
+                    "CreateTime": {"format": "date-time", "type": ["null", "string"]},
+                    "LastUpdatedTime": {"format": "date-time", "type": ["null", "string"]},
+                },
+                "type": ["null", "object"],
+            },
+            "Adjustment": {"type": ["null", "boolean"]},
+            "sparse": {"type": ["null", "boolean"]},
+            "airbyte_cursor": {"type": ["null", "string"]},
+        },
+    }
+
+    return ConfiguredAirbyteStream(
+        stream=AirbyteStream(
+            name=stream_name,
+            json_schema=stream_schema,
+            default_cursor_field=["airbyte_cursor"],
+            supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
+        ),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+        cursor_field=["airbyte_cursor"],
+    )
+
+
 def get_big_schema_writer(config: Dict[str, Any]):
     connector_config = ConnectorConfig(**config)
     aws_handler = AwsHandler(connector_config, DestinationAwsDatalake())
@@ -291,6 +396,30 @@ def test_get_glue_dtypes_from_json_schema():
     }
 
 
+def test_get_glue_types_from_json_schema_camel_case():
+    connector_config = ConnectorConfig(**get_config())
+    aws_handler = AwsHandler(connector_config, DestinationAwsDatalake())
+    writer = StreamWriter(aws_handler, connector_config, get_camelcase_configured_stream())
+    result, _ = writer._get_glue_dtypes_from_json_schema(writer._schema)
+    assert result == {
+        "Adjustment": "boolean",
+        "CurrencyRef": "struct<name:string,value:string>",
+        "DocNumber": "string",
+        "ExchangeRate": "double",
+        "Id": "string",
+        "Line": "array<struct<Id:string,Amount:double,JournalEntryLineDetail:struct<AccountRef:struct<name:string,value:string>,PostingType:string>,DetailType:string,Description:string>>",
+        "MetaData": "struct<CreateTime:timestamp,LastUpdatedTime:timestamp>",
+        "PrivateNote": "string",
+        "SyncToken": "string",
+        "TaxRateRef": "struct<name:string,value:string>",
+        "TxnDate": "date",
+        "TxnTaxDetail": "struct<TotalTax:double,TxnTaxCodeRef:struct<value:string,name:string>,TaxLine:array<struct<DetailType:string,Amount:double,TaxLineDetail:struct<TaxPercent:double,OverrideDeltaAmount:double,TaxInclusiveAmount:double,PercentBased:boolean,NetAmountTaxable:double,TaxRateRef:struct<name:string,value:string>>>>>",
+        "airbyte_cursor": "string",
+        "domain": "string",
+        "sparse": "boolean",
+    }
+
+
 def test_has_objects_with_no_properties_good():
     writer = get_big_schema_writer(get_config())
     assert writer._is_invalid_struct_or_array(
@@ -327,4 +456,302 @@ def test_has_objects_with_no_properties_nested_bad():
                 },
             }
         }
+    )
+
+
+def test_json_schema_cast_value():
+    writer = get_big_schema_writer(get_config())
+    assert (
+        writer._json_schema_cast_value(
+            "test",
+            {
+                "type": "string",
+            },
+        )
+        == "test"
+    )
+    assert (
+        writer._json_schema_cast_value(
+            "1",
+            {
+                "type": "integer",
+            },
+        )
+        == 1
+    )
+
+
+def test_json_schema_cast_decimal():
+    config = get_config()
+    config["glue_catalog_float_as_decimal"] = True
+    connector_config = ConnectorConfig(**config)
+    aws_handler = AwsHandler(connector_config, DestinationAwsDatalake())
+    writer = StreamWriter(aws_handler, connector_config, get_camelcase_configured_stream())
+
+    assert writer._json_schema_cast(
+        {
+            "Adjustment": False,
+            "domain": "QBO",
+            "sparse": "true",
+            "Id": "147491",
+            "SyncToken": "2",
+            "MetaData": {"CreateTime": "2023-02-09T10:36:39-08:00", "LastUpdatedTime": "2023-06-15T16:08:39-07:00"},
+            "DocNumber": "wt_JE001032",
+            "TxnDate": "2023-01-13",
+            "CurrencyRef": {"value": "USD", "name": "United States Dollar"},
+            "Line": [
+                {
+                    "Id": "0",
+                    "Description": "Payroll 01/13/23",
+                    "Amount": "137973.66",
+                    "DetailType": "JournalEntryLineDetail",
+                    "JournalEntryLineDetail": {
+                        "PostingType": "Debit",
+                        "Entity": {"Type": "Vendor", "EntityRef": {"value": "1", "name": "Test"}},
+                        "AccountRef": {"value": "234", "name": "Expense"},
+                        "ClassRef": {"value": "14", "name": "Business"},
+                    },
+                },
+            ],
+            "airbyte_cursor": "2023-06-15T16:08:39-07:00",
+        }
+    ) == {
+        "Adjustment": False,
+        "CurrencyRef": {"name": "United States Dollar", "value": "USD"},
+        "DocNumber": "wt_JE001032",
+        "Id": "147491",
+        "ExchangeRate": Decimal("0"),
+        "Line": [
+            {
+                "Amount": Decimal("137973.66"),
+                "Description": "Payroll 01/13/23",
+                "DetailType": "JournalEntryLineDetail",
+                "Id": "0",
+                "JournalEntryLineDetail": {
+                    "PostingType": "Debit",
+                    "Entity": {"Type": "Vendor", "EntityRef": {"value": "1", "name": "Test"}},
+                    "AccountRef": {"value": "234", "name": "Expense"},
+                    "ClassRef": {"value": "14", "name": "Business"},
+                },
+            }
+        ],
+        "MetaData": {
+            "CreateTime": pd.to_datetime("2023-02-09T10:36:39-08:00", utc=True),
+            "LastUpdatedTime": pd.to_datetime("2023-06-15T16:08:39-07:00", utc=True),
+        },
+        "PrivateNote": None,
+        "SyncToken": "2",
+        "TxnDate": "2023-01-13",
+        "TaxRateRef": None,
+        "TxnTaxDetail": None,
+        "airbyte_cursor": "2023-06-15T16:08:39-07:00",
+        "domain": "QBO",
+        "sparse": True,
+    }
+
+
+def test_json_schema_cast():
+    connector_config = ConnectorConfig(**get_config())
+    aws_handler = AwsHandler(connector_config, DestinationAwsDatalake())
+    writer = StreamWriter(aws_handler, connector_config, get_camelcase_configured_stream())
+
+    input = {
+        "Adjustment": False,
+        "domain": "QBO",
+        "sparse": False,
+        "Id": "147491",
+        "SyncToken": "2",
+        "ExchangeRate": "1.33",
+        "MetaData": {"CreateTime": "2023-02-09T10:36:39-08:00", "LastUpdatedTime": "2023-06-15T16:08:39-07:00"},
+        "DocNumber": "wt_JE001032",
+        "TxnDate": "2023-01-13",
+        "CurrencyRef": {"value": "USD", "name": "United States Dollar"},
+        "Line": [
+            {
+                "Id": "0",
+                "Description": "Money",
+                "Amount": "137973.66",
+                "DetailType": "JournalEntryLineDetail",
+                "JournalEntryLineDetail": {
+                    "PostingType": "Debit",
+                    "Entity": {"Type": "Vendor", "EntityRef": {"value": "1", "name": "Test"}},
+                    "AccountRef": {"value": "234", "name": "Expense"},
+                    "ClassRef": {"value": "14", "name": "Business"},
+                },
+            },
+        ],
+        "airbyte_cursor": "2023-06-15T16:08:39-07:00",
+    }
+
+    expected = {
+        "Adjustment": False,
+        "ExchangeRate": 1.33,
+        "CurrencyRef": {"name": "United States Dollar", "value": "USD"},
+        "DocNumber": "wt_JE001032",
+        "Id": "147491",
+        "Line": [
+            {
+                "Amount": 137973.66,
+                "Description": "Money",
+                "DetailType": "JournalEntryLineDetail",
+                "Id": "0",
+                "JournalEntryLineDetail": {
+                    "PostingType": "Debit",
+                    "Entity": {"Type": "Vendor", "EntityRef": {"value": "1", "name": "Test"}},
+                    "AccountRef": {"value": "234", "name": "Expense"},
+                    "ClassRef": {"value": "14", "name": "Business"},
+                },
+            }
+        ],
+        "MetaData": {
+            "CreateTime": pd.to_datetime("2023-02-09T10:36:39-08:00", utc=True),
+            "LastUpdatedTime": pd.to_datetime("2023-06-15T16:08:39-07:00", utc=True),
+        },
+        "PrivateNote": None,
+        "SyncToken": "2",
+        "TxnDate": "2023-01-13",
+        "TaxRateRef": None,
+        "TxnTaxDetail": None,
+        "airbyte_cursor": "2023-06-15T16:08:39-07:00",
+        "domain": "QBO",
+        "sparse": False,
+    }
+
+    assert writer._json_schema_cast(input) == expected
+
+
+def test_json_schema_cast_empty_values():
+    connector_config = ConnectorConfig(**get_config())
+    aws_handler = AwsHandler(connector_config, DestinationAwsDatalake())
+    writer = StreamWriter(aws_handler, connector_config, get_camelcase_configured_stream())
+
+    input = {
+        "Line": [
+            {
+                "Id": "0",
+                "Description": "Money",
+                "Amount": "",
+                "DetailType": "JournalEntryLineDetail",
+                "JournalEntryLineDetail": "",
+            },
+        ],
+        "MetaData": {"CreateTime": "", "LastUpdatedTime": "2023-06-15"},
+    }
+
+    expected = {
+        "Adjustment": False,
+        "CurrencyRef": None,
+        "DocNumber": None,
+        "Id": None,
+        "Line": [
+            {
+                "Description": "Money",
+                "DetailType": "JournalEntryLineDetail",
+                "Id": "0",
+                "JournalEntryLineDetail": None,
+            }
+        ],
+        "MetaData": {"LastUpdatedTime": pd.to_datetime("2023-06-15", utc=True)},
+        "PrivateNote": None,
+        "SyncToken": None,
+        "TaxRateRef": None,
+        "TxnDate": None,
+        "TxnTaxDetail": None,
+        "airbyte_cursor": None,
+        "domain": None,
+        "sparse": False,
+    }
+
+    result = writer._json_schema_cast(input)
+    exchange_rate = result.pop("ExchangeRate")
+    created_time = result["MetaData"].pop("CreateTime")
+    line_amount = result["Line"][0].pop("Amount")
+
+    assert result == expected
+    assert np.isnan(exchange_rate)
+    assert np.isnan(line_amount)
+    assert pd.isna(created_time)
+
+
+def test_json_schema_cast_bad_values():
+    connector_config = ConnectorConfig(**get_config())
+    aws_handler = AwsHandler(connector_config, DestinationAwsDatalake())
+    writer = StreamWriter(aws_handler, connector_config, get_camelcase_configured_stream())
+
+    input = {
+        "domain": 12,
+        "sparse": "true",
+        "Adjustment": 0,
+        "Line": [
+            {
+                "Id": "0",
+                "Description": "Money",
+                "Amount": "hello",
+                "DetailType": "JournalEntryLineDetail",
+                "JournalEntryLineDetail": "",
+            },
+        ],
+        "MetaData": {"CreateTime": "hello", "LastUpdatedTime": "2023-06-15"},
+    }
+
+    expected = {
+        "Adjustment": False,
+        "CurrencyRef": None,
+        "DocNumber": None,
+        "Id": None,
+        "Line": [
+            {
+                "Description": "Money",
+                "DetailType": "JournalEntryLineDetail",
+                "Id": "0",
+                "JournalEntryLineDetail": None,
+            }
+        ],
+        "MetaData": {"LastUpdatedTime": pd.to_datetime("2023-06-15", utc=True)},
+        "PrivateNote": None,
+        "SyncToken": None,
+        "TaxRateRef": None,
+        "TxnDate": None,
+        "TxnTaxDetail": None,
+        "airbyte_cursor": None,
+        "domain": "12",
+        "sparse": True,
+    }
+
+    result = writer._json_schema_cast(input)
+    exchange_rate = result.pop("ExchangeRate")
+    created_time = result["MetaData"].pop("CreateTime")
+    line_amount = result["Line"][0].pop("Amount")
+
+    assert result == expected
+    assert np.isnan(exchange_rate)
+    assert np.isnan(line_amount)
+    assert pd.isna(created_time)
+
+
+def test_json_dict_encoder():
+    dt = "2023-08-01T23:32:11Z"
+    dt = pd.to_datetime(dt, utc=True)
+
+    input = {
+        "boolean": False,
+        "integer": 1,
+        "float": 2.0,
+        "decimal": Decimal("13.232"),
+        "datetime": dt.to_pydatetime(),
+        "date": dt.date(),
+        "timestamp": dt,
+        "nested": {
+            "boolean": False,
+            "datetime": dt.to_pydatetime(),
+            "very_nested": {
+                "boolean": False,
+                "datetime": dt.to_pydatetime(),
+            },
+        },
+    }
+
+    assert (
+        json.dumps(input, cls=DictEncoder)
+        == '{"boolean": false, "integer": 1, "float": 2.0, "decimal": "13.232", "datetime": "2023-08-01T23:32:11Z", "date": "2023-08-01", "timestamp": "2023-08-01T23:32:11Z", "nested": {"boolean": false, "datetime": "2023-08-01T23:32:11Z", "very_nested": {"boolean": false, "datetime": "2023-08-01T23:32:11Z"}}}'
     )

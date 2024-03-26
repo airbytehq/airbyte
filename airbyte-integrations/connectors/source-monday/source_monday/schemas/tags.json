@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "color": { "type": ["null", "string"] },
-    "id": { "type": ["null", "integer"] },
+    "id": { "type": ["null", "string"] },
     "name": { "type": ["null", "string"] }
   }
 }

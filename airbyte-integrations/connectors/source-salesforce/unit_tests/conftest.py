@@ -3,10 +3,13 @@
 #
 
 import json
+from typing import List
 from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_protocol.models import AirbyteStateMessage
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 
@@ -32,9 +35,13 @@ def rest_catalog():
 
 
 @pytest.fixture(scope="module")
-def state():
-    state = {"Account": {"LastModifiedDate": "2021-10-01T21:18:20.000Z"}, "Asset": {"SystemModstamp": "2021-10-02T05:08:29.000Z"}}
-    return state
+def state() -> List[AirbyteStateMessage]:
+    return (
+        StateBuilder()
+        .with_stream_state("Account", {"LastModifiedDate": "2021-10-01T21:18:20.000Z"})
+        .with_stream_state("Asset", {"SystemModstamp": "2021-10-02T05:08:29.000Z"})
+        .build()
+    )
 
 
 @pytest.fixture(scope="module")
@@ -107,21 +114,15 @@ def stream_api_pk(stream_config):
 
 @pytest.fixture(scope="module")
 def stream_api_v2_too_many_properties(stream_config):
-    describe_response_data = {
-        "fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]
-    }
+    describe_response_data = {"fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]}
     describe_response_data["fields"].extend([{"name": "BillingAddress", "type": "address"}])
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
 @pytest.fixture(scope="module")
 def stream_api_v2_pk_too_many_properties(stream_config):
-    describe_response_data = {
-        "fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]
-    }
-    describe_response_data["fields"].extend([
-        {"name": "BillingAddress", "type": "address"}, {"name": "Id", "type": "string"}
-    ])
+    describe_response_data = {"fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]}
+    describe_response_data["fields"].extend([{"name": "BillingAddress", "type": "address"}, {"name": "Id", "type": "string"}])
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
@@ -130,28 +131,36 @@ def generate_stream(stream_name, stream_config, stream_api):
 
 
 def encoding_symbols_parameters():
-    return [(x, {"Content-Type": "text/csv; charset=ISO-8859-1"}, b'"\xc4"\n,"4"\n\x00,"\xca \xfc"', [{"Ä": "4"}, {"Ä": "Ê ü"}]) for x in range(1, 11)] + [
-        (
-            x,
-            {"Content-Type": "text/csv; charset=utf-8"},
-            b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
-            [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
-        )
-        for x in range(1, 11)
-    ] + [
-        (
-            x,
-            {"Content-Type": "text/csv"},
-            b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
-            [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
-        )
-        for x in range(1, 11)
-    ] + [
-        (
-            x,
-            {},
-            b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
-            [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
-        )
-        for x in range(1, 11)
-    ]
+    return (
+        [
+            (x, {"Content-Type": "text/csv; charset=ISO-8859-1"}, b'"\xc4"\n,"4"\n\x00,"\xca \xfc"', [{"Ä": "4"}, {"Ä": "Ê ü"}])
+            for x in range(1, 11)
+        ]
+        + [
+            (
+                x,
+                {"Content-Type": "text/csv; charset=utf-8"},
+                b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
+                [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
+            )
+            for x in range(1, 11)
+        ]
+        + [
+            (
+                x,
+                {"Content-Type": "text/csv"},
+                b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
+                [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
+            )
+            for x in range(1, 11)
+        ]
+        + [
+            (
+                x,
+                {},
+                b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
+                [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
+            )
+            for x in range(1, 11)
+        ]
+    )

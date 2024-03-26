@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
-import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
+import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,19 +13,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.ConnectionFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.TestingNamespaces;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.ConnectionFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.TestingNamespaces;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashSet;

@@ -5,16 +5,17 @@
 package io.airbyte.integrations.source.cockroachdb;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.db.JdbcCompatibleSourceOperations;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -79,6 +80,11 @@ public class CockroachJdbcDatabase
       return statement.executeQuery();
     }, sourceOperations::rowToJson).stream();
 
+  }
+
+  @Override
+  public <T> T executeMetadataQuery(Function<DatabaseMetaData, T> function) throws SQLException {
+    return database.executeMetadataQuery(function);
   }
 
 }

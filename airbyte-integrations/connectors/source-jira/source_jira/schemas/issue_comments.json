@@ -12,6 +12,11 @@
       "description": "The ID of the comment.",
       "readOnly": true
     },
+    "issueId": {
+      "type": ["null", "string"],
+      "description": "Id of the related issue.",
+      "readOnly": true
+    },
     "author": {
       "description": "The ID of the user who created the comment.",
       "readOnly": true
