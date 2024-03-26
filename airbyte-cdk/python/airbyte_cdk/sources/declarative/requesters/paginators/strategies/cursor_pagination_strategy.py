@@ -39,9 +39,8 @@ class CursorPaginationStrategy(PaginationStrategy):
             self._cursor_value = InterpolatedString.create(self.cursor_value, parameters=parameters)
         else:
             self._cursor_value = self.cursor_value
-        self._stop_condition: Optional[InterpolatedBoolean] = None
         if isinstance(self.stop_condition, str):
-            self._stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
+            self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
         else:
             self._stop_condition = self.stop_condition
 
@@ -58,10 +57,22 @@ class CursorPaginationStrategy(PaginationStrategy):
         headers["link"] = response.links
 
         if self._stop_condition:
-            should_stop = self._stop_condition.eval(self.config, response=decoded_response, headers=headers, last_record=last_record)
+            should_stop = self._stop_condition.eval(
+                self.config,
+                response=decoded_response,
+                headers=headers,
+                last_record=last_record,
+                last_page_size=last_page_size,
+            )
             if should_stop:
                 return None
-        token = self._cursor_value.eval(config=self.config, last_record=last_record, response=decoded_response, headers=headers)
+        token = self._cursor_value.eval(
+            config=self.config,
+            response=decoded_response,
+            headers=headers,
+            last_record=last_record,
+            last_page_size=last_page_size,
+        )
         return token if token else None
 
     def reset(self) -> None:
