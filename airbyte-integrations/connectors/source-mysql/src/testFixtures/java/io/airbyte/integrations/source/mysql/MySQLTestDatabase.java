@@ -81,6 +81,7 @@ public class MySQLTestDatabase extends
     // Besides setting up user and privileges, we also need to create a soft link otherwise
     // airbyte-ci on github runner would not be able to connect to DB, because the sock file does not
     // exist.
+    // TODO : https://www.nixcraft.com/t/innodb-io-setup-failed-with-eagain-will-make-5-attempts-before-giving-up/3839/2
     return Stream.of(Stream.of(
         "sh", "-c", "ln -s -f /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock"),
         mysqlCmd(Stream.of(
