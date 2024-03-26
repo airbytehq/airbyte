@@ -44,7 +44,7 @@ To purchase credits directly through the UI,
 
 ## Automatic reload of credits
 
-You can enroll in automatic top-ups of your credit balance. Thie feature is for those who do not want to manually add credits each time.
+You can enroll in automatic top-ups of your credit balance. This feature is for those who do not want to manually add credits each time.
 
 To enroll, [email us](mailto:billing@airbyte.io) with:
 

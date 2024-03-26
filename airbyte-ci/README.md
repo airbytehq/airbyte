@@ -7,8 +7,12 @@ The installation instructions for the `airbyte-ci` CLI tool cal be found here
 
 ## Tools
 
-| Directory                                     | Description                                                        |
-| --------------------------------------------- | ------------------------------------------------------------------ |
-| [`base_images`](connectors/base_images)       | A set of tools to build and publish Airbyte base connector images. |
-| [`ci_credentials`](connectors/ci_credentials) | A CLI tool to fetch connector secrets from GCP Secrets Manager.    |
-| [`connector_ops`](connectors/connector_ops)   | A python package with utils reused in internal packages.                         |
+| Directory                                          | Description                                                                                                                   |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [`base_images`](connectors/base_images)            | A set of tools to build and publish Airbyte base connector images.                                                            |
+| [`ci_credentials`](connectors/ci_credentials)      | A CLI tool to fetch connector secrets from GCP Secrets Manager.                                                               |
+| [`connector_ops`](connectors/connector_ops)        | A python package with utils reused in internal packages.                                                                      |
+| [`connectors_qa`](connectors/connectors_qa/)       | A tool to verify connectors have sounds assets and metadata.                                                                  |
+| [`metadata_service`](connectors/metadata_service/) | Tools to generate connector metadata and registry.                                                                            |
+| [`pipelines`](connectors/pipelines/)               | Airbyte CI pipelines, including formatting, linting, building, testing connectors, etc. Connector acceptance tests live here. |
+| [`qa_engine`](connectors/qa-engine/)               | Tools to fetch connector catalog metrics and parameters, such as adoption metrics.                                             |
