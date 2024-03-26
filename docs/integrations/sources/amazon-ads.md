@@ -83,6 +83,10 @@ This source is capable of syncing the following streams:
 * [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
 * [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
 
+:::note
+As of connector version 5.0.0, the `Sponsored Products Ad Group Bid Recommendations` stream provides bid recommendations and impact metrics for an existing automatic targeting ad group. The stream returns bid recommendations for match types `CLOSE_MATCH`, `LOOSE_MATCH`, `SUBSTITUTES`, and `COMPLEMENTS` per theme. For more detail on theme-based bid recommendations, review Amazon's [Theme-base bid suggestions - Quick-start guide](https://advertising.amazon.com/API/docs/en-us/guides/sponsored-products/bid-suggestions/theme-based-bid-suggestions-quickstart-guide).
+:::
+
 ## Connector-specific features and highlights
 
 All the reports are generated relative to the target profile's timezone.
@@ -110,6 +114,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.0.0   | 2024-03-22 | [36169](https://github.com/airbytehq/airbyte/pull/36169) | Update `SponsoredBrand` and `SponsoredProduct` streams due to API endpoint deprecation                          |
 | 4.1.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                 |
 | 4.0.4   | 2024-02-23 | [35481](https://github.com/airbytehq/airbyte/pull/35481) | Migrate source to `YamlDeclarativeSource` with custom `check_connection`                                        |
 | 4.0.3   | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry                                                                                 |

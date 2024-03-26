@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.77.0
+low-code: Add string interpolation filter
+
+## 0.76.0
+Migrate Python CDK to Poetry
+
+## 0.75.0
+low-code: Add StateMigration component
+
 ## 0.74.0
 Request option params are allowed to be an array
 
