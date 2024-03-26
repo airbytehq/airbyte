@@ -23,9 +23,6 @@ import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
 /** Source operation skeleton for JDBC compatible databases. */
 abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     JdbcCompatibleSourceOperations<Datatype> {
