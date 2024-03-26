@@ -144,6 +144,7 @@ Maven and Gradle will automatically reference the correct (pinned) version of th
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.27.7  | 2024-03-26 | [\#36466](https://github.com/airbytehq/airbyte/pull/36466) | Destinations: fix support for case-sensitive fields in destination state.                                                                                      |
 | 0.27.6  | 2024-03-26 | [\#36432](https://github.com/airbytehq/airbyte/pull/36432) | Sources support for AirbyteRecordMessageMeta during reading source data types.                                                                                 |
 | 0.27.5  | 2024-03-25 | [\#36461](https://github.com/airbytehq/airbyte/pull/36461) | Destinations: Handle case-sensitive columns in destination state handling.                                                                                     |
 | 0.27.4  | 2024-03-25 | [\#36333](https://github.com/airbytehq/airbyte/pull/36333) | Sunset DebeziumSourceDecoratingIterator.                                                                                                                       |

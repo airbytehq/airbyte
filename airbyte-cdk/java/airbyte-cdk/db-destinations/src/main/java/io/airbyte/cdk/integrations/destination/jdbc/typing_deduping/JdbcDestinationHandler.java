@@ -42,6 +42,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -223,8 +225,17 @@ public abstract class JdbcDestinationHandler<DestinationState> implements Destin
           // Forcibly downcase all key names.
           // This is to handle any destinations that upcase the column names.
           // For example - Snowflake with QUOTED_IDENTIFIERS_IGNORE_CASE=TRUE.
-          ObjectNode record = (ObjectNode) recordJson;
-          record.fieldNames().forEachRemaining(fieldName -> record.set(fieldName.toLowerCase(), record.get(fieldName)));
+          final ObjectNode record = (ObjectNode) recordJson;
+          final Map<String, JsonNode> newFields = new HashMap<>();
+          for (Iterator<String> it = record.fieldNames(); it.hasNext();) {
+            String fieldName = it.next();
+            // We can't directly call record.set here, because that will raise a
+            // ConcurrentModificationException on the fieldnames iterator.
+            // Instead, build up a map of new fields and set them all at once.
+            newFields.put(fieldName.toLowerCase(), record.get(fieldName));
+          }
+
+          record.setAll(newFields);
         }).collect(toMap(
             record -> {
               final JsonNode nameNode = record.get(DESTINATION_STATE_TABLE_COLUMN_NAME);
