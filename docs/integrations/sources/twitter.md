@@ -16,7 +16,12 @@ To set up the Twitter source connector, you'll need the [App only Bearer Token](
 6. For **Search Query**, enter the query for matching Tweets. You can learn how to build this query by reading [build a query guide](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query).
 7. For **Start Date (Optional)**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The start date for retrieving tweets cannot be more than 7 days in the past.
 8. For **End Date (Optional)**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The end date for retrieving tweets must be a minimum of 10 seconds prior to the request time.
-9. Click **Set up source**.
+9.  For **tweet_fields**, select the tweet fields you want to extract from the API. See [here](https://developer.twitter.com/en/docs/twitter-api/fields) for more details.
+10. For **user_fields**, select the user fields you want to extract from the API. See [here](https://developer.twitter.com/en/docs/twitter-api/fields) for more details.
+11. For **media_fields**, select the media fields you want to extract from the API. See [here](https://developer.twitter.com/en/docs/twitter-api/fields) for more details.
+12. For **poll_fields**, select the poll fields you want to extract from the API. See [here](https://developer.twitter.com/en/docs/twitter-api/fields) for more details.
+13. For **place_fields**, select the place fields you want to extract from the API. See [here](https://developer.twitter.com/en/docs/twitter-api/fields) for more details.
+14. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -38,6 +43,7 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.2.0   | 2023-10-28 | [31609](https://github.com/airbytehq/airbyte/pull/31609) | Improve Query Parameter Spec |
 | 0.1.2   | 2023-03-06 | [23749](https://github.com/airbytehq/airbyte/pull/23749) | Spec and docs are improved for beta certification |
 | 0.1.1   | 2023-03-03 | [23661](https://github.com/airbytehq/airbyte/pull/23661) | Incremental added for the "tweets" stream         |
 | 0.1.0   | 2022-11-01 | [18883](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter                            |
