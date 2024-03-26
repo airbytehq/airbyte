@@ -146,17 +146,6 @@ class TimeOffRequestsStream(BambooHrIncrementalStream):
 
     primary_key = "id"
 
-    # def get_json_schema(self) -> Mapping[str, Any]:
-    #     report_schema_name = "time_off_requests_stream"
-    #     return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(report_schema_name)
-
-    # def fields(self, **kwargs) -> List[str]:
-    #     """List of fields that we want to query, for now just all properties from stream's schema"""
-    #     if self._fields:
-    #         return self._fields
-    #     self._saved_fields = list(self.get_json_schema().get("properties", {}).keys())
-    #     return self._saved_fields
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
 
@@ -164,7 +153,7 @@ class TimeOffRequestsStream(BambooHrIncrementalStream):
     def path(self, date_from, **kwargs):
         return f"time_off/requests/?start={date_from}&end={date_from}"
     
-    def _fetch_next_page(
+    def send_request(
         self,
         start_date: str,
         stream_slice: Optional[Mapping[str, Any]] = None,
@@ -183,6 +172,10 @@ class TimeOffRequestsStream(BambooHrIncrementalStream):
         response = self._send_request(request, request_kwargs)
         return request, response
     
+    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        actual_record = {key: value for key, value in record.items() if key in self.get_json_schema()["properties"].keys()}
+        return actual_record
+
     def _read_pages(
         self,
         records_generator_fn: Callable[
@@ -193,9 +186,9 @@ class TimeOffRequestsStream(BambooHrIncrementalStream):
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
         for start_date in generate_dates_to_today(self.start_date):
-            request, response = self._fetch_next_page(start_date, stream_slice, stream_state, None)
-            yield from records_generator_fn(request, response, stream_state, stream_slice)
-    
+            request, response = self.send_request(start_date, stream_slice, stream_state, None)
+            for record in records_generator_fn(request, response, stream_state, stream_slice):
+                yield self.transform(record)
 
 class SourceBambooHr(AbstractSource):
     @staticmethod
