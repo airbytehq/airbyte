@@ -23,6 +23,8 @@ Some of Zoho CRM Modules may not be available for sync due to limitations of Zoh
 Connector streams and schemas are built dynamically on top of Metadata that is available from the REST API - please see [Modules API](https://www.zoho.com/crm/developer/docs/api/v2/modules-api.html), [Modules Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/module-meta.html), [Fields Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/field-meta.html).
 The list of available streams is the list of Modules as long as Module Metadata is available for each of them from the Zoho CRM API, and Fields Metadata is available for each of the fields. If a module you want to sync is not available from this connector, it's because the Zoho CRM API does not make it available. 
 
+For the request parameter `fields` a maximum of 50 values/params are supported, so remaining parameters are dropped (if any).
+
 ### Data type mapping
 
 | Integration Type      | Airbyte Type | Notes                     |
@@ -128,8 +130,9 @@ Make sure to complete the auth flow quickly, as the initial token granted by Zoh
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
-| 0.1.2   | 2023-03-09 | [23906](https://github.com/airbytehq/airbyte/pull/23906) | added support for the latest CDK, fixed SAT                                        |
-| 0.1.1   | 2023-03-13 | [23818](https://github.com/airbytehq/airbyte/pull/23818) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix |
-| 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release                                                                    |
+| Version | Date       | Pull Request                                             | Subject                                                                              |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.1.3   | 2023-10-03 | [31011](https://github.com/airbytehq/airbyte/pull/31011) | Update api version from v2 to v4, default optional fields in FieldMeta class to None |
+| 0.1.2   | 2023-03-09 | [23906](https://github.com/airbytehq/airbyte/pull/23906) | added support for the latest CDK, fixed SAT                                          |
+| 0.1.1   | 2023-03-13 | [23818](https://github.com/airbytehq/airbyte/pull/23818) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix   |
+| 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release                                                                      |
