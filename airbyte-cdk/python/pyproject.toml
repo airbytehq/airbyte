@@ -42,33 +42,34 @@ PyYAML = "^6.0.1"
 requests = "*"
 requests_cache = "*"
 wcmatch = "8.4"
+# Extras depedencies
+avro = { version = "~1.11.2", optional = true }
+cohere = { version = "4.21", optional = true }
+fastavro = { version = "~1.8.0", optional = true }
+langchain = { version = "0.0.271", optional = true }
+markdown = { version = "*", optional = true }
+openai = { version = "0.27.9", extras = ["embeddings"], optional = true }
+pyarrow = { version = "~15.0.0", optional = true }
+pytesseract = { version = "0.3.10", optional = true }
+Sphinx = { version = "~4.2", optional = true }
+sphinx-rtd-theme = { version = "~1.0", optional = true }
+tiktoken = { version = "0.4.0", optional = true }
+unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true }
+"unstructured.pytesseract" = { version = ">=0.3.12", optional = true }
 
-[tool.poetry.dev-dependencies]
-avro = "~1.11.2"
-cohere = "4.21"
-fastavro = "~1.8.0"
+[tool.poetry.group.dev.dependencies]
 freezegun = "*"
-langchain = "0.0.271"
-markdown = "*"
 mypy = "*"
-openai = { version = "0.27.9", extras = ["embeddings"] }
 pandas = "2.0.3"
 pdf2image = "1.16.3"
 "pdfminer.six" = "20221105"
 poethepoet = "^0.24.2"
-pyarrow = "~15.0.0"
 pyproject-flake8 = "^6.1.0"
-pytesseract = "0.3.10"
 pytest = "6.2.5"
 pytest-cov = "*"
 pytest-httpserver = "*"
 pytest-mock = "*"
 requests-mock = "*"
-Sphinx = "~4.2"
-sphinx-rtd-theme = "~1.0"
-tiktoken = "0.4.0"
-unstructured = { version = "0.10.27", extras = ["docx", "pptx"] }
-"unstructured.pytesseract" = ">=0.3.12"
 
 [tool.poetry.extras]
 file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown"]
