@@ -12,11 +12,15 @@ import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
 import io.airbyte.cdk.db.AbstractDatabase;
 import io.airbyte.cdk.db.IncrementalUtils;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.JdbcConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.CursorStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
@@ -40,6 +44,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -48,6 +53,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -399,15 +405,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
           cursorField);
 
+      CursorStateMessageProducer messageProducer = new CursorStateMessageProducer(
+          stateManager,
+          cursorInfo.map(CursorInfo::getCursor));
+
       iterator = AutoCloseableIterators.transform(
-          autoCloseableIterator -> new StateDecoratingIterator(
-              autoCloseableIterator,
-              stateManager,
-              pair,
-              cursorField,
-              cursorInfo.map(CursorInfo::getCursor).orElse(null),
-              cursorType,
-              getStateEmissionFrequency()),
+          autoCloseableIterator -> new SourceStateIterator(autoCloseableIterator, airbyteStream, messageProducer,
+              new StateEmitFrequency(getStateEmissionFrequency(),
+                  Duration.ZERO)),
           airbyteMessageIterator,
           AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
@@ -463,7 +468,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         table.getFields().stream().anyMatch(f -> f.getName().equals(cursorField)),
         String.format("Could not find cursor field %s in table %s", cursorField, table.getName()));
 
-    final AutoCloseableIterator<JsonNode> queryIterator = queryTableIncremental(
+    final AutoCloseableIterator<AirbyteRecordData> queryIterator = queryTableIncremental(
         database,
         selectedDatabaseFields,
         table.getNameSpace(),
@@ -495,26 +500,31 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                      final Instant emittedAt,
                                                                      final SyncMode syncMode,
                                                                      final Optional<String> cursorField) {
-    final AutoCloseableIterator<JsonNode> queryStream =
+    final AutoCloseableIterator<AirbyteRecordData> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(),
             table.getName(), syncMode, cursorField);
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
   private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(
-                                                                          final AutoCloseableIterator<JsonNode> recordIterator,
+                                                                          final AutoCloseableIterator<AirbyteRecordData> recordIterator,
                                                                           final String streamName,
                                                                           final String namespace,
                                                                           final long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator,
         new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(streamName, namespace),
-        r -> new AirbyteMessage()
+        airbyteRecordData -> new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
                 .withStream(streamName)
                 .withNamespace(namespace)
                 .withEmittedAt(emittedAt)
-                .withData(r)));
+                .withData(airbyteRecordData.rawRowData())
+                .withMeta(isMetaChangesEmptyOrNull(airbyteRecordData.meta()) ? null : airbyteRecordData.meta())));
+  }
+
+  private static boolean isMetaChangesEmptyOrNull(AirbyteRecordMessageMeta meta) {
+    return meta == null || meta.getChanges() == null || meta.getChanges().isEmpty();
   }
 
   /**
@@ -646,12 +656,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param syncMode The sync mode that this full refresh stream should be associated with.
    * @return iterator with read data
    */
-  protected abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
-                                                                           final List<String> columnNames,
-                                                                           final String schemaName,
-                                                                           final String tableName,
-                                                                           final SyncMode syncMode,
-                                                                           final Optional<String> cursorField);
+  protected abstract AutoCloseableIterator<AirbyteRecordData> queryTableFullRefresh(final Database database,
+                                                                                    final List<String> columnNames,
+                                                                                    final String schemaName,
+                                                                                    final String tableName,
+                                                                                    final SyncMode syncMode,
+                                                                                    final Optional<String> cursorField);
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor
@@ -661,17 +671,19 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return iterator with read data
    */
-  protected abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
-                                                                           List<String> columnNames,
-                                                                           String schemaName,
-                                                                           String tableName,
-                                                                           CursorInfo cursorInfo,
-                                                                           DataType cursorFieldType);
+  protected abstract AutoCloseableIterator<AirbyteRecordData> queryTableIncremental(Database database,
+                                                                                    List<String> columnNames,
+                                                                                    String schemaName,
+                                                                                    String tableName,
+                                                                                    CursorInfo cursorInfo,
+                                                                                    DataType cursorFieldType);
 
   /**
    * When larger than 0, the incremental iterator will emit intermediate state for every N records.
    * Please note that if intermediate state emission is enabled, the incremental query must be ordered
    * by the cursor field.
+   *
+   * TODO: Return an optional value instead of 0 to make it easier to understand.
    */
   protected int getStateEmissionFrequency() {
     return 0;
