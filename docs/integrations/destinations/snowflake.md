@@ -276,6 +276,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                 | Subject                                                                                                                                                         |
 |:----------------|:-----------|:-------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.6           | 2024-03-26 | [\#36466](https://github.com/airbytehq/airbyte/pull/36466)   | Correctly hhandle instances with `QUOTED_IDENTIFIERS_IGNORE_CASE` enabled globally                                                                              |
 | 3.6.5           | 2024-03-25 | [\#36461](https://github.com/airbytehq/airbyte/pull/36461)   | Internal code change (use published CDK artifact instead of source dependency)                                                                                  |
 | 3.6.4           | 2024-03-25 | [\#36396](https://github.com/airbytehq/airbyte/pull/36396)   | Handle instances with `QUOTED_IDENTIFIERS_IGNORE_CASE` enabled globally                                                                                         |
 | 3.6.3           | 2024-03-25 | [\#36452](https://github.com/airbytehq/airbyte/pull/36452)   | Remove Query timeout                                                                                                                                            |
