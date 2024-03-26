@@ -118,11 +118,11 @@ The Slack source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-For most of the streams, the Slack source connector uses the [Conversations API](https://api.slack.com/docs/conversations-api) under the hood.
+For most of the streams, the Slack source connector uses the [Conversations API](https://api.slack.com/docs/conversations-api) under the hood. 
 
 * [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
 * [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of.
+* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of. Private channels are not able to be replicated. 
 * [Users](https://api.slack.com/methods/users.list)
 * [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
 
