@@ -43,16 +43,18 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "21"
-      - name: Install Pip
-        run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv --user
-      - name: Run Gradle Check on Python CDK
-        run: (cd airbyte-cdk/python && CI=true ./gradlew --no-daemon --no-build-cache --scan check)
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install Dependencies
+        id: install_dependencies
+        working-directory: airbyte-cdk/python
+        run: poetry install
+      - name: Build CDK Package
+        working-directory: airbyte-cdk/python
+        run: poetry run poe build
+      - name: Check Python CDK
+        working-directory: airbyte-cdk/python
+        run: poetry run poe check-ci
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
