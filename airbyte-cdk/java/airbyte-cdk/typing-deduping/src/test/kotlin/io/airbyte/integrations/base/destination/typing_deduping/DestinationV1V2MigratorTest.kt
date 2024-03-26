@@ -20,7 +20,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
-@Disabled
 class DestinationV1V2MigratorTest {
     class ShouldMigrateTestArgumentProvider : ArgumentsProvider {
         @Throws(Exception::class)
