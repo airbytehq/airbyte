@@ -2,26 +2,32 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Shopify](https://www.shopify.com/) source connector.
+This page contains the setup guide and reference information for the
+[Shopify](https://www.shopify.com/) source connector.
 
 </HideInUI>
 
 ## Prerequisites
 
-* An active [Shopify store](https://www.shopify.com).
-* If you are syncing data from a store that you do not own, you will need to [request access to your client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners).
+- An active [Shopify store](https://www.shopify.com).
+- If you are syncing data from a store that you do not own, you will need to
+[request access to your client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access)
+(not required for account owners).
 <!-- env:oss  -->
-* For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#scopes-required-for-custom-app).
+- For **Airbyte Open Source** users: A custom Shopify application with
+[`read_` scopes enabled](#scopes-required-for-custom-app).
 <!-- /env:oss -->
 
 ## Setup guide
 
-This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
+This connector supports **OAuth2.0** and **API Password** (for private applications) authentication
+methods.
 
 <!-- env:cloud -->
-:::note
-For existing **Airbyte Cloud** customers, if you are currently using the **API Password** authentication method, please switch to **OAuth2.0**, as the API Password will be deprecated shortly. This change will not affect **Airbyte Open Source** connections.
-:::
+
+:::note For existing **Airbyte Cloud** customers, if you are currently using the **API Password**
+authentication method, please switch to **OAuth2.0**, as the API Password will be deprecated
+shortly. This change will not affect **Airbyte Open Source** connections. :::
 
 ### Airbyte Cloud
 
@@ -31,72 +37,86 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 2. Click **Authenticate your Shopify account**.
 3. Click **Install** to install the Airbyte application.
 4. Log in to your account, if you are not already logged in.
-5. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
-6. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm the value is accurate.
-7. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+5. Select the store you want to sync and review the consent form. Click **Install app** to finish
+   the installation.
+6. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm
+   the value is accurate.
+7. (Optional) You may set a **Replication Start Date** as the starting point for your data
+   replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
 8. Click **Set up source** and wait for the connection test to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 ### Airbyte Open Source
 
 #### Create a custom app
 
-Authentication to the Shopify API requires a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
+Authentication to the Shopify API requires a
+[custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these
+instructions to create a custom app and find your Admin API Access Token.
 
 1. Log in to your Shopify account.
-2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
+2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** >
+   **Create an app**.
 3. Select a name for your new app.
 4. Select **Configure Admin API scopes**.
-5. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
+5. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select
+   scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
 6. Click **Install app** to give this app access to your data.
-7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
+7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now
+   ready to set up the source in Airbyte!
 
 #### Connect using API Password
 
 1. Enter a **Source name**.
-2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
+2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or
+   within the Store details section of your Settings.
 3. For **API Password**, enter your custom application's Admin API access token.
-4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
+4. (Optional) You may set a **Replication Start Date** as the starting point for your data
+   replication. Any data created before this date will not be synced. Please note that this defaults
+   to January 1st, 2020.
 5. Click **Set up source** and wait for the connection test to complete.
 
 ### Custom app scopes
 
-Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
+Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more
+information on access scopes, see the
+[Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
 
-* `read_analytics`
-* `read_assigned_fulfillment_orders`
-* `read_content`
-* `read_customers`
-* `read_discounts`
-* `read_draft_orders`
-* `read_fulfillments`
-* `read_gdpr_data_request`
-* `read_gift_cards`
-* `read_inventory`
-* `read_legal_policies`
-* `read_locations`
-* `read_locales`
-* `read_marketing_events`
-* `read_merchant_managed_fulfillment_orders`
-* `read_online_store_pages`
-* `read_order_edits`
-* `read_orders`
-* `read_price_rules`
-* `read_product_listings`
-* `read_products`
-* `read_publications`
-* `read_reports`
-* `read_resource_feedbacks`
-* `read_script_tags`
-* `read_shipping`
-* `read_shopify_payments_accounts`
-* `read_shopify_payments_bank_accounts`
-* `read_shopify_payments_disputes`
-* `read_shopify_payments_payouts`
-* `read_themes`
-* `read_third_party_fulfillment_orders`
-* `read_translations`
+- `read_analytics`
+- `read_assigned_fulfillment_orders`
+- `read_content`
+- `read_customers`
+- `read_discounts`
+- `read_draft_orders`
+- `read_fulfillments`
+- `read_gdpr_data_request`
+- `read_gift_cards`
+- `read_inventory`
+- `read_legal_policies`
+- `read_locations`
+- `read_locales`
+- `read_marketing_events`
+- `read_merchant_managed_fulfillment_orders`
+- `read_online_store_pages`
+- `read_order_edits`
+- `read_orders`
+- `read_price_rules`
+- `read_product_listings`
+- `read_products`
+- `read_publications`
+- `read_reports`
+- `read_resource_feedbacks`
+- `read_script_tags`
+- `read_shipping`
+- `read_shopify_payments_accounts`
+- `read_shopify_payments_bank_accounts`
+- `read_shopify_payments_disputes`
+- `read_shopify_payments_payouts`
+- `read_themes`
+- `read_third_party_fulfillment_orders`
+- `read_translations`
 
 <!-- env:oss -->
 
@@ -104,9 +124,13 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 
 ## Supported sync modes
 
-The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this
+connector will copy only the new or updated data, or all rows in the tables and columns you set up
+for replication, every time a sync is run.
 
-This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql) and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries)
+This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the
+[Shopify GraphQL API](https://shopify.dev/api/admin-graphql) and the
+[Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries)
 
 ## Supported streams
 
@@ -147,11 +171,15 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Capturing deleted records
 
-The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams.
+The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`,
+`Orders`, `Pages`, `PriceRules` and `Products` streams.
 
-When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
+When a record is deleted, the connector outputs a record with the `ID` of that record and the
+`deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are
+filled out for the deleted records.
 
-Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2023-07/resources/event).
+Check the following Shopify documentation for more information about
+[retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2023-07/resources/event).
 
 ## Data type mapping
 
@@ -184,29 +212,37 @@ Expand to see details about Shopify connector limitations and troubleshooting
 
 #### Rate limiting
 
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
+Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits).
+Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge
+cases, you may encounter the following warning message:
 
 ```text
-"Caught retryable error '<some_error> or null' after <some_number> tries. 
+"Caught retryable error '<some_error> or null' after <some_number> tries.
 Waiting <some_number> seconds then retrying..."
 ```
 
-This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
+This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync
+operation will continue successfully after a short backoff period.
 
-For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions 
-
+For all `Shopify GraphQL BULK` api requests these limitations are applied:
+https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions
 
 ### Troubleshooting
 
-* If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
-* Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- If you encounter access errors while using **OAuth2.0** authentication, please make sure you've
+  followed this
+  [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access)
+  to request the access to the client's store first. Once the access is granted, you should be able
+  to proceed with **OAuth2.0** authentication.
+- Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum
+  [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2.0.4   | 2024-03-22 | [36355](https://github.com/airbytehq/airbyte/pull/36355) | Update CDK version to ensure Per-Stream Error Messaging and Record Counts In State (features were already there so just upping the version)                                                                                                                                                                                                                                               |
 | 2.0.3   | 2024-03-15 | [36170](https://github.com/airbytehq/airbyte/pull/36170) | Fixed the `STATE` messages emittion frequency for the `nested` sub-streams                                                                                                                                                                                                                                                                                                                |
 | 2.0.2   | 2024-03-12 | [36000](https://github.com/airbytehq/airbyte/pull/36000) | Fix and issue where invalid shop name causes index out of bounds error                                                                                                                                                                                                                                                                                                                    |

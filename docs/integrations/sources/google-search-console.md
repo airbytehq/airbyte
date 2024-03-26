@@ -2,13 +2,15 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the Google Search Console source connector.
+This page contains the setup guide and reference information for the Google Search Console source
+connector.
 
 </HideInUI>
 
 ## Prerequisites
 
-- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Properties))
+- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL
+Properties))
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
@@ -17,107 +19,154 @@ This page contains the setup guide and reference information for the Google Sear
 
 ### Step 1: Set up Google Search Console
 
-To authenticate the Google Search Console connector, you will need to use one of the following methods:
+To authenticate the Google Search Console connector, you will need to use one of the following
+methods:
 
 <!-- env:cloud -->
+
 #### OAuth (Recommended for Airbyte Cloud)
 
-You can authenticate using your Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
+You can authenticate using your Google Account with OAuth if you are the owner of the Google Search
+Console property or have view permissions. Follow
+[Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA)
+to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the
+Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it
+significantly simplifies the setup process and allows you to authenticate the connection
+[directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-To authenticate with OAuth in **Airbyte Open Source**, you will need to create an authentication app and obtain the following credentials and tokens:
+
+To authenticate with OAuth in **Airbyte Open Source**, you will need to create an authentication app
+and obtain the following credentials and tokens:
 
 - Client ID
 - Client Secret
 - Refresh Token
 - Access Token
 
-More information on the steps to create an OAuth app to access Google APIs and obtain these credentials can be found [in Google's documentation](https://developers.google.com/identity/protocols/oauth2).
+More information on the steps to create an OAuth app to access Google APIs and obtain these
+credentials can be found
+[in Google's documentation](https://developers.google.com/identity/protocols/oauth2).
 
 #### Google service account with JSON key file (Recommended for Airbyte Open Source)
 
-You can authenticate the connection using a JSON key file associated with a Google service account. This option is recommended for **Airbyte Open Source** users. Follow the steps below to create a service account and generate the JSON key file:
+You can authenticate the connection using a JSON key file associated with a Google service account.
+This option is recommended for **Airbyte Open Source** users. Follow the steps below to create a
+service account and generate the JSON key file:
 
-1. Open the [Service Accounts page](https://console.developers.google.com/iam-admin/serviceaccounts).
+1. Open the
+   [Service Accounts page](https://console.developers.google.com/iam-admin/serviceaccounts).
 2. Select an existing project, or create a new project.
 3. At the top of the page, click **+ Create service account**.
 4. Enter a name and description for the service account, then click **Create and Continue**.
-5. Under **Service account permissions**, select the roles to grant to the service account, then click **Continue**. We recommend the **Viewer** role.
-   - Optional: Under **Grant users access to this service account**, you may specify the users or groups that are allowed to use and manage the service account.
-6. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) and click on the email address of the service account you just created.
+5. Under **Service account permissions**, select the roles to grant to the service account, then
+   click **Continue**. We recommend the **Viewer** role.
+   - Optional: Under **Grant users access to this service account**, you may specify the users or
+     groups that are allowed to use and manage the service account.
+6. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) and click
+   on the email address of the service account you just created.
 7. In the **Keys** tab, click **+ Add key**, then click **Create new key**.
-8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
+8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll
+   use for authentication. Click **Continue**.
 
-:::caution
-This file serves as the only copy of your JSON service key, and you will not be able to re-download it. Be sure to store it in a secure location.
-:::
+:::caution This file serves as the only copy of your JSON service key, and you will not be able to
+re-download it. Be sure to store it in a secure location. :::
 
-:::note
-You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to manage your service account or generate additional JSON keys. For more details about service account credentials, see [Google's IAM documentation](https://cloud.google.com/iam/docs/understanding-service-accounts).
-:::
+:::note You can return to the
+[API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to manage
+your service account or generate additional JSON keys. For more details about service account
+credentials, see
+[Google's IAM documentation](https://cloud.google.com/iam/docs/understanding-service-accounts). :::
 
 #### Note on delegating domain-wide authority to the service account
 
-Domain-wide delegation is a powerful feature that allows service accounts to access users' data across an organization's Google Workspace environment through 'impersonation'. This authority is necessary in certain use cases, such as when a service account needs broad access across multiple users and services within a domain.
+Domain-wide delegation is a powerful feature that allows service accounts to access users' data
+across an organization's Google Workspace environment through 'impersonation'. This authority is
+necessary in certain use cases, such as when a service account needs broad access across multiple
+users and services within a domain.
 
-:::note
-Only the super admin of your Google Workspace domain can enable domain-wide delegation of authority to a service account.
-:::
+:::note Only the super admin of your Google Workspace domain can enable domain-wide delegation of
+authority to a service account. :::
 
-To enable delegated domain-wide authority, follow the steps listed in the [Google documentation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority). Please make sure to grant the following OAuth scopes to the service account:
+To enable delegated domain-wide authority, follow the steps listed in the
+[Google documentation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority).
+Please make sure to grant the following OAuth scopes to the service account:
 
 - `https://www.googleapis.com/auth/webmasters.readonly`
 
-For more information on this topic, please refer to [this Google article](https://support.google.com/a/answer/162106?hl=en).
+For more information on this topic, please refer to
+[this Google article](https://support.google.com/a/answer/162106?hl=en).
+
 <!-- /env:oss -->
 
 ### Step 2: Set up the Google Search Console connector in Airbyte
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Search Console** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
-5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
-6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
+5. For **Website URL Property**, enter the specific website property in Google Seach Console with
+   data you want to replicate.
+6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a
+   date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 <!-- env:cloud -->
+
 - **For Airbyte Cloud:**
-  - Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
-<!-- /env:cloud -->
-<!-- env:oss -->
+  - Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to
+    authorize your account.
+    <!-- /env:cloud -->
+    <!-- env:oss -->
 - **For Airbyte Open Source:**
-  - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
-  - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
-<!-- /env:oss -->
-8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
-9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
-10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](#data-freshness) section below for more information on this parameter.
+  - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown,
+    then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the
+    JSON key you obtained during the service account setup. It should begin with
+    `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
+  - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client
+  Secret**, **Access Token** and **Refresh Token**.
+  <!-- /env:oss -->
+
+8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any
+   data created between the defined Start Date and End Date will be replicated. Leaving this field
+   blank will replicate all data created on or after the Start Date to the present.
+9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects
+   representing any custom reports you wish to query the API with. Refer to the
+   [Custom reports](#custom-reports) section below for more information on formulating these
+   reports.
+10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not
+    been finalized by Google, and may be subject to change. Please note that if you are using
+    Incremental sync mode, we highly recommend leaving this option to its default value of `final`.
+    Refer to the [Data Freshness](#data-freshness) section below for more information on this
+    parameter.
 11. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
 ## Supported sync modes
 
-The Google Search Console Source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Search Console Source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-:::note
-The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.
-:::
+:::note The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in
+duplicating the data. :::
 
 ## Supported streams
 
 - [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
 - [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) \(this stream has a long sync time because it is very detailed, use with care\)
+- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+  \(this stream has a long sync time because it is very detailed, use with care\)
 - [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
@@ -135,7 +184,9 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 ### Custom reports
 
-Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed like following:
+Custom reports allow you to query the API with a custom set of dimensions to group results by.
+Results are grouped in the order that you supply these dimensions. Each custom report should be
+constructed like following:
 
 1. Click `Add` under the `Custom Reports` section
 2. Enter the `Name` of the report, this will be the name of the stream
@@ -149,27 +200,40 @@ The available `Dimensions` are:
 - `page`
 - `query`
 
-For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
+For example, to query the API for a report that groups results by country, then by date, you could
+enter the following custom report:
 
-* Name: country_date
-* Dimensions: ["country", "date"]
+- Name: country_date
+- Dimensions: ["country", "date"]
 
-Please note, that for technical reasons `date` is the default dimension which will be included in your query whether you specify it or not. By specifying it you can change the order the results are grouped in. Primary key will consist of your custom dimensions and the default dimension along with `site_url` and `search_type`.
+Please note, that for technical reasons `date` is the default dimension which will be included in
+your query whether you specify it or not. By specifying it you can change the order the results are
+grouped in. Primary key will consist of your custom dimensions and the default dimension along with
+`site_url` and `search_type`.
 
-The information you provide via UI Custom report builder will then be transformed into the custom stream by it's `Name`
+The information you provide via UI Custom report builder will then be transformed into the custom
+stream by it's `Name`
 
-You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
+You can use the
+[Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to
+build and test the reports you want to use.
 
 ### Data Freshness
 
-The **Data Freshness** parameter deals with the "freshness", or finality of the data that is being queried.
+The **Data Freshness** parameter deals with the "freshness", or finality of the data that is being
+queried.
 
-- `final`: The query will include only finalized, stable data. This is data that has been processed, verified, and is unlikely to change. When you select this option, you are querying for the definitive statistics and information that Google has analyzed and confirmed.
-- `all`: The query will return both finalized data and what Google terms "fresh" data. Fresh data includes more recent data that hasn't gone through the full processing and verification that finalized data has. This option can give you more up-to-the-minute insights, but it may be subject to change as Google continues to process and analyze it.
+- `final`: The query will include only finalized, stable data. This is data that has been processed,
+  verified, and is unlikely to change. When you select this option, you are querying for the
+  definitive statistics and information that Google has analyzed and confirmed.
+- `all`: The query will return both finalized data and what Google terms "fresh" data. Fresh data
+  includes more recent data that hasn't gone through the full processing and verification that
+  finalized data has. This option can give you more up-to-the-minute insights, but it may be subject
+  to change as Google continues to process and analyze it.
 
-:::caution
-When using Incremental Sync mode, we recommend leaving this parameter to its default state of `final`, as the `all` option may cause discrepancies between the data in your destination table and the finalized data in Google Search Console.
-:::
+:::caution When using Incremental Sync mode, we recommend leaving this parameter to its default
+state of `final`, as the `all` option may cause discrepancies between the data in your destination
+table and the finalized data in Google Search Console. :::
 
 ## Data type map
 
@@ -191,22 +255,27 @@ Expand to see details about Google Search Console connector limitations and trou
 
 #### Rate limiting
 
-This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
+This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more
+information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits)
+documentation.
 
 #### Data retention
 
-Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. [Please see this article for more information](https://seotesting.com/google-search-console/how-long-does-gsc-keep-my-data/#:~:text=Google%20Search%20Console%20holds%20relevant,October%2C%202022%2C%20until%20today.).
+Google Search Console only retains data for websites from the last 16 months. Any data prior to this
+cutoff point will not be accessible.
+[Please see this article for more information](https://seotesting.com/google-search-console/how-long-does-gsc-keep-my-data/#:~:text=Google%20Search%20Console%20holds%20relevant,October%2C%202022%2C%20until%20today.).
 
 ### Troubleshooting
 
-* Check out common troubleshooting issues for the Google Search Console source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Google Search Console source connector on our
+  [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
-|:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
 | `1.4.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)                                                      | Pin airbyte-cdk version to `^0`                                                                                                |
 | `1.3.7`  | 2024-02-12 | [35163](https://github.com/airbytehq/airbyte/pull/35163)                                                      | Manage dependencies with Poetry.                                                                                               |
 | `1.3.6`  | 2023-10-26 | [31863](https://github.com/airbytehq/airbyte/pull/31863)                                                      | Base image migration: remove Dockerfile and use the python-connector-base image                                                |

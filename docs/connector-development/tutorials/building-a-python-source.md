@@ -39,9 +39,7 @@ to install Python 3 before beginning.
   metadata will be used to add the connector to Airbyte's connector registry.
 - Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
-:::info
-Each step of the Creating a Source checklist is explained in more detail below.
-:::
+:::info Each step of the Creating a Source checklist is explained in more detail below. :::
 
 ### Submitting a Source to Airbyte
 
@@ -59,8 +57,8 @@ Each step of the Creating a Source checklist is explained in more detail below.
 
 :::info
 
-If you have a question about a step the Submitting a Source to Airbyte checklist include it
-in your PR or ask it on
+If you have a question about a step the Submitting a Source to Airbyte checklist include it in your
+PR or ask it on
 [#help-connector-development channel on Slack](https://airbytehq.slack.com/archives/C027KKE4BCZ).
 
 :::
@@ -125,8 +123,8 @@ implement each method. The next 4 steps are just implementing that interface.
 
 :::info
 
-All logging should be done through the `logger` object passed into each method. Otherwise,
-logs will not be shown in the Airbyte UI.
+All logging should be done through the `logger` object passed into each method. Otherwise, logs will
+not be shown in the Airbyte UI.
 
 :::
 
@@ -213,8 +211,8 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 
 :::info
 
-Each time you make a change to your implementation you need to re-build the connector image.
-This ensures the new python code is added into the docker container.
+Each time you make a change to your implementation you need to re-build the connector image. This
+ensures the new python code is added into the docker container.
 
 :::
 
@@ -311,15 +309,16 @@ in the Airbyte CI to prevent regressions. They also can help you sanity check th
 as expected. The following [article](../testing-connectors/connector-acceptance-tests-reference.md)
 explains Connector Acceptance Tests and how to run them.
 
-You can run the tests using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+You can run the tests using
+[`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 `airbyte-ci connectors --name source-<source-name> test --only-step=acceptance`
 
 :::info
 
-In some rare cases we make exceptions and allow a source to not need to pass all the
-standard tests. If for some reason you think your source cannot reasonably pass one of the tests
-cases, reach out to us on github or slack, and we can determine whether there's a change we can make
-so that the test will pass or if we should skip that test for your source.
+In some rare cases we make exceptions and allow a source to not need to pass all the standard tests.
+If for some reason you think your source cannot reasonably pass one of the tests cases, reach out to
+us on github or slack, and we can determine whether there's a change we can make so that the test
+will pass or if we should skip that test for your source.
 
 :::
 
@@ -331,7 +330,8 @@ functionality of your source, write unit or integration tests.
 
 #### Unit Tests
 
-Add any relevant unit tests to the `tests/unit_tests` directory. Unit tests should _not_ depend on any secrets.
+Add any relevant unit tests to the `tests/unit_tests` directory. Unit tests should _not_ depend on
+any secrets.
 
 You can run the tests using `poetry run pytest tests/unit_tests`
 

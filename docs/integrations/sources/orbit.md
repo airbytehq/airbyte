@@ -2,35 +2,39 @@
 
 ## Sync overview
 
-This source can sync data for the [Orbit API](https://docs.orbit.love/reference/about-the-orbit-api). It currently only supports Full Refresh syncs. 
+This source can sync data for the
+[Orbit API](https://docs.orbit.love/reference/about-the-orbit-api). It currently only supports Full
+Refresh syncs.
 
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
 
-* [Members](https://api.orbit.love/reference/get_workspace-slug-members) 
-* [Workspaces](https://docs.orbit.love/reference/get_workspaces-workspace-slug)
+- [Members](https://api.orbit.love/reference/get_workspace-slug-members)
+- [Workspaces](https://docs.orbit.love/reference/get_workspaces-workspace-slug)
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
-| Namespaces | No |  |
-| Pagination | Yes |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
+| Namespaces        | No                   |       |
+| Pagination        | Yes                  |       |
 
 ### Performance considerations / Rate Limiting
 
-The Orbit API is rate limited at 120 requests per IP per minute as stated [here](https://docs.orbit.love/reference/rate-limiting).
+The Orbit API is rate limited at 120 requests per IP per minute as stated
+[here](https://docs.orbit.love/reference/rate-limiting).
 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit
+issues that are not automatically retried successfully.
 
 ## Getting started
 
 ### Requirements
 
-* Orbit API key - This can either be a workspace-tied key or a general personal key.
+- Orbit API key - This can either be a workspace-tied key or a general personal key.
 
 ### Setup guide
 
@@ -43,9 +47,9 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.3.0 | 2023-10-25 | [30976](https://github.com/airbytehq/airbyte/pull/30976) | Migrate to low-code framework |
-| 0.2.0 | 2023-10-23 | [31747](https://github.com/airbytehq/airbyte/pull/31747) | Update schema |
-| 0.1.1 | 2022-06-28 | [14208](https://github.com/airbytehq/airbyte/pull/14208) | Remove unused schema |
-| 0.1.0 | 2022-06-27 | [13390](https://github.com/airbytehq/airbyte/pull/13390) | Initial Release |
+| Version | Date       | Pull Request                                             | Subject                       |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.3.0   | 2023-10-25 | [30976](https://github.com/airbytehq/airbyte/pull/30976) | Migrate to low-code framework |
+| 0.2.0   | 2023-10-23 | [31747](https://github.com/airbytehq/airbyte/pull/31747) | Update schema                 |
+| 0.1.1   | 2022-06-28 | [14208](https://github.com/airbytehq/airbyte/pull/14208) | Remove unused schema          |
+| 0.1.0   | 2022-06-27 | [13390](https://github.com/airbytehq/airbyte/pull/13390) | Initial Release               |

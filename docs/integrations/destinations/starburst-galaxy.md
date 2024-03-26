@@ -2,8 +2,10 @@
 
 ## Overview
 
-The Starburst Galaxy destination syncs data to Starburst Galaxy [great lake catalogs](https://docs.starburst.io/starburst-galaxy/sql/great-lakes.html)
-in [Apache Iceberg](https://iceberg.apache.org/) table format. Each stream is written to its own Iceberg table.
+The Starburst Galaxy destination syncs data to Starburst Galaxy
+[great lake catalogs](https://docs.starburst.io/starburst-galaxy/sql/great-lakes.html) in
+[Apache Iceberg](https://iceberg.apache.org/) table format. Each stream is written to its own
+Iceberg table.
 
 ## Features
 
@@ -17,7 +19,8 @@ in [Apache Iceberg](https://iceberg.apache.org/) table format. Each stream is wr
 
 ## Data storage
 
-Starburst Galaxy supports various [object storages](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#object-storage);
+Starburst Galaxy supports various
+[object storages](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#object-storage);
 however, only Amazon S3 is supported by this connector.
 
 ## Configuration
@@ -41,9 +44,10 @@ however, only Amazon S3 is supported by this connector.
 
 ### S3
 
-Data streams are written to a temporary Iceberg table, and then loaded into Amazon S3 Starburst Galaxy catalog in the Iceberg table format.
-Staging table is deleted after a sync is complete if the `Purge staging Iceberg table` is enabled.
-The following is an example of a full path for a staging file:
+Data streams are written to a temporary Iceberg table, and then loaded into Amazon S3 Starburst
+Galaxy catalog in the Iceberg table format. Staging table is deleted after a sync is complete if the
+`Purge staging Iceberg table` is enabled. The following is an example of a full path for a staging
+file:
 
 ```text
 s3://<bucket-name>/<bucket-path>/<namespace/schema>/<temp Iceberg table name {_airbyte_tmp_random-three-chars_stream-name}>
@@ -76,23 +80,32 @@ Each table in the output schema has the following columns:
 | Data fields from the source stream |        various        | All the fields from the source stream will be populated as an individual column in the target table. |
 | `_airbyte_additional_properties`   | map(varchar, varchar) | Additional properties.                                                                               |
 
-The Airbyte data stream's JSON schema is converted to an Avro schema. The JSON object is then converted to an Avro record;
-the Avro record is written to a staging Iceberg table. As the data stream can be generated from any data source,
-the JSON-to-Avro conversion process has arbitrary rules and limitations.
-Learn more about [how source data is converted to Avro](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
+The Airbyte data stream's JSON schema is converted to an Avro schema. The JSON object is then
+converted to an Avro record; the Avro record is written to a staging Iceberg table. As the data
+stream can be generated from any data source, the JSON-to-Avro conversion process has arbitrary
+rules and limitations. Learn more about
+[how source data is converted to Avro](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
 
 ### Datatype support
 
-Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.io/latest/connector/iceberg.html#iceberg-to-trino-type-mapping).
+Learn more about
+[Starburst Galaxy Iceberg type mapping](https://docs.starburst.io/latest/connector/iceberg.html#iceberg-to-trino-type-mapping).
 
 ## Getting started
 
 ### Requirements
 
-- [Starburst Galaxy cluster](https://docs.starburst.io/starburst-galaxy/clusters/index.html). Required credentials are found in the **Connection info** section of the [view clusters](https://docs.starburst.io/starburst-galaxy/clusters/index.html#manage-clusters) page
-- A [Starburst Galaxy S3 catalog](https://docs.starburst.io/starburst-galaxy/catalogs/s3.html) created within the Galaxy domain, and [attached to a running cluster](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#add-a-catalog-to-a-cluster).
+- [Starburst Galaxy cluster](https://docs.starburst.io/starburst-galaxy/clusters/index.html).
+  Required credentials are found in the **Connection info** section of the
+  [view clusters](https://docs.starburst.io/starburst-galaxy/clusters/index.html#manage-clusters)
+  page
+- A [Starburst Galaxy S3 catalog](https://docs.starburst.io/starburst-galaxy/catalogs/s3.html)
+  created within the Galaxy domain, and
+  [attached to a running cluster](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#add-a-catalog-to-a-cluster).
 - [Credentials for S3 bucket](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-- Grant S3 bucket [location privileges](https://docs.starburst.io/starburst-galaxy/security/privileges.html#location-privileges-) to the role user is assigned to.
+- Grant S3 bucket
+  [location privileges](https://docs.starburst.io/starburst-galaxy/security/privileges.html#location-privileges-)
+  to the role user is assigned to.
 
 ## Changelog
 

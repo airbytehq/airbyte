@@ -4,7 +4,8 @@
 
 The Vitally source supports both Full Refresh only.
 
-This source can sync data for the [Vitally API](https://docs.vitally.io/pushing-data-to-vitally/rest-api).
+This source can sync data for the
+[Vitally API](https://docs.vitally.io/pushing-data-to-vitally/rest-api).
 
 ### Output schema
 
@@ -32,7 +33,9 @@ The Vitally connector should not run into Vitally API limitations under normal u
 
 ## Requirements
 
-- **Vitaly API key**. See the [Vitally docs](https://docs.vitally.io/pushing-data-to-vitally/rest-api#authentication) for information on how to obtain an API key.
+- **Vitaly API key**. See the
+  [Vitally docs](https://docs.vitally.io/pushing-data-to-vitally/rest-api#authentication) for
+  information on how to obtain an API key.
 
 ## Changelog
 

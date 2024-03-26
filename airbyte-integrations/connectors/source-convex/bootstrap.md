@@ -2,9 +2,9 @@
 
 ## Overview
 
-Convex is the reactive backend-as-a-service for web developers.
-As part of the backend, Convex stores developer-defined documents in tables.
-Convex's HTTP API allows a developer to retrieve documents from their Convex tables.
+Convex is the reactive backend-as-a-service for web developers. As part of the backend, Convex
+stores developer-defined documents in tables. Convex's HTTP API allows a developer to retrieve
+documents from their Convex tables.
 
 ## Endpoints
 

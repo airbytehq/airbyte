@@ -2,7 +2,9 @@
 
 ## Overview
 
-The 3PL Central source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The 3PL Central source supports both Full Refresh and Incremental syncs. You can choose if this
+connector will copy only the new or updated data, or all rows in the tables and columns you set up
+for replication, every time a sync is run.
 
 ### Output schema
 
@@ -15,7 +17,8 @@ Several output streams are available from this source:
 - [Inventory](https://api.3plcentral.com/rels/inventory/inventory) \(Incremental\)
 - [Orders](https://api.3plcentral.com/rels/orders/orders) \(Incremental\)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+If there are more endpoints you'd like Airbyte to support, please
+[create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
 
@@ -40,7 +43,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Setup guide
 
-Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en-us/articles/360056546352-Getting-Started-with-Credential-Management).
+Please read
+[How to get your APIs credentials](https://help.3plcentral.com/hc/en-us/articles/360056546352-Getting-Started-with-Credential-Management).
 
 ## Changelog
 

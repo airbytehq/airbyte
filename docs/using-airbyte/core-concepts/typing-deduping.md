@@ -114,9 +114,9 @@ observers. This is done for a number of reasons, including:
   column order and data types of each column.
 - **Transactional Full Refresh** - In order to keep your final tables consistently useful, when a
   refresh or reset occurs, airbyte will erase the raw tables, and then build a new tmp final table
-  first. Airbyte attempts to do an atomic swap of old and tmp final tables, usually via a
-  rename at the last second. Otherwise, there would be a period of time where the final table is empty, which could
-  cause downstream issues.
+  first. Airbyte attempts to do an atomic swap of old and tmp final tables, usually via a rename at
+  the last second. Otherwise, there would be a period of time where the final table is empty, which
+  could cause downstream issues.
 
 This means that additional permissions, constraints, views, or other rules you apply to the final
 table outside of Airbyte could be lost during a sync. Many destinations provide ways to use roles or
@@ -127,6 +127,7 @@ recommend altering the final tables (e.g. adding constraints) as it may cause is
 
 In some cases, you need to manually run a soft reset - for example, if you accidentally delete some
 records from the final table and want to repopulate them from the raw data. This can be done by:
+
 1. Dropping the final table entirely (`DROP TABLE <your_final_table>`)
 1. Unsetting the raw table's `_airbyte_loaded_at` column
    (`UPDATE airbyte_internal.<your_raw_table> SET _airbyte_loaded_at = NULL`)

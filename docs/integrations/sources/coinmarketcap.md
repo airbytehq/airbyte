@@ -2,7 +2,10 @@
 
 ## Sync overview
 
-This source can sync data from the [Coinmarketcap API](https://coinmarketcap.com/api/documentation/v1/). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source can sync data from the
+[Coinmarketcap API](https://coinmarketcap.com/api/documentation/v1/). At present this connector only
+supports full refresh syncs meaning that each time you use the connector it will sync all available
+records from scratch. Please use cautiously if you expect your API to have a lot of records.
 
 ## This Source Supports the Following Streams
 
@@ -21,7 +24,9 @@ This source can sync data from the [Coinmarketcap API](https://coinmarketcap.com
 
 ### Performance considerations
 
-Coinmarketcap APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://coinmarketcap.com/api/documentation/v1/#section/Errors-and-Rate-Limits)
+Coinmarketcap APIs are under rate limits for the number of API calls allowed per API keys per
+second. If you reach a rate limit, API will return a 429 HTTP error code. See
+[here](https://coinmarketcap.com/api/documentation/v1/#section/Errors-and-Rate-Limits)
 
 ## Getting started
 

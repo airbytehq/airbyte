@@ -1,10 +1,13 @@
 # Deploy Airbyte on Azure (Cloud Shell)
 
-This page guides you through deploying Airbyte Open Source on a [Microsoft Azure VM](https://learn.microsoft.com/en-us/azure/virtual-machines/) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the VM.
+This page guides you through deploying Airbyte Open Source on a
+[Microsoft Azure VM](https://learn.microsoft.com/en-us/azure/virtual-machines/) by setting up the
+deployment environment, installing and starting Airbyte, and connecting it to the VM.
 
 :::info
 
-The instructions have been tested on a standard DS1 v2 (1 vcpu, 3.5 GiB memory) Microsoft Azure VM with Ubuntu 18.04.
+The instructions have been tested on a standard DS1 v2 (1 vcpu, 3.5 GiB memory) Microsoft Azure VM
+with Ubuntu 18.04.
 
 :::
 
@@ -12,7 +15,9 @@ The instructions have been tested on a standard DS1 v2 (1 vcpu, 3.5 GiB memory) 
 
 Install Docker and Docker Compose in the VM:
 
-1. [Create a new VM](https://learn.microsoft.com/en-us/azure/virtual-machines/) and [generate the SSH keys](https://learn.microsoft.com/en-us/azure/virtual-machines/ssh-keys-portal) to connect to the VM. You’ll need the SSH keys to connect to the VM remotely later.
+1. [Create a new VM](https://learn.microsoft.com/en-us/azure/virtual-machines/) and
+   [generate the SSH keys](https://learn.microsoft.com/en-us/azure/virtual-machines/ssh-keys-portal)
+   to connect to the VM. You’ll need the SSH keys to connect to the VM remotely later.
 
 2. To connect to the VM, run the following command in the Azure Cloud Shell:
 
@@ -20,7 +25,8 @@ Install Docker and Docker Compose in the VM:
    ssh <admin username>@<IP address>
    ```
 
-   If successfully connected to the VM, the working directory of Cloud Shell should look like this: `<admin username>@<virtual machine name>:~$`
+   If successfully connected to the VM, the working directory of Cloud Shell should look like this:
+   `<admin username>@<virtual machine name>:~$`
 
 3. To install Docker, run the following commands:
 
@@ -102,9 +108,8 @@ Test a remote connection to your VM locally and verify that Airbyte is up and ru
 
 4. Open a web browser and navigate to `http://localhost:8000`. You will see Airbyte’s landing page.
 
-:::caution
-For security reasons, we strongly recommend not exposing Airbyte on Internet available ports.
-:::
+:::caution For security reasons, we strongly recommend not exposing Airbyte on Internet available
+ports. :::
 
 ## Troubleshooting
 

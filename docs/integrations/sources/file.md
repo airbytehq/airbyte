@@ -10,101 +10,152 @@ This page contains the setup guide and reference information for the Files sourc
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud users:** Please note that locally stored files cannot be used as a source in Airbyte Cloud.
+**For Airbyte Cloud users:** Please note that locally stored files cannot be used as a source in
+Airbyte Cloud.
 
 <!-- /env:cloud -->
 
 ### Step 1: Set up the connector in Airbyte
 
-1. From the Airbyte UI, click the **Sources** tab, then click **+ New source** and select **Files (CSV, JSON, Excel, Feather, Parquet)** from the list of available sources.
+1. From the Airbyte UI, click the **Sources** tab, then click **+ New source** and select **Files
+   (CSV, JSON, Excel, Feather, Parquet)** from the list of available sources.
 2. Enter a **Source name** of your choosing.
-3. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should include letters, numbers, dashes and underscores only).
-4. For **File Format**, select the _format_ of the file to replicate from the dropdown menu (Warning: some formats may be experimental. Please refer to [the table of supported formats](#file-formats)).
+3. For **Dataset Name**, enter the _name_ of the final table to replicate this file into (should
+   include letters, numbers, dashes and underscores only).
+4. For **File Format**, select the _format_ of the file to replicate from the dropdown menu
+   (Warning: some formats may be experimental. Please refer to
+   [the table of supported formats](#file-formats)).
 
 ### Step 2: Select the provider and set provider-specific configurations:
 
-1. For **Storage Provider**, use the dropdown menu to select the _Storage Provider_ or _Location_ of the file(s) which should be replicated, then configure the provider-specific fields as needed:
+1. For **Storage Provider**, use the dropdown menu to select the _Storage Provider_ or _Location_ of
+   the file(s) which should be replicated, then configure the provider-specific fields as needed:
 
 #### HTTPS: Public Web [Default]
+
 - `User-Agent` (Optional)
 
-Set this to active if you want to add the [User-Agent header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) to requests (inactive by default).
+Set this to active if you want to add the
+[User-Agent header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) to
+requests (inactive by default).
 
 #### GCS: Google Cloud Storage
+
 - `Service Account JSON` (Required for **private** buckets)
 
-To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data**, this field is not required.
+To access **private** buckets stored on Google Cloud, this connector requires a service account JSON
+credentials file with the appropriate permissions. A detailed breakdown of this topic can be found
+at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts).
+Please generate the "credentials.json" file and copy its content to this field, ensuring it is in
+JSON format. **If you are accessing publicly available data**, this field is not required.
 
 #### S3: Amazon Web Services
+
 - `AWS Access Key ID` (Required for **private** buckets)
 - `AWS Secret Access Key` (Required for **private** buckets)
 
-To access **private** buckets stored on AWS S3, this connector requires valid credentials with the necessary permissions. To access these keys, refer to the
+To access **private** buckets stored on AWS S3, this connector requires valid credentials with the
+necessary permissions. To access these keys, refer to the
 [AWS IAM documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
 More information on setting permissions in AWS can be found
-[here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are accessing publicly available data**, these fields are not required.
+[here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are
+accessing publicly available data**, these fields are not required.
 
 #### AzBlob: Azure Blob Storage
+
 - `Storage Account` (Required)
 
-This is the globally unique name of the storage account that the desired blob sits within. See the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview) for more details.
+This is the globally unique name of the storage account that the desired blob sits within. See the
+[Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview)
+for more details.
 
-**If you are accessing private storage**, you must also provide _one_ of the following security credentials with the necessary permissions:
+**If you are accessing private storage**, you must also provide _one_ of the following security
+credentials with the necessary permissions:
 
-- `SAS Token`: [Find more information here](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
-- `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
+- `SAS Token`:
+  [Find more information here](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+- `Shared Key`:
+  [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
 
 #### SSH: Secure Shell / SCP: Secure Copy Protocol / SFTP: Secure File Transfer Protocol
+
 - `Host` (Required)
 
 Enter the _hostname_ or _IP address_ of the remote server where the file trasfer will take place.
+
 - `User` (Required)
 
 Enter the _username_ associated with your account on the remote server.
+
 - `Password` (Optional)
 
-**If required by the remote server**, enter the _password_ associated with your user account. Otherwise, leave this field blank.
+**If required by the remote server**, enter the _password_ associated with your user account.
+Otherwise, leave this field blank.
+
 - `Port` (Optional)
 
-Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
+Specify the _port number_ to use for the connection. The default port is usually 22. However, if
+your remote server uses a non-standard port, you can enter the appropriate port number here.
 
 <!-- env:oss -->
+
 #### Local Filesystem (Airbyte Open Source only)
+
 - `Storage`
 
-:::caution
-Currently, the local storage URL for reading must start with the local mount "/local/".
+:::caution Currently, the local storage URL for reading must start with the local mount "/local/".
 :::
 
-Please note that if you are replicating data from a locally stored file on Windows OS, you will need to open the `.env` file in your local Airbyte root folder and change the values for:
+Please note that if you are replicating data from a locally stored file on Windows OS, you will need
+to open the `.env` file in your local Airbyte root folder and change the values for:
+
 - `LOCAL_ROOT`
 - `LOCAL_DOCKER_MOUNT`
 - `HACK_LOCAL_ROOT_PARENT`
 
-Please set these to an existing absolute path on your machine. Colons in the path need to be replaced with a double forward slash, `//`. `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be set to the same value, and `HACK_LOCAL_ROOT_PARENT` should be set to their parent directory.
+Please set these to an existing absolute path on your machine. Colons in the path need to be
+replaced with a double forward slash, `//`. `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be set to the
+same value, and `HACK_LOCAL_ROOT_PARENT` should be set to their parent directory.
+
 <!-- /env:oss -->
 
 ### Step 3: Complete the connector setup
+
 1. For **URL**, enter the _URL path_ of the file to be replicated.
 
-:::note
-When connecting to a file located in **Google Drive**, please note that you need to utilize the Download URL format: `https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]`. `[DRIVE_FILE_ID]` should be replaced with the unique string found in the Share URL specific to Google Drive. You can find the Share URL by visiting `https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing`.
+:::note When connecting to a file located in **Google Drive**, please note that you need to utilize
+the Download URL format: `https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]`.
+`[DRIVE_FILE_ID]` should be replaced with the unique string found in the Share URL specific to
+Google Drive. You can find the Share URL by visiting
+`https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing`.
 
-When connecting to a file using **Azure Blob Storage**, please note that we account for the base URL. Therefore, you should only need to include the path to your specific file (eg `container/file.csv`).
-:::
+When connecting to a file using **Azure Blob Storage**, please note that we account for the base
+URL. Therefore, you should only need to include the path to your specific file (eg
+`container/file.csv`). :::
 
-2. For **Reader Options** (Optional), you may choose to enter a _string_ in JSON format. Depending on the file format of your source, this will provide additional options and tune the Reader's behavior. Please refer to the [next section](#reader-options) for a breakdown of the possible inputs. This field may be left blank if you do not wish to configure custom Reader options.
+2. For **Reader Options** (Optional), you may choose to enter a _string_ in JSON format. Depending
+   on the file format of your source, this will provide additional options and tune the Reader's
+   behavior. Please refer to the [next section](#reader-options) for a breakdown of the possible
+   inputs. This field may be left blank if you do not wish to configure custom Reader options.
 3. Click **Set up source** and wait for the tests to complete.
 
 ### Reader Options
 
-The Reader in charge of loading the file format is currently based on [Pandas IO Tools](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html). It is possible to customize how to load the file into a Pandas DataFrame as part of this Source Connector. This is doable in the `reader_options` that should be in JSON format and depends on the chosen file format. See pandas' documentation, depending on the format:
+The Reader in charge of loading the file format is currently based on
+[Pandas IO Tools](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html). It is possible
+to customize how to load the file into a Pandas DataFrame as part of this Source Connector. This is
+doable in the `reader_options` that should be in JSON format and depends on the chosen file format.
+See pandas' documentation, depending on the format:
 
-For example, if the format `CSV` is selected, then options from the [read_csv](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-read-csv-table) functions are available.
+For example, if the format `CSV` is selected, then options from the
+[read_csv](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-read-csv-table)
+functions are available.
 
-- It is therefore possible to customize the `delimiter` (or `sep`) to in case of tab separated files.
+- It is therefore possible to customize the `delimiter` (or `sep`) to in case of tab separated
+  files.
 - Header line can be ignored with `header=0` and customized with `names`
-- If a file has no header, it is required to set `header=null`; otherwise, the first record will be missing
+- If a file has no header, it is required to set `header=null`; otherwise, the first record will be
+  missing
 - Parse dates for in specified columns
 - etc
 
@@ -114,34 +165,37 @@ We would therefore provide in the `reader_options` the following json:
 { "sep" : "\t", "header" : null, "names": ["column1", "column2"], "parse_dates": ["column2"]}
 ```
 
-In case you select `JSON` format, then options from the [read_json](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-json-reader) reader are available.
+In case you select `JSON` format, then options from the
+[read_json](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-json-reader) reader
+are available.
 
-For example, you can use the `{"orient" : "records"}` to change how orientation of data is loaded (if data is `[{column -> value}, … , {column -> value}]`)
+For example, you can use the `{"orient" : "records"}` to change how orientation of data is loaded
+(if data is `[{column -> value}, … , {column -> value}]`)
 
-If you need to read Excel Binary Workbook, please specify `excel_binary` format in `File Format` select.
+If you need to read Excel Binary Workbook, please specify `excel_binary` format in `File Format`
+select.
 
-:::caution
-This connector does not support syncing unstructured data files such as raw text, audio, or videos.
-:::
+:::caution This connector does not support syncing unstructured data files such as raw text, audio,
+or videos. :::
 
 ## Supported sync modes
 
 | Feature                                  | Supported? |
-|------------------------------------------|------------|
+| ---------------------------------------- | ---------- |
 | Full Refresh Sync                        | Yes        |
 | Incremental Sync                         | No         |
 | Replicate Incremental Deletes            | No         |
 | Replicate Folders (multiple Files)       | No         |
 | Replicate Glob Patterns (multiple Files) | No         |
 
-:::note
-This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
-:::
+:::note This source produces a single table for the target file as it replicates only one file at a
+time for the moment. Note that you should provide the `dataset_name` which dictates how the table
+will be identified in the destination (since `URL` can be made of complex characters). :::
 
 ## File / Stream Compression
 
 | Compression | Supported? |
-|-------------|------------|
+| ----------- | ---------- |
 | Gzip        | Yes        |
 | Zip         | Yes        |
 | Bzip2       | No         |
@@ -152,7 +206,7 @@ This source produces a single table for the target file as it replicates only on
 ## Storage Providers
 
 | Storage Providers      | Supported?                                      |
-|------------------------|-------------------------------------------------|
+| ---------------------- | ----------------------------------------------- |
 | HTTPS                  | Yes                                             |
 | Google Cloud Storage   | Yes                                             |
 | Amazon Web Services S3 | Yes                                             |
@@ -163,7 +217,7 @@ This source produces a single table for the target file as it replicates only on
 ### File Formats
 
 | Format                | Supported? |
-|-----------------------|------------|
+| --------------------- | ---------- |
 | CSV                   | Yes        |
 | JSON/JSONL            | Yes        |
 | HTML                  | No         |
@@ -178,14 +232,17 @@ This source produces a single table for the target file as it replicates only on
 
 ### Changing data types of source columns
 
-Normally, Airbyte tries to infer the data type from the source, but you can use `reader_options` to force specific data types. If you input `{"dtype":"string"}`, all columns will be forced to be parsed as strings. If you only want a specific column to be parsed as a string, simply use `{"dtype" : {"column name": "string"}}`.
+Normally, Airbyte tries to infer the data type from the source, but you can use `reader_options` to
+force specific data types. If you input `{"dtype":"string"}`, all columns will be forced to be
+parsed as strings. If you only want a specific column to be parsed as a string, simply use
+`{"dtype" : {"column name": "string"}}`.
 
 ### Examples
 
 Here are a list of examples of possible file inputs:
 
 | Dataset Name      | Storage | URL                                                                                                                                                        | Reader Impl        | Service Account                                                  | Description                                                                                                                                                                                                           |
-|-------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | epidemiology      | HTTPS   | [https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv](https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv) |                    |                                                                  | [COVID-19 Public dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-datasets/covid19-public-data-program?filter=solution-type:dataset&id=7d6cc408-53c8-4485-a187-b8cb9a5c0b56) on BigQuery |
 | hr_and_financials | GCS     | gs://airbyte-vault/financial.csv                                                                                                                           | smart_open or gcfs | `{"type": "service_account", "private_key_id": "XXXXXXXX", ...}` | data from a private bucket, a service account is necessary                                                                                                                                                            |
 | landsat_index     | GCS     | gcp-public-data-landsat/index.csv.gz                                                                                                                       | smart_open         |                                                                  | Using smart_open, we don't need to specify the compression (note the gs:// is optional too, same for other providers)                                                                                                 |
@@ -193,7 +250,7 @@ Here are a list of examples of possible file inputs:
 Examples with reader options:
 
 | Dataset Name  | Storage | URL                                             | Reader Impl | Reader Options                  | Description                                                                                                                                      |
-|---------------|---------|-------------------------------------------------|-------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------- | ------- | ----------------------------------------------- | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | landsat_index | GCS     | gs://gcp-public-data-landsat/index.csv.gz       | GCFS        | `{"compression": "gzip"}`       | Additional reader options to specify a compression option to `read_csv`                                                                          |
 | GDELT         | S3      | s3://gdelt-open-data/events/20190914.export.csv |             | `{"sep": "\t", "header": null}` | Here is TSV data separated by tabs without header row from [AWS Open Data](https://registry.opendata.aws/gdelt/)                                 |
 | server_logs   | local   | /local/logs.log                                 |             | `{"sep": ";"}`                  | After making sure a local text file exists at `/tmp/airbyte_local/logs.log` with logs file from some server that are delimited by ';' delimiters |
@@ -201,25 +258,38 @@ Examples with reader options:
 Example for SFTP:
 
 | Dataset Name | Storage | User | Password | Host            | URL                     | Reader Options                                                            | Description                                                                                                                       |
-|--------------|---------|------|----------|-----------------|-------------------------|---------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| ------------ | ------- | ---- | -------- | --------------- | ----------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Test Rebext  | SFTP    | demo | password | test.rebext.net | /pub/example/readme.txt | `{"sep": "\r\n", "header": null, "names": \["text"], "engine": "python"}` | We use `python` engine for `read_csv` in order to handle delimiter of more than 1 character while providing our own column names. |
 
-Please see (or add) more at `airbyte-integrations/connectors/source-file/integration_tests/integration_source_test.py` for further usages examples.
+Please see (or add) more at
+`airbyte-integrations/connectors/source-file/integration_tests/integration_source_test.py` for
+further usages examples.
 
 ## Performance Considerations and Notes
 
-In order to read large files from a remote location, this connector uses the [smart_open](https://pypi.org/project/smart-open/) library. However, it is possible to switch to either [GCSFS](https://gcsfs.readthedocs.io/en/latest/) or [S3FS](https://s3fs.readthedocs.io/en/latest/) implementations as it is natively supported by the `pandas` library. This choice is made possible through the optional `reader_impl` parameter.
+In order to read large files from a remote location, this connector uses the
+[smart_open](https://pypi.org/project/smart-open/) library. However, it is possible to switch to
+either [GCSFS](https://gcsfs.readthedocs.io/en/latest/) or
+[S3FS](https://s3fs.readthedocs.io/en/latest/) implementations as it is natively supported by the
+`pandas` library. This choice is made possible through the optional `reader_impl` parameter.
 
-- Note that for local filesystem, the file probably have to be stored somewhere in the `/tmp/airbyte_local` folder with the same limitations as the [CSV Destination](../destinations/csv.md) so the `URL` should also starts with `/local/`.
-- Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
-- The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
+- Note that for local filesystem, the file probably have to be stored somewhere in the
+  `/tmp/airbyte_local` folder with the same limitations as the
+  [CSV Destination](../destinations/csv.md) so the `URL` should also starts with `/local/`.
+- Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has
+  a symlink that points to /private. It will not work otherwise). You allow it with "File sharing"
+  in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply &
+  restart" button.
+- The JSON implementation needs to be tweaked in order to produce more complex catalog and is still
+  in an experimental state: Simple JSON schemas should work at this point but may not be well
+  handled when there are multiple layers of nesting.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.5.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
-| 0.4.1   | 2024-03-04 | [35800](https://github.com/airbytehq/airbyte/pull/35800) | Add PyAirbyte support on Python 3.11                                                                                    |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                         |
+| 0.4.1   | 2024-03-04 | [35800](https://github.com/airbytehq/airbyte/pull/35800) | Add PyAirbyte support on Python 3.11                                                                    |
 | 0.4.0   | 2024-02-15 | [32354](https://github.com/airbytehq/airbyte/pull/32354) | Add Zip File Support                                                                                    |
 | 0.3.17  | 2024-02-13 | [34678](https://github.com/airbytehq/airbyte/pull/34678) | Add Fixed-Width File Support                                                                            |
 | 0.3.16  | 2024-02-12 | [35186](https://github.com/airbytehq/airbyte/pull/35186) | Manage dependencies with Poetry                                                                         |

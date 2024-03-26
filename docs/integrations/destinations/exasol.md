@@ -6,11 +6,15 @@ Exasol is the in-memory database built for analytics.
 
 ### Output schema
 
-Each Airbyte Stream becomes an Exasol table and each Airbyte Field becomes an Exasol column. Each Exasol table created by Airbyte will contain 3 columns:
+Each Airbyte Stream becomes an Exasol table and each Airbyte Field becomes an Exasol column. Each
+Exasol table created by Airbyte will contain 3 columns:
 
-- `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Exasol is `VARCHAR(64)`.
-- `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Exasol is `VARCHAR(2000000)`.
-- `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Exasol is `TIMESTAMP`.
+- `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in
+  Exasol is `VARCHAR(64)`.
+- `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Exasol is
+  `VARCHAR(2000000)`.
+- `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source.
+  The column type in Exasol is `TIMESTAMP`.
 
 ### Features
 
@@ -30,7 +34,8 @@ The Exasol destination supports the following features:
 
 #### Maximum data size two million characters
 
-Exasol does not have a special data type for storing data of arbitrary length or JSON. That's why this connector uses type `VARCHAR(2000000)` for storing Airbyte data.
+Exasol does not have a special data type for storing data of arbitrary length or JSON. That's why
+this connector uses type `VARCHAR(2000000)` for storing Airbyte data.
 
 ## Getting started
 
@@ -40,11 +45,14 @@ To use the Exasol destination, you'll need Exasol database version 7.1 or above.
 
 #### Network Access
 
-Make sure your Exasol database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+Make sure your Exasol database can be accessed by Airbyte. If your database is within a VPC, you may
+need to allow access from the IP you're using to expose Airbyte.
 
 #### **Permissions**
 
-As Airbyte namespaces allow to store data into different schemas, there are different scenarios requiring different permissions assigned to the user account. The following table describes 4 scenarios regarding the login user and the destination user.
+As Airbyte namespaces allow to store data into different schemas, there are different scenarios
+requiring different permissions assigned to the user account. The following table describes 4
+scenarios regarding the login user and the destination user.
 
 | Login user   | Destination user   | Required permissions                                          | Comment                                                                    |
 | :----------- | :----------------- | :------------------------------------------------------------ | :------------------------------------------------------------------------- |
@@ -57,11 +65,13 @@ We highly recommend creating an Airbyte-specific user for this purpose.
 
 ### Setup guide
 
-You should now have all the requirements needed to configure Exasol as a destination in the UI. You'll need the following information to configure the Exasol destination:
+You should now have all the requirements needed to configure Exasol as a destination in the UI.
+You'll need the following information to configure the Exasol destination:
 
 - Host
 - Port
-- Fingerprint of the Exasol server's TLS certificate (if the database uses a self-signed certificate)
+- Fingerprint of the Exasol server's TLS certificate (if the database uses a self-signed
+  certificate)
 - Username
 - Password
 

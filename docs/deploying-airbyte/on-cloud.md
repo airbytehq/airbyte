@@ -14,9 +14,9 @@ You will be provided 1000 credits to get your first few syncs going!
 
 ![](../.gitbook/assets/cloud_onboarding.png)
 
-**3. Click on `Onboarding` and follow the directions to create your first connection. Or if you know what you're doing, just get started!**
+**3. Click on `Onboarding` and follow the directions to create your first connection. Or if you know
+what you're doing, just get started!**
 
 ![](../.gitbook/assets/cloud_connection_onboarding.png)
 
 **4. You're done!**
-

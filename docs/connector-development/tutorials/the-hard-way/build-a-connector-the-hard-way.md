@@ -17,9 +17,9 @@ demonstrate the following concepts in action:
 
 :::warning
 
-**This tutorial is meant for those interested in learning how the Airbyte Specification
-works in detail, not for creating production connectors**. If you're building a real source, you
-should start with using the [Connector Builder](../../connector-builder-ui/overview), or the
+**This tutorial is meant for those interested in learning how the Airbyte Specification works in
+detail, not for creating production connectors**. If you're building a real source, you should start
+with using the [Connector Builder](../../connector-builder-ui/overview), or the
 [Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials).
 
 :::
@@ -90,9 +90,9 @@ Select the `Generic Source` template and call the connector `stock-ticker-api`:
 
 :::info
 
-This tutorial uses the bare-bones `Generic Source` template to illustrate how all the pieces
-of a connector work together. For real connectors, the generator provides `Python` and
-`Python HTTP API` source templates, they use [Airbyte CDK](../../cdk-python/README.md).
+This tutorial uses the bare-bones `Generic Source` template to illustrate how all the pieces of a
+connector work together. For real connectors, the generator provides `Python` and `Python HTTP API`
+source templates, they use [Airbyte CDK](../../cdk-python/README.md).
 
 :::
 
@@ -125,7 +125,7 @@ To contact the stock ticker API, we need two things:
 2. The API key to use when contacting the API \(you can obtain a free API token from
    [Polygon.io](https://polygon.io/dashboard/signup) free plan\)
 
-:::info 
+:::info
 
 For reference, the API docs we'll be using
 [can be found here](https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).
@@ -464,11 +464,11 @@ We need to update our list of available commands:
 
 :::info
 
-You may be wondering why `config` is a required input to `discover` if it's not used. This
-is done for consistency: the Airbyte Specification requires `--config` as an input to `discover`
-because many sources require it \(e.g: to discover the tables available in a Postgres database, you
-must supply a password\). So instead of guessing whether the flag is required depending on the
-connector, we always assume it is required, and the connector can choose whether to use it.
+You may be wondering why `config` is a required input to `discover` if it's not used. This is done
+for consistency: the Airbyte Specification requires `--config` as an input to `discover` because
+many sources require it \(e.g: to discover the tables available in a Postgres database, you must
+supply a password\). So instead of guessing whether the flag is required depending on the connector,
+we always assume it is required, and the connector can choose whether to use it.
 
 :::
 

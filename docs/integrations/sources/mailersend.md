@@ -2,7 +2,9 @@
 
 ## Sync overview
 
-This source can sync data from the [Mailersend](https://developers.mailersend.com/#mailersend-api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch.
+This source can sync data from the [Mailersend](https://developers.mailersend.com/#mailersend-api).
+At present this connector only supports full refresh syncs meaning that each time you use the
+connector it will sync all available records from scratch.
 
 ## This Source Supports the Following Streams
 
@@ -17,7 +19,8 @@ This source can sync data from the [Mailersend](https://developers.mailersend.co
 
 ### Performance considerations
 
-MailerSend has a default [rate limit](https://developers.mailersend.com/general.html#api-response) of 60 requests per minute on general API endpoints.
+MailerSend has a default [rate limit](https://developers.mailersend.com/general.html#api-response)
+of 60 requests per minute on general API endpoints.
 
 ## Getting started
 

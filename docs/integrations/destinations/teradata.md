@@ -8,14 +8,23 @@ To use the Teradata destination connector, you'll need:
 
 - Access to a Teradata Vantage instance
 
-  **Note:** If you need a new instance of Vantage, you can install a free version called Vantage Express in the cloud on [Google Cloud](https://quickstarts.teradata.com/vantage.express.gcp.html), [Azure](https://quickstarts.teradata.com/run-vantage-express-on-microsoft-azure.html), and [AWS](https://quickstarts.teradata.com/run-vantage-express-on-aws.html). You can also run Vantage Express on your local machine using [VMware](https://quickstarts.teradata.com/getting.started.vmware.html), [VirtualBox](https://quickstarts.teradata.com/getting.started.vbox.html), or [UTM](https://quickstarts.teradata.com/getting.started.utm.html).
+  **Note:** If you need a new instance of Vantage, you can install a free version called Vantage
+  Express in the cloud on [Google Cloud](https://quickstarts.teradata.com/vantage.express.gcp.html),
+  [Azure](https://quickstarts.teradata.com/run-vantage-express-on-microsoft-azure.html), and
+  [AWS](https://quickstarts.teradata.com/run-vantage-express-on-aws.html). You can also run Vantage
+  Express on your local machine using
+  [VMware](https://quickstarts.teradata.com/getting.started.vmware.html),
+  [VirtualBox](https://quickstarts.teradata.com/getting.started.vbox.html), or
+  [UTM](https://quickstarts.teradata.com/getting.started.utm.html).
 
 You'll need the following information to configure the Teradata destination:
 
 - **Host** - The host name of the Teradata Vantage instance.
 - **Username**
 - **Password**
-- **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in the search-path. These schemas will be used to resolve unqualified object names used in statements executed over this connection.
+- **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in
+  the search-path. These schemas will be used to resolve unqualified object names used in statements
+  executed over this connection.
 - **JDBC URL Params** (optional)
 
 [Refer to this guide for more details](https://downloads.teradata.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGBHDDGB)
@@ -26,9 +35,12 @@ You'll need the following information to configure the Teradata destination:
 
 Each stream will be output into its own table in Teradata. Each table will contain 3 columns:
 
-- `_airbyte_ab_id`: a unique uuid assigned by Airbyte to each event that is processed. This is the primary index column. The column type in Teradata is `VARCHAR(256)`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Teradata is `TIMESTAMP(6)`.
-- `_airbyte_data`: a json blob representing with the event data. The column type in Teradata is `JSON`.
+- `_airbyte_ab_id`: a unique uuid assigned by Airbyte to each event that is processed. This is the
+  primary index column. The column type in Teradata is `VARCHAR(256)`.
+- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
+  The column type in Teradata is `TIMESTAMP(6)`.
+- `_airbyte_data`: a json blob representing with the event data. The column type in Teradata is
+  `JSON`.
 
 ### Features
 
@@ -42,7 +54,9 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 | Incremental - Append + Deduped | No                   |       |
 | Namespaces                     | Yes                  |       |
 
-The Teradata destination connector supports [ DBT custom transformation](https://docs.airbyte.com/operator-guides/transformation-and-normalization/transformations-with-airbyte/) type. Teradata DBT Docker image is available at https://hub.docker.com/r/teradata/dbt-teradata.
+The Teradata destination connector supports
+[ DBT custom transformation](https://docs.airbyte.com/operator-guides/transformation-and-normalization/transformations-with-airbyte/)
+type. Teradata DBT Docker image is available at https://hub.docker.com/r/teradata/dbt-teradata.
 
 ### Performance considerations
 
@@ -76,19 +90,22 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 5. For **Host**, enter the host domain of the Teradata instance
 6. For **Default Schema**, enter the Default Schema name. The default value is public.
 7. For **User** and **Password**, enter the database username and password.
-8. To customize the JDBC connection beyond common options, specify additional supported [JDBC URL parameters](https://downloads.teradata.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGBHDDGB) as key-value pairs separated by the symbol & in the **JDBC URL Params** field.
+8. To customize the JDBC connection beyond common options, specify additional supported
+   [JDBC URL parameters](https://downloads.teradata.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGBHDDGB)
+   as key-value pairs separated by the symbol & in the **JDBC URL Params** field.
 
    Example: key1=value1&key2=value2&key3=value3
 
-   These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Teradata database.
+   These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to
+   your Teradata database.
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                    | Subject                                                 |
-|:--------|:-----------| :---------------------------------------------- |:--------------------------------------------------------|
-| 0.1.5   | 2024-01-12 | https://github.com/airbytehq/airbyte/pull/33872 | Added Primary Index on _airbyte_ab_id to fix NoPI issue |
-| 0.1.4   | 2023-12-04 | https://github.com/airbytehq/airbyte/pull/28667 | Make connector available on Airbyte Cloud               |
-| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation                        |
-| 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor                                 |
-| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                                       |
-| 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage                        |
+| Version | Date       | Pull Request                                    | Subject                                                  |
+| :------ | :--------- | :---------------------------------------------- | :------------------------------------------------------- |
+| 0.1.5   | 2024-01-12 | https://github.com/airbytehq/airbyte/pull/33872 | Added Primary Index on \_airbyte_ab_id to fix NoPI issue |
+| 0.1.4   | 2023-12-04 | https://github.com/airbytehq/airbyte/pull/28667 | Make connector available on Airbyte Cloud                |
+| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation                         |
+| 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor                                  |
+| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                                        |
+| 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage                         |

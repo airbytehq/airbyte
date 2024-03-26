@@ -24,18 +24,19 @@ This source automatically discovers all indices in the domain and can sync any o
 
 ## Performance Considerations
 
-ElasticSearch calls may be rate limited by the underlying service.
-This is specific to each deployment.
+ElasticSearch calls may be rate limited by the underlying service. This is specific to each
+deployment.
 
 ## Data type map
 
-Elasticsearch data types: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
+Elasticsearch data types:
+https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
 
 Airbyte data types: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
 
-In Elasticsearch, there is no dedicated array data type.
-Any field can contain zero or more values by default, however,
-all values in the array must be of the same data type. Hence, every field can be an array as well.
+In Elasticsearch, there is no dedicated array data type. Any field can contain zero or more values
+by default, however, all values in the array must be of the same data type. Hence, every field can
+be an array as well.
 
 | Integration Type          | Airbyte Type                               | Notes |
 | :------------------------ | :----------------------------------------- | :---- |
@@ -82,9 +83,9 @@ all values in the array must be of the same data type. Hence, every field can be
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject         |
-|:--------| :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.2 | 2024-02-13 | [35230](https://github.com/airbytehq/airbyte/pull/35230) | Adopt CDK 0.20.4 |
-| `0.1.2` | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
+| Version | Date       | Pull Request                                             | Subject                        |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.1.2   | 2024-02-13 | [35230](https://github.com/airbytehq/airbyte/pull/35230) | Adopt CDK 0.20.4               |
+| `0.1.2` | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version               |
 | `0.1.1` | 2022-12-02 | [18118](https://github.com/airbytehq/airbyte/pull/18118) | Avoid too_long_frame_exception |
-| `0.1.0` | 2022-07-12 | [14118](https://github.com/airbytehq/airbyte/pull/14118) | Initial Release |
+| `0.1.0` | 2022-07-12 | [14118](https://github.com/airbytehq/airbyte/pull/14118) | Initial Release                |

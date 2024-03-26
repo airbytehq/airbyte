@@ -1,11 +1,14 @@
 # MailGun
 
-This page contains the setup guide and reference information for the [MailGun](https://www.mailgun.com/) source connector.
+This page contains the setup guide and reference information for the
+[MailGun](https://www.mailgun.com/) source connector.
 
 ## Prerequisites
 
-Api key is mandate for this connector to work, It could be seen at Mailgun dashboard at settings, Navigate through API Keys section and click on the eye icon next to Private API key [See reference](https://documentation.mailgun.com/en/latest/api-intro.html#authentication-1).
-Just pass the generated API key for establishing the connection.
+Api key is mandate for this connector to work, It could be seen at Mailgun dashboard at settings,
+Navigate through API Keys section and click on the eye icon next to Private API key
+[See reference](https://documentation.mailgun.com/en/latest/api-intro.html#authentication-1). Just
+pass the generated API key for establishing the connection.
 
 ## Setup guide
 
@@ -14,8 +17,10 @@ Just pass the generated API key for establishing the connection.
 - Generate an API key (Example: 12345)
 - Params (If specific info is needed)
 - Available params
-  - **Domain Region Code**: Domain region code. 'EU' or 'US' are possible values. The default is 'US'.
-  - **Replication Start Date**: UTC date and time in the format 2020-10-01 00:00:00. Any data before this date will not be replicated. If omitted, defaults to 90 days ago.
+  - **Domain Region Code**: Domain region code. 'EU' or 'US' are possible values. The default is
+    'US'.
+  - **Replication Start Date**: UTC date and time in the format 2020-10-01 00:00:00. Any data before
+    this date will not be replicated. If omitted, defaults to 90 days ago.
 
 ## Step 2: Set up the MailGun connector in Airbyte
 
@@ -23,9 +28,11 @@ Just pass the generated API key for establishing the connection.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the MailGun connector and select **MailGun** from the Source type dropdown.
+3. On the Set up the source page, enter the name for the MailGun connector and select **MailGun**
+   from the Source type dropdown.
 4. Enter your api_key as `private_key`.
-5. Enter the optional params configuration if needed. Supported params are: **Domain Region Code**, **Replication Start Date**.
+5. Enter the optional params configuration if needed. Supported params are: **Domain Region Code**,
+   **Replication Start Date**.
 6. Click **Set up source**.
 
 ### For Airbyte OSS:
@@ -33,12 +40,14 @@ Just pass the generated API key for establishing the connection.
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your api_key as `pivate_key`.
-4. Enter the optional params configuration if needed. Supported params are: **Domain Region Code**, **Replication Start Date**.
+4. Enter the optional params configuration if needed. Supported params are: **Domain Region Code**,
+   **Replication Start Date**.
 5. Click **Set up source**.
 
 ## Supported sync modes
 
-The MailGun source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The MailGun source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -59,12 +68,13 @@ The MailGun source connector supports the following [sync modes](https://docs.ai
 
 ## Performance considerations
 
-MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_reference.html) has v3 at present and v4 is at development. The connector as default uses v3.
+MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_reference.html) has v3 at
+present and v4 is at development. The connector as default uses v3.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                              |
-| :------ | :--------- | :------------------------------------------------------  | :--------------------------------------------------- |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
 | 0.2.1   | 2023-10-16 | [31405](https://github.com/airbytehq/airbyte/pull/31405) | Fixed test connection failure if date field is empty |
 | 0.2.0   | 2023-08-05 | [29122](https://github.com/airbytehq/airbyte/pull/29122) | Migrate to Low Code                                  |
 | 0.1.1   | 2023-02-13 | [22939](https://github.com/airbytehq/airbyte/pull/22939) | Specified date formatting in specification           |

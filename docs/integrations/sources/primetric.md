@@ -2,7 +2,8 @@
 
 ## Overview
 
-The Primetric source currently supports Full Refresh syncs only. This means that all contents for all chosen streams will be replaced with every sync.
+The Primetric source currently supports Full Refresh syncs only. This means that all contents for
+all chosen streams will be replaced with every sync.
 
 ### Output schema
 
@@ -31,7 +32,8 @@ This Source is capable of syncing the following core Streams:
 - [Timeoffs](https://developer.primetric.com/#daecfab4-1f4a-4744-b6eb-49f291b6092c)
 - [Worklogs](https://developer.primetric.com/#cd27074c-2918-4894-b656-c56d38527981)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+If there are more endpoints you'd like Airbyte to support, please
+[create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
 
@@ -45,8 +47,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ## Getting started
 
-Primetric facilitates resource planning. With it you can manage your employee's skills and schedule assignment of
-your employees to the right projects.
+Primetric facilitates resource planning. With it you can manage your employee's skills and schedule
+assignment of your employees to the right projects.
 
 ### Requirements
 
@@ -55,6 +57,6 @@ your employees to the right projects.
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                               | Subject                |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------- |
+| Version | Date       | Pull Request                                             | Subject                |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------- |
 | 0.1.0   | 2022-09-05 | [15880](https://github.com/airbytehq/airbyte/pull/15880) | Initial implementation |

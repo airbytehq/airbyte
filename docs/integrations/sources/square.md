@@ -4,14 +4,16 @@ This page contains the setup guide and reference information for the Square sour
 
 ## Prerequisites
 
-To set up the Square source connector with Airbyte, you'll need to create your Square Application and use Personal token or Oauth access token.
+To set up the Square source connector with Airbyte, you'll need to create your Square Application
+and use Personal token or Oauth access token.
 
 ## Setup guide
 
 ### Step 1: Set up Square
 
 1. Create [Square Application](https://developer.squareup.com/apps)
-2. Obtain [Personal token](https://developer.squareup.com/docs/build-basics/access-tokens) or [Oauth access token](https://developer.squareup.com/docs/oauth-api/create-urls-for-square-authorization).
+2. Obtain [Personal token](https://developer.squareup.com/docs/build-basics/access-tokens) or
+   [Oauth access token](https://developer.squareup.com/docs/oauth-api/create-urls-for-square-authorization).
 
 ### Step 2: Set up the Square connector in Airbyte
 
@@ -19,35 +21,44 @@ To set up the Square source connector with Airbyte, you'll need to create your S
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the Square connector and select **Square** from the Source type dropdown.
+3. On the Set up the source page, enter the name for the Square connector and select **Square** from
+   the Source type dropdown.
 4. Choose authentication method:
    - Api-Key
-     - Fill in API key token with "Access token" from Square Application settings page (Credentials on the left)
+     - Fill in API key token with "Access token" from Square Application settings page (Credentials
+       on the left)
    - Oauth authentication
-     - Fill in Client ID and Client secret with data from Square Application settings page (Oauth on the left)
+     - Fill in Client ID and Client secret with data from Square Application settings page (Oauth on
+       the left)
      - Fill in refresh token with one obtained during the authentication process
 5. Choose if your account is sandbox
 6. Choose start date
-7. Choose if you would like to include Deleted objects (for streams: Items, Categories, Discounts, Taxes)
+7. Choose if you would like to include Deleted objects (for streams: Items, Categories, Discounts,
+   Taxes)
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. On the Set up the source page, enter the name for the Square connector and select **Square** from the Source type dropdown.
+3. On the Set up the source page, enter the name for the Square connector and select **Square** from
+   the Source type dropdown.
 4. Choose authentication method:
    - Api-Key
-     - Fill in API key token with "Access token" from Square Application settings page (Credentials on the left)
+     - Fill in API key token with "Access token" from Square Application settings page (Credentials
+       on the left)
    - Oauth authentication
-     - Fill in Client ID and Client secret with data from Square Application settings page (Oauth on the left)
+     - Fill in Client ID and Client secret with data from Square Application settings page (Oauth on
+       the left)
      - Fill in refresh token with one obtained during the authentication process
 5. Choose if your account is sandbox
 6. Choose start date
-7. Choose if you would like to include Deleted objects (for streams: Items, Categories, Discounts, Taxes)
+7. Choose if you would like to include Deleted objects (for streams: Items, Categories, Discounts,
+   Taxes)
 
 ## Supported sync modes
 
-The Square source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Square source connector supports the following
+[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -56,13 +67,20 @@ The Square source connector supports the following [ sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Items](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [Categories](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [Discounts](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [Taxes](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [ModifierLists](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [Payments](https://developer.squareup.com/reference/square_2022-10-19/payments-api/list-payments) \(Incremental\)
-- [Refunds](https://developer.squareup.com/reference/square_2022-10-19/refunds-api/list-payment-refunds) \(Incremental\)
+- [Items](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects)
+  \(Incremental\)
+- [Categories](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects)
+  \(Incremental\)
+- [Discounts](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects)
+  \(Incremental\)
+- [Taxes](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects)
+  \(Incremental\)
+- [ModifierLists](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects)
+  \(Incremental\)
+- [Payments](https://developer.squareup.com/reference/square_2022-10-19/payments-api/list-payments)
+  \(Incremental\)
+- [Refunds](https://developer.squareup.com/reference/square_2022-10-19/refunds-api/list-payment-refunds)
+  \(Incremental\)
 - [Locations](https://developer.squareup.com/explorer/square/locations-api/list-locations)
 - [Team Members](https://developer.squareup.com/reference/square_2022-10-19/team-api/search-team-members)
 - [List Team Member Wages](https://developer.squareup.com/explorer/square/labor-api/list-team-member-wages)
@@ -83,8 +101,12 @@ Useful links:
 
 ## Performance considerations (if any)
 
-No defined API rate limits were found in Square documentation however considering [this information](https://stackoverflow.com/questions/28033966/whats-the-rate-limit-on-the-square-connect-api/28053836#28053836) it has 10 QPS limits. The connector doesn't handle rate limits exceptions, but no errors were raised during testing.
-Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api-rate-limit/449) strategy recommended.
+No defined API rate limits were found in Square documentation however considering
+[this information](https://stackoverflow.com/questions/28033966/whats-the-rate-limit-on-the-square-connect-api/28053836#28053836)
+it has 10 QPS limits. The connector doesn't handle rate limits exceptions, but no errors were raised
+during testing. Exponential
+[Backoff](https://developer.squareup.com/forums/t/current-square-api-rate-limit/449) strategy
+recommended.
 
 ## Data type map
 
@@ -100,7 +122,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 1.6.1   | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream|
+| 1.6.1   | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream                 |
 | 1.6.0   | 2023-10-18 | [31115](https://github.com/airbytehq/airbyte/pull/31115) | Add `customer_id` field to `Payments` and `Orders` streams                |
 | 1.5.0   | 2023-10-16 | [31045](https://github.com/airbytehq/airbyte/pull/31045) | Added New Stream bank_accounts                                            |
 | 1.4.0   | 2023-10-13 | [31106](https://github.com/airbytehq/airbyte/pull/31106) | Add new stream Loyalty                                                    |

@@ -1,6 +1,7 @@
 # Linnworks
 
-This page contains the setup guide and reference information for the [Linnworks](https://www.linnworks.com) source connector.
+This page contains the setup guide and reference information for the
+[Linnworks](https://www.linnworks.com) source connector.
 
 ## Prerequisites
 
@@ -10,47 +11,53 @@ This page contains the setup guide and reference information for the [Linnworks]
 
 ### Generate Credentials in Linnworks
 
-1. The Linnworks platform has two portals: Seller and Developer. To generate the necessary credentials, log in to the [developer portal](https://developer.linnworks.com) and select **+ New App**.
+1. The Linnworks platform has two portals: Seller and Developer. To generate the necessary
+   credentials, log in to the [developer portal](https://developer.linnworks.com) and select **+ New
+   App**.
 2. Input a name for your application and set the **Application Type** to `System Integration`.
-3. Select **Edit** for your new application. In the **General** tab, find and copy your **Application ID** and **Application Secret**. Click on the **Installation URL** to complete the installation of your app and acquire your **API Token**.
+3. Select **Edit** for your new application. In the **General** tab, find and copy your
+   **Application ID** and **Application Secret**. Click on the **Installation URL** to complete the
+   installation of your app and acquire your **API Token**.
 
-:::tip
-The value of your API Token can be viewed at any time from the main dashboard of your account, listed in your app's **Installs** table.
-:::
+:::tip The value of your API Token can be viewed at any time from the main dashboard of your
+account, listed in your app's **Installs** table. :::
 
 ### Set up the connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source
+   account.
 2. From the Airbyte UI, click **Sources** > **+ New Source**.
 3. Select **Linnworks** from the list of available sources.
 4. Enter a **Name** of your choosing.
 5. Enter your **Application ID**, **Application Secret** and **API Token**.
-6. Enter a **Start date** using the provided datepicker. When using Incremental sync mode, only data generated after this date will be fetched.
+6. Enter a **Start date** using the provided datepicker. When using Incremental sync mode, only data
+   generated after this date will be fetched.
 7. Select **Set up source** and wait for the connection test to complete.
 
 ## Supported streams and sync modes
 
-The Linnworks source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Linnworks source connector supports the following streams and
+[sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
 
-| Stream Name                                                                                    | Full Refresh | Incremental  |
-| :--------------------------------------------------------------------------------------------- | :----------- | :----------- |
-| [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders) | ✓           | ✓            |
-| [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)            | ✓           | ✓            |
-| [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)                   | ✓           | X             |
-| [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)            | ✓           | X             |
-| [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)            | ✓           | X             |
+| Stream Name                                                                                    | Full Refresh | Incremental |
+| :--------------------------------------------------------------------------------------------- | :----------- | :---------- |
+| [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders) | ✓            | ✓           |
+| [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)            | ✓            | ✓           |
+| [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)                   | ✓            | X           |
+| [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)            | ✓            | X           |
+| [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)            | ✓            | X           |
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Example                    |
-| :--------------- | :----------- | :------------------------- |
-| `number`         | `number`     | 50.23                      |
-| `integer`        | `integer`    | 50                         |
-| `date`           | `string`     | 2020-12-31                 |
-| `datetime`       | `string`     | 2020-12-31T07:30:00        |
-| `array`          | `array`      | ["Item 1", "Item 2"]       |
-| `boolean`        | `boolean`    | True/False                 |
-| `string`         | `string`     | Item 3                     |
+| Integration Type | Airbyte Type | Example              |
+| :--------------- | :----------- | :------------------- |
+| `number`         | `number`     | 50.23                |
+| `integer`        | `integer`    | 50                   |
+| `date`           | `string`     | 2020-12-31           |
+| `datetime`       | `string`     | 2020-12-31T07:30:00  |
+| `array`          | `array`      | ["Item 1", "Item 2"] |
+| `boolean`        | `boolean`    | True/False           |
+| `string`         | `string`     | Item 3               |
 
 ## Limitations & Troubleshooting
 
@@ -63,7 +70,10 @@ Expand to see details about Linnworks connector limitations and troubleshooting
 
 ### Rate limits
 
-Rate limits for the Linnworks API vary across endpoints. Use the [links in the **Supported Streams** table](#supported-streams-and-sync-modes) to view each endpoint's limits. Rate limited requests will receive a 429 response, but the Linnworks connector should not run into Linnworks API limitations under normal usage.
+Rate limits for the Linnworks API vary across endpoints. Use the
+[links in the **Supported Streams** table](#supported-streams-and-sync-modes) to view each
+endpoint's limits. Rate limited requests will receive a 429 response, but the Linnworks connector
+should not run into Linnworks API limitations under normal usage.
 
 </details>
 

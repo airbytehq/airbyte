@@ -2,7 +2,11 @@
 
 ## Sync overview
 
-This source can sync data for the [Cart.com API](https://developers.cart.com/docs/rest-api/docs/README.md). It supports both Full Refresh and Incremental sync for all streams. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+This source can sync data for the
+[Cart.com API](https://developers.cart.com/docs/rest-api/docs/README.md). It supports both Full
+Refresh and Incremental sync for all streams. You can choose if this connector will copy only the
+new or updated data, or all rows in the tables and columns you set up for replication, every time a
+sync is run.
 
 ### Output schema
 
@@ -32,7 +36,8 @@ This Source is capable of syncing the following core Streams:
 
 ### Performance considerations
 
-The Cart.com API has some request limitation. See [this](https://developers.cart.com/docs/rest-api/docs/README.md#rate-limiting) .
+The Cart.com API has some request limitation. See
+[this](https://developers.cart.com/docs/rest-api/docs/README.md#rate-limiting) .
 
 ## Getting started
 
@@ -44,15 +49,16 @@ The Cart.com API has some request limitation. See [this](https://developers.cart
 
 ### Setup guide
 
-Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/README.md#setup) to obtain Access Token for your account.
+Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/README.md#setup) to
+obtain Access Token for your account.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| 0.3.1   | 2023-11-21 | [32705](https://github.com/airbytehq/airbyte/pull/32705) | Update CDK version |
-| 0.3.0   | 2023-11-14 | [23317](https://github.com/airbytehq/airbyte/pull/23317) | Update schemas |
-| 0.2.1   | 2023-02-22 | [23317](https://github.com/airbytehq/airbyte/pull/23317) | Remove support for incremental for `order_statuses` stream |
+| 0.3.1   | 2023-11-21 | [32705](https://github.com/airbytehq/airbyte/pull/32705) | Update CDK version                                                                     |
+| 0.3.0   | 2023-11-14 | [23317](https://github.com/airbytehq/airbyte/pull/23317) | Update schemas                                                                         |
+| 0.2.1   | 2023-02-22 | [23317](https://github.com/airbytehq/airbyte/pull/23317) | Remove support for incremental for `order_statuses` stream                             |
 | 0.2.0   | 2022-09-21 | [16612](https://github.com/airbytehq/airbyte/pull/16612) | Source Cart.com: implement Central API Router access method and improve backoff policy |
 | 0.1.6   | 2022-07-15 | [14752](https://github.com/airbytehq/airbyte/pull/14752) | Add `order_statuses` stream                                                            |
 | 0.1.5   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications                                      |

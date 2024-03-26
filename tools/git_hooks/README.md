@@ -1,4 +1,3 @@
-
 ## Pre commit linter for spec.json files
 
 Run and apply to all files
