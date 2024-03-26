@@ -20,10 +20,15 @@ import java.time.*
 import java.time.chrono.IsoEra
 import java.time.format.DateTimeParseException
 import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /** Source operation skeleton for JDBC compatible databases. */
 abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     JdbcCompatibleSourceOperations<Datatype> {
+
+    private val LOGGER: Logger =
+        LoggerFactory.getLogger(AbstractJdbcCompatibleSourceOperations::class.java)
 
     @Throws(SQLException::class)
     override fun convertDatabaseRowToAirbyteRecordData(queryContext: ResultSet): AirbyteRecordData {
