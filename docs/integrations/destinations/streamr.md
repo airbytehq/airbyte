@@ -9,10 +9,11 @@
 | Incremental - Append + Deduped |   ❌    |                                                                                      |
 | Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.          |
 
-The Streamr destination allows you to sync data to Streamr - The decentralized
-real‑time data network.
+The Streamr destination allows you to sync data to Streamr - The decentralized real‑time data
+network.
 
-How to use: [https://github.com/devmate-cloud/streamr-airbyte-connectors](https://github.com/devmate-cloud/streamr-airbyte-connectors)
+How to use:
+[https://github.com/devmate-cloud/streamr-airbyte-connectors](https://github.com/devmate-cloud/streamr-airbyte-connectors)
 
 ## Troubleshooting
 

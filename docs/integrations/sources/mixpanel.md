@@ -4,34 +4,52 @@ This page contains the setup guide and reference information for the Mixpanel so
 
 ## Prerequisites
 
-To set up the Mixpanel source connector, you'll need a Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts) and it's [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id), the [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel), and the Project region (`US` or `EU`).
+To set up the Mixpanel source connector, you'll need a Mixpanel
+[Service Account](https://developer.mixpanel.com/reference/service-accounts) and it's
+[Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id),
+the
+[Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel),
+and the Project region (`US` or `EU`).
 
 ## Set up the Mixpanel connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte
+   Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Mixpanel** from the Source type dropdown.
 4. Enter the name for the Mixpanel connector.
-5. For **Authentication**, select **Service Account** from the dropdown and enter the [Mixpanel Service Account secret](https://developer.mixpanel.com/reference/service-accounts).
-6. For **Project ID**, enter the [Mixpanel Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id).
+5. For **Authentication**, select **Service Account** from the dropdown and enter the
+   [Mixpanel Service Account secret](https://developer.mixpanel.com/reference/service-accounts).
+6. For **Project ID**, enter the
+   [Mixpanel Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id).
 7. For **Attribution Window**, enter the number of days for the length of the attribution window.
-8. For **Project Timezone**, enter the [timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel) for your Mixpanel project.
-9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If left blank, the connector will replicate data from up to one year ago by default.
+8. For **Project Timezone**, enter the
+   [timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel)
+   for your Mixpanel project.
+9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date
+   will be replicated. If left blank, the connector will replicate data from up to one year ago by
+   default.
 10. For **End Date**, enter the date in YYYY-MM-DD format.
-11. For **Region**, enter the [region](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU) for your Mixpanel project.
-12. For **Date slicing window**, enter the number of days to slice through data. If you encounter RAM usage issues due to a huge amount of data in each window, try using a lower value for this parameter.
+11. For **Region**, enter the
+    [region](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU) for your
+    Mixpanel project.
+12. For **Date slicing window**, enter the number of days to slice through data. If you encounter
+    RAM usage issues due to a huge amount of data in each window, try using a lower value for this
+    parameter.
 13. Click **Set up source**.
 
 ## Supported sync modes
 
-The Mixpanel source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Mixpanel source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-Note: Incremental sync returns duplicated \(old records\) for the state date due to API filter limitation, which is granular to the whole day only.
+Note: Incremental sync returns duplicated \(old records\) for the state date due to API filter
+limitation, which is granular to the whole day only.
 
 ### Supported Streams
 
@@ -45,17 +63,20 @@ Note: Incremental sync returns duplicated \(old records\) for the state date due
 
 ### Primary key selection for Export stream
 
-Mixpanel recommends using `[insert_id, event_time, event_name, distinct_id]` as the primary key. However, note that some rows might lack an `insert_id` for certain users. Ensure you select a primary key that aligns with your data.
+Mixpanel recommends using `[insert_id, event_time, event_name, distinct_id]` as the primary key.
+However, note that some rows might lack an `insert_id` for certain users. Ensure you select a
+primary key that aligns with your data.
 
 ## Performance considerations
 
-Syncing huge date windows may take longer due to Mixpanel's low API rate-limits \(**60 reqs per hour**\).
+Syncing huge date windows may take longer due to Mixpanel's low API rate-limits \(**60 reqs per
+hour**\).
 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
-| 2.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| 2.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                             |
 | 2.1.0   | 2024-02-13 | [35203](https://github.com/airbytehq/airbyte/pull/35203) | Update stream Funnels schema with custom_event_id and custom_event fields                                   |
 | 2.0.2   | 2024-02-12 | [35151](https://github.com/airbytehq/airbyte/pull/35151) | Manage dependencies with Poetry.                                                                            |
 | 2.0.1   | 2024-01-11 | [34147](https://github.com/airbytehq/airbyte/pull/34147) | prepare for airbyte-lib                                                                                     |

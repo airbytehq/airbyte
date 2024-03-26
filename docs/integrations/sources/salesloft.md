@@ -11,7 +11,8 @@ This page contains the setup guide and reference information for the Salesloft S
 
 **For Airbyte Open Source:**
 
-- Salesloft API Key (see [API Key Authentication](https://developers.salesloft.com/api.html#!/Topic/apikey))
+- Salesloft API Key (see
+[API Key Authentication](https://developers.salesloft.com/api.html#!/Topic/apikey))
 <!-- /env:oss -->
 
 ## Setup guide
@@ -24,7 +25,8 @@ Create a [Salesloft Account](https://salesloft.com).
 
 **Airbyte Open Source additional setup steps**
 
-Log into [Salesloft](https://salesloft.com) and then generate an [API Key](https://developers.salesloft.com/api.html#!/Topic/apikey).
+Log into [Salesloft](https://salesloft.com) and then generate an
+[API Key](https://developers.salesloft.com/api.html#!/Topic/apikey).
 
 <!-- /env:oss -->
 
@@ -36,7 +38,8 @@ Log into [Salesloft](https://salesloft.com) and then generate an [API Key](https
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Salesloft** from the Source type dropdown and enter a name for this connector.
+3. On the source setup page, select **Salesloft** from the Source type dropdown and enter a name for
+   this connector.
 4. Click `Authenticate your Salesloft account` by selecting Oauth or API Key for Authentication.
 5. Log in and Authorize to the Salesloft account.
 6. Enter the **Start date** - The date from which you'd like to replicate data for streams.
@@ -53,7 +56,8 @@ Log into [Salesloft](https://salesloft.com) and then generate an [API Key](https
 
 ## Supported sync modes
 
-The Salesloft Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Salesloft Source connector supports the following
+[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -96,7 +100,10 @@ This connector outputs the following streams:
 
 ## Performance considerations
 
-Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Topic/RateLimiting), but the Salesloft connector should not run into Salesloft API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Topic/RateLimiting),
+but the Salesloft connector should not run into Salesloft API limitations under normal usage. Please
+[create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
 ## Changelog
 

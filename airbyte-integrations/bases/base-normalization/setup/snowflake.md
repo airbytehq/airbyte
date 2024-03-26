@@ -2,7 +2,8 @@
 
 ## Setting up an integration user
 
-Here is the SQL to make an integration environment in Snowflake for this source via an ACCOUNTADMIN. Be sure to give a real password.
+Here is the SQL to make an integration environment in Snowflake for this source via an ACCOUNTADMIN.
+Be sure to give a real password.
 
 ```sql
 CREATE WAREHOUSE INTEGRATION_TEST_WAREHOUSE_NORMALIZATION WITH WAREHOUSE_SIZE = 'XSMALL' WAREHOUSE_TYPE = 'STANDARD' AUTO_SUSPEND = 600 AUTO_RESUME = TRUE;
@@ -25,6 +26,7 @@ CREATE SCHEMA INTEGRATION_TEST_NORMALIZATION.TEST_SCHEMA;
 ```
 
 If you ever need to start over, use this:
+
 ```sql
 DROP DATABASE IF EXISTS INTEGRATION_TEST_NORMALIZATION;
 DROP USER IF EXISTS INTEGRATION_TEST_USER_NORMALIZATION;

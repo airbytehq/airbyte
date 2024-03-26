@@ -6,7 +6,8 @@
 
 ## Community Contributor
 
-1. Look at the integration documentation to see how to create a warehouse/database/schema/user/role for Airbyte to sync into.
+1. Look at the integration documentation to see how to create a warehouse/database/schema/user/role
+   for Airbyte to sync into.
 1. Create a file at `secrets/config.json` with the following format:
 
 ```
@@ -25,7 +26,8 @@
 
 ## For Airbyte employees
 
-Put the contents of the following LastPass secrets into corresponding files under the `secrets` directory:
+Put the contents of the following LastPass secrets into corresponding files under the `secrets`
+directory:
 
 | LastPass Secret                                                                                        | File                                     |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
@@ -42,7 +44,8 @@ The query timeout for insert data to table has been updated from 30 minutes to 3
 
 ## Setting up an integration user
 
-Here is the SQL to make an integration environment in Snowflake for this destination via an ACCOUNTADMIN. Be sure to give a real password.
+Here is the SQL to make an integration environment in Snowflake for this destination via an
+ACCOUNTADMIN. Be sure to give a real password.
 
 ```sql
 CREATE WAREHOUSE INTEGRATION_TEST_WAREHOUSE_DESTINATION WITH WAREHOUSE_SIZE = 'XSMALL' WAREHOUSE_TYPE = 'STANDARD' AUTO_SUSPEND = 600 AUTO_RESUME = TRUE;
@@ -83,7 +86,9 @@ CREATE SCHEMA INTEGRATION_TEST_DESTINATION.TEST_SCHEMA;
 DESC STORAGE INTEGRATION GCS_AIRBYTE_INTEGRATION;
 ```
 
-That last query (`DESC STORAGE`) will show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. Add read/write permissions to your bucket with that email if it's not already there.
+That last query (`DESC STORAGE`) will show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as
+the property value. Add read/write permissions to your bucket with that email if it's not already
+there.
 
 If you ever need to start over, use this:
 
@@ -95,7 +100,9 @@ DROP WAREHOUSE IF EXISTS INTEGRATION_TEST_WAREHOUSE_DESTINATION;
 ```
 
 ### Setup for various error-case users:
+
 Log in as the `INTEGRATION_TEST_USER_DESTINATION` user, and run this:
+
 ```sql
 drop schema if exists INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;
 create schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;
@@ -103,4 +110,6 @@ grant ownership on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role INTEG
 grant all privileges on schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA to role NO_ACTIVE_WAREHOUSE_ROLE;
 ```
 
-These tests are currently disabled (`testCheckWithNoProperStagingPermissionConnection`, `testCheckWithNoActiveWarehouseConnection`). Their test users keep breaking (i.e. becoming the schema owner) because our tests are tearing down `TEXT_SCHEMA` after every test.
+These tests are currently disabled (`testCheckWithNoProperStagingPermissionConnection`,
+`testCheckWithNoActiveWarehouseConnection`). Their test users keep breaking (i.e. becoming the
+schema owner) because our tests are tearing down `TEXT_SCHEMA` after every test.

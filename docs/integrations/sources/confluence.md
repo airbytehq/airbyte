@@ -18,8 +18,10 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 
 ### Step 2: Set up the Confluence connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
-2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the
+   Airbyte Open Source dashboard.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence**
+   from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. In the **API Token** field, enter your Atlassian API Token.
 5. In the **Domain name** field, enter your Confluence domain name.
@@ -44,17 +46,21 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 - [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
 - [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
 
-:::note
-The `audit` stream requires a Standard or Premium plan.
-:::
+:::note The `audit` stream requires a Standard or Premium plan. :::
 
 ## Data type mapping
 
-The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The
+[Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about)
+uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html)
+types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`,
+and `number`\), so no type conversions happen as part of this source.
 
 ## Performance considerations
 
-The Confluence connector should not run into Confluence API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Confluence connector should not run into Confluence API limitations under normal usage. Please
+[create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
 ## Changelog
 

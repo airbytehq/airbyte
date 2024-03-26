@@ -4,11 +4,16 @@
 
 This destination writes data to Azure Blob Storage.
 
-The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob Storage. Each stream is written to its own blob under the container.
+The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob Storage. Each
+stream is written to its own blob under the container.
 
 ## Prerequisites
 
-- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your AzureBlobStorage connector to version `0.1.6` or newer
+- For Airbyte Open Source users using the
+  [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector,
+  [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to
+  version `v0.40.0-alpha` or newer and upgrade your AzureBlobStorage connector to version `0.1.6` or
+  newer
 
 ## Sync Mode
 
@@ -30,19 +35,26 @@ The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob
 | Azure Blob Storage spill size                | integer | Azure Blob Storage spill size, in megabytes. Example: 500. After exceeding threshold connector will create new blob with incremented sequence number 'prefix_name'\_seq+1 |
 | Format                                       | object  | Format specific configuration. See below for details.                                                                                                                     |
 
-⚠️ Please note that under "Full Refresh Sync" mode, data in the configured blob will be wiped out before each sync. We recommend you to provision a dedicated Azure Blob Storage Container resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
+⚠️ Please note that under "Full Refresh Sync" mode, data in the configured blob will be wiped out
+before each sync. We recommend you to provision a dedicated Azure Blob Storage Container resource
+for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
 
 ## Output Schema
 
-Each stream will be outputted to its dedicated Blob according to the configuration. The complete datastore of each stream includes all the output files under that Blob. You can think of the Blob as equivalent of a Table in the database world.
-If stream replication exceeds configured threshold data will continue to be replicated in a new blob file for better read performance
+Each stream will be outputted to its dedicated Blob according to the configuration. The complete
+datastore of each stream includes all the output files under that Blob. You can think of the Blob as
+equivalent of a Table in the database world. If stream replication exceeds configured threshold data
+will continue to be replicated in a new blob file for better read performance
 
 - Under Full Refresh Sync mode, old output files will be purged before new files are created.
-- Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
+- Under Incremental - Append Sync mode, new output files will be added that only contain the new
+  data.
 
 ### CSV
 
-Like most of the other Airbyte destination connectors, usually the output has three columns: a UUID, an emission timestamp, and the data blob. With the CSV output, it is possible to normalize \(flatten\) the data blob to multiple columns.
+Like most of the other Airbyte destination connectors, usually the output has three columns: a UUID,
+an emission timestamp, and the data blob. With the CSV output, it is possible to normalize
+\(flatten\) the data blob to multiple columns.
 
 | Column                | Condition                                                                                         | Description                                                              |
 | :-------------------- | :------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
@@ -77,7 +89,8 @@ With root level normalization, the output CSV is:
 
 ### JSON Lines \(JSONL\)
 
-[Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a structure as follows:
+[Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a
+structure as follows:
 
 ```javascript
 {
@@ -120,24 +133,30 @@ They will be like this in the output file:
 ### Requirements
 
 1. Create an AzureBlobStorage account.
-2. Check if it works under [https://portal.azure.com/](https://portal.azure.com/) -&gt; "Storage explorer \(preview\)".
+2. Check if it works under [https://portal.azure.com/](https://portal.azure.com/) -&gt; "Storage
+   explorer \(preview\)".
 
 ### Setup guide
 
 - Fill up AzureBlobStorage info
   - **Endpoint Domain Name**
-    - Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one or use your own.
+    - Leave default value \(or leave it empty if run container from command line\) to use Microsoft
+      native one or use your own.
   - **Azure blob storage container**
-    - If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp..
+    - If not exists - will be created automatically. If leave empty, then will be created
+      automatically airbytecontainer+timestamp..
   - **Azure Blob Storage account name**
-    - See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
+    - See
+      [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
+      on how to create an account.
   - **The Azure blob storage account key**
     - Corresponding key to the above user.
   - **Format**
     - Data format that will be use for a migrated data representation in blob.
 - Make sure your user has access to Azure from the machine running Airbyte.
   - This depends on your networking setup.
-  - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
+  - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is
+    via the check connection tool in the UI.
 
 ## CHANGELOG
 

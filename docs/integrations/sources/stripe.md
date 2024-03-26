@@ -2,7 +2,8 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Stripe](https://stripe.com/) source connector.
+This page contains the setup guide and reference information for the [Stripe](https://stripe.com/)
+source connector.
 
 </HideInUI>
 
@@ -12,9 +13,10 @@ This page contains the setup guide and reference information for the [Stripe](ht
 
 ## Setup Guide
 
-:::note
-To authenticate the Stripe connector, you need to use a Stripe API key. Although you may use an existing key, we recommend that you create a new restricted key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate within Airbyte.
-:::
+:::note To authenticate the Stripe connector, you need to use a Stripe API key. Although you may use
+an existing key, we recommend that you create a new restricted key specifically for Airbyte and
+grant it **Read** privileges only. We also recommend granting **Read** privileges to all available
+permissions, and configuring the specific data you would like to replicate within Airbyte. :::
 
 ### Step 1: Set up Stripe
 
@@ -23,33 +25,56 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 3. In the top-left corner, click **API keys**.
 4. Click **+ Create restricted key**.
 5. Choose a **Key name**, and select **Read** for all available permissions.
-6. Click **Create key**. You may be prompted to enter a confirmation code sent to your email address.
+6. Click **Create key**. You may be prompted to enter a confirmation code sent to your email
+   address.
 
-For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
+For more information on Stripe API Keys, see the
+[Stripe documentation](https://stripe.com/docs/keys).
 
 ### Step 2: Set up the Stripe source connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open
+   Source account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Stripe** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
-5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
+5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found
+   in the top-right corner of your Stripe
+   [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
-7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments. This applies only to streams that do not support event-based incremental syncs, please see [the list below](#troubleshooting).
+7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time
+   programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will
+   be replicated.
+8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to
+   reread data. This allows the connector to retrieve data that might have been updated after its
+   initial creation, and is useful for handling any post-transaction adjustments. This applies only
+   to streams that do not support event-based incremental syncs, please see
+   [the list below](#troubleshooting).
 
-   - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
-   - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day, capturing any changes made in the last 24 hours.
-   - Setting the **Lookback Window** to 7 means Airbyte will re-export and capture any data changes within the last week.
+   - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data
+     after it has been synced.
+   - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day,
+     capturing any changes made in the last 24 hours.
+   - Setting the **Lookback Window** to 7 means Airbyte will re-export and capture any data changes
+     within the last week.
 
-9. (Optional) For **Data Request Window**, you may specify the time window in days used by the connector when requesting data from the Stripe API. This window defines the span of time covered in each request, with larger values encompassing more days in a single request. Generally speaking, the lack of overhead from making fewer requests means a larger window is faster to sync. However, this also means the state of the sync will persist less frequently. If an issue occurs or the sync is interrupted, a larger window means more data will need to be resynced, potentially causing a delay in the overall process.
+9. (Optional) For **Data Request Window**, you may specify the time window in days used by the
+   connector when requesting data from the Stripe API. This window defines the span of time covered
+   in each request, with larger values encompassing more days in a single request. Generally
+   speaking, the lack of overhead from making fewer requests means a larger window is faster to
+   sync. However, this also means the state of the sync will persist less frequently. If an issue
+   occurs or the sync is interrupted, a larger window means more data will need to be resynced,
+   potentially causing a delay in the overall process.
 
    For example, if you are replicating three years worth of data:
 
-   - A **Data Request Window** of 365 days means Airbyte makes 3 requests, each for a year. This is generally faster but risks needing to resync up to a year's data if the sync is interrupted.
-   - A **Data Request Window** of 30 days means 36 requests, each for a month. This may be slower but minimizes the amount of data that needs to be resynced if an issue occurs.
+   - A **Data Request Window** of 365 days means Airbyte makes 3 requests, each for a year. This is
+     generally faster but risks needing to resync up to a year's data if the sync is interrupted.
+   - A **Data Request Window** of 30 days means 36 requests, each for a month. This may be slower
+     but minimizes the amount of data that needs to be resynced if an issue occurs.
 
-   If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
+   If you are unsure of which value to use, we recommend leaving this setting at its default value
+   of 365 days.
 
 10. Click **Set up source** and wait for the tests to complete.
 
@@ -57,7 +82,8 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 ## Supported sync modes
 
-The Stripe source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Stripe source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -74,20 +100,23 @@ The Stripe source connector supports the following streams:
 - [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list) \(Incremental\)
 - [Cardholders](https://stripe.com/docs/api/issuing/cardholders/list) \(Incremental\)
 - [Cards](https://stripe.com/docs/api/issuing/cards/list) \(Incremental\)
-- [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
-  :::note
-  The `amount` column defaults to the smallest currency unit. Check [the Stripe docs](https://stripe.com/docs/api/charges/object) for more details.
-  :::
+- [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\) :::note The `amount` column
+  defaults to the smallest currency unit. Check
+  [the Stripe docs](https://stripe.com/docs/api/charges/object) for more details. :::
 - [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list) \(Incremental\)
-- [Checkout Sessions Line Items](https://stripe.com/docs/api/checkout/sessions/line_items) \(Incremental\)
+- [Checkout Sessions Line Items](https://stripe.com/docs/api/checkout/sessions/line_items)
+  \(Incremental\)
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
 - [Credit Notes](https://stripe.com/docs/api/credit_notes/list) \(Incremental\)
-- [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) \(Incremental\)
+- [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
+  \(Incremental\)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
-- [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list) \(Incremental\)
+- [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list)
+  \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
-- [External Account Bank Accounts](https://stripe.com/docs/api/external_account_bank_accounts/list) \(Incremental\)
+- [External Account Bank Accounts](https://stripe.com/docs/api/external_account_bank_accounts/list)
+  \(Incremental\)
 - [External Account Cards](https://stripe.com/docs/api/external_account_cards/list) \(Incremental\)
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
@@ -116,13 +145,12 @@ The Stripe source connector supports the following streams:
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
-
-
-
-
 ### Data type mapping
 
-The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+The [Stripe API](https://stripe.com/docs/api) uses the same
+[JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that
+Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and
+`number`\), so no type conversions are performed for the Stripe connector.
 
 ## Limitations & Troubleshooting
 
@@ -135,17 +163,27 @@ Expand to see details about Stripe connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe [Rate limits](https://stripe.com/docs/rate-limits) documentation. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe
+[Rate limits](https://stripe.com/docs/rate-limits) documentation.
+[Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
-:::warning
-**Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
-Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
-:::
+:::warning **Stripe API Restriction on Events Data**: Access to the events endpoint is
+[guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the
+Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted**
+from your target destination and replaced with the data from the last 30 days only. Use an Append
+sync mode to ensure historical data is retained. Please be aware: this also means that any change
+older than 30 days will not be replicated using the incremental sync mode. If you want all your
+synced data to remain up to date, please set up your sync frequency to no more than 30 days. :::
 
 ### Troubleshooting
 
-Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
-However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
+Since the Stripe API does not allow querying objects which were updated since the last sync, the
+Stripe connector uses the Events API under the hood to implement incremental syncs and export data
+based on its update date. However, not all the entities are supported by the Events API, so the
+Stripe connector uses the `created` field or its analogue to query for new data in your Stripe
+account. These are the entities synced based on the date of creation:
+
 - `Balance Transactions`
 - `Events`
 - `File Links`
@@ -199,6 +237,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 ## Incremental deletes
 
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
+
 - `Bank Accounts`
 - `Coupons`
 - `Customers`
@@ -213,7 +252,9 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 - `Subscriptions`
 
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
-* Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+- Check out common troubleshooting issues for the Stripe source connector on our
+  [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 ### Data type mapping
 
@@ -222,7 +263,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
-|:--------|:-----------| :-------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 5.3.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978)  | Upgrade CDK to start emitting record counts with state and full refresh state                                                                                                                                                 |
 | 5.2.4   | 2024-02-12 | [35137](https://github.com/airbytehq/airbyte/pull/35137)  | Fix license in `pyproject.toml`                                                                                                                                                                                               |
 | 5.2.3   | 2024-02-09 | [35068](https://github.com/airbytehq/airbyte/pull/35068)  | Manage dependencies with Poetry.                                                                                                                                                                                              |
@@ -319,4 +360,5 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 0.1.10  | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)    | Update data types to be number instead of int                                                                                                                                                                                 |
 | 0.1.9   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)    | Add acceptance tests for connected accounts                                                                                                                                                                                   |
 | 0.1.8   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)    | Bump CDK connectors                                                                                                                                                                                                           |
+
 </HideInUI>

@@ -31,9 +31,13 @@ To access the Sandbox environment:
 
 ### Step 1: Set up TikTok
 
-1. Create a TikTok For Business account: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250) <!-- env:oss -->
-2. Create developer application: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450)
-3. For a sandbox environment: create a Sandbox Ad Account [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026)
+1. Create a TikTok For Business account:
+   [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250)
+   <!-- env:oss -->
+2. Create developer application:
+   [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450)
+3. For a sandbox environment: create a Sandbox Ad Account
+[Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026)
 <!-- /env:oss -->
 
 ### Step 2: Set up the source connector in Airbyte
@@ -44,7 +48,8 @@ To access the Sandbox environment:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Tiktok Marketing** from the Source type dropdown and enter a name for this connector.
+3. On the source setup page, select **Tiktok Marketing** from the Source type dropdown and enter a
+   name for this connector.
 4. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
 5. Log in and Authorize to the Tiktok account
 6. Choose required Start date
@@ -57,8 +62,10 @@ To access the Sandbox environment:
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
-4. Select `Production Access Token` or `Sandbox Access Token` Authorization method, then copy and paste info from step 1.
+3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing**
+   from the Source type dropdown.
+4. Select `Production Access Token` or `Sandbox Access Token` Authorization method, then copy and
+   paste info from step 1.
 5. Choose required Start date
 6. Click `Set up source`.
 <!-- /env:oss -->
@@ -66,7 +73,7 @@ To access the Sandbox environment:
 ## Supported streams and sync modes
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-|:------------------------------------------| ------------ |--------------------------------------------| :---------- |
+| :---------------------------------------- | ------------ | ------------------------------------------ | :---------- |
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -106,23 +113,32 @@ To access the Sandbox environment:
 
 :::info
 
-TikTok Reporting API has some [Data Latency](https://ads.tiktok.com/marketing_api/docs?id=1738864894606337), usually of about 11 hours.
-It is recommended to use higher values of attribution window (used in Incremental Syncs), at least 3 days, to ensure that the connector updates metrics in already presented records.
+TikTok Reporting API has some
+[Data Latency](https://ads.tiktok.com/marketing_api/docs?id=1738864894606337), usually of about 11
+hours. It is recommended to use higher values of attribution window (used in Incremental Syncs), at
+least 3 days, to ensure that the connector updates metrics in already presented records.
 
 :::
 
 ### Report Aggregation
 
-Reports synced by this connector can use either hourly, daily, or lifetime granularities for aggregating performance data. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
+Reports synced by this connector can use either hourly, daily, or lifetime granularities for
+aggregating performance data. For example, if you select the daily-aggregation flavor of a report,
+the report will contain a row for each day for the duration of the report. Each row will indicate
+the number of impressions recorded on that day.
 
 ## Performance considerations
 
-The connector is restricted by [requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by
+[requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433).
+This connector should not run into TikTok Marketing API limitations under normal usage. Please
+[create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-|:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
 | 3.9.4   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field                            |
 | 3.9.3   | 2024-02-12 | [35161](https://github.com/airbytehq/airbyte/pull/35161) | Manage dependencies with Poetry.                                                                            |
 | 3.9.2   | 2023-11-02 | [32091](https://github.com/airbytehq/airbyte/pull/32091) | Fix incremental syncs; update docs; fix field type of `preview_url_expire_time` to `date-time`.             |

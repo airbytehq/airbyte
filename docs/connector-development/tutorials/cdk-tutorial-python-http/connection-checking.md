@@ -49,8 +49,8 @@ currency is a real currency:
 
 :::info
 
-In a real implementation you should write code to connect to the API to validate connectivity
-and not just validate inputs - for an example see `check_connection` in the
+In a real implementation you should write code to connect to the API to validate connectivity and
+not just validate inputs - for an example see `check_connection` in the
 [OneSignal source connector implementation](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-onesignal/source_onesignal/source.py)
 
 :::

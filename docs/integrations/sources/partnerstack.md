@@ -32,7 +32,9 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 
 ## Requirements
 
-- **Partnerstack API keys**. See the [Partnerstack docs](https://docs.partnerstack.com/reference/auth) for information on how to obtain the API keys.
+- **Partnerstack API keys**. See the
+  [Partnerstack docs](https://docs.partnerstack.com/reference/auth) for information on how to obtain
+  the API keys.
 
 ## Changelog
 

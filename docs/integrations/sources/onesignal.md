@@ -5,7 +5,8 @@ This page contains the setup guide and reference information for the OneSignal s
 ## Prerequisites
 
 - [User Auth Key](https://documentation.onesignal.com/docs/accounts-and-keys#user-auth-key)
-- Applications [credentials](https://documentation.onesignal.com/docs/accounts-and-keys) \(App Id & REST API Key\)
+- Applications [credentials](https://documentation.onesignal.com/docs/accounts-and-keys) \(App Id &
+  REST API Key\)
 
 ## Setup guide
 
@@ -25,7 +26,8 @@ This page contains the setup guide and reference information for the OneSignal s
    2. Enter [App ID](https://documentation.onesignal.com/docs/accounts-and-keys#app-id)
    3. Enter [REST API Key](https://documentation.onesignal.com/docs/accounts-and-keys#rest-api-key)
 7. Enter the Start Date in format `YYYY-MM-DDTHH:mm:ssZ`
-8. Enter Outcome names as comma separated values, e.g. `os__session_duration.count,os__click.count,` see the [API docs](https://documentation.onesignal.com/reference/view-outcomes) for more details.
+8. Enter Outcome names as comma separated values, e.g. `os__session_duration.count,os__click.count,`
+   see the [API docs](https://documentation.onesignal.com/reference/view-outcomes) for more details.
 
 #### For Airbyte Open Source:
 
@@ -39,11 +41,13 @@ This page contains the setup guide and reference information for the OneSignal s
    2. Enter [App ID](https://documentation.onesignal.com/docs/accounts-and-keys#app-id)
    3. Enter [REST API Key](https://documentation.onesignal.com/docs/accounts-and-keys#rest-api-key)
 7. Enter the Start Date in format `YYYY-MM-DDTHH:mm:ssZ`
-8. Enter Outcome names as comma separated values, e.g. `os__session_duration.count,os__click.count,` see the [API docs](https://documentation.onesignal.com/reference/view-outcomes) for more details.
+8. Enter Outcome names as comma separated values, e.g. `os__session_duration.count,os__click.count,`
+   see the [API docs](https://documentation.onesignal.com/reference/view-outcomes) for more details.
 
 ## Supported sync modes
 
-The OneSignal source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The OneSignal source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -59,7 +63,8 @@ The OneSignal source connector supports the following [sync modes](https://docs.
 
 ## Performance considerations
 
-The connector is restricted by normal OneSignal [rate limits](https://documentation.onesignal.com/docs/rate-limits).
+The connector is restricted by normal OneSignal
+[rate limits](https://documentation.onesignal.com/docs/rate-limits).
 
 ## Data type mapping
 
@@ -74,7 +79,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
 | 1.1.0   | 2023-08-31 | [28941](https://github.com/airbytehq/airbyte/pull/28941) | Migrate connector to low-code                |
 | 1.0.1   | 2023-03-14 | [24076](https://github.com/airbytehq/airbyte/pull/24076) | Fix schema and add additionalProperties true |
 | 1.0.0   | 2023-03-14 | [24076](https://github.com/airbytehq/airbyte/pull/24076) | Update connectors spec; fix incremental sync |

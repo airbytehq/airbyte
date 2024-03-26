@@ -14,24 +14,30 @@ You can find or create authentication tokens within [Coda](https://coda.io/accou
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Coda connector and select **Coda** from the Source type dropdown.
-4. Enter your `auth_token` - Coda Authentication Token with the necessary permissions \(described below\).
-5. Enter your `doc_id` - Document id for a specific document created on Coda. You can check it under [Advanced Settings](https://coda.io/account)
-   by exporting data and copying the id in doc_manifest.json from the downloaded zip.
+3. On the Set up the source page, enter the name for the Coda connector and select **Coda** from the
+   Source type dropdown.
+4. Enter your `auth_token` - Coda Authentication Token with the necessary permissions \(described
+   below\).
+5. Enter your `doc_id` - Document id for a specific document created on Coda. You can check it under
+   [Advanced Settings](https://coda.io/account) by exporting data and copying the id in
+   doc_manifest.json from the downloaded zip.
 6. Click **Set up source**.
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your `auth_token` - Coda Authentication Token with the necessary permissions \(described below\).
-4. Enter your `doc_id` - Document id for a specific document created on Coda. You can check it under [Advanced Settings](https://coda.io/account)
-   by exporting data and copying the id in doc_manifest.json from the downloaded zip.
+3. Enter your `auth_token` - Coda Authentication Token with the necessary permissions \(described
+   below\).
+4. Enter your `doc_id` - Document id for a specific document created on Coda. You can check it under
+   [Advanced Settings](https://coda.io/account) by exporting data and copying the id in
+   doc_manifest.json from the downloaded zip.
 5. Click **Set up source**.
 
 ## Supported sync modes
 
-The Coda source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Coda source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -65,6 +71,6 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
 | 1.2.0   | 2023-08-13 | [29288](https://github.com/airbytehq/airbyte/pull/29288) | Migrate python cdk to low-code    |
-| 1.1.0   | 2023-07-10 | [27797](https://github.com/airbytehq/airbyte/pull/27797) | Add `rows` stream                |
+| 1.1.0   | 2023-07-10 | [27797](https://github.com/airbytehq/airbyte/pull/27797) | Add `rows` stream                 |
 | 1.0.0   | 2023-07-10 | [28093](https://github.com/airbytehq/airbyte/pull/28093) | Update `docs` and `pages` schemas |
-| 0.1.0   | 2022-11-17 | [18675](https://github.com/airbytehq/airbyte/pull/18675) | 🎉 New source: Coda [python cdk] |
+| 0.1.0   | 2022-11-17 | [18675](https://github.com/airbytehq/airbyte/pull/18675) | 🎉 New source: Coda [python cdk]  |

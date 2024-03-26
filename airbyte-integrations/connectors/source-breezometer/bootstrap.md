@@ -2,11 +2,16 @@
 
 ## Overview
 
-Breezometer connector lets you request environment information like air quality, pollen forecast, current and forecasted weather and wildfires for a specific location.
+Breezometer connector lets you request environment information like air quality, pollen forecast,
+current and forecasted weather and wildfires for a specific location.
 
 ## Authentication
 
-Breezometer uses a token to authenticate. Every BreezoMeter account is assigned an API Key. The key stores permissions, rate limits, daily quota, API usage, and billing information associated with an account. To send an authenticated API request, you add the API key parameter and include your key to the request URL. For more informations, consult the [documentation](https://docs.breezometer.com/api-documentation/introduction/#authentication).
+Breezometer uses a token to authenticate. Every BreezoMeter account is assigned an API Key. The key
+stores permissions, rate limits, daily quota, API usage, and billing information associated with an
+account. To send an authenticated API request, you add the API key parameter and include your key to
+the request URL. For more informations, consult the
+[documentation](https://docs.breezometer.com/api-documentation/introduction/#authentication).
 
 ## Endpoints
 

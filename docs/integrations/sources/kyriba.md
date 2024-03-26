@@ -2,14 +2,18 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Kyriba](https://www.kyriba.com/) source connector.
+This page contains the setup guide and reference information for the
+[Kyriba](https://www.kyriba.com/) source connector.
 
 </HideInUI>
 
 ## Overview
-The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their [JSON REST APIs](https://developer.kyriba.com/apiCatalog/).
+
+The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their
+[JSON REST APIs](https://developer.kyriba.com/apiCatalog/).
 
 ## Prerequisites
+
 - Kyriba domain
 - Username
 - Password
@@ -17,7 +21,9 @@ The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their 
 ## Setup Guide
 
 ### Set up the Kyriba source connector in Airbyte
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
+
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open
+   Source account.
 2. Navigate to **Sources** in the left sidebar and click **+ New source**. in the top-right corner.
 3. Choose **Kyriba** from the list of available sources.
 4. For **Source name**, enter a descriptive name to help you identify this source.
@@ -30,15 +36,19 @@ The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their 
 
 ## Supported Sync Modes
 
-The Kyriba source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Kyriba source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
 ## Supported Streams
+
 - [Accounts](https://developer.kyriba.com/site/global/apis/accounts/index.gsp)
-- [Bank Balances](https://developer.kyriba.com/site/global/apis/bank-statement-balances/index.gsp) - End of Day and Intraday
-- [Cash Balances](https://developer.kyriba.com/site/global/apis/cash-balances/index.gsp) - End of Day and Intraday
+- [Bank Balances](https://developer.kyriba.com/site/global/apis/bank-statement-balances/index.gsp) -
+  End of Day and Intraday
+- [Cash Balances](https://developer.kyriba.com/site/global/apis/cash-balances/index.gsp) - End of
+  Day and Intraday
 - [Cash Flows](https://developer.kyriba.com/site/global/apis/cash-flows/index.gsp)
 
 ## Limitations & Troubleshooting
@@ -52,19 +62,22 @@ Expand to see details about Kyriba connector limitations and troubleshooting.
 
 #### Rate Limiting
 
-The Kyriba connector should not run into API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Kyriba connector should not run into API limitations under normal usage.
+[Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
 ### Troubleshooting
 
-* Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Stripe source connector on our
+  [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                      |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------- |
-| 0.1.1   | 2024-01-30 | [34545](https://github.com/airbytehq/airbyte/pull/34545) | Updates CDK, Base image migration: remove Dockerfile and use the python-connector-base image                  |
-| 0.1.0   | 2022-07-13 | [12748](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created |
+| Version | Date       | Pull Request                                             | Subject                                                                                      |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.1.1   | 2024-01-30 | [34545](https://github.com/airbytehq/airbyte/pull/34545) | Updates CDK, Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.0   | 2022-07-13 | [12748](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created                                                                 |
 
 </HideInUI>

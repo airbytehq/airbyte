@@ -1,10 +1,12 @@
 # Python Concepts
 
-The Airbyte CDK makes use of various not-so-obvious Python concepts. You might want to revisit these concepts as you implement your connector:
+The Airbyte CDK makes use of various not-so-obvious Python concepts. You might want to revisit these
+concepts as you implement your connector:
 
 ## Abstract Classes [ABCs \(AbstractBaseClasses\)](https://docs.python.org/3/library/abc.html) and [abstractmethods](https://docs.python.org/3/library/abc.html#abc.abstractmethod)
 
-You'll want a strong understanding of these as the central API concepts require extending and using them.
+You'll want a strong understanding of these as the central API concepts require extending and using
+them.
 
 ## [Keyword Arguments](https://realpython.com/python-kwargs-and-args/).
 
@@ -27,7 +29,8 @@ class Pilot(Employee):
     job_title = "pilot"
 ```
 
-Notice how statically defining properties in this manner looks the same as defining variables. You can then reference this property as follows:
+Notice how statically defining properties in this manner looks the same as defining variables. You
+can then reference this property as follows:
 
 ```text
 pilot = Pilot()
@@ -53,7 +56,7 @@ class Pilot(Employee):
 
 ## [Generators](https://wiki.python.org/moin/Generators)
 
-Generators are basically iterators over arbitrary source data. They are handy because their syntax is extremely concise and feel just like any other list or collection when working with them in code.
+Generators are basically iterators over arbitrary source data. They are handy because their syntax
+is extremely concise and feel just like any other list or collection when working with them in code.
 
 If you see `yield` anywhere in the code -- that's a generator at work.
-

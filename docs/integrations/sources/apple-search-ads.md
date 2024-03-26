@@ -1,13 +1,18 @@
 # Apple Search Ads
 
-This page contains the setup guide and reference information for the Apple Search Ads source connector.
+This page contains the setup guide and reference information for the Apple Search Ads source
+connector.
 
 ## Setup guide
 
 ### Step 1: Set up Apple Search Ads
 
-1. With an administrator account, [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) from the Apple Search Ads UI.
-2. Then [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) in order to the required Client Secret and Client Id.
+1. With an administrator account,
+   [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)
+   from the Apple Search Ads UI.
+2. Then
+   [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)
+   in order to the required Client Secret and Client Id.
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -19,12 +24,15 @@ This page contains the setup guide and reference information for the Apple Searc
 4. Enter a name for your source.
 5. For **Org Id**, enter the Id of your organization (found in the Apple Search Ads UI).
 6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
-7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
+7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the
+   Start Date can't be earlier than 90 days from today. If the End Date field is left blank, Airbyte
+   will replicate data to today.
 8. Click **Set up source**.
 
 ## Supported sync modes
 
-The Apple Search Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Apple Search Ads source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -33,7 +41,8 @@ The Apple Search Ads source connector supports the following [sync modes](https:
 
 ## Supported Streams
 
-The Apple Ads source connector supports the following streams. For more information, see the [Apple Search Ads API](https://developer.apple.com/documentation/apple_search_ads).
+The Apple Ads source connector supports the following streams. For more information, see the
+[Apple Search Ads API](https://developer.apple.com/documentation/apple_search_ads).
 
 ### Base streams
 
@@ -49,9 +58,12 @@ The Apple Ads source connector supports the following streams. For more informat
 
 ### Report aggregation
 
-The Apple Search Ads currently offers [aggregation](https://developer.apple.com/documentation/apple_search_ads/reportingrequest) at hourly, daily, weekly, or monthly level.
+The Apple Search Ads currently offers
+[aggregation](https://developer.apple.com/documentation/apple_search_ads/reportingrequest) at
+hourly, daily, weekly, or monthly level.
 
-However, at this moment and as indicated in the stream names, the connector only offers data with daily aggregation.
+However, at this moment and as indicated in the stream names, the connector only offers data with
+daily aggregation.
 
 ## Changelog
 

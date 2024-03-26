@@ -12,8 +12,11 @@ This page contains the setup guide and reference information for the PrestaShop 
 
 ### Step 1: Set up PrestaShop
 
-1. By default, the webservice feature is disabled on PrestaShop and needs to be [switched on](https://devdocs.prestashop.com/1.7/webservice/tutorials/creating-access/#enable-the-webservice).
-2. To get access to the PrestaShop API you need to create an access key, please follow the instructions in this [documentation](https://devdocs.prestashop-project.org/1.7/webservice/tutorials/creating-access/#create-an-access-key).
+1. By default, the webservice feature is disabled on PrestaShop and needs to be
+   [switched on](https://devdocs.prestashop.com/1.7/webservice/tutorials/creating-access/#enable-the-webservice).
+2. To get access to the PrestaShop API you need to create an access key, please follow the
+   instructions in this
+   [documentation](https://devdocs.prestashop-project.org/1.7/webservice/tutorials/creating-access/#create-an-access-key).
 
 ### Step 2: Set up the PrestaShop connector in Airbyte
 
@@ -21,14 +24,18 @@ This page contains the setup guide and reference information for the PrestaShop 
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **PrestaShop** from the Source type dropdown and enter a name for this connector.
+3. On the source setup page, select **PrestaShop** from the Source type dropdown and enter a name
+   for this connector.
 4. Enter the **Access Key** that you obtained.
-5. Enter the **Shop URL** without trailing slash, for example, https://my.prestashop.com, only HTTPS urls are supported.
-6. Enter **Start date** in YYYY-MM-DD format. The data added on and after this date will be replicated.
+5. Enter the **Shop URL** without trailing slash, for example, https://my.prestashop.com, only HTTPS
+   urls are supported.
+6. Enter **Start date** in YYYY-MM-DD format. The data added on and after this date will be
+   replicated.
 
 ## Supported sync modes
 
-The PrestaShop source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The PrestaShop source connector supports the following
+[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -98,7 +105,8 @@ This connector outputs the following incremental streams:
 - [Suppliers](https://devdocs.prestashop.com/1.7/webservice/resources/suppliers/)
 - [Tax Rule Groups](https://devdocs.prestashop.com/1.7/webservice/resources/tax_rule_groups/)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+If there are more endpoints you'd like Airbyte to support, please
+[create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ## CHANGELOG
 

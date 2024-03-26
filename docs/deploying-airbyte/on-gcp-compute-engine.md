@@ -1,6 +1,9 @@
 # Deploy Airbyte on GCP (Compute Engine)
 
-This page guides you through deploying Airbyte Open Source on a [Google Cloud Platform (GCP) Compute Engine instance](https://cloud.google.com/compute/docs/instances) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the GCP instance.
+This page guides you through deploying Airbyte Open Source on a
+[Google Cloud Platform (GCP) Compute Engine instance](https://cloud.google.com/compute/docs/instances)
+by setting up the deployment environment, installing and starting Airbyte, and connecting it to the
+GCP instance.
 
 :::info
 
@@ -10,12 +13,14 @@ The instructions have been tested on a `Debian GNU/Linux 10` VM instance.
 
 ## Requirements
 
-- To test Airbyte, we recommend an `e2.medium` instance and provision at least 30GBs of disk per node
+- To test Airbyte, we recommend an `e2.medium` instance and provision at least 30GBs of disk per
+  node
 - To deploy Airbyte in a production environment, we recommend a `n1-standard-2` instance
 
 ## Set up the environment
 
-1. Create a [new GCP instance](https://cloud.google.com/compute/docs/instances/create-start-instance).
+1. Create a
+   [new GCP instance](https://cloud.google.com/compute/docs/instances/create-start-instance).
 2. Set variables in your local terminal:
 
 ```bash
@@ -23,14 +28,16 @@ PROJECT_ID=PROJECT_ID_WHERE_YOU_CREATED_YOUR_INSTANCE
 INSTANCE_NAME=airbyte # or any other name that you've used
 ```
 
-3. Install Google Cloud SDK and initialize the gcloud command-line tool using the following commands in your local terminal:
+3. Install Google Cloud SDK and initialize the gcloud command-line tool using the following commands
+   in your local terminal:
 
 ```bash
 brew install --cask google-cloud-sdk
 gcloud init
 ```
 
-4. List all instances in your project and verify that you can see the Airbyte instance you created in step 1 in your local terminal:
+4. List all instances in your project and verify that you can see the Airbyte instance you created
+   in step 1 in your local terminal:
 
 ```bash
 # Verify you can see your instance
@@ -63,7 +70,8 @@ sudo apt-get -y install docker-compose-plugin
 docker compose version
 ```
 
-8.  Close the SSH connection on your VM instance to ensure the group modification is taken into account by following the below command in your VM terminal:
+8.  Close the SSH connection on your VM instance to ensure the group modification is taken into
+    account by following the below command in your VM terminal:
 
 ```bash
 logout
@@ -90,9 +98,7 @@ chmod +x run-ab-platform.sh
 
 ## Connect to Airbyte
 
-:::caution
-For security reasons, we strongly recommended not exposing Airbyte publicly.
-:::
+:::caution For security reasons, we strongly recommended not exposing Airbyte publicly. :::
 
 1. In your local terminal, create an SSH tunnel to connect the GCP instance to Airbyte:
 

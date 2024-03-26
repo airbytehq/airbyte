@@ -17,5 +17,6 @@ As a community contributor, you will need access to a GCP project and PubSub to 
 
 ## Airbyte Employee
 
-1. Access the `google pubsub test credentials.json` secret on Lastpass under the `shared-integration-test` folder
+1. Access the `google pubsub test credentials.json` secret on Lastpass under the
+   `shared-integration-test` folder
 1. Create a file with the contents at `secrets/credentials.json`

@@ -4,7 +4,8 @@
 
 The Gong source supports both Full Refresh only.
 
-This source can sync data for the [Gong API](https://us-14321.app.gong.io/settings/api/documentation#overview).
+This source can sync data for the
+[Gong API](https://us-14321.app.gong.io/settings/api/documentation#overview).
 
 ### Output schema
 
@@ -25,16 +26,18 @@ This Source is capable of syncing the following core Streams:
 
 ### Performance considerations
 
-The Gong connector should not run into Gong API limitations under normal usage.
-By default Gong limits your company's access to the service to 3 API calls per second, and 10,000 API calls per day.
+The Gong connector should not run into Gong API limitations under normal usage. By default Gong
+limits your company's access to the service to 3 API calls per second, and 10,000 API calls per day.
 
 ## Requirements
 
-- **Gong API keys**. See the [Gong docs](https://us-14321.app.gong.io/settings/api/documentation#overview) for information on how to obtain the API keys.
+- **Gong API keys**. See the
+  [Gong docs](https://us-14321.app.gong.io/settings/api/documentation#overview) for information on
+  how to obtain the API keys.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                   |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------ |
+| Version | Date       | Pull Request                                             | Subject                                              |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
 | 0.1.1   | 2024-02-05 | [34847](https://github.com/airbytehq/airbyte/pull/34847) | Adjust stream schemas and make ready for airbyte-lib |
-| 0.1.0   | 2022-10-27 | [18819](https://github.com/airbytehq/airbyte/pull/18819) | Add Gong Source Connector |
+| 0.1.0   | 2022-10-27 | [18819](https://github.com/airbytehq/airbyte/pull/18819) | Add Gong Source Connector                            |

@@ -19,29 +19,42 @@ This page contains the setup guide and reference information for the Marketo sou
 
 If you don't have IP Restriction enabled in Marketo, skip this step.
 
-If you have IP Restriction enabled in Marketo, you'll need to whitelist the IP address of the machine running your Airbyte instance. To obtain your IP address, run `curl ifconfig.io` from the node running Airbyte. You might need to enlist an engineer to help with this. Copy the IP address returned and keep it on hand.
+If you have IP Restriction enabled in Marketo, you'll need to whitelist the IP address of the
+machine running your Airbyte instance. To obtain your IP address, run `curl ifconfig.io` from the
+node running Airbyte. You might need to enlist an engineer to help with this. Copy the IP address
+returned and keep it on hand.
 
-Once you have the IP address, whitelist it by following the Marketo documentation for [allowlisting IP addresses](https://docs.marketo.com/display/public/DOCS/Create+an+Allowlist+for+IP-Based+API+Access) for API based access.
+Once you have the IP address, whitelist it by following the Marketo documentation for
+[allowlisting IP addresses](https://docs.marketo.com/display/public/DOCS/Create+an+Allowlist+for+IP-Based+API+Access)
+for API based access.
 
 #### Step 1.2: Create an API-only Marketo User Role
 
-Follow the [Marketo documentation for creating an API-only Marketo User Role](https://docs.marketo.com/display/public/DOCS/Create+an+API+Only+User+Role).
+Follow the
+[Marketo documentation for creating an API-only Marketo User Role](https://docs.marketo.com/display/public/DOCS/Create+an+API+Only+User+Role).
 
 #### Step 1.3: Create an Airbyte Marketo API-only user
 
-Follow the [Marketo documentation to create an API only user](https://docs.marketo.com/display/public/DOCS/Create+an+API+Only+User)
+Follow the
+[Marketo documentation to create an API only user](https://docs.marketo.com/display/public/DOCS/Create+an+API+Only+User)
 
 #### Step 1.4: Create a Marketo API custom service
 
-Follow the [Marketo documentation for creating a custom service for use with a REST API](https://docs.marketo.com/display/public/DOCS/Create+a+Custom+Service+for+Use+with+ReST+API).
+Follow the
+[Marketo documentation for creating a custom service for use with a REST API](https://docs.marketo.com/display/public/DOCS/Create+a+Custom+Service+for+Use+with+ReST+API).
 
-Make sure to follow the "**Credentials for API Access"** section in the Marketo docs to generate a **Client ID** and **Client Secret.** Once generated, copy those credentials and keep them handy for use in the Airbyte UI later.
+Make sure to follow the "**Credentials for API Access"** section in the Marketo docs to generate a
+**Client ID** and **Client Secret.** Once generated, copy those credentials and keep them handy for
+use in the Airbyte UI later.
 
 #### Step 1.5: Obtain your Endpoint and Identity URLs provided by Marketo
 
-Follow the [Marketo documentation for obtaining your base URL](https://developers.marketo.com/rest-api/base-url/). Specifically, copy your **Endpoint** without "/rest" and keep them handy for use in the Airbyte UI.
+Follow the
+[Marketo documentation for obtaining your base URL](https://developers.marketo.com/rest-api/base-url/).
+Specifically, copy your **Endpoint** without "/rest" and keep them handy for use in the Airbyte UI.
 
-We're almost there! Armed with your Endpoint & Identity URLs and your Client ID and Secret, head over to the Airbyte UI to setup Marketo as a source.
+We're almost there! Armed with your Endpoint & Identity URLs and your Client ID and Secret, head
+over to the Airbyte UI to setup Marketo as a source.
 
 ## Step 2: Set up the Marketo connector in Airbyte
 
@@ -51,7 +64,8 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click Sources. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Marketo connector and select **Marketo** from the Source type dropdown.
+3. On the Set up the source page, enter the name for the Marketo connector and select **Marketo**
+   from the Source type dropdown.
 4. Enter the start date, domain URL, client ID and secret
 5. Submit the form
 <!-- /env:cloud -->
@@ -70,7 +84,8 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 
 ## Supported sync modes
 
-The Marketo source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Marketo source connector supports the
+following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -81,25 +96,41 @@ The Marketo source connector supports the following[ sync modes](https://docs.ai
 
 This connector can be used to sync the following tables from Marketo:
 
-- **Activities_X** where X is an activity type contains information about lead activities of the type X. For example, activities_send_email contains information about lead activities related to the activity type `send_email`. See the [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getLeadActivitiesUsingGET) for a detailed explanation of what each column means.
-- **Activity types** Contains metadata about activity types. See the [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getAllActivityTypesUsingGET) for a detailed explanation of columns.
-- **[Campaigns](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET)**: Contains info about your Marketo campaigns.
-- **[Leads](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET)**: Contains info about your Marketo leads.
+- **Activities_X** where X is an activity type contains information about lead activities of the
+  type X. For example, activities_send_email contains information about lead activities related to
+  the activity type `send_email`. See the
+  [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getLeadActivitiesUsingGET)
+  for a detailed explanation of what each column means.
+- **Activity types** Contains metadata about activity types. See the
+  [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getAllActivityTypesUsingGET)
+  for a detailed explanation of columns.
+- **[Campaigns](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET)**:
+  Contains info about your Marketo campaigns.
+- **[Leads](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET)**:
+  Contains info about your Marketo leads.
 
 :::caution
 
 Available fields are limited by what is presented in the static schema.
 
 :::
-- **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**: Contains info about your Marketo static lists.
-- **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs.
-- **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo programs.
+
+- **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**:
+  Contains info about your Marketo static lists.
+- **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**:
+  Contains info about your Marketo programs.
+- **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**:
+  Contains info about your Marketo programs.
 
 ## Performance considerations
 
 By default, Marketo caps all accounts to 50,000 API calls per day.
 
-By default, this connector caps itself to 40,000 API calls per day. But you can also customize the maximum number of API calls this source connector makes per day to Marketo \(which may be helpful if you have for example other applications which are also hitting the Marketo API\). If this source connector reaches the maximum number you configured, it will not replicate any data until the next day.
+By default, this connector caps itself to 40,000 API calls per day. But you can also customize the
+maximum number of API calls this source connector makes per day to Marketo \(which may be helpful if
+you have for example other applications which are also hitting the Marketo API\). If this source
+connector reaches the maximum number you configured, it will not replicate any data until the next
+day.
 
 If the 50,000 limit is too stringent, contact Marketo support for a quota increase.
 
@@ -116,7 +147,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
-|:---------| :--------- | :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
 | `1.3.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                  |
 | `1.2.6`  | 2024-02-09 | [35078](https://github.com/airbytehq/airbyte/pull/35078) | Manage dependencies with Poetry.                                                                 |
 | `1.2.5`  | 2024-01-15 | [34246](https://github.com/airbytehq/airbyte/pull/34246) | prepare for airbyte-lib                                                                          |

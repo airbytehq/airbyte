@@ -2,11 +2,13 @@
 
 ## Overview
 
-The Guardian API source can sync data from the [The Guardian](https://open-platform.theguardian.com/)
+The Guardian API source can sync data from the
+[The Guardian](https://open-platform.theguardian.com/)
 
 ## Requirements
 
-To access the API, you will need to sign up for an API key, which should be sent with every request. Visit [this](https://open-platform.theguardian.com/access) link to register for an API key.
+To access the API, you will need to sign up for an API key, which should be sent with every request.
+Visit [this](https://open-platform.theguardian.com/access) link to register for an API key.
 
 The following (optional) parameters can be provided to the connector :-
 
@@ -14,40 +16,55 @@ The following (optional) parameters can be provided to the connector :-
 
 ##### `q` (query)
 
-The `q` (query) parameter filters the results to only those that include that search term. The `q` parameter supports `AND`, `OR` and `NOT` operators. For example, let's see if the Guardian has any content on political debates: `https://content.guardianapis.com/search?q=debates`
+The `q` (query) parameter filters the results to only those that include that search term. The `q`
+parameter supports `AND`, `OR` and `NOT` operators. For example, let's see if the Guardian has any
+content on political debates: `https://content.guardianapis.com/search?q=debates`
 
-Here the q parameter filters the results to only those that include that search term. In this case, there are many results, so we might want to filter down the response to something more meaningful, specifically looking for political content published in 2014, for example: `https://content.guardianapis.com/search?q=debate&tag=politics/politics&from-date=2014-01-01&api-key=test`
+Here the q parameter filters the results to only those that include that search term. In this case,
+there are many results, so we might want to filter down the response to something more meaningful,
+specifically looking for political content published in 2014, for example:
+`https://content.guardianapis.com/search?q=debate&tag=politics/politics&from-date=2014-01-01&api-key=test`
 
 ---
 
 ##### `tag`
 
-A tag is a piece of data that is used to categorise content. All Guardian content is manually categorised using these tags, of which there are more than 50,000. Use this parameter to filter results by showing only the ones matching the entered tag. See <a href="https://content.guardianapis.com/tags?api-key=test">here</a> for a list of all tags, and <a href="https://open-platform.theguardian.com/documentation/tag">here</a> for the tags endpoint documentation.
+A tag is a piece of data that is used to categorise content. All Guardian content is manually
+categorised using these tags, of which there are more than 50,000. Use this parameter to filter
+results by showing only the ones matching the entered tag. See
+<a href="https://content.guardianapis.com/tags?api-key=test">here</a> for a list of all tags, and
+<a href="https://open-platform.theguardian.com/documentation/tag">here</a> for the tags endpoint
+documentation.
 
 ---
 
 ##### `section`
 
-Use this to filter the results by a particular section. See <a href="https://content.guardianapis.com/sections?api-key=test">here</a> for a list of all sections, and <a href="https://open-platform.theguardian.com/documentation/section">here</a> for the sections endpoint documentation.
+Use this to filter the results by a particular section. See
+<a href="https://content.guardianapis.com/sections?api-key=test">here</a> for a list of all
+sections, and <a href="https://open-platform.theguardian.com/documentation/section">here</a> for the
+sections endpoint documentation.
 
 ---
 
 ##### `order-by`
 
-Use this to sort the results. The three available sorting options are - newest, oldest, relevance. For enabling incremental syncs set order-by to oldest.
+Use this to sort the results. The three available sorting options are - newest, oldest, relevance.
+For enabling incremental syncs set order-by to oldest.
 
 ---
 
 ##### `start_date`
 
-Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the start_date will not be shown.
+Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the start_date will
+not be shown.
 
 ---
 
 ##### `end_date`
 
-Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the end_date will not be shown.
-Default is set to the current date (today) for incremental syncs.
+Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the end_date will
+not be shown. Default is set to the current date (today) for incremental syncs.
 
 ---
 
@@ -94,7 +111,8 @@ The source is capable of syncing the content stream.
 
 ## Supported sync modes
 
-The Guardian API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Guardian API source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
@@ -104,7 +122,9 @@ The Guardian API source connector supports the following [sync modes](https://do
 
 ## Performance considerations
 
-The key that you are assigned is rate-limited and as such any applications that depend on making large numbers of requests on a polling basis are likely to exceed their daily quota and thus be prevented from making further requests until the next period begins.
+The key that you are assigned is rate-limited and as such any applications that depend on making
+large numbers of requests on a polling basis are likely to exceed their daily quota and thus be
+prevented from making further requests until the next period begins.
 
 ## Changelog
 

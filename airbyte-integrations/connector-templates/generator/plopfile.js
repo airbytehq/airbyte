@@ -6,7 +6,7 @@ const changeCase = require("change-case");
 const getSuccessMessage = function (
   connectorName,
   outputPath,
-  additionalMessage
+  additionalMessage,
 ) {
   return `
 🚀 🚀 🚀 🚀 🚀 🚀
@@ -14,8 +14,8 @@ const getSuccessMessage = function (
 Success!
 
 Your ${connectorName} connector has been created at .${path.resolve(
-  outputPath
-)}.
+    outputPath,
+  )}.
 
 Follow the TODOs in the generated module to implement your connector.
 
@@ -78,7 +78,7 @@ module.exports = function (plop) {
     }
     if (inSubFolder) {
       return `${defaultSpecPathFolderPrefix}${changeCase.snakeCase(
-        this.name
+        this.name,
       )}${suffix}/${specFileName}`;
     } else {
       return specFileName;
@@ -90,8 +90,8 @@ module.exports = function (plop) {
       getSuccessMessage(
         answers.name,
         plopApi.renderString(config.outputPath, answers),
-        config.message
-      )
+        config.message,
+      ),
     );
   });
 
@@ -113,8 +113,7 @@ module.exports = function (plop) {
   });
 
   plop.setGenerator("Python CDK Source", {
-    description:
-      "Generate a source connector based on Python CDK.",
+    description: "Generate a source connector based on Python CDK.",
     prompts: [
       {
         type: "input",
@@ -143,8 +142,7 @@ module.exports = function (plop) {
   });
 
   plop.setGenerator("Low-code Source", {
-    description:
-      "Generate a source based on the low-code CDK.",
+    description: "Generate a source based on the low-code CDK.",
     prompts: [
       {
         type: "input",

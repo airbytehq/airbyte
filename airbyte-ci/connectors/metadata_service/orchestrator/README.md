@@ -6,8 +6,8 @@ This is the Orchestrator for Airbyte metadata built on Dagster.
 
 ## Installation
 
-Metadata Orchestrator uses Poetry as dependency manager and build system. The guide below
-assumes you have Poetry installed.
+Metadata Orchestrator uses Poetry as dependency manager and build system. The guide below assumes
+you have Poetry installed.
 
 ```bash
 poetry install

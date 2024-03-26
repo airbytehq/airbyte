@@ -12,7 +12,12 @@ This page contains the setup guide and reference information for the Klaviyo sou
 ### Step 1: Set up Klaviyo
 
 1. Create a [Klaviyo account](https://www.klaviyo.com)
-2. Create a [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3). Make sure you selected all [scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283) corresponding to the streams you would like to replicate. You can find which scope is required for a specific stream by navigating to the relevant API documentation for the streams Airbyte supports.
+2. Create a
+   [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
+   Make sure you selected all [scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283)
+   corresponding to the streams you would like to replicate. You can find which scope is required
+   for a specific stream by navigating to the relevant API documentation for the streams Airbyte
+   supports.
 
 ### Step 2: Set up the Klaviyo connector in Airbyte
 
@@ -20,13 +25,16 @@ This page contains the setup guide and reference information for the Klaviyo sou
 2. Click **Sources** and then click **+ new source**.
 3. On the Set up the source page, select **Klaviyo** from the **Source type** dropdown.
 4. Enter a name for the Klaviyo connector.
-5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
+5. For **Api Key**, enter the Klaviyo
+   [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date
+   will be replicated. This field is optional - if not provided, all data will be replicated.
 7. Click **Set up source**.
 
 ## Supported sync modes
 
-The Klaviyo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Klaviyo source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -46,14 +54,17 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ## Performance considerations
 
-The connector is restricted by Klaviyo [requests limitation](https://apidocs.klaviyo.com/reference/api-overview#rate-limits).
+The connector is restricted by Klaviyo
+[requests limitation](https://apidocs.klaviyo.com/reference/api-overview#rate-limits).
 
-The Klaviyo connector should not run into Klaviyo API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+The Klaviyo connector should not run into Klaviyo API limitations under normal usage.
+[Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit
+issues that are not automatically retried successfully.
 
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
@@ -62,7 +73,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 ## Changelog
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
-|:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
 | `2.3.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)   | Pin airbyte-cdk version to `^0`                                                                                               |
 | `2.2.0`  | 2024-02-27 | [35637](https://github.com/airbytehq/airbyte/pull/35637)   | Fix `predictive_analytics` field in stream `profiles`                                                                         |
 | `2.1.3`  | 2024-02-15 | [35336](https://github.com/airbytehq/airbyte/pull/35336)   | Added type transformer for the `profiles` stream.                                                                             |

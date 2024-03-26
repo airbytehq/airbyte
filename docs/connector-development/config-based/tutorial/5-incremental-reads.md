@@ -1,16 +1,18 @@
 # Step 5: Incremental Reads
 
-We now have a working implementation of a connector reading the latest exchange rates for a given currency.
-In this section, we'll update the source to read historical data instead of only reading the latest exchange rates.
+We now have a working implementation of a connector reading the latest exchange rates for a given
+currency. In this section, we'll update the source to read historical data instead of only reading
+the latest exchange rates.
 
-According to the API documentation, we can read the exchange rate for a specific date by querying the `"/exchangerates_data/{date}"` endpoint instead of `"/exchangerates_data/latest"`.
+According to the API documentation, we can read the exchange rate for a specific date by querying
+the `"/exchangerates_data/{date}"` endpoint instead of `"/exchangerates_data/latest"`.
 
 We'll now add a `start_date` property to the connector.
 
 First we'll update the spec block in `source_exchange_rates_tutorial/manifest.yaml`
 
 ```yaml
-spec: 
+spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -31,9 +33,8 @@ spec:
       access_key:
         type: string
         description: >-
-          Your API Access Key. See <a
-          href="https://exchangeratesapi.io/documentation/">here</a>. The key is
-          case sensitive.
+          Your API Access Key. See <a href="https://exchangeratesapi.io/documentation/">here</a>.
+          The key is case sensitive.
         airbyte_secret: true
       base:
         type: string
@@ -46,8 +47,7 @@ spec:
 ```
 
 Then we'll set the `start_date` to last week in our connection config in `secrets/config.json`.
-Let's add a start_date field to `secrets/config.json`.
-The file should look like
+Let's add a start_date field to `secrets/config.json`. The file should look like
 
 ```json
 {
@@ -59,8 +59,9 @@ The file should look like
 
 where the start date should be 7 days in the past.
 
-And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`.
-Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/exchangerates_data/latest`:
+And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`. Note
+that we are setting a default value because the `check` operation does not know the `start_date`.
+We'll default to hitting `/exchangerates_data/latest`:
 
 ```yaml
 definitions:
@@ -79,16 +80,20 @@ You can test these changes by executing the `read` operation:
 poetry run source-exchange-rates-tutorial read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
-By reading the output record, you should see that we read historical data instead of the latest exchange rate.
-For example:
+By reading the output record, you should see that we read historical data instead of the latest
+exchange rate. For example:
+
 > "historical": true, "base": "USD", "date": "2022-07-18"
 
 The connector will now always read data for the start date, which is not exactly what we want.
-Instead, we would like to iterate over all the dates between the `start_date` and today and read data for each day.
+Instead, we would like to iterate over all the dates between the `start_date` and today and read
+data for each day.
 
-We can do this by adding a `DatetimeBasedCursor` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
+We can do this by adding a `DatetimeBasedCursor` to the connector definition, and update the `path`
+to point to the stream_slice's `start_date`:
 
-More details on incremental syncs can be found [here](../understanding-the-yaml-file/incremental-syncs.md).
+More details on incremental syncs can be found
+[here](../understanding-the-yaml-file/incremental-syncs.md).
 
 Let's first define a datetime cursor at the top level of the connector definition:
 
@@ -110,8 +115,10 @@ definitions:
 
 and refer to it in the stream.
 
-This will generate time windows from the start time until the end time, where each window is exactly one day.
-The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
+This will generate time windows from the start time until the end time, where each window is exactly
+one day. The start time is defined in the config file, while the end time is defined by the
+`now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See
+the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
 
 ```yaml
 definitions:
@@ -156,7 +163,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: [ ]
+      field_path: []
   requester:
     url_base: "https://api.apilayer.com"
     http_method: "GET"
@@ -202,7 +209,7 @@ streams:
 check:
   stream_names:
     - "rates"
-spec: 
+spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -223,9 +230,8 @@ spec:
       access_key:
         type: string
         description: >-
-          Your API Access Key. See <a
-          href="https://exchangeratesapi.io/documentation/">here</a>. The key is
-          case sensitive.
+          Your API Access Key. See <a href="https://exchangeratesapi.io/documentation/">here</a>.
+          The key is case sensitive.
         airbyte_secret: true
       base:
         type: string
@@ -251,8 +257,9 @@ The operation should now output more than one record:
 
 ## Supporting incremental syncs
 
-Instead of always reading data for all dates, we would like the connector to only read data for dates we haven't read yet.
-This can be achieved by updating the catalog to run in incremental mode (`integration_tests/configured_catalog.json`):
+Instead of always reading data for all dates, we would like the connector to only read data for
+dates we haven't read yet. This can be achieved by updating the catalog to run in incremental mode
+(`integration_tests/configured_catalog.json`):
 
 ```json
 {
@@ -261,10 +268,7 @@ This can be achieved by updating the catalog to run in incremental mode (`integr
       "stream": {
         "name": "rates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
@@ -281,8 +285,8 @@ In addition to records, the `read` operation now also outputs state messages:
 
 Where the date ("2022-07-15") should be replaced by today's date.
 
-We can simulate incremental syncs by creating a state file containing the last state produced by the `read` operation.
-`source-exchange-rates-tutorial/integration_tests/sample_state.json`:
+We can simulate incremental syncs by creating a state file containing the last state produced by the
+`read` operation. `source-exchange-rates-tutorial/integration_tests/sample_state.json`:
 
 ```json
 {
@@ -307,7 +311,8 @@ There shouldn't be any data read if the state is today's date:
 
 ## Next steps:
 
-Next, we'll run the [Connector Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
+Next, we'll run the
+[Connector Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
 
 ## More readings
 

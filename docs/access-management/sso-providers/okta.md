@@ -3,8 +3,7 @@ sidebar_label: Okta
 products: oss-enterprise, cloud-teams
 ---
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
+import Tabs from "@theme/Tabs"; import TabItem from "@theme/TabItem";
 
 # Setup Single Sign-On via Okta
 
@@ -14,13 +13,15 @@ Airbyte will communicate with your Okta account using OpenID Connect (OIDC).
 
 ## Creating an Okta app for Airbyte
 
-:::info
-The following steps need to be executed by an administrator of your company's Okta account.
+:::info The following steps need to be executed by an administrator of your company's Okta account.
 :::
 
-You will need to create a new Okta OIDC App Integration for your Airbyte. Documentation on how to do this in Okta can be found [here](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm).
+You will need to create a new Okta OIDC App Integration for your Airbyte. Documentation on how to do
+this in Okta can be found
+[here](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm).
 
-You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
+You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web
+Application** as the application type:
 
 ![Screenshot of Okta app integration creation modal](./assets/okta-create-new-app-integration.png)
 
@@ -63,6 +64,7 @@ On the following screen you'll need to configure all parameters for your Okta ap
     * Your **Okta domain** (it's not specific to this application, see [Find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
     * **Client ID**
     * **Client Secret**
+
   </TabItem>
   <TabItem value="self-managed" label="Self Hosted">
     Create the application with the following parameters:
@@ -104,5 +106,6 @@ On the following screen you'll need to configure all parameters for your Okta ap
     * Client Secret
 
     Visit the [implementation guide](/enterprise-setup/implementation-guide.md) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
+
   </TabItem>
 </Tabs>

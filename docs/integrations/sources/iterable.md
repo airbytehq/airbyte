@@ -4,21 +4,26 @@ This page contains the setup guide and reference information for the Iterable so
 
 ## Prerequisites
 
-To set up the Iterable source connector, you'll need the Iterable [`Server-side` API Key with `standard` permissions](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
+To set up the Iterable source connector, you'll need the Iterable
+[`Server-side` API Key with `standard` permissions](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
 
 ## Set up the Iterable connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the
+   Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Iterable** from the Source type dropdown.
 4. Enter the name for the Iterable connector.
-5. For **API Key**, enter the [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
+5. For **API Key**, enter the
+   [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after
+   this date will be replicated.
 7. Click **Set up source**.
 
 ## Supported sync modes
 
-The Iterable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Iterable source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -74,13 +79,16 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 ## Additional notes
 
-[List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to unexpected failures when trying to get users list for specific list ids. See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
+[List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meet
+`500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to
+unexpected failures when trying to get users list for specific list ids.
+See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                                                            |
 | 0.3.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                                                                   |
 | 0.2.2   | 2024-02-12 | [35150](https://github.com/airbytehq/airbyte/pull/35150) | Manage dependencies with Poetry.                                                                                                                                           |
 | 0.2.1   | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234)   | prepare for airbyte-lib                                                                                                                                                    |

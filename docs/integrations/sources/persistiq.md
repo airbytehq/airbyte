@@ -24,7 +24,9 @@ This Source is capable of syncing the following streams:
 
 ### Performance considerations
 
-The PersistIq connector should not run into PersistIq API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The PersistIq connector should not run into PersistIq API limitations under normal usage. Please
+[create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
 ## Getting started
 
@@ -40,5 +42,5 @@ Please read [How to find your API key](https://apidocs.persistiq.com/#introducti
 
 | Version | Date       | Pull Request                                           | Subject                  |
 | :------ | :--------- | :----------------------------------------------------- | :----------------------- |
-| 0.2.0   | 2023-10-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate to low code |
+| 0.2.0   | 2023-10-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)   | Migrate to low code      |
 | 0.1.0   | 2022-01-21 | [9515](https://github.com/airbytehq/airbyte/pull/9515) | 🎉 New Source: PersistIq |

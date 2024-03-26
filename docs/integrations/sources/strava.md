@@ -25,8 +25,10 @@ Follow these steps to get the required credentials and inputs:
   - Enter this URL into your browser (make sure to add your `client_id` from previous step:
     - `https://www.strava.com/oauth/authorize?client_id=[REPLACE_WITH_YOUR_CLIENT_ID]&response_type=code&redirect_uri=https://localhost/exchange_token&approval_prompt=force&scope=activity:read_all`
   - Authorize through the UI
-  - Browser will redirect you to an empty page with a URL similar to `https://localhost/exchange_token?state=&code=b55003496d87a9f0b694ca1680cd5690d27d9d28&scope=activity:read_all`
-  - Copy the authorization code above (in this example it would be `b55003496d87a9f0b694ca1680cd5690d27d9d28`)
+  - Browser will redirect you to an empty page with a URL similar to
+    `https://localhost/exchange_token?state=&code=b55003496d87a9f0b694ca1680cd5690d27d9d28&scope=activity:read_all`
+  - Copy the authorization code above (in this example it would be
+    `b55003496d87a9f0b694ca1680cd5690d27d9d28`)
   - Make a cURL request to exchange the authorization code and scope for a refresh token:
   - ```
     curl -X POST https://www.strava.com/oauth/token \
@@ -57,10 +59,16 @@ Follow these steps to get the required credentials and inputs:
           }
       }
     ```
-  - Refer to Strava's [Getting Started - Oauth](https://developers.strava.com/docs/getting-started/#oauth) or [Authentication](https://developers.strava.com/docs/authentication/) documents for more information
+  - Refer to Strava's
+    [Getting Started - Oauth](https://developers.strava.com/docs/getting-started/#oauth) or
+    [Authentication](https://developers.strava.com/docs/authentication/) documents for more
+    information
 - `athlete_id`
-  - Go to your athlete page by clicking your name on the [Strava dashboard](https://www.strava.com/dashboard) or click on "My Profile" on the drop down after hovering on your top bar icon
-  - The number at the end of the url will be your `athlete_id`. For example `17831421` would be the `athlete_id` for https://www.strava.com/athletes/17831421
+  - Go to your athlete page by clicking your name on the
+    [Strava dashboard](https://www.strava.com/dashboard) or click on "My Profile" on the drop down
+    after hovering on your top bar icon
+  - The number at the end of the url will be your `athlete_id`. For example `17831421` would be the
+    `athlete_id` for https://www.strava.com/athletes/17831421
 
 <!-- /env:oss -->
 
@@ -69,8 +77,11 @@ Follow these steps to get the required credentials and inputs:
 **For Airbyte Cloud:**
 
 - `athlete_id`
-  - Go to your athlete page by clicking your name on the [Strava dashboard](https://www.strava.com/dashboard) or click on "My Profile" on the drop down after hovering on your top bar icon
-  - The number at the end of the url will be your `athlete_id`. For example `17831421` would be the `athlete_id` for https://www.strava.com/athletes/17831421
+  - Go to your athlete page by clicking your name on the
+    [Strava dashboard](https://www.strava.com/dashboard) or click on "My Profile" on the drop down
+    after hovering on your top bar icon
+  - The number at the end of the url will be your `athlete_id`. For example `17831421` would be the
+    `athlete_id` for https://www.strava.com/athletes/17831421
 
 <!-- /env:cloud -->
 
@@ -82,7 +93,8 @@ Follow these steps to get the required credentials and inputs:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Strava** from the Source type dropdown and enter a name for this connector.
+3. On the source setup page, select **Strava** from the Source type dropdown and enter a name for
+   this connector.
 4. lick `Authenticate your account`.
 5. Log in and Authorize to the Strava account
 6. Set required **Athlete ID** and **Start Date**
@@ -95,7 +107,8 @@ Follow these steps to get the required credentials and inputs:
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Strava** from the Source type dropdown and enter a name for this connector.
+3. On the source setup page, select **Strava** from the Source type dropdown and enter a name for
+   this connector.
 4. Add **Client ID**, **Client Secret** and **Refresh Token**
 5. Set required **Athlete ID** and **Start Date**
 6. Click `Set up source`.
@@ -103,7 +116,8 @@ Follow these steps to get the required credentials and inputs:
 
 ## Supported sync modes
 
-The Strava source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Strava source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -113,12 +127,14 @@ The Strava source connector supports the following [sync modes](https://docs.air
 ## Supported streams
 
 - [Athlete Stats](https://developers.strava.com/docs/reference/#api-Athletes-getStats)
-- [Activities](https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities) \(Incremental\)
+- [Activities](https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities)
+  \(Incremental\)
 
 ## Performance considerations
 
-Strava API has limitations to 100 requests every 15 minutes, 1000 daily.
-More information about Strava rate limits and adjustments to those limits can be found [here](https://developers.strava.com/docs/rate-limits).
+Strava API has limitations to 100 requests every 15 minutes, 1000 daily. More information about
+Strava rate limits and adjustments to those limits can be found
+[here](https://developers.strava.com/docs/rate-limits).
 
 ## Changelog
 

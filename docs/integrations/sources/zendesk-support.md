@@ -2,7 +2,8 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Zendesk Support](https://www.zendesk.com/) source connector.
+This page contains the setup guide and reference information for the
+[Zendesk Support](https://www.zendesk.com/) source connector.
 
 </HideInUI>
 
@@ -18,31 +19,39 @@ The Zendesk Support source connector supports two authentication methods:
 - API token
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
-We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
+We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the
+setup process and allows you to authenticate
+[directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
-We recommend using an API token to authenticate your Zendesk Support account. Please follow the steps below to generate this key.
+We recommend using an API token to authenticate your Zendesk Support account. Please follow the
+steps below to generate this key.
 
-:::note
-If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can follow the steps laid out in [this Zendesk article](https://support.zendesk.com/hc/en-us/articles/4408845965210) to obtain your client ID, client secret and access token. Please ensure you set the scope to `read` when generating the access token.
-:::
+:::note If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can follow the
+steps laid out in
+[this Zendesk article](https://support.zendesk.com/hc/en-us/articles/4408845965210) to obtain your
+client ID, client secret and access token. Please ensure you set the scope to `read` when generating
+the access token. :::
 
 ### Generate an API token
 
 1. Log in to your Zendesk account.
-2. Click the **Zendesk Products** icon (four squares) in the top-right corner, then select **Admin Center**.
+2. Click the **Zendesk Products** icon (four squares) in the top-right corner, then select **Admin
+   Center**.
 3. In the left navbar, click **Apps and Integrations**, then select **APIs** > **Zendesk API**.
 4. In the **Settings** tab, toggle the option to enable token access.
 5. Click the **Add API token** button. You may optionally provide a token description.
 
-   :::caution
-   Be sure to copy the token and save it in a secure location. You will not be able to access the token's value after you close the page.
-   :::
+   :::caution Be sure to copy the token and save it in a secure location. You will not be able to
+   access the token's value after you close the page. :::
 
 6. Click **Save**.
 <!-- /env:oss -->
@@ -55,13 +64,24 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 4. For **Source name**, enter a name to help you identify this source.
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
-- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
-<!-- /env:cloud -->
-<!-- env:oss -->
-- **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
+
+- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0** from the Authentication
+  dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support
+  and authorize your account.
+  <!-- /env:cloud -->
+  <!-- env:oss -->
+- **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the
+Authentication dropdown and enter the API token you generated, as well as the email address
+associated with your Zendesk Support account.
 <!-- /env:oss -->
-6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
-7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
+
+6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL.
+   For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is
+   your subdomain.
+7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time
+   programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will
+   be replicated. If this field is left blank, Airbyte will replicate the data for the last two
+   years by default.
 8. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
@@ -69,60 +89,85 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 ## Supported sync modes
 
-The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Zendesk Support source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
 - Incremental Sync | Append
 - Incremental Sync | Deduped History
 
-:::note
-There are two types of incremental sync:
+:::note There are two types of incremental sync:
 
-1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync).
-2. Client-Side Incremental (API returns all available data and connector filters out only new records).
-:::
+1. Incremental (standard server-side, where API returns only the data updated or generated since the
+   last sync).
+2. Client-Side Incremental (API returns all available data and connector filters out only new
+   records). :::
 
 ## Supported streams
 
 The Zendesk Support source connector supports the following streams:
 
 - [Account Attributes](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-account-attributes)
-- [Articles](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles) \(Incremental\)
-- [Article Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
-- [Article Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_comments/#list-comments) \(Incremental\)
-- [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
+- [Articles](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles)
+  \(Incremental\)
+- [Article Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
+  \(Incremental\)
+- [Article Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_comments/#list-comments)
+  \(Incremental\)
+- [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
+  \(Incremental\)
 - [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
-- [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
+- [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\)
+  (Only available for enterprise accounts)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
-- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
+- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
+  \(Incremental\)
 - [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
-- [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
+- [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships)
+  \(Incremental\)
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
 - [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
-- [Organization Fields](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields) \(Incremental\)
-- [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
-- [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts) \(Incremental\)
-- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments) \(Incremental\)
-- [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
-- [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
-- [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
-- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Incremental\)
+- [Organization Fields](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields)
+  \(Incremental\)
+- [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/)
+  \(Incremental\)
+- [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts)
+  \(Incremental\)
+- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments)
+  \(Incremental\)
+- [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
+  \(Incremental\)
+- [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
+  \(Incremental\)
+- [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings)
+  \(Incremental\)
+- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
+  \(Incremental\)
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
-- [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
-- [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
+- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based)
+  \(Incremental\)
+- [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side
+  Incremental\)
+- [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export)
+  \(Incremental\)
 - [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
 - [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\)
-- [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
-- [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
-- [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
-- [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
-- [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics)
+  \(Incremental\)
+- [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
+  \(Incremental\)
+- [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics)
+  \(Incremental\)
+- [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/)
+  \(Incremental\)
+- [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export)
+  \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
 ### Deleted Records Support
+
 The Zendesk Support connector fetches deleted records in the following streams:
 
 | Stream                   | Deletion indicator field |
@@ -144,13 +189,17 @@ Expand to see details about Zendesk Support connector limitations and troublesho
 
 #### Rate limiting
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
+The connector is restricted by normal Zendesk
+[requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
 
-The Zendesk connector ideally should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Zendesk connector ideally should not run into Zendesk API limitations under normal usage.
+[Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
 ### Troubleshooting
 
-* Check out common troubleshooting issues for the Zendesk Support source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Zendesk Support source connector on our
+  [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 

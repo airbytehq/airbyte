@@ -4,18 +4,19 @@
 
 This destination writes data to GCS bucket.
 
-The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
+The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written
+to its own directory under the bucket.
 
 ### Sync overview
 
 #### Features
 
-| Feature                        | Support | Notes                                                                                                                                                                                               |
-| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                |
+| Feature                        | Support | Notes                                                                                                                                                                                                    |
+| :----------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                     |
 | Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
-| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                     |
-| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                         |
+| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                          |
+| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                              |
 
 ## Configuration
 
@@ -29,11 +30,19 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | Format             | object  | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema).                                                                                                                                               |
 | Part Size          | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize \* 10,000 blocks.                                                                                                                                                       |
 
-Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
+Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is
+supported. More credential types will be added in the future, please
+[submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=)
+with your request.
 
-Additionally, your bucket must be encrypted using a Google-managed encryption key (this is the default setting when creating a new bucket). We currently do not support buckets using customer-managed encryption keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
+Additionally, your bucket must be encrypted using a Google-managed encryption key (this is the
+default setting when creating a new bucket). We currently do not support buckets using
+customer-managed encryption keys (CMEK). You can view this setting under the "Configuration" tab of
+your GCS bucket, in the `Encryption type` row.
 
-⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
+⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be
+wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to
+prevent unexpected data deletion from misconfiguration. ⚠️
 
 The full path of the output data is:
 
@@ -58,20 +67,29 @@ bucket name
 
 Please note that the stream name may contain a prefix, if it is configured on the connection.
 
-The rationales behind this naming pattern are: 1. Each stream has its own directory. 2. The data output files can be sorted by upload time. 3. The upload time composes of a date part and millis part so that it is both readable and unique.
+The rationales behind this naming pattern are: 1. Each stream has its own directory. 2. The data
+output files can be sorted by upload time. 3. The upload time composes of a date part and millis
+part so that it is both readable and unique.
 
-A data sync may create multiple files as the output files can be partitioned by size (targeting a size of 200MB compressed or lower) .
+A data sync may create multiple files as the output files can be partitioned by size (targeting a
+size of 200MB compressed or lower) .
 
 ## Output Schema
 
-Each stream will be outputted to its dedicated directory according to the configuration. The complete datastore of each stream includes all the output files under that directory. You can think of the directory as equivalent of a Table in the database world.
+Each stream will be outputted to its dedicated directory according to the configuration. The
+complete datastore of each stream includes all the output files under that directory. You can think
+of the directory as equivalent of a Table in the database world.
 
 - Under Full Refresh Sync mode, old output files will be purged before new files are created.
-- Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
+- Under Incremental - Append Sync mode, new output files will be added that only contain the new
+  data.
 
 ### Avro
 
-[Apache Avro](https://avro.apache.org/) serializes data in a compact binary format. Currently, the Airbyte S3 Avro connector always uses the [binary encoding](http://avro.apache.org/docs/current/spec.html#binary_encoding), and assumes that all data records follow the same schema.
+[Apache Avro](https://avro.apache.org/) serializes data in a compact binary format. Currently, the
+Airbyte S3 Avro connector always uses the
+[binary encoding](http://avro.apache.org/docs/current/spec.html#binary_encoding), and assumes that
+all data records follow the same schema.
 
 #### Configuration
 
@@ -89,7 +107,9 @@ Here is the available compression codecs:
     - Range `[0, 9]`. Default to 6.
     - Level 0-3 are fast with medium compression.
     - Level 4-6 are fairly slow with high compression.
-    - Level 7-9 are like level 6 but use bigger dictionaries and have higher memory requirements. Unless the uncompressed size of the file exceeds 8 MiB, 16 MiB, or 32 MiB, it is waste of memory to use the presets 7, 8, or 9, respectively.
+    - Level 7-9 are like level 6 but use bigger dictionaries and have higher memory requirements.
+      Unless the uncompressed size of the file exceeds 8 MiB, 16 MiB, or 32 MiB, it is waste of
+      memory to use the presets 7, 8, or 9, respectively.
 - `zstandard`
   - Compression level
     - Range `[-5, 22]`. Default to 3.
@@ -102,11 +122,17 @@ Here is the available compression codecs:
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the
+Json object is converted to an Avro record. Because the data stream can come from any data source,
+the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source
+data is converted to Avro and the current limitations
+[here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
 ### CSV
 
-Like most of the other Airbyte destination connectors, usually the output has three columns: a UUID, an emission timestamp, and the data blob. With the CSV output, it is possible to normalize \(flatten\) the data blob to multiple columns.
+Like most of the other Airbyte destination connectors, usually the output has three columns: a UUID,
+an emission timestamp, and the data blob. With the CSV output, it is possible to normalize
+\(flatten\) the data blob to multiple columns.
 
 | Column                | Condition                                                                                         | Description                                                              |
 | :-------------------- | :------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
@@ -139,11 +165,13 @@ With root level normalization, the output CSV is:
 | :------------------------------------- | :-------------------- | :-------- | :----------------------------------- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000         | 123       | `{ "first": "John", "last": "Doe" }` |
 
-Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.csv.gz`).
+Output files can be compressed. The default option is GZIP compression. If compression is selected,
+the output filename will have an extra extension (GZIP: `.csv.gz`).
 
 ### JSON Lines \(JSONL\)
 
-[Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a structure as follows:
+[Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a
+structure as follows:
 
 ```json
 {
@@ -181,7 +209,8 @@ They will be like this in the output file:
 { "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
-Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.jsonl.gz`).
+Output files can be compressed. The default option is GZIP compression. If compression is selected,
+the output filename will have an extra extension (GZIP: `.jsonl.gz`).
 
 ### Parquet
 
@@ -198,11 +227,19 @@ The following configuration is available to configure the Parquet output:
 | `dictionary_page_size_kb` | integer |  1024 \(KB\)   | **Dictionary Page Size** in KB. There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary.                                     |
 | `dictionary_encoding`     | boolean |     `true`     | **Dictionary encoding**. This parameter controls whether dictionary encoding is turned on.                                                                                                                                        |
 
-These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/docs/file-format/configurations) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
+These parameters are related to the `ParquetOutputFormat`. See the
+[Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html)
+for more details. Also see
+[Parquet documentation](https://parquet.apache.org/docs/file-format/configurations) for their
+recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the
+Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet
+format. Because the data stream can come from any data source, the Json to Avro conversion process
+has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the
+current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
 ## Getting started
 
@@ -215,11 +252,16 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 - Fill up GCS info
   - **GCS Bucket Name**
-    - See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
+    - See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to
+      create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none
+      or Object versioning.
   - **GCS Bucket Region**
   - **HMAC Key Access ID**
-    - See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
-    - We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
+    - See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to
+      generate an access key. For more information on hmac keys please reference the
+      [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
+    - We recommend creating an Airbyte-specific user or service account. This user or account will
+      require the following permissions for the bucket:
       ```
       storage.multipartUploads.abort
       storage.multipartUploads.create
@@ -228,17 +270,20 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
       storage.objects.get
       storage.objects.list
       ```
-      You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
+      You can set those by going to the permissions tab in the GCS bucket and adding the appropriate
+      the email address of the service account or user and adding the aforementioned permissions.
   - **Secret Access Key**
     - Corresponding key to the above access ID.
-- Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
+- Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your
+  networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is
+  via the check connection tool in the UI.
 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
-| 0.4.6 | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285) | Adopt CDK 0.20.8 |
-| 0.4.5 | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745) | Adopt CDK 0.19.0 |
+| 0.4.6   | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285)   | Adopt CDK 0.20.8                                                                                                           |
+| 0.4.5   | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745)   | Adopt CDK 0.19.0                                                                                                           |
 | 0.4.4   | 2023-07-14 | [#28345](https://github.com/airbytehq/airbyte/pull/28345)  | Increment patch to trigger a rebuild                                                                                       |
 | 0.4.3   | 2023-07-05 | [#27936](https://github.com/airbytehq/airbyte/pull/27936)  | Internal code update                                                                                                       |
 | 0.4.2   | 2023-06-30 | [#27891](https://github.com/airbytehq/airbyte/pull/27891)  | Internal code update                                                                                                       |

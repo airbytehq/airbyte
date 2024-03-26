@@ -23,10 +23,12 @@ be used in CI. They will detect the list of connectors that are modified compare
 of the repository, and only run checks on them. You can run them locally, too, with
 `poetry run TOOL_NAME`.
 
-- `check-test-strictness-level` verifies that connectors define strictness level as `high` in `acceptance-test-config.yml`.
+- `check-test-strictness-level` verifies that connectors define strictness level as `high` in
+  `acceptance-test-config.yml`.
 - `write-review-requirements-file` writes required reviewers github action file.
 - `print-mandatory-reviewers`
-- `allowed-hosts-checks` verifies that connectors have `allowedHosts` filled out in their `metadata.yaml` files.
+- `allowed-hosts-checks` verifies that connectors have `allowedHosts` filled out in their
+  `metadata.yaml` files.
 
 ## Contributing to `connector_ops`
 

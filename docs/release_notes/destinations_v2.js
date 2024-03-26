@@ -159,10 +159,14 @@ export const PostgresMigrationGenerator = () => {
     }
   }
   function generateSql(og_namespace, new_namespace, name, raw_schema) {
-    let v2RawTableName =
-        concatenateRawTableName(new_namespace, name).toLowerCase();
+    let v2RawTableName = concatenateRawTableName(
+      new_namespace,
+      name,
+    ).toLowerCase();
     let v1namespace = postgresConvertStreamName(og_namespace);
-    let v1name = postgresConvertStreamName("_airbyte_raw_" + name).toLowerCase();
+    let v1name = postgresConvertStreamName(
+      "_airbyte_raw_" + name,
+    ).toLowerCase();
     return `CREATE SCHEMA IF NOT EXISTS "${raw_schema}";
 DROP TABLE IF EXISTS "${raw_schema}".${v2RawTableName};
 CREATE TABLE "${raw_schema}".${v2RawTableName} (
@@ -181,7 +185,7 @@ INSERT INTO "${raw_schema}".${v2RawTableName} (
 );`;
   }
   return (
-      <MigrationGenerator destination="postgres" generateSql={generateSql} />
+    <MigrationGenerator destination="postgres" generateSql={generateSql} />
   );
 };
 
@@ -194,14 +198,14 @@ If your stream has no namespace, take the default value from the destination con
   });
   function updateSql(event) {
     let og_namespace = document.getElementById(
-      "og_stream_namespace_" + destination
+      "og_stream_namespace_" + destination,
     ).value;
     let new_namespace = document.getElementById(
-      "new_stream_namespace_" + destination
+      "new_stream_namespace_" + destination,
     ).value;
     let name = document.getElementById("stream_name_" + destination).value;
     var raw_dataset = document.getElementById(
-      "raw_dataset_" + destination
+      "raw_dataset_" + destination,
     ).value;
     if (raw_dataset === "") {
       raw_dataset = "airbyte_internal";

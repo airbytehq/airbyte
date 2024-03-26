@@ -14,85 +14,121 @@ To authenticate the Notion source connector, you need to use **one** of the foll
 - Access Token
 
 <!-- env:cloud -->
-:::note
-**For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to Notion, as this method significantly simplifies the setup process. If you use OAuth2.0 authorization in Airbyte Cloud, you do **not** need to create and configure a new integration in Notion. Instead, you can proceed straight to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
-:::
+
+:::note **For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to
+Notion, as this method significantly simplifies the setup process. If you use OAuth2.0 authorization
+in Airbyte Cloud, you do **not** need to create and configure a new integration in Notion. Instead,
+you can proceed straight to
+[setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte). :::
+
 <!-- /env:cloud -->
 
-We have provided a quick setup guide for creating an integration in Notion below. If you would like more detailed information and context on Notion integrations, or experience any difficulties with the integration setup process, please refer to the [official Notion documentation](https://developers.notion.com/docs).
+We have provided a quick setup guide for creating an integration in Notion below. If you would like
+more detailed information and context on Notion integrations, or experience any difficulties with
+the integration setup process, please refer to the
+[official Notion documentation](https://developers.notion.com/docs).
 
 ### Step 1: Create an integration in Notion​ and set capabilities
 
-1. Log in to your Notion workspace and navigate to the [My integrations](https://www.notion.so/my-integrations) page. Select **New integration**.
+1. Log in to your Notion workspace and navigate to the
+   [My integrations](https://www.notion.so/my-integrations) page. Select **New integration**.
 
-:::note
-You must be the owner of the Notion workspace to create a new integration associated with it.
-:::
+:::note You must be the owner of the Notion workspace to create a new integration associated with
+it. :::
 
-2. Enter a **Name** for your integration. Make sure you have selected the correct workspace from the **Associated workspace** dropdown menu, and click **Submit**.
-3. In the navbar, select [**Capabilities**](https://developers.notion.com/reference/capabilities). Check the following capabilities based on your use case:
+2. Enter a **Name** for your integration. Make sure you have selected the correct workspace from the
+   **Associated workspace** dropdown menu, and click **Submit**.
+3. In the navbar, select [**Capabilities**](https://developers.notion.com/reference/capabilities).
+   Check the following capabilities based on your use case:
 
-- [**Read content**](https://developers.notion.com/reference/capabilities#content-capabilities): required for all connections.
-- [**Read comments**](https://developers.notion.com/reference/capabilities#comment-capabilities): required if you wish to sync the `Comments` stream
-- [**Read user information**](https://developers.notion.com/reference/capabilities#user-capabilities) (either with or without emails): required if you wish to sync the `Users` stream
+- [**Read content**](https://developers.notion.com/reference/capabilities#content-capabilities):
+  required for all connections.
+- [**Read comments**](https://developers.notion.com/reference/capabilities#comment-capabilities):
+  required if you wish to sync the `Comments` stream
+- [**Read user information**](https://developers.notion.com/reference/capabilities#user-capabilities)
+  (either with or without emails): required if you wish to sync the `Users` stream
 
 ### Step 2: Share pages and acquire authorization credentials
 
 #### Access Token (Cloud and Open Source)
 
-If you are authenticating via Access Token, you will need to manually share each page you want to sync with Airbyte.
+If you are authenticating via Access Token, you will need to manually share each page you want to
+sync with Airbyte.
 
-1. Navigate to the page(s) you want to share with Airbyte. Click the **•••** menu at the top right of the page, select **Add connections**, and choose the integration you created in Step 1.
-2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to [setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
+1. Navigate to the page(s) you want to share with Airbyte. Click the **•••** menu at the top right
+   of the page, select **Add connections**, and choose the integration you created in Step 1.
+2. Once you have selected all the pages to share, you can find and copy the Access Token from the
+   **Secrets** tab of your Notion integration's page. Then proceed to
+   [setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
 
 <!-- env:oss -->
 
 #### OAuth2.0 (Open Source only)
 
-If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will need to make your integration public and acquire your Client ID, Client Secret and Access Token.
+If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will need to make your
+integration public and acquire your Client ID, Client Secret and Access Token.
 
-1. Navigate to the **Distribution** tab in your integration page, and toggle the switch to make the integration public.
-2. Fill out the required fields in the **Organization information** and **OAuth Domain & URIs** section, then click **Submit**.
+1. Navigate to the **Distribution** tab in your integration page, and toggle the switch to make the
+   integration public.
+2. Fill out the required fields in the **Organization information** and **OAuth Domain & URIs**
+   section, then click **Submit**.
 3. Navigate to the **Secrets** tab to find your Client ID and Client Secret.
-4. You need to use your integration's authorization URL to set the necessary page permissions and send a request to obtain your Access Token. A thorough explanation of the necessary steps is provided in the [official Notion documentation](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up). Once you have your Client ID, Client Secret and Access Token, you are ready to proceed to the next step.
+4. You need to use your integration's authorization URL to set the necessary page permissions and
+send a request to obtain your Access Token. A thorough explanation of the necessary steps is
+provided in the
+[official Notion documentation](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up).
+Once you have your Client ID, Client Secret and Access Token, you are ready to proceed to the next
+step.
 <!-- /env:oss -->
 
 ### Step 3: Set up the Notion connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your
+   Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **New source**.
 3. Find and select **Notion** from the list of available sources.
 4. Enter a **Source name** of your choosing.
 5. Choose the method of authentication from the dropdown menu:
 
 <!-- env:cloud -->
+
 #### Authentication for Airbyte Cloud
 
-- **OAuth2.0** (Recommended): Click **Authenticate your Notion account**. When the popup appears, click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow access**.
-- **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private integration's page.
+- **OAuth2.0** (Recommended): Click **Authenticate your Notion account**. When the popup appears,
+  click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow
+  access**.
+- **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private
+integration's page.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 #### Authentication for Airbyte Open Source
 
-- **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private integration's page.
-- **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired after setting up your public integration.
+- **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private
+  integration's page.
+- **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired after
+setting up your public integration.
 <!-- /env:oss -->
 
-6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When using incremental syncs, only data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
+6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by
+   programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When
+   using incremental syncs, only data generated after this date will be replicated. If left blank,
+   Airbyte will set the start date two years from the current date by default.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
-The Notion source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Notion source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Stream    | Full Refresh (Overwrite/Append) | Incremental (Append/Append + Deduped) |
-|-----------|:------------:|:-----------:|
-| Blocks    | ✓           | ✓           |
-| Comments  | ✓           | ✓           |
-| Databases | ✓           | ✓           |
-| Pages     | ✓           | ✓           |
-| Users     | ✓           |             |
+| --------- | :-----------------------------: | :-----------------------------------: |
+| Blocks    |                ✓                |                   ✓                   |
+| Comments  |                ✓                |                   ✓                   |
+| Databases |                ✓                |                   ✓                   |
+| Pages     |                ✓                |                   ✓                   |
+| Users     |                ✓                |                                       |
 
 ## Supported Streams
 
@@ -106,12 +142,16 @@ The Notion source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+The connector is restricted by Notion
+[request limits](https://developers.notion.com/reference/request-limits). The Notion connector
+should not run into Notion API limitations under normal usage.
+[Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit
+issues that are not automatically retried successfully.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
 | 2.1.0   | 2024-02-19 | [35409](https://github.com/airbytehq/airbyte/pull/35409) | Update users stream schema with bot type info fields and block schema with mention type info fields. |
 | 2.0.9   | 2024-02-12 | [35155](https://github.com/airbytehq/airbyte/pull/35155) | Manage dependencies with Poetry.                                                                     |
 | 2.0.8   | 2023-11-01 | [31899](https://github.com/airbytehq/airbyte/pull/31899) | Fix `table_row.cells` property in `Blocks` stream                                                    |
