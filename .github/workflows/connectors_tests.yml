@@ -41,7 +41,7 @@ jobs:
               - '*'
               - 'airbyte-ci/**/*'
               - 'airbyte-integrations/connectors/**/*'
-              - 'airbyte-cdk/**/*'
+              - 'airbyte-cdk/java/**/*'
               - 'buildSrc/**/*'
       # The Connector CI Tests is a status check emitted by airbyte-ci
       # We make it pass once we have determined that there are no changes to the connectors
