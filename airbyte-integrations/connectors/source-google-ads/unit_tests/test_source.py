@@ -17,8 +17,6 @@ from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdLegacy, chunk_date_range
 from source_google_ads.utils import GAQL
 
-from .common import MockGoogleAdsClient
-
 
 @pytest.fixture
 def mock_get_customers(mocker):
