@@ -35,7 +35,7 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
 
   private record ContainerKey<C extends GenericContainer<?>> (Class<? extends ContainerFactory> clazz,
                                                               DockerImageName imageName,
-                                                              List<? extends NamedContainerModifier<C>> methods) {}
+                                                              List<String> modifierNames) {}
 
   ;
 
@@ -93,7 +93,6 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
    *
    * @Deprecated use shared(String, NamedContainerModifier) instead
    */
-  @Deprecated
   public final C shared(String imageName, String... methods) {
     return shared(imageName,
         Stream.of(methods).map(n -> new NamedContainerModifierImpl<C>(n, resolveModifierByName(n))).toList());
@@ -108,13 +107,14 @@ public abstract class ContainerFactory<C extends GenericContainer<?>> {
   }
 
   public final C shared(String imageName, List<? extends NamedContainerModifier<C>> namedContainerModifiers) {
-    final ContainerKey<C> containerKey = new ContainerKey<>(getClass(), DockerImageName.parse(imageName), namedContainerModifiers);
+    final ContainerKey<C> containerKey =
+        new ContainerKey<>(getClass(), DockerImageName.parse(imageName), namedContainerModifiers.stream().map(ncm -> ncm.name()).toList());
     // We deliberately avoid creating the container itself eagerly during the evaluation of the map
     // value.
     // Container creation can be exceedingly slow.
     // Furthermore, we need to handle exceptions raised during container creation.
     ContainerOrException containerOrError = SHARED_CONTAINERS.computeIfAbsent(containerKey,
-        key -> new ContainerOrException(() -> createAndStartContainer(key.imageName(), ((ContainerKey<C>) key).methods())));
+        key -> new ContainerOrException(() -> createAndStartContainer(key.imageName(), namedContainerModifiers)));
     // Instead, the container creation (if applicable) is deferred to here.
     return (C) containerOrError.container();
   }

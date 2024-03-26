@@ -110,9 +110,10 @@ public class LoggingInvocationInterceptor implements InvocationInterceptor {
         if (timeoutTask.wasTriggered) {
           Throwable t1 = t;
           t = new TimeoutException(
-              "Execution was cancelled after %s. If you think your test should be given more time to complete, you can use the @Timeout annotation. If all the test of a connector are slow, "
-                  + " you can override the property 'JunitMethodExecutionTimeout' in your gradle.properties."
-                      .formatted(DurationFormatUtils.formatDurationWords(elapsedMs, true, true)));
+              String.format(
+                  "Execution was cancelled after %s. If you think your test should be given more time to complete, you can use the @Timeout annotation. If all the test of a connector are slow, "
+                      + " you can override the property 'JunitMethodExecutionTimeout' in your gradle.properties.",
+                  DurationFormatUtils.formatDurationWords(elapsedMs, true, true)));
           t.initCause(t1);
         }
         boolean belowCurrentCall = false;
