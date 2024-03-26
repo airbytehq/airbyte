@@ -4,7 +4,7 @@
 import logging
 import re
 from collections import namedtuple
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import Mock, call, MagicMock
 
 import pendulum
 import pytest
