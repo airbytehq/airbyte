@@ -10,19 +10,13 @@ function Description({ text }) {
 
 function Examples({ examples }) {
   if (!examples) return null;
-  if (examples.length === 1) {
-    return <>Example:
-      <pre>
-        {JSON.stringify(examples[0], null, 2)}
-      </pre>
-    </>;
-  }
-  return <>Examples:
+  return <>
+    {examples.length === 1 ? "Example:" : "Examples:"}
     {examples.map((example, index) => <pre key={index}>
-      {JSON.stringify(example, null, 2)}
+      {typeof example === "string" ? example : JSON.stringify(example, null, 2)}
     </pre>
     )}
-  </>;
+  </>
 }
 
 function Name({ name, definition }) {
