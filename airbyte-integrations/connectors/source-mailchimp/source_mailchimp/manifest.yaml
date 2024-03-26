@@ -125,7 +125,7 @@ definitions:
             parent_key: id
             partition_field: id
     state_migrations:
-      - LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "list_members"
       primary_key: ["id", "list_id"]
@@ -226,7 +226,7 @@ definitions:
             parent_key: id
             partition_field: id
     state_migrations:
-      - LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "segments"
       primary_key: "id"
@@ -268,7 +268,7 @@ definitions:
             value: "{{ stream_slice.id }}"
       - "#/definitions/transformer_remove_empty_fields"
     state_migrations:
-      - LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "segment_members"
       primary_key: ["id", "segment_id"]
@@ -304,7 +304,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       lookback_window: PT0.1S
     state_migrations:
-      - LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "unsubscribes"
       primary_key: ["campaign_id", "email_id", "timestamp"]
@@ -344,7 +344,7 @@ definitions:
         type: RequestOption
       lookback_window: PT0.1S
     state_migrations:
-      - LegacyToPerPartitionStateMigration
+      - type: LegacyToPerPartitionStateMigration
     $parameters:
       name: "email_activity"
       primary_key: ["timestamp", "email_id", "action"]
