@@ -19,6 +19,7 @@ include = "source_gcs"
 python = "^3.9,<3.12"
 pytz = "==2024.1"
 google-cloud-storage = "==2.12.0"
+smart-open = "5.1.0"
 
 [tool.poetry.scripts]
 source-gcs = "source_gcs.run:run"
@@ -27,9 +28,6 @@ source-gcs = "source_gcs.run:run"
 extras = [ "file-based",]
 version = "==0.61.0"
 
-[tool.poetry.dependencies.smart-open]
-extras = [ "s3",]
-version = "==5.1.0"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
