@@ -16,10 +16,10 @@ async function injectSpecSchema(ast) {
     if (node.name !== "SpecSchema" && node.name !== "AirbyteLibExample") return;
 
     const connectorName = node.attributes.find(
-      (attr) => attr.name === "connector"
+      (attr) => attr.name === "connector",
     ).value;
     const connectorSpec = registry.find(
-      (c) => c.dockerRepository_oss === `airbyte/${connectorName}`
+      (c) => c.dockerRepository_oss === `airbyte/${connectorName}`,
     ).spec_oss.connectionSpecification;
     node.attributes.push({
       type: "mdxJsxAttribute",
@@ -65,13 +65,13 @@ async function injectDefaultAirbyteLibSection(vfile, ast) {
               value: connectorName,
             },
           ],
-        }
+        },
       );
     }
   });
   if (!added) {
     throw new Error(
-      `Could not find a changelog heading in ${vfile.path} to add the default airbyte-lib section. This connector won't have a reference section. Make sure there is either a ## Changelog section or add a manual reference section.`
+      `Could not find a changelog heading in ${vfile.path} to add the default airbyte-lib section. This connector won't have a reference section. Make sure there is either a ## Changelog section or add a manual reference section.`,
     );
   }
 }

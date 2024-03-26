@@ -12,5 +12,5 @@ module.exports = {
   catalog: fetchCatalog(),
   isPypiConnector: (connector) => {
     return Boolean(connector.remoteRegistries_oss?.pypi?.enabled);
-  }
-}
+  },
+};
