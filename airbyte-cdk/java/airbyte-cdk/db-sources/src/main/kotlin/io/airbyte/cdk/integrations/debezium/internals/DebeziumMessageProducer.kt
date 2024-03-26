@@ -9,31 +9,33 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageP
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import java.util.*
 import org.apache.kafka.connect.errors.ConnectException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 
-class DebeziumMessageProducer<T>(private val cdcStateHandler: CdcStateHandler,
-                                 targetPosition: CdcTargetPosition<T>,
-                                 eventConverter: DebeziumEventConverter,
-                                 offsetManager: AirbyteFileOffsetBackingStore?,
-                                 schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>) : SourceStateMessageProducer<ChangeEventWithMetadata> {
+class DebeziumMessageProducer<T>(
+    private val cdcStateHandler: CdcStateHandler,
+    targetPosition: CdcTargetPosition<T>,
+    eventConverter: DebeziumEventConverter,
+    offsetManager: AirbyteFileOffsetBackingStore?,
+    schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
+) : SourceStateMessageProducer<ChangeEventWithMetadata> {
     /**
      * `checkpointOffsetToSend` is used as temporal storage for the offset that we want to send as
      * message. As Debezium is reading records faster that we process them, if we try to send
-     * `offsetManger.read()` offset, it is possible that the state is behind the record we are currently
-     * propagating. To avoid that, we store the offset as soon as we reach the checkpoint threshold
-     * (time or records) and we wait to send it until we are sure that the record we are processing is
-     * behind the offset to be sent.
+     * `offsetManger.read()` offset, it is possible that the state is behind the record we are
+     * currently propagating. To avoid that, we store the offset as soon as we reach the checkpoint
+     * threshold (time or records) and we wait to send it until we are sure that the record we are
+     * processing is behind the offset to be sent.
      */
     private val checkpointOffsetToSend = HashMap<String, String>()
 
     /**
      * `previousCheckpointOffset` is used to make sure we don't send duplicated states with the same
-     * offset. Is it possible that the offset Debezium report doesn't move for a period of time, and if
-     * we just rely on the `offsetManger.read()`, there is a chance to sent duplicate states, generating
-     * an unneeded usage of networking and processing.
+     * offset. Is it possible that the offset Debezium report doesn't move for a period of time, and
+     * if we just rely on the `offsetManger.read()`, there is a chance to sent duplicate states,
+     * generating an unneeded usage of networking and processing.
      */
     private val initialOffset: HashMap<String, String>
     private val previousCheckpointOffset: HashMap<String?, String?>
@@ -57,7 +59,9 @@ class DebeziumMessageProducer<T>(private val cdcStateHandler: CdcStateHandler,
         this.initialOffset = HashMap(this.previousCheckpointOffset)
     }
 
-    override fun generateStateMessageAtCheckpoint(stream: ConfiguredAirbyteStream?): AirbyteStateMessage {
+    override fun generateStateMessageAtCheckpoint(
+        stream: ConfiguredAirbyteStream?
+    ): AirbyteStateMessage {
         LOGGER.info("Sending CDC checkpoint state message.")
         val stateMessage = createStateMessage(checkpointOffsetToSend)
         previousCheckpointOffset.clear()
@@ -72,7 +76,10 @@ class DebeziumMessageProducer<T>(private val cdcStateHandler: CdcStateHandler,
      * @param message
      * @return
      */
-    override fun processRecordMessage(stream: ConfiguredAirbyteStream?, message: ChangeEventWithMetadata): AirbyteMessage {
+    override fun processRecordMessage(
+        stream: ConfiguredAirbyteStream?,
+        message: ChangeEventWithMetadata
+    ): AirbyteMessage {
         if (checkpointOffsetToSend.isEmpty()) {
             try {
                 val temporalOffset = offsetManager!!.read()
@@ -80,7 +87,9 @@ class DebeziumMessageProducer<T>(private val cdcStateHandler: CdcStateHandler,
                     checkpointOffsetToSend.putAll(temporalOffset)
                 }
             } catch (e: ConnectException) {
-                LOGGER.warn("Offset file is being written by Debezium. Skipping CDC checkpoint in this loop.")
+                LOGGER.warn(
+                    "Offset file is being written by Debezium. Skipping CDC checkpoint in this loop."
+                )
             }
         }
 
@@ -122,7 +131,14 @@ class DebeziumMessageProducer<T>(private val cdcStateHandler: CdcStateHandler,
      */
     private fun createStateMessage(offset: Map<String, String>): AirbyteStateMessage {
         val message =
-                cdcStateHandler.saveState(offset, schemaHistoryManager.map { obj: AirbyteSchemaHistoryStorage -> obj.read() }.orElse(null))!!.state
+            cdcStateHandler
+                .saveState(
+                    offset,
+                    schemaHistoryManager
+                        .map { obj: AirbyteSchemaHistoryStorage -> obj.read() }
+                        .orElse(null)
+                )!!
+                .state
         return message
     }
 

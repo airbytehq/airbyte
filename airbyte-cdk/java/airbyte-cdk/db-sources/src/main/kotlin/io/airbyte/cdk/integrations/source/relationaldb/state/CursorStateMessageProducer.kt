@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.source.relationaldb.state
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.IncrementalUtils.compareCursors
 import io.airbyte.cdk.db.IncrementalUtils.getCursorField
 import io.airbyte.cdk.db.IncrementalUtils.getCursorType
@@ -52,6 +53,7 @@ class CursorStateMessageProducer(
      * sync, and since we have saved state message before, we should be able to resume it in next
      * sync if we have fixed the underlying issue, of if the issue is transient.
      */
+    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun processRecordMessage(
         stream: ConfiguredAirbyteStream?,
         message: AirbyteMessage
@@ -83,6 +85,7 @@ class CursorStateMessageProducer(
         return message
     }
 
+    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
     override fun createFinalStateMessage(stream: ConfiguredAirbyteStream?): AirbyteStateMessage? {
         return createStateMessage(stream!!)
     }

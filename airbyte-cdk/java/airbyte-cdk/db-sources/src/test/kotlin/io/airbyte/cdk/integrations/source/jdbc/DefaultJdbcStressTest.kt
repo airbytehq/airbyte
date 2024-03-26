@@ -135,7 +135,7 @@ internal class DefaultJdbcStressTest : JdbcStressTest() {
     }
 
     companion object {
-        private var PSQL_DB: PostgreSQLContainer<*>? = null
+        private var PSQL_DB: PostgreSQLContainer<Nothing>? = null
 
         @BeforeAll
         @JvmStatic

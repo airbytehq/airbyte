@@ -120,7 +120,7 @@ internal class JdbcSourceStressTest : JdbcStressTest() {
     }
 
     companion object {
-        private var PSQL_DB: PostgreSQLContainer<*>? = null
+        private lateinit var PSQL_DB: PostgreSQLContainer<Nothing>
 
         @BeforeAll
         @JvmStatic

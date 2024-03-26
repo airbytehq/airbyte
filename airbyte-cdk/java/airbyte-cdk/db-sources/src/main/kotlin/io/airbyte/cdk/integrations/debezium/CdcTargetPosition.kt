@@ -57,10 +57,7 @@ interface CdcTargetPosition<T> {
      * @param event Event from the CDC load
      * @return Returns `true` when the event is ahead of the offset. Otherwise, it returns `false`
      */
-    fun isEventAheadOffset(
-        offset: Map<String, String>?,
-        event: ChangeEventWithMetadata?
-    ): Boolean {
+    fun isEventAheadOffset(offset: Map<String, String>?, event: ChangeEventWithMetadata?): Boolean {
         return false
     }
 

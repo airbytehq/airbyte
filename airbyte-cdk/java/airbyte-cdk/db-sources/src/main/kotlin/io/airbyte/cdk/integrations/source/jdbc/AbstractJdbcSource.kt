@@ -545,7 +545,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                     preparedStatement,
                                     1,
                                     cursorFieldType,
-                                    cursorInfo.cursor
+                                    cursorInfo.cursor!!
                                 )
                                 preparedStatement
                             },
