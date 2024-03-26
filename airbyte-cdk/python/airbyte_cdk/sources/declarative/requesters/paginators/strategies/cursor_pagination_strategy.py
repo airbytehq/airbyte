@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -48,7 +48,7 @@ class CursorPaginationStrategy(PaginationStrategy):
     def initial_token(self) -> Optional[Any]:
         return None
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
 
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
@@ -56,26 +56,22 @@ class CursorPaginationStrategy(PaginationStrategy):
         headers: Dict[str, Any] = dict(response.headers)
         headers["link"] = response.links
 
-        last_record = last_records[-1] if last_records else None
-
         if self._stop_condition:
             should_stop = self._stop_condition.eval(
                 self.config,
                 response=decoded_response,
                 headers=headers,
-                last_records=last_records,
                 last_record=last_record,
-                last_page_size=len(last_records),
+                last_page_size=last_page_size,
             )
             if should_stop:
                 return None
         token = self._cursor_value.eval(
             config=self.config,
-            last_records=last_records,
             response=decoded_response,
             headers=headers,
             last_record=last_record,
-            last_page_size=len(last_records),
+            last_page_size=last_page_size,
         )
         return token if token else None
 
