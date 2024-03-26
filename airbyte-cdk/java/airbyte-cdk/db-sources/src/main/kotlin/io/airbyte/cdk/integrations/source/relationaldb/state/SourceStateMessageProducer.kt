@@ -19,7 +19,7 @@ interface SourceStateMessageProducer<T> {
     fun generateStateMessageAtCheckpoint(stream: ConfiguredAirbyteStream?): AirbyteStateMessage?
 
     /** For the incoming record message, this method defines how the connector will consume it. */
-    fun processRecordMessage(stream: ConfiguredAirbyteStream, message: T): AirbyteMessage
+    fun processRecordMessage(stream: ConfiguredAirbyteStream?, message: T): AirbyteMessage
 
     /**
      * At the end of the iteration, this method will be called and it will generate the final state
@@ -27,7 +27,7 @@ interface SourceStateMessageProducer<T> {
      *
      * @return
      */
-    fun createFinalStateMessage(stream: ConfiguredAirbyteStream): AirbyteStateMessage?
+    fun createFinalStateMessage(stream: ConfiguredAirbyteStream?): AirbyteStateMessage?
 
     /**
      * Determines if the iterator has reached checkpoint or not per connector's definition. By

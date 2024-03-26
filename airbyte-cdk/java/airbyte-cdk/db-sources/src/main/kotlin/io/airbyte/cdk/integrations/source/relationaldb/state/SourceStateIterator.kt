@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 
 open class SourceStateIterator<T>(
     private val messageIterator: Iterator<T>,
-    private val stream: ConfiguredAirbyteStream,
+    private val stream: ConfiguredAirbyteStream?,
     private val sourceStateMessageProducer: SourceStateMessageProducer<T>,
     private val stateEmitFrequency: StateEmitFrequency
 ) : AbstractIterator<AirbyteMessage?>(), MutableIterator<AirbyteMessage?> {
