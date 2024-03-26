@@ -1,0 +1,1289 @@
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - start_date
+      - batchsize
+      - baseurl
+    properties:
+      baseurl:
+        type: string
+        order: 4
+        title: baseurl
+        description: http://localhost:8090
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+      batchsize:
+        type: string
+        order: 3
+        title: batchsize
+        default: '100'
+        description: Number of items to fetch at 1 rest call
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          Initial Start Date in format "2023-09-03T13:33:42.165+0100" from which
+          we are ingesting events
+    additionalProperties: true
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - activity-instance-startedAfter
+streams:
+  - name: activity-instance-startedAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: activity-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: startTime
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+          unfinished: 'true'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          taskId:
+            type:
+              - 'null'
+              - string
+          endTime:
+            type: string
+          assignee:
+            type:
+              - 'null'
+              - string
+          canceled:
+            type: boolean
+          tenantId:
+            type:
+              - 'null'
+              - string
+          startTime:
+            type: string
+          activityId:
+            type: string
+          executionId:
+            type: string
+          removalTime:
+            type: string
+          activityName:
+            type: string
+          activityType:
+            type: string
+          completeScope:
+            type: boolean
+          durationInMillis:
+            type: number
+          processInstanceId:
+            type: string
+          processDefinitionId:
+            type: string
+          calledCaseInstanceId:
+            type:
+              - 'null'
+              - string
+          processDefinitionKey:
+            type: string
+          rootProcessInstanceId:
+            type: string
+          calledProcessInstanceId:
+            type:
+              - 'null'
+              - string
+          parentActivityInstanceId:
+            type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: startTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: startedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: activity-instance-finishedAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: activity-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: endTime
+          finished: 'true'
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          taskId:
+            type:
+              - 'null'
+              - string
+          endTime:
+            type: string
+          assignee:
+            type:
+              - 'null'
+              - string
+          canceled:
+            type: boolean
+          tenantId:
+            type:
+              - 'null'
+              - string
+          startTime:
+            type: string
+          activityId:
+            type: string
+          executionId:
+            type: string
+          removalTime:
+            type: string
+          activityName:
+            type: string
+          activityType:
+            type: string
+          completeScope:
+            type: boolean
+          durationInMillis:
+            type: number
+          processInstanceId:
+            type: string
+          processDefinitionId:
+            type: string
+          calledCaseInstanceId:
+            type:
+              - 'null'
+              - string
+          processDefinitionKey:
+            type: string
+          rootProcessInstanceId:
+            type: string
+          calledProcessInstanceId:
+            type:
+              - 'null'
+              - string
+          parentActivityInstanceId:
+            type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: endTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: finishedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: process-instance-startedAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: process-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: startTime
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+          unfinished: 'true'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          state:
+            type: string
+          endTime:
+            type: string
+          tenantId:
+            type:
+              - 'null'
+              - string
+          startTime:
+            type: string
+          businessKey:
+            type: string
+          removalTime:
+            type: string
+          startUserId:
+            type:
+              - 'null'
+              - string
+          deleteReason:
+            type:
+              - 'null'
+              - string
+          caseInstanceId:
+            type:
+              - 'null'
+              - string
+          startActivityId:
+            type: string
+          durationInMillis:
+            type: number
+          processDefinitionId:
+            type: string
+          superCaseInstanceId:
+            type:
+              - 'null'
+              - string
+          processDefinitionKey:
+            type: string
+          processDefinitionName:
+            type: string
+          rootProcessInstanceId:
+            type: string
+          superProcessInstanceId:
+            type:
+              - 'null'
+              - string
+          processDefinitionVersion:
+            type: number
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: startTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: startedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: process-instance-finishedAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: process-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: endTime
+          finished: 'true'
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          state:
+            type: string
+          endTime:
+            type: string
+          tenantId:
+            type:
+              - 'null'
+              - string
+          startTime:
+            type: string
+          businessKey:
+            type: string
+          removalTime:
+            type: string
+          startUserId:
+            type:
+              - 'null'
+              - string
+          deleteReason:
+            type:
+              - 'null'
+              - string
+          caseInstanceId:
+            type:
+              - 'null'
+              - string
+          startActivityId:
+            type: string
+          durationInMillis:
+            type: number
+          processDefinitionId:
+            type: string
+          superCaseInstanceId:
+            type:
+              - 'null'
+              - string
+          processDefinitionKey:
+            type: string
+          processDefinitionName:
+            type: string
+          rootProcessInstanceId:
+            type: string
+          superProcessInstanceId:
+            type:
+              - 'null'
+              - string
+          processDefinitionVersion:
+            type: number
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: endTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: finishedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: batch
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: batch
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: startTime
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          type:
+            type: string
+          endTime:
+            type: string
+          tenantId:
+            type: string
+          startTime:
+            type: string
+          totalJobs:
+            type: number
+          removalTime:
+            type: string
+          createUserId:
+            type: string
+          batchJobsPerSeed:
+            type: number
+          seedJobDefinitionId:
+            type: string
+          batchJobDefinitionId:
+            type: string
+          invocationsPerBatchJob:
+            type: number
+          monitorJobDefinitionId:
+            type: string
+        additionalProperties: true
+  - name: case-instance-createdAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: case-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: createTime
+          notClosed: 'true'
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          active:
+            type: boolean
+          closed:
+            type: boolean
+          tenantId:
+            type:
+              - 'null'
+              - string
+          closeTime:
+            type: string
+          completed:
+            type: boolean
+          createTime:
+            type: string
+          terminated:
+            type: boolean
+          businessKey:
+            type: string
+          createUserId:
+            type: string
+          caseDefinitionId:
+            type: string
+          durationInMillis:
+            type: number
+          caseDefinitionKey:
+            type: string
+          caseDefinitionName:
+            type: string
+          superCaseInstanceId:
+            type:
+              - 'null'
+              - string
+          superProcessInstanceId:
+            type:
+              - 'null'
+              - string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: createdAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: case-instance-closedAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: case-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: closeTime
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          active:
+            type: boolean
+          closed:
+            type: boolean
+          tenantId:
+            type:
+              - 'null'
+              - string
+          closeTime:
+            type: string
+          completed:
+            type: boolean
+          createTime:
+            type: string
+          terminated:
+            type: boolean
+          businessKey:
+            type: string
+          createUserId:
+            type: string
+          caseDefinitionId:
+            type: string
+          durationInMillis:
+            type: number
+          caseDefinitionKey:
+            type: string
+          caseDefinitionName:
+            type: string
+          superCaseInstanceId:
+            type:
+              - 'null'
+              - string
+          superProcessInstanceId:
+            type:
+              - 'null'
+              - string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: closeTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: closedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: case-activity-instance-createdAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: case-activity-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: createTime
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+          unfinished: 'true'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          active:
+            type: boolean
+          taskId:
+            type:
+              - 'null'
+              - string
+          enabled:
+            type: boolean
+          disabled:
+            type: boolean
+          required:
+            type: boolean
+          tenantId:
+            type:
+              - 'null'
+              - string
+          available:
+            type: boolean
+          completed:
+            type: boolean
+          createTime:
+            type: string
+          endTime:
+            type: string
+          repeatable:
+            type: boolean
+          repetition:
+            type: boolean
+          terminated:
+            type: boolean
+          caseActivityId:
+            type: string
+          caseInstanceId:
+            type: string
+          caseExecutionId:
+            type: string
+          caseActivityName:
+            type: string
+          caseActivityType:
+            type: string
+          caseDefinitionId:
+            type: string
+          durationInMillis:
+            type: number
+          calledCaseInstanceId:
+            type:
+              - 'null'
+              - string
+          calledProcessInstanceId:
+            type:
+              - 'null'
+              - string
+          parentCaseActivityInstanceId:
+            type: string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: createdAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: case-activity-instance-endedAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: case-activity-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: endTime
+          finished: 'true'
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          active:
+            type: boolean
+          taskId:
+            type:
+              - 'null'
+              - string
+          enabled:
+            type: boolean
+          disabled:
+            type: boolean
+          required:
+            type: boolean
+          tenantId:
+            type:
+              - 'null'
+              - string
+          available:
+            type: boolean
+          endTime:
+            type: string
+          completed:
+            type: boolean
+          createTime:
+            type: string
+          repeatable:
+            type: boolean
+          repetition:
+            type: boolean
+          terminated:
+            type: boolean
+          caseActivityId:
+            type: string
+          caseInstanceId:
+            type: string
+          caseExecutionId:
+            type: string
+          caseActivityName:
+            type: string
+          caseActivityType:
+            type: string
+          caseDefinitionId:
+            type: string
+          durationInMillis:
+            type: number
+          calledCaseInstanceId:
+            type:
+              - 'null'
+              - string
+          calledProcessInstanceId:
+            type:
+              - 'null'
+              - string
+          parentCaseActivityInstanceId:
+            type: string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: endTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: endedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: decision-instance
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: decision-instance
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: evaluationTime
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          userId:
+            type: string
+          tenantId:
+            type: string
+          activityId:
+            type: string
+          removalTime:
+            type: string
+          caseInstanceId:
+            type: string
+          evaluationTime:
+            type: string
+          caseDefinitionId:
+            type: string
+          caseDefinitionKey:
+            type: string
+          processInstanceId:
+            type: string
+          activityInstanceId:
+            type: string
+          processDefinitionId:
+            type: string
+          decisionDefinitionId:
+            type: string
+          processDefinitionKey:
+            type: string
+          decisionDefinitionKey:
+            type: string
+          rootProcessInstanceId:
+            type:
+              - 'null'
+              - string
+          decisionDefinitionName:
+            type: string
+          rootDecisionInstanceId:
+            type:
+              - 'null'
+              - string
+          decisionRequirementsDefinitionId:
+            type: string
+          decisionRequirementsDefinitionKey:
+            type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: evaluationTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: evaluatedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: task-startedAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: task
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: startTime
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+          unfinished: 'true'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          due:
+            type: string
+          name:
+            type: string
+          owner:
+            type: string
+          endTime:
+            type: string
+          assignee:
+            type: string
+          duration:
+            type: number
+          followUp:
+            type: string
+          priority:
+            type: number
+          tenantId:
+            type: string
+          startTime:
+            type: string
+          description:
+            type: string
+          executionId:
+            type: string
+          removalTime:
+            type: string
+          deleteReason:
+            type: string
+          parentTaskId:
+            type: string
+          caseInstanceId:
+            type: string
+          caseExecutionId:
+            type: string
+          caseDefinitionId:
+            type: string
+          caseDefinitionKey:
+            type: string
+          processInstanceId:
+            type: string
+          taskDefinitionKey:
+            type: string
+          activityInstanceId:
+            type: string
+          processDefinitionId:
+            type: string
+          processDefinitionKey:
+            type: string
+          rootProcessInstanceId:
+            type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: startTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: startedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - name: task-finishedAfter
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: firstResult
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+      requester:
+        path: task
+        type: HttpRequester
+        url_base: '{{ config[''baseurl''] }}/history/'
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''password''] }}'
+          username: '{{ config[''username''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          sortBy: endTime
+          finished: 'true'
+          sortOrder: asc
+          maxResults: '{{ config[''batchsize''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          due:
+            type: string
+          name:
+            type: string
+          owner:
+            type: string
+          endTime:
+            type: string
+          assignee:
+            type: string
+          duration:
+            type: number
+          followUp:
+            type: string
+          priority:
+            type: number
+          tenantId:
+            type: string
+          startTime:
+            type: string
+          description:
+            type: string
+          executionId:
+            type: string
+          removalTime:
+            type: string
+          deleteReason:
+            type: string
+          parentTaskId:
+            type: string
+          caseInstanceId:
+            type: string
+          caseExecutionId:
+            type: string
+          caseDefinitionId:
+            type: string
+          caseDefinitionKey:
+            type: string
+          processInstanceId:
+            type: string
+          taskDefinitionKey:
+            type: string
+          activityInstanceId:
+            type: string
+          processDefinitionId:
+            type: string
+          processDefinitionKey:
+            type: string
+          rootProcessInstanceId:
+            type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: endTime
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: finishedAfter
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%f%z'
+version: 0.57.0
+metadata:
+  autoImportSchema:
+    batch: false
+    decision-instance: false
+    task-startedAfter: false
+    task-finishedAfter: false
+    case-instance-closedAfter: false
+    case-instance-createdAfter: false
+    process-instance-startedAfter: false
+    activity-instance-startedAfter: false
+    process-instance-finishedAfter: false
+    activity-instance-finishedAfter: false
+    case-activity-instance-endedAfter: false
+    case-activity-instance-createdAfter: false

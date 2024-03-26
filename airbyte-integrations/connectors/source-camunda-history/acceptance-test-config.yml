@@ -1,0 +1,53 @@
+connector_image: airbyte/source-camunda-history:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_camunda_history/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams: 
+          - name: "batch"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "decision-instance"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "task-startedAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "task-finishedAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "case-instance-closedAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "case-instance-createdAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "process-instance-startedAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "activity-instance-startedAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "process-instance-finishedAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "activity-instance-finishedAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "case-activity-instance-endedAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+          - name: "case-activity-instance-createdAfter"
+            bypass_reason: "Endpoint not allowed in integration account"
+  incremental: 
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

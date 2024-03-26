@@ -1,0 +1,44 @@
+connectionSpecification:
+  type: object
+  $schema: http://json-schema.org/draft-07/schema#
+  required:
+    - username
+    - start_date
+    - batchsize
+    - baseurl
+  properties:
+    username:
+      type: string
+      order: 0
+      title: Username
+      description: Username for connecting to Camunda rest-engine, can be anything if auth is not set
+      example: anonymous
+    password:
+      type: string
+      order: 1
+      title: Password
+      description: Password for connecting to Camunda rest-engine API if auth is enabled
+      always_show: true
+      airbyte_secret: true
+    start_date:
+      type: string
+      order: 2
+      title: Start date
+      format: date-time
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      description: >-
+        Initial Start Date in format "2023-09-03T13:33:42.165+0100" from which
+        we are ingesting events
+    batchsize:
+      type: string
+      order: 3
+      title: batchsize
+      default: '100'
+      description: Number of items to fetch at single rest call
+    baseurl:
+      type: string
+      order: 4
+      title: baseurl
+      description: Camunda rest-engine API endpoint
+      example: http://localhost:8090
+  additionalProperties: true
