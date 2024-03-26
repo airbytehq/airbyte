@@ -48,6 +48,7 @@ from .streams import (
 )
 from .utils import GAQL, logger, traced_exception
 
+DEFAULT_VALIDATION_SAMPLE_SIZE = 10
 
 class SourceGoogleAds(AbstractSource):
     # Skip exceptions on missing streams
@@ -186,7 +187,10 @@ class SourceGoogleAds(AbstractSource):
 
         customers = self.get_customers(google_api, config)
         logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
-        validate_customers = random.sample(customers, min(config.get(""), len(customers)))
+        validate_customers = random.sample(customers, min(
+            config.get("validation_sample_size", DEFAULT_VALIDATION_SAMPLE_SIZE),
+            len(customers)
+        ))
         logger.info(f"Using {len(validate_customers)} customers for validation: {[customer.id for customer in validate_customers]}")
         # Check custom query request validity by sending metric request with non-existent time window
         for customer in validate_customers:
