@@ -10,6 +10,7 @@ import io.airbyte.cdk.db.AbstractDatabase
 import io.airbyte.cdk.db.IncrementalUtils.getCursorField
 import io.airbyte.cdk.db.IncrementalUtils.getCursorFieldOptional
 import io.airbyte.cdk.db.IncrementalUtils.getCursorType
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.JdbcConnector
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
@@ -416,14 +417,14 @@ protected constructor(driverClassName: String) :
                 .filter { o: String -> selectedFieldsInCatalog.contains(o) }
                 .collect(Collectors.toList())
 
-        val iterator: AutoCloseableIterator<AirbyteMessage?>
+        val iterator: AutoCloseableIterator<AirbyteMessage>
         // checks for which sync mode we're using based on the configured airbytestream
         // this is where the bifurcation between full refresh and incremental
         if (airbyteStream.syncMode == SyncMode.INCREMENTAL) {
             val cursorField = getCursorField(airbyteStream)
             val cursorInfo = stateManager!!.getCursorInfo(pair)
 
-            val airbyteMessageIterator: AutoCloseableIterator<AirbyteMessage?>
+            val airbyteMessageIterator: AutoCloseableIterator<AirbyteMessage>
             if (cursorInfo!!.map { it.cursor }.isPresent) {
                 airbyteMessageIterator =
                     getIncrementalStream(
@@ -525,7 +526,7 @@ protected constructor(driverClassName: String) :
         table: TableInfo<CommonField<DataType>>,
         cursorInfo: CursorInfo,
         emittedAt: Instant
-    ): AutoCloseableIterator<AirbyteMessage?> {
+    ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
         val cursorField = getCursorField(airbyteStream)
@@ -577,7 +578,7 @@ protected constructor(driverClassName: String) :
         emittedAt: Instant,
         syncMode: SyncMode,
         cursorField: Optional<String>
-    ): AutoCloseableIterator<AirbyteMessage?> {
+    ): AutoCloseableIterator<AirbyteMessage> {
         val queryStream =
             queryTableFullRefresh(
                 database,
@@ -745,7 +746,7 @@ protected constructor(driverClassName: String) :
         tableName: String,
         syncMode: SyncMode,
         cursorField: Optional<String>
-    ): AutoCloseableIterator<JsonNode>?
+    ): AutoCloseableIterator<AirbyteRecordData>
 
     /**
      * Read incremental data from a table. Incremental read should return only records where cursor
@@ -762,7 +763,7 @@ protected constructor(driverClassName: String) :
         tableName: String,
         cursorInfo: CursorInfo,
         cursorFieldType: DataType
-    ): AutoCloseableIterator<JsonNode>?
+    ): AutoCloseableIterator<AirbyteRecordData>
 
     protected val stateEmissionFrequency: Int
         /**
@@ -794,18 +795,19 @@ protected constructor(driverClassName: String) :
         const val DISCOVER_TRACE_OPERATION_NAME: String = "discover-operation"
         const val READ_TRACE_OPERATION_NAME: String = "read-operation"
 
-        private val LOGGER: Logger = LoggerFactory.getLogger(AbstractDbSource::class.java)
+        @JvmStatic
+        protected val LOGGER: Logger = LoggerFactory.getLogger(AbstractDbSource::class.java)
 
         private fun getMessageIterator(
-            recordIterator: AutoCloseableIterator<JsonNode>?,
+            recordIterator: AutoCloseableIterator<AirbyteRecordData>,
             streamName: String,
             namespace: String,
             emittedAt: Long
-        ): AutoCloseableIterator<AirbyteMessage?> {
+        ): AutoCloseableIterator<AirbyteMessage> {
             return AutoCloseableIterators.transform(
                 recordIterator,
                 AirbyteStreamNameNamespacePair(streamName, namespace)
-            ) { r: JsonNode? ->
+            ) { airbyteRecordData ->
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.RECORD)
                     .withRecord(
@@ -813,9 +815,17 @@ protected constructor(driverClassName: String) :
                             .withStream(streamName)
                             .withNamespace(namespace)
                             .withEmittedAt(emittedAt)
-                            .withData(r)
+                            .withData(airbyteRecordData.rawRowData)
+                            .withMeta(
+                                if (isMetaChangesEmptyOrNull(airbyteRecordData.meta)) null
+                                else airbyteRecordData.meta
+                            )
                     )
             }
+        }
+
+        private fun isMetaChangesEmptyOrNull(meta: AirbyteRecordMessageMeta?): Boolean {
+            return meta == null || meta.changes == null || meta.changes.isEmpty()
         }
     }
 }

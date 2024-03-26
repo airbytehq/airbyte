@@ -30,6 +30,10 @@ interface CdcMetadataInjector<T> {
         throw RuntimeException("Not Supported")
     }
 
+    fun addMetaDataToRowsFetchedOutsideDebezium(record: ObjectNode?) {
+        throw java.lang.RuntimeException("Not Supported")
+    }
+
     /**
      * As part of Airbyte record we need to add the namespace (schema name)
      *
