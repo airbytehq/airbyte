@@ -21,12 +21,6 @@ class OktaConfigMigration:
     """
 
     message_repository: MessageRepository = InMemoryMessageRepository()
-    migrate_from_keys_map: dict = {
-        "expand_issue_changelog": "changelog",
-        "render_fields": "renderedFields",
-        "expand_issue_transition": "transitions",
-    }
-    migrate_to_key: str = "issues_stream_expand_with"
 
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
