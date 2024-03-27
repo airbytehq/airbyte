@@ -19,6 +19,11 @@ class AirbyteConnectorBaseImage(ABC):
     Please do not declare any Dagger with_exec instruction in this class as in the abstract class context we have no guarantee about the underlying system used in the base image.
     """
 
+    USER: str = "airbyte"
+    USER_ID: int = 1000
+    CACHE_DIR_PATH: str = "/custom_cache"
+    AIRBYTE_DIR_PATH: str = "/airbyte"
+
     @final
     def __init__(self, dagger_client: dagger.Client, version: semver.VersionInfo):
         """Initializes the Airbyte base image.
@@ -98,4 +103,16 @@ class AirbyteConnectorBaseImage(ABC):
         Returns:
             dagger.Container: The container using the base python image.
         """
-        return self.dagger_client.pipeline(self.name_with_tag).container(platform=platform).from_(self.root_image.address)
+        return (
+            self.dagger_client.pipeline(self.name_with_tag)
+            .container(platform=platform)
+            .from_(self.root_image.address)
+            # Set the timezone to UTC
+            .with_exec(["ln", "-snf", "/usr/share/zoneinfo/Etc/UTC", "/etc/localtime"], skip_entrypoint=True)
+            # Install socat 1.7.4.4
+            .with_exec(["sh", "-c", "apt update && apt-get install -y socat=1.7.4.4-2"], skip_entrypoint=True)
+            .with_exec(["adduser", "--uid", str(self.USER_ID), "--system", "--group", "--no-create-home", self.USER], skip_entrypoint=True)
+            .with_exec(["mkdir", "--mode", "755", self.CACHE_DIR_PATH], skip_entrypoint=True)
+            .with_exec(["mkdir", "--mode", "755", self.AIRBYTE_DIR_PATH], skip_entrypoint=True)
+            .with_exec(["chown", f"{self.USER}:{self.USER}", self.AIRBYTE_DIR_PATH], skip_entrypoint=True)
+        )

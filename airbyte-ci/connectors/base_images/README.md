@@ -41,6 +41,7 @@ RUN mkdir /usr/share/nltk_data
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
 |  1.2.2 | ✅| docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0 | Fix Python 3.9.19 image digest |
+|  1.2.2-rc.1 | ✅| docker.io/airbyte/python-connector-base:1.2.2-rc.1@sha256:9715c1ba59b69783eb87758eb0c2fac8d3904233d6ffd687c5642af97eed0c7a | Create an airbyte user and use it |
 |  1.2.1 | ✅| docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795 | Upgrade to Python 3.9.19 + update pip and setuptools |
 |  1.2.0 | ✅| docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9 | Add CDK system dependencies: nltk data, tesseract, poppler. |
 |  1.2.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:1.2.0-rc.1@sha256:f6467768b75fb09125f6e6b892b6b48c98d9fe085125f3ff4adc722afb1e5b30 |  |
