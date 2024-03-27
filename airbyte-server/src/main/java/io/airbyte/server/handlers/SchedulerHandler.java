@@ -163,7 +163,8 @@ public class SchedulerHandler {
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
         .connectionConfiguration(updatedSource.getConfiguration())
-        .sourceDefinitionId(updatedSource.getSourceDefinitionId());
+        .sourceDefinitionId(updatedSource.getSourceDefinitionId())
+        .workspaceId(sourceUpdate.getWorkspaceId());
 
     return checkSourceConnectionFromSourceCreate(sourceCoreConfig);
   }
@@ -204,7 +205,8 @@ public class SchedulerHandler {
 
     final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
         .connectionConfiguration(updatedDestination.getConfiguration())
-        .destinationDefinitionId(updatedDestination.getDestinationDefinitionId());
+        .destinationDefinitionId(updatedDestination.getDestinationDefinitionId())
+        .workspaceId(destinationUpdate.getWorkspaceId());
 
     return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
