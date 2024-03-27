@@ -45,7 +45,7 @@ definitions:
                   "AttributeValue": "ConsoleLogin"
               }
           ],
-          "MaxResults": 100
+          "MaxResults": 50
       }
     retriever:
       type: SimpleRetriever
@@ -56,10 +56,22 @@ definitions:
           field_path: ["Events"]
       paginator:
         type: NoPagination
+        # type: DefaultPaginator
+        # page_token_option:
+        #   type: RequestOption
+        #   inject_into: request_parameter
+        #   field_name: 'NextToken'
+        # pagination_strategy:
+        #   type: CursorPagination
+        #   cursor_value: '{{ response.get("NextToken", {}) }}'
+        #   stop_condition: '{{ not response.get("NextToken", {}) }}'
       requester:
         $ref: "#/definitions/requester"
         authenticator:
           $ref: "#/definitions/requester/authenticator"
+          # path: "{{ parameters['path'] }}"
+        # request_parameters:
+        #   StartTime: '{{ config[''start_date''] }}'
         request_headers:
             x-amz-target: 'com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101.LookupEvents'
         request_body_json: "{{ parameters['management_events_json_payload'] }}"
