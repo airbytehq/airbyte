@@ -124,11 +124,22 @@ definitions:
 
   revenue_stream:
     $ref: "#/definitions/stream_base"
+    primary_key: "date"
     $parameters:
       name: revenue
       path: 2.0/engage/revenue
       field_path: results
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          class_name: "source_mixpanel.components.RevenueDpathExtractor"
+          field_path:
+            - "{{ parameters['field_path'] }}"
     incremental_sync: "#/definitions/incremental_sync"
+#    transformations:
+#      - class_name: "source_mixpanel.components.RevenueTransformation"
 
   funnel_ids_stream:
     $ref: "#/definitions/stream_base"
