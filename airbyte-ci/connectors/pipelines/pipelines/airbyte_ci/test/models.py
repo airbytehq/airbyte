@@ -11,8 +11,7 @@ class AirbyteCiPackageConfiguration(BaseModel):
     required_environment_variables: Set[str] = Field(
         set(), description="List of unique required environment variables to pass to the container running the poe task"
     )
-    poetry_extras: Set[str] = Field(set(), description="List of unique poetry extras to install")
-    optional_poetry_groups: Set[str] = Field(set(), description="List of unique poetry groups to install")
+    extra_poetry_groups: Set[str] = Field(set(), description="List of unique extra poetry groups to install")
     side_car_docker_engine: bool = Field(
         False, description="Flag indicating the use of a sidecar Docker engine during the poe task executions"
     )

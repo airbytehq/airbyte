@@ -40,7 +40,7 @@ class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
 
-        # Deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
+        # deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
         if is_cloud_environment():
             _init_internal_request_filter()
 
@@ -161,27 +161,26 @@ class AirbyteEntrypoint(object):
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
 
-        # The Airbyte protocol dictates that counts be expressed as float/double to better protect against integer overflows
-        stream_message_counter: DefaultDict[HashableStreamDescriptor, float] = defaultdict(float)
+        stream_message_counter: DefaultDict[HashableStreamDescriptor, int] = defaultdict(int)
         for message in self.source.read(self.logger, config, catalog, state):
             yield self.handle_record_counts(message, stream_message_counter)
         for message in self._emit_queued_messages(self.source):
             yield self.handle_record_counts(message, stream_message_counter)
 
     @staticmethod
-    def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, float]) -> AirbyteMessage:
+    def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, int]) -> AirbyteMessage:
         if message.type == Type.RECORD:
-            stream_message_count[message_utils.get_stream_descriptor(message)] += 1.0
+            stream_message_count[message_utils.get_stream_descriptor(message)] += 1
 
         elif message.type == Type.STATE:
             stream_descriptor = message_utils.get_stream_descriptor(message)
 
             # Set record count from the counter onto the state message
             message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()
-            message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0.0)
+            message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0)
 
             # Reset the counter
-            stream_message_count[stream_descriptor] = 0.0
+            stream_message_count[stream_descriptor] = 0
         return message
 
     @staticmethod

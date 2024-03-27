@@ -53,7 +53,7 @@ class ParquetSerializedBuffer(
     private val avroRecordFactory: AvroRecordFactory
     private val parquetWriter: ParquetWriter<GenericData.Record>
     private val bufferFile: Path
-    override var inputStream: InputStream? = null
+    private var inputStream: InputStream?
     private var lastByteCount: Long
     private var isClosed: Boolean
 
@@ -103,6 +103,7 @@ class ParquetSerializedBuffer(
                 .withDictionaryPageSize(formatConfig.dictionaryPageSize)
                 .withDictionaryEncoding(formatConfig.isDictionaryEncoding)
                 .build()
+        inputStream = null
         isClosed = false
         lastByteCount = 0L
     }
@@ -133,41 +134,47 @@ class ParquetSerializedBuffer(
             parquetWriter.close()
             inputStream = FileInputStream(bufferFile.toFile())
             logger.info {
-                "Finished writing data to ${filename} (${FileUtils.byteCountToDisplaySize(byteCount)})"
+                "Finished writing data to $filename (${FileUtils.byteCountToDisplaySize(byteCount)})"
             }
         }
     }
 
-    override val byteCount: Long
-        get() {
-            if (inputStream != null) {
-                // once the parquetWriter is closed, we can't query how many bytes are in it, so we
-                // cache the last
-                // count
-                return lastByteCount
-            }
-            lastByteCount = parquetWriter.dataSize
+    override fun getByteCount(): Long {
+        if (inputStream != null) {
+            // once the parquetWriter is closed, we can't query how many bytes are in it, so we
+            // cache the last
+            // count
             return lastByteCount
         }
+        lastByteCount = parquetWriter.dataSize
+        return lastByteCount
+    }
 
-    override val filename: String
-        @Throws(IOException::class)
-        get() {
-            return bufferFile.fileName.toString()
-        }
+    @Throws(IOException::class)
+    override fun getFilename(): String {
+        return bufferFile.fileName.toString()
+    }
 
-    override val file: File
-        @Throws(IOException::class)
-        get() {
-            return bufferFile.toFile()
-        }
+    @Throws(IOException::class)
+    override fun getFile(): File {
+        return bufferFile.toFile()
+    }
 
-    override val maxTotalBufferSizeInBytes: Long = FileBuffer.MAX_TOTAL_BUFFER_SIZE_BYTES
+    override fun getInputStream(): InputStream? {
+        return inputStream
+    }
 
-    override val maxPerStreamBufferSizeInBytes: Long = FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES
+    override fun getMaxTotalBufferSizeInBytes(): Long {
+        return FileBuffer.MAX_TOTAL_BUFFER_SIZE_BYTES
+    }
 
-    override val maxConcurrentStreamsInBuffer: Int =
-        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER
+    override fun getMaxPerStreamBufferSizeInBytes(): Long {
+        return FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES
+    }
+
+    override fun getMaxConcurrentStreamsInBuffer(): Int {
+        return FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER
+    }
 
     @Throws(Exception::class)
     override fun close() {
