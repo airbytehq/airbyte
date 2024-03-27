@@ -188,6 +188,9 @@ class Source:
         """Validate the config against the spec.
 
         If config is not provided, the already-set config will be validated.
+
+        Raises:
+            jsonschema.exceptions.ValidationError: If the validation fails.
         """
         spec = self._get_spec(force_refresh=False)
         config = self._config if config is None else config
@@ -353,6 +356,11 @@ class Source:
         """
         with as_temp_files([self._config]) as [config_file]:
             try:
+                pre_validation_error: Exception | None = None
+                try:
+                    self.validate_config()
+                except jsonschema.exceptions.ValidationError as ex:
+                    pre_validation_error = ex
                 for msg in self._execute(["check", "--config", config_file]):
                     if msg.type == Type.CONNECTION_STATUS and msg.connectionStatus:
                         if msg.connectionStatus.status != Status.FAILED:
@@ -362,7 +370,8 @@ class Source:
                         raise exc.AirbyteConnectorCheckFailedError(
                             help_url=self.docs_url,
                             context={
-                                "failure_reason": msg.connectionStatus.message,
+                                "connector_error_message": msg.connectionStatus.message,
+                                "pre_validation_error": pre_validation_error,
                             },
                         )
                 raise exc.AirbyteConnectorCheckFailedError(log_text=self._last_log_messages)
