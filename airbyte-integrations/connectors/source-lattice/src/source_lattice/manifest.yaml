@@ -25,8 +25,10 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: "{{ response['endingCursor'] }}"
-      stop_condition: "{{ not response['hasMore']}}"
-      page_size: 100
+      stop_condition: "{{ true }}"
+      page_size: 1
+      # stop_condition: "{{ not response['hasMore']}}"
+      # page_size: 100
     page_size_option:
       type: "RequestOption"
       inject_into: "request_parameter"
@@ -51,6 +53,45 @@ definitions:
       $ref: "#/definitions/single_record_selector"
     paginator:
       type: NoPagination
+  review_cycle_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/review_cycles_stream"
+        parent_key: "id"
+        partition_field: "review_cycle_id"
+  question_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/reviews_stream"
+          retriever:
+            $ref: "#/definitions/reviews_retriever"
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: [ "data", "*", "question" ]
+        parent_key: "id"
+        partition_field: "question_id"
+  question_revision_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/reviews_stream"
+          retriever:
+            $ref: "#/definitions/reviews_retriever"
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: [ "data", "*", "questionRevision" ]
+        parent_key: "id"
+        partition_field: "question_revision_id"
+  single_record_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/single_record_retriever"
+    primary_key: "id"
   paginated_base_stream:
     type: DeclarativeStream
     retriever:
@@ -81,6 +122,84 @@ definitions:
     $parameters:
       name: "review_cycles"
       path: "/reviewCycles"
+  # questions_reviews_stream:
+  #   $ref: "#/definitions/paginated_base_stream"
+  #   $parameters:
+  #     name: "questions_reviews_stream"
+  #   retriever:
+  #     $ref: "#/definitions/paginated_retriever"
+  #     requester:
+  #       $ref: "#/definitions/requester"
+  #       path: "/reviewCycle/{{ stream_slice.review_cycle_id }}/reviews"
+  #     record_selector:
+  #       type: RecordSelector
+  #       extractor:
+  #         type: DpathExtractor
+  #         field_path: [ "data", "*", "question" ]
+  #     partition_router:
+  #       $ref: "#/definitions/review_cycle_partition_router"
+  # question_revisions_reviews_stream:
+  #   $ref: "#/definitions/paginated_base_stream"
+  #   $parameters:
+  #     name: "question_revisions_reviews_stream"
+  #   retriever:
+  #     $ref: "#/definitions/paginated_retriever"
+  #     requester:
+  #       $ref: "#/definitions/requester"
+  #       path: "/reviewCycle/{{ stream_slice.review_cycle_id }}/reviews"
+  #     record_selector:
+  #       type: RecordSelector
+  #       extractor:
+  #         type: DpathExtractor
+  #         field_path: [ "data", "*", "questionRevision" ]
+  #     partition_router:
+  #       $ref: "#/definitions/review_cycle_partition_router"
+  reviews_retriever:
+      $ref: "#/definitions/paginated_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/reviewCycle/{{ stream_slice.review_cycle_id }}/reviews"
+      partition_router:
+        $ref: "#/definitions/review_cycle_partition_router"
+  reviews_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "reviews"
+    retriever:
+      $ref: "#/definitions/reviews_retriever"
+  reviewees_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "reviewees"
+    retriever:
+      $ref: "#/definitions/paginated_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/reviewCycle/{{ stream_slice.review_cycle_id }}/reviewees"
+      partition_router:
+        $ref: "#/definitions/review_cycle_partition_router"
+  questions_stream:
+    $ref: "#/definitions/single_record_base_stream"
+    $parameters:
+      name: "questions"
+    retriever:
+      $ref: "#/definitions/single_record_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/question/{{ stream_slice.question_id }}"
+      partition_router:
+        $ref: "#/definitions/question_partition_router"
+  question_revisions_stream:
+    $ref: "#/definitions/single_record_base_stream"
+    $parameters:
+      name: "question_revisions"
+    retriever:
+      $ref: "#/definitions/single_record_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/questionRevision/{{ stream_slice.question_revision_id }}"
+      partition_router:
+        $ref: "#/definitions/question_revision_partition_router"
 
 streams:
   - "#/definitions/users_stream"
@@ -88,6 +207,10 @@ streams:
   - "#/definitions/goals_stream"
   - "#/definitions/feedbacks_stream"
   - "#/definitions/review_cycles_stream"
+  - "#/definitions/reviews_stream"
+  - "#/definitions/reviewees_stream"
+  - "#/definitions/questions_stream"
+  - "#/definitions/question_revisions_stream"
 
 check:
   type: CheckStream
