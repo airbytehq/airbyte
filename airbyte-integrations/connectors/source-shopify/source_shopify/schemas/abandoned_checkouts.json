@@ -362,9 +362,6 @@
           "carrier_service_id": {
             "type": ["null", "integer"]
           },
-          "delivery_category": {
-            "type": ["null", "string"]
-          },
           "markup": {
             "type": ["null", "string"]
           },
