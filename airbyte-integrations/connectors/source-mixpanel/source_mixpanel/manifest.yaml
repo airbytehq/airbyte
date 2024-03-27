@@ -193,8 +193,11 @@ definitions:
       field_path: results
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: POST
       partition_router:
-        type: SubstreamPartitionRouter
+        class_name: "source_mixpanel.components.CohortMembersSubstreamPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/cohorts_stream"
@@ -204,6 +207,12 @@ definitions:
               inject_into: body_json
               type: RequestOption
               field_name: filter_by_cohort
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - cohort_id
+            value: "{{ stream_partition.get('id') }}"
 
 streams:
   - "#/definitions/cohorts_stream"
