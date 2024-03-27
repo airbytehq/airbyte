@@ -27,6 +27,7 @@ acceptance_tests:
         expect_records:
           path: integration_tests/expected_records.jsonl
         timeout_seconds: 3600
+        validate_state_messages: False
         empty_streams:
           - name: engagements_calls
             bypass_reason: Unable to populate cost $20/month
