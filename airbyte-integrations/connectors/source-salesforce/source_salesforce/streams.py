@@ -353,6 +353,15 @@ class BulkSalesforceStream(SalesforceStream):
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
+        """
+        This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
+        the response buffer (which is either by calling `json` or `iter_content`)
+        """
+        return self._non_retryable_send_http_request(method, url, json, headers, stream)
+
+    def _non_retryable_send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
+        """
+        """
         headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
@@ -360,15 +369,22 @@ class BulkSalesforceStream(SalesforceStream):
         response.raise_for_status()
         return response
 
+    @default_backoff_handler(max_tries=5, factor=15)
+    def _create_stream_job(self, query: str, url: str) -> Optional[str]:
+        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
+        response = self._non_retryable_send_http_request("POST", url, json=json)
+        job_id: str = response.json()["id"]
+        return job_id
+
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
+
+        Note that we want to retry during connection issues as well. Those can occur when calling `.json()`. Even in the case of a
+        connection error during a HTTPError, we will retry as else, we won't be able to take the right action.
         """
-        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
-            response = self._send_http_request("POST", url, json=json)
-            job_id: str = response.json()["id"]
-            return job_id
+            return self._create_stream_job(query, url)
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 # A part of streams can't be used by BULK API. Every API version can have a custom list of
@@ -520,6 +536,7 @@ class BulkSalesforceStream(SalesforceStream):
 
         return self.encoding
 
+    @default_backoff_handler(max_tries=5, factor=15)
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
@@ -529,7 +546,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
-        with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
+        with closing(self._non_retryable_send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
             tmp_file, "wb"
         ) as data_file:
             response_headers = response.headers

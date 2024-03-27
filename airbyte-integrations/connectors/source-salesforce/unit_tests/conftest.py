@@ -3,6 +3,7 @@
 #
 
 import json
+import pathlib
 from typing import List
 from unittest.mock import Mock
 
@@ -22,14 +23,14 @@ def time_sleep_mock(mocker):
 
 @pytest.fixture(scope="module")
 def bulk_catalog():
-    with open("unit_tests/bulk_catalog.json") as f:
+    with (pathlib.Path(__file__).parent / "bulk_catalog.json").open() as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 
 
 @pytest.fixture(scope="module")
 def rest_catalog():
-    with open("unit_tests/rest_catalog.json") as f:
+    with (pathlib.Path(__file__).parent / "rest_catalog.json").open() as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 

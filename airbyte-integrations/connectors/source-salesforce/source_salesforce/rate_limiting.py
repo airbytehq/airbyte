@@ -4,11 +4,11 @@
 
 import logging
 import sys
-from http.client import IncompleteRead
 
 import backoff
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests import codes, exceptions  # type: ignore[import]
+
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,
@@ -16,9 +16,15 @@ TRANSIENT_EXCEPTIONS = (
     exceptions.ReadTimeout,
     exceptions.ConnectionError,
     exceptions.HTTPError,
-    # We've had a customer on a self-managed instance which got this issue. The error occurred during `BulkSalesforceStream.download_data`.
+    # We've had a couple of customers with ProtocolErrors, namely:
+    # * A self-managed instance during `BulkSalesforceStream.download_data`. This customer had an abnormally high number of ConnectionError
+    #   which seems to indicate problems with his network infrastructure in general. The exact error was: `urllib3.exceptions.ProtocolError: ('Connection broken: IncompleteRead(905 bytes read, 119 more expected)', IncompleteRead(905 bytes read, 119 more expected))`
+    # * A cloud customer with very long syncs. All those syncs would end up with the following error: `urllib3.exceptions.ProtocolError: ("Connection broken: InvalidChunkLength(got length b'', 0 bytes read)", InvalidChunkLength(got length b'', 0 bytes read))`
     # Without much more information, we will make it retryable hoping that performing the same request will work.
-    IncompleteRead,
+    exceptions.ChunkedEncodingError,
+    # We've had examples where the response from Salesforce was not a JSON response. Those cases where error cases though. For example:
+    # https://github.com/airbytehq/airbyte-internal-issues/issues/6855. We will assume that this is an edge issue and that retry should help
+    exceptions.JSONDecodeError,
 )
 
 logger = logging.getLogger("airbyte")
