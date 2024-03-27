@@ -72,7 +72,7 @@ class SourceFtp(AbstractSource):
         return SFTPClient(
             host=config["host"],
             username=config["username"],
-            password=config["password"],
+            password=config.get("password", None),
             private_key=config.get("private_key", None),
             port=config["port"],
         )
