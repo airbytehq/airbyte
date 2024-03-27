@@ -8,6 +8,18 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
+      error_handler:
+        type: CompositeErrorHandler
+        # ignore 403 error but retry default retriable http errors (429, 500 - 600)
+        error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [403, 404]
+                action: IGNORE
+          - type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
   single_record_selector:
     type: RecordSelector
     extractor:
