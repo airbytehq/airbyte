@@ -26,7 +26,7 @@ data:
   icon: microsoft-sharepoint.svg
   license: MIT
   name: Microsoft SharePoint
-  supportLevel: community
+  supportLevel: certified
   releaseStage: alpha
   releaseDate: 2024-02-02
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
