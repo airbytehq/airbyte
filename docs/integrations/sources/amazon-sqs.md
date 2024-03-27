@@ -71,6 +71,8 @@ Required properties are 'Queue URL', 'AWS Region' and 'Delete Messages After Rea
   - If `Delete Messages After Read` is `true` then `sqs:DeleteMessage` is also needed
 - AWS IAM Secret Key (STRING)
   - The Secret Key for the IAM User with permissions on this Queue
+- AWS IAM Session Token (STRING)
+  - The temporary Session token for the IAM role with permissions on this Queue 
 
 ### Data loss warning
 
@@ -98,6 +100,7 @@ Extra care should be taken to understand this risk before enabling this option.
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                              | Subject                           |
-| :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+|:--------| :--------- | :-------------------------------------------------------- |:----------------------------------|
+| 0.2.0   | 2024-02-21 | [#35483](https://github.com/airbytehq/airbyte/pull/35483) | Allow role based access           |
 | 0.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
 | 0.1.0   | 2021-10-10 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000)  | Initial version                   |
