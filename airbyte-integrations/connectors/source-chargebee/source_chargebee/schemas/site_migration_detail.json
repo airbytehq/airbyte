@@ -4,27 +4,35 @@
   "type": "object",
   "properties": {
     "entity_id": {
+      "description": "ID of the entity being migrated at the current site.",
       "type": ["string", "null"]
     },
     "other_site_name": {
+      "description": "Name of the site from which the entity was migrated.",
       "type": ["string", "null"]
     },
     "entity_id_at_other_site": {
+      "description": "ID of the entity at the other site where migration occurred.",
       "type": ["string", "null"]
     },
     "migrated_at": {
+      "description": "Timestamp indicating when the migration took place.",
       "type": ["integer", "null"]
     },
     "entity_type": {
+      "description": "Type of entity being migrated (e.g., customer, subscription).",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "Current status of the site migration process.",
       "type": ["string", "null"]
     },
     "object": {
+      "description": "Type of object being migrated (e.g., user, data).",
       "type": ["string", "null"]
     },
     "custom_fields": {
+      "description": "Custom fields associated with the site migration detail.",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }

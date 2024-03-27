@@ -4,36 +4,47 @@
   "type": "object",
   "properties": {
     "version": {
+      "description": "The version of the quote line group.",
       "type": ["integer", "null"]
     },
     "id": {
+      "description": "Unique identifier for the quote line group.",
       "type": ["string", "null"]
     },
     "quote_id": {
+      "description": "Unique identifier for the quote associated with the line group.",
       "type": ["string", "null"]
     },
     "sub_total": {
+      "description": "The subtotal amount of the quote line group.",
       "type": ["integer", "null"]
     },
     "total": {
+      "description": "The total amount for the quote line group after all calculations.",
       "type": ["integer", "null"]
     },
     "credits_applied": {
+      "description": "The amount of credits applied to the quote line group.",
       "type": ["integer", "null"]
     },
     "amount_paid": {
+      "description": "The total amount that has been paid.",
       "type": ["integer", "null"]
     },
     "amount_due": {
+      "description": "The total amount that is due for payment.",
       "type": ["integer", "null"]
     },
     "charge_event": {
+      "description": "Details about the charge event associated with the quote line group.",
       "type": ["string", "null"]
     },
     "billing_cycle_number": {
+      "description": "The number indicating the current billing cycle.",
       "type": ["integer", "null"]
     },
     "line_items": {
+      "description": "Details about the line items included in the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -117,6 +128,7 @@
       }
     },
     "discounts": {
+      "description": "Details about any discounts applied to the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -149,6 +161,7 @@
       }
     },
     "line_item_discounts": {
+      "description": "Details about any discounts applied to individual line items within the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -172,6 +185,7 @@
       }
     },
     "taxes": {
+      "description": "Details about the taxes applied to the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -189,6 +203,7 @@
       }
     },
     "line_item_taxes": {
+      "description": "Details about taxes applied to individual line items within the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -233,9 +248,11 @@
       }
     },
     "object": {
+      "description": "Type of object representing the quote line group.",
       "type": ["string", "null"]
     },
     "custom_fields": {
+      "description": "Any custom fields associated with the quote line group.",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
