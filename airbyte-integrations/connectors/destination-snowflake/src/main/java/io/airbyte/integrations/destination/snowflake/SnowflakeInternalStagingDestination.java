@@ -20,8 +20,10 @@ import io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
@@ -45,7 +47,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
+public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination<SnowflakeState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
   public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
@@ -140,6 +142,14 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
+  protected List<Migration<SnowflakeState>> getMigrations(JdbcDatabase database,
+                                                          String databaseName,
+                                                          SqlGenerator sqlGenerator,
+                                                          DestinationHandler<SnowflakeState> destinationHandler) {
+    return List.of();
+  }
+
+  @Override
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector) {
@@ -169,7 +179,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
     final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
-    final List<Migration<SnowflakeState>> migrations = List.of();
+    final List<Migration<SnowflakeState>> migrations = getMigrations(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
     if (disableTypeDedupe) {
       typerDeduper =
           new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, migrations);
