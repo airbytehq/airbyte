@@ -4,157 +4,209 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique ID of the subscription.",
       "type": ["string", "null"]
     },
     "currency_code": {
+      "description": "The currency code used for the subscription.",
       "type": ["string", "null"]
     },
     "start_date": {
+      "description": "The start date of the subscription.",
       "type": ["integer", "null"]
     },
     "trial_end": {
+      "description": "The end date of the trial period for the subscription.",
       "type": ["integer", "null"]
     },
     "remaining_billing_cycles": {
+      "description": "The count of remaining billing cycles for the subscription.",
       "type": ["integer", "null"]
     },
     "po_number": {
+      "description": "The purchase order number associated with the subscription.",
       "type": ["string", "null"]
     },
     "plan_quantity_in_decimal": {
+      "description": "The quantity of the plan in decimal format.",
       "type": ["string", "null"]
     },
     "plan_unit_price_in_decimal": {
+      "description": "The unit price of the plan in decimal format.",
       "type": ["string", "null"]
     },
     "customer_id": {
+      "description": "The ID of the customer associated with the subscription.",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "The current status of the subscription.",
       "type": ["string", "null"]
     },
     "trial_start": {
+      "description": "The start date of the trial period for the subscription.",
       "type": ["integer", "null"]
     },
     "trial_end_action": {
+      "description": "The action to be taken at the end of the trial period.",
       "type": ["string", "null"]
     },
     "current_term_start": {
+      "description": "The start date of the current term for the subscription.",
       "type": ["integer", "null"]
     },
     "current_term_end": {
+      "description": "The end date of the current term for the subscription.",
       "type": ["integer", "null"]
     },
     "next_billing_at": {
+      "description": "The date and time of the next billing event for the subscription.",
       "type": ["integer", "null"]
     },
     "created_at": {
+      "description": "The date and time of the creation of the subscription.",
       "type": ["integer", "null"]
     },
     "started_at": {
+      "description": "The date and time when the subscription started.",
       "type": ["integer", "null"]
     },
     "activated_at": {
+      "description": "The date and time when the subscription was activated.",
       "type": ["integer", "null"]
     },
     "contract_term_billing_cycle_on_renewal": {
+      "description": "Indicates if the contract term billing cycle is applied on renewal.",
       "type": ["integer", "null"]
     },
     "override_relationship": {
+      "description": "Indicates if the existing relationship is overridden by this subscription.",
       "type": ["boolean", "null"]
     },
     "pause_date": {
+      "description": "The date on which the subscription was paused.",
       "type": ["integer", "null"]
     },
     "resume_date": {
+      "description": "The date on which the subscription was resumed.",
       "type": ["integer", "null"]
     },
     "cancelled_at": {
+      "description": "The date and time when the subscription was cancelled.",
       "type": ["integer", "null"]
     },
     "cancel_reason": {
+      "description": "The reason for the cancellation of the subscription.",
       "type": ["string", "null"]
     },
     "created_from_ip": {
+      "description": "The IP address from which the subscription was created.",
       "type": ["string", "null"]
     },
     "resource_version": {
+      "description": "The version of the resource (subscription).",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "The date and time when the subscription was last updated.",
       "type": ["integer", "null"]
     },
     "has_scheduled_advance_invoices": {
+      "description": "Indicates if there are scheduled advance invoices for the subscription.",
       "type": ["boolean", "null"]
     },
     "has_scheduled_changes": {
+      "description": "Indicates if there are scheduled changes for the subscription.",
       "type": ["boolean", "null"]
     },
     "payment_source_id": {
+      "description": "The ID of the payment source used for the subscription.",
       "type": ["string", "null"]
     },
     "plan_free_quantity_in_decimal": {
+      "description": "The free quantity included in the plan in decimal format.",
       "type": ["string", "null"]
     },
     "plan_amount_in_decimal": {
+      "description": "The total amount charged for the plan in decimal format.",
       "type": ["string", "null"]
     },
     "cancel_schedule_created_at": {
+      "description": "The date and time when the cancellation schedule was created.",
       "type": ["integer", "null"]
     },
     "due_invoices_count": {
+      "description": "The count of due invoices for the subscription.",
       "type": ["integer", "null"]
     },
     "due_since": {
+      "description": "The date since which the invoices are due.",
       "type": ["integer", "null"]
     },
     "total_dues": {
+      "description": "The total amount of dues for the subscription.",
       "type": ["integer", "null"]
     },
     "mrr": {
+      "description": "The monthly recurring revenue generated by the subscription.",
       "type": ["integer", "null"]
     },
     "exchange_rate": {
+      "description": "The exchange rate used for currency conversion.",
       "type": ["number", "null"]
     },
     "base_currency_code": {
+      "description": "The base currency code used for the subscription.",
       "type": ["string", "null"]
     },
     "invoice_notes": {
+      "description": "Any notes added to the invoices of the subscription.",
       "type": ["string", "null"]
     },
     "metadata": {
       "type": ["object", "null"],
-      "properties": {}
+      "properties": {
+        "description": "Additional metadata associated with the subscription."
+      }
     },
     "deleted": {
+      "description": "Indicates if the subscription has been deleted.",
       "type": ["boolean", "null"]
     },
     "object": {
+      "description": "The type of object (subscription).",
       "type": ["string", "null"]
     },
     "coupon": {
+      "description": "The coupon applied to the subscription.",
       "type": ["string", "null"]
     },
     "cancel_reason_code": {
+      "description": "The code associated with the cancellation reason.",
       "type": ["string", "null"]
     },
     "free_period": {
+      "description": "The duration of the free period for the subscription.",
       "type": ["integer", "null"]
     },
     "free_period_unit": {
+      "description": "The unit of the free period duration.",
       "type": ["string", "null"]
     },
     "create_pending_invoices": {
+      "description": "Indicates if pending invoices are created.",
       "type": ["boolean", "null"]
     },
     "auto_close_invoices": {
+      "description": "Defines if the invoices are automatically closed or not.",
       "type": ["boolean", "null"]
     },
     "business_entity_id": {
+      "description": "The ID of the business entity to which the subscription belongs.",
       "type": ["string", "null"]
     },
     "channel": {
+      "description": "The channel through which the subscription was acquired.",
       "type": ["string", "null"]
     },
     "coupons": {
@@ -163,21 +215,27 @@
         "type": ["object", "null"],
         "properties": {
           "coupon_id": {
+            "description": "The ID of the applied coupon.",
             "type": "string"
           },
           "apply_till": {
+            "description": "The date until which the coupon can be applied.",
             "type": ["integer", "null"]
           },
           "apply_count": {
+            "description": "The count of times the coupon can be applied.",
             "type": ["integer", "null"]
           },
           "coupon_code": {
+            "description": "The code of the applied coupon.",
             "type": ["string", "null"]
           },
           "applied_count": {
+            "description": "The count of times the coupon has been applied.",
             "type": ["integer", "null"]
           },
           "object": {
+            "description": "The type of object (coupon).",
             "type": ["string", "null"]
           }
         }
@@ -424,44 +482,58 @@
       }
     },
     "plan_id": {
+      "description": "The ID of the plan associated with the subscription.",
       "type": ["string", "null"]
     },
     "plan_quantity": {
+      "description": "The quantity of the plan included in the subscription.",
       "type": ["integer", "null"]
     },
     "plan_unit_price": {
+      "description": "The unit price of the plan for the subscription.",
       "type": ["integer", "null"]
     },
     "setup_fee": {
+      "description": "The setup fee charged for the subscription.",
       "type": ["integer", "null"]
     },
     "billing_period": {
+      "description": "The billing period duration for the subscription.",
       "type": ["integer", "null"]
     },
     "billing_period_unit": {
+      "description": "The unit of the billing period.",
       "type": ["string", "null"]
     },
     "auto_collection": {
+      "description": "Indicates if auto-collection is enabled for the subscription.",
       "type": ["string", "null"]
     },
     "plan_amount": {
+      "description": "The total amount charged for the plan of the subscription.",
       "type": ["integer", "null"]
     },
     "plan_free_quantity": {
+      "description": "The free quantity included in the plan of the subscription.",
       "type": ["integer", "null"]
     },
     "gift_id": {
+      "description": "The ID of the gift associated with the subscription.",
       "type": ["string", "null"]
     },
     "affiliate_token": {
+      "description": "The affiliate token associated with the subscription.",
       "type": ["string", "null"]
     },
     "offline_payment_method": {
+      "description": "The offline payment method used for the subscription.",
       "type": ["string", "null"]
     },
     "meta_data": {
       "type": ["object", "null"],
-      "properties": {}
+      "properties": {
+        "description": "Additional metadata associated with the subscription."
+      }
     },
     "addons": {
       "type": ["array", "null"],
@@ -533,9 +605,11 @@
         "type": ["object", "null"],
         "properties": {
           "id": {
+            "description": "The ID of the charged event-based addon.",
             "type": ["string", "null"]
           },
           "last_charged_at": {
+            "description": "The date and time of the last charge for the addon.",
             "type": ["integer", "null"]
           }
         }
@@ -601,6 +675,7 @@
       }
     },
     "custom_fields": {
+      "description": "Any custom fields associated with the subscription.",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }

@@ -4,116 +4,153 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the credit note.",
       "type": ["string", "null"]
     },
     "customer_id": {
+      "description": "The ID of the customer associated with the credit note.",
       "type": ["string", "null"]
     },
     "subscription_id": {
+      "description": "The ID of the subscription associated with the credit note.",
       "type": ["string", "null"]
     },
     "reference_invoice_id": {
+      "description": "The ID of the invoice this credit note references.",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "The type of credit note.",
       "type": ["string", "null"]
     },
     "reason_code": {
+      "description": "The reason code for creating the credit note.",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "The status of the credit note.",
       "type": ["string", "null"]
     },
     "vat_number": {
+      "description": "VAT number associated with the credit note.",
       "type": ["string", "null"]
     },
     "date": {
+      "description": "The date when the credit note was created.",
       "type": ["integer", "null"]
     },
     "price_type": {
+      "description": "The type of pricing used for the credit note.",
       "type": ["string", "null"]
     },
     "currency_code": {
+      "description": "The currency code for the credit note.",
       "type": ["string", "null"]
     },
     "total": {
+      "description": "The total amount of the credit note.",
       "type": ["integer", "null"]
     },
     "amount_allocated": {
+      "description": "The amount of credits allocated.",
       "type": ["integer", "null"]
     },
     "amount_refunded": {
+      "description": "The amount of credits refunded.",
       "type": ["integer", "null"]
     },
     "amount_available": {
+      "description": "The amount of credits available.",
       "type": ["integer", "null"]
     },
     "refunded_at": {
+      "description": "The date when the credit note was refunded.",
       "type": ["integer", "null"]
     },
     "voided_at": {
+      "description": "The date when the credit note was voided.",
       "type": ["integer", "null"]
     },
     "generated_at": {
+      "description": "The date when the credit note was generated.",
       "type": ["integer", "null"]
     },
     "resource_version": {
+      "description": "The version of the credit note resource.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "The date when the credit note was last updated.",
       "type": ["integer", "null"]
     },
     "sub_total": {
+      "description": "The subtotal amount of the credit note.",
       "type": ["integer", "null"]
     },
     "sub_total_in_local_currency": {
+      "description": "The subtotal amount in local currency.",
       "type": ["integer", "null"]
     },
     "total_in_local_currency": {
+      "description": "The total amount in local currency.",
       "type": ["integer", "null"]
     },
     "local_currency_code": {
+      "description": "The local currency code for the credit note.",
       "type": ["string", "null"]
     },
     "round_off_amount": {
+      "description": "Amount rounded off for currency conversions.",
       "type": ["integer", "null"]
     },
     "fractional_correction": {
+      "description": "Fractional correction for rounding off decimals.",
       "type": ["integer", "null"],
       "maximum": 50000
     },
     "deleted": {
+      "description": "Indicates if the credit note has been deleted.",
       "type": ["boolean", "null"]
     },
     "create_reason_code": {
+      "description": "The reason code for creating the credit note.",
       "type": ["string", "null"]
     },
     "vat_number_prefix": {
+      "description": "Prefix for the VAT number.",
       "type": ["string", "null"]
     },
     "base_currency_code": {
+      "description": "The base currency code for the credit note.",
       "type": ["string", "null"]
     },
     "business_entity_id": {
+      "description": "The ID of the business entity associated with the credit note.",
       "type": ["string", "null"]
     },
     "channel": {
+      "description": "The channel through which the credit note was created.",
       "type": ["string", "null"]
     },
     "exchange_rate": {
+      "description": "The exchange rate used for currency conversion.",
       "type": ["number", "null"]
     },
     "is_digital": {
+      "description": "Indicates if the credit note is in digital format.",
       "type": ["boolean", "null"]
     },
     "object": {
+      "description": "The object type of the credit note.",
       "type": ["string", "null"]
     },
     "is_vat_moss_registered": {
+      "description": "Indicates if VAT MOSS registration applies.",
       "type": ["boolean", "null"],
       "$comment": "Only available for accounts which have enabled taxes for EU Region for taxes."
     },
     "customer_notes": {
+      "description": "Notes provided by the customer for the credit note.",
       "type": ["string", "null"]
     },
     "line_items": {
@@ -280,12 +317,15 @@
         "type": ["object", "null"],
         "properties": {
           "name": {
+            "description": "Name of the tax.",
             "type": ["string", "null"]
           },
           "amount": {
+            "description": "The amount of taxes.",
             "type": ["integer", "null"]
           },
           "description": {
+            "description": "Description of the tax.",
             "type": ["string", "null"]
           }
         }
@@ -509,6 +549,7 @@
       }
     },
     "custom_fields": {
+      "description": "Custom fields associated with the credit note.",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
