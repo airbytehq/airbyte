@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -30,13 +31,20 @@ class EventPropertiesTransformation(RecordTransformation):
 
         # The events endpoint is a `POST` endpoint which expects a list of event_ids to filter on
         event_id = record.id
-        request_filter_json = {"event_ids": [event_id]}
+        created_at_timestamp = pendulum.parse(record.created_at) if record.created_at else pendulum.now()
+        request_filter_json = {
+            "event_ids": [event_id],
+            "timeframe_start": created_at_timestamp.to_iso8601_string(),
+            "timeframe_end": created_at_timestamp.add(days=30).to_iso8601_string(),
+            }
         headers = {"Content-Type": "application/json", "Accept": "application/json", "Authorization": f"Bearer {config.api_key}"}
 
         args = {"method": "POST", "url": "https://api.billwithorb.com/v1/events", "json": request_filter_json, "headers": headers}
 
         events_response = requests.request(**args)
-        events_response.raise_for_status()  # Error for invalid responses
+        # Error for invalid responses
+        if events_response.status_code != 200:
+            events_response.raise_for_status()
         events_response_body = events_response.json()
 
         for event in events_response_body["data"]:
