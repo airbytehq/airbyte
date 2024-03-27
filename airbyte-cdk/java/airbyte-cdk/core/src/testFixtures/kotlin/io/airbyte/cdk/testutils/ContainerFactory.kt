@@ -30,9 +30,9 @@ import org.testcontainers.utility.DockerImageName
 abstract class ContainerFactory<C : GenericContainer<*>> {
     @JvmRecord
     private data class ContainerKey<C : GenericContainer<*>>(
-            val clazz: Class<out ContainerFactory<*>>,
-            val imageName: DockerImageName,
-            val methods: kotlin.collections.List<String>
+        val clazz: Class<out ContainerFactory<*>>,
+        val imageName: DockerImageName,
+        val methods: kotlin.collections.List<String>
     )
 
     private class ContainerOrException(
@@ -90,7 +90,6 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
      *
      * @Deprecated use shared(String, NamedContainerModifier) instead
      */
-    @Deprecated("")
     fun shared(imageName: String, vararg methods: String): C {
         return shared(
             imageName,
@@ -110,7 +109,11 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         namedContainerModifiers: MutableList<out NamedContainerModifier<C>> = ArrayList()
     ): C {
         val containerKey =
-            ContainerKey<C>(javaClass, DockerImageName.parse(imageName), namedContainerModifiers.map { it.name() }.toList())
+            ContainerKey<C>(
+                javaClass,
+                DockerImageName.parse(imageName),
+                namedContainerModifiers.map { it.name() }.toList()
+            )
         // We deliberately avoid creating the container itself eagerly during the evaluation of the
         // map
         // value.
@@ -131,7 +134,6 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
      *
      * @Deprecated use exclusive(String, NamedContainerModifier) instead
      */
-    @Deprecated("")
     fun exclusive(imageName: String, vararg methods: String): C {
         return exclusive(
             imageName,
