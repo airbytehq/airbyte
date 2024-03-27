@@ -1,6 +1,6 @@
 {
   "credentials": {
-    "auth_type": "oauth",
+    "auth_type": "oauth2.0",
     "client_id": "invalid",
     "client_secret": "invalid",
     "access_token": "invalid",

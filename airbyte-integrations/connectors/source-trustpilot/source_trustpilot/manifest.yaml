@@ -20,7 +20,7 @@ definitions:
     type: SelectiveAuthenticator
     authenticator_selection_path: [ "credentials", "auth_type" ]
     authenticators:
-      oauth: "#/definitions/oauth_authenticator"
+      oauth2.0: "#/definitions/oauth_authenticator"
       apikey: "#/definitions/apikey_authenticator"
 
 check:
@@ -275,7 +275,7 @@ spec:
             properties:
               auth_type:
                 type: string
-                const: "oauth"
+                const: "oauth2.0"
               client_id:
                 type: string
                 title: API key

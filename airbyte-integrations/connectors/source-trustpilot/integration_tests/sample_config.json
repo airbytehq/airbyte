@@ -1,6 +1,6 @@
 {
   "credentials": {
-    "auth_type": "oauth",
+    "auth_type": "oauth2.0",
     "client_id": "aoVLPAXHFwryzNepiAY3yR7urlx9hhGr",
     "client_secret": "EDLVnp9t11Oa375D",
     "access_token": "MB4o9G3MpM5yrdIKo0OcYsOjeaBT",
