@@ -336,8 +336,8 @@ class HttpRequester(Requester):
             raise ValueError("Request params cannot be a string")
 
         for k, v in options.items():
-            if isinstance(v, (list, dict)):
-                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object.")
+            if isinstance(v, (dict,)):
+                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an object.")
 
         return options
 
@@ -456,9 +456,6 @@ class HttpRequester(Requester):
             json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),
             data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
         )
-        import time
-
-        time.sleep(1)
 
         response = self._send_with_retry(request, log_formatter=log_formatter)
         return self._validate_response(response)

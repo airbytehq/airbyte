@@ -9,7 +9,7 @@ $ ./generate.sh
 ```
 
 This will bring up an interactive helper application. Use the arrow keys to pick a template from the
-list. Select the `Python HTTP API Source` template and then input the name of your connector. The
+list. Select the `Python CDK Source` template and then input the name of your connector. The
 application will create a new directory in airbyte/airbyte-integrations/connectors/ with the name of
 your new connector.
 

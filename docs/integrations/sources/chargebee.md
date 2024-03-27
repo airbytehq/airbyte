@@ -99,6 +99,8 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 0.4.2   | 2024-03-14 | [36037](https://github.com/airbytehq/airbyte/pull/36037) | Adds fields: `coupon_constraints` to `coupon` stream, `billing_month` to `customer stream`, and `error_detail` to `transaction` stream schemas                                                                       |
+| 0.4.1   | 2024-03-13 | [35509](https://github.com/airbytehq/airbyte/pull/35509) | Updates CDK version to latest (0.67.1), updates `site_migration_detail` record filtering            |
 | 0.4.0   | 2024-02-12 | [34053](https://github.com/airbytehq/airbyte/pull/34053) | Add missing fields to and cleans up schemas, adds incremental support for `gift`, `site_migration_detail`, and `unbilled_charge` streams.` |
 | 0.3.1   | 2024-02-12 | [35169](https://github.com/airbytehq/airbyte/pull/35169) | Manage dependencies with Poetry.                                                                    |
 | 0.3.0   | 2023-12-26 | [33696](https://github.com/airbytehq/airbyte/pull/33696) | Add new stream, add fields to existing streams                                                      |

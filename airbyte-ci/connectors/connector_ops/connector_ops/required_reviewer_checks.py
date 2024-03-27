@@ -10,7 +10,7 @@ from connector_ops import utils
 BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-extensibility"}
 TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-extensibility"}
 BYPASS_REASON_REVIEWERS = {"connector-extensibility"}
-STRATEGIC_PYTHON_CONNECTOR_REVIEWERS = {"gl-python"}
+STRATEGIC_PYTHON_CONNECTOR_REVIEWERS = {"gl-python", "connector-extensibility"}
 BREAKING_CHANGE_REVIEWERS = {"breaking-change-reviewers"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
