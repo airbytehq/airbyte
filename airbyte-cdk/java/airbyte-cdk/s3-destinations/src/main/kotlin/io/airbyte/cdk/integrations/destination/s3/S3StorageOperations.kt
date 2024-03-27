@@ -187,7 +187,7 @@ open class S3StorageOperations(
             } else {
                 objectPath + partId + fileExtension
             }
-        val metadata: Map<String, String> = HashMap()
+        val metadata: MutableMap<String, String> = HashMap()
         for (blobDecorator: BlobDecorator in blobDecorators) {
             blobDecorator.updateMetadata(metadata, getMetadataMapping())
         }
@@ -213,7 +213,7 @@ open class S3StorageOperations(
 
         try {
             rawOutputStream.use { outputStream ->
-                recordsData.getInputStream().use { dataStream ->
+                recordsData.inputStream!!.use { dataStream ->
                     dataStream.transferTo(outputStream)
                     succeeded = true
                 }
@@ -338,9 +338,8 @@ open class S3StorageOperations(
         }
     }
 
-    fun getRegexFormat(namespace: String?, streamName: String?, pathFormat: String): String {
-        val namespaceStr: String =
-            nameTransformer.getNamespace(if (Strings.isNotBlank(namespace)) namespace else "")
+    fun getRegexFormat(namespace: String?, streamName: String, pathFormat: String): String {
+        val namespaceStr: String = nameTransformer.getNamespace(namespace ?: "")
         val streamNameStr: String = nameTransformer.getIdentifier(streamName)
         return nameTransformer.applyDefaultCase(
             (pathFormat
