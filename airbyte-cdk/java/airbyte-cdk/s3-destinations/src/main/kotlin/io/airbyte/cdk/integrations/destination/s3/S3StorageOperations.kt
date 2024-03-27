@@ -100,7 +100,7 @@ open class S3StorageOperations(
 
     /** Create a directory object at the specified location. Creates the bucket if necessary. */
     override fun createBucketIfNotExists() {
-        val bucket: String = s3Config.bucketName
+        val bucket: String? = s3Config.bucketName
         if (!doesBucketExist(bucket)) {
             logger.info { "Bucket $bucket does not exist; creating..." }
             s3Client.createBucket(bucket)
@@ -170,7 +170,7 @@ open class S3StorageOperations(
     @Throws(IOException::class)
     private fun loadDataIntoBucket(objectPath: String, recordsData: SerializableBuffer): String {
         val partSize: Long = DEFAULT_PART_SIZE.toLong()
-        val bucket: String = s3Config.bucketName
+        val bucket: String? = s3Config.bucketName
         val partId: String = getPartId(objectPath)
         val fileExtension: String = getExtension(recordsData.filename)
         val fullObjectKey: String =
@@ -261,7 +261,7 @@ open class S3StorageOperations(
             var objects: ObjectListing?
             var objectCount = 0
 
-            val bucket: String = s3Config.bucketName
+            val bucket: String? = s3Config.bucketName
             objects = s3Client.listObjects(bucket, objectPath)
 
             if (objects != null) {
@@ -296,7 +296,7 @@ open class S3StorageOperations(
         objectPath: String,
         pathFormat: String
     ) {
-        val bucket: String = s3Config.bucketName
+        val bucket: String? = s3Config.bucketName
         var objects: ObjectListing =
             s3Client.listObjects(
                 ListObjectsRequest()
@@ -360,7 +360,7 @@ open class S3StorageOperations(
     }
 
     override fun cleanUpBucketObject(objectPath: String, stagedFiles: List<String>) {
-        val bucket: String = s3Config.bucketName
+        val bucket: String? = s3Config.bucketName
         var objects: ObjectListing = s3Client.listObjects(bucket, objectPath)
         while (objects.objectSummaries.size > 0) {
             val keysToDelete: List<DeleteObjectsRequest.KeyVersion> =

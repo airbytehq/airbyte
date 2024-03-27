@@ -35,13 +35,13 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
             val s3Client = destinationConfig.getS3Client()
 
             // Test single upload (for small files) permissions
-            testSingleUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath)
+            testSingleUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath!!)
 
             // Test multipart upload with stream transfer manager
             testMultipartUpload(
                 s3Client,
                 destinationConfig.bucketName,
-                destinationConfig.bucketPath
+                destinationConfig.bucketPath!!
             )
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
