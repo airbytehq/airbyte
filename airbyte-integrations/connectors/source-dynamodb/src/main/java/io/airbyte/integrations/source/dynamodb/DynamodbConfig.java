@@ -12,28 +12,33 @@ import software.amazon.awssdk.regions.Region;
 
 public record DynamodbConfig(
 
-                             URI endpoint,
+    URI endpoint,
 
-                             Region region,
+    Region region,
 
-                             String accessKey,
+    String accessKey,
 
-                             String secretKey,
+    String secretKey,
 
-                             List<String> reservedAttributeNames
+    List<String> reservedAttributeNames,
 
-) {
+    boolean ignoreMissingPermissions
+
+
+    ) {
 
   public static DynamodbConfig createDynamodbConfig(JsonNode jsonNode) {
     JsonNode endpoint = jsonNode.get("endpoint");
     JsonNode region = jsonNode.get("region");
     JsonNode attributeNames = jsonNode.get("reserved_attribute_names");
+    JsonNode missingPermissions = jsonNode.get("ignore_missing_read_permissions_tables");
     return new DynamodbConfig(
         endpoint != null && !endpoint.asText().isBlank() ? URI.create(endpoint.asText()) : null,
         region != null && !region.asText().isBlank() ? Region.of(region.asText()) : null,
         jsonNode.get("access_key_id").asText(),
         jsonNode.get("secret_access_key").asText(),
-        attributeNames != null ? Arrays.asList(attributeNames.asText().split("\\s*,\\s*")) : List.of());
+        attributeNames != null ? Arrays.asList(attributeNames.asText().split("\\s*,\\s*")) : List.of(),
+        missingPermissions != null && missingPermissions.asBoolean());
   }
 
 }

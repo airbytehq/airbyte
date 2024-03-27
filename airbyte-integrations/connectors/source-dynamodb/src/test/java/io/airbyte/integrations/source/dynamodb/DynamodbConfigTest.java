@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.airbyte.commons.json.Jsons;
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.regions.Region;
@@ -29,7 +30,9 @@ class DynamodbConfigTest {
         .hasFieldOrPropertyWithValue("endpoint", URI.create("http://localhost:8080"))
         .hasFieldOrPropertyWithValue("region", Region.of("us-east-1"))
         .hasFieldOrPropertyWithValue("accessKey", "A012345678910EXAMPLE")
-        .hasFieldOrPropertyWithValue("secretKey", "a012345678910ABCDEFGH/AbCdEfGhLEKEY");
+        .hasFieldOrPropertyWithValue("secretKey", "a012345678910ABCDEFGH/AbCdEfGhLEKEY")
+        .hasFieldOrPropertyWithValue("reservedAttributeNames", Collections.emptyList())
+        .hasFieldOrPropertyWithValue("ignoreMissingPermissions", false);
 
   }
 
