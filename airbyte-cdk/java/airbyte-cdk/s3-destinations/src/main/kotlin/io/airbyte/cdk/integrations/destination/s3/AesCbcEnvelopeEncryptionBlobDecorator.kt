@@ -102,7 +102,7 @@ internal constructor( // The real "secret key". Should be handled with great car
         justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
     )
     override fun updateMetadata(
-        metadata: Map<String, String>,
+        metadata: MutableMap<String, String>,
         metadataKeyMapping: Map<String, String>
     ) {
         try {

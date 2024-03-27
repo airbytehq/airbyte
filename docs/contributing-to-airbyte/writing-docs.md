@@ -33,9 +33,19 @@ To make minor changes (example: fixing typos) or edit a single file, you can edi
 
 ### Editing on your local machine
 
+#### Prerequisites
+
+To contribute to our documentation, please ensure following required technologies are installed on your local machine:
+
+1. [`Node.js`](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
+2. [`pnpm`](https://pnpm.io/installation)
+
+#### Setup and Making Changes
+
 To make complex changes or edit multiple files, edit the files on your local machine:
 
 1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the Airbyte [repository](https://github.com/airbytehq/airbyte).
+
 2. Clone the fork on your local machine:
 
    ```bash
@@ -52,7 +62,15 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
    While cloning on Windows, you might encounter errors about long filenames. Refer to the instructions [here](../deploying-airbyte/local-deployment.md#handling-long-filename-error) to correct it.
 
-3. Test changes locally:
+3. Create a feature branch from which to make changes:
+
+   ```bash
+   git checkout -b {YOUR_USERNAME}/{FEATURE/BUG}
+   ```
+
+   (e.g. `jdoe/source-stock-api-stream-fix`)
+
+4. Test changes locally:
 
    To install the docs locally, run the following commands in your terminal:
 
@@ -79,13 +97,13 @@ To make complex changes or edit multiple files, edit the files on your local mac
    Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
 
 
-4. [Follow the GitHub workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects/) to edit the files and create a pull request.
+5. [Follow the GitHub workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects/) to edit the files and create a pull request.
 
     :::note
     Before we accept any contributions, you'll need to sign the Contributor License Agreement (CLA). By signing a CLA, we can ensure that the community is free and confident in its ability to use your contributions. You will be prompted to sign the CLA while opening a pull request.
     :::
 
-5. Assign `airbytehq/docs` as a Reviewer for your pull request. 
+6. Assign `airbytehq/docs` as a Reviewer for your pull request. 
 
 ### Custom markdown extensions for connector docs
 Airbyte's markdown documentation—particularly connector-specific documentation—needs to gracefully support multiple different contexts: key details may differ between open-source builds and Airbyte Cloud, and the more exhaustive explanations appropriate for https://docs.airbyte.com may bury key details when rendered as inline documentation within the Airbyte application. In order to support all these different contexts without resorting to multiple overlapping files that must be maintained in parallel, Airbyte's documentation tooling supports multiple nonstandard features. 

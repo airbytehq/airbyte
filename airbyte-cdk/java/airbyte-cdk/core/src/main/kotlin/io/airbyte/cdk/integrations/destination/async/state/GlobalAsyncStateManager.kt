@@ -154,7 +154,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * Intended to be called by [io.airbyte.cdk.integrations.destination.async.FlushWorkers] after a
      * worker has finished flushing its record batch.
      */
-    fun flushStates(outputRecordCollector: Consumer<AirbyteMessage?>) {
+    fun flushStates(outputRecordCollector: Consumer<AirbyteMessage>) {
         var bytesFlushed: Long = 0L
         logger.info { "Flushing states" }
         synchronized(lock) {
