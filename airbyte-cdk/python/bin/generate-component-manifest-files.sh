@@ -15,7 +15,6 @@ function main() {
     filename_wo_ext=$(basename "$f" | cut -d . -f 1)
     echo "from .$filename_wo_ext import *" >> "$ROOT_DIR/$OUTPUT_DIR"/__init__.py
 
-    # Replace docker run command with direct invocation
     datamodel-codegen \
       --input "$ROOT_DIR/$YAML_DIR/$filename_wo_ext.yaml" \
       --output "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" \
