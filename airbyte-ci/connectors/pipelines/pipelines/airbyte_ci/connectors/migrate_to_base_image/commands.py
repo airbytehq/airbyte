@@ -30,7 +30,7 @@ async def migrate_to_base_image(
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",
+            pipeline_name=f"Upgrade connector {connector.technical_name} to use our base image",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],

@@ -28,6 +28,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # TODO: get off of the runners
   # We are using these runners because they are the same as the one for `publish-command.yml`
   # One problem we had using `ubuntu-latest` for example is that the user is not root and some commands would fail in
   # `manage.sh` (specifically `apt-get`)
@@ -237,18 +238,29 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-      - name: Publish source-declarative-manifest
-        id: publish
-        env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
-          TZ: UTC
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: |
-            docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-            ./tools/integrations/manage.sh publish airbyte-cdk/python false
+      - name: Publish source-declarative-manifest  # TODO: we can probably just bumpversion and then publish on merge might do it
+        runs-on: connector-publish-large
+        steps:
+          - name: Checkout Airbyte
+            uses: actions/checkout@v3
+          - name: Publish source-declarative-manifest after new Python CDK version is published
+            uses: ./.github/actions/run-airbyte-ci
+            with:
+              context: "master" # TODO change to ref
+              dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+              docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+              docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+              gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+              gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+              sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+              slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+              spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+              s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+              s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+              subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest publish --main-release"
+              python_registry_token: ${{ secrets.PYPI_TOKEN }}
       - name: Post failure to Slack channel dev-connectors-extensibility
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
