@@ -19,7 +19,11 @@ class AvroNameTransformer : StandardNameTransformer() {
         return super.convertStreamName(input).lowercase(Locale.getDefault())
     }
 
-    override fun convertStreamName(input: String): String {
+    override fun convertStreamName(input: String?): String? {
+        if (input == null) {
+            return null
+        }
+
         val normalizedName = super.convertStreamName(input)
         return if (normalizedName.substring(0, 1).matches("[A-Za-z_]".toRegex())) {
             normalizedName
@@ -28,10 +32,14 @@ class AvroNameTransformer : StandardNameTransformer() {
         }
     }
 
-    override fun getNamespace(input: String): String {
+    override fun getNamespace(input: String?): String? {
+        if (input == null) {
+            return null
+        }
+
         val tokens = input.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         return Arrays.stream(tokens)
-            .map { name: String ->
+            .map { name: String? ->
                 this.getIdentifier(
                     name,
                 )

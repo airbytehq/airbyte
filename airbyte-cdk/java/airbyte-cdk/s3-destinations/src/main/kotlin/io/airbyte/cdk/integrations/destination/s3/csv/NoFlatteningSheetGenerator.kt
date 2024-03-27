@@ -18,7 +18,7 @@ class NoFlatteningSheetGenerator : BaseSheetGenerator(), CsvSheetGenerator {
     }
 
     /** When no flattening is needed, the record column is just one json blob. */
-    override fun getRecordColumns(json: JsonNode): List<String> {
+    public override fun getRecordColumns(json: JsonNode): List<String> {
         return listOf(Jsons.serialize(json))
     }
 }
