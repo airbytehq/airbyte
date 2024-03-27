@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.JDBCType;
@@ -50,13 +51,14 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    final ObjectNode jsonNode = (ObjectNode) super.rowToJson(queryContext);
+  public AirbyteRecordData convertDatabaseRowToAirbyteRecordData(final ResultSet queryContext) throws SQLException {
+    final AirbyteRecordData airbyteRecordData = super.convertDatabaseRowToAirbyteRecordData(queryContext);
+    final ObjectNode jsonNode = (ObjectNode) airbyteRecordData.rawRowData();
     if (!metadataInjector.isPresent()) {
-      return jsonNode;
+      return airbyteRecordData;
     }
     metadataInjector.get().addMetaDataToRowsFetchedOutsideDebezium(jsonNode);
-    return jsonNode;
+    return new AirbyteRecordData(jsonNode, airbyteRecordData.meta());
   }
 
   /**
