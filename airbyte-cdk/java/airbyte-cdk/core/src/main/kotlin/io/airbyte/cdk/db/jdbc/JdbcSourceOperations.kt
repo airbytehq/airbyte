@@ -65,7 +65,7 @@ class JdbcSourceOperations :
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         cursorFieldType: JDBCType?,
-        value: String
+        value: String?
     ) {
         when (cursorFieldType) {
             JDBCType.TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value)
