@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory
 class BufferedStreamConsumer
 @VisibleForTesting
 internal constructor(
-    private val outputRecordCollector: Consumer<AirbyteMessage?>?,
+    private val outputRecordCollector: Consumer<AirbyteMessage>,
     private val onStart: OnStartFunction,
     private val bufferingStrategy: BufferingStrategy,
     private val onClose: OnCloseFunction,
@@ -87,7 +87,7 @@ internal constructor(
      */
     @Deprecated("")
     constructor(
-        outputRecordCollector: Consumer<AirbyteMessage?>?,
+        outputRecordCollector: Consumer<AirbyteMessage>,
         onStart: OnStartFunction,
         bufferingStrategy: BufferingStrategy,
         onClose: OnCloseFunction,
@@ -109,7 +109,7 @@ internal constructor(
     )
 
     constructor(
-        outputRecordCollector: Consumer<AirbyteMessage?>?,
+        outputRecordCollector: Consumer<AirbyteMessage>,
         onStart: OnStartFunction,
         bufferingStrategy: BufferingStrategy,
         onClose: OnCloseFunction,

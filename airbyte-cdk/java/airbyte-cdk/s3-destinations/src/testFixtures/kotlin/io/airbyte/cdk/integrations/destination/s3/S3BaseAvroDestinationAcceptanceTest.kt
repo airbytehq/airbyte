@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.json.Jsons
 import java.util.*
 import org.apache.avro.Schema
@@ -38,11 +39,12 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
     @Throws(Exception::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String,
+        streamName: String?,
         namespace: String?,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        val nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema)
+        val nameUpdater =
+            AvroRecordHelper.getFieldNameUpdater(streamName!!, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
@@ -69,7 +71,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
         return jsonRecords
     }
 
-    override fun getTestDataComparator() = S3AvroParquetTestDataComparator()
+    override fun getTestDataComparator(): TestDataComparator = S3AvroParquetTestDataComparator()
 
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
