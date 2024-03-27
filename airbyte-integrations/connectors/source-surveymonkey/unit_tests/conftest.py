@@ -7,6 +7,7 @@ import json
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_surveymonkey.source import SourceSurveymonkey
 
@@ -22,7 +23,7 @@ def read_json_fixture(request):
 
 @pytest.fixture(name='read_records')
 def read_records_fixture(config):
-    def read_records(stream_name, slice={"survey_id": "307785415"}):
+    def read_records(stream_name, slice=StreamSlice(partition={"survey_id": "307785415"}, cursor_slice={})):
         stream = next(filter(lambda x: x.name == stream_name, SourceSurveymonkey().streams(config=config)))
         records = list(
             map(lambda record: record.data, stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)))
