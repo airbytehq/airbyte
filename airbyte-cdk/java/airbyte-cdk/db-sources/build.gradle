@@ -53,6 +53,7 @@ dependencies {
     testFixturesImplementation 'io.swagger:swagger-annotations:1.6.13'
     testFixturesImplementation 'org.hamcrest:hamcrest-all:1.3'
     testFixturesImplementation 'org.junit.platform:junit-platform-launcher:1.10.1'
+    testFixturesImplementation 'org.jetbrains.kotlin:kotlin-test'
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:datastore-postgres')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:datastore-postgres'))

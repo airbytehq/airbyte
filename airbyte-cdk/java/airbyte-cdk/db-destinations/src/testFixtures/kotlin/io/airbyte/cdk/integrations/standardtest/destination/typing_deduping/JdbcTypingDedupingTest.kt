@@ -96,7 +96,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
     @Throws(Exception::class)
     override fun dumpFinalTableRecords(
         streamNamespace: String?,
-        streamName: String?
+        streamName: String
     ): List<JsonNode> {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {

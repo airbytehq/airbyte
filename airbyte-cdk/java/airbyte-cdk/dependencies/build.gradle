@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
@@ -19,6 +21,9 @@ java {
         options.compilerArgs += "-Xlint:-try"
     }
 }
+compileKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
 String specFile = "$projectDir/src/main/openapi/config.yaml"
 String serverOutputDir = "$buildDir/generated/api/server"
@@ -159,6 +164,8 @@ dependencies {
     api 'org.apache.logging.log4j:log4j-slf4j2-impl:2.21.1'
     api 'org.slf4j:log4j-over-slf4j:2.0.11'
     api 'org.slf4j:slf4j-api:2.0.11'
+    api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+
 
     implementation 'com.jayway.jsonpath:json-path:2.7.0'
     implementation 'com.networknt:json-schema-validator:1.0.72'
@@ -175,6 +182,7 @@ dependencies {
     testFixturesImplementation 'org.apache.ant:ant:1.10.11'
 
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 }
 
 
@@ -208,6 +216,13 @@ sourceSets {
                 "${clientOutputDir}/src/main/java",
             ])
         }
+        kotlin {
+            srcDirs([
+                    "$projectDir/src/main/kotlin",
+                    "${serverOutputDir}/src/gen/kotlin",
+                    "${clientOutputDir}/src/main/kotlin",
+            ])
+        }
         resources {
             srcDir "$projectDir/src/main/openapi/"
         }
@@ -215,6 +230,13 @@ sourceSets {
 }
 
 tasks.named('compileJava').configure {
+    dependsOn generate
+}
+tasks.named('compileTestJava').configure {
+    dependsOn generate
+}
+
+tasks.named('compileKotlin').configure {
     dependsOn generate
 }
 tasks.named('compileTestJava').configure {

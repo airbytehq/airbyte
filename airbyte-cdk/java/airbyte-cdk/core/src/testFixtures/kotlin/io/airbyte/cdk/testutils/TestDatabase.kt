@@ -101,7 +101,7 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
      * the [DataSource] and [DSLContext] owned by this object.
      */
     fun initialized(): T? {
-        inContainerBootstrapCmd()!!.forEach { cmds: Stream<String?>? -> this.execInContainer(cmds) }
+        inContainerBootstrapCmd()!!.forEach { cmds: Stream<String> -> this.execInContainer(cmds) }
         this.dataSource =
             DataSourceFactory.create(
                 userName,
@@ -121,9 +121,9 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
     val isInitialized: Boolean
         get() = dslContext != null
 
-    protected abstract fun inContainerBootstrapCmd(): Stream<Stream<String?>?>?
+    protected abstract fun inContainerBootstrapCmd(): Stream<Stream<String>>
 
-    protected abstract fun inContainerUndoBootstrapCmd(): Stream<String?>?
+    protected abstract fun inContainerUndoBootstrapCmd(): Stream<String>
 
     abstract val databaseDriver: DatabaseDriver?
 
@@ -182,14 +182,19 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
         }
     }
 
-    protected fun execInContainer(cmds: Stream<String?>?) {
+    protected fun execInContainer(cmds: Stream<String>?) {
         val cmd = cmds!!.toList()
         if (cmd!!.isEmpty()) {
             return
         }
         try {
             LOGGER!!.info(
-                formatLogLine(String.format("executing command %s", Strings.join(cmd, " ")))
+                formatLogLine(
+                    String.format(
+                        "executing command %s",
+                        Strings.join(cmd.toList().asIterable(), " ")
+                    )
+                )
             )
             val exec = container!!.execInContainer(*cmd.toTypedArray<String?>())
             if (exec!!.exitCode == 0) {

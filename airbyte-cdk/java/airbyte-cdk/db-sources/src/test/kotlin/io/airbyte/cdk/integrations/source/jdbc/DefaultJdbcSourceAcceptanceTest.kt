@@ -132,7 +132,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
         TestDatabase<PostgreSQLContainer<*>, BareBonesTestDatabase, BareBonesConfigBuilder>(
             container
         ) {
-        override fun inContainerBootstrapCmd(): Stream<Stream<String?>?>? {
+        override fun inContainerBootstrapCmd(): Stream<Stream<String>> {
             val sql =
                 Stream.of(
                     String.format("CREATE DATABASE %s", databaseName),
@@ -161,7 +161,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
             )
         }
 
-        override fun inContainerUndoBootstrapCmd(): Stream<String?>? {
+        override fun inContainerUndoBootstrapCmd(): Stream<String> {
             return Stream.empty()
         }
 

@@ -18,7 +18,7 @@ abstract class BaseConnector : Integration {
      * - any exception.
      */
     @Throws(Exception::class)
-    override fun spec(): ConnectorSpecification? {
+    override fun spec(): ConnectorSpecification {
         // return a JsonSchema representation of the spec for the integration.
         val resourceString = MoreResources.readResource("spec.json")
         return Jsons.deserialize(resourceString, ConnectorSpecification::class.java)
