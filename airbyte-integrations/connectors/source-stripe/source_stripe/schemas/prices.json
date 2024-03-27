@@ -71,29 +71,29 @@
     "tax_behavior": {
       "type": ["null", "string"]
     },
-    "tiers" : {
-      "type" : ["null", "array"],
-      "items" : {
-        "properties" : {
-          "flat_amount" : {
-            "type" : ["null", "integer"]
+    "tiers": {
+      "type": ["null", "array"],
+      "items": {
+        "properties": {
+          "flat_amount": {
+            "type": ["null", "integer"]
           },
-          "flat_amount_decimal" : {
-            "type" : ["null", "string"]
+          "flat_amount_decimal": {
+            "type": ["null", "string"]
           },
-          "unit_amount" : {
-            "type" : ["null","integer"]
+          "unit_amount": {
+            "type": ["null", "integer"]
           },
-          "unit_amount_decimal" : {
-            "type" : ["null","string"]
+          "unit_amount_decimal": {
+            "type": ["null", "string"]
           },
-          "up_to" : {
-            "type" : ["null", "string"]
+          "up_to": {
+            "type": ["null", "string"]
           }
         }
       }
     },
-    "tiers_mode" : {
+    "tiers_mode": {
       "type": ["null", "string"]
     },
     "transform_quantity": {
