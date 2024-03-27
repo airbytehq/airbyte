@@ -58,6 +58,7 @@ unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true
 "unstructured.pytesseract" = { version = ">=0.3.12", optional = true }
 
 [tool.poetry.group.dev.dependencies]
+datamodel_code_generator = "0.11.19"
 freezegun = "*"
 mypy = "*"
 pandas = "2.0.3"
@@ -78,11 +79,9 @@ vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
 [tool.poe.tasks]
 # Build tasks
-build-code-generator-image = {cmd = "bin/build_code_generator_image.sh", help = "Build the code generator docker image."}
-generate-component-manifest-files = {cmd = "bin/generate-component-manifest-files.sh", help = "Generate component manifest files."}
-generate = {sequence = ["build-code-generator-image", "generate-component-manifest-files"], help = "Run all code generation tasks."}
+assemble = {cmd = "bin/generate-component-manifest-files.sh", help = "Generate component manifest files."}
 build-package = {cmd = "poetry build", help = "Build the python package: source and wheels archives."}
-build = {sequence = ["generate", "build-package"], help = "Run all tasks to build the package."}
+build = {sequence = ["assemble", "build-package"], help = "Run all tasks to build the package."}
 
 # Check tasks
 lint =  {cmd = "pflake8 --config ../../pyproject.toml ./", help = "Lint with flake8."}
