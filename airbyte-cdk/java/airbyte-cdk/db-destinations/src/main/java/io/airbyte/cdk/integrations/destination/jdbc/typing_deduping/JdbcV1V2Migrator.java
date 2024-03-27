@@ -35,9 +35,9 @@ public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinitio
 
   @SneakyThrows
   @Override
-  protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) {
+  public boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) {
     final String retrievedSchema = database.executeMetadataQuery(dbMetadata -> {
-      try (ResultSet columns = dbMetadata.getSchemas(databaseName, streamConfig.id().rawNamespace())) {
+      try (ResultSet columns = dbMetadata.getSchemas(databaseName, streamConfig.getId().getRawNamespace())) {
         String schema = "";
         while (columns.next()) {
           // Catalog can be null, so don't do anything with it.
@@ -54,22 +54,22 @@ public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinitio
   }
 
   @Override
-  protected boolean schemaMatchesExpectation(final TableDefinition existingTable, final Collection<String> columns) {
+  public boolean schemaMatchesExpectation(final TableDefinition existingTable, final Collection<String> columns) {
     return existingTable.columns().keySet().containsAll(columns);
   }
 
   @SneakyThrows
   @Override
-  protected Optional<TableDefinition> getTableIfExists(final String namespace, final String tableName) throws Exception {
+  public Optional<TableDefinition> getTableIfExists(final String namespace, final String tableName) throws Exception {
     return JdbcDestinationHandler.findExistingTable(database, databaseName, namespace, tableName);
   }
 
   @Override
-  protected NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
+  public NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
     @SuppressWarnings("deprecation")
-    final String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName());
+    final String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.getId().getOriginalName());
     return new NamespacedTableName(
-        this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
+        this.namingConventionTransformer.getIdentifier(streamConfig.getId().getOriginalNamespace()),
         tableName);
   }
 
