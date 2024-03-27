@@ -107,7 +107,7 @@ class KlaviyoStream(HttpStream, ABC):
             retry_after = float(retry_after) if retry_after else None
             if retry_after and retry_after >= self.max_time:
                 raise KlaviyoBackoffError(
-                    f"Stream {self.name} has reached rate limit with 'Retry-After' of {retry_after} seconds, " "exit from stream."
+                    f"Stream {self.name} has reached rate limit with 'Retry-After' of {retry_after} seconds, exit from stream."
                 )
             return retry_after
 
