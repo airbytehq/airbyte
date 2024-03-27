@@ -6,8 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_aws_cloudtrail import SourceAwsCloudtrail
-
+from .source import SourceAwsCloudtrail
 
 def run():
     source = SourceAwsCloudtrail()
