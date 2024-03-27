@@ -94,7 +94,7 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
         return NoOpRawTableTDLock()
     }
 
-    override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor?, StreamSyncSummary>) {
+    override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {
         log.info("Skipping TypeAndDedupe final")
     }
 

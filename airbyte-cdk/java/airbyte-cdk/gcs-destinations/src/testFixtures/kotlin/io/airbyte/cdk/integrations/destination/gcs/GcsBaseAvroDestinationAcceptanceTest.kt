@@ -30,18 +30,16 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
 }"""
             )
 
-    override fun getTestDataComparator(): TestDataComparator {
-        return GcsAvroTestDataComparator()
-    }
+    override fun getTestDataComparator(): TestDataComparator = GcsAvroTestDataComparator()
 
     @Throws(Exception::class)
     override fun retrieveRecords(
-        testEnv: TestDestinationEnv,
-        streamName: String,
-        namespace: String,
+        testEnv: TestDestinationEnv?,
+        streamName: String?,
+        namespace: String?,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        val nameUpdater = getFieldNameUpdater(streamName, namespace, streamSchema)
+        val nameUpdater = getFieldNameUpdater(streamName!!, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
@@ -92,7 +90,5 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
         return resultDataTypes
     }
 
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
+    override fun getProtocolVersion() = ProtocolVersion.V1
 }

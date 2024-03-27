@@ -71,7 +71,7 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
     override fun getConsumer(
         config: JsonNode,
         configuredCatalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
         val gcsConfig: GcsDestinationConfig =
             GcsDestinationConfig.Companion.getGcsDestinationConfig(config)

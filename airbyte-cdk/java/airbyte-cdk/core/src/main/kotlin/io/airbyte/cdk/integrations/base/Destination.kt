@@ -34,7 +34,7 @@ interface Destination : Integration {
     fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer?
 
     /**
@@ -53,7 +53,7 @@ interface Destination : Integration {
     fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         return ShimToSerializedAirbyteMessageConsumer(
             getConsumer(config, catalog, outputRecordCollector)

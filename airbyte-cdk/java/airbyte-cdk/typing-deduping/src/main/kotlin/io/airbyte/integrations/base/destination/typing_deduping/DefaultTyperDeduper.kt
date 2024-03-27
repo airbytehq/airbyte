@@ -377,7 +377,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     }
 
     @Throws(Exception::class)
-    override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor?, StreamSyncSummary>) {
+    override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {
         LOGGER.info("Typing and deduping all tables")
         val typeAndDedupeTasks: MutableSet<CompletableFuture<Optional<Exception>>> = HashSet()
         parsedCatalog.streams

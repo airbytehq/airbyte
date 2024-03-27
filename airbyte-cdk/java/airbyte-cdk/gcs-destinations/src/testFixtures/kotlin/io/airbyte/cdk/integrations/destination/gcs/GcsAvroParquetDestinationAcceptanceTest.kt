@@ -27,9 +27,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 
 abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
     GcsDestinationAcceptanceTest(s3Format) {
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
+    override fun getProtocolVersion() = ProtocolVersion.V1
 
     @ParameterizedTest
     @ArgumentsSource(NumberDataTypeTestArgumentProvider::class)
@@ -38,8 +36,8 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
         val catalog = readCatalogFromFile(catalogFileName)
         val messages = readMessagesFromFile(messagesFileName)
 
-        val config = getConfig()
-        val defaultSchema = getDefaultSchema(config!!)
+        val config = this.getConfig()
+        val defaultSchema = getDefaultSchema(config)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
 
