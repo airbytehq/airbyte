@@ -174,7 +174,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   private String getCatalog(final SqlDatabase database) {
-    return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
+    JsonNode sourceConfig = database.sourceConfig;
+    if (sourceConfig != null) {
+      return (sourceConfig.has(JdbcUtils.DATABASE_KEY) ? sourceConfig.get(JdbcUtils.DATABASE_KEY).asText() : null);
+    }
+    throw new NullPointerException();
   }
 
   @Override
@@ -463,8 +467,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    database.setSourceConfig(sourceConfig);
-    database.setDatabaseConfig(jdbcConfig);
+    database.sourceConfig = sourceConfig;
+    database.databaseConfig = jdbcConfig;
     return database;
   }
 

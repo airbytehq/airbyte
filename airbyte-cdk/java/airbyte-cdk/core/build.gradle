@@ -26,6 +26,30 @@ compileTestFixturesKotlin {
     }
 }
 
+compileTestKotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+        languageVersion = KotlinVersion.KOTLIN_1_9
+        allWarningsAsErrors = false
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+    dependsOn {
+        tasks.matching { it.name == 'generate' }
+    }
+}
+
+compileKotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+        languageVersion = KotlinVersion.KOTLIN_1_9
+        allWarningsAsErrors = false
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+    dependsOn {
+        tasks.matching { it.name == 'generate' }
+    }
+}
+
 dependencies {
 
     api 'com.datadoghq:dd-trace-api:1.28.0'

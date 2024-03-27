@@ -184,7 +184,7 @@ class AvroSerializedBufferTest() {
                         writer.byteCount in minExpectedByte..maxExpectedByte,
                         "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}",
                     )
-                    val `in`: InputStream = writer.inputStream
+                    val `in`: InputStream = writer.inputStream!!
                     DataFileReader(
                             SeekableByteArrayInput(`in`.readAllBytes()),
                             GenericDatumReader<GenericData.Record>(),
