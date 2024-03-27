@@ -75,7 +75,8 @@ inputs:
   airbyte_ci_binary_url:
     description: "URL to airbyte-ci binary"
     required: false
-    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+    #TODO: revert before merging
+    default: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/51c9dc8/airbyte-ci
   python_registry_token:
     description: "Python registry API token to publish python package"
     required: false

@@ -5,7 +5,7 @@
 
 from typing import Any
 
-from base_images.bases import AirbyteConnectorBaseImage
+from base_images.bases import AirbyteConnectorBaseImage  # type: ignore
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase

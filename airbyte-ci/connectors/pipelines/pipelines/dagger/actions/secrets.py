@@ -9,7 +9,6 @@ import datetime
 from typing import TYPE_CHECKING
 
 from anyio import Path
-from base_images.bases import AirbyteConnectorBaseImage
 from dagger import Secret
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
 
