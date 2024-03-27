@@ -147,13 +147,12 @@ class PytestStep(Step, ABC):
             Container: The container with the test environment installed.
         """
         secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets")
-
         container_with_test_deps = (
             # Install the connector python package in /test_environment with the extra dependencies
             await pipelines.dagger.actions.python.common.with_python_connector_installed(
                 self.context,
-                # Reset the entrypoint to run non airbyte commands
-                built_connector_container.with_entrypoint([]),
+                # Reset the entrypoint to run non airbyte commands and set the user to root to install the dependencies and access secrets
+                built_connector_container.with_entrypoint([]).with_user("root"),
                 str(self.context.connector.code_directory),
                 additional_dependency_groups=extra_dependencies_names,
             )
