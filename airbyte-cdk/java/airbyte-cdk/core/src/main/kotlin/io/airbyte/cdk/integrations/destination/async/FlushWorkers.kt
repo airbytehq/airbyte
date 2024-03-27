@@ -48,7 +48,7 @@ class FlushWorkers
 constructor(
     private val bufferDequeue: io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue,
     private val flusher: DestinationFlushFunction,
-    private val outputRecordCollector: Consumer<AirbyteMessage?>,
+    private val outputRecordCollector: Consumer<AirbyteMessage>,
     private val flushFailure: FlushFailure,
     private val stateManager: GlobalAsyncStateManager,
     private val workerPool: ExecutorService = Executors.newFixedThreadPool(5),

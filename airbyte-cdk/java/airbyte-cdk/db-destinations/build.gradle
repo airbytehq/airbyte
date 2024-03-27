@@ -8,6 +8,10 @@ java {
     }
 }
 
+compileKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestKotlin.compilerOptions.allWarningsAsErrors = false
+
 dependencies {
     api 'org.apache.commons:commons-csv:1.10.0'
 
@@ -25,6 +29,9 @@ dependencies {
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
+    testFixturesImplementation 'org.jetbrains.kotlin:kotlin-test'
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+
 }

@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
   license: Elv2
+  maxSecondsBetweenMessages: 60
   name: Google Sheets
   remoteRegistries:
     pypi:
