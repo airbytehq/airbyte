@@ -90,7 +90,7 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
         return (
             self.get_base_container(platform)
-            .with_mounted_cache("/root/.cache/pip", pip_cache_volume)
+            .with_mounted_cache("/home/airbyte/.cache/pip", pip_cache_volume)
             # Set the timezone to UTC
             .with_exec(["ln", "-snf", "/usr/share/zoneinfo/Etc/UTC", "/etc/localtime"])
             # Upgrade pip to the expected version
