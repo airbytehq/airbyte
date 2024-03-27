@@ -29,35 +29,35 @@ acceptance_tests:
         timeout_seconds: 3600
         empty_streams:
           - name: engagements_calls
-            bypass_reason: Unable to populate cost $20/month
+            bypass_reason: Unable to populate (cost $20/month) - covered by integration tests
           - name: owners_archived
-            bypass_reason: unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: tickets_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: deals_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: companies_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: engagements_calls_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: engagements_emails_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: engagements_meetings_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: engagements_notes_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: engagements_tasks_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: goals_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: line_items_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: products_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: pets_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
           - name: cars_web_analytics
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate - covered by integration tests
   full_refresh:
     tests:
       - config_path: secrets/config.json
