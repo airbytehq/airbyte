@@ -1,7 +1,7 @@
 name: Stale issue action
 on:
   schedule:
-    - cron: "30 1 * * *"
+    - cron: "* 8 * * *"
 
 jobs:
   close-issues:
