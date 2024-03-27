@@ -20,10 +20,22 @@ from source_google_drive.utils import get_folder_id
 
 from .spec import SourceGoogleDriveSpec
 
+# MIME Type constant definitions
+# See: https://stackoverflow.com/a/50860387/4298208
+
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
+GOOGLE_SHEETS_MIME_TYPE = "application/vnd.google-apps.spreadsheet"
+MICROSOFT_DOCX_MIME_TYPE = (
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
+MICROSOFT_XLSX_MIME_TYPE = (
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+PDF_MIME_TYPE = "application/pdf"
 EXPORTABLE_DOCUMENTS_MIME_TYPES = [
     GOOGLE_DOC_MIME_TYPE,
+    GOOGLE_SHEETS_MIME_TYPE,
     "application/vnd.google-apps.presentation",
     "application/vnd.google-apps.drawing",
 ]
@@ -180,6 +192,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
         """
         if original_mime_type.startswith(GOOGLE_DOC_MIME_TYPE):
-            return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            return MICROSOFT_DOCX_MIME_TYPE
+        elif original_mime_type.startswith(GOOGLE_SHEETS_MIME_TYPE):
+            return MICROSOFT_XLSX_MIME_TYPE
         else:
-            return "application/pdf"
+            return PDF_MIME_TYPE
