@@ -100,5 +100,5 @@ pre-push = {sequence = ["build", "check-local"], help = "Run all build and check
 [tool.airbyte_ci]
 optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
-poe_tasks = ["check-ci"] # TODO add build
+poe_tasks = ["build", "check-ci"]
 mount_docker_socket = true
