@@ -178,7 +178,7 @@ const useUpdateDestination = () => {
         name: updateDestinationPayload.values.name,
         destinationId: updateDestinationPayload.destinationId,
         connectionConfiguration: updateDestinationPayload.values.connectionConfiguration,
-        workspaceId: updateDestinationPayload.values.workspaceId,
+        workspaceId: updateDestinationPayload?.values?.workspaceId,
       });
     },
     {
