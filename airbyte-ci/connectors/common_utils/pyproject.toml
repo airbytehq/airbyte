@@ -27,6 +27,6 @@ build-backend = "poetry.core.masonry.api"
 test = "pytest tests"
 
 [tool.airbyte_ci]
-extra_poetry_groups = ["dev"]
+optional_poetry_groups = ["dev"]
 # Disable poe tasks as tests are not passing ATM
 poe_tasks = []
