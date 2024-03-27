@@ -120,9 +120,6 @@
     "fulfillment_status": {
       "type": ["null", "string"]
     },
-    "gateway": {
-      "type": ["null", "string"]
-    },
     "landing_site": {
       "type": ["null", "string"]
     },
@@ -169,9 +166,6 @@
       "type": ["null", "string"]
     },
     "processed_at": {
-      "type": ["null", "string"]
-    },
-    "processing_method": {
       "type": ["null", "string"]
     },
     "reference": {
@@ -284,26 +278,6 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"]
-      }
-    },
-    "payment_details": {
-      "type": ["null", "object"],
-      "properties": {
-        "credit_card_bin": {
-          "type": ["null", "string"]
-        },
-        "avs_result_code": {
-          "type": ["null", "string"]
-        },
-        "cvv_result_code": {
-          "type": ["null", "string"]
-        },
-        "credit_card_number": {
-          "type": ["null", "string"]
-        },
-        "credit_card_company": {
-          "type": ["null", "string"]
-        }
       }
     },
     "refunds": {
