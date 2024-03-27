@@ -4,3 +4,4 @@
 !source_surveycto
 !setup.py
 !secrets
+!integration_tests/sample_files
