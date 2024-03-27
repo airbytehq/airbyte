@@ -7,6 +7,11 @@ data:
       enabled: true
     cloud:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-04-15"
+        message: "The verison migrates the Rss connector to the low-code framework for greater maintainability."
   remoteRegistries:
     pypi:
       enabled: true
@@ -25,11 +30,14 @@ data:
   icon: rss.svg
   license: MIT
   name: Rss
-  releaseDate: 2024-04-20
+  releaseDate: 2022-10-12
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/rss
   tags:
     - language:python
     - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
 metadataSpecVersion: "1.0"
