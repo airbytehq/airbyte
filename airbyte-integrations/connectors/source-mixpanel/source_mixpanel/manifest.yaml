@@ -1,0 +1,220 @@
+version: 0.72.1
+type: DeclarativeSource
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
+
+  default_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 1000
+      cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+      stop_condition: >-
+        {{ not response.get("response_metadata", {}).get("next_cursor", {})
+        }}
+
+
+  api_token_auth:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_secret'] }}"
+  basic_http_authenticator:
+    type: BasicHttpAuthenticator
+    username: "{{ config['credentials']['username'] }}"
+    password: "{{ config['credentials']['secret'] }}"
+
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "option_title"]
+    authenticators:
+      Project Secret: "#/definitions/api_token_auth"
+      Service Account: "#/definitions/basic_http_authenticator"
+
+  requester:
+    type: HttpRequester
+    url_base: https://eu.mixpanel.com/api/
+    path: "{{ parameters['path'] }}"
+    authenticator: "#/definitions/authenticator"
+    http_method: GET
+    request_parameters:
+      project_id: "{{ config['credentials']['project_id'] }}"
+    request_headers: {}
+    request_body_json: {}
+
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "{{ parameters['field_path'] }}"
+
+  selector_empty_dpath:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/selector"
+    partition_router: []
+
+  stream_base:
+    primary_key: "id"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    cursor_datetime_formats:
+      - '%Y-%m-%d'
+    datetime_format: '%Y-%m-%d'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_time_option:
+      inject_into: request_parameter
+      field_name: from_date
+      type: RequestOption
+    end_time_option:
+      inject_into: request_parameter
+      field_name: to_date
+      type: RequestOption
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    step: P2D
+    cursor_granularity: P1D
+
+  cohorts_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: cohorts
+      path: 2.0/cohorts/list
+      field_path: []
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_empty_dpath"
+
+  engage_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: engage
+      path: 2.0/engage
+      field_path: results
+
+  revenue_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: revenue
+      path: 2.0/engage/revenue
+      field_path: results
+    incremental_sync: "#/definitions/incremental_sync"
+
+  funnel_ids_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: funnel_ids
+      path: 2.0/funnels/list
+    primary_key: "funnel_id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector_empty_dpath"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          funnel_id:
+            type: number
+          name:
+            type: [string, null]
+
+  funnels_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: funnels
+      path: 2.0/funnels
+      field_path:
+       - data
+    incremental_sync: "#/definitions/incremental_sync"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: funnel_id
+            partition_field: funnel_id
+            request_option:
+              inject_into: request_parameter
+              type: RequestOption
+              field_name: funnel_id
+            stream: "#/definitions/funnel_ids_stream"
+
+  annotations_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: annotations
+      field_path: results
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "app/projects/{{ config['credentials']['project_id'] }}/annotations"
+
+  cohort_members_stream:
+    $ref: "#/definitions/engage_stream"
+    $parameters:
+      name: cohort_members
+      path: 2.0/engage
+      field_path: results
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/cohorts_stream"
+            parent_key: id
+            partition_field: id
+            request_option:
+              inject_into: body_json
+              type: RequestOption
+              field_name: filter_by_cohort
+
+streams:
+  - "#/definitions/cohorts_stream"
+  - "#/definitions/engage_stream"
+  - "#/definitions/revenue_stream"
+  - "#/definitions/annotations_stream"
+  - "#/definitions/funnel_ids_stream"
+  - "#/definitions/funnels_stream"
+  - "#/definitions/cohort_members_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - users

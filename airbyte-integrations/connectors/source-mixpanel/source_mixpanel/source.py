@@ -35,7 +35,7 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
         super().__init__(token=token, auth_method="Basic")
 
 
-class SourceMixpanel(AbstractSource):
+class SourceMixpanel_________(AbstractSource):
     STREAMS = [Cohorts, CohortMembers, Funnels, Revenue, Export, Annotations, Engage]
 
     @staticmethod
@@ -163,3 +163,11 @@ class SourceMixpanel(AbstractSource):
                 stream.reqs_per_hour_limit = reqs_per_hour_limit
                 streams.append(stream)
         return streams
+
+
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
+
+class SourceMixpanel(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
