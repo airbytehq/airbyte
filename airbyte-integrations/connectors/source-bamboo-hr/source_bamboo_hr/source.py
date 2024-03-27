@@ -69,7 +69,7 @@ class MetaFieldsStream(BambooHrStream):
         yield from response.json()
 
 
-class EmployeesDirectoryStream(BambooHrStream):
+class EmployeesDirectory(BambooHrStream):
     primary_key = "id"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -142,7 +142,7 @@ class CustomReportsStream(BambooHrStream):
         yield from response.json()["employees"]
 
 
-class TimeOffRequestsStream(BambooHrIncrementalStream):
+class TimeOffRequests(BambooHrIncrementalStream):
 
     primary_key = "id"
 
@@ -231,6 +231,6 @@ class SourceBambooHr(AbstractSource):
         config = SourceBambooHr.add_authenticator_to_config(config)
         return [
             CustomReportsStream(config),
-            EmployeesDirectoryStream(config),
-            TimeOffRequestsStream(config)
+            EmployeesDirectory(config),
+            TimeOffRequests(config)
         ]

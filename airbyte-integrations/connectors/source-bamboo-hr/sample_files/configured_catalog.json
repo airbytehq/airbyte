@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "employees_directory_stream",
+        "name": "employees_directory",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh"
@@ -49,7 +49,7 @@
     },
     {
       "stream": {
-        "name": "time_off_requests_stream",
+        "name": "time_off_requests",
         "json_schema": {},
         "supported_sync_modes": [
           "incremental",
