@@ -4,8 +4,8 @@
 
 package io.airbyte.commons.functional;
 
-public interface CheckedBiFunction<First, Second, Result, E extends Throwable> {
+import org.apache.commons.lang3.function.FailableBiFunction;
 
-  Result apply(First first, Second second) throws E;
+public interface CheckedBiFunction<First, Second, Result, E extends Throwable> extends FailableBiFunction<First, Second, Result, E> {
 
 }

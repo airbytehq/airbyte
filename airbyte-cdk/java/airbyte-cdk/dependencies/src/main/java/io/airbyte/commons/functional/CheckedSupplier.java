@@ -4,9 +4,9 @@
 
 package io.airbyte.commons.functional;
 
-@FunctionalInterface
-public interface CheckedSupplier<T, E extends Throwable> {
+import org.apache.commons.lang3.function.FailableSupplier;
 
-  T get() throws E;
+@FunctionalInterface
+public interface CheckedSupplier<T, E extends Throwable> extends FailableSupplier<T, E> {
 
 }

@@ -4,9 +4,9 @@
 
 package io.airbyte.commons.functional;
 
-@FunctionalInterface
-public interface CheckedBiConsumer<T, R, E extends Throwable> {
+import org.apache.commons.lang3.function.FailableBiConsumer;
 
-  void accept(T t, R r) throws E;
+@FunctionalInterface
+public interface CheckedBiConsumer<T, R, E extends Throwable> extends FailableBiConsumer<T, R, E> {
 
 }

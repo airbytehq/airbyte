@@ -37,7 +37,7 @@ class JsonLSerializedBuffer(
         withCompression(gzipCompression)
     }
 
-    override fun initWriter(outputStream: OutputStream?) {
+    override fun initWriter(outputStream: OutputStream) {
         printWriter = PrintWriter(outputStream, true, StandardCharsets.UTF_8)
     }
 
@@ -60,7 +60,7 @@ class JsonLSerializedBuffer(
     }
 
     @Suppress("DEPRECATION")
-    override fun writeRecord(recordString: String?, airbyteMetaString: String?, emittedAt: Long) {
+    override fun writeRecord(recordString: String, airbyteMetaString: String, emittedAt: Long) {
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(
             Jsons.deserialize(
