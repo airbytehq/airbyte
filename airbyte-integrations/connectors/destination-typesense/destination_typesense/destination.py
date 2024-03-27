@@ -3,6 +3,7 @@
 #
 
 
+import time
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
@@ -10,15 +11,10 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
 from typesense import Client
-import time
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
-    node = {
-        "host": config.get("host"),
-        "port": config.get("port") or "8108",
-        "protocol": config.get("protocol") or "https"
-    }
+    node = {"host": config.get("host"), "port": config.get("port") or "8108", "protocol": config.get("protocol") or "https"}
     path = config.get("path")
     if path:
         node["path"] = path
