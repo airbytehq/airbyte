@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.1"
+version = "0.5.0"
 name = "source-file"
 description = "Source implementation for File"
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -22,7 +22,7 @@ beautifulsoup4 = "==4.11.1"
 openpyxl = "==3.0.10"
 google-cloud-storage = "==2.5.0"
 pandas = "==1.4.3"
-airbyte-cdk = "==0.51.41"
+airbyte-cdk = "^0"
 paramiko = "==2.11.0"
 xlrd = "==2.0.1"
 boto3 = "==1.21.21"

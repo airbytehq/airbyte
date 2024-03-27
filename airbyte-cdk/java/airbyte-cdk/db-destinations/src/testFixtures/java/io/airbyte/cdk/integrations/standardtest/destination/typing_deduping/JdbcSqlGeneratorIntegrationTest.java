@@ -67,7 +67,10 @@ public abstract class JdbcSqlGeneratorIntegrationTest<DestinationState extends M
    */
   protected abstract Field<?> toJsonValue(String valueAsString);
 
-  private void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records, final String... columnsToParseJson)
+  private void insertRecords(final Name tableName,
+                             final List<String> columnNames,
+                             final List<? extends JsonNode> records,
+                             final String... columnsToParseJson)
       throws SQLException {
     InsertValuesStepN<Record> insert = getDslContext().insertInto(
         DSL.table(tableName),
@@ -105,7 +108,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest<DestinationState extends M
 
   @Override
   protected void createRawTable(final StreamId streamId) throws Exception {
-    getDatabase().execute(getDslContext().createTable(DSL.name(streamId.rawNamespace(), streamId.rawName()))
+    getDatabase().execute(getDslContext().createTable(DSL.name(streamId.getRawNamespace(), streamId.getRawName()))
         .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
         .column(COLUMN_NAME_AB_EXTRACTED_AT, getTimestampWithTimeZoneType().nullable(false))
         .column(COLUMN_NAME_AB_LOADED_AT, getTimestampWithTimeZoneType())
@@ -116,7 +119,7 @@ public abstract class JdbcSqlGeneratorIntegrationTest<DestinationState extends M
 
   @Override
   protected void createV1RawTable(final StreamId v1RawTable) throws Exception {
-    getDatabase().execute(getDslContext().createTable(DSL.name(v1RawTable.rawNamespace(), v1RawTable.rawName()))
+    getDatabase().execute(getDslContext().createTable(DSL.name(v1RawTable.getRawNamespace(), v1RawTable.getRawName()))
         .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
         .column(COLUMN_NAME_EMITTED_AT, getTimestampWithTimeZoneType().nullable(false))
         .column(COLUMN_NAME_DATA, getStructType().nullable(false))
@@ -124,9 +127,9 @@ public abstract class JdbcSqlGeneratorIntegrationTest<DestinationState extends M
   }
 
   @Override
-  protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+  public void insertRawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws Exception {
     insertRecords(
-        DSL.name(streamId.rawNamespace(), streamId.rawName()),
+        DSL.name(streamId.getRawNamespace(), streamId.getRawName()),
         JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
         records,
         COLUMN_NAME_DATA,
@@ -134,9 +137,9 @@ public abstract class JdbcSqlGeneratorIntegrationTest<DestinationState extends M
   }
 
   @Override
-  protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+  protected void insertV1RawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws Exception {
     insertRecords(
-        DSL.name(streamId.rawNamespace(), streamId.rawName()),
+        DSL.name(streamId.getRawNamespace(), streamId.getRawName()),
         LEGACY_RAW_TABLE_COLUMNS,
         records,
         COLUMN_NAME_DATA);
@@ -146,12 +149,12 @@ public abstract class JdbcSqlGeneratorIntegrationTest<DestinationState extends M
   protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
                                          final StreamId streamId,
                                          final String suffix,
-                                         final List<JsonNode> records)
+                                         final List<? extends JsonNode> records)
       throws Exception {
     final List<String> columnNames =
         includeCdcDeletedAt ? BaseSqlGeneratorIntegrationTest.FINAL_TABLE_COLUMN_NAMES_CDC : BaseSqlGeneratorIntegrationTest.FINAL_TABLE_COLUMN_NAMES;
     insertRecords(
-        DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix),
+        DSL.name(streamId.getFinalNamespace(), streamId.getFinalName() + suffix),
         columnNames,
         records,
         COLUMN_NAME_AB_META, "struct", "array", "unknown");
@@ -159,13 +162,14 @@ public abstract class JdbcSqlGeneratorIntegrationTest<DestinationState extends M
 
   @Override
   protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
-    return getDatabase().queryJsons(getDslContext().selectFrom(DSL.name(streamId.rawNamespace(), streamId.rawName())).getSQL(ParamType.INLINED));
+    return getDatabase()
+        .queryJsons(getDslContext().selectFrom(DSL.name(streamId.getRawNamespace(), streamId.getRawName())).getSQL(ParamType.INLINED));
   }
 
   @Override
   protected List<JsonNode> dumpFinalTableRecords(final StreamId streamId, final String suffix) throws Exception {
     return getDatabase()
-        .queryJsons(getDslContext().selectFrom(DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix)).getSQL(ParamType.INLINED));
+        .queryJsons(getDslContext().selectFrom(DSL.name(streamId.getFinalNamespace(), streamId.getFinalName() + suffix)).getSQL(ParamType.INLINED));
   }
 
   @Override
