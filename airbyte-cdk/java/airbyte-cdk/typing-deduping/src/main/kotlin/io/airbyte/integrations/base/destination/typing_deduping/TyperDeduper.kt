@@ -99,7 +99,7 @@ interface TyperDeduper {
      * [StreamSyncSummary.DEFAULT].
      */
     @Throws(Exception::class)
-    fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor?, StreamSyncSummary>)
+    fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 
     @Throws(Exception::class) fun commitFinalTables()
 

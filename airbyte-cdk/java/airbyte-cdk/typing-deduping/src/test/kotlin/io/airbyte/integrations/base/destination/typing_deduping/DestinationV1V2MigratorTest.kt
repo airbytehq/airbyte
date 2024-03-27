@@ -15,9 +15,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.spy
 
 class DestinationV1V2MigratorTest {
@@ -113,7 +113,7 @@ class DestinationV1V2MigratorTest {
         migrator.migrate(sqlGenerator, handler, stream)
         Mockito.verify(handler).execute(sql)
         // Exception thrown when executing sql, TableNotMigratedException thrown
-        Mockito.doThrow(Exception::class.java).`when`(handler).execute(ArgumentMatchers.any())
+        Mockito.doThrow(Exception::class.java).`when`(handler).execute(any())
         val exception =
             Assertions.assertThrows(TableNotMigratedException::class.java) {
                 migrator.migrate(sqlGenerator, handler, stream)
@@ -136,7 +136,7 @@ class DestinationV1V2MigratorTest {
             v1RawTableSchemaMatches: Boolean
         ): BaseDestinationV1V2Migrator<*> {
             val migrator: BaseDestinationV1V2Migrator<String> = spy()
-            Mockito.`when`(migrator.doesAirbyteInternalNamespaceExist(ArgumentMatchers.any()))
+            Mockito.`when`(migrator.doesAirbyteInternalNamespaceExist(any()))
                 .thenReturn(v2NamespaceExists)
             val existingTable =
                 if (v2TableExists) Optional.of("v2_raw") else Optional.empty<String>()
@@ -156,7 +156,7 @@ class DestinationV1V2MigratorTest {
                 )
                 .thenReturn(v2RawSchemaMatches)
 
-            Mockito.`when`(migrator.convertToV1RawName(ArgumentMatchers.any()))
+            Mockito.`when`(migrator.convertToV1RawName(any()))
                 .thenReturn(NamespacedTableName("v1_raw_namespace", "v1_raw_table"))
             val existingV1RawTable =
                 if (v1RawTableExists) Optional.of("v1_raw") else Optional.empty<String>()
@@ -174,7 +174,13 @@ class DestinationV1V2MigratorTest {
 
         @Throws(Exception::class)
         fun noIssuesMigrator(): BaseDestinationV1V2Migrator<*> {
-            return makeMockMigrator(true, false, true, true, true)
+            return makeMockMigrator(
+                v2NamespaceExists = true,
+                v2TableExists = false,
+                v2RawSchemaMatches = true,
+                v1RawTableExists = true,
+                v1RawTableSchemaMatches = true
+            )
         }
     }
 }

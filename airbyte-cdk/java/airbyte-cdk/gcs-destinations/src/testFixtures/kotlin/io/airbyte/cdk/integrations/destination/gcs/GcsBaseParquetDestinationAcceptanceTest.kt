@@ -26,26 +26,22 @@ import org.apache.parquet.hadoop.ParquetReader
 
 abstract class GcsBaseParquetDestinationAcceptanceTest :
     GcsAvroParquetDestinationAcceptanceTest(S3Format.PARQUET) {
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
+    override fun getProtocolVersion() = ProtocolVersion.V1
 
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(java.util.Map.of("format_type", "Parquet", "compression_codec", "GZIP"))
 
-    override fun getTestDataComparator(): TestDataComparator {
-        return GcsAvroTestDataComparator()
-    }
+    override fun getTestDataComparator(): TestDataComparator = GcsAvroTestDataComparator()
 
     @Throws(IOException::class, URISyntaxException::class)
     override fun retrieveRecords(
-        testEnv: TestDestinationEnv,
-        streamName: String,
-        namespace: String,
+        testEnv: TestDestinationEnv?,
+        streamName: String?,
+        namespace: String?,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        val nameUpdater = getFieldNameUpdater(streamName, namespace, streamSchema)
+        val nameUpdater = getFieldNameUpdater(streamName!!, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
@@ -87,7 +83,7 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
             val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
             val uri = URI(String.format("s3a://%s/%s", `object`.bucketName, `object`.key))
             val path = Path(uri)
-            val hadoopConfig = getHadoopConfig(config!!)
+            val hadoopConfig = getHadoopConfig(config)
 
             ParquetReader.builder(AvroReadSupport<GenericData.Record>(), path)
                 .withConf(hadoopConfig)

@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory
 
 internal class IntegrationRunnerTest {
     private lateinit var cliParser: IntegrationCliParser
-    private lateinit var stdoutConsumer: Consumer<AirbyteMessage?>
+    private lateinit var stdoutConsumer: Consumer<AirbyteMessage>
     private lateinit var destination: Destination
     private lateinit var source: Source
     private lateinit var configPath: Path

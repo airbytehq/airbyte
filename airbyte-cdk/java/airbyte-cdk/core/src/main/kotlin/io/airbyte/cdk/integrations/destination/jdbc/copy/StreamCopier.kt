@@ -48,7 +48,7 @@ interface StreamCopier {
     @Throws(Exception::class) fun createDestinationTable(): String?
 
     /** Generates a merge SQL statement from the temporary table to the final table. */
-    @Throws(Exception::class) fun generateMergeStatement(destTableName: String?): String?
+    @Throws(Exception::class) fun generateMergeStatement(destTableName: String?): String
 
     /**
      * Cleans up the copier by removing the staging file and dropping the temporary table after

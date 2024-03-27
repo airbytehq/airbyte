@@ -13,6 +13,7 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
@@ -39,9 +40,9 @@ abstract class S3DestinationAcceptanceTest
 protected constructor(protected val outputFormat: S3Format) : DestinationAcceptanceTest() {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
-    protected lateinit var config: S3DestinationConfig
+    protected lateinit var s3DestinationConfig: S3DestinationConfig
     protected var s3Client: AmazonS3? = null
-    protected lateinit var nameTransformer: NamingConventionTransformer
+    protected lateinit var s3nameTransformer: NamingConventionTransformer
     protected var s3StorageOperations: S3StorageOperations? = null
 
     protected val baseConfigJson: JsonNode
@@ -53,6 +54,8 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
         }
         return null
     }
+
+    override fun getConfig(): JsonNode = configJson!!
 
     override fun getFailCheckConfig(): JsonNode {
         val baseJson = baseConfigJson
@@ -68,20 +71,20 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
         streamName: String?,
         namespace: String?
     ): List<S3ObjectSummary> {
-        val namespaceStr = nameTransformer!!.getNamespace(namespace!!)
-        val streamNameStr = nameTransformer!!.getIdentifier(streamName!!)
+        val namespaceStr = s3nameTransformer!!.getNamespace(namespace!!)
+        val streamNameStr = s3nameTransformer!!.getIdentifier(streamName!!)
         val outputPrefix =
             s3StorageOperations!!.getBucketObjectPath(
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                config!!.pathFormat
+                s3DestinationConfig!!.pathFormat
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
         val objectSummaries =
             s3Client!!
-                .listObjects(config!!.bucketName, parentFolder)
+                .listObjects(s3DestinationConfig!!.bucketName, parentFolder)
                 .objectSummaries
                 .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
@@ -105,7 +108,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
      * * Construct the S3 destination config.
      * * Construct the S3 client.
      */
-    override fun setup(testEnv: TestDestinationEnv?, TEST_SCHEMAS: HashSet<String?>?) {
+    override fun setup(testEnv: TestDestinationEnv, TEST_SCHEMAS: HashSet<String>) {
         val baseConfigJson = baseConfigJson
         // Set a random s3 bucket path for each integration test
         val configJson = Jsons.clone(baseConfigJson)
@@ -119,19 +122,27 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
             .put("s3_bucket_path", testBucketPath)
             .set<JsonNode>("format", formatConfig)
         this.configJson = configJson
-        this.config = S3DestinationConfig.getS3DestinationConfig(configJson, storageProvider())
-        LOGGER.info("Test full path: {}/{}", config.bucketName, config.bucketPath)
+        this.s3DestinationConfig =
+            S3DestinationConfig.getS3DestinationConfig(configJson, storageProvider())
+        LOGGER.info(
+            "Test full path: {}/{}",
+            s3DestinationConfig.bucketName,
+            s3DestinationConfig.bucketPath
+        )
 
-        this.s3Client = config.getS3Client()
-        this.nameTransformer = S3NameTransformer()
-        this.s3StorageOperations = S3StorageOperations(nameTransformer, s3Client!!, config)
+        this.s3Client = s3DestinationConfig.getS3Client()
+        this.s3nameTransformer = S3NameTransformer()
+        this.s3StorageOperations =
+            S3StorageOperations(s3nameTransformer, s3Client!!, s3DestinationConfig)
     }
 
     /** Remove all the S3 output from the tests. */
-    override fun tearDown(testEnv: TestDestinationEnv?) {
+    override fun tearDown(testEnv: TestDestinationEnv) {
         val keysToDelete: MutableList<DeleteObjectsRequest.KeyVersion> = LinkedList()
         val objects =
-            s3Client!!.listObjects(config!!.bucketName, config!!.bucketPath).objectSummaries
+            s3Client!!
+                .listObjects(s3DestinationConfig!!.bucketName, s3DestinationConfig!!.bucketPath)
+                .objectSummaries
         for (`object` in objects) {
             keysToDelete.add(DeleteObjectsRequest.KeyVersion(`object`.key))
         }
@@ -139,18 +150,18 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
         if (keysToDelete.size > 0) {
             LOGGER.info(
                 "Tearing down test bucket path: {}/{}",
-                config!!.bucketName,
-                config!!.bucketPath
+                s3DestinationConfig!!.bucketName,
+                s3DestinationConfig!!.bucketPath
             )
             val result =
                 s3Client!!.deleteObjects(
-                    DeleteObjectsRequest(config!!.bucketName).withKeys(keysToDelete)
+                    DeleteObjectsRequest(s3DestinationConfig!!.bucketName).withKeys(keysToDelete)
                 )
             LOGGER.info("Deleted {} file(s).", result.deletedObjects.size)
         }
     }
 
-    override fun getTestDataComparator() = AdvancedTestDataComparator()
+    override fun getTestDataComparator(): TestDataComparator = AdvancedTestDataComparator()
 
     override fun supportBasicDataTypeTest(): Boolean {
         return true

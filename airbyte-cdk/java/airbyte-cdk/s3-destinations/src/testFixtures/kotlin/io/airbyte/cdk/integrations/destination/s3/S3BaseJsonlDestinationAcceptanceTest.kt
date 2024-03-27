@@ -37,7 +37,7 @@ abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
         testEnv: TestDestinationEnv?,
         streamName: String?,
         namespace: String?,
-        streamSchema: JsonNode?
+        streamSchema: JsonNode
     ): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
