@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "required": [
+    "object",
+    "hasMore",
+    "data"
+  ],
+  "properties": {
+    "object": {
+      "type": "string",
+      "description": "undefined"
+    },
+    "hasMore": {
+      "type": "boolean",
+      "description": "undefined"
+    },
+    "endingCursor": {
+      "type": "string",
+      "description": "undefined"
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The api id of the value"
+          },
+          "object": {
+            "type": "string",
+            "description": "The type of this object"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the value"
+          },
+          "description": {
+            "type": "string",
+            "description": "The human readable description of the value"
+          }
+        },
+        "$schema": "http://json-schema.org/schema#"
+      },
+      "description": "undefined"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

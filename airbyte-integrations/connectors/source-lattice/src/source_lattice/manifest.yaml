@@ -1,44 +1,98 @@
 version: "0.29.0"
 
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: []
   requester:
     type: HttpRequester
-    url_base: "https://example.com"
+    url_base: "https://api.latticehq.com/v1"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
-  retriever:
+  single_record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: [ ]
+  paginated_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: [ "data" ]
+  single_record_paginator:
+    type: NoPagination
+  paginated_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response['endingCursor'] }}"
+      stop_condition: "{{ not response['hasMore']}}"
+      page_size: 100
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "limit"
+    page_token_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "startingAfter"
+  paginated_retriever:
     type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-  base_stream:
+    record_selector:
+      $ref: "#/definitions/paginated_selector"
+    paginator:
+      $ref: "#/definitions/paginated_paginator"
+  single_record_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/single_record_selector"
+    paginator:
+      type: NoPagination
+  paginated_base_stream:
     type: DeclarativeStream
     retriever:
-      $ref: "#/definitions/retriever"
-  customers_stream:
-    $ref: "#/definitions/base_stream"
-    name: "customers"
+      $ref: "#/definitions/paginated_retriever"
     primary_key: "id"
+  users_stream:
+    $ref: "#/definitions/paginated_base_stream"
     $parameters:
-      path: "/example"
+      name: "users"
+      path: "/users"
+  departments_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "departments"
+      path: "/departments"
+  goals_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "goals"
+      path: "/goals"
+  feedbacks_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "feedbacks"
+      path: "/feedbacks"
+  review_cycles_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "review_cycles"
+      path: "/reviewCycles"
 
 streams:
-  - "#/definitions/customers_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/departments_stream"
+  - "#/definitions/goals_stream"
+  - "#/definitions/feedbacks_stream"
+  - "#/definitions/review_cycles_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
+    - "users"
 
 spec:
   type: Spec
@@ -50,7 +104,7 @@ spec:
       - api_key
     additionalProperties: true
     properties:
-      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
       api_key:
         type: string
         description: API Key
+        airbyte_secret: true

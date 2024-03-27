@@ -1,0 +1,14 @@
+{
+  "type": "string",
+  "description": "The type of stages a review cycle can be in",
+  "enum": [
+    "Draft",
+    "PreLaunch",
+    "Launching",
+    "PeerSelection",
+    "CollectingReviews",
+    "Calibration",
+    "Ended"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

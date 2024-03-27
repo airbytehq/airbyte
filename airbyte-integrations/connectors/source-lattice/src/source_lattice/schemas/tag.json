@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "url",
+    "name",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The api id of the tag"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "url": {
+      "type": "string",
+      "description": "The URL of this object"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the tag"
+    },
+    "createdAt": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The time the tag was created"
+    },
+    "updatedAt": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The time the tag was last updated"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

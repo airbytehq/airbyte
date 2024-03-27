@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "url",
+    "name",
+    "createdAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The api id of the department"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "url": {
+      "type": "string",
+      "description": "The url of this object"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the department"
+    },
+    "description": {
+      "type": "string",
+      "description": "The description of the department. This text can be in markdown"
+    },
+    "createdAt": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The time the feedback was created"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

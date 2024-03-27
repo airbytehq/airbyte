@@ -1,0 +1,148 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "type",
+    "feedbackRequest"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The api id of the user"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the task"
+    },
+    "feedbackRequest": {
+      "type": "object",
+      "required": [
+        "object",
+        "author",
+        "target",
+        "subject",
+        "body",
+        "createdAt"
+      ],
+      "properties": {
+        "object": {
+          "type": "string",
+          "description": "The type of this object"
+        },
+        "author": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "target": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "subject": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "body": {
+          "type": "string",
+          "description": "The text of feedback request"
+        },
+        "competency": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "fulfilledAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the feedback request was fulfilled. This should be the same time as the feedback createdAt"
+        },
+        "createdAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the feedback request was created"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

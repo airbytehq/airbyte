@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "enum": [
+    "Percent",
+    "Dollar",
+    "Digit",
+    "Binary"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

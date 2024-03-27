@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "rating"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The api id of the value"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "rating": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The sentiment rating submitted"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

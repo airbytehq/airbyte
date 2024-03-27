@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "required": [
+    "object",
+    "hasMore",
+    "data"
+  ],
+  "properties": {
+    "object": {
+      "type": "string",
+      "description": "undefined"
+    },
+    "hasMore": {
+      "type": "boolean",
+      "description": "undefined"
+    },
+    "endingCursor": {
+      "type": "string",
+      "description": "undefined"
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The id of the referenced object"
+          },
+          "object": {
+            "type": "string",
+            "description": "The type of the referenced object"
+          },
+          "url": {
+            "type": "string",
+            "description": "The url of the referenced object"
+          }
+        },
+        "$schema": "http://json-schema.org/schema#"
+      },
+      "description": "undefined"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "enum": [
+    "Company",
+    "Department",
+    "Group",
+    "Individual"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The API ID of the Competency"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the competency"
+    },
+    "description": {
+      "type": "string",
+      "description": "The description of the competency"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

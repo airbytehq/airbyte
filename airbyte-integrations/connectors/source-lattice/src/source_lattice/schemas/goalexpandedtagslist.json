@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "required": [
+    "object",
+    "hasMore",
+    "data"
+  ],
+  "properties": {
+    "object": {
+      "type": "string",
+      "description": "undefined"
+    },
+    "hasMore": {
+      "type": "boolean",
+      "description": "undefined"
+    },
+    "endingCursor": {
+      "type": "string",
+      "description": "undefined"
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "url",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The api id of the tag"
+          },
+          "object": {
+            "type": "string",
+            "description": "The type of this object"
+          },
+          "url": {
+            "type": "string",
+            "description": "The URL of this object"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the tag"
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The time the tag was created"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The time the tag was last updated"
+          }
+        },
+        "$schema": "http://json-schema.org/schema#"
+      },
+      "description": "undefined"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

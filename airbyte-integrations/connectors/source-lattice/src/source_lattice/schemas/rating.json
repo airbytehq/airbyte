@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "required": [
+    "value",
+    "descriptor"
+  ],
+  "properties": {
+    "value": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The numeric rating value"
+    },
+    "descriptor": {
+      "type": "string",
+      "description": "The qualitative descriptor for this rating"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "enum": [
+    "NotUpdated",
+    "OnTrack",
+    "Progressing",
+    "OffTrack"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}
