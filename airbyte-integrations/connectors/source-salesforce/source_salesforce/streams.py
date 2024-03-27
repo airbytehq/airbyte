@@ -360,8 +360,6 @@ class BulkSalesforceStream(SalesforceStream):
         return self._non_retryable_send_http_request(method, url, json, headers, stream)
 
     def _non_retryable_send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
-        """
-        """
         headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
