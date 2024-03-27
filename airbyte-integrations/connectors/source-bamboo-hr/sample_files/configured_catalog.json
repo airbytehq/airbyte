@@ -3,71 +3,14 @@
     {
       "stream": {
         "name": "employees_directory_stream",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "displayName": {
-              "type": ["null", "string"]
-            },
-            "firstName": {
-              "type": ["null", "string"]
-            },
-            "lastName": {
-              "type": ["null", "string"]
-            },
-            "preferredName": {
-              "type": ["null", "string"]
-            },
-            "jobTitle": {
-              "type": ["null", "string"]
-            },
-            "workPhone": {
-              "type": ["null", "string"]
-            },
-            "mobilePhone": {
-              "type": ["null", "string"]
-            },
-            "workEmail": {
-              "type": ["null", "string"]
-            },
-            "department": {
-              "type": ["null", "string"]
-            },
-            "location": {
-              "type": ["null", "string"]
-            },
-            "division": {
-              "type": ["null", "string"]
-            },
-            "linkedIn": {
-              "type": ["null", "string"]
-            },
-            "pronouns": {
-              "type": ["null", "string"]
-            },
-            "workPhoneExtension": {
-              "type": ["null", "string"]
-            },
-            "supervisor": {
-              "type": ["null", "string"]
-            },
-            "photoUploaded": {
-              "type": ["null", "boolean"]
-            },
-            "photoUrl": {
-              "type": ["null", "string"]
-            },
-            "canUploadPhoto": {
-              "type": ["null", "boolean"]
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "supported_destination_sync_modes": [
+          "overwrite",
+          "append_dedup"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append_dedup"
@@ -80,18 +23,44 @@
           "type": "object",
           "properties": {
             "zipcode": {
-              "type": ["null", "string"]
+              "type": [
+                "null",
+                "string"
+              ]
             },
             "terminationDate": {
-              "type": ["null", "string"]
+              "type": [
+                "null",
+                "string"
+              ]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "supported_destination_sync_modes": [
+          "overwrite",
+          "append_dedup"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "time_off_requests_stream",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "incremental",
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [
+        "created"
+      ],
+      "destination_sync_mode": "append"
     }
   ]
 }
