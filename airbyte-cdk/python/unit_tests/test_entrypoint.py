@@ -420,8 +420,9 @@ def test_handle_record_counts(incoming_message, stream_message_count, expected_m
     assert actual_message == expected_message
 
     for stream_descriptor, message_count in stream_message_count.items():
+        assert isinstance(message_count, float)
+        # Python assertions against different number types won't fail if the value is equivalent
         assert message_count == expected_records_by_stream[stream_descriptor]
-        assert isinstance(message_count, float)  # Python assertions against different number types won't fail if the value is equivalent
 
     if actual_message.type == Type.STATE:
         assert isinstance(actual_message.state.sourceStats.recordCount, float), "recordCount value should be expressed as a float"
