@@ -191,7 +191,7 @@ def test_write(
     motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
     duckdb_config = {}
     if motherduck_api_key:
-        duckdb_config["motherduck_token"] = motherduck_api_key
+        duckdb_config["motherduck_api_token"] = motherduck_api_key
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
     con = duckdb.connect(
         database=config.get("destination_path"), read_only=False, config=duckdb_config
