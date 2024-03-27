@@ -67,7 +67,7 @@ object DSLContextFactory {
         driverClassName: String,
         jdbcConnectionString: String?,
         dialect: SQLDialect?,
-        connectionProperties: Map<String?, String?>?,
+        connectionProperties: Map<String, String>?,
         connectionTimeout: Duration?
     ): DSLContext {
         return DSL.using(

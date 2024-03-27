@@ -76,7 +76,7 @@ class SshWrappedSource : Source {
     @Throws(Exception::class)
     override fun read(
         config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog?,
+        catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): AutoCloseableIterator<AirbyteMessage> {
         val tunnel: SshTunnel = SshTunnel.Companion.getInstance(config, hostKey, portKey)
@@ -97,7 +97,7 @@ class SshWrappedSource : Source {
     @Throws(Exception::class)
     override fun readStreams(
         config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog?,
+        catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {
         val tunnel: SshTunnel = SshTunnel.Companion.getInstance(config, hostKey, portKey)

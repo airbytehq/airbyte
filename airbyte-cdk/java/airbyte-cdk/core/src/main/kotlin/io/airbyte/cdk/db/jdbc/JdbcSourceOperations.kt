@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 
 /** Implementation of source operations with standard JDBC types. */
 class JdbcSourceOperations :
-    AbstractJdbcCompatibleSourceOperations<JDBCType?>(), SourceOperations<ResultSet, JDBCType?> {
+    AbstractJdbcCompatibleSourceOperations<JDBCType>(), SourceOperations<ResultSet, JDBCType> {
     protected fun safeGetJdbcType(columnTypeInt: Int): JDBCType {
         return try {
             JDBCType.valueOf(columnTypeInt)
@@ -80,12 +80,12 @@ class JdbcSourceOperations :
             JDBCType.TINYINT,
             JDBCType.SMALLINT -> setShortInt(preparedStatement, parameterIndex, value!!)
             JDBCType.INTEGER -> setInteger(preparedStatement, parameterIndex, value!!)
-            JDBCType.BIGINT -> setBigInteger(preparedStatement, parameterIndex, value)
+            JDBCType.BIGINT -> setBigInteger(preparedStatement, parameterIndex, value!!)
             JDBCType.FLOAT,
             JDBCType.DOUBLE -> setDouble(preparedStatement, parameterIndex, value!!)
             JDBCType.REAL -> setReal(preparedStatement, parameterIndex, value!!)
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> setDecimal(preparedStatement, parameterIndex, value)
+            JDBCType.DECIMAL -> setDecimal(preparedStatement, parameterIndex, value!!)
             JDBCType.CHAR,
             JDBCType.NCHAR,
             JDBCType.NVARCHAR,
@@ -147,7 +147,7 @@ class JdbcSourceOperations :
         return JdbcUtils.ALLOWED_CURSOR_TYPES.contains(type)
     }
 
-    override fun getAirbyteType(jdbcType: JDBCType?): JsonSchemaType {
+    override fun getAirbyteType(jdbcType: JDBCType): JsonSchemaType {
         return when (jdbcType) {
             JDBCType.BIT,
             JDBCType.BOOLEAN -> JsonSchemaType.BOOLEAN
