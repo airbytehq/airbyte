@@ -40,12 +40,12 @@ class SurveyIdPartitionRouter(SubstreamPartitionRouter):
         if survey_ids:
             # If specific survey IDs are provided, yield slices based on them
             for item in survey_ids:
-                yield {partition_field: item}
+                yield StreamSlice(partition={partition_field: item}, cursor_slice={})
         else:
             # If not, iterate over parent stream records and yield slices based on parent keys
             for parent_stream_config in self.parent_stream_configs:
                 for item in parent_stream_config.stream.read_records(sync_mode=SyncMode.full_refresh):
-                    yield {partition_field: item[parent_key]}
+                    yield StreamSlice(partition={partition_field: item[parent_key]}, cursor_slice={})
 
         # Ensures the function always returns an iterable
         yield from []
