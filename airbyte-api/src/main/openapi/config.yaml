@@ -3041,6 +3041,7 @@ components:
         - sourceId
         - connectionConfiguration
         - name
+        - workspaceId
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
@@ -3048,6 +3049,8 @@ components:
           $ref: "#/components/schemas/SourceConfiguration"
         name:
           type: string
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     SourceRead:
       type: object
       required:
@@ -3365,6 +3368,7 @@ components:
         - destinationId
         - connectionConfiguration
         - name
+        - workspaceId
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
@@ -3372,6 +3376,8 @@ components:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
           type: string
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     DestinationCloneRequestBody:
       description: The values required to configure the destination. The schema for this should have an id of the existing destination along with the configuration you want to change in case.
       type: object
