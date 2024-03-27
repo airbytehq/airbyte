@@ -45,7 +45,7 @@ definitions:
                   "AttributeValue": "ConsoleLogin"
               }
           ],
-          "MaxResults": 2
+          "MaxResults": 100
       }
     retriever:
       type: SimpleRetriever

@@ -41,7 +41,7 @@ class CustomAuthenticator(NoAuth):
                     "AttributeValue": "ConsoleLogin"
                 }
             ],
-            "MaxResults": 2
+            "MaxResults": 100
         }
 
 
