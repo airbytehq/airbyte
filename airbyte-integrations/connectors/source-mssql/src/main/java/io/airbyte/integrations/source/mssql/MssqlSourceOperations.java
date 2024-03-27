@@ -17,7 +17,6 @@ import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
-import io.airbyte.integrations.source.mssql.initialsync.CdcMetadataInjector;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -38,14 +37,14 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSourceOperations.class);
 
-  private final Optional<CdcMetadataInjector> metadataInjector;
+  private final Optional<MssqlCdcConnectorMetadataInjector> metadataInjector;
 
   public MssqlSourceOperations() {
     super();
     this.metadataInjector = Optional.empty();
   }
 
-  public MssqlSourceOperations(final Optional<CdcMetadataInjector> metadataInjector) {
+  public MssqlSourceOperations(final Optional<MssqlCdcConnectorMetadataInjector> metadataInjector) {
     super();
     this.metadataInjector = metadataInjector;
   }
@@ -56,7 +55,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     if (!metadataInjector.isPresent()) {
       return jsonNode;
     }
-    metadataInjector.get().inject(jsonNode);
+    metadataInjector.get().addMetaDataToRowsFetchedOutsideDebezium(jsonNode);
     return jsonNode;
   }
 
