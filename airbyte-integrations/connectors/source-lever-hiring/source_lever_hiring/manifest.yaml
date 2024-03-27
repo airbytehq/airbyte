@@ -2,10 +2,6 @@ version: 0.65.0
 type: DeclarativeSource
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_lever_hiring/schemas/{{ parameters['name'] }}.json"
-
   oauth_authenticator:
     type: OAuthAuthenticator
     client_id: '{{ config[''credentials''][''client_id''] }}'
@@ -76,12 +72,143 @@ definitions:
         path: /opportunities
         request_parameters:
           include: followers
-          confidentiality: all
       paginator:
         $ref: "#/definitions/paginator"
       partition_router: [ ]
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          contact:
+            type:
+              - 'null'
+              - string
+          headline:
+            type:
+              - 'null'
+              - string
+          stage:
+            type:
+              - 'null'
+              - string
+          confidentiality:
+            type:
+              - 'null'
+              - string
+          location:
+            type:
+              - 'null'
+              - string
+          phones:
+            type:
+              - 'null'
+              - array
+            items:
+              type: object
+          emails:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          links:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          archived:
+            type:
+              - 'null'
+              - object
+          tags:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          sources:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          stageChanges:
+            type:
+              - 'null'
+              - array
+            items:
+              type: object
+          origin:
+            type:
+              - 'null'
+              - string
+          sourcedBy:
+            type:
+              - 'null'
+              - string
+          owner:
+            type:
+              - 'null'
+              - string
+          followers:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          applications:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          createdAt:
+            type:
+              - 'null'
+              - integer
+          updatedAt:
+            type:
+              - 'null'
+              - integer
+          lastInteractionAt:
+            type:
+              - 'null'
+              - integer
+          lastAdvancedAt:
+            type:
+              - 'null'
+              - integer
+          snoozedUntil:
+            type:
+              - 'null'
+              - integer
+          urls:
+            type:
+              - 'null'
+              - object
+          resume:
+            type:
+              - 'null'
+              - string
+          dataProtection:
+            type:
+              - 'null'
+              - object
+          isAnonymized:
+            type:
+              - 'null'
+              - boolean
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -130,7 +257,61 @@ streams:
         $ref: "#/definitions/paginator"
       partition_router: [ ]
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          username:
+            type:
+              - 'null'
+              - string
+          email:
+            type:
+              - 'null'
+              - string
+          accessRole:
+            type:
+              - 'null'
+              - string
+          photo:
+            type:
+              - 'null'
+              - string
+          createdAt:
+            type:
+              - 'null'
+              - integer
+          deactivatedAt:
+            type:
+              - 'null'
+              - integer
+          externalDirectoryId:
+            type:
+              - 'null'
+              - string
+          linkedContactIds:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          jobTitle:
+            type:
+              - 'null'
+              - string
+          managerId:
+            type:
+              - 'null'
+              - string
 
   - type: DeclarativeStream
     name: applications
@@ -159,7 +340,87 @@ streams:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          type:
+            type:
+              - 'null'
+              - string
+          candidateId:
+            type:
+              - 'null'
+              - string
+          opportunityId:
+            type:
+              - 'null'
+              - string
+          posting:
+            type:
+              - 'null'
+              - string
+          postingHiringManager:
+            type:
+              - 'null'
+              - string
+          postingOwner:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          company:
+            type:
+              - 'null'
+              - string
+          phone:
+            type:
+              - 'null'
+              - object
+          email:
+            type:
+              - 'null'
+              - string
+          links:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          comments:
+            type:
+              - 'null'
+              - string
+          user:
+            type:
+              - 'null'
+              - string
+          customQuestions:
+            type:
+              - 'null'
+              - array
+            items:
+              type: object
+          createdAt:
+            type:
+              - 'null'
+              - integer
+          archived:
+            type:
+              - 'null'
+              - object
+          requisitionForHire:
+            type:
+              - 'null'
+              - object
 
   - type: DeclarativeStream
     name: interviews
@@ -188,7 +449,89 @@ streams:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          panel:
+            type:
+              - 'null'
+              - string
+          subject:
+            type:
+              - 'null'
+              - string
+          note:
+            type:
+              - 'null'
+              - string
+          interviewers:
+            type:
+              - 'null'
+              - array
+            items:
+              type: object
+          timezone:
+            type:
+              - 'null'
+              - string
+          createdAt:
+            type:
+              - 'null'
+              - integer
+          date:
+            type:
+              - 'null'
+              - integer
+          duration:
+            type:
+              - 'null'
+              - integer
+          location:
+            type:
+              - 'null'
+              - string
+          feedbackTemplate:
+            type:
+              - 'null'
+              - string
+          feedbackForms:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          feedbackReminder:
+            type:
+              - 'null'
+              - string
+          user:
+            type:
+              - 'null'
+              - string
+          stage:
+            type:
+              - 'null'
+              - string
+          canceledAt:
+            type:
+              - 'null'
+              - integer
+          postings:
+            type:
+              - 'null'
+              - array
+            items:
+              type: string
+          gcalEventUrl:
+            type:
+              - 'null'
+              - string
 
   - type: DeclarativeStream
     name: notes
@@ -217,7 +560,45 @@ streams:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          text:
+            type:
+              - 'null'
+              - string
+          fields:
+            type:
+              - 'null'
+              - array
+            items:
+              type: object
+          user:
+            type:
+              - 'null'
+              - string
+          secret:
+            type:
+              - 'null'
+              - boolean
+          completedAt:
+            type:
+              - 'null'
+              - integer
+          deletedAt:
+            type:
+              - 'null'
+              - integer
+          createdAt:
+            type:
+              - 'null'
+              - integer
 
   - type: DeclarativeStream
     name: offers
@@ -246,7 +627,61 @@ streams:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          posting:
+            type:
+              - 'null'
+              - string
+          createdAt:
+            type:
+              - 'null'
+              - integer
+          status:
+            type:
+              - 'null'
+              - string
+          creator:
+            type:
+              - 'null'
+              - string
+          fields:
+            type:
+              - 'null'
+              - array
+            items:
+              type: object
+          signatures:
+            type:
+              - 'null'
+              - object
+          approved:
+            type:
+              - 'null'
+              - string
+          approvedAt:
+            type:
+              - 'null'
+              - integer
+          sentAt:
+            type:
+              - 'null'
+              - integer
+          sentDocument:
+            type:
+              - 'null'
+              - object
+          signedDocument:
+            type:
+              - 'null'
+              - object
 
   - type: DeclarativeStream
     name: referrals
@@ -288,7 +723,57 @@ streams:
                 name: opportunities
                 $ref: "#/definitions/opportunities_stream"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          type:
+            type:
+              - 'null'
+              - string
+          text:
+            type:
+              - 'null'
+              - string
+          instructions:
+            type:
+              - 'null'
+              - string
+          fields:
+            type:
+              - 'null'
+              - array
+            items:
+              type: object
+          baseTemplateId:
+            type:
+              - 'null'
+              - string
+          user:
+            type:
+              - 'null'
+              - string
+          referrer:
+            type:
+              - 'null'
+              - string
+          stage:
+            type:
+              - 'null'
+              - string
+          createdAt:
+            type:
+              - 'null'
+              - integer
+          completedAt:
+            type:
+              - 'null'
+              - integer
 
 spec:
   connectionSpecification:
