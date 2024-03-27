@@ -23,18 +23,18 @@ abstract class SpecModifyingSource(private val source: Source) : Source {
     }
 
     @Throws(Exception::class)
-    override fun check(config: JsonNode?): AirbyteConnectionStatus? {
+    override fun check(config: JsonNode): AirbyteConnectionStatus? {
         return source.check(config)
     }
 
     @Throws(Exception::class)
-    override fun discover(config: JsonNode?): AirbyteCatalog? {
+    override fun discover(config: JsonNode): AirbyteCatalog? {
         return source.discover(config)
     }
 
     @Throws(Exception::class)
     override fun read(
-        config: JsonNode?,
+        config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
         state: JsonNode?
     ): AutoCloseableIterator<AirbyteMessage> {
@@ -43,7 +43,7 @@ abstract class SpecModifyingSource(private val source: Source) : Source {
 
     @Throws(Exception::class)
     override fun readStreams(
-        config: JsonNode?,
+        config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
         state: JsonNode?
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {

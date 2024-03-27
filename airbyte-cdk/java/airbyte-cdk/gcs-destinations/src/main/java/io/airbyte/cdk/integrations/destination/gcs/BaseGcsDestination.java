@@ -45,10 +45,10 @@ public abstract class BaseGcsDestination extends BaseConnector implements Destin
       final AmazonS3 s3Client = destinationConfig.getS3Client();
 
       // Test single upload (for small files) permissions
-      S3BaseChecks.testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
+      S3BaseChecks.testSingleUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath);
 
       // Test multipart upload with stream transfer manager
-      S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
+      S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.bucketName, destinationConfig.bucketPath);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final AmazonS3Exception e) {

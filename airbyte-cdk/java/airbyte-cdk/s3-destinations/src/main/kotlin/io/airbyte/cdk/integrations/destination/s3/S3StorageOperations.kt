@@ -187,7 +187,7 @@ open class S3StorageOperations(
             } else {
                 objectPath + partId + fileExtension
             }
-        val metadata: Map<String, String> = HashMap()
+        val metadata: MutableMap<String, String> = HashMap()
         for (blobDecorator: BlobDecorator in blobDecorators) {
             blobDecorator.updateMetadata(metadata, getMetadataMapping())
         }

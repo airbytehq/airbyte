@@ -50,7 +50,7 @@ public abstract class BaseGcsWriter implements DestinationFileWriter {
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
-    this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
+    this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.bucketPath, stream);
   }
 
   /**
@@ -62,7 +62,7 @@ public abstract class BaseGcsWriter implements DestinationFileWriter {
   @Override
   public void initialize() throws IOException {
     try {
-      final String bucket = config.getBucketName();
+      final String bucket = config.bucketName;
       if (!gcsBucketExist(s3Client, bucket)) {
         LOGGER.info("Bucket {} does not exist; creating...", bucket);
         s3Client.createBucket(bucket);

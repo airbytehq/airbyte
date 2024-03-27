@@ -68,7 +68,7 @@ public class GcsDestinationConfig extends S3DestinationConfig {
 
         return AmazonS3ClientBuilder.standard()
             .withEndpointConfiguration(
-                new AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, getBucketRegion()))
+                new AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, bucketRegion))
             .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
             .build();
       }

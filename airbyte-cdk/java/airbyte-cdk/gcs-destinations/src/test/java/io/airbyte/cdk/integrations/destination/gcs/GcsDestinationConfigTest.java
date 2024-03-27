@@ -24,9 +24,9 @@ class GcsDestinationConfigTest {
     final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config.json"));
 
     final GcsDestinationConfig config = GcsDestinationConfig.getGcsDestinationConfig(configJson);
-    assertEquals("test_bucket", config.getBucketName());
-    assertEquals("test_path", config.getBucketPath());
-    assertEquals("us-west1", config.getBucketRegion());
+    assertEquals("test_bucket", config.bucketName);
+    assertEquals("test_path", config.bucketPath);
+    assertEquals("us-west1", config.bucketRegion);
 
     final GcsCredentialConfig credentialConfig = config.getGcsCredentialConfig();
     assertTrue(credentialConfig instanceof GcsHmacKeyCredentialConfig);
@@ -35,7 +35,7 @@ class GcsDestinationConfigTest {
     assertEquals("test_access_id", hmacKeyConfig.getHmacKeyAccessId());
     assertEquals("test_secret", hmacKeyConfig.getHmacKeySecret());
 
-    final S3FormatConfig formatConfig = config.getFormatConfig();
+    final S3FormatConfig formatConfig = config.formatConfig;
     assertTrue(formatConfig instanceof S3AvroFormatConfig);
 
     final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) formatConfig;

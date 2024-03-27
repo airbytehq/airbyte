@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.gcs.parquet;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.cdk.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.cdk.integrations.destination.gcs.util.GcsS3FileSystem;
@@ -43,6 +44,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
   private final String gcsFileLocation;
   private final String objectKey;
 
+  @SuppressFBWarnings("NP_NULL_ON_SOME_PATH")
   public GcsParquetWriter(final GcsDestinationConfig config,
                           final AmazonS3 s3Client,
                           final ConfiguredAirbyteStream configuredStream,
@@ -54,23 +56,23 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
 
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     objectKey = String.join("/", outputPrefix, outputFilename);
-    LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
+    LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.bucketName, objectKey);
 
-    gcsFileLocation = String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
+    gcsFileLocation = String.format("s3a://%s/%s/%s", config.bucketName, outputPrefix, outputFilename);
     final URI uri = new URI(gcsFileLocation);
     final Path path = new Path(uri);
 
     LOGGER.info("Full GCS path for stream '{}': {}", stream.getName(), path);
 
-    final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
+    final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.formatConfig;
     final Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
-        .withCompressionCodec(formatConfig.getCompressionCodec())
-        .withRowGroupSize(formatConfig.getBlockSize())
-        .withMaxPaddingSize(formatConfig.getMaxPaddingSize())
-        .withPageSize(formatConfig.getPageSize())
-        .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
+        .withCompressionCodec(formatConfig.compressionCodec)
+        .withRowGroupSize(formatConfig.blockSize)
+        .withMaxPaddingSize(formatConfig.maxPaddingSize)
+        .withPageSize(formatConfig.pageSize)
+        .withDictionaryPageSize(formatConfig.dictionaryPageSize)
         .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);

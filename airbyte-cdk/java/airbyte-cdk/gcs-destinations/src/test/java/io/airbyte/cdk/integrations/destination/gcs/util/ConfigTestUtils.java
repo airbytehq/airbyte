@@ -28,9 +28,9 @@ public class ConfigTestUtils {
   }
 
   public static void assertBaseConfig(final GcsDestinationConfig gcsDestinationConfig) {
-    assertEquals("test-bucket-name", gcsDestinationConfig.getBucketName());
-    assertEquals("test_path", gcsDestinationConfig.getBucketPath());
-    assertEquals("us-east-2", gcsDestinationConfig.getBucketRegion());
+    assertEquals("test-bucket-name", gcsDestinationConfig.bucketName);
+    assertEquals("test_path", gcsDestinationConfig.bucketPath);
+    assertEquals("us-east-2", gcsDestinationConfig.bucketRegion);
   }
 
 }
