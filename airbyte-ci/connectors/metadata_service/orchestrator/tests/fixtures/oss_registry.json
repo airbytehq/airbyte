@@ -5217,6 +5217,46 @@
       "supportsDbt": true
     },
     {
+      "destinationDefinitionId": "938e4f36-ab42-4486-9a21-d43df92ed9e4",
+      "name": "Propel",
+      "dockerRepository": "propeldata/airbyte-propel-destination",
+      "dockerImageTag": "0.0.1",
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/propel",
+      "icon": "propel.svg",
+      "spec": {
+        "documentationUrl": "https://propeldata.com/docs",
+        "connectionSpecification": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "title": "Propel Spec",
+          "type": "object",
+          "required": ["application_id", "application_secret"],
+          "additionalProperties": false,
+          "properties": {
+            "application_id": {
+              "type": "string",
+              "title": "Application ID",
+              "description": "Propel Application ID",
+              "examples": ["APP00000000000000000000000000"]
+            },
+            "application_secret": {
+              "type": "string",
+              "title": "Application Secret",
+              "description": "Propel Application secret",
+              "airbyte_secret": true
+            }
+          }
+        },
+        "supportsIncremental": true,
+        "supportsNormalization": false,
+        "supportsDBT": false,
+        "supported_destination_sync_modes": ["append", "overwrite"]
+      },
+      "tombstone": false,
+      "public": true,
+      "custom": false,
+      "releaseStage": "alpha"
+    },
+    {
       "destinationDefinitionId": "2340cbba-358e-11ec-8d3d-0242ac130203",
       "name": "Pulsar",
       "dockerRepository": "airbyte/destination-pulsar",
