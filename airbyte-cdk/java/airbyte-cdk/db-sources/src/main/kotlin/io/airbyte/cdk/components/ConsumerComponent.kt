@@ -7,13 +7,13 @@ package io.airbyte.cdk.components
 import java.util.function.Consumer
 
 /**
- * [ConsumerComponent] collects records of type [R] produced by [ProducerComponent]. It's this
+ * [ConsumerComponent] accepts records of type [I] produced by [ProducerComponent]. It's this
  * object's responsibility to tell the [ProducerComponent] that it has collected enough records.
  *
  * All implementations must be thread-safe. The [Consumer.accept] and [shouldCheckpoint] methods may
  * be called concurrently from multiple threads.
  */
-interface ConsumerComponent<R> : Consumer<R> {
+interface ConsumerComponent<I,O> : Consumer<I> {
 
     /**
      * Returns true if the records held by this [ConsumerComponent] should be flushed ASAP. This
@@ -25,14 +25,14 @@ interface ConsumerComponent<R> : Consumer<R> {
      * Returns all the records accepted by the [ConsumerComponent]. This method is called
      * exclusively, and at most once, by [ComponentRunner.collect].
      */
-    fun flush(): Sequence<R>
+    fun flush(): Sequence<O>
 
-    fun interface Builder<R> {
+    fun interface Builder<I,O> {
 
         /**
          * Deterministically instantiates a new [ConsumerComponent] instance. May be called multiple
          * times. Called exclusively by [ComponentRunner].
          */
-        fun build(): ConsumerComponent<R>
+        fun build(): ConsumerComponent<I,O>
     }
 }

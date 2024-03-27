@@ -19,7 +19,7 @@ class ComponentRunnerTest {
      * Test implementation of [ConsumerComponent]. Thread-safe, as per contract. Records are
      * characters, which are accumulated into a string.
      */
-    class TestConsumerComponent(val maxRecords: Int) : ConsumerComponent<Char> {
+    class TestConsumerComponent(val maxRecords: Int) : ConsumerComponent<Char,Char> {
 
         private val sb = StringBuilder()
 
@@ -45,7 +45,7 @@ class ComponentRunnerTest {
         val upperBound: Int,
         val isCloseSynchronized: Boolean,
         val notifyStop: () -> Unit,
-        val consumer: ConsumerComponent<Char>,
+        val consumer: ConsumerComponent<Char, *>,
     ) : ProducerComponent<Int> {
 
         private val state = AtomicInteger(initialState)
@@ -157,7 +157,7 @@ class ComponentRunnerTest {
     ): String {
         val consumerBuilder = ConsumerComponent.Builder { TestConsumerComponent(tc.maxRecords) }
         val producerBuilder =
-            ProducerComponent.Builder { input: Int, consumer: ConsumerComponent<Char>, notifyStop ->
+            ProducerComponent.Builder { input: Int, consumer: ConsumerComponent<Char,*>, notifyStop ->
                 TestProducerComponent(
                     input,
                     tc.upperBound,

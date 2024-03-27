@@ -6,21 +6,34 @@ package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
 import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.MYSQL_STATUS_VERSION;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mysql.cj.MysqlType;
+import io.airbyte.cdk.components.ComponentRunner;
+import io.airbyte.cdk.components.ConsumerComponent;
+import io.airbyte.cdk.components.ProducerComponent;
+import io.airbyte.cdk.components.cursor.CursorAirbyteMessageFactory;
+import io.airbyte.cdk.components.cursor.CursorConsumer;
+import io.airbyte.cdk.components.cursor.CursorProducer;
+import io.airbyte.cdk.components.cursor.CursorState;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils.TableSizeInfo;
 import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
+import io.airbyte.integrations.source.mysql.internal.models.InternalModels;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
@@ -35,6 +48,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -113,12 +127,32 @@ public class MySqlInitialLoadHandler {
         final AutoCloseableIterator<JsonNode> queryStream =
             new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
                 calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
-        final AutoCloseableIterator<AirbyteMessage> recordIterator =
-            getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
-
-        iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
-
+        final var pb = new CursorProducer.Builder()
+            .withAirbyteStream(airbyteStream)
+            .withJdbcDriver("com.mysql.cj.jdbc.Driver")
+            .withJdbcUrl("jdbc:mysql://%s:%d/%s",
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText())
+            .withJdbcProperty("user", config.get(JdbcUtils.USERNAME_KEY).asText())
+            .withJdbcProperty("password", config.get(JdbcUtils.PASSWORD_KEY).asText())
+            .withJdbcProperty("ssl", "false")
+            .withLimitSql("SELECT 1000000");
+        final var cb = new CursorConsumer.Builder(1_000_000, 1_000_000_000)
+            .withAirbyteStream(airbyteStream);
+        final var runner = new ComponentRunner<>("mysql-initial-load", pb, cb, Duration.ofMinutes(1), Comparator.naturalOrder());
+        final var factory = new CursorAirbyteMessageFactory(pair.getNamespace(), pair.getName(), emittedAt, (cursorState -> {
+          final var pkLoadStatus = new PrimaryKeyLoadStatus()
+              .withVersion(3L)
+              .withStateType(InternalModels.StateType.PRIMARY_KEY)
+              .withPkName(primaryKeys.getFirst());
+          if (cursorState.progress() == CursorState.Progress.ONGOING) {
+            pkLoadStatus.withPkVal(cursorState.initialValues().getFirst().toString());
+          }
+          return Jsons.jsonNode(pkLoadStatus);
+        }));
+        final var lazy = factory.apply(runner.collectRepeatedly(CursorState.notStarted(), CursorState.done()));
+        iteratorList.add(AutoCloseableIterators.fromIterator(lazy.iterator(), pair));
       }
     }
     return iteratorList;

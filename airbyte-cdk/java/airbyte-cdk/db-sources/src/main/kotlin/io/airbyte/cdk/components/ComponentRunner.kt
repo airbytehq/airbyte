@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory
  * - [maxTime] is the global timeout for a [collect] method call;
  * - [comparator] is used by [collectRepeatedly] to compare relative progress between two states.
  */
-class ComponentRunner<R, S>(
+class ComponentRunner<I, O, S>(
     val name: String,
-    val producerBuilder: ProducerComponent.Builder<R, S>,
-    val consumerBuilder: ConsumerComponent.Builder<R>,
+    val producerBuilder: ProducerComponent.Builder<I, S>,
+    val consumerBuilder: ConsumerComponent.Builder<I, O>,
     val maxTime: Duration,
     val comparator: Comparator<S>,
 ) {
@@ -37,8 +37,8 @@ class ComponentRunner<R, S>(
      * - all records produced and consumed, with [ConsumerComponent.flush],
      * - the final state of the producer, with [ProducerComponent.finalState].
      */
-    fun collect(input: S): Pair<Sequence<R>, S> {
-        val consumer: ConsumerComponent<R> = consumerBuilder.build()
+    fun collect(input: S): Pair<Sequence<O>, S> {
+        val consumer: ConsumerComponent<I, O> = consumerBuilder.build()
         val sentinel = Runnable {
             try {
                 Thread.sleep(maxTime.toMillis())
@@ -72,11 +72,12 @@ class ComponentRunner<R, S>(
         val thrown = AtomicReference<Throwable>()
         log.debug("$name is running")
         sentinelThread.start()
-        producerThread.setUncaughtExceptionHandler { _, e: Throwable ->
+        producerThread.setUncaughtExceptionHandler { t: Thread, e: Throwable ->
             thrown.set(e)
             sentinelThread.interrupt()
             closerThread.interrupt()
             log.warn("$name producer run() threw an exception, interrupted other $name threads", e)
+            t.interrupt()
         }
         producerThread.start()
         closerThread.start()
@@ -99,15 +100,15 @@ class ComponentRunner<R, S>(
      *
      * It does this lazily.
      */
-    fun collectRepeatedly(initialState: S, upperBound: S): Sequence<Pair<Sequence<R>, S>> =
+    fun collectRepeatedly(initialState: S, upperBound: S): Sequence<Pair<Sequence<O>, S>> =
         Sequence {
-            object : Iterator<Pair<Sequence<R>, S>> {
+            object : Iterator<Pair<Sequence<O>, S>> {
 
-                var nextValue: Pair<Sequence<R>, S>? = collect(initialState)
+                var nextValue: Pair<Sequence<O>, S>? = collect(initialState)
 
                 override fun hasNext(): Boolean = nextValue != null
 
-                override fun next(): Pair<Sequence<R>, S> {
+                override fun next(): Pair<Sequence<O>, S> {
                     val currentValue = nextValue ?: throw NoSuchElementException()
                     val (_, currentState) = currentValue
                     val hasReachedUpperBound = comparator.compare(currentState, upperBound) >= 0

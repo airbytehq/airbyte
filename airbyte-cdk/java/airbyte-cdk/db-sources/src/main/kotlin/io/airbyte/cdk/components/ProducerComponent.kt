@@ -21,11 +21,11 @@ interface ProducerComponent<S> : Runnable, AutoCloseable {
      */
     fun finalState(): S
 
-    fun interface Builder<R, S> {
+    fun interface Builder<I, S> {
 
         /**
          * Deterministically instantiates a new [ProducerComponent] instance:
-         * - [input] is the initial state of the producer and determines which records of type [R]
+         * - [input] is the initial state of the producer and determines which records of type [I]
          * will be produced;
          * - [consumer] is the consumer to pass the records to via [ConsumerComponent.accept];
          * - [notifyStop] is the callback that the producer will call when it thinks that it should
@@ -35,7 +35,7 @@ interface ProducerComponent<S> : Runnable, AutoCloseable {
          */
         fun build(
             input: S,
-            consumer: ConsumerComponent<R>,
+            consumer: ConsumerComponent<I,*>,
             notifyStop: () -> Unit,
         ): ProducerComponent<S>
     }
