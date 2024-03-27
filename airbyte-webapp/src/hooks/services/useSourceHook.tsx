@@ -214,6 +214,7 @@ const useUpdateSource = () => {
         name: updateSourcePayload.values.name,
         sourceId: updateSourcePayload.sourceId,
         connectionConfiguration: updateSourcePayload.values.connectionConfiguration,
+        workspaceId: updateSourcePayload?.values?.workspaceId,
       });
     },
     {
