@@ -41,7 +41,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "{{ config['base_url'] + '/rest/api/' if config.confluence_server else config['base_url'] + '/wiki/rest/api/' }}"
+    url_base: https://{{ config['domain_name'] + '' if config.confluence_server else '/wiki' }}/rest/api
     path: "{{ parameters.path }}"
     http_method: GET
     authenticator:
@@ -83,8 +83,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          expand: >-
-            ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
+          expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
     primary_key: "id"
     $parameters:
       name: "blog_posts"
@@ -109,8 +108,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          expand: >-
-            ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
+          expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
     primary_key: "id"
     $parameters:
       name: "pages"
@@ -123,7 +121,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          expand: '["permissions","icon","description.plain","description.view"]'
+          expand: "permissions,icon,description.plain,description.view"
     primary_key: "id"
     $parameters:
       name: "space"
@@ -146,9 +144,7 @@ spec:
     required:
       - email
       - api_token
-      - base_url
-      - confluence_server
-      - auth
+      - domain_name
     properties:
       email:
         type: string
@@ -162,10 +158,11 @@ spec:
         description: 'Please follow the Jira confluence for generating an API token: <a href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/">generating an API token</a>.'
         airbyte_secret: true
         order: 1
-      base_url:
-        title: "Base URL"
-        description: "Your Confluence base URL"
+      domain_name:
+        title: "Domain Name"
+        description: "Your Confluence domain name"
         type: string
+        examples: ["example.atlassian.net", "my.company.com/confluence"]
         order: 2
       confluence_server:
         title: "Confluence Server"

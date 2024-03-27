@@ -24,9 +24,9 @@ For detailed instructions on creating a PAT (Personal Access Token), which can b
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. In the **API Token** field, enter your Atlassian API Token or PAT.
-5. In the **Base URL** field, enter your Confluence base URL
-   1. Confluence Cloud example: https://my-confluence.atlassian.net
-   2. Confluence Server example: https://my.company.domain/confluence
+5. In the **Domain Name** field, enter your Confluence domain + path
+   1. Confluence Cloud example: my-confluence.atlassian.net
+   2. Confluence Server example: my.company.domain/confluence
 6. In the **Email** field, enter your Confluence login email.
 7. In the **Authentication** field:
    1. Choose _basic_ for Confluence Cloud
@@ -67,7 +67,7 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
-| 1.0.0   | 2024-03-25 | [36450](https://github.com/airbytehq/airbyte/pull/36450) | Added Confluence Server support
+| 0.3.0   | 2024-03-25 | [36450](https://github.com/airbytehq/airbyte/pull/36450) | Added Confluence Server support
 | 0.2.0   | 2023-08-14 | [29125](https://github.com/airbytehq/airbyte/pull/29125) | Migrate Confluence Source Connector to Low Code                |
 | 0.1.3   | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body, add check for stream Audit |
 | 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec           |
