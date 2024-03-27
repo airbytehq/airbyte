@@ -29,9 +29,9 @@ object SshHelpers {
     @JvmOverloads
     @Throws(IOException::class)
     fun injectSshIntoSpec(
-        connectorSpecification: ConnectorSpecification?,
+        connectorSpecification: ConnectorSpecification,
         group: Optional<String> = Optional.empty()
-    ): ConnectorSpecification? {
+    ): ConnectorSpecification {
         val originalSpec = Jsons.clone(connectorSpecification)
         val propNode = originalSpec!!.connectionSpecification["properties"] as ObjectNode
         val tunnelMethod =

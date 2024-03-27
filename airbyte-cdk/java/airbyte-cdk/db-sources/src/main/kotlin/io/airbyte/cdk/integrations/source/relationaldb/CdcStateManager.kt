@@ -30,7 +30,7 @@ class CdcStateManager(
     }
 
     var cdcState: CdcState?
-        get() = if (currentState != null) Jsons.clone(currentState) else null
+        get() = if (currentState != null) Jsons.clone(currentState!!) else null
         set(state) {
             this.currentState = state
         }

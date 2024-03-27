@@ -119,7 +119,7 @@ abstract class JdbcStressTest {
         LOGGER.info("writing {} batches of {}", batchCount, BATCH_SIZE)
         for (i in 0 until batchCount) {
             if (i % 1000 == 0L) LOGGER.info("writing batch: $i")
-            val insert: MutableList<String?> = ArrayList()
+            val insert: MutableList<String> = ArrayList()
             for (j in 0 until BATCH_SIZE) {
                 val recordNumber = (i * BATCH_SIZE + j).toInt()
                 insert.add(String.format(INSERT_STATEMENT, recordNumber, recordNumber))
@@ -215,7 +215,7 @@ abstract class JdbcStressTest {
         Assertions.assertEquals(expectedMessage, actualMessage)
     }
 
-    private fun prepareInsertStatement(inserts: List<String?>): String {
+    private fun prepareInsertStatement(inserts: List<String>): String {
         if (driverClass.lowercase(Locale.getDefault()).contains("oracle")) {
             return String.format("INSERT ALL %s SELECT * FROM dual", Strings.join(inserts, " "))
         }

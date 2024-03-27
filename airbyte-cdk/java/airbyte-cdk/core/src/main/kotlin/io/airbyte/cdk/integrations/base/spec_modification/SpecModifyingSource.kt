@@ -15,10 +15,10 @@ import io.airbyte.protocol.models.v0.*
  */
 abstract class SpecModifyingSource(private val source: Source) : Source {
     @Throws(Exception::class)
-    abstract fun modifySpec(originalSpec: ConnectorSpecification?): ConnectorSpecification?
+    abstract fun modifySpec(originalSpec: ConnectorSpecification): ConnectorSpecification
 
     @Throws(Exception::class)
-    override fun spec(): ConnectorSpecification? {
+    override fun spec(): ConnectorSpecification {
         return modifySpec(source.spec())
     }
 
@@ -28,7 +28,7 @@ abstract class SpecModifyingSource(private val source: Source) : Source {
     }
 
     @Throws(Exception::class)
-    override fun discover(config: JsonNode): AirbyteCatalog? {
+    override fun discover(config: JsonNode): AirbyteCatalog {
         return source.discover(config)
     }
 

@@ -31,6 +31,7 @@ import io.airbyte.workers.process.ProcessFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
+import kotlin.test.assertNotNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -46,9 +47,9 @@ import org.slf4j.LoggerFactory
  */
 abstract class AbstractSourceConnectorTest {
     private var environment: TestDestinationEnv? = null
-    private var jobRoot: Path? = null
+    private lateinit var jobRoot: Path
     protected var localRoot: Path? = null
-    private var processFactory: ProcessFactory? = null
+    private lateinit var processFactory: ProcessFactory
 
     /** Name of the docker image that the tests will run against. */
     protected abstract val imageName: String
@@ -91,7 +92,7 @@ abstract class AbstractSourceConnectorTest {
 
     private lateinit var mSourceApi: SourceApi
 
-    private var mConnectorConfigUpdater: ConnectorConfigUpdater? = null
+    private lateinit var mConnectorConfigUpdater: ConnectorConfigUpdater
 
     protected val lastPersistedCatalog: AirbyteCatalog
         get() =
@@ -115,7 +116,7 @@ abstract class AbstractSourceConnectorTest {
         setupEnvironment(environment)
         mAirbyteApiClient = Mockito.mock(AirbyteApiClient::class.java)
         mSourceApi = Mockito.mock(SourceApi::class.java)
-        Mockito.`when`(mAirbyteApiClient.getSourceApi()).thenReturn(mSourceApi)
+        Mockito.`when`(mAirbyteApiClient.sourceApi).thenReturn(mSourceApi)
         Mockito.`when`(mSourceApi.writeDiscoverCatalogResult(ArgumentMatchers.any()))
             .thenReturn(DiscoverCatalogResult().catalogId(CATALOG_ID))
         mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater::class.java)
@@ -247,8 +248,7 @@ abstract class AbstractSourceConnectorTest {
                 jobRoot,
                 imageName
             )
-
-        Assertions.assertNotNull(entrypoint)
+        assertNotNull(entrypoint)
         Assertions.assertFalse(entrypoint.isBlank())
     }
 

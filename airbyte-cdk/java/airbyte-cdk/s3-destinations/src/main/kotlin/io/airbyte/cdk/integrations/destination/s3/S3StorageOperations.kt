@@ -153,7 +153,7 @@ open class S3StorageOperations(
                 }
                 .count() == exceptionsThrown.size.toLong()
         if (areAllExceptionsAuthExceptions) {
-            throw ConfigErrorException(exceptionsThrown[0].message, exceptionsThrown[0])
+            throw ConfigErrorException(exceptionsThrown[0].message!!, exceptionsThrown[0])
         } else {
             throw RuntimeException(
                 "Exceptions thrown while uploading records into storage: ${exceptionsThrown.joinToString(separator = "\n")}",

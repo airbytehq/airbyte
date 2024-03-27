@@ -174,7 +174,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
     private fun prepareTablesFuture(
         initialState: DestinationInitialStatus<DestinationState>
-    ): CompletionStage<Void?> {
+    ): CompletionStage<Unit> {
         // For each stream, make sure that its corresponding final table exists.
         // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into
         // an
@@ -254,7 +254,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     // immediately acquire the lock.
                     internalTdLocks[stream.id] = ReentrantLock()
 
-                    return@supplyAsync null
+                    return@supplyAsync Unit
                 } catch (e: Exception) {
                     LOGGER.error(
                         "Exception occurred while preparing tables for stream " +

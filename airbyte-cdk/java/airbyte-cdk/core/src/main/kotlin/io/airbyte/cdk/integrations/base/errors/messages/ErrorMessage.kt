@@ -11,7 +11,7 @@ object ErrorMessage {
     // errorCode exists
     @JvmStatic
     fun getErrorMessage(
-        stateCode: String,
+        stateCode: String?,
         errorCode: Int,
         message: String?,
         exception: Exception
@@ -23,7 +23,7 @@ object ErrorMessage {
         }
     }
 
-    private fun configMessage(stateCode: String, errorCode: Int, message: String?): String {
+    private fun configMessage(stateCode: String?, errorCode: Int, message: String?): String {
         val stateCodePart =
             if (Objects.isNull(stateCode)) "" else String.format("State code: %s; ", stateCode)
         val errorCodePart = if (errorCode == 0) "" else String.format("Error code: %s; ", errorCode)
