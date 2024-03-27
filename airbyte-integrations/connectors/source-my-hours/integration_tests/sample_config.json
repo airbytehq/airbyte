@@ -1,4 +1,6 @@
 {
-  "start_date": "2021-12-01",
-  "api_key": "api_key"
+  "email": "email",
+  "password": "password",
+  "logs_batch_size": 30,
+  "start_date": "2021-12-01"
 }

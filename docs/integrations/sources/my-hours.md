@@ -22,11 +22,7 @@ This source allows you to synchronize the following data tables:
 ## Getting started
 
 **Requirements**
-
- 1. In order to use the My Hours API you need to provide the credentials from My Hours account.
- 2. POST call to https://api2.myhours.com/api/tokens/login with json body including
-    {"grantType": "password", "email": --email--, "password": --password--, "clientId": "api"}
- 3. Retrieve the access_token in the response
+- In order to use the My Hours API you need to provide the credentials to an admin My Hours account.
 
 ### Performance Considerations (Airbyte Open Source)
 
