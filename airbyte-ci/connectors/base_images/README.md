@@ -6,7 +6,7 @@ Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyt
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
 - [Python base image code declaration](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/base_images/python/bases.py)
-- ~Java base image code declaration~ *TODO*
+- ~Java base image code declaration~ *TODO* 
 
 
 ## Where are the Dockerfiles?
@@ -19,8 +19,13 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### Example for `airbyte/python-connector-base`:
 ```dockerfile
-FROM docker.io/python:3.10.14-slim-bookworm@sha256:3b37199fbc5a730a551909b3efa7b29105c859668b7502451c163f2a4a7ae1ed
+FROM docker.io/python:3.10.14-slim-bookworm@sha256:2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
+RUN adduser --uid 1000 --system --group --no-create-home airbyte
+RUN mkdir --mode 755 /custom_cache
+RUN mkdir --mode 755 /airbyte
+RUN chown airbyte:airbyte /airbyte
+ENV PIP_CACHE_DIR=/custom_cache/pip
 RUN pip install --upgrade pip==24.0 setuptools==70.0.0
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
@@ -29,7 +34,7 @@ RUN pip install poetry==1.6.1
 RUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean
 RUN sh -c apt-get install -y socat=1.7.4.4-2
 RUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1
-RUN mkdir /usr/share/nltk_data
+RUN mkdir -p 755 /usr/share/nltk_data
 ```
 
 
@@ -39,12 +44,13 @@ RUN mkdir /usr/share/nltk_data
 
 ### `airbyte/python-connector-base`
 
-| Version | Published | Docker Image Address | Changelog |
+| Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  3.0.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:3.0.0-rc.1@sha256:ee046486af9ad90b1b248afe5e92846b51375a21463dff1cd377c4f06abb55b5 | Update Python 3.10.4 image + create airbyte user |
 |  2.0.0 | ✅| docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916 | Use Python 3.10 |
 |  1.2.3 | ✅| docker.io/airbyte/python-connector-base:1.2.3@sha256:a8abfdc75f8e22931657a1ae15069e7b925e74bb7b5ef36371a85e4caeae5696 | Use latest root image version and update system packages |
 |  1.2.2 | ✅| docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0 | Fix Python 3.9.19 image digest |
-|  1.2.2-rc.1 | ✅| docker.io/airbyte/python-connector-base:1.2.2-rc.1@sha256:a8abfdc75f8e22931657a1ae15069e7b925e74bb7b5ef36371a85e4caeae5696 |  |
+|  1.2.2-rc.1 | ✅| docker.io/airbyte/python-connector-base:1.2.2-rc.1@sha256:a8abfdc75f8e22931657a1ae15069e7b925e74bb7b5ef36371a85e4caeae5696 | Create an airbyte user and use it |
 |  1.2.1 | ✅| docker.io/airbyte/python-connector-base:1.2.1@sha256:4a4255e2bccab71fa5912487e42d9755cdecffae77273fed8be01a081cd6e795 | Upgrade to Python 3.9.19 + update pip and setuptools |
 |  1.2.0 | ✅| docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9 | Add CDK system dependencies: nltk data, tesseract, poppler. |
 |  1.2.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:1.2.0-rc.1@sha256:f6467768b75fb09125f6e6b892b6b48c98d9fe085125f3ff4adc722afb1e5b30 |  |
@@ -92,21 +98,3 @@ poetry run pytest
 # Static typing checks
 poetry run mypy base_images --check-untyped-defs
 ```
-## CHANGELOG
-
-### 1.2.0
-- Improve new version prompt to pick bump type with optional pre-release version.
-
-### 1.1.0
-- Add a cache ttl for base image listing to avoid DockerHub rate limiting.
-
-### 1.0.4
-- Upgrade Dagger to `0.13.3`
-
-### 1.0.2
-
-- Improved support for images with non-semantic-versioned tags.
-
-### 1.0.1
-
-- Bumped dependencies ([#42581](https://github.com/airbytehq/airbyte/pull/42581))
