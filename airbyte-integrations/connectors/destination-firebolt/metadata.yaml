@@ -2,9 +2,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 18081484-02a5-4662-8dba-b270b582f321
-  dockerImageTag: 1.0.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-firebolt
   githubIssueLabel: destination-firebolt
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   icon: firebolt.svg
   license: MIT
   name: Firebolt
@@ -12,7 +14,7 @@ data:
     cloud:
       enabled: false
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/firebolt
   supportsDbt: true
