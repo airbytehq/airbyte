@@ -22,7 +22,9 @@ def get_container_dockerfile(container) -> str:
     """
 
     lineage = [
-        field for field in list(container._ctx.selections) if isinstance(field, dagger.api.base.Field) and field.type_name == "Container"
+        field
+        for field in list(container._ctx.selections)
+        if isinstance(field, dagger.client._core.Field) and field.type_name == "Container"
     ]
     dockerfile = []
 
