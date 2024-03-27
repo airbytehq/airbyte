@@ -40,6 +40,27 @@
     "expire_after_specific_number_of_charges": {
       "type": ["null", "integer"]
     },
+    "external_product_id": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "external_variant_id": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "presentment_currency": {
+      "type": ["null", "string"]
+    },
     "has_queued_charges": {
       "type": ["null", "integer"]
     },

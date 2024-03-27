@@ -1,0 +1,272 @@
+version: 0.72.2
+
+definitions:
+  # COMMON PARTS
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_recharge/schemas/{{ parameters['name'] }}.json"
+  selector:
+    description: >-
+      Base records selector for Full Refresh streams
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.get('data_path')}}"]
+    # apply default schema normalization
+    schema_normalization: Default
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config['access_token'] }}"
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: X-Recharge-Access-Token
+
+  # PAGINATORS
+  paginator_deprecated_api:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      inject_into: request_parameter
+      field_name: limit
+      type: RequestOption
+    pagination_strategy:
+      type: PageIncrement
+      start_from_page: 1
+      page_size: 250
+      inject_on_first_request: false
+  paginator_modern_api:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      inject_into: request_parameter
+      type: RequestOption
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 250
+      cursor_value: '{{ response.get("next_cursor", {}) }}'
+      stop_condition: '{{ not response.get("next_cursor", {}) }}'
+
+  # REQUESTERS
+  requester_base:
+    description: >-
+      Default Base Requester for Full Refresh streams
+    type: HttpRequester
+    url_base: https://api.rechargeapps.com/
+    path: "{{ parameters['name'] }}"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      description: >-
+        The default error handler
+  requester_deprecated_api:
+    $ref: "#/definitions/requester_base"
+    # for deprecated retriever we should use `2021-01` api version
+    request_headers:
+      x-recharge-version: "2021-01"
+  requester_modern_api:
+    $ref: "#/definitions/requester_base"
+    # for modern retriever we should use >= `2021-11` api version
+    request_headers:
+      x-recharge-version: "2021-11"
+
+  # RETRIEVER FOR `DEPRECATED API`
+  retriever_api_deprecated:
+    description: >-
+      Default Retriever for Deprecated API `2021-01` Full Refresh streams.
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/requester_deprecated_api"
+    paginator:
+      $ref: "#/definitions/paginator_deprecated_api"
+  # RETRIEVER FOR `MODERN API`
+  retriever_api_modern:
+    description: >-
+      Default Retriever for Modern API `2021-11` Full Refresh streams.
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/requester_modern_api"
+    paginator:
+      $ref: "#/definitions/paginator_modern_api"
+    # we should ignore all other req.params once we have the `next_page_token` in response
+    # for pagination in `2021-11` - modern api.
+    ignore_stream_slicer_parameters_on_paginated_requests: true
+  # RETRIEVER FOR `METAFIELDS` STREAM
+  retriever_metafields:
+    $ref: "#/definitions/retriever_api_modern"
+    partition_router:
+      type: ListPartitionRouter
+      cursor_field: owner_resource
+      values:
+        - address
+        - order
+        - charge
+        - customer
+        - store
+        - subscription
+      request_option:
+        inject_into: request_parameter
+        type: RequestOption
+        field_name: owner_resource
+
+  # BASE STREAMS
+  # FULL-REFRESH
+  base_stream:
+    primary_key: "id"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+  base_deprecated_api_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever_api_deprecated"
+  base_modern_api_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever_api_modern"
+  # INCREMENTAL
+  base_incremental_stream:
+    $ref: "#/definitions/base_modern_api_stream"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_recharge.components.datetime_based_cursor.RechargeDateTimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: "updated_at_min"
+        inject_into: request_parameter
+
+  # FULL-REFRESH STREAMS
+  # COLLECTIONS
+  collections_stream:
+    description: >-
+      Collections Stream: https://developer.rechargepayments.com/2021-11/collections/collections_list
+    $ref: "#/definitions/base_modern_api_stream"
+    $parameters:
+      name: "collections"
+      data_path: "collections"
+  # METAFIELDS
+  metafields_stream:
+    description: >-
+      Metafields Stream: https://developer.rechargepayments.com/2021-11/metafields
+    $ref: "#/definitions/base_modern_api_stream"
+    retriever:
+      $ref: "#/definitions/retriever_metafields"
+    $parameters:
+      name: "metafields"
+      data_path: "metafields"
+  # PRODUCTS
+  products_stream:
+    description: >-
+      Products Stream: https://developer.rechargepayments.com/2021-11/products/products_list
+      Products endpoint has 422 error with 2021-11 API version
+    $ref: "#/definitions/base_deprecated_api_stream"
+    $parameters:
+      name: "products"
+      data_path: "products"
+  # SHOP
+  shop_stream:
+    description: >-
+      Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop
+      Shop endpoint is not available in 2021-11 API version
+    $ref: "#/definitions/base_deprecated_api_stream"
+    retriever:
+      $ref: "#/definitions/retriever_api_deprecated"
+      paginator:
+        type: NoPagination
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: ["shop", "store"]
+    $parameters:
+      name: "shop"
+
+  # INCREMENTAL STREAMS
+  # ADDRESSES
+  addresses_stream:
+    description: >-
+      Addresses Stream: https://developer.rechargepayments.com/2021-11/addresses/list_addresses
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "addresses"
+      data_path: "addresses"
+  # CHARGES
+  charges_stream:
+    description: >-
+      Charges Stream: https://developer.rechargepayments.com/2021-11/charges/charge_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "charges"
+      data_path: "charges"
+  # CUSTOMERS
+  customers_stream:
+    description: >-
+      Customers Stream: https://developer.rechargepayments.com/2021-11/customers/customers_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "customers"
+      data_path: "customers"
+  # DISCOUNTS
+  discounts_stream:
+    description: >-
+      Discounts Stream: https://developer.rechargepayments.com/2021-11/discounts/discounts_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "discounts"
+      data_path: "discounts"
+  # ONETIMES
+  onetimes_stream:
+    description: >-
+      Onetimes Stream: https://developer.rechargepayments.com/2021-11/onetimes/onetimes_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "onetimes"
+      data_path: "onetimes"
+  # SUBSCRIPTIONS
+  subscriptions_stream:
+    # description: >-
+    #   Subscriptions Stream: https://developer.rechargepayments.com/2021-11/subscriptions/subscriptions_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "subscriptions"
+      data_path: "subscriptions"
+
+streams:
+  - "#/definitions/addresses_stream"
+  - "#/definitions/charges_stream"
+  - "#/definitions/collections_stream"
+  - "#/definitions/customers_stream"
+  - "#/definitions/discounts_stream"
+  - "#/definitions/metafields_stream"
+  - "#/definitions/onetimes_stream"
+  - "#/definitions/products_stream"
+  - "#/definitions/shop_stream"
+  - "#/definitions/subscriptions_stream"
+  # The `orders` stream remains implemented in `streams.py` due to:
+  # 1. Inability to resolve `$ref` conditionally
+  # 2. Inability to dynamically switch between paginators (diff api versions, require diff pagination approach) (or create the CustomPaginator component)
+
+check:
+  type: CheckStream
+  stream_names:
+    - shop
