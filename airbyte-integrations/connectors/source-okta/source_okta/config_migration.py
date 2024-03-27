@@ -25,7 +25,7 @@ class OktaConfigMigration:
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
-        based on the source spec.
+        Uses the presence of the `domain` field to know if the config should be migrated.
         Returns:
             > True, if the transformation is necessary
             > False, otherwise.
