@@ -24,7 +24,7 @@ class NoFlatteningSheetGeneratorTest {
                 JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
                 JavaBaseConstants.COLUMN_NAME_DATA,
             ),
-            sheetGenerator.headerRow,
+            sheetGenerator.getHeaderRow(),
         )
     }
 

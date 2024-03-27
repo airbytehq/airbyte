@@ -26,13 +26,13 @@ object StreamTransferManagerFactory {
     const val DEFAULT_NUM_STREAMS: Int = 1
 
     @JvmStatic
-    fun create(bucketName: String, objectKey: String, s3Client: AmazonS3?): Builder {
+    fun create(bucketName: String?, objectKey: String, s3Client: AmazonS3?): Builder {
         return Builder(bucketName, objectKey, s3Client)
     }
 
     class Builder
     internal constructor(
-        private val bucketName: String,
+        private val bucketName: String?,
         private val objectKey: String,
         private val s3Client: AmazonS3?
     ) {

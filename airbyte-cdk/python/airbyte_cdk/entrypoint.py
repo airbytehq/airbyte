@@ -40,7 +40,7 @@ class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
 
-        # deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
+        # Deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
         if is_cloud_environment():
             _init_internal_request_filter()
 
