@@ -14,8 +14,10 @@ acceptance_tests:
         status: "succeed"
       - config_path: "integration_tests/invalid_config_apikey.json"
         status: "failed"
+        timeout_seconds: 300
       - config_path: "integration_tests/invalid_config_oauth.json"
         status: "failed"
+        timeout_seconds: 300
   discovery:
     tests:
       # for auth with API token
