@@ -148,7 +148,7 @@ class CsvSerializedBuffer(
                     )
                 val csvSettings =
                     CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC)
-                        .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>())
+                        .withHeader(*csvSheetGenerator.headerRow.toTypedArray<String>())
                 val compression = config.compressionType != CompressionType.NO_COMPRESSION
                 CsvSerializedBuffer(
                         createStorageFunction.call(),
