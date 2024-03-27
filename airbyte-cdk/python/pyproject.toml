@@ -31,7 +31,7 @@ Deprecated = "~1.2"
 dpath = "~2.0.1"
 genson = "1.2.2"
 isodate = "~0.6.1"
-Jinja2 = "~3.1.2"
+Jinja2 = "*"
 jsonref = "~0.2"
 jsonschema = "~3.2.0"
 pendulum = "<3.0.0"
@@ -58,8 +58,9 @@ unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true
 "unstructured.pytesseract" = { version = ">=0.3.12", optional = true }
 
 [tool.poetry.group.dev.dependencies]
-datamodel_code_generator = "0.11.9"
+datamodel_code_generator = "0.11.19"
 freezegun = "*"
+markupsafe = "~2.0"
 mypy = "*"
 pandas = "2.0.3"
 pdf2image = "1.16.3"
