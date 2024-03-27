@@ -38,10 +38,7 @@ class OktaConfigMigration:
         config["domain"] = config["base_url"].split("https://")[1].split(".")[0]
         if "credentials" not in config:
             if "token" in config:
-                config["credentials"] = {
-                    "auth_type": "api_token",
-                    "api_token": config["token"]
-                }
+                config["credentials"] = {"auth_type": "api_token", "api_token": config["token"]}
             else:
                 raise ValueError(f"Invalid config. got {config}")
         return config

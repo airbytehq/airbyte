@@ -1,6 +1,6 @@
 from abc import ABC
-from dataclasses import dataclass, InitVar
-from typing import Mapping, Any, Tuple
+from dataclasses import InitVar, dataclass
+from typing import Any, Mapping, Tuple
 
 import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -14,6 +14,7 @@ class CustomBearerAuthenticator(DeclarativeAuthenticator):
     """
     Custom authenticator that uses "SSWS" instead of "Bearer" in the authorization header.
     """
+
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
