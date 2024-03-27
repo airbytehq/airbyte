@@ -121,7 +121,7 @@ class AsyncStreamConsumerTest {
     private lateinit var onStart: OnStartFunction
     private lateinit var flushFunction: DestinationFlushFunction
     private lateinit var onClose: OnCloseFunction
-    private lateinit var outputRecordCollector: Consumer<AirbyteMessage?>
+    private lateinit var outputRecordCollector: Consumer<AirbyteMessage>
     private lateinit var flushFailure: FlushFailure
     private lateinit var streamAwareDataTransformer: StreamAwareDataTransformer
     private lateinit var deserializationUtil: DeserializationUtil
@@ -136,7 +136,7 @@ class AsyncStreamConsumerTest {
             )
         onClose = Mockito.mock(OnCloseFunction::class.java)
         flushFunction = Mockito.mock(DestinationFlushFunction::class.java)
-        outputRecordCollector = Mockito.mock(Consumer::class.java) as Consumer<AirbyteMessage?>
+        outputRecordCollector = Mockito.mock(Consumer::class.java) as Consumer<AirbyteMessage>
         flushFailure = Mockito.mock(FlushFailure::class.java)
         deserializationUtil = DeserializationUtil()
         streamAwareDataTransformer = IdentityDataTransformer()
