@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: badc5925-0485-42be-8caa-b34096cb71b5
-  dockerImageTag: 1.0.0
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-surveymonkey
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   githubIssueLabel: source-surveymonkey
@@ -21,16 +21,6 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-surveymonkey
-  releases:
-    breakingChanges:
-      1.0.0:
-        message: >-
-          The state format for the survey_responses stream has been updated. Users will need to reset their connections to accommodate this change. 
-          The field value for page_id will no longer be present in records. If you do not use this field as a reference key, please ignore this information.
-        upgradeDeadline: "2024-06-01"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes: ["survey_responses"]
   registries:
     cloud:
       enabled: true
@@ -39,5 +29,6 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"
