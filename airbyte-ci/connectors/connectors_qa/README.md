@@ -107,6 +107,10 @@ poe lint
 
 ## Changelog
 
+### 1.0.4
+
+Adds `htmlcov` to list of ignored directories for `CheckConnectorUsesHTTPSOnly` check.
+
 ### 1.0.3
 
 Disable `CheckDocumentationStructure` for now.

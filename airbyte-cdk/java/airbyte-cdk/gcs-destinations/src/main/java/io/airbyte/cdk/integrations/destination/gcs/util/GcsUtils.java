@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.destination.gcs.util;
 
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants;
-import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
@@ -21,7 +20,7 @@ public class GcsUtils {
   private static final Schema NULLABLE_TIMESTAMP_MILLIS = SchemaBuilder.builder().unionOf().nullType().and().type(TIMESTAMP_MILLIS_SCHEMA).endUnion();
 
   public static Schema getDefaultAvroSchema(final String name,
-                                            @Nullable final String namespace,
+                                            final String namespace,
                                             final boolean appendAirbyteFields,
                                             final boolean useDestinationsV2Columns) {
     LOGGER.info("Default schema.");

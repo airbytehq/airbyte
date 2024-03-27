@@ -44,7 +44,7 @@ public abstract class JdbcTypingDedupingTest extends BaseTypingDedupingTest {
    * deserialize JSON columns to JsonNode.
    */
   protected JdbcCompatibleSourceOperations<?> getSourceOperations() {
-    return JdbcUtils.getDefaultSourceOperations();
+    return JdbcUtils.defaultSourceOperations;
   }
 
   /**

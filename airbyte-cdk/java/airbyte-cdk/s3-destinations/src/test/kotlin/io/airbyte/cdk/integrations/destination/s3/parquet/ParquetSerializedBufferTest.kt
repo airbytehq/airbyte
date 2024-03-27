@@ -261,17 +261,17 @@ class ParquetSerializedBufferTest {
         try {
             ParquetSerializedBuffer.createFunction(config).apply(streamPair, catalog).use { writer
                 ->
-                writer.accept(message)
+                writer!!.accept(message)
                 writer.accept(message)
                 writer.flush()
                 // some data are randomized (uuid, timestamp, compression?) so the expected byte
                 // count is not always
                 // deterministic
                 assertTrue(
-                    writer.getByteCount() in minExpectedByte..maxExpectedByte,
+                    writer.byteCount in minExpectedByte..maxExpectedByte,
                     "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}",
                 )
-                val `in`: InputStream = writer.getInputStream()
+                val `in`: InputStream = writer.inputStream!!
                 FileOutputStream(tempFile).use { outFile -> IOUtils.copy(`in`, outFile) }
                 ParquetReader.builder(
                         AvroReadSupport<GenericData.Record>(),
