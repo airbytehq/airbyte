@@ -21,7 +21,7 @@ logger = getLogger("airbyte")
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
 CONFIG_DEFAULT_SCHEMA = "main"
 
-DUCKDB_CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_token"
+DUCKDB_CONFIG_MOTHERDUCK_API_KEY = "motherduck_token"
 DUCKDB_CONFIG_CUSTOM_USER_AGENT = "custom_user_agent"
 
 
