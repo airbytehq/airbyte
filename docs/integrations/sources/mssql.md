@@ -58,6 +58,7 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 #### CDC Limitations
 
 - Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
+- In some extreme edge cases, MSSQL's reading of it's `binlog` can be slow enough to extend beyond the maximum `timeout` connector setting (`1200`-`2400` seconds/`20`-`40` minutes), resulting in a 'successful' sync with zero (0) rows sent to the destination. See [Mitigation strategies for timeout errors in MSSQL Connector with CDC](#mitigation-strategies-for-timeout-errors-in-mssql-connector-with-cdc), for more details.
 - `hierarchyid` and `sql_variant` types are not processed in CDC migration type (not supported by Debezium). For more details please check
 [this ticket](https://github.com/airbytehq/airbyte/issues/14411)
 - CDC is only available for SQL Server 2016 Service Pack 1 \(SP1\) and later.
@@ -322,6 +323,42 @@ If you have connections with Microsoft SQL Source using _Logicai Replication (CD
 update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)
 WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'CDC');
 ```
+
+## Troubleshooting
+
+### Mitigation Strategies for Timeout Errors in MSSQL Connector with CDC
+
+#### Understanding the Issue
+
+When using the CDC feature with the MSSQL connector in Airbyte, you may encounter a situation where the connector times out without syncing any rows. This can occur when there is a significant difference in the volume of data or transaction frequency between tables in your MSSQL instance. It's a limitation linked to MSSQL's CDC implementation, where the connector struggles to efficiently process changes from tables with low activity amidst high-activity tables.
+
+#### Why It Matters
+
+A timeout leading to zero rows being synced disrupts data reliability and can affect downstream processes relying on consistent and timely data updates.
+
+#### Simplified Explanation
+
+Imagine you have two tables:
+
+*   **Table A**: Large and frequently updated.
+*   **Table B**: Smaller and infrequently updated.
+
+MSSQL tracks changes in a centralized ledger (binlog), which the CDC feature uses to capture data changes. When syncing, the connector looks for the next relevant change for the requested table, starting from the last synced point. If Table B's changes are sparse and buried under a heavy volume of Table A's updates, finding the next change for Table B takes longer, risking a timeout.
+
+#### The Solution: Sync Table Groups
+
+**Strategy**: Always sync a mix of frequently and infrequently updated tables together. This approach ensures that the presence of changes in high-activity tables (like Table A) helps avoid timeouts by providing consistent sync feedback, aiding in the capture of changes from low-activity tables (like Table B).
+
+##### How to Implement
+
+1.  **Identify Table Groups**: Pair or group tables based on their update frequency. Ensure each group includes at least one table with a high update frequency.
+2.  **Adjust Sync Settings**: Configure your Airbyte MSSQL source connector to sync these groups instead of individual tables.
+3.  **Monitor and Adjust**: Keep an eye on the sync performance. You may need to adjust your table groupings based on changes in table activity patterns or data volume.
+
+#### Conclusion
+
+By strategically grouping tables for synchronization, you can mitigate the risk of timeout errors during CDC with the MSSQL connector in Airbyte. This ensures a more reliable data sync process, maintaining the integrity and consistency of your data pipeline.
+
 
 ## Changelog
 
