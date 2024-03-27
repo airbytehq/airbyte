@@ -29,11 +29,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_duckdb import DestinationDuckdb
-from destination_duckdb.destination import (
-    CONFIG_MOTHERDUCK_API_KEY,
-    DUCKDB_CONFIG_MOTHERDUCK_API_KEY,
-    DUCKDB_CONFIG_CUSTOM_USER_AGENT,
-)
+from destination_duckdb.destination import CONFIG_MOTHERDUCK_API_KEY, DUCKDB_CONFIG_CUSTOM_USER_AGENT, DUCKDB_CONFIG_MOTHERDUCK_API_KEY
 
 CONFIG_PATH = "integration_tests/config.json"
 SECRETS_CONFIG_PATH = (
