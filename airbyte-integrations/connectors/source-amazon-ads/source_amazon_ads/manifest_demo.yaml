@@ -1,0 +1,191 @@
+version: 0.65.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - Locations
+streams:
+  - type: DeclarativeStream
+    name: Locations
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          locations:
+            items:
+              properties:
+                business_hours:
+                  type:
+                    - object
+                    - 'null'
+                business_name:
+                  type:
+                    - string
+                    - 'null'
+                capabilities:
+                  items:
+                    type:
+                      - string
+                      - 'null'
+                  type:
+                    - array
+                    - 'null'
+                country:
+                  type:
+                    - string
+                    - 'null'
+                created_at:
+                  type:
+                    - string
+                    - 'null'
+                currency:
+                  type:
+                    - string
+                    - 'null'
+                id:
+                  type:
+                    - string
+                    - 'null'
+                language_code:
+                  type:
+                    - string
+                    - 'null'
+                mcc:
+                  type:
+                    - string
+                    - 'null'
+                merchant_id:
+                  type:
+                    - string
+                    - 'null'
+                name:
+                  type:
+                    - string
+                    - 'null'
+                status:
+                  type:
+                    - string
+                    - 'null'
+                timezone:
+                  type:
+                    - string
+                    - 'null'
+                type:
+                  type:
+                    - string
+                    - 'null'
+              type:
+                - object
+                - 'null'
+            type:
+              - array
+              - 'null'
+          not_a_custom_field:
+            type:
+              - string
+              - 'null'
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://connect.squareup.com/v2
+        path: locations
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          grant_type: refresh_token
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          expires_in_name: expires_at
+          refresh_request_body: {}
+          refresh_token_updater:
+            access_token_config_path:
+              - oauth_access_token
+            refresh_token_config_path:
+              - client_refresh_token
+            token_expiry_date_config_path:
+              - oauth_token_expiry_date
+          token_refresh_endpoint: https://connect.squareup.com/oauth2/token
+          token_expiry_date_format: YYYY-MM-DDTHH:mm:ss[Z]
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_size_options:
+          type: RequestOption
+          field_name: count
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: startIndex
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_amazon_ads.components.MyPaginationStrategy
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - not_a_custom_field
+            value: not_a_custom_value
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      oauth_access_token:
+        type: string
+        title: Access token
+        airbyte_secret: true
+        description: saasdsadasd
+        order: 0
+        always_show: true
+      oauth_token_expiry_date:
+        type: string
+        title: Token expiry date
+        format: date-time
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+        order: 1
+        always_show: true
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+        order: 2
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+        order: 3
+      client_refresh_token:
+        type: string
+        title: Refresh token
+        airbyte_secret: true
+        order: 4
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    Locations: true
+  yamlComponents:
+    streams:
+      Locations:
+        - paginator
