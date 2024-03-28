@@ -26,6 +26,18 @@ TRANSIENT_EXCEPTIONS = (
     exceptions.JSONDecodeError,
 )
 
+_RETRYABLE_400_STATUS_CODE = {
+    # Using debug mode and breakpointing on the issue, we were able to validate that there issues are retryable. We've also opened a case
+    # with Salesforce to try to understand what is causing that as the response does not have a body.
+    406,
+    # Most of the time, they don't have a body but there was one from the Salesforce Edge mentioning "We are setting things up. This process
+    # can take a few minutes. This page will auto-refresh when ready. If it takes too long, please contact support or visit our <a>status
+    # page</a> for more information." We therefore assume this is a transient error and will retry on it.
+    420,
+    codes.too_many_requests,
+}
+
+
 logger = logging.getLogger("airbyte")
 
 
@@ -36,7 +48,7 @@ def default_backoff_handler(max_tries: int, backoff_method={"method": backoff.ex
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        give_up = exc.response is not None and exc.response.status_code != codes.too_many_requests and 400 <= exc.response.status_code < 500
+        give_up = exc.response is not None and exc.response.status_code not in _RETRYABLE_400_STATUS_CODE and 400 <= exc.response.status_code < 500
 
         # Salesforce can return an error with a limit using a 403 code error.
         if exc.response is not None and exc.response.status_code == codes.forbidden:
