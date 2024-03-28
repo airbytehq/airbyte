@@ -17,6 +17,7 @@ data:
   githubIssueLabel: source-amplitude
   icon: amplitude.svg
   license: MIT
+  maxSecondsBetweenMessages: 2592000
   name: Amplitude
   remoteRegistries:
     pypi:
