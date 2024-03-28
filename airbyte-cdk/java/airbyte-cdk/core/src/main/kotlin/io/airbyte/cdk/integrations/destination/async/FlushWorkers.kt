@@ -124,9 +124,7 @@ constructor(
         val queueSize = threadPoolExecutor.queue.size
         val activeCount = threadPoolExecutor.activeCount
 
-        workerInfo.append(
-            String.format("Pool queue size: %d, Active threads: %d", queueSize, activeCount),
-        )
+        workerInfo.append("Pool queue size: $queueSize, Active threads: $activeCount")
         logger.info { workerInfo.toString() }
     }
 
