@@ -25,6 +25,9 @@ import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants;
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change;
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,15 +38,16 @@ import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
-import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 
 public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   public static final String CASE_STATEMENT_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} ELSE {2} END ";
   public static final String CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} END ";
-  private static final String COLUMN_ERROR_MESSAGE_FORMAT = "Problem with `%s`";
-  private static final String AIRBYTE_META_COLUMN_ERRORS_KEY = "errors";
+
+  private static final String CHANGE_TRACKER_JSON_TEMPLATE = "{\"field\": \"{0}\", \"change\": \"{1}\", \"reason\": \"{2}\"}";
+
+  private static final String AIRBYTE_META_COLUMN_CHANGES_KEY = "changes";
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
@@ -56,7 +60,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @return
    */
   private DataType<?> getSuperType() {
-    return new DefaultDataType<>(null, String.class, "super");
+    return RedshiftDestinationConstants.SUPER_TYPE;
   }
 
   @Override
@@ -173,7 +177,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // supports regex functions.
     return field(CASE_STATEMENT_SQL_TEMPLATE,
         field.isNotNull().and(castedField(field, type, column.name(), true).isNull()),
-        function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
+        function("ARRAY", getSuperType(),
+            function("JSON_PARSE", getSuperType(), val(
+                "{\"field\": \"" + column.name() + "\", "
+                    + "\"change\": \"" + Change.NULLED.value() + "\", "
+                    + "\"reason\": \"" + Reason.DESTINATION_TYPECAST_ERROR + "\"}"))),
+        field("ARRAY()"));
   }
 
   @Override
@@ -183,7 +192,17 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .stream()
         .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
         .collect(Collectors.toList());
-    return function("OBJECT", getSuperType(), val(AIRBYTE_META_COLUMN_ERRORS_KEY), arrayConcatStmt(dataFields)).as(COLUMN_NAME_AB_META);
+    final Condition rawTableAirbyteMetaExists =
+        field(quotedName(COLUMN_NAME_AB_META)).isNotNull()
+            .and(function("IS_OBJECT", SQLDataType.BOOLEAN, field(quotedName(COLUMN_NAME_AB_META))))
+            .and(field(quotedName(COLUMN_NAME_AB_META, AIRBYTE_META_COLUMN_CHANGES_KEY)).isNotNull())
+            .and(function("IS_ARRAY", SQLDataType.BOOLEAN, field(quotedName(COLUMN_NAME_AB_META, AIRBYTE_META_COLUMN_CHANGES_KEY))));
+    final Field<?> airbyteMetaChangesArray = function("ARRAY_CONCAT", getSuperType(),
+        arrayConcatStmt(dataFields), field(CASE_STATEMENT_SQL_TEMPLATE,
+            rawTableAirbyteMetaExists,
+            field(quotedName(COLUMN_NAME_AB_META, AIRBYTE_META_COLUMN_CHANGES_KEY)),
+            field("ARRAY()")));
+    return function("OBJECT", getSuperType(), val(AIRBYTE_META_COLUMN_CHANGES_KEY), airbyteMetaChangesArray).as(COLUMN_NAME_AB_META);
 
   }
 

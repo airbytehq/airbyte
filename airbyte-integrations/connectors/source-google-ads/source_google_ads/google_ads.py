@@ -3,9 +3,8 @@
 #
 
 
-import logging
 from enum import Enum
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
 import backoff
 from airbyte_cdk.models import FailureType
@@ -16,8 +15,9 @@ from google.api_core.exceptions import InternalServerError, ServerError, TooMany
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
+from .utils import logger
+
 API_VERSION = "v15"
-logger = logging.getLogger("airbyte")
 
 
 class GoogleAds:
@@ -74,7 +74,12 @@ class GoogleAds:
         ),
         max_tries=5,
     )
-    def send_request(self, query: str, customer_id: str, login_customer_id: str = "default") -> Iterator[SearchGoogleAdsResponse]:
+    def send_request(
+        self,
+        query: str,
+        customer_id: str,
+        login_customer_id: str = "default",
+    ) -> Iterator[SearchGoogleAdsResponse]:
         client = self.get_client(login_customer_id)
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.query = query

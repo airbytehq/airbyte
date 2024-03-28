@@ -1,4 +1,4 @@
-# Changes to CDK or Low-Code Connector
+# Changes to Python CDK or Low-Code Connector
 
 ## Contribution Process
 

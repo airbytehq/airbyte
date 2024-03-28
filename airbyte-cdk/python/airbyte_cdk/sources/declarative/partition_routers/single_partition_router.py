@@ -48,4 +48,4 @@ class SinglePartitionRouter(StreamSlicer):
         return {}
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        yield dict()
+        yield StreamSlice(partition={}, cursor_slice={})
