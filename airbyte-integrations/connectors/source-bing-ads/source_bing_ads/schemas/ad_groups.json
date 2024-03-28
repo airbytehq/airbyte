@@ -3,155 +3,197 @@
   "type": "object",
   "properties": {
     "CampaignId": {
+      "description": "The unique identifier of the campaign to which the ad group belongs.",
       "type": ["null", "integer"]
     },
     "AccountId": {
+      "description": "The unique identifier of the account to which the ad group belongs.",
       "type": ["null", "integer"]
     },
     "CustomerId": {
+      "description": "The unique identifier of the customer to which the ad group belongs.",
       "type": ["null", "integer"]
     },
     "AdRotation": {
+      "description": "Defines how ads are rotated within the ad group.",
       "type": ["null", "object"],
       "properties": {
         "EndDate": {
+          "description": "The end date for the ad rotation period.",
           "type": ["null", "string"]
         },
         "StartDate": {
+          "description": "The start date for the ad rotation period.",
           "type": ["null", "string"]
         },
         "Type": {
+          "description": "The type of ad rotation strategy being used.",
           "type": ["null", "string"]
         }
       }
     },
     "AudienceAdsBidAdjustment": {
+      "description": "The bid adjustment for audience-based ads.",
       "type": ["null", "number"]
     },
     "BiddingScheme": {
+      "description": "The bidding strategy used for the ad group.",
       "type": ["null", "object"],
       "properties": {
         "Type": {
+          "description": "The type of bidding strategy being used.",
           "type": ["null", "string"]
         },
         "InheritedBidStrategyType": {
+          "description": "The inherited bid strategy type from the parent campaign.",
           "type": ["null", "string"]
         }
       }
     },
     "CpcBid": {
+      "description": "The cost-per-click bid for the ad group.",
       "type": ["null", "object"],
       "properties": {
         "Amount": {
+          "description": "The amount of the cost-per-click bid.",
           "type": ["null", "number"]
         }
       }
     },
     "CpvBid": {
+      "description": "The cost-per-view bid for the ad group.",
       "type": ["null", "object"],
       "properties": {
         "Amount": {
+          "description": "The amount of the cost-per-view bid.",
           "type": ["null", "number"]
         }
       }
     },
     "CpmBid": {
+      "description": "The cost-per-thousand-impressions bid for the ad group.",
       "type": ["null", "object"],
       "properties": {
         "Amount": {
+          "description": "The amount of the cost-per-thousand-impressions bid.",
           "type": ["null", "number"]
         }
       }
     },
     "EndDate": {
+      "description": "The end date of the ad group.",
       "type": ["null", "object"],
       "properties": {
         "Day": {
+          "description": "The day part of the end date.",
           "type": ["null", "integer"]
         },
         "Month": {
+          "description": "The month part of the end date.",
           "type": ["null", "integer"]
         },
         "Year": {
+          "description": "The year part of the end date.",
           "type": ["null", "integer"]
         }
       }
     },
     "FinalUrlSuffix": {
+      "description": "A string to append to the final URL.",
       "type": ["null", "string"]
     },
     "ForwardCompatibilityMap": {
+      "description": "A map of key-value pairs for forward compatibility.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "key": {
+            "description": "The key of the compatibility pair.",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "The value of the compatibility pair.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "Id": {
+      "description": "The unique identifier of the ad group.",
       "type": ["null", "integer"]
     },
     "Language": {
+      "description": "The language targeting setting for the ad group.",
       "type": ["null", "string"]
     },
     "Name": {
+      "description": "The name of the ad group.",
       "type": ["null", "string"]
     },
     "Network": {
+      "description": "The network targeting setting for the ad group.",
       "type": ["null", "string"]
     },
     "PrivacyStatus": {
+      "description": "The privacy status of the ad group.",
       "type": ["null", "string"]
     },
     "Settings": {
+      "description": "The settings associated with the ad group.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "Type": {
+            "description": "The type of setting.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "StartDate": {
+      "description": "The start date of the ad group.",
       "type": ["null", "object"],
       "properties": {
         "Day": {
+          "description": "The day part of the start date.",
           "type": ["null", "integer"]
         },
         "Month": {
+          "description": "The month part of the start date.",
           "type": ["null", "integer"]
         },
         "Year": {
+          "description": "The year part of the start date.",
           "type": ["null", "integer"]
         }
       }
     },
     "Status": {
+      "description": "The status of the ad group.",
       "type": ["null", "string"]
     },
     "TrackingUrlTemplate": {
+      "description": "The tracking URL template for the ad group.",
       "type": ["null", "string"]
     },
     "UrlCustomParameters": {
+      "description": "Custom parameters for tracking URLs.",
       "type": ["null", "object"],
       "properties": {
         "Parameters": {
+          "description": "The list of custom parameters.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "key": {
+                "description": "The key of the custom parameter.",
                 "type": ["null", "string"]
               },
               "value": {
+                "description": "The value of the custom parameter.",
                 "type": ["null", "string"]
               }
             }
@@ -160,12 +202,15 @@
       }
     },
     "AdScheduleUseSearcherTimeZone": {
+      "description": "Indicates whether ad scheduling uses the searcher's time zone.",
       "type": ["null", "boolean"]
     },
     "AdGroupType": {
+      "description": "The type of the ad group (e.g., Search, Display, Video, etc).",
       "type": ["null", "string"]
     },
     "MultimediaAdsBidAdjustment": {
+      "description": "The bid adjustment for multimedia ads.",
       "type": ["null", "integer"]
     }
   }
