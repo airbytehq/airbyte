@@ -14,7 +14,7 @@ on:
     branches:
       - master
     paths:
-      - "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
+      - "airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
   workflow_dispatch:
     inputs:
       repo:
