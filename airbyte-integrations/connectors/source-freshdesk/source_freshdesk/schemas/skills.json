@@ -3,51 +3,65 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the skills data.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the skills data entry.",
       "type": ["null", "string"]
     },
     "rank": {
+      "description": "Ranking value of the skills data entry.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Date and time when the skills data was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Date and time when the skills data was last updated.",
       "type": ["null", "string"]
     },
     "agents": {
+      "description": "List of agents associated with the skills data.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Agent ID.",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "match_type": {
+      "description": "Type of matching algorithm used for skills data.",
       "type": ["null", "string"]
     },
     "conditions": {
+      "description": "Conditions under which the skills data apply.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "resource_type": {
+            "description": "Type of resource for comparison.",
             "type": ["null", "string"]
           },
           "field_name": {
+            "description": "Name of the field to apply the condition on.",
             "type": ["null", "string"]
           },
           "operator": {
+            "description": "Operator used for comparison.",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "Value to compare with.",
             "type": ["null", "array"],
             "items": {
+              "description": "Specific value for comparison.",
               "type": ["null", "string"]
             }
           }

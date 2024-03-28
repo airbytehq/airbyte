@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the canned response folder.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the canned response folder.",
       "type": ["null", "string"]
     },
     "personal": {
+      "description": "Indicates if the canned response folder is personal (true) or shared (false).",
       "type": ["null", "boolean"]
     },
     "responses_count": {
+      "description": "The total number of canned responses in the folder.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the canned response folder was created.",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "The date and time when the canned response folder was last updated.",
       "type": ["string", "null"]
     }
   }

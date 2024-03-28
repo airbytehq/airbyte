@@ -3,42 +3,54 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the company",
       "type": ["integer", "null"]
     },
     "name": {
+      "description": "The name of the company",
       "type": ["string", "null"]
     },
     "description": {
+      "description": "A brief description of the company",
       "type": ["string", "null"]
     },
     "note": {
+      "description": "Any notes or comments regarding the company",
       "type": ["string", "null"]
     },
     "domains": {
+      "description": "List of domains associated with the company",
       "type": ["array", "null"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "created_at": {
+      "description": "The date and time when the company's record was initially created",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "The date and time when the company's record was last updated",
       "type": ["string", "null"]
     },
     "custom_fields": {
+      "description": "Any custom fields or data associated with the company",
       "type": ["object", "null"]
     },
     "health_score": {
+      "description": "The health score of the company based on various metrics",
       "type": ["string", "null"]
     },
     "account_tier": {
+      "description": "The tier of the company's account (e.g., Free, Pro, Enterprise)",
       "type": ["string", "null"]
     },
     "renewal_date": {
+      "description": "The date when the company's account is due for renewal",
       "type": ["string", "null"]
     },
     "industry": {
+      "description": "The industry to which the company belongs",
       "type": ["string", "null"]
     }
   }

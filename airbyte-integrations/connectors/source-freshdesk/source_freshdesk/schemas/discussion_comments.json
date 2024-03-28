@@ -3,36 +3,47 @@
   "type": "object",
   "properties": {
     "answer": {
+      "description": "Contains the answer or response to the discussion comment.",
       "type": ["null", "boolean"]
     },
     "body": {
+      "description": "Text content of the discussion comment.",
       "type": ["null", "string"]
     },
     "forum_id": {
+      "description": "Unique identifier of the forum where the discussion comment belongs.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "Unique identifier for the discussion comment.",
       "type": ["null", "integer"]
     },
     "published": {
+      "description": "Flag indicating if the comment is published.",
       "type": ["null", "boolean"]
     },
     "spam": {
+      "description": "Flag indicating if the comment is marked as spam.",
       "type": ["null", "boolean"]
     },
     "topic_id": {
+      "description": "Unique identifier of the topic to which the comment is related.",
       "type": ["null", "integer"]
     },
     "trash": {
+      "description": "Flag indicating if the comment is in the trash.",
       "type": ["null", "boolean"]
     },
     "user_id": {
+      "description": "Unique identifier of the user who created the comment.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the comment was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Timestamp indicating when the comment was last updated.",
       "type": ["null", "string"]
     }
   }

@@ -3,33 +3,43 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for this group",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the group",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the purpose or function of this group",
       "type": ["null", "string"]
     },
     "escalate_to": {
+      "description": "User or group to escalate tickets to when unresolved",
       "type": ["integer", "null"]
     },
     "unassigned_for": {
+      "description": "Duration before unassigned tickets are escalated",
       "type": ["string", "null"]
     },
     "business_hour_id": {
+      "description": "ID of the business hour associated with this group",
       "type": ["integer", "null"]
     },
     "group_type": {
+      "description": "Type or category of the group (e.g., sales, support)",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp indicating when this group was created",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Timestamp indicating when this group was last updated",
       "type": ["null", "string"]
     },
     "auto_ticket_assign": {
+      "description": "Flag indicating whether tickets are automatically assigned to this group",
       "type": ["integer", "null"]
     }
   }

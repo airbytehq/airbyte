@@ -3,33 +3,43 @@
   "type": "object",
   "properties": {
     "active": {
+      "description": "Indicates if the email configuration is active or not.",
       "type": ["null", "boolean"]
     },
     "group_id": {
+      "description": "ID of the group associated with the email configuration.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "Unique identifier for the email configuration.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name given to the email configuration.",
       "type": ["null", "string"]
     },
     "primary_role": {
+      "description": "Primary role assigned to the email configuration.",
       "type": ["null", "boolean"]
     },
     "product_id": {
+      "description": "ID of the product linked to the email configuration.",
       "type": ["null", "integer"]
     },
     "reply_email": {
+      "description": "Email address used for replying to emails.",
       "type": ["null", "string"]
     },
     "to_email": {
+      "description": "Email address to which emails are sent.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp for when the email configuration was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Timestamp for the last update made to the email configuration.",
       "type": ["null", "string"]
     }
   }

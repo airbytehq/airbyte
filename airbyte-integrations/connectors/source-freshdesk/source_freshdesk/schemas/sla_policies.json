@@ -3,90 +3,117 @@
   "type": "object",
   "properties": {
     "active": {
+      "description": "Indicates whether the SLA policy is currently active or not.",
       "type": ["null", "boolean"]
     },
     "description": {
+      "description": "Description of the SLA policy.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the SLA policy.",
       "type": ["null", "integer"]
     },
     "is_default": {
+      "description": "Indicates whether the SLA policy is the default one or not.",
       "type": ["null", "boolean"]
     },
     "name": {
+      "description": "Name of the SLA policy.",
       "type": ["null", "string"]
     },
     "position": {
+      "description": "Order in which the SLA policy should be applied.",
       "type": ["null", "integer"]
     },
     "sla_target": {
+      "description": "Defines the SLA targets for different priorities.",
       "type": ["null", "object"],
       "properties": {
         "priority_4": {
+          "description": "SLA targets for priority level 4.",
           "type": ["null", "object"],
           "properties": {
             "respond_within": {
+              "description": "Time duration within which initial response should be provided for this priority level.",
               "type": ["null", "integer"]
             },
             "resolve_within": {
+              "description": "Time duration within which the issue should be resolved for this priority level.",
               "type": ["null", "integer"]
             },
             "business_hours": {
+              "description": "Business hours within which the SLA policy should be enforced.",
               "type": ["null", "boolean"]
             },
             "escalation_enabled": {
+              "description": "Indicates whether escalation is enabled for this priority level or not.",
               "type": ["null", "boolean"]
             }
           }
         },
         "priority_3": {
+          "description": "SLA targets for priority level 3.",
           "type": ["null", "object"],
           "properties": {
             "respond_within": {
+              "description": "Time duration within which initial response should be provided for this priority level.",
               "type": ["null", "integer"]
             },
             "resolve_within": {
+              "description": "Time duration within which the issue should be resolved for this priority level.",
               "type": ["null", "integer"]
             },
             "business_hours": {
+              "description": "Business hours within which the SLA policy should be enforced.",
               "type": ["null", "boolean"]
             },
             "escalation_enabled": {
+              "description": "Indicates whether escalation is enabled for this priority level or not.",
               "type": ["null", "boolean"]
             }
           }
         },
         "priority_2": {
+          "description": "SLA targets for priority level 2.",
           "type": ["null", "object"],
           "properties": {
             "respond_within": {
+              "description": "Time duration within which initial response should be provided for this priority level.",
               "type": ["null", "integer"]
             },
             "resolve_within": {
+              "description": "Time duration within which the issue should be resolved for this priority level.",
               "type": ["null", "integer"]
             },
             "business_hours": {
+              "description": "Business hours within which the SLA policy should be enforced.",
               "type": ["null", "boolean"]
             },
             "escalation_enabled": {
+              "description": "Indicates whether escalation is enabled for this priority level or not.",
               "type": ["null", "boolean"]
             }
           }
         },
         "priority_1": {
+          "description": "SLA targets for priority level 1.",
           "type": ["null", "object"],
           "properties": {
             "respond_within": {
+              "description": "Time duration within which initial response should be provided for this priority level.",
               "type": ["null", "integer"]
             },
             "resolve_within": {
+              "description": "Time duration within which the issue should be resolved for this priority level.",
               "type": ["null", "integer"]
             },
             "business_hours": {
+              "description": "Business hours within which the SLA policy should be enforced.",
               "type": ["null", "boolean"]
             },
             "escalation_enabled": {
+              "description": "Indicates whether escalation is enabled for this priority level or not.",
               "type": ["null", "boolean"]
             }
           }
@@ -94,33 +121,39 @@
       }
     },
     "applicable_to": {
+      "description": "Defines the criteria to which the SLA policy is applicable.",
       "type": ["null", "object"],
       "properties": {
         "company_ids": {
+          "description": "List of company IDs to which the SLA policy is applicable.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "group_ids": {
+          "description": "List of group IDs to which the SLA policy is applicable.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "sources": {
+          "description": "List of ticket sources to which the SLA policy is applicable.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "ticket_types": {
+          "description": "List of ticket types to which the SLA policy is applicable.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "product_ids": {
+          "description": "List of product IDs to which the SLA policy is applicable.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
@@ -129,15 +162,19 @@
       }
     },
     "escalation": {
+      "description": "Defines the escalation settings for the SLA policy.",
       "type": ["null", "object"],
       "properties": {
         "response": {
+          "description": "Escalation settings for initial response.",
           "type": ["null", "object"],
           "properties": {
             "escalation_time": {
+              "description": "Time duration for initial response escalation.",
               "type": ["null", "integer"]
             },
             "agent_ids": {
+              "description": "List of agent IDs for initial response escalation.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "integer"]
@@ -146,15 +183,19 @@
           }
         },
         "resolution": {
+          "description": "Escalation settings for resolution levels.",
           "type": ["null", "object"],
           "properties": {
             "level1": {
+              "description": "Escalation settings for level 1 resolution.",
               "type": ["null", "object"],
               "properties": {
                 "escalation_time": {
+                  "description": "Time duration for escalation at this level.",
                   "type": ["null", "integer"]
                 },
                 "agent_ids": {
+                  "description": "List of agent IDs for escalation at this level.",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "integer"]
@@ -163,12 +204,15 @@
               }
             },
             "level2": {
+              "description": "Escalation settings for level 2 resolution.",
               "type": ["null", "object"],
               "properties": {
                 "escalation_time": {
+                  "description": "Time duration for escalation at this level.",
                   "type": ["null", "integer"]
                 },
                 "agent_ids": {
+                  "description": "List of agent IDs for escalation at this level.",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "integer"]
@@ -177,12 +221,15 @@
               }
             },
             "level3": {
+              "description": "Escalation settings for level 3 resolution.",
               "type": ["null", "object"],
               "properties": {
                 "escalation_time": {
+                  "description": "Time duration for escalation at this level.",
                   "type": ["null", "integer"]
                 },
                 "agent_ids": {
+                  "description": "List of agent IDs for escalation at this level.",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "integer"]
@@ -191,12 +238,15 @@
               }
             },
             "level4": {
+              "description": "Escalation settings for level 4 resolution.",
               "type": ["null", "object"],
               "properties": {
                 "escalation_time": {
+                  "description": "Time duration for escalation at this level.",
                   "type": ["null", "integer"]
                 },
                 "agent_ids": {
+                  "description": "List of agent IDs for escalation at this level.",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "integer"]

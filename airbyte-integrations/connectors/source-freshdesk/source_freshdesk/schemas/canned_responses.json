@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the canned response",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title of the canned response",
       "type": ["null", "string"]
     },
     "folder_id": {
+      "description": "Identifier of the folder where the canned response is stored",
       "type": ["null", "integer"]
     },
     "content": {
+      "description": "Textual content of the canned response",
       "type": ["null", "string"]
     },
     "content_html": {
+      "description": "HTML formatted content of the canned response",
       "type": ["null", "string"]
     },
     "attachments": {
@@ -23,36 +28,46 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the attachment",
             "type": ["null", "integer"]
           },
           "name": {
+            "description": "Name of the attachment file",
             "type": ["null", "string"]
           },
           "content_type": {
+            "description": "The type of content within the attachment",
             "type": ["null", "string"]
           },
           "size": {
+            "description": "Size of the attachment file",
             "type": ["null", "integer"]
           },
           "attachment_url": {
+            "description": "URL of the attachment file",
             "type": ["null", "string"]
           },
           "thumb_url": {
+            "description": "URL of the thumbnail image for the attachment (if applicable)",
             "type": ["null", "string"]
           },
           "created_at": {
+            "description": "Timestamp of when the attachment was created",
             "type": ["string", "null"]
           },
           "updated_at": {
+            "description": "Timestamp of when the attachment was last updated",
             "type": ["string", "null"]
           }
         }
       }
     },
     "created_at": {
+      "description": "Timestamp of when the canned response was created",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "Timestamp of when the canned response was last updated",
       "type": ["string", "null"]
     }
   }

@@ -3,39 +3,48 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "Brief overview or details describing the content or purpose of the solution folder.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the solution folder.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name or title of the solution folder for easy identification.",
       "type": ["null", "string"]
     },
     "visibility": {
+      "description": "Indicates the visibility settings of the solution folder, e.g., public, private, restricted.",
       "type": ["null", "integer"]
     },
     "company_ids": {
+      "description": "Array of IDs representing the companies associated with the solution folder.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "contact_segment_ids": {
+      "description": "Array of segment IDs indicating the contact segments associated with the solution folder.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "company_segment_ids": {
+      "description": "Array of segment IDs specifying the company segments associated with the solution folder.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "created_at": {
+      "description": "Timestamp representing the date and time when the solution folder was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Timestamp indicating the last update time of the solution folder.",
       "type": ["null", "string"]
     }
   }
