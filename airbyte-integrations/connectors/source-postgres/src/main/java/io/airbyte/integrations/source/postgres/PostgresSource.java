@@ -843,7 +843,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   private boolean cloudDeploymentMode() {
-    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(getFeatureFlags().deploymentMode());
   }
 
 }

@@ -207,6 +207,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
          * - the schema file
          * @return schema object processed from across all dependency files.
          */
+        @JvmStatic
         fun getSchema(schemaFile: File?): JsonNode {
             try {
                 return processor.process(schemaFile)

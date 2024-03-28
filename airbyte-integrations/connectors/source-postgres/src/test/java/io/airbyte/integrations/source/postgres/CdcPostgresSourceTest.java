@@ -83,7 +83,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertExpectedStateMessageCountMatches(final List<AirbyteStateMessage> stateMessages, long totalCount) {
+  protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
     AtomicLong count = new AtomicLong(0L);
     stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
     assertEquals(totalCount, count.get());
@@ -201,18 +201,18 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
     assertStateTypes(stateMessages, 4);
   }
 
   @Override
-  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<? extends AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
-    assertStateTypes(stateAfterFirstBatch, 24);
+    assertStateTypes((List<AirbyteStateMessage>) stateAfterFirstBatch, 24);
   }
 
-  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
+  private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -241,7 +241,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
+  protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size(), stateMessages.toString());
     for (int i = 0; i <= 4; i++) {
@@ -451,12 +451,12 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesForNoData(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(2, stateMessages.size());
   }
 
   @Override
-  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesFromIncrementalSync(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
   }
@@ -467,8 +467,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         DataSourceFactory.create(
             config().get(JdbcUtils.USERNAME_KEY).asText(),
             config().get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            DatabaseDriver.POSTGRESQL.driverClassName,
+            String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
                 config().get(JdbcUtils.HOST_KEY).asText(),
                 config().get(JdbcUtils.PORT_KEY).asInt(),
                 config().get(JdbcUtils.DATABASE_KEY).asText())));
@@ -731,8 +731,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final DataSource dataSource = DataSourceFactory.create(
         config().get(JdbcUtils.USERNAME_KEY).asText(),
         config().get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+        DatabaseDriver.POSTGRESQL.driverClassName,
+        String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
             config().get(JdbcUtils.HOST_KEY).asText(),
             config().get(JdbcUtils.PORT_KEY).asInt(),
             config().get(JdbcUtils.DATABASE_KEY).asText()));

@@ -332,6 +332,7 @@ object Jsons {
      * provided for backward compatibility.
      */
     @JvmOverloads
+    @JvmStatic
     fun flatten(node: JsonNode, applyFlattenToArray: Boolean = false): Map<String?, Any> {
         if (node.isObject) {
             val output: MutableMap<String?, Any> = HashMap()

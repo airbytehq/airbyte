@@ -20,6 +20,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return closeable iterator </T>
      */
+    @JvmStatic
     fun <T> fromIterator(iterator: Iterator<T>): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(iterator, VoidCallable.NOOP, null)
     }
@@ -31,6 +32,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return closeable iterator </T>
      */
+    @JvmStatic
     fun <T> fromIterator(
         iterator: Iterator<T>,
         airbyteStream: AirbyteStreamNameNamespacePair?
@@ -47,6 +49,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return new autocloseable iterator with the close function appended </T>
      */
+    @JvmStatic
     fun <T> fromIterator(
         iterator: Iterator<T>,
         onClose: VoidCallable,
@@ -73,6 +76,7 @@ object AutoCloseableIterators {
 
     /** Consumes entire iterator and collect it into a list. Then it closes the iterator. */
     @Throws(Exception::class)
+    @JvmStatic
     fun <T> toListAndClose(iterator: AutoCloseableIterator<T>): List<T> {
         iterator.use {
             return MoreIterators.toList(iterator)

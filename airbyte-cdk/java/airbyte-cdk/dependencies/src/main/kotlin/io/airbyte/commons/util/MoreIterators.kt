@@ -16,6 +16,7 @@ object MoreIterators {
      * @return iterator with all elements </T>
      */
     @SafeVarargs
+    @JvmStatic
     fun <T> of(vararg elements: T): Iterator<T> {
         return Arrays.asList(*elements).iterator()
     }
@@ -27,6 +28,7 @@ object MoreIterators {
      * @param <T> type
      * @return list </T>
      */
+    @JvmStatic
     fun <T> toList(iterator: Iterator<T>): List<T> {
         val list: MutableList<T> = ArrayList()
         while (iterator.hasNext()) {
@@ -42,6 +44,7 @@ object MoreIterators {
      * @param <T> type
      * @return set </T>
      */
+    @JvmStatic
     fun <T> toSet(iterator: Iterator<T>): Set<T> {
         val set: MutableSet<T> = HashSet()
         while (iterator.hasNext()) {
