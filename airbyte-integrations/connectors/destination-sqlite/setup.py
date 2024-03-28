@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1"]
+TEST_REQUIREMENTS = ["pytest"]
 
 setup(
     name="destination_sqlite",

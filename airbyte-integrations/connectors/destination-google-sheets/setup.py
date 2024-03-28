@@ -12,7 +12,7 @@ MAIN_REQUIREMENTS = [
     "google-api-python-client==2.47.0",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "requests-mock"]
+TEST_REQUIREMENTS = ["pytest", "requests-mock"]
 
 setup(
     name="destination_google_sheets",
