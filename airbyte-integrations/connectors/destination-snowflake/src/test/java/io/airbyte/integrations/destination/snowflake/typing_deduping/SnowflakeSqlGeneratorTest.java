@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 public class SnowflakeSqlGeneratorTest {
 
-  private final SnowflakeSqlGenerator generator = new SnowflakeSqlGenerator();
+  private final SnowflakeSqlGenerator generator = new SnowflakeSqlGenerator(0);
 
   @Test
   void columnNameSpecialCharacterHandling() {

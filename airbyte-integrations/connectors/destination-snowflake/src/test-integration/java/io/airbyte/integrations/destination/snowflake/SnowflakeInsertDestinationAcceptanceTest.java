@@ -122,7 +122,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    final StreamId streamId = new SnowflakeSqlGenerator().buildStreamId(namespace, streamName, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
+    final StreamId streamId = new SnowflakeSqlGenerator(0).buildStreamId(namespace, streamName, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
     return retrieveRecordsFromTable(streamId.rawName(), streamId.rawNamespace())
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
