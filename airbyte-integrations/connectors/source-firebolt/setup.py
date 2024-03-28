@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "firebolt-sdk>=0.14.0"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "firebolt-sdk>=1.1.0"]
 
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",
