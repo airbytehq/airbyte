@@ -48,7 +48,11 @@ def default_backoff_handler(max_tries: int, backoff_method={"method": backoff.ex
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        give_up = exc.response is not None and exc.response.status_code not in _RETRYABLE_400_STATUS_CODE and 400 <= exc.response.status_code < 500
+        give_up = (
+            exc.response is not None
+            and exc.response.status_code not in _RETRYABLE_400_STATUS_CODE
+            and 400 <= exc.response.status_code < 500
+        )
 
         # Salesforce can return an error with a limit using a 403 code error.
         if exc.response is not None and exc.response.status_code == codes.forbidden:
