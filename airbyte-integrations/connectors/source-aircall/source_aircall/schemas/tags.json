@@ -5,15 +5,19 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the tag.",
       "type": ["null", "number"]
     },
     "name": {
+      "description": "The name of the tag.",
       "type": ["null", "string"]
     },
     "color": {
+      "description": "The color associated with the tag.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief description of the tag.",
       "type": ["null", "string"]
     }
   }

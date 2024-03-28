@@ -5,9 +5,11 @@
   "type": "object",
   "properties": {
     "availability": {
+      "description": "Specifies the availability status of the user. It indicates whether the user is currently available or not.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier assigned to the user for identification.",
       "type": ["null", "number"]
     }
   }
