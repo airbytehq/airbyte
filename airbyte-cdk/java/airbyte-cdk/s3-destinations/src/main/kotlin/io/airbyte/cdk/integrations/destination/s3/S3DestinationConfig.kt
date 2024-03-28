@@ -25,13 +25,13 @@ import org.slf4j.LoggerFactory
  * data syncing to S3)
  */
 open class S3DestinationConfig {
-    @JvmField val endpoint: String?
-    @JvmField val bucketName: String?
-    @JvmField val bucketPath: String?
-    @JvmField val bucketRegion: String?
-    @JvmField val pathFormat: String?
+    val endpoint: String?
+    val bucketName: String?
+    val bucketPath: String?
+    val bucketRegion: String?
+    val pathFormat: String?
     val s3CredentialConfig: S3CredentialConfig?
-    @JvmField val formatConfig: S3FormatConfig?
+    val formatConfig: S3FormatConfig?
     var fileNamePattern: String? = null
         private set
 

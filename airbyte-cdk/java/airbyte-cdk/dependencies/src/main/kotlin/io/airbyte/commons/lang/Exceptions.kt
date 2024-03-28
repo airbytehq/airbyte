@@ -37,6 +37,7 @@ object Exceptions {
      * @param voidCallable
      * - function that throws a checked exception.
      */
+    @JvmStatic
     fun toRuntime(voidCallable: Procedure) {
         castCheckedToRuntime(voidCallable) { cause: Exception? -> RuntimeException(cause) }
     }

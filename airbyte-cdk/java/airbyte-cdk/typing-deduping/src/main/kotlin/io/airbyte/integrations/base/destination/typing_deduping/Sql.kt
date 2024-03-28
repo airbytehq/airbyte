@@ -19,7 +19,7 @@ import java.util.stream.Stream
  * Callers are encouraged to use the static factory methods instead of the public constructor.
  */
 @JvmRecord
-data class Sql(@JvmField val transactions: List<List<String>>) {
+data class Sql(val transactions: List<List<String>>) {
     /**
      * @param begin The SQL statement to start a transaction, typically "BEGIN"
      * @param commit The SQL statement to commit a transaction, typically "COMMIT"

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.networknt.schema.*
-import io.airbyte.commons.string.Strings.join
+import io.airbyte.commons.string.Strings.Companion.join
 import java.io.File
 import java.io.IOException
 import java.net.URI
