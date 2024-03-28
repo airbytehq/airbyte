@@ -220,7 +220,7 @@ paginator:
   <...>
   pagination_strategy:
     type: "CursorPagination"
-    cursor_value: "{{ headers['urls']['next'] }}"
+    cursor_value: "{{ headers['link']['next']['url'] }}"
   page_token_option:
     type: "RequestPath"
 ```
