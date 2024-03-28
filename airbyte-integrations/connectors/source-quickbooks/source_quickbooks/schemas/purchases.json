@@ -160,6 +160,17 @@
                   }
                 }
               },
+              "ClassRef": {
+                "properties": {
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
               "CustomerRef": {
                 "type": ["null", "object"],
                 "properties": {

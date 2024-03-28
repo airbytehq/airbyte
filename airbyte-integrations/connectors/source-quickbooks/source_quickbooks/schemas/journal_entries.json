@@ -58,8 +58,38 @@
                 },
                 "type": ["null", "object"]
               },
+              "ClassRef": {
+                "properties": {
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
               "PostingType": {
                 "type": ["null", "string"]
+              },
+              "Entity": {
+                "properties": {
+                  "Type": {
+                    "type": ["null", "string"]
+                  },
+                  "EntityRef": {
+                    "properties": {
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "value": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "type": ["null", "object"]
+                  }
+                },
+                "type": ["null", "object"]
               }
             },
             "type": ["null", "object"]

@@ -134,6 +134,17 @@
               "BillableStatus": {
                 "type": ["null", "string"]
               },
+              "ClassRef": {
+                "properties": {
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
               "AccountRef": {
                 "properties": {
                   "name": {
