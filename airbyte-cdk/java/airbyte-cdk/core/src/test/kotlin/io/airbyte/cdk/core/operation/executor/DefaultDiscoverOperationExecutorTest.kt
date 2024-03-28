@@ -17,7 +17,7 @@ class DefaultDiscoverOperationExecutorTest {
         value = ["RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"],
         justification = "Invalid warning for Kotlin",
     )
-    internal fun `test that the expected Airbyte message is returned when executed`() {
+    internal fun testThatTheExpectedAirbyteMessageIsReturnedWhenExecuted() {
         val executor = DefaultDiscoverOperationExecutor()
         val result = executor.execute()
         assertTrue(result.isSuccess)

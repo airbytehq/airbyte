@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 
 class DefaultReadOperationExecutorTest {
     @Test
-    internal fun `test that for each message in the iterator, an airbyte message is written to the output record consumer`() {
+    internal fun testThatForEachMessageInTheIteratorAnAirbyteMessageIsWrittenToTheOutputRecordConsumer() {
         val iterator: AutoCloseableIterator<AirbyteMessage> = mockk()
         val messageIterator = Optional.of(iterator)
         val outputRecordCollector: Consumer<AirbyteMessage> = mockk()
@@ -64,7 +64,7 @@ class DefaultReadOperationExecutorTest {
     }
 
     @Test
-    internal fun `test that if during message iteration an exception is raised, a failure result is returned`() {
+    internal fun testThatIfDuringMessageIterationAnExceptionIsRaisedAFailureResultIsReturned() {
         val iterator: AutoCloseableIterator<AirbyteMessage> = mockk()
         val messageIterator = Optional.of(iterator)
         val outputRecordCollector: Consumer<AirbyteMessage> = mockk()
@@ -109,7 +109,7 @@ class DefaultReadOperationExecutorTest {
     }
 
     @Test
-    internal fun `test that if the message iterator is not present, a failure result is returned`() {
+    internal fun testThatIfTheMessageIteratorIsNotPresentAFailureResultIsReturned() {
         val messageIterator = Optional.empty<AutoCloseableIterator<AirbyteMessage>>()
         val outputRecordCollector: Consumer<AirbyteMessage> = mockk()
         val shutdownUtils: ShutdownUtils = mockk()

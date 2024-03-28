@@ -20,7 +20,7 @@ import picocli.CommandLine.Model.CommandSpec
 
 class IntegrationCommandTest {
     @Test
-    internal fun `test that the operations that matches the provided command is executed`() {
+    internal fun testThatTheOperationThatMatchesTheProvidedCommandIsExecuted() {
         val operationType = OperationType.CHECK
         val command = operationType.name.lowercase()
         val commandSpec: CommandSpec = mockk()
@@ -47,7 +47,7 @@ class IntegrationCommandTest {
     }
 
     @Test
-    internal fun `test that when the operations that matches the provided command is executed and fails, the failure is handled`() {
+    internal fun testThatWhenTheOperationThatMatchesTheProvidedCommandIsExecutedAndFailsTheFailureIsHandled() {
         val operationType = OperationType.CHECK
         val command = operationType.name.lowercase()
         val commandSpec: CommandSpec = mockk()
@@ -83,7 +83,7 @@ class IntegrationCommandTest {
     }
 
     @Test
-    internal fun `test that when an invalid command is provided, nothing is executed and the usage is printed`() {
+    internal fun testThatWhenAnInvalidCommandIsProvidedNothingIsExecutedAndTheUsageIsPrinted() {
         val command = "invalid"
         val commandSpec: CommandSpec = mockk()
         val commandLine: CommandLine = mockk()
@@ -112,7 +112,7 @@ class IntegrationCommandTest {
     }
 
     @Test
-    internal fun `test that when the operations does not match any command, nothing is executed and the usage is printed`() {
+    internal fun testThatWhenTheOperationDoesNotMatcAnyCommandNothingIsExecutedAndTheUsageIsPrinted() {
         val operationType = OperationType.CHECK
         val command = operationType.name.lowercase()
         val commandSpec: CommandSpec = mockk()

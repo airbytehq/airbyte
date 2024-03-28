@@ -14,14 +14,14 @@ import org.junit.jupiter.api.Test
 
 class DefaultWriteOperationTest {
     @Test
-    internal fun `test that the correct operation type is returned`() {
+    internal fun testThatTheCorrectOperationTypeIsReturned() {
         val operationExecutor: OperationExecutor = mockk()
         val operation = DefaultWriteOperation(operationExecutor = operationExecutor)
         assertEquals(OperationType.WRITE, operation.type())
     }
 
     @Test
-    internal fun `test that the result of the operation is returned`() {
+    internal fun testThatTheResultOfTheOperationIsReturned() {
         val operationExecutor: OperationExecutor = mockk()
 
         every { operationExecutor.execute() } answers
