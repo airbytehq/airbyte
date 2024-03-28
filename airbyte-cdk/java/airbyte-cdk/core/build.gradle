@@ -50,9 +50,6 @@ compileKotlin {
     }
 }
 
-spotbugsTest.enabled = false
-spotbugsTestFixtures.enabled = false
-
 
 dependencies {
 

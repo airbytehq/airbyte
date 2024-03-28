@@ -129,17 +129,17 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
 
     abstract val sqlDialect: SQLDialect?
 
-    fun withNamespace(name: String?): String? {
+    fun withNamespace(name: String?): String {
         return name + suffix
     }
 
-    val databaseName: String?
+    val databaseName: String
         get() = withNamespace("db")
 
-    val userName: String?
+    val userName: String
         get() = withNamespace("user")
 
-    val password: String?
+    val password: String
         get() = "password"
 
     fun getDataSource(): DataSource? {
@@ -182,8 +182,8 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
         }
     }
 
-    protected fun execInContainer(cmds: Stream<String>?) {
-        val cmd = cmds!!.toList()
+    protected fun execInContainer(cmds: Stream<String>) {
+        val cmd = cmds.toList()
         if (cmd!!.isEmpty()) {
             return
         }
@@ -268,7 +268,7 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
             return this as B
         }
 
-        fun with(key: Any?, value: Any?): B {
+        fun with(key: Any, value: Any): B {
             builder!!.put(key, value)
             return self()
         }
@@ -299,7 +299,7 @@ protected constructor(@JvmField val container: C) : AutoCloseable {
             return with(JdbcUtils.SSL_KEY, false)
         }
 
-        fun withSsl(sslMode: MutableMap<Any?, Any?>?): B {
+        fun withSsl(sslMode: MutableMap<Any, Any>): B {
             return with(JdbcUtils.SSL_KEY, true)!!.with(JdbcUtils.SSL_MODE_KEY, sslMode)
         }
 
