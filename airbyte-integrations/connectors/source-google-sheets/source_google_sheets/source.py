@@ -164,7 +164,7 @@ class SourceGoogleSheets(Source):
         logger.info(f"Row counts: {sheet_row_counts}")
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
-            stream = stream_name_to_stream.get(sheet)
+            stream = stream_name_to_stream.get(sheet).stream
             yield as_airbyte_message(stream, AirbyteStreamStatus.STARTED)
             # We revalidate the sheet here to avoid errors in case the sheet was changed after the sync started
             is_valid, reason = Helpers.check_sheet_is_valid(client, spreadsheet_id, sheet)
