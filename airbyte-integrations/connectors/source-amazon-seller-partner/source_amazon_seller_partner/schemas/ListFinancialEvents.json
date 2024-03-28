@@ -345,6 +345,7 @@
       }
     },
     "PerformanceBondRefundEventList": {
+      "description": "List of performance bond refund events",
       "type": "array",
       "items": {}
     },
@@ -461,14 +462,17 @@
       }
     },
     "LoanServicingEventList": {
+      "description": "List of loan servicing events",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "LoanAmount": {
+            "description": "Amount of loan",
             "type": ["null", "object"]
           },
           "SourceBusinessEventType": {
+            "description": "Type of business event associated with the loan",
             "type": ["null", "string"]
           }
         }
@@ -547,21 +551,26 @@
       }
     },
     "FBALiquidationEventList": {
+      "description": "List of FBA liquidation events",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "PostedDate": {
+            "description": "Date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "OriginalRemovalOrderId": {
+            "description": "Original removal order ID",
             "type": ["null", "string"]
           },
           "LiquidationProceedsAmount": {
+            "description": "Amount of proceeds from liquidation",
             "type": ["null", "object"]
           },
           "LiquidationFeeAmount": {
+            "description": "Amount of liquidation fee",
             "type": ["null", "object"]
           }
         }
@@ -602,21 +611,26 @@
       }
     },
     "ImagingServicesFeeEventList": {
+      "description": "List of imaging services fee events",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "ImagingRequestBillingItemID": {
+            "description": "Billing item ID for imaging request",
             "type": ["null", "string"]
           },
           "ASIN": {
+            "description": "ASIN of the product",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "FeeList": {
+            "description": "List of fees for imaging services",
             "type": ["null", "array"]
           }
         }
@@ -776,21 +790,26 @@
       }
     },
     "AdhocDisbursementEventList": {
+      "description": "List of adhoc disbursement events",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "AdjustmentType": {
+            "description": "Type of adjustment",
             "type": ["null", "string"]
           },
           "PostedDate": {
+            "description": "Date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "AdjustmentAmount": {
+            "description": "Amount of adjustment made",
             "type": ["null", "object"]
           },
           "AdjustmentItemList": {
+            "description": "List of items adjusted",
             "type": ["null", "array"]
           }
         }
@@ -845,14 +864,17 @@
       }
     },
     "ChargeRefundEventList": {
+      "description": "List of charge refund events",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "ChargeAmount": {
+            "description": "Amount of charge refunded",
             "type": ["null", "object"]
           },
           "ChargeType": {
+            "description": "Type of charge being refunded",
             "type": ["null", "string"]
           }
         }
@@ -889,20 +911,25 @@
       }
     },
     "ValueAddedServiceChargeEventList": {
+      "description": "List of value-added service charge events",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "TransactionType": {
+            "description": "Type of transaction associated with the service charge",
             "type": ["null", "string"]
           },
           "Description": {
+            "description": "Description of the service charge",
             "type": ["null", "string"]
           },
           "TransactionAmount": {
+            "description": "Amount of the transaction",
             "type": ["null", "object"]
           },
           "PostedDate": {
+            "description": "Date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -910,49 +937,61 @@
       }
     },
     "CapacityReservationBillingEventList": {
+      "description": "List of capacity reservation billing events",
       "type": "array",
       "items": {}
     },
     "TaxWithholdingEventList": {
+      "description": "List of tax withholding events",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "PostedDate": {
+            "description": "Date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "BaseAmount": {
+            "description": "Base amount subject to withholding",
             "type": ["null", "object"]
           },
           "WithheldAmount": {
+            "description": "Amount withheld for tax",
             "type": ["null", "object"]
           },
           "TaxWithholdingPeriod": {
+            "description": "Period for tax withholding",
             "type": ["null", "object"]
           }
         }
       }
     },
     "RemovalShipmentEventList": {
+      "description": "List of removal shipment events",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "PostedDate": {
+            "description": "Date and time when the event was posted",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "MerchantOrderId": {
+            "description": "Merchant's order ID",
             "type": ["null", "string"]
           },
           "OrderId": {
+            "description": "Order ID",
             "type": ["null", "string"]
           },
           "TransactionType": {
+            "description": "Type of transaction associated with the shipment",
             "type": ["null", "string"]
           },
           "RemovalShipmentItemList": {
+            "description": "List of items in the removal shipment",
             "type": ["null", "array"]
           }
         }
@@ -986,6 +1025,7 @@
       }
     },
     "PostedBefore": {
+      "description": "Date and time filter for events posted before a specific date",
       "type": ["null", "string"],
       "format": "date-time"
     }
