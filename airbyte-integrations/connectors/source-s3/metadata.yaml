@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-s3
   icon: s3.svg
   license: ELv2
+  maxSecondsBetweenMessages: 1
   name: S3
   remoteRegistries:
     pypi:
