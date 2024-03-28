@@ -13,6 +13,7 @@ data:
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Klaviyo
   remoteRegistries:
     pypi:
