@@ -216,17 +216,6 @@ allprojects {
         implementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
     }
 
-    tasks.withType(SpotBugsTask).configureEach {
-        if (name != "spotbugsMain" && System.getProperty('skipSlowTests', 'false') != 'false') {
-            enabled = false
-        }
-        // Reports can be found under each subproject in build/spotbugs/
-        reports {
-            xml.required = false
-            html.required = true
-        }
-    }
-
     javadoc {
         options.addStringOption('Xdoclint:none', '-quiet')
     }
