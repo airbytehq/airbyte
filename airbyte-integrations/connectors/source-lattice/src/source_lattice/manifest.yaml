@@ -134,38 +134,6 @@ definitions:
     $parameters:
       name: "review_cycles"
       path: "/reviewCycles"
-  # questions_reviews_stream:
-  #   $ref: "#/definitions/paginated_base_stream"
-  #   $parameters:
-  #     name: "questions_reviews_stream"
-  #   retriever:
-  #     $ref: "#/definitions/paginated_retriever"
-  #     requester:
-  #       $ref: "#/definitions/requester"
-  #       path: "/reviewCycle/{{ stream_slice.review_cycle_id }}/reviews"
-  #     record_selector:
-  #       type: RecordSelector
-  #       extractor:
-  #         type: DpathExtractor
-  #         field_path: [ "data", "*", "question" ]
-  #     partition_router:
-  #       $ref: "#/definitions/review_cycle_partition_router"
-  # question_revisions_reviews_stream:
-  #   $ref: "#/definitions/paginated_base_stream"
-  #   $parameters:
-  #     name: "question_revisions_reviews_stream"
-  #   retriever:
-  #     $ref: "#/definitions/paginated_retriever"
-  #     requester:
-  #       $ref: "#/definitions/requester"
-  #       path: "/reviewCycle/{{ stream_slice.review_cycle_id }}/reviews"
-  #     record_selector:
-  #       type: RecordSelector
-  #       extractor:
-  #         type: DpathExtractor
-  #         field_path: [ "data", "*", "questionRevision" ]
-  #     partition_router:
-  #       $ref: "#/definitions/review_cycle_partition_router"
   reviews_retriever:
       $ref: "#/definitions/paginated_retriever"
       requester:
