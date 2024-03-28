@@ -50,6 +50,10 @@ compileKotlin {
     }
 }
 
+spotbugsTest.enabled = false
+spotbugsTestFixtures.enabled = false
+
+
 dependencies {
 
     api 'com.datadoghq:dd-trace-api:1.28.0'

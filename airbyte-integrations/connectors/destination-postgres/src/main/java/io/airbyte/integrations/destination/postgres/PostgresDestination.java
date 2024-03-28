@@ -20,24 +20,32 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDataTransformer;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresState;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresDestination extends AbstractJdbcDestination implements Destination {
+public class PostgresDestination extends AbstractJdbcDestination<PostgresState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
 
@@ -131,6 +139,19 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   @Override
   protected JdbcDestinationHandler<PostgresState> getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
     return new PostgresDestinationHandler(databaseName, database, rawTableSchema);
+  }
+
+  @Override
+  protected List<Migration<PostgresState>> getMigrations(JdbcDatabase database,
+                                                         String databaseName,
+                                                         SqlGenerator sqlGenerator,
+                                                         DestinationHandler<PostgresState> destinationHandler) {
+    return List.of(new PostgresRawTableAirbyteMetaMigration(database, databaseName));
+  }
+
+  @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    return new PostgresDataTransformer();
   }
 
   @Override
