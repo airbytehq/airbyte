@@ -37,7 +37,7 @@ enum class DatabaseDriver(
          * @param driverClassName The driver class name.
          * @return The matching [DatabaseDriver] enumerated value or `null` if no match is found.
          */
-        fun findByDriverClassName(driverClassName: String?): DatabaseDriver {
+        @JvmStatic fun findByDriverClassName(driverClassName: String?): DatabaseDriver {
             lateinit var selected: DatabaseDriver
 
             for (candidate in entries) {

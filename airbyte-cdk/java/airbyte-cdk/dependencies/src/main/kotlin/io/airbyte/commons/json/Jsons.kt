@@ -176,6 +176,7 @@ object Jsons {
         return jsonNode(emptyMap<Any, Any>())
     }
 
+    @JvmStatic
     fun arrayNode(): ArrayNode {
         return OBJECT_MAPPER!!.createArrayNode()
     }

@@ -154,6 +154,7 @@ class AirbyteDebeziumHandler<T>(
          */
         const val QUEUE_CAPACITY: Int = 10000
 
+        @JvmStatic
         fun isAnyStreamIncrementalSyncMode(catalog: ConfiguredAirbyteCatalog): Boolean {
             return catalog.streams
                 .stream()

@@ -79,6 +79,7 @@ class JdbcPrivilegeDto(
     }
 
     companion object {
+        @JvmStatic
         fun builder(): JdbcPrivilegeDtoBuilder {
             return JdbcPrivilegeDtoBuilder()
         }

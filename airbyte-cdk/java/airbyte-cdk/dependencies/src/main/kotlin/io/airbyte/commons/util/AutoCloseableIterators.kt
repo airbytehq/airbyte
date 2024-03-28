@@ -63,7 +63,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return autocloseable iterator </T>
      */
-    fun <T> fromStream(
+    @JvmStatic fun <T> fromStream(
         stream: Stream<T>,
         airbyteStream: AirbyteStreamNameNamespacePair?
     ): AutoCloseableIterator<T> {
@@ -88,6 +88,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return autocloseable iterator </T>
      */
+    @JvmStatic
     fun <T> lazyIterator(
         iteratorSupplier: Supplier<AutoCloseableIterator<T>>,
         airbyteStream: AirbyteStreamNameNamespacePair?
@@ -149,7 +150,7 @@ object AutoCloseableIterators {
      * @param <T> output type
      * @return mapped autocloseable iterator </T></F>
      */
-    fun <F, T> transform(
+    @JvmStatic fun <F, T> transform(
         fromIterator: AutoCloseableIterator<F>,
         function: Function<in F, out T>
     ): AutoCloseableIterator<T> {
@@ -166,7 +167,7 @@ object AutoCloseableIterators {
      * @param <T> output type
      * @return mapped autocloseable iterator </T></F>
      */
-    fun <F, T> transform(
+    @JvmStatic fun <F, T> transform(
         fromIterator: AutoCloseableIterator<F>,
         airbyteStream: AirbyteStreamNameNamespacePair?,
         function: Function<in F, out T>
@@ -189,6 +190,7 @@ object AutoCloseableIterators {
      * @return autocloseable iterator that still has the close functionality of the original input
      * iterator but is transformed by the iterator output by the iteratorCreator </T>
      */
+    @JvmStatic
     fun <T> transform(
         iteratorCreator: Function<AutoCloseableIterator<T>, Iterator<T>>,
         autoCloseableIterator: AutoCloseableIterator<T>,
@@ -201,7 +203,7 @@ object AutoCloseableIterators {
         )
     }
 
-    fun <T, F> transformIterator(
+    @JvmStatic fun <T, F> transformIterator(
         iteratorCreator: Function<AutoCloseableIterator<T>, Iterator<F>>,
         autoCloseableIterator: AutoCloseableIterator<T>,
         airbyteStream: AirbyteStreamNameNamespacePair?

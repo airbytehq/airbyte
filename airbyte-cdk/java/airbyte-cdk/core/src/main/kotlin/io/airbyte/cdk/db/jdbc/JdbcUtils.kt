@@ -62,7 +62,7 @@ object JdbcUtils {
             JDBCType.VARCHAR,
             JDBCType.LONGVARCHAR
         )
-    @JvmField val defaultSourceOperations: JdbcSourceOperations = JdbcSourceOperations()
+    @JvmStatic val defaultSourceOperations: JdbcSourceOperations = JdbcSourceOperations()
 
     val defaultJSONFormat: JSONFormat = JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT)
 

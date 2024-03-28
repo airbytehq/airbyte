@@ -28,7 +28,7 @@ object RelationalDbQueryUtils {
         }
     }
 
-    fun enquoteIdentifierList(identifiers: List<String>, quoteString: String): String {
+    @JvmStatic fun enquoteIdentifierList(identifiers: List<String>, quoteString: String): String {
         val joiner = StringJoiner(",")
         for (identifier in identifiers) {
             joiner.add(getIdentifierWithQuoting(identifier, quoteString))
@@ -37,6 +37,7 @@ object RelationalDbQueryUtils {
     }
 
     /** @return fully qualified table name with the schema (if a schema exists) in quotes. */
+    @JvmStatic
     fun getFullyQualifiedTableNameWithQuoting(
         nameSpace: String?,
         tableName: String,
