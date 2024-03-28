@@ -46,7 +46,7 @@ wcmatch = "8.4"
 avro = { version = "~1.11.2", optional = true }
 cohere = { version = "4.21", optional = true }
 fastavro = { version = "~1.8.0", optional = true }
-langchain = { version = "0.0.271", optional = true }
+langchain = { version = "0.1.0", optional = true }
 markdown = { version = "*", optional = true }
 openai = { version = "0.27.9", extras = ["embeddings"], optional = true }
 pyarrow = { version = "~15.0.0", optional = true }
