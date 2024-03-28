@@ -26,4 +26,4 @@ pandas = "==2.0.3"
 destination-aws-datalake = "destination_aws_datalake.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8"

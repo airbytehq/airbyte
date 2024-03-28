@@ -25,7 +25,7 @@ airbyte-cdk = "^0"
 source-google-ads = "source_google_ads.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.12.0"
+pytest-mock = "^3"
 requests-mock = "^1.11.0"
 freezegun = "^1.4.0"
-pytest = "^6.1"
+pytest = "^8"

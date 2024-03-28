@@ -23,6 +23,6 @@ airbyte-cdk = "^0"
 source-snapchat-marketing = "source_snapchat_marketing.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest-mock = "^3"
+pytest = "^8"
 requests-mock = "^1.9.3"

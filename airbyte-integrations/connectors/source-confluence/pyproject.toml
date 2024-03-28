@@ -25,6 +25,6 @@ source-confluence = "source_confluence.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
-pytest-mock = "^3.6.1"
-pytest = "^6.2"
+pytest-mock = "^3"
+pytest = "^8"
 responses = "^0.13.3"

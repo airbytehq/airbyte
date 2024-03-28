@@ -26,5 +26,5 @@ source-shopify = "source_shopify.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.11.0"
-pytest-mock = "^3.12.0"
-pytest = "^8.0.0"
+pytest-mock = "^3"
+pytest = "^8"

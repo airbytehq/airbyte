@@ -27,6 +27,6 @@ version = "==6.4.0"
 source-azure-blob-storage = "source_azure_blob_storage.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.6.1"
+pytest-mock = "^3"
 requests-mock = "^1.9.3"
-pytest = "^6.2"
+pytest = "^8"

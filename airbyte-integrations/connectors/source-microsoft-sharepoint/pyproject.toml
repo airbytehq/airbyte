@@ -29,6 +29,6 @@ extras = [ "file-based",]
 version = "^0"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.6.1"
+pytest-mock = "^3"
 requests-mock = "^1.11.0"
-pytest = "^6.1"
+pytest = "^8"
