@@ -46,7 +46,7 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
   // config which refers to the schema that the test is being run in.
   protected JsonNode config;
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
-  private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
+  private final String USER_WITHOUT_CREDS = Strings.Companion.addRandomSuffix("test_user", "_", 5);
 
   private Database database;
   private Connection connection;
@@ -72,7 +72,7 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected TestDataComparator getTestDataComparator() {
+  public TestDataComparator getTestDataComparator() {
     return new RedshiftTestDataComparator();
   }
 

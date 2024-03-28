@@ -39,7 +39,7 @@ public class RedshiftSpecTest {
     configText = MoreResources.readResource("config-test.json");
     final String spec = MoreResources.readResource("spec.json");
     final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "spec-test"), "schema.json", spec).toFile();
-    schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
+    schema = JsonSchemaValidator.Companion.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
 
