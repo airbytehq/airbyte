@@ -2,19 +2,28 @@
   "streams": [
     {
       "stream": {
-        "name": "test_stream",
+        "name": "test",
+
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_source_file_last_modified"],
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "string_col": { "type": "str" },
-            "int_col": { "type": "integer" },
-            "last_modified": { "type": "string", "format": "date-time" }
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "string_col": {
+              "type": ["null", "string"]
+            },
+            "int_col": {
+              "type": ["null", "integer"]
+            }
           }
-        },
-        "supported_sync_modes": ["incremental"],
-        "default_cursor_field": ["last_modified"],
-        "source_defined_cursor": true
+        }
       },
       "sync_mode": "incremental",
       "cursor_field": ["last_modified"],
