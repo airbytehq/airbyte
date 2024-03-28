@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.integrations.destination.async.partial_messages
+package io.airbyte.cdk.integrations.destination.async.model
 
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteStateMessage

@@ -13,8 +13,8 @@ import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteRecordMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
