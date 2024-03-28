@@ -13,6 +13,7 @@ import java.util.*
 import org.apache.commons.io.input.ReversedLinesFileReader
 
 object IOs {
+    @JvmStatic
     fun writeFile(path: Path, fileName: String?, contents: String?): Path {
         val filePath = path.resolve(fileName)
         return writeFile(filePath, contents)

@@ -44,9 +44,10 @@ object Jsons {
     private val YAML_OBJECT_MAPPER: ObjectMapper = MoreMappers.initYamlMapper(YAMLFactory())
     private val OBJECT_WRITER: ObjectWriter = OBJECT_MAPPER!!.writer(JsonPrettyPrinter())
 
+    @JvmStatic
     fun <T> serialize(`object`: T): String {
         try {
-            return OBJECT_MAPPER!!.writeValueAsString(`object`)
+            return OBJECT_MAPPER.writeValueAsString(`object`)
         } catch (e: JsonProcessingException) {
             throw RuntimeException(e)
         }
@@ -55,7 +56,7 @@ object Jsons {
     @JvmStatic
     fun <T> deserialize(jsonString: String?, klass: Class<T>?): T {
         try {
-            return OBJECT_MAPPER!!.readValue(jsonString, klass)
+            return OBJECT_MAPPER.readValue(jsonString, klass)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
@@ -98,6 +99,7 @@ object Jsons {
         }
     }
 
+    @JvmStatic
     fun deserializeExact(jsonString: String?): JsonNode {
         try {
             return OBJECT_MAPPER_EXACT!!.readTree(jsonString)

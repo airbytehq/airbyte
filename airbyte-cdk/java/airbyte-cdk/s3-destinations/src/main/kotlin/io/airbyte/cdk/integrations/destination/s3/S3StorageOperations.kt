@@ -24,7 +24,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.OutputStream
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -302,7 +302,7 @@ open class S3StorageOperations(
                 ListObjectsRequest()
                     .withBucketName(bucket)
                     .withPrefix(
-                        objectPath
+                        objectPath,
                     ) // pathFormat may use subdirectories under the objectPath to organize files
                     // so we need to recursively list them and filter files matching the pathFormat
                     .withDelimiter(""),
@@ -414,6 +414,10 @@ open class S3StorageOperations(
             AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR,
             "x-amz-iv",
         )
+    }
+
+    fun uploadManifest(bucketName: String, manifestFilePath: String, manifestContents: String) {
+        s3Client.putObject(s3Config.bucketName, manifestFilePath, manifestContents)
     }
 
     companion object {

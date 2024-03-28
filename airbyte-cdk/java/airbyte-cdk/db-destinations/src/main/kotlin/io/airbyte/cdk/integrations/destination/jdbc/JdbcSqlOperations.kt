@@ -86,7 +86,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         return listOf()
     }
 
-    protected fun createTableQueryV1(schemaName: String?, tableName: String?): String {
+    protected open fun createTableQueryV1(schemaName: String?, tableName: String?): String {
         return String.format(
             """
         CREATE TABLE IF NOT EXISTS %s.%s (
@@ -104,7 +104,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         )
     }
 
-    protected fun createTableQueryV2(schemaName: String?, tableName: String?): String {
+    protected open fun createTableQueryV2(schemaName: String?, tableName: String?): String {
         // Note that Meta is the last column in order, there was a time when tables didn't have
         // meta,
         // we issued Alter to add that column so it should be the last column.
