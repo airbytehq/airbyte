@@ -183,14 +183,16 @@ streams:
           cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
       partition_router:
-        - type: CustomPartitionRouter
-          class_name: source_surveymonkey.components.SurveyIdPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: survey_id
-              stream:
-                $ref: "#/definitions/survey_ids"
+        type: CustomPartitionRouter
+        class_name: source_surveymonkey.components.SurveyIdPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: survey_id
+            stream:
+              $ref: "#/definitions/survey_ids"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date_modified
