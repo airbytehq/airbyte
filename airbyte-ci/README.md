@@ -15,4 +15,3 @@ The installation instructions for the `airbyte-ci` CLI tool cal be found here
 | [`connectors_qa`](connectors/connectors_qa/)       | A tool to verify connectors have sounds assets and metadata.                                                                  |
 | [`metadata_service`](connectors/metadata_service/) | Tools to generate connector metadata and registry.                                                                            |
 | [`pipelines`](connectors/pipelines/)               | Airbyte CI pipelines, including formatting, linting, building, testing connectors, etc. Connector acceptance tests live here. |
-| [`qa_engine`](connectors/qa-engine/)               | Tools to fetch connector catalog metrics and parameters, such as adoption metrics.                                             |

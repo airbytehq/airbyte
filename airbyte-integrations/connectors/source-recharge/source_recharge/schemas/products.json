@@ -5,6 +5,9 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "product_id": {
+      "type": ["null", "integer"]
+    },
     "charge_interval_frequency": {
       "type": ["null", "integer"]
     },
