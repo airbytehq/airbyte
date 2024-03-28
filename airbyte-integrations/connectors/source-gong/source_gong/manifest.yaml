@@ -1,94 +1,236 @@
-version: "0.29.0"
-
-definitions:
-  selector:
-    extractor:
-      field_path: ["{{ parameters.name }}"]
-  requester:
-    url_base: "https://api.gong.io/v2/"
-    http_method: "GET"
-    authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config['access_key'] }}"
-      password: "{{ config['access_key_secret'] }}"
-    request_parameters:
-      fromDateTime: "{{ config['start_date'] }}"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ response.records.cursor }}"
-        stop_condition: "{{ 'records' not in response }}"
-        page_size: 100
-      page_size_option:
-        field_name: "limit"
-        inject_into: "request_parameter"
-      page_token_option:
-        type: RequestOption
-        field_name: "cursor"
-        inject_into: "request_parameter"
-    requester:
-      $ref: "#/definitions/requester"
-
-  # base stream
-  base_stream:
+version: 0.57.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - users
+streams:
+  - type: DeclarativeStream
+    name: users
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: {}
     retriever:
-      $ref: "#/definitions/retriever"
-
-  # streams
-  users_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "users"
-      primary_key: "id"
-      path: "/users"
-
-  calls_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "calls"
-      primary_key: "id"
-      path: "/calls"
-
-  scorecards_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "scorecards"
-      primary_key: "scorecardId"
-      path: "/settings/scorecards"
-
-  answered_scorecards_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "answeredScorecards"
-      primary_key: "answeredScorecardId"
-      path: "/stats/activity/scorecards"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.gong.io/v2/
+        path: /users
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['access_key'] }}"
+          password: "{{ config['access_key_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "{{ parameters.name }}"
       paginator:
-        $ref: "#/definitions/retriever/paginator"
-        page_size_option:
-          field_name: "limit"
-          inject_into: "body_json"
+        type: DefaultPaginator
         page_token_option:
           type: RequestOption
-          field_name: "cursor"
-          inject_into: "body_json"
+          inject_into: request_parameter
+          field_name: cursor
+        page_size_option:
+          field_name: limit
+          inject_into: request_parameter
+          type: RequestOption
+          name: users
+          primary_key: id
+          path: /users
+          $parameters:
+            name: users
+            primary_key: id
+            path: /users
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          name: users
+          primary_key: id
+          path: /users
+          $parameters:
+            name: users
+            primary_key: id
+            path: /users
+          cursor_value: "{{ response.records.cursor }}"
+          stop_condition: "{{ 'records' not in response }}"
+      partition_router: []
+  - type: DeclarativeStream
+    name: calls
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: {}
+    retriever:
+      type: SimpleRetriever
       requester:
-        $ref: "#/definitions/requester"
-        http_method: "POST"
-        request_body_json:
-          filter: '{"callFromDate": "{{ config["start_date"] }}"}'
-
-streams:
-  - "#/definitions/users_stream"
-  - "#/definitions/calls_stream"
-  - "#/definitions/scorecards_stream"
-  - "#/definitions/answered_scorecards_stream"
-
-check:
-  stream_names:
-    - "users"
+        type: HttpRequester
+        url_base: https://api.gong.io/v2/
+        path: /calls
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['access_key'] }}"
+          password: "{{ config['access_key_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - calls
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: cursor
+        page_size_option:
+          field_name: limit
+          inject_into: request_parameter
+          type: RequestOption
+          name: calls
+          primary_key: id
+          path: /calls
+          $parameters:
+            name: calls
+            primary_key: id
+            path: /calls
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          name: calls
+          primary_key: id
+          path: /calls
+          $parameters:
+            name: calls
+            primary_key: id
+            path: /calls
+          cursor_value: "{{ response.records.cursor }}"
+          stop_condition: "{{ 'records' not in response }}"
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: started
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: fromDateTime
+        type: RequestOption
+  - type: DeclarativeStream
+    name: scorecards
+    primary_key:
+      - scorecardId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: {}
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.gong.io/v2/
+        path: /settings/scorecards
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['access_key'] }}"
+          password: "{{ config['access_key_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router: []
+  - type: DeclarativeStream
+    name: answeredScorecards
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: {}
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.gong.io/v2/
+        path: /stats/activity/scorecards
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['access_key'] }}"
+          password: "{{ config['access_key_secret'] }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - answeredScorecards
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          field_name: limit
+          inject_into: body_json
+          type: RequestOption
+          name: answeredScorecards
+          primary_key: answeredScorecardId
+          path: /stats/activity/scorecards
+          $parameters:
+            name: answeredScorecards
+            primary_key: answeredScorecardId
+            path: /stats/activity/scorecards
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          name: answeredScorecards
+          primary_key: answeredScorecardId
+          path: /stats/activity/scorecards
+          $parameters:
+            name: answeredScorecards
+            primary_key: answeredScorecardId
+            path: /stats/activity/scorecards
+          cursor_value: "{{ response.records.cursor }}"
+          stop_condition: "{{ 'records' not in response }}"
+      partition_router: []
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_gong.components.IncrementalSingleBodyFilterCursor
+      cursor_field: reviewTime
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: body_json
+        type: RequestOption
+        field_name: filter, reviewFromDate
