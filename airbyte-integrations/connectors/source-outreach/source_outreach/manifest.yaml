@@ -76,42 +76,23 @@ streams:
     $parameters:
       path: "/accounts"
 
-
   - $ref: "#/definitions/base_stream"
-    name: "prospects"
+    name: "calls"
     primary_key: "id"
     $parameters:
-      path: "/prospects"
+      path: "/calls"
 
   - $ref: "#/definitions/base_stream"
-    name: "sequences"
+    name: "call_dispositions"
     primary_key: "id"
     $parameters:
-      path: "/sequences"
+      path: "/callDispositions"
 
   - $ref: "#/definitions/base_stream"
-    name: "opportunities"
+    name: "call_purposes"
     primary_key: "id"
     $parameters:
-      path: "/opportunities"
-
-  - $ref: "#/definitions/base_stream"
-    name: "sequence_steps"
-    primary_key: "id"
-    $parameters:
-      path: "/sequenceSteps"
-
-  - $ref: "#/definitions/base_stream"
-    name: "sequence_states"
-    primary_key: "id"
-    $parameters:
-      path: "/sequenceStates"
-
-  - $ref: "#/definitions/base_stream"
-    name: "personas"
-    primary_key: "id"
-    $parameters:
-      path: "/personas"
+      path: "/callPurposes"
 
   - $ref: "#/definitions/base_stream"
     name: "mailings"
@@ -126,34 +107,52 @@ streams:
       path: "/mailboxes"
 
   - $ref: "#/definitions/base_stream"
+    name: "opportunities"
+    primary_key: "id"
+    $parameters:
+      path: "/opportunities"
+
+  - $ref: "#/definitions/base_stream"
+    name: "personas"
+    primary_key: "id"
+    $parameters:
+      path: "/personas"
+
+  - $ref: "#/definitions/base_stream"
+    name: "prospects"
+    primary_key: "id"
+    $parameters:
+      path: "/prospects"
+
+  - $ref: "#/definitions/base_stream"
+    name: "sequences"
+    primary_key: "id"
+    $parameters:
+      path: "/sequences"
+
+  - $ref: "#/definitions/base_stream"
+    name: "sequence_states"
+    primary_key: "id"
+    $parameters:
+      path: "/sequenceStates"
+
+  - $ref: "#/definitions/base_stream"
+    name: "sequence_steps"
+    primary_key: "id"
+    $parameters:
+      path: "/sequenceSteps"
+
+  - $ref: "#/definitions/base_stream"
+    name: "snippets"
+    primary_key: "id"
+    $parameters:
+      path: "/snippets"
+
+  - $ref: "#/definitions/base_stream"
     name: "stages"
     primary_key: "id"
     $parameters:
       path: "/stages"
-
-  - $ref: "#/definitions/base_stream"
-    name: "calls"
-    primary_key: "id"
-    $parameters:
-      path: "/calls"
-
-  - $ref: "#/definitions/base_stream"
-    name: "call_purposes"
-    primary_key: "id"
-    $parameters:
-      path: "/callPurposes"
-
-  - $ref: "#/definitions/base_stream"
-    name: "call_dispositions"
-    primary_key: "id"
-    $parameters:
-      path: "/callDispositions"
-
-  - $ref: "#/definitions/base_stream"
-    name: "users"
-    primary_key: "id"
-    $parameters:
-      path: "/users"
 
   - $ref: "#/definitions/base_stream"
     name: "tasks"
@@ -168,10 +167,10 @@ streams:
       path: "/templates"
 
   - $ref: "#/definitions/base_stream"
-    name: "snippets"
+    name: "users"
     primary_key: "id"
     $parameters:
-      path: "/snippets"
+      path: "/users"
 
 check:
   type: CheckStream
