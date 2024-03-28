@@ -20,6 +20,9 @@ definitions:
               - http_codes: [403, 404]
                 action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [429]
+                action: RETRY
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -40,6 +43,7 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: "{{ response['endingCursor'] }}"
+      # For debugging
       stop_condition: "{{ true }}"
       page_size: 1
       # stop_condition: "{{ not response['hasMore']}}"
@@ -102,6 +106,11 @@ definitions:
                 field_path: [ "data", "*", "questionRevision" ]
         parent_key: "id"
         partition_field: "question_revision_id"
+  add_parent_id_transformation:
+    type: AddFields
+    fields:
+      - path: [ "parent_id" ]
+        value: "{{ stream_slice.parent_slice }}"
   single_record_base_stream:
     type: DeclarativeStream
     retriever:
@@ -109,6 +118,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    transformations:
+      - $ref: "#/definitions/add_parent_id_transformation"
   paginated_base_stream:
     type: DeclarativeStream
     retriever:
@@ -116,6 +127,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    transformations:
+      - $ref: "#/definitions/add_parent_id_transformation"
   users_stream:
     $ref: "#/definitions/paginated_base_stream"
     $parameters:
