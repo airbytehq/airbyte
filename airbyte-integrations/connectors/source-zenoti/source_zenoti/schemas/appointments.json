@@ -1,0 +1,508 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "guest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "gender": {
+          "type": "number"
+        },
+        "mobile": {
+          "type": "object",
+          "properties": {
+            "country_id": {
+              "type": "number"
+            },
+            "display_number": {
+              "type": "string"
+            }
+          }
+        },
+        "indicator": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "lp_tier_info": {
+          "type": "string"
+        },
+        "is_virtual_user": {
+          "type": "boolean"
+        },
+        "GuestIndicatorValue": {
+          "type": "object",
+          "properties": {
+            "Dues": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "Member": {
+              "type": "number"
+            },
+            "hasAddOns": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "HighSpender": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "LowFeedback": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "RegularGuest": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "HasProfileAlerts": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "OtherCenterGuest": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "ReturningCustomer": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "CustomDataIndicator": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "RebookedAppointment": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "price": {
+      "type": "object",
+      "properties": {
+        "tax": {
+          "type": "number"
+        },
+        "tip": {
+          "type": "number"
+        },
+        "final": {
+          "type": "number"
+        },
+        "sales": {
+          "type": "number"
+        },
+        "final1": {
+          "type": "number"
+        },
+        "discount": {
+          "type": "number"
+        },
+        "currency_id": {
+          "type": "number"
+        },
+        "rounding_correction": {
+          "type": "number"
+        }
+      }
+    },
+    "locked": {
+      "type": "boolean"
+    },
+    "source": {
+      "type": "number"
+    },
+    "status": {
+      "type": "number"
+    },
+    "service": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "is_addon": {
+          "type": "boolean"
+        },
+        "has_addons": {
+          "type": "boolean"
+        },
+        "segment_id": {
+          "type": "string"
+        },
+        "sub_category": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "business_unit": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "guid": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "is_virtual_service": {
+          "type": "boolean"
+        },
+        "parent_appointment_id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "override_product_consumption": {
+          "type": "boolean"
+        },
+        "override_default_product_consumption": {
+          "type": "boolean"
+        }
+      }
+    },
+    "blockout": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "bookable": {
+          "type": "boolean"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "text_color": {
+          "type": "string"
+        },
+        "indicator_color": {
+          "type": "string"
+        },
+        "count_in_utilization": {
+          "type": "boolean"
+        }
+      }
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "progress": {
+      "type": "number"
+    },
+    "quantity": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "app_count": {
+      "type": "number"
+    },
+    "center_id": {
+      "type": "string"
+    },
+    "equipment": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "therapist": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "number"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "vanity_image_url": {
+          "type": "string"
+        }
+      }
+    },
+    "group_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "invoice_id": {
+      "type": "string"
+    },
+    "package_id": {
+      "type": "string"
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "group_notes": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "checkin_time": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "closed_by_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "end_time_utc": {
+      "type": "string"
+    },
+    "created_by_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creation_date": {
+      "type": "string"
+    },
+    "selected_time": {
+      "type": "string"
+    },
+    "appointment_id": {
+      "type": "string"
+    },
+    "invoice_locked": {
+      "type": "boolean"
+    },
+    "start_time_utc": {
+      "type": "string"
+    },
+    "invoice_item_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "appointment_type": {
+      "type": "number"
+    },
+    "group_invoice_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "show_in_calender": {
+      "type": "number"
+    },
+    "actual_start_time": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "creation_date_utc": {
+      "type": "string"
+    },
+    "canUpdateTherapist": {
+      "type": "boolean"
+    },
+    "is_feedback_filled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "parent_service_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "appointment_group_id": {
+      "type": "string"
+    },
+    "actual_completed_time": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "is_single_appointment": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "requested_alternative": {
+      "type": "number"
+    },
+    "has_unexpired_packages": {
+      "type": "boolean"
+    },
+    "is_prescription_signed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "are_custom_fields_filled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "cancel_or_no_show_status": {
+      "type": "number"
+    },
+    "auto_pay_authorize_status": {
+      "type": "number"
+    },
+    "is_educator_rating_filled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "therapist_preference_type": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "are_package_targets_filled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "are_package_targets_required": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "service_custom_data_indicator": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "is_product_consumption_updated": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "invoice_processed_in_integrations": {
+      "type": "number"
+    },
+    "has_active_membership_for_auto_pay": {
+      "type": "boolean"
+    }
+  }
+}

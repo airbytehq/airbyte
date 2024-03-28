@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "state": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "short_name": {
+          "type": "string"
+        }
+      }
+    },
+    "country": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone_code": {
+          "type": "number"
+        },
+        "nationality": {
+          "type": "string"
+        }
+      }
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "lattitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "time_zone": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "symbol": {
+              "type": "string"
+            },
+            "standard_name": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "description": {
+      "type": "string"
+    },
+    "address_info": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "zip_code": {
+          "type": "string"
+        },
+        "address_1": {
+          "type": "string"
+        },
+        "address_2": {
+          "type": "string"
+        }
+      }
+    },
+    "contact_info": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "phone_1": {
+          "type": "object",
+          "properties": {
+            "number": {
+              "type": "string"
+            },
+            "country_id": {
+              "type": "number"
+            },
+            "display_number": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "is_fbe_enabled": {
+      "type": "boolean"
+    },
+    "additional_info": {
+      "type": "object",
+      "properties": {
+        "can_book": {
+          "type": "boolean"
+        },
+        "center_amenities": {
+          "type": "string"
+        },
+        "services_available": {
+          "type": "boolean"
+        },
+        "categories_available": {
+          "type": "boolean"
+        },
+        "is_add_ons_available": {
+          "type": "boolean"
+        },
+        "cancellation_fee_duration": {
+          "type": "number"
+        },
+        "is_center_amenities_enabled": {
+          "type": "boolean"
+        },
+        "is_auto_pay_enabled_at_center": {
+          "type": "boolean"
+        },
+        "is_global_tokenization_supported": {
+          "type": "boolean"
+        }
+      }
+    },
+    "culture_code_at_center": {
+      "type": "string"
+    },
+    "online_booking_start_date": {
+      "type": "string"
+    },
+    "enable_parallel_services_at_center": {
+      "type": "boolean"
+    }
+  }
+}
