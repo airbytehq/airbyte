@@ -103,12 +103,62 @@ definitions:
       cursor_granularity: P0D
       cursor_datetime_formats:
         - '%Y-%m-%dT%H:%M:%S'
+  guests_stream:
+    name: guests
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: size
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        $ref: "#/definitions/requester"
+        path: guests
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - guests
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/centers_stream"
+              parent_key: id
+              request_option:
+                type: RequestOption
+                field_name: center_id
+                inject_into: request_parameter
+              partition_field: center_id
+    primary_key:
+      - id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - id
+            type: AddedFieldDefinition
+            value: "{{ record['id'] | lower }}"
 
 check:
   type: CheckStream
   stream_names:
     - centers
     - appointments
+    - guests
 
 spec:
   type: Spec
@@ -147,307 +197,7 @@ spec:
 streams:
   - "#/definitions/centers_stream"
   - "#/definitions/appointments_stream"
-  # - name: guests
-  #   type: DeclarativeStream
-  #   retriever:
-  #     type: SimpleRetriever
-  #     paginator:
-  #       type: DefaultPaginator
-  #       page_size_option:
-  #         type: RequestOption
-  #         field_name: size
-  #         inject_into: request_parameter
-  #       page_token_option:
-  #         type: RequestOption
-  #         field_name: page
-  #         inject_into: request_parameter
-  #       pagination_strategy:
-  #         type: PageIncrement
-  #         page_size: 100
-  #         start_from_page: 1
-  #         inject_on_first_request: true
-  #     requester:
-  #       path: guests
-  #       type: HttpRequester
-  #       url_base: https://api.zenoti.com/v1
-  #       http_method: GET
-  #       authenticator:
-  #         type: ApiKeyAuthenticator
-  #         api_token: '{{ config[''api_key''] }}'
-  #         inject_into:
-  #           type: RequestOption
-  #           field_name: Authorization
-  #           inject_into: header
-  #       error_handler:
-  #         type: CompositeErrorHandler
-  #         error_handlers:
-  #           - type: DefaultErrorHandler
-  #             backoff_strategies:
-  #               - type: WaitTimeFromHeader
-  #                 header: Retry-After
-  #       request_headers:
-  #         accept: application/json
-  #       request_body_json: {}
-  #       request_parameters: {}
-  #     record_selector:
-  #       type: RecordSelector
-  #       extractor:
-  #         type: DpathExtractor
-  #         field_path:
-  #           - guests
-  #     partition_router:
-  #       - type: SubstreamPartitionRouter
-  #         parent_stream_configs:
-  #           - type: ParentStreamConfig
-  #             stream:
-  #               name: centers
-  #               type: DeclarativeStream
-  #               retriever:
-  #                 type: SimpleRetriever
-  #                 paginator:
-  #                   type: NoPagination
-  #                 requester:
-  #                   path: centers
-  #                   type: HttpRequester
-  #                   url_base: https://api.zenoti.com/v1
-  #                   http_method: GET
-  #                   authenticator:
-  #                     type: ApiKeyAuthenticator
-  #                     api_token: '{{ config[''api_key''] }}'
-  #                     inject_into:
-  #                       type: RequestOption
-  #                       field_name: Authorization
-  #                       inject_into: header
-  #                   error_handler:
-  #                     type: CompositeErrorHandler
-  #                     error_handlers:
-  #                       - type: DefaultErrorHandler
-  #                         backoff_strategies:
-  #                           - type: WaitTimeFromHeader
-  #                             header: Retry-After
-  #                   request_headers:
-  #                     accept: application/json
-  #                   request_body_json: {}
-  #                   request_parameters: {}
-  #                 record_selector:
-  #                   type: RecordSelector
-  #                   extractor:
-  #                     type: DpathExtractor
-  #                     field_path:
-  #                       - centers
-  #                 partition_router: []
-  #               primary_key:
-  #                 - id
-  #               schema_loader:
-  #                 type: InlineSchemaLoader
-  #                 schema:
-  #                   type: object
-  #                   $schema: http://json-schema.org/schema#
-  #                   properties:
-  #                     id:
-  #                       type: string
-  #                     code:
-  #                       type: string
-  #                     name:
-  #                       type: string
-  #                     state:
-  #                       type: object
-  #                       properties:
-  #                         id:
-  #                           type: number
-  #                         code:
-  #                           type: string
-  #                         name:
-  #                           type: string
-  #                         short_name:
-  #                           type: string
-  #                     country:
-  #                       type: object
-  #                       properties:
-  #                         id:
-  #                           type: number
-  #                         code:
-  #                           type: string
-  #                         name:
-  #                           type: string
-  #                         phone_code:
-  #                           type: number
-  #                         nationality:
-  #                           type: string
-  #                     currency:
-  #                       type: object
-  #                       properties:
-  #                         id:
-  #                           type: number
-  #                         code:
-  #                           type: string
-  #                         name:
-  #                           type: string
-  #                         symbol:
-  #                           type: string
-  #                     location:
-  #                       type: object
-  #                       properties:
-  #                         latitude:
-  #                           type: number
-  #                         lattitude:
-  #                           type: number
-  #                         longitude:
-  #                           type: number
-  #                         time_zone:
-  #                           type: object
-  #                           properties:
-  #                             id:
-  #                               type: number
-  #                             name:
-  #                               type: string
-  #                             symbol:
-  #                               type: string
-  #                             standard_name:
-  #                               type: string
-  #                     description:
-  #                       type: string
-  #                     address_info:
-  #                       type: object
-  #                       properties:
-  #                         city:
-  #                           type: string
-  #                         zip_code:
-  #                           type: string
-  #                         address_1:
-  #                           type: string
-  #                         address_2:
-  #                           type: string
-  #                     contact_info:
-  #                       type: object
-  #                       properties:
-  #                         email:
-  #                           type: string
-  #                         phone_1:
-  #                           type: object
-  #                           properties:
-  #                             number:
-  #                               type: string
-  #                             country_id:
-  #                               type: number
-  #                             display_number:
-  #                               type: string
-  #                     display_name:
-  #                       type: string
-  #                     is_fbe_enabled:
-  #                       type: boolean
-  #                     additional_info:
-  #                       type: object
-  #                       properties:
-  #                         can_book:
-  #                           type: boolean
-  #                         center_amenities:
-  #                           type: string
-  #                         services_available:
-  #                           type: boolean
-  #                         categories_available:
-  #                           type: boolean
-  #                         is_add_ons_available:
-  #                           type: boolean
-  #                         cancellation_fee_duration:
-  #                           type: number
-  #                         is_center_amenities_enabled:
-  #                           type: boolean
-  #                         is_auto_pay_enabled_at_center:
-  #                           type: boolean
-  #                         is_global_tokenization_supported:
-  #                           type: boolean
-  #                     culture_code_at_center:
-  #                       type: string
-  #                     online_booking_start_date:
-  #                       type: string
-  #                     enable_parallel_services_at_center:
-  #                       type: boolean
-  #             parent_key: id
-  #             request_option:
-  #               type: RequestOption
-  #               field_name: center_id
-  #               inject_into: request_parameter
-  #             partition_field: center_id
-  #   primary_key:
-  #     - id
-  #   schema_loader:
-  #     type: InlineSchemaLoader
-  #     schema:
-  #       type: object
-  #       $schema: http://json-schema.org/schema#
-  #       properties:
-  #         id:
-  #           type: string
-  #         code:
-  #           type: string
-  #         center_id:
-  #           type: string
-  #         center_name:
-  #           type: string
-  #         created_date:
-  #           type: string
-  #         personal_info:
-  #           type: object
-  #           properties:
-  #             pan:
-  #               type: string
-  #             email:
-  #               type: string
-  #             gender:
-  #               type: number
-  #             is_minor:
-  #               type: boolean
-  #             last_name:
-  #               type: string
-  #             user_name:
-  #               type: string
-  #             first_name:
-  #               type: string
-  #             home_phone:
-  #               type:
-  #                 - object
-  #                 - 'null'
-  #               properties:
-  #                 number:
-  #                   type: string
-  #                 phone_code:
-  #                   type: number
-  #                 country_code:
-  #                   type: number
-  #             gender_name:
-  #               type: string
-  #             language_id:
-  #               type: number
-  #             middle_name:
-  #               type: string
-  #             mobile_phone:
-  #               type:
-  #                 - object
-  #                 - 'null'
-  #               properties:
-  #                 number:
-  #                   type: string
-  #                 phone_code:
-  #                   type: number
-  #                 country_code:
-  #                   type: number
-  #             date_of_birth:
-  #               type:
-  #                 - 'null'
-  #                 - string
-  #             nationality_id:
-  #               type: number
-  #             lock_guest_custom_data:
-  #               type: boolean
-  #         is_virtual_guest:
-  #           type: boolean
-  #         can_edit_personal_info:
-  #           type: boolean
-  #         is_online_booking_blocked:
-  #           type: boolean
-  #         is_guest_custom_form_filled:
-  #           type: boolean
+  - "#/definitions/guests_stream"
   # - name: invoices
     # type: DeclarativeStream
     # retriever:
@@ -1126,5 +876,5 @@ metadata:
   autoImportSchema:
     centers: true
     appointments: true
-    # guests: true
+    guests: true
     # invoices: true
