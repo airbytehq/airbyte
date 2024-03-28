@@ -41,7 +41,7 @@ jobs:
               - '*'
               - 'airbyte-ci/**/*'
               - 'airbyte-integrations/connectors/**/*'
-              - 'airbyte-cdk/**/*'
+              - 'airbyte-cdk/java/**/*'
               - 'buildSrc/**/*'
       # The Connector CI Tests is a status check emitted by airbyte-ci
       # We make it pass once we have determined that there are no changes to the connectors
@@ -63,7 +63,7 @@ jobs:
     if: needs.changes.outputs.connectors == 'true'
     name: Connectors CI
     runs-on: connector-test-large
-    timeout-minutes: 1440 # 24 hours
+    timeout-minutes: 360 # 6 hours
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3

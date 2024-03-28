@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.7.0
+Add `validate_state_messages` to TestBasicRead.test_read:: Validate that all states contain neither legacy state emissions nor missing source stats in the state message.
+
+## 3.6.0
+Relaxing CATs validation when a stream has a primary key defined.
+
 ## 3.5.0
 Add `validate_stream_statuses` to TestBasicRead.test_read:: Validate all statuses for all streams in the catalogs were emitted in correct order.
 

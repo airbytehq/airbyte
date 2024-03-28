@@ -24,9 +24,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         timeout_seconds: 600
         empty_streams:
           - name: skills
