@@ -44,8 +44,12 @@ from source_salesforce.streams import (
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
 _A_JSON_RESPONSE = {"id": "any id"}
+_A_SUCCESSFUL_JOB_CREATION_RESPONSE = {"state": "JobComplete"}
 _A_PK = "a_pk"
 _A_STREAM_NAME = "a_stream_name"
+
+_NUMBER_OF_DOWNLOAD_TRIES = 5
+_FIRST_CALL_FROM_JOB_CREATION = 1
 
 _ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
 _ANY_CONFIG = {}
@@ -597,6 +601,21 @@ def test_given_retryable_error_when_download_data_then_retry(send_http_request_p
     send_http_request_patch.return_value.iter_content.side_effect = [HTTPError(), _A_CHUNKED_RESPONSE]
     BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).download_data(url="any url")
     assert send_http_request_patch.call_count == 2
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_first_download_fail_when_download_data_then_retry_job_only_once(send_http_request_patch):
+    sf_api = Mock()
+    sf_api.generate_schema.return_value = {}
+    sf_api.instance_url = "http://test_given_first_download_fail_when_download_data_then_retry_job.com"
+    job_creation_return_values = [_A_JSON_RESPONSE, _A_SUCCESSFUL_JOB_CREATION_RESPONSE]
+    send_http_request_patch.return_value.json.side_effect = job_creation_return_values * 2
+    send_http_request_patch.return_value.iter_content.side_effect = HTTPError()
+
+    with pytest.raises(Exception):
+        list(BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=sf_api, pk=_A_PK).read_records(SyncMode.full_refresh))
+
+    assert send_http_request_patch.call_count == (len(job_creation_return_values) + _NUMBER_OF_DOWNLOAD_TRIES) * 2
 
 
 @patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")

@@ -29,7 +29,7 @@ TRANSIENT_EXCEPTIONS = (
 logger = logging.getLogger("airbyte")
 
 
-def default_backoff_handler(max_tries: int, factor: int, **kwargs):
+def default_backoff_handler(max_tries: int, backoff_method={"method": backoff.expo, "params": {"factor": 15}}, **kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
         logger.info(str(exc))
@@ -49,12 +49,11 @@ def default_backoff_handler(max_tries: int, factor: int, **kwargs):
         return give_up
 
     return backoff.on_exception(
-        backoff.expo,
+        backoff_method["method"],
         TRANSIENT_EXCEPTIONS,
         jitter=None,
         on_backoff=log_retry_attempt,
         giveup=should_give_up,
         max_tries=max_tries,
-        factor=factor,
-        **kwargs,
+        **backoff_method["params"],
     )
