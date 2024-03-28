@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "departments",
+        "name": "department",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
@@ -12,7 +12,7 @@
     },
     {
       "stream": {
-        "name": "goals",
+        "name": "goal",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
@@ -22,7 +22,7 @@
     },
     {
       "stream": {
-        "name": "feedbacks",
+        "name": "feedback",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
@@ -32,7 +32,7 @@
     },
     {
       "stream": {
-        "name": "users",
+        "name": "user",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
@@ -42,7 +42,7 @@
     },
     {
       "stream": {
-        "name": "review_cycles",
+        "name": "reviewcycle",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
@@ -52,7 +52,7 @@
     },
     {
       "stream": {
-        "name": "reviews",
+        "name": "review",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
@@ -62,7 +62,7 @@
     },
     {
       "stream": {
-        "name": "reviewees",
+        "name": "reviewee",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
@@ -72,7 +72,7 @@
     },
     {
       "stream": {
-        "name": "questions",
+        "name": "question",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
@@ -82,7 +82,7 @@
     },
     {
       "stream": {
-        "name": "question_revisions",
+        "name": "questionrevision",
         "json_schema": {
         },
         "supported_sync_modes": ["full_refresh"]
