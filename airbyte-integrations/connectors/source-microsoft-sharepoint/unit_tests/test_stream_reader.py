@@ -452,3 +452,43 @@ def test_get_shared_drive_object(
     else:
         result = list(reader._get_shared_drive_object("dummy_drive_id", "dummy_object_id", initial_path))
         assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "auth_type, user_principal_name",
+    [
+        ("Client", None),
+        ("User", "user@example.com"),
+    ],
+)
+def test_drives_property(auth_type, user_principal_name):
+    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query, patch(
+        "source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client"
+    ) as mock_one_drive_client:
+
+        # Setup for different authentication types
+        config_mock = MagicMock(credentials=MagicMock(auth_type=auth_type, user_principal_name=user_principal_name))
+
+        # Mock responses for the drives list and a single drive (my_drive)
+        drives_response = MagicMock()
+        my_drive = MagicMock()
+        drives_response.add_child = MagicMock()
+
+        # Set up mock responses for the two different calls within the property based on auth_type
+        if auth_type == "Client":
+            mock_execute_query.side_effect = [drives_response, my_drive]
+        else:
+            # For User auth_type, assume a call to get user's principal name drive
+            mock_execute_query.side_effect = [drives_response, my_drive]
+
+        # Create an instance of the reader and set its config mock
+        reader = SourceMicrosoftSharePointStreamReader()
+        reader._config = config_mock
+
+        # Access the drives property to trigger the retrieval and caching logic
+        drives = reader.drives
+
+        # Assertions
+        assert drives is not None
+        mock_execute_query.assert_called()
+        drives_response.add_child.assert_called_once_with(my_drive)
