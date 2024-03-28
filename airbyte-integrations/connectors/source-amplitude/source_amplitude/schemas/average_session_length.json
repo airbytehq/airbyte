@@ -3,10 +3,12 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date on which the session occurred",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "length": {
+      "description": "The duration of the session in seconds",
       "type": ["null", "number"]
     }
   }
