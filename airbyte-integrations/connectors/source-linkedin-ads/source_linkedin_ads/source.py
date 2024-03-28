@@ -24,7 +24,7 @@ from source_linkedin_ads.analytics_streams import (
     AdMemberRegionAnalytics,
     AdMemberSeniorityAnalytics,
 )
-from source_linkedin_ads.streams import Accounts, AccountUsers, CampaignGroups, Campaigns, Conversions, Creatives
+from source_linkedin_ads.streams import Accounts, AccountUsers, CampaignGroups, Campaigns, Conversions, Creatives, AdDirectSponsoredContents
 
 logger = logging.getLogger("airbyte")
 
@@ -97,6 +97,7 @@ class SourceLinkedinAds(AbstractSource):
             CampaignGroups(config=config),
             Campaigns(config=config),
             Creatives(config=config),
+            AdDirectSponsoredContents(config=config),
             Conversions(config=config),
         ]
 
