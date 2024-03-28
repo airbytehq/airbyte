@@ -11,7 +11,7 @@ async def pre_connector_install(base_image_container: Container) -> Container:
     Docker compose is required to run the integration tests so we install Docker on top of the base image.
     """
     return (
-        base_image_container.with_exec(["sh", "-c", "apt-get update && apt-get install -y curl"])
+        base_image_container.with_exec(["sh", "-c", "apt-get update && apt-get install -y curl jq"])
         # Download install-docker.sh script
         .with_exec(["curl", "-fsSL", "https://get.docker.com", "-o", "/tmp/install-docker.sh"])
         # Run the install-docker.sh script with a pinned Docker version
