@@ -78,13 +78,7 @@
           {
             "title": "AWS S3 Staging",
             "description": "<i>(recommended)</i> Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html\">AWS docs</a> for more details.",
-            "required": [
-              "method",
-              "s3_bucket_name",
-              "s3_bucket_region",
-              "access_key_id",
-              "secret_access_key"
-            ],
+            "required": ["method", "s3_bucket_name", "s3_bucket_region"],
             "properties": {
               "method": {
                 "type": "string",
@@ -150,14 +144,14 @@
               },
               "access_key_id": {
                 "type": "string",
-                "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
+                "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key. If not set, IAM will use the default credential provider, including instance roles and environmental variables.",
                 "title": "S3 Access Key Id",
                 "airbyte_secret": true,
                 "order": 3
               },
               "secret_access_key": {
                 "type": "string",
-                "description": "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
+                "description": "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key. Must be set if access_key_id is configured.",
                 "title": "S3 Secret Access Key",
                 "airbyte_secret": true,
                 "order": 4
