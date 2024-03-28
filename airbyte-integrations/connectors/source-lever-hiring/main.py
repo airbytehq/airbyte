@@ -2,7 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_lever_hiring.run import run
+
+import sys
+
+from airbyte_cdk.entrypoint import launch
+from source_lever_hiring import SourceLeverHiring
 
 if __name__ == "__main__":
-    run()
+    source = SourceLeverHiring()
+    launch(source, sys.argv[1:])
