@@ -304,7 +304,10 @@ abstract class AbstractJdbcSource<Datatype>(
 
     // needs to override isNotInternalSchema for connectors that override
     // getPrivilegesTableForCurrentUser()
-    protected open fun isNotInternalSchema(jsonNode: JsonNode, internalSchemas: Set<String?>): Boolean {
+    protected open fun isNotInternalSchema(
+        jsonNode: JsonNode,
+        internalSchemas: Set<String?>
+    ): Boolean {
         return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText())
     }
 

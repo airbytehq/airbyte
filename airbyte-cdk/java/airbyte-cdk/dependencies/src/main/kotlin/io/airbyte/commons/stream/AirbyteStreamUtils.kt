@@ -28,7 +28,8 @@ object AirbyteStreamUtils {
      * @param namespace The namespace of the stream.
      * @return The [AirbyteStreamNameNamespacePair].
      */
-    @JvmStatic fun convertFromNameAndNamespace(
+    @JvmStatic
+    fun convertFromNameAndNamespace(
         name: String?,
         namespace: String?
     ): AirbyteStreamNameNamespacePair {

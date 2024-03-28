@@ -33,7 +33,8 @@ object AirbyteTraceMessageUtility {
         )
     }
 
-    @JvmStatic fun emitEstimateTrace(
+    @JvmStatic
+    fun emitEstimateTrace(
         byteEstimate: Long,
         type: AirbyteEstimateTraceMessage.Type?,
         rowEstimate: Long,

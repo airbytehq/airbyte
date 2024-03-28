@@ -24,7 +24,8 @@ class DebeziumConverterUtils private constructor() {
         private val LOGGER: Logger = LoggerFactory.getLogger(DebeziumConverterUtils::class.java)
 
         /** TODO : Replace usage of this method with [io.airbyte.cdk.db.jdbc.DateTimeConverter] */
-        @JvmStatic fun convertDate(input: Any): String {
+        @JvmStatic
+        fun convertDate(input: Any): String {
             /**
              * While building this custom converter we were not sure what type debezium could return
              * cause there is no mention of it in the documentation. Secondly if you take a look at
@@ -61,7 +62,8 @@ class DebeziumConverterUtils private constructor() {
             return input.toString()
         }
 
-        @JvmStatic fun convertDefaultValue(field: RelationalColumn): Any? {
+        @JvmStatic
+        fun convertDefaultValue(field: RelationalColumn): Any? {
             if (field.isOptional) {
                 return null
             } else if (field.hasDefaultValue()) {

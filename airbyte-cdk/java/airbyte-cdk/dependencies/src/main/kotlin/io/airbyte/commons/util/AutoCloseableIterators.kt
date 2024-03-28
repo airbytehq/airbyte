@@ -63,7 +63,8 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return autocloseable iterator </T>
      */
-    @JvmStatic fun <T> fromStream(
+    @JvmStatic
+    fun <T> fromStream(
         stream: Stream<T>,
         airbyteStream: AirbyteStreamNameNamespacePair?
     ): AutoCloseableIterator<T> {
@@ -150,7 +151,8 @@ object AutoCloseableIterators {
      * @param <T> output type
      * @return mapped autocloseable iterator </T></F>
      */
-    @JvmStatic fun <F, T> transform(
+    @JvmStatic
+    fun <F, T> transform(
         fromIterator: AutoCloseableIterator<F>,
         function: Function<in F, out T>
     ): AutoCloseableIterator<T> {
@@ -167,7 +169,8 @@ object AutoCloseableIterators {
      * @param <T> output type
      * @return mapped autocloseable iterator </T></F>
      */
-    @JvmStatic fun <F, T> transform(
+    @JvmStatic
+    fun <F, T> transform(
         fromIterator: AutoCloseableIterator<F>,
         airbyteStream: AirbyteStreamNameNamespacePair?,
         function: Function<in F, out T>
@@ -203,7 +206,8 @@ object AutoCloseableIterators {
         )
     }
 
-    @JvmStatic fun <T, F> transformIterator(
+    @JvmStatic
+    fun <T, F> transformIterator(
         iteratorCreator: Function<AutoCloseableIterator<T>, Iterator<F>>,
         autoCloseableIterator: AutoCloseableIterator<T>,
         airbyteStream: AirbyteStreamNameNamespacePair?

@@ -208,12 +208,22 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected open fun putDate(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
+    protected open fun putDate(
+        node: ObjectNode,
+        columnName: String?,
+        resultSet: ResultSet,
+        index: Int
+    ) {
         node.put(columnName, resultSet.getString(index))
     }
 
     @Throws(SQLException::class)
-    protected open fun putTime(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
+    protected open fun putTime(
+        node: ObjectNode,
+        columnName: String?,
+        resultSet: ResultSet,
+        index: Int
+    ) {
         node.put(
             columnName,
             DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime::class.java))

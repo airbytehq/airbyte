@@ -28,7 +28,8 @@ object RelationalDbQueryUtils {
         }
     }
 
-    @JvmStatic fun enquoteIdentifierList(identifiers: List<String>, quoteString: String): String {
+    @JvmStatic
+    fun enquoteIdentifierList(identifiers: List<String>, quoteString: String): String {
         val joiner = StringJoiner(",")
         for (identifier in identifiers) {
             joiner.add(getIdentifierWithQuoting(identifier, quoteString))
