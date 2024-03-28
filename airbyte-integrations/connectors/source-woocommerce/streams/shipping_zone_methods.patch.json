@@ -6,11 +6,6 @@
             "object"
         ],
         "properties": {
-            "type": [
-                "null",
-                "object", 
-                "string"
-            ]
             }
         }
     }
