@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 2.1.1
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
@@ -43,7 +43,9 @@ data:
               - "ads_insights_region"
               - "ads_insights_dma"
               - "ads_insights_action_product_id"
-  suggestedStreams:
+      3.0.0:
+        message: "All Custom Insights Streams that uses body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset or video_asset as breakdown now have updated schemas. Users will need to retest source configuration, refresh the source schema and reset affected streams after upgrading. "
+        upgradeDeadline: "2024-04-18"
     streams:
       - ads_insights
       - campaigns
