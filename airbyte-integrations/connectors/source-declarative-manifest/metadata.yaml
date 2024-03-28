@@ -18,7 +18,7 @@ data:
       enabled: false
     oss:
       enabled: false
-  releaseDate: 2021-07-07
+  releaseDate: 2023-03-01
   releaseStage: alpha
   supportLevel: community
   tags:
