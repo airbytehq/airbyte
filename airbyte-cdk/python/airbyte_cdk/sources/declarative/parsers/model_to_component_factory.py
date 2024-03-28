@@ -316,28 +316,25 @@ class ModelToComponentFactory:
         )
 
     def create_legacy_to_per_partition_state_migration(
-        self,
-        model: LegacyToPerPartitionStateMigrationModel,
-        config: Mapping[str, Any],
-        declarative_stream: DeclarativeStreamModel,
+            self,
+            model: LegacyToPerPartitionStateMigrationModel,
+            config: Mapping[str, Any],
+            declarative_stream: DeclarativeStreamModel,
     ) -> LegacyToPerPartitionStateMigration:
-        if not isinstance(declarative_stream.retriever, SimpleRetrieverModel):
+        retriever = declarative_stream.retriever
+        partition_router = retriever.partition_router
+
+        if not isinstance(retriever, SimpleRetrieverModel):
             raise ValueError(
-                f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(declarative_stream.retriever)}"
+                f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(retriever)}"
             )
-
-        partition_router = declarative_stream.retriever.partition_router
-        router_class = partition_router[0].get("class_name") if partition_router else None
-        is_parent_stream_config = True if partition_router.parent_stream_configs else False
-
-        is_default_substream_partition_router = isinstance(partition_router, SubstreamPartitionRouterModel)
-        is_custom_substream_partition_router = is_parent_stream_config and router_class == SubstreamPartitionRouterModel and isinstance(
-            partition_router, CustomPartitionRouterModel
-        )
-
-        if not is_default_substream_partition_router and not is_custom_substream_partition_router:
+        if not isinstance(partition_router, (SubstreamPartitionRouterModel, CustomPartitionRouterModel)):
             raise ValueError(
                 f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(partition_router)}"
+            )
+        if not hasattr(partition_router, "parent_stream_configs"):
+            raise ValueError(
+                "LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration."
             )
 
         return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
