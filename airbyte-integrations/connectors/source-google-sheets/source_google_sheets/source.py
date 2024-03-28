@@ -149,6 +149,7 @@ class SourceGoogleSheets(Source):
         catalog: ConfiguredAirbyteCatalog,
     ) -> Generator[AirbyteMessage, None, None]:
         client = GoogleSheetsClient(self.get_credentials(config))
+        client.Backoff.row_batch_size = config.get("batch_size", 200)
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         stream_name_to_stream = {stream.stream.name: stream for stream in catalog.streams}
