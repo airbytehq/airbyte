@@ -395,7 +395,7 @@ develop = false
 click = "^8.1.3"
 common_utils = {path = "../common_utils", develop = true}
 pyyaml = "^6.0"
-requests = "^2.28.2"
+requests = "^2.31"
 
 [package.source]
 type = "directory"
@@ -436,7 +436,7 @@ files = []
 develop = true
 
 [package.dependencies]
-pyjwt = "^2.1.0"
+pyjwt = "^2.8.0"
 requests = "^2.31.0"
 
 [package.source]
@@ -462,7 +462,7 @@ pydantic = "^1.9"
 pydash = "^6.0.2"
 PyGithub = "^1.58.0"
 PyYAML = "^6.0"
-requests = "^2.28.2"
+requests = "^2.31"
 rich = "^13.0.0"
 simpleeval = "^0.9.13"
 
@@ -2341,17 +2341,17 @@ files = [
 
 [[package]]
 name = "types-requests"
-version = "2.28.2"
+version = "2.31.0.20240311"
 description = "Typing stubs for requests"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 files = [
-    {file = "types-requests-2.28.2.tar.gz", hash = "sha256:398f88cd9302c796cb63d1021af2a1fb7ae507741a3d508edf8e0746d8c16a04"},
-    {file = "types_requests-2.28.2-py3-none-any.whl", hash = "sha256:c164696bfdce0123901165c5f097a6cc4f6326268c65815d4b6a57eacfec5e81"},
+    {file = "types-requests-2.31.0.20240311.tar.gz", hash = "sha256:b1c1b66abfb7fa79aae09097a811c4aa97130eb8831c60e47aee4ca344731ca5"},
+    {file = "types_requests-2.31.0.20240311-py3-none-any.whl", hash = "sha256:47872893d65a38e282ee9f277a4ee50d1b28bd592040df7d1fdaffdf3779937d"},
 ]
 
 [package.dependencies]
-types-urllib3 = "<1.27"
+urllib3 = ">=2"
 
 [[package]]
 name = "types-toml"
@@ -2362,17 +2362,6 @@ python-versions = ">=3.8"
 files = [
     {file = "types-toml-0.10.8.20240310.tar.gz", hash = "sha256:3d41501302972436a6b8b239c850b26689657e25281b48ff0ec06345b8830331"},
     {file = "types_toml-0.10.8.20240310-py3-none-any.whl", hash = "sha256:627b47775d25fa29977d9c70dc0cbab3f314f32c8d8d0c012f2ef5de7aaec05d"},
-]
-
-[[package]]
-name = "types-urllib3"
-version = "1.26.25.14"
-description = "Typing stubs for urllib3"
-optional = false
-python-versions = "*"
-files = [
-    {file = "types-urllib3-1.26.25.14.tar.gz", hash = "sha256:229b7f577c951b8c1b92c1bc2b2fdb0b49847bd2af6d1cc2a2e3dd340f3bda8f"},
-    {file = "types_urllib3-1.26.25.14-py3-none-any.whl", hash = "sha256:9683bbb7fb72e32bfe9d2be6e04875fbe1b3eeec3cbb4ea231435aa7fd6b4f0e"},
 ]
 
 [[package]]
@@ -2643,4 +2632,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "ba9282f0642e38cfd8a941870c45f19d607b15c6b402edfe130ade32310f4a30"
+content-hash = "7f8a662e19c93f1899c12e7b2a87e42e86e25a84bae7b123a972ca0e3bad2210"
