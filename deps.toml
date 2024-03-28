@@ -10,9 +10,12 @@ hikaricp = "5.0.1"
 jmh = "1.36"
 jooq = "3.13.4"
 junit-bom = "5.10.1"
-kotlin = "1.9.0"
+kotlin = "1.9.22"
 log4j = "2.21.1"
 lombok = "1.18.30"
+micronaut-platform = "4.3.6"
+micronaut-inject = "4.3.11"
+picocli = "4.7.5"
 postgresql = "42.6.0"
 reactor = "3.5.2"
 segment = "2.1.1"
@@ -72,6 +75,7 @@ jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
 jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
 jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
 junit-jupiter-system-stubs = { module = "uk.org.webcompere:system-stubs-jupiter", version = "2.0.1" }
+junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "5.1.0" }
 kotlinx-cli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version = "0.3.5" }
 kotlinx-cli-jvm = { module = "org.jetbrains.kotlinx:kotlinx-cli-jvm", version = "0.3.5" }
@@ -84,12 +88,16 @@ log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j
 log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
-mockk = { module = "io.mockk:mockk", version = "1.13.3" }
+micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java", version.ref = "micronaut-inject" }
+micronaut-inject-kotlin = { module = "io.micronaut:micronaut-inject-kotlin", version.ref = "micronaut-inject" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "5.10.0" }
+mockk = { module = "io.mockk:mockk", version = "1.13.9" }
 mongo-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version = "4.10.2" }
 otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
 otel-sdk = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0" }
 otel-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha" }
 otel-semconv = { module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha" }
+picocli-codegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
@@ -114,8 +122,10 @@ apache = ["apache-commons", "apache-commons-lang"]
 datadog = ["datadog-trace-api", "datadog-trace-ot"]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 log4j = ["log4j-api", "log4j-core", "log4j-slf4j-impl", "log4j-slf4j2-impl", "log4j-web"]
+micronaut-annotation-processor = ["picocli-codegen", "micronaut-inject-java", "micronaut-inject-kotlin"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]
 
 [plugins]
+ksp = { id = "com.google.devtools.ksp", version = "1.9.22-1.0.17" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
