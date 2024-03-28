@@ -161,7 +161,7 @@ class TestLinkedinAdsStream:
         "response_json, expected",
         (
             ({"elements": []}, None),
-            ({"elements": [{"data": []}] * 500, "paging": {"start": 0}}, {"start": 500}),
+            ({"elements": [{"data": []}] * 500, "paging": {"start": 0, "total": 600}}, {"start": 500}),
         ),
     )
     def test_next_page_token(self, requests_mock, response_json, expected):
