@@ -19,8 +19,8 @@ def validate_custom_fields(custom_fields, available_fields):
 
 
 def daterange(date1, date2):
-        for n in range(int((date2 - date1).days)+1):
-            yield date1 + timedelta(n) 
+    for n in range(int((date2 - date1).days)+1):
+        yield date1 + timedelta(n) 
     
 def generate_dates_to_today(date_from_str:str):
     format = '%Y-%m-%d'

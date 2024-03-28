@@ -167,10 +167,6 @@ class TimeOffRequests(BambooHrIncrementalStream):
         request = self._create_prepared_request(path= path, headers= headers)
         response = self._send_request(request, {})
         return request, response
-    
-    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        actual_record = {key: value for key, value in record.items() if key in self.get_json_schema()["properties"].keys()}
-        return actual_record
 
     def _read_pages(
         self,
@@ -183,8 +179,7 @@ class TimeOffRequests(BambooHrIncrementalStream):
         stream_state = stream_state or {}
         for start_date in generate_dates_to_today(self.start_date):
             request, response = self.send_request(start_date, stream_slice, stream_state, None)
-            for record in records_generator_fn(request, response, stream_state, stream_slice):
-                yield self.transform(record)
+            yield from records_generator_fn(request, response, stream_state, stream_slice)
 
 class SourceBambooHr(AbstractSource):
     @staticmethod

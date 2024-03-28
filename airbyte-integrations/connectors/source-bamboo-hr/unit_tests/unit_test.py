@@ -3,9 +3,11 @@
 #
 
 import pytest
+from datetime import datetime
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import Status
 from source_bamboo_hr.source import CustomReportsStream, EmployeesDirectoryStream, SourceBambooHr
+from source_bamboo_hr.utils import daterange, generate_dates_to_today
 
 
 @pytest.fixture
@@ -82,3 +84,17 @@ def test_custom_reports_stream_request_body_json(config):
         "title": "Airbyte",
         "fields": ["one", "two"],
     }
+
+def test_daterange():
+    date1 = datetime(2024, 1, 1)
+    date2 = datetime(2024, 1, 5)
+    dates = [dt for dt in daterange(date1, date2)]
+    assert len(dates) == 5
+
+def test_generate_dates_to_today():
+    date = '2023-12-01'
+    today = datetime.today()
+    date_timedelta_60  = datetime.strptime('2023-10-02', '%Y-%m-%d')
+    num_days_expected = (today - date_timedelta_60).days + 1
+    generated_dates = list(generate_dates_to_today(date))
+    assert num_days_expected == len(generated_dates)
