@@ -53,6 +53,7 @@ export interface ValuesProps {
   namespaceDefinition: NamespaceDefinitionType;
   namespaceFormat?: string;
   operations?: OperationCreate[];
+  workspaceId?: any;
 }
 
 interface CreateConnectionProps {
