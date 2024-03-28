@@ -1,0 +1,32 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 1f7bac7e-53ff-4e0b-b6df-b74aa85cf703
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-yellowbrick
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/yellowbrick
+  githubIssueLabel: destination-yellowbrick
+  icon: yellowbrick.svg
+  license: ELv2
+  name: Yellowbrick
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-yellowbrick
+      enabled: true
+    oss:
+      enabled: true
+  releases:
+    breakingChanges:
+      0.0.1:
+        message: >
+          This initial version implements [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures.
+        upgradeDeadline: "2024-05-31"
+  releaseStage: alpha
+  supportLevel: community
+  supportsDbt: false
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
