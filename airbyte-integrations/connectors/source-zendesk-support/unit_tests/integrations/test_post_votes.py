@@ -158,7 +158,8 @@ class TestPostsVotesStreamIncremental(TestCase):
         assert len(output.records) == 1
 
         post_comment = post_comments_record_builder.build()
-        assert output.most_recent_state == {"post_votes": {"updated_at": post_comment["updated_at"]}}
+        assert output.most_recent_state.stream_descriptor.name == "post_votes" 
+        assert output.most_recent_state.stream_state == {"updated_at": post_comment["updated_at"]}
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker):
@@ -215,4 +216,5 @@ class TestPostsVotesStreamIncremental(TestCase):
         output = read_stream("post_votes", SyncMode.incremental, self._config, StateBuilder().with_stream_state("post_votes", state).build())
         assert len(output.records) == 2
 
-        assert output.most_recent_state == {"post_votes": {"updated_at":  datetime_to_string(last_page_record_updated_at)}}
+        assert output.most_recent_state.stream_descriptor.name == "post_votes" 
+        assert output.most_recent_state.stream_state == {"updated_at":  datetime_to_string(last_page_record_updated_at)}
