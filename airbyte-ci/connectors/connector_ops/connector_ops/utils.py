@@ -128,26 +128,6 @@ def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> Set[st
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
 
 
-def has_local_cdk_ref(build_file: Path) -> bool:
-    """Return true if the build file uses the local CDK.
-
-    Args:
-        build_file (Path): Path to the build.gradle file of the project.
-
-    Returns:
-        bool: True if using local CDK.
-    """
-    contents = "\n".join(
-        [
-            # Return contents without inline code comments
-            line.split("//")[0]
-            for line in build_file.read_text().split("\n")
-        ]
-    )
-    contents = contents.replace(" ", "")
-    return "useLocalCdk=true" in contents
-
-
 def get_gradle_dependencies_block(build_file: Path) -> str:
     """Get the dependencies block of a Gradle file.
 
@@ -361,6 +341,32 @@ class Connector:
     @property
     def has_dockerfile(self) -> bool:
         return (self.code_directory / "Dockerfile").is_file()
+
+    @property
+    def changelog_entry_files(self) -> Set[Path]:
+        changelog_entry_dir = self.code_directory / ".changelog_entries"
+        return set(changelog_entry_dir.iterdir()) if changelog_entry_dir.is_dir() else set()
+
+    @property
+    def uses_local_cdk(self) -> bool:
+        """Return true if the connector is in JAVA and uses the local CDK.
+
+        Returns:
+            bool: True if using local CDK.
+        """
+        if self.language != ConnectorLanguage.JAVA:
+            return False
+
+        build_file = self.code_directory / "build.gradle"
+        contents = "\n".join(
+            [
+                # Return contents without inline code comments
+                line.split("//")[0]
+                for line in build_file.read_text().split("\n")
+            ]
+        )
+        contents = contents.replace(" ", "")
+        return "useLocalCdk=true" in contents
 
     @property
     def metadata_file_path(self) -> Path:

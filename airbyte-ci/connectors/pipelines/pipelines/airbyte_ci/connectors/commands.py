@@ -32,6 +32,9 @@ def get_selected_connectors_with_modified_files(
     selected_languages: Tuple[str],
     modified: bool,
     metadata_changes_only: bool,
+    with_changelog_entry_files: bool,
+    with_use_local_cdk: bool,
+    without_use_local_cdk: bool,
     metadata_query: str,
     modified_files: Set[Path],
     enable_dependency_scanning: bool = False,
@@ -44,6 +47,9 @@ def get_selected_connectors_with_modified_files(
         selected_languages (Tuple[str]): Selected connector languages.
         modified (bool): Whether to select the modified connectors.
         metadata_changes_only (bool): Whether to select only the connectors with metadata changes.
+        with_changelog_entry_files (bool): Whether to select the connectors with files in .changelog_entries
+        with_use_local_cdk (bool): Whether to select the connectors with useLocalCdk set to true
+        without_use_local_cdk (bool): Whether to unselect the connectors with useLocalCdk set to true
         modified_files (Set[Path]): The modified files.
         enable_dependency_scanning (bool): Whether to enable the dependency scanning.
     Returns:
@@ -63,6 +69,11 @@ def get_selected_connectors_with_modified_files(
     selected_connectors_by_query = (
         {connector for connector in ALL_CONNECTORS if connector.metadata_query_match(metadata_query)} if metadata_query else set()
     )
+    selected_connectors_with_changelog_entry_files = (
+        {c for c in ALL_CONNECTORS if c.changelog_entry_files} if with_changelog_entry_files else set()
+    )
+    connectors_with_use_local_cdk = {c for c in ALL_CONNECTORS if c.uses_local_cdk}
+    selected_connectors_with_use_local_cdk = connectors_with_use_local_cdk if with_use_local_cdk else set()
 
     non_empty_connector_sets = [
         connector_set
@@ -72,11 +83,14 @@ def get_selected_connectors_with_modified_files(
             selected_connectors_by_language,
             selected_connectors_by_query,
             selected_modified_connectors,
+            selected_connectors_with_changelog_entry_files,
+            selected_connectors_with_use_local_cdk,
         ]
         if connector_set
     ]
     # The selected connectors are the intersection of the selected connectors by name, support_level, language, simpleeval query and modified.
     selected_connectors = set.intersection(*non_empty_connector_sets) if non_empty_connector_sets else set()
+    selected_connectors.discard(connectors_with_use_local_cdk) if without_use_local_cdk else selected_connectors
 
     selected_connectors_with_modified_files = []
     for connector in selected_connectors:
@@ -177,6 +191,13 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     help="Filter connectors to test by support_level.",
     type=click.Choice(SupportLevelEnum),
 )
+@click.option(
+    "--with-changelog-entry-files", help="Select connectors that have changelog_entry files.", is_flag=True, default=False, type=bool
+)
+@click.option("--with-use-local-cdk", help="Select connectors that have useLocalCdk set to true.", is_flag=True, default=False, type=bool)
+@click.option(
+    "--without-use-local-cdk", help="Unselect connectors that have useLocalCdk set to true.", is_flag=True, default=False, type=bool
+)
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
 @click.option(
     "--metadata-changes-only/--not-metadata-changes-only",
@@ -258,6 +279,9 @@ async def connectors(
         ctx.obj["languages"],
         ctx.obj["modified"],
         ctx.obj["metadata_changes_only"],
+        ctx.obj["with_changelog_entry_files"],
+        ctx.obj["with_use_local_cdk"],
+        ctx.obj["without_use_local_cdk"],
         ctx.obj["metadata_query"],
         set(modified_files),
         ctx.obj["enable_dependency_scanning"],
