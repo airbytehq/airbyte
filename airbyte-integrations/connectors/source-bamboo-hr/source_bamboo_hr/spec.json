@@ -4,7 +4,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Bamboo HR Spec",
     "type": "object",
-    "required": ["subdomain", "api_key"],
+    "required": [
+      "subdomain",
+      "api_key"
+    ],
     "additionalProperties": true,
     "properties": {
       "subdomain": {
@@ -15,6 +18,15 @@
         "type": "string",
         "description": "Api key of bamboo hr",
         "airbyte_secret": true
+      },
+      "start_date": {
+        "type": "string",
+        "description": "Start date to fetch data from. Format: YYYY-MM-DD. This just applies to Incremental syncs.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}",
+        "examples": [
+          "2024-03-01"
+        ],
+        "default": "2024-01-01"
       },
       "custom_reports_fields": {
         "type": "string",
