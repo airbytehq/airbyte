@@ -865,7 +865,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
-    fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
+    open fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
         if (!normalizationFromDefinition()) {
             return
         }
@@ -898,7 +898,7 @@ abstract class DestinationAcceptanceTest {
      */
     @Test
     @Throws(Exception::class)
-    fun testIncrementalDedupeSync() {
+    open fun testIncrementalDedupeSync() {
         if (!implementsAppendDedup()) {
             LOGGER.info(
                 "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'"
@@ -1042,7 +1042,7 @@ abstract class DestinationAcceptanceTest {
 
     @Test
     @Throws(Exception::class)
-    fun testCustomDbtTransformations() {
+    open fun testCustomDbtTransformations() {
         if (!dbtFromDefinition()) {
             return
         }
@@ -1980,7 +1980,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataTypeTestArgumentProvider::class)
     @Throws(Exception::class)
-    fun testDataTypeTestWithNormalization(
+    open fun testDataTypeTestWithNormalization(
         messagesFilename: String,
         catalogFilename: String,
         testCompatibility: DataTypeTestArgumentProvider.TestCompatibility
