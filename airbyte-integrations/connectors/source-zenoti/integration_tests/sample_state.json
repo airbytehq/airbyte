@@ -1,5 +1,24 @@
 {
   "appointments": {
-    "start_time": "2024-04-03T17:30:00"
+    "states": [
+      {
+        "cursor": {
+          "start_time_utc": "2024-03-28T17:30:00"
+        },
+        "partition": {
+          "center_id": "f298684c-25d9-409e-bb74-7f067dc2e111",
+          "parent_slice": {}
+        }
+      },
+      {
+        "cursor": {
+          "start_time_utc": "2024-03-28T17:55:00"
+        },
+        "partition": {
+          "center_id": "5b058a56-dd0f-4f9c-bc75-0fd5a72523fe",
+          "parent_slice": {}
+        }
+      }
+    ]
   }
 }

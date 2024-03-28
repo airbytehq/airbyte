@@ -81,21 +81,21 @@ definitions:
       type: CustomIncrementalSync
       class_name: "source_zenoti.components.AppointmentsDatetimeBasedCursor"
       step: P1D
-      cursor_field: start_time
+      cursor_field: start_time_utc
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ day_delta(7) }}'
+        datetime: '{{ day_delta(config[''appointments_lookahead_days'']) }}'
         datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ day_delta(-7) }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime: '{{ config[''appointments_start_date''] }}'
+        datetime_format: '%Y-%m-%d'
       datetime_format: '%Y-%m-%d'
       end_time_option:
         type: RequestOption
         field_name: end_date
         inject_into: request_parameter
-      lookback_window: P0D
+      lookback_window: 'P{{config[''appointments_lookback_days'']}}D'
       start_time_option:
         type: RequestOption
         field_name: start_date
@@ -117,8 +117,9 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
-      # - appointments_lookback_days
-      # - appointments_start_date
+      - appointments_start_date
+      - appointments_lookback_days
+      - appointments_lookahead_days
     additionalProperties: true
     properties:
       api_key:
@@ -126,16 +127,20 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
-      # appointments_start_date:
-      #   type: string
-      #   order: 2
-      #   title: Appointments Start Date
-      #   format: date
-      #   pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-      # appointments_lookback_days:
-      #   type: integer
-      #   order: 1
-      #   title: Appointments Lookback Days
+      appointments_start_date:
+        type: string
+        order: 2
+        title: Appointments Start Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      appointments_lookback_days:
+        type: integer
+        order: 3
+        title: Appointments Lookback Days
+      appointments_lookahead_days:
+        type: integer
+        order: 4
+        title: Appointments Lookahead Days
 
 # type: DeclarativeSource
 
