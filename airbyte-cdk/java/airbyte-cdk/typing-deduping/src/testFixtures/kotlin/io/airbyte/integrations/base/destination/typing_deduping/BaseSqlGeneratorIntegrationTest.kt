@@ -46,28 +46,28 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     protected var DIFFER: RecordDiffer? = null
 
     /** Subclasses may use these four StreamConfigs in their tests. */
-    protected var incrementalDedupStream: StreamConfig? = null
+    protected var incrementalDedupStream: StreamConfig = mock()
 
     /**
      * We intentionally don't have full refresh overwrite/append streams. Those actually behave
      * identically in the sqlgenerator. Overwrite mode is actually handled in [DefaultTyperDeduper].
      */
-    protected var incrementalAppendStream: StreamConfig? = null
-    protected var cdcIncrementalDedupStream: StreamConfig? = null
+    protected var incrementalAppendStream: StreamConfig = mock()
+    protected var cdcIncrementalDedupStream: StreamConfig = mock()
 
     /** This isn't particularly realistic, but it's technically possible. */
-    protected var cdcIncrementalAppendStream: StreamConfig? = null
+    protected var cdcIncrementalAppendStream: StreamConfig = mock()
 
-    protected var generator: SqlGenerator? = null
-    protected abstract val destinationHandler: DestinationHandler<DestinationState>
-    protected var namespace: String? = null
+    protected var generator: SqlGenerator = mock()
+    protected abstract var destinationHandler: DestinationHandler<DestinationState>
+    protected var namespace: String = mock()
 
     protected var streamId: StreamId = mock()
     private lateinit var primaryKey: List<ColumnId>
     private lateinit var cursor: ColumnId
-    private var COLUMNS: LinkedHashMap<ColumnId, AirbyteType>? = null
+    private var COLUMNS: LinkedHashMap<ColumnId, AirbyteType> = mock()
 
-    protected abstract val sqlGenerator: SqlGenerator?
+    protected abstract val sqlGenerator: SqlGenerator
         get
 
     /**
@@ -75,15 +75,15 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * example, you could upcase the final table name here.
      */
     protected fun buildStreamId(
-        namespace: String?,
-        finalTableName: String?,
-        rawTableName: String?
+        namespace: String,
+        finalTableName: String,
+        rawTableName: String
     ): StreamId {
         return StreamId(
-            namespace!!,
-            finalTableName!!,
             namespace,
-            rawTableName!!,
+            finalTableName,
+            namespace,
+            rawTableName,
             namespace,
             finalTableName
         )
@@ -161,34 +161,35 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     fun setup() {
         generator = sqlGenerator
 
-        val id1 = generator!!.buildColumnId("id1")
-        val id2 = generator!!.buildColumnId("id2")
-        primaryKey = java.util.List.of(id1, id2)
-        cursor = generator!!.buildColumnId("updated_at")
+        val id1 = generator.buildColumnId("id1")
+        val id2 = generator.buildColumnId("id2")
+        primaryKey = listOf(id1, id2)
+        val cursor = generator.buildColumnId("updated_at")
+        this.cursor = cursor
 
         COLUMNS = LinkedHashMap()
-        COLUMNS!![id1] = AirbyteProtocolType.INTEGER
-        COLUMNS!![id2] = AirbyteProtocolType.INTEGER
-        COLUMNS!![cursor] = AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
-        COLUMNS!![generator!!.buildColumnId("struct")] = Struct(LinkedHashMap())
-        COLUMNS!![generator!!.buildColumnId("array")] = Array(AirbyteProtocolType.UNKNOWN)
-        COLUMNS!![generator!!.buildColumnId("string")] = AirbyteProtocolType.STRING
-        COLUMNS!![generator!!.buildColumnId("number")] = AirbyteProtocolType.NUMBER
-        COLUMNS!![generator!!.buildColumnId("integer")] = AirbyteProtocolType.INTEGER
-        COLUMNS!![generator!!.buildColumnId("boolean")] = AirbyteProtocolType.BOOLEAN
-        COLUMNS!![generator!!.buildColumnId("timestamp_with_timezone")] =
+        COLUMNS[id1] = AirbyteProtocolType.INTEGER
+        COLUMNS[id2] = AirbyteProtocolType.INTEGER
+        COLUMNS[cursor] = AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
+        COLUMNS[generator.buildColumnId("struct")] = Struct(LinkedHashMap())
+        COLUMNS[generator.buildColumnId("array")] = Array(AirbyteProtocolType.UNKNOWN)
+        COLUMNS[generator.buildColumnId("string")] = AirbyteProtocolType.STRING
+        COLUMNS[generator.buildColumnId("number")] = AirbyteProtocolType.NUMBER
+        COLUMNS[generator.buildColumnId("integer")] = AirbyteProtocolType.INTEGER
+        COLUMNS[generator.buildColumnId("boolean")] = AirbyteProtocolType.BOOLEAN
+        COLUMNS[generator.buildColumnId("timestamp_with_timezone")] =
             AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
-        COLUMNS!![generator!!.buildColumnId("timestamp_without_timezone")] =
+        COLUMNS[generator.buildColumnId("timestamp_without_timezone")] =
             AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE
-        COLUMNS!![generator!!.buildColumnId("time_with_timezone")] =
+        COLUMNS[generator.buildColumnId("time_with_timezone")] =
             AirbyteProtocolType.TIME_WITH_TIMEZONE
-        COLUMNS!![generator!!.buildColumnId("time_without_timezone")] =
+        COLUMNS[generator.buildColumnId("time_without_timezone")] =
             AirbyteProtocolType.TIME_WITHOUT_TIMEZONE
-        COLUMNS!![generator!!.buildColumnId("date")] = AirbyteProtocolType.DATE
-        COLUMNS!![generator!!.buildColumnId("unknown")] = AirbyteProtocolType.UNKNOWN
+        COLUMNS[generator.buildColumnId("date")] = AirbyteProtocolType.DATE
+        COLUMNS[generator.buildColumnId("unknown")] = AirbyteProtocolType.UNKNOWN
 
         val cdcColumns = LinkedHashMap(COLUMNS)
-        cdcColumns[generator!!.buildColumnId("_ab_cdc_deleted_at")] =
+        cdcColumns[generator.buildColumnId("_ab_cdc_deleted_at")] =
             AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
 
         DIFFER =
@@ -214,8 +215,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
-                Optional.of(cursor!!),
-                COLUMNS!!
+                Optional.of(cursor),
+                COLUMNS
             )
         incrementalAppendStream =
             StreamConfig(
@@ -223,8 +224,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 primaryKey,
-                Optional.of(cursor!!),
-                COLUMNS!!
+                Optional.of(cursor),
+                COLUMNS
             )
 
         cdcIncrementalDedupStream =
@@ -233,7 +234,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
-                Optional.of(cursor!!),
+                Optional.of(cursor),
                 cdcColumns
             )
         cdcIncrementalAppendStream =
@@ -242,7 +243,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 primaryKey,
-                Optional.of(cursor!!),
+                Optional.of(cursor),
                 cdcColumns
             )
 
@@ -258,13 +259,12 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Throws(Exception::class)
     private fun getDestinationInitialState(
-        streamConfig: StreamConfig?
+        streamConfig: StreamConfig
     ): DestinationInitialStatus<DestinationState> {
-        val initialState =
-            destinationHandler!!.gatherInitialState(java.util.List.of(streamConfig!!))
+        val initialState = destinationHandler!!.gatherInitialState(java.util.List.of(streamConfig))
         Assertions.assertEquals(
             1,
-            initialState!!.size,
+            initialState.size,
             "gatherInitialState returned the wrong number of futures"
         )
         Assertions.assertTrue(
@@ -1281,44 +1281,22 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey!!,
                 Optional.of(cursor!!),
-                object : LinkedHashMap<ColumnId, AirbyteType>() {
-                    init {
-                        put(generator!!.buildColumnId("id1"), AirbyteProtocolType.INTEGER)
-                        put(generator!!.buildColumnId("id2"), AirbyteProtocolType.INTEGER)
-                        put(
-                            generator!!.buildColumnId("updated_at"),
-                            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
-                        )
-                        put(
-                            generator!!.buildColumnId("\$starts_with_dollar_sign"),
-                            AirbyteProtocolType.STRING
-                        )
-                        put(
-                            generator!!.buildColumnId("includes\"doublequote"),
-                            AirbyteProtocolType.STRING
-                        )
-                        put(
-                            generator!!.buildColumnId("includes'singlequote"),
-                            AirbyteProtocolType.STRING
-                        )
-                        put(
-                            generator!!.buildColumnId("includes`backtick"),
-                            AirbyteProtocolType.STRING
-                        )
-                        put(
-                            generator!!.buildColumnId("includes.period"),
-                            AirbyteProtocolType.STRING
-                        )
-                        put(
-                            generator!!.buildColumnId("includes$\$doubledollar"),
-                            AirbyteProtocolType.STRING
-                        )
-                        put(
-                            generator!!.buildColumnId("endswithbackslash\\"),
-                            AirbyteProtocolType.STRING
-                        )
-                    }
-                }
+                linkedMapOf(
+                    generator!!.buildColumnId("id1") to AirbyteProtocolType.INTEGER,
+                    generator!!.buildColumnId("id2") to AirbyteProtocolType.INTEGER,
+                    generator!!.buildColumnId("updated_at") to
+                        AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
+                    generator!!.buildColumnId("\$starts_with_dollar_sign") to
+                        AirbyteProtocolType.STRING,
+                    generator!!.buildColumnId("includes\"doublequote") to
+                        AirbyteProtocolType.STRING,
+                    generator!!.buildColumnId("includes'singlequote") to AirbyteProtocolType.STRING,
+                    generator!!.buildColumnId("includes`backtick") to AirbyteProtocolType.STRING,
+                    generator!!.buildColumnId("includes.period") to AirbyteProtocolType.STRING,
+                    generator!!.buildColumnId("includes$\$doubledollar") to
+                        AirbyteProtocolType.STRING,
+                    generator!!.buildColumnId("endswithbackslash\\") to AirbyteProtocolType.STRING
+                )
             )
 
         val createTable = generator!!.createTable(stream, "", false)
@@ -1347,8 +1325,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val originalStreamId = generator!!.buildStreamId(str, str, "unused")
         val modifiedStreamId =
             buildStreamId(
-                originalStreamId!!.finalNamespace,
-                originalStreamId.finalName,
+                originalStreamId!!.finalNamespace!!,
+                originalStreamId.finalName!!,
                 "raw_table"
             )
         val columnId = generator!!.buildColumnId(str)
@@ -1377,11 +1355,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     DestinationSyncMode.APPEND_DEDUP,
                     java.util.List.of(columnId),
                     Optional.of(columnId!!),
-                    object : LinkedHashMap<ColumnId, AirbyteType>() {
-                        init {
-                            put(columnId, AirbyteProtocolType.STRING)
-                        }
-                    }
+                    linkedMapOf(columnId to AirbyteProtocolType.STRING)
                 )
 
             val createTable = generator!!.createTable(stream, "", false)
@@ -1414,12 +1388,10 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND,
                 emptyList(),
                 Optional.empty(),
-                object : LinkedHashMap<ColumnId, AirbyteType>() {
-                    init {
-                        put(generator!!.buildColumnId("current_date"), AirbyteProtocolType.STRING)
-                        put(generator!!.buildColumnId("join"), AirbyteProtocolType.STRING)
-                    }
-                }
+                linkedMapOf(
+                    generator!!.buildColumnId("current_date") to AirbyteProtocolType.STRING,
+                    generator!!.buildColumnId("join") to AirbyteProtocolType.STRING
+                )
             )
 
         val createTable = generator!!.createTable(stream, "", false)
@@ -1674,9 +1646,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    protected fun createFinalTable(stream: StreamConfig?, suffix: String?) {
-        val createTable = generator!!.createTable(stream!!, suffix!!, false)
-        destinationHandler!!.execute(createTable)
+    protected fun createFinalTable(stream: StreamConfig, suffix: String) {
+        val createTable = generator.createTable(stream, suffix, false)
+        destinationHandler.execute(createTable)
     }
 
     private fun verifyRecords(

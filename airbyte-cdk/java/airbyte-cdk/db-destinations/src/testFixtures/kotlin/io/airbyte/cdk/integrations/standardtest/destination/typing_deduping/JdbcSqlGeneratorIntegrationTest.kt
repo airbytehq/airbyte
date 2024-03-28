@@ -38,7 +38,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // TODO - can we move this class into db_destinations/testFixtures?
         get() = sqlGenerator!!.toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
 
-    abstract override val sqlGenerator: JdbcSqlGenerator?
+    abstract override val sqlGenerator: JdbcSqlGenerator
         get
 
     protected abstract val sqlDialect: SQLDialect?
