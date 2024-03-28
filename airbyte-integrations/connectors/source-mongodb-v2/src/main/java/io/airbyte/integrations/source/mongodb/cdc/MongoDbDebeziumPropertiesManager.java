@@ -41,6 +41,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   static final String MONGODB_SSL_ENABLED_KEY = "mongodb.ssl.enabled";
   static final String MONGODB_SSL_ENABLED_VALUE = Boolean.TRUE.toString();
   static final String MONGODB_USER_KEY = "mongodb.user";
+  static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
+  static final String MONGODB_POST_IMAGE_VALUE = "post_image";
 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
@@ -65,6 +67,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
       properties.setProperty(MONGODB_AUTHSOURCE_KEY, config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText());
     }
     properties.setProperty(MONGODB_SSL_ENABLED_KEY, MONGODB_SSL_ENABLED_VALUE);
+    properties.setProperty(MONGODB_POST_IMAGE_KEY, MONGODB_POST_IMAGE_VALUE);
     return properties;
   }
 
