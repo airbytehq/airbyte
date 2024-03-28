@@ -1,4 +1,4 @@
-export default function AirbyteLibConnectors({
+export default function PyAirbyteConnectors({
     connectorsJSON,
   }) {
     const connectors = JSON.parse(connectorsJSON);

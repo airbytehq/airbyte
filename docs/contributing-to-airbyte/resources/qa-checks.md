@@ -75,7 +75,7 @@ Connector version in metadata.yaml and pyproject.toml file must match. This is t
 *Applies to the following connector types: source*
 *Applies to the following connector languages: python, low-code*
 
-Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `metadata.yaml` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in metadata.yaml. This is to ensure that all connectors can be published to PyPi and can be used in `airbyte-lib`.
+Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `metadata.yaml` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in metadata.yaml. This is to ensure that all connectors can be published to PyPi and can be used in `PyAirbyte`.
 
 ## 💼 Assets
 

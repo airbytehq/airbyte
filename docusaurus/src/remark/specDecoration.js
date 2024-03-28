@@ -4,7 +4,7 @@ const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
-    await injectDefaultAirbyteLibSection(vfile, ast);
+    await injectDefaultPyAirbyteSection(vfile, ast);
     await injectSpecSchema(ast);
   };
   return transformer;
@@ -13,7 +13,7 @@ const plugin = () => {
 async function injectSpecSchema(ast) {
   const registry = await catalog;
   visit(ast, "mdxJsxFlowElement", (node) => {
-    if (node.name !== "SpecSchema" && node.name !== "AirbyteLibExample") return;
+    if (node.name !== "SpecSchema" && node.name !== "PyAirbyteExample") return;
 
     const connectorName = node.attributes.find(
       (attr) => attr.name === "connector"
@@ -29,7 +29,7 @@ async function injectSpecSchema(ast) {
   });
 }
 
-async function injectDefaultAirbyteLibSection(vfile, ast) {
+async function injectDefaultPyAirbyteSection(vfile, ast) {
   const registryEntry = await getRegistryEntry(vfile);
   const docsPageInfo = isDocsPage(vfile);
 
@@ -37,7 +37,7 @@ async function injectDefaultAirbyteLibSection(vfile, ast) {
     !docsPageInfo.isTrueDocsPage ||
     !registryEntry ||
     !isPypiConnector(registryEntry) ||
-    vfile.value.includes("## Usage with airbyte-lib")
+    vfile.value.includes("## Usage with PyAirbyte")
   ) {
     return;
   }
@@ -71,7 +71,7 @@ async function injectDefaultAirbyteLibSection(vfile, ast) {
   });
   if (!added) {
     throw new Error(
-      `Could not find a changelog heading in ${vfile.path} to add the default airbyte-lib section. This connector won't have a reference section. Make sure there is either a ## Changelog section or add a manual reference section.`
+      `Could not find a changelog heading in ${vfile.path} to add the default PyAirbyte section. This connector won't have a reference section. Make sure there is either a ## Changelog section or add a manual reference section.`
     );
   }
 }
