@@ -230,7 +230,7 @@ class PyAirbyteValidation(Step):
             [
                 "pip",
                 "install",
-                "pyairbyte",
+                "airbyte",
             ]
         )
 

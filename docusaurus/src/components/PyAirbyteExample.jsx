@@ -32,7 +32,7 @@ export const PyAirbyteExample = ({
       Install the Python library via:
     </p>
     <CodeBlock
-        language="bash">{"pip install pyairbyte"}</CodeBlock>
+        language="bash">{"pip install airbyte"}</CodeBlock>
     <p>Then, execute a sync by loading the connector like this:</p>
     <CodeBlock
       language="python"
