@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "0.65.0"
 
 type: DeclarativeSource
 
@@ -59,7 +59,62 @@ streams:
         type: RequestOption
         inject_into: request_parameter
         field_name: updated_before
-
+  - name: message_export
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: message_export
+        type: HttpRequester
+        url_base: https://exports.dixa.io/v1/
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 60
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key:
+      - id
+    incremental_sync:
+      step: P{{ config.batch_size }}D
+      type: DatetimeBasedCursor
+      cursor_field: created_after
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+        datetime_format: '%Y-%m-%d'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+        datetime_format: '%Y-%m-%d'
+      datetime_format: '%Y-%m-%d'
+      end_time_option:
+        type: RequestOption
+        field_name: created_before
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: created_after
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - '%ms'
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/dixa
