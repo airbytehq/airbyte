@@ -152,7 +152,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
 
   @Override
   protected DestinationHandler<RedshiftState> getDestinationHandler() {
-    return new RedshiftDestinationHandler(databaseName, database, namespace);
+    return new RedshiftDestinationHandler(databaseName, database, getNamespace());
   }
 
   @Override
@@ -178,9 +178,9 @@ public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
-    destinationHandler.execute(sql);
-    List<DestinationInitialStatus<RedshiftState>> initialStatuses = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    final Sql sql = getGenerator().createTable(getIncrementalDedupStream(), "", false);
+    getDestinationHandler().execute(sql);
+    List<DestinationInitialStatus<RedshiftState>> initialStatuses = getDestinationHandler().gatherInitialState(List.of(getIncrementalDedupStream()));
     assertEquals(1, initialStatuses.size());
     final DestinationInitialStatus<RedshiftState> initialStatus = initialStatuses.getFirst();
     assertTrue(initialStatus.isFinalTablePresent());

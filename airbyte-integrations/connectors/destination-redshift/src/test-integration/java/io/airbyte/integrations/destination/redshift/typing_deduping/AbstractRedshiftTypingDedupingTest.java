@@ -67,9 +67,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     // First sync without _airbyte_meta
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages_before_meta.jsonl");
@@ -92,9 +92,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     // First sync without _airbyte_meta
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages_before_meta.jsonl");
@@ -145,16 +145,16 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
     final AirbyteMessage message1 = Jsons.deserialize(record1, AirbyteMessage.class);
-    message1.getRecord().setNamespace(streamNamespace);
-    message1.getRecord().setStream(streamName);
+    message1.getRecord().setNamespace(getStreamNamespace());
+    message1.getRecord().setStream(getStreamName());
     ((ObjectNode) message1.getRecord().getData()).put("name", largeString1);
     final AirbyteMessage message2 = Jsons.deserialize(record2, AirbyteMessage.class);
-    message2.getRecord().setNamespace(streamNamespace);
-    message2.getRecord().setStream(streamName);
+    message2.getRecord().setNamespace(getStreamNamespace());
+    message2.getRecord().setStream(getStreamName());
     ((ObjectNode) message2.getRecord().getData()).put("name", largeString2);
 
     // message1 should be preserved which is just on limit, message2 should be nulled.

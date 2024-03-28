@@ -95,7 +95,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig =
-        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+        config.has(UPLOADING_METHOD) ? EncryptionConfig.Companion.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY))
+            : new NoEncryption();
     if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -220,7 +221,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final EncryptionConfig encryptionConfig =
-        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+        config.has(UPLOADING_METHOD) ? EncryptionConfig.Companion.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY))
+            : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     final int numberOfFileBuffers = getNumberOfFileBuffers(s3Options);
@@ -267,7 +269,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
           new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, redshiftMigrations);
     }
 
-    return StagingConsumerFactory.builder(
+    return StagingConsumerFactory.Companion.builder(
         outputRecordCollector,
         database,
         new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),

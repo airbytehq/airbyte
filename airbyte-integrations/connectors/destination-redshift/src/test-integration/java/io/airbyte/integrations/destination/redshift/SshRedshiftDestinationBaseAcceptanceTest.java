@@ -47,7 +47,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   private Connection connection;
 
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
-  private final String USER_WITHOUT_CREDS = Strings.addRandomSuffix("test_user", "_", 5);
+  private final String USER_WITHOUT_CREDS = Strings.Companion.addRandomSuffix("test_user", "_", 5);
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -124,7 +124,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    return SshTunnel.sshWrap(
+    return SshTunnel.Companion.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
@@ -175,7 +175,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
     database = createDatabaseFromConfig(config);
     // create the schema
 
-    SshTunnel.sshWrap(
+    SshTunnel.Companion.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
@@ -184,7 +184,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         });
 
     // create the user
-    SshTunnel.sshWrap(
+    SshTunnel.Companion.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
@@ -197,7 +197,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     // blow away the test schema at the end.
-    SshTunnel.sshWrap(
+    SshTunnel.Companion.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
@@ -206,7 +206,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         });
 
     // blow away the user at the end.
-    SshTunnel.sshWrap(
+    SshTunnel.Companion.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
