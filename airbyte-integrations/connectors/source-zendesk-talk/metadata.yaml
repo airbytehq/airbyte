@@ -17,6 +17,7 @@ data:
   githubIssueLabel: source-zendesk-talk
   icon: zendesk-talk.svg
   license: MIT
+  maxSecondsBetweenMessages: 300
   name: Zendesk Talk
   remoteRegistries:
     pypi:
