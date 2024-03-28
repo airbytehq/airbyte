@@ -1,0 +1,1454 @@
+version: 0.51.41
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - sites
+streams:
+  - type: DeclarativeStream
+    name: sites
+    primary_key:
+      - data
+      - "*"
+      - app_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
+        properties:
+          app_id:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          name:
+            type:
+              - 'null'
+              - string
+          native_optin:
+            type:
+              - 'null'
+              - boolean
+          total_email:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          total_push:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          total_pushonsite:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          total_sms:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          url:
+            type:
+              - 'null'
+              - string
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: site_configuration
+    primary_key:
+      - data
+      - "*"
+      - app_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
+        properties:
+          app_id:
+            type:
+              - 'null'
+              - string
+          configuration:
+            properties:
+              button_text:
+                properties:
+                  value:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+              confirmation_popup:
+                properties:
+                  body:
+                    type:
+                      - 'null'
+                      - string
+                  caption:
+                    type:
+                      - 'null'
+                      - string
+                  message:
+                    type:
+                      - 'null'
+                      - string
+                  title:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+              extra:
+                properties:
+                  constants:
+                    properties:
+                      INFLUENCED_WINDOW_HOURS:
+                        airbyte_type: integer
+                        type:
+                          - 'null'
+                          - integer
+                      WHITELABEL:
+                        type:
+                          - 'null'
+                          - boolean
+                    type:
+                      - 'null'
+                      - object
+                  events:
+                    properties:
+                      dismissedOptinWidget:
+                        type:
+                          - 'null'
+                          - string
+                      load:
+                        type:
+                          - 'null'
+                          - string
+                      newSubscription:
+                        type:
+                          - 'null'
+                          - string
+                    type:
+                      - 'null'
+                      - object
+                  googleAnalytics:
+                    properties:
+                      events:
+                        type:
+                          - 'null'
+                          - array
+                      status:
+                        type:
+                          - 'null'
+                          - boolean
+                    type:
+                      - 'null'
+                      - object
+                  interests:
+                    properties:
+                      INTERESTS:
+                        type:
+                          - 'null'
+                          - array
+                      status:
+                        type:
+                          - 'null'
+                          - boolean
+                    type:
+                      - 'null'
+                      - object
+                type:
+                  - 'null'
+                  - object
+              onsitepush:
+                properties:
+                  activation_eventName:
+                    type:
+                      - 'null'
+                      - string
+                  activation_type:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+              optin:
+                properties:
+                  disableBranding:
+                    type:
+                      - 'null'
+                      - string
+                  mailinglistOsp:
+                    properties:
+                      activation:
+                        properties:
+                          type:
+                            type:
+                              - 'null'
+                              - string
+                        type:
+                          - 'null'
+                          - object
+                      buttonSignUp:
+                        type:
+                          - 'null'
+                          - string
+                      status:
+                        type:
+                          - 'null'
+                          - boolean
+                      subtitle:
+                        type:
+                          - 'null'
+                          - string
+                      thankYou:
+                        type:
+                          - 'null'
+                          - string
+                      title:
+                        type:
+                          - 'null'
+                          - string
+                    type:
+                      - 'null'
+                      - object
+                  native:
+                    type:
+                      - 'null'
+                      - boolean
+                  status:
+                    type:
+                      - 'null'
+                      - boolean
+                type:
+                  - 'null'
+                  - object
+              osp:
+                properties:
+                  status:
+                    type:
+                      - 'null'
+                      - boolean
+                type:
+                  - 'null'
+                  - object
+              popup:
+                properties:
+                  emailActionMessage:
+                    type:
+                      - 'null'
+                      - string
+                  emailButtonSubmit:
+                    type:
+                      - 'null'
+                      - string
+                  emailCapture:
+                    type:
+                      - 'null'
+                      - boolean
+                  emailNoThanks:
+                    type:
+                      - 'null'
+                      - string
+                  emailSubtitleMessage:
+                    type:
+                      - 'null'
+                      - string
+                  emailSuccessMessage:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+              subscription_request:
+                properties:
+                  activation_type:
+                    type:
+                      - 'null'
+                      - string
+                  body:
+                    type:
+                      - 'null'
+                      - string
+                  btn_no:
+                    type:
+                      - 'null'
+                      - string
+                  btn_yes:
+                    type:
+                      - 'null'
+                      - string
+                  nativePrePrompt:
+                    type:
+                      - 'null'
+                      - string
+                  theme:
+                    type:
+                      - 'null'
+                      - string
+                  themeHorizontalAlignment:
+                    type:
+                      - 'null'
+                      - string
+                  themeVerticalAlignment:
+                    type:
+                      - 'null'
+                      - string
+                  title:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+            type:
+              - 'null'
+              - object
+          created_at:
+            airbyte_type: timestamp_with_timezone
+            format: date-time
+            type:
+              - 'null'
+              - string
+          default_icon:
+            type:
+              - 'null'
+              - string
+          fb_page_url:
+            type:
+              - 'null'
+              - string
+          id:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          is_active:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          name:
+            type:
+              - 'null'
+              - string
+          native_optin:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          optin_url:
+            type:
+              - 'null'
+              - string
+          total_emails:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          total_pushonsite:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          total_sms:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          total_subscribers:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          url:
+            type:
+              - 'null'
+              - string
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites/{{ stream_partition.site_id }}
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: app_id
+              partition_field: site_id
+              stream:
+                type: DeclarativeStream
+                name: sites
+                primary_key:
+                  - data
+                  - "*"
+                  - app_id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      app_id:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      native_optin:
+                        type: boolean
+                      total_email:
+                        type: number
+                      total_push:
+                        type: number
+                      total_pushonsite:
+                        type: number
+                      total_sms:
+                        type: number
+                      url:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.pushnews.eu/v2
+                    path: /sites
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-Auth-Token
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: NoPagination
+  - type: DeclarativeStream
+    name: notifications
+    primary_key:
+      - data
+      - "*"
+      - notification_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: false
+        properties:
+          app_id:
+            type:
+              - 'null'
+              - string
+          big_image:
+            type:
+              - 'null'
+              - string
+          body:
+            type:
+              - 'null'
+              - string
+          canceled:
+            type:
+              - 'null'
+              - boolean
+          clicks:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          converted:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          created_at:
+            properties:
+              date:
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
+              timezone:
+                type:
+                  - 'null'
+                  - string
+              timezone_type:
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
+            type: object
+          delivered:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          failed:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          filters:
+            type: array
+          finished_at:
+            properties:
+              date:
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
+              timezone:
+                type:
+                  - 'null'
+                  - string
+              timezone_type:
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
+            type:
+              - object
+              - 'null'
+          future:
+            type: boolean
+          icon:
+            type:
+              - 'null'
+              - string
+          id:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          influenced:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          kind:
+            type:
+              - 'null'
+              - string
+          notification_id:
+            type:
+              - 'null'
+              - string
+          opened:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          osp:
+            type:
+              - 'null'
+              - string
+          parameters:
+            properties:
+              converted:
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
+              influenced:
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
+              pushnotification.buttonText:
+                type:
+                  - 'null'
+                  - string
+              pushnotification.tag:
+                type:
+                  - 'null'
+                  - string
+            type: object
+          queued_at:
+            properties:
+              date:
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
+              timezone:
+                type:
+                  - 'null'
+                  - string
+              timezone_type:
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
+            type: object
+          remaining:
+            type:
+              - 'null'
+              - integer
+          scheduled:
+            type: boolean
+          sent_at:
+            properties:
+              date:
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
+              timezone:
+                type:
+                  - 'null'
+                  - string
+              timezone_type:
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
+            type: object
+          site_id:
+            type:
+              - 'null'
+              - integer
+          title:
+            type: string
+          updated_at:
+            properties:
+              date:
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
+              timezone:
+                type: string
+              timezone_type:
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
+            type: object
+          url:
+            type:
+              - 'null'
+              - string
+          user_credentials:
+            type: string
+          user_credentials_id:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+          user_credentials_name:
+            type:
+              - 'null'
+              - string
+          user_id:
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites/{{ stream_partition.site_id }}/notifications_stats
+        http_method: GET
+        request_parameters:
+          date_end: "{{ today_utc() }}"
+          date_start: "{{ config['start_date'] }}"
+          force_update_stats: "{{ config['force_update_stats'] }}"
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - notification_stats
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: app_id
+              partition_field: site_id
+              stream:
+                type: DeclarativeStream
+                name: sites
+                primary_key:
+                  - data
+                  - "*"
+                  - app_id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      app_id:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      native_optin:
+                        type: boolean
+                      total_email:
+                        type: number
+                      total_push:
+                        type: number
+                      total_pushonsite:
+                        type: number
+                      total_sms:
+                        type: number
+                      url:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.pushnews.eu/v2
+                    path: /sites
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-Auth-Token
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: NoPagination
+  - type: DeclarativeStream
+    name: pushonsite_events
+    primary_key:
+      - notification_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
+        properties:
+          app_id:
+            type:
+              - 'null'
+              - string
+          big_image:
+            type:
+              - 'null'
+              - string
+          body:
+            type:
+              - 'null'
+              - string
+          canceled:
+            type:
+              - 'null'
+              - boolean
+          clicks:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          converted:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          created_at:
+            properties:
+              date:
+                type: string
+                format: date-time
+                airbyte_type: timestamp_without_timezone
+              timezone:
+                type:
+                  - 'null'
+                  - string
+              timezone_type:
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
+            type: object
+          delivered:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          failed:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          filters:
+            type: array
+          future:
+            type:
+              - 'null'
+              - boolean
+          icon:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          influenced:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          kind:
+            type: string
+          notification_id:
+            type:
+              - 'null'
+              - string
+          opened:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          osp:
+            type:
+              - 'null'
+              - string
+          parameters:
+            properties:
+              converted:
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
+              pushonsite.activation:
+                properties:
+                  type:
+                    type:
+                      - 'null'
+                      - string
+                type: object
+              pushonsite.activationPages:
+                type:
+                  - 'null'
+                  - string
+              pushonsite.configuration:
+                properties:
+                  campaignId:
+                    type:
+                      - 'null'
+                      - string
+                  closeBtn:
+                    type:
+                      - 'null'
+                      - boolean
+                  description:
+                    type:
+                      - 'null'
+                      - string
+                  effectFadeIn:
+                    type:
+                      - 'null'
+                      - boolean
+                  fixedWidth:
+                    type:
+                      - 'null'
+                      - boolean
+                  horizontalAlignment:
+                    type:
+                      - 'null'
+                      - string
+                  iconUrl:
+                    type:
+                      - 'null'
+                      - string
+                  isClickable:
+                    type:
+                      - 'null'
+                      - boolean
+                  lightbox:
+                    type:
+                      - 'null'
+                      - boolean
+                  margin:
+                    type:
+                      - 'null'
+                      - boolean
+                  openLinkInSamePage:
+                    type:
+                      - 'null'
+                      - boolean
+                  showIcon:
+                    type:
+                      - 'null'
+                      - boolean
+                  style:
+                    properties:
+                      mainTheme:
+                        type:
+                          - 'null'
+                          - string
+                    type: object
+                  text:
+                    type:
+                      - 'null'
+                      - string
+                  url:
+                    type:
+                      - 'null'
+                      - string
+                  verticalAlignment:
+                    type:
+                      - 'null'
+                      - string
+                type: object
+              pushonsite.openLinkInSamePage:
+                type:
+                  - 'null'
+                  - boolean
+              pushonsite.positionHorizontal:
+                type:
+                  - 'null'
+                  - string
+              pushonsite.positionVertical:
+                type:
+                  - 'null'
+                  - string
+              pushonsite.segmentation.countryCode:
+                items:
+                  type:
+                    - 'null'
+                    - string
+                type: array
+              pushonsite.segmentation.stateCode:
+                items:
+                  type:
+                    - 'null'
+                    - string
+                type: array
+              pushonsite.type:
+                type:
+                  - 'null'
+                  - string
+            type: object
+          queued_at:
+            properties:
+              date:
+                type: string
+                format: date-time
+                airbyte_type: timestamp_without_timezone
+              timezone:
+                type:
+                  - 'null'
+                  - string
+              timezone_type:
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
+            type: object
+          remaining:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          scheduled:
+            type:
+              - 'null'
+              - boolean
+          sent_at:
+            properties:
+              date:
+                type: string
+                format: date-time
+                airbyte_type: timestamp_without_timezone
+              timezone:
+                type:
+                  - 'null'
+                  - string
+              timezone_type:
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
+            type: object
+          site_id:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          title:
+            type:
+              - 'null'
+              - string
+          updated_at:
+            properties:
+              date:
+                type: string
+                format: date-time
+                airbyte_type: timestamp_without_timezone
+              timezone:
+                type:
+                  - 'null'
+                  - string
+              timezone_type:
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
+            type: object
+          url:
+            type:
+              - 'null'
+              - string
+          user_credentials:
+            type:
+              - 'null'
+              - string
+          user_credentials_id:
+            type:
+              - 'null'
+              - number
+          user_credentials_name:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          user_id:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites/{{ stream_partition.site_id }}/pushonsite_stats
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - pushonsites_stats
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: app_id
+              partition_field: site_id
+              stream:
+                type: DeclarativeStream
+                name: sites
+                primary_key:
+                  - data
+                  - "*"
+                  - app_id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      app_id:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      native_optin:
+                        type: boolean
+                      total_email:
+                        type: number
+                      total_push:
+                        type: number
+                      total_pushonsite:
+                        type: number
+                      total_sms:
+                        type: number
+                      url:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.pushnews.eu/v2
+                    path: /sites
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-Auth-Token
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: NoPagination
+        - type: ListPartitionRouter
+          values: >-
+            {{ ['active','inactive'] if config['status'] == 'all' else
+            [config['status']] }}
+          cursor_field: status{{ config['status'] }}
+          request_option:
+            type: RequestOption
+            field_name: status
+            inject_into: request_parameter
+  - type: DeclarativeStream
+    name: pushonsite
+    primary_key:
+      - site_id
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
+        properties:
+          date:
+            type:
+              - 'null'
+              - string
+            format: date
+          period_total_clicks:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          period_total_views:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          pushonsite_count:
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
+          site_id:
+            type:
+              - 'null'
+              - string
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites/{{ stream_partition.site_id }}/pushonsite_stats
+        http_method: GET
+        request_parameters:
+          status: active
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: app_id
+              partition_field: site_id
+              stream:
+                type: DeclarativeStream
+                name: sites
+                primary_key:
+                  - data
+                  - "*"
+                  - app_id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      app_id:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      native_optin:
+                        type: boolean
+                      total_email:
+                        type: number
+                      total_push:
+                        type: number
+                      total_pushonsite:
+                        type: number
+                      total_sms:
+                        type: number
+                      url:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.pushnews.eu/v2
+                    path: /sites
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-Auth-Token
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: NoPagination
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['date_start'] }}"
+      - type: AddFields
+        fields:
+          - path:
+              - site_id
+            value: "{{ stream_partition['site_id'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - pushonsites_stats
+      - type: RemoveFields
+        field_pointers:
+          - - page
+      - type: RemoveFields
+        field_pointers:
+          - - total_pages
+      - type: RemoveFields
+        field_pointers:
+          - - date_start
+      - type: RemoveFields
+        field_pointers:
+          - - date_end
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date_start
+      lookback_window: P3D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: date_start
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: date_end
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: P1D
+      cursor_granularity: P1D
+spec:
+  documentationUrl: https://docs.airbyte.io/integrations/sources/pushnews
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        format: date
+        default: "2017-11-01"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        description: UTC date in the format 2017-01-25
+      status:
+        enum:
+          - all
+          - active
+          - inactive
+        type: string
+        order: 2
+        title: Status
+        default: all
+        description: Filter events by status
+      force_update_stats:
+        type: boolean
+        order: 3
+        title: Force Update Stats
+        description: Enable to force statistics update, reduce performance when activated.
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    sites: true
+    site_configuration: true
+    notifications: true
+    pushonsite_events: true
+    pushonsite: true
