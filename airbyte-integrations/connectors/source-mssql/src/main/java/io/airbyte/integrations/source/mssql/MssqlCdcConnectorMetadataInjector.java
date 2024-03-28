@@ -20,19 +20,24 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<MssqlDebeziumStateAttributes> {
 
   private final long emittedAtConverted;
+  private final String emittedAtTimestamp;
+
+  private final MssqlDebeziumStateAttributes stateAttributes;
 
   // This now makes this class stateful. Please make sure to use the same instance within a sync
   private final AtomicLong recordCounter = new AtomicLong(1);
   private static final long ONE_HUNDRED_MILLION = 100_000_000;
   private static MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector;
 
-  private MssqlCdcConnectorMetadataInjector(final Instant emittedAt) {
+  private MssqlCdcConnectorMetadataInjector(final Instant emittedAt, MssqlDebeziumStateAttributes stateAttributes) {
     this.emittedAtConverted = emittedAt.getEpochSecond() * ONE_HUNDRED_MILLION;
+    this.emittedAtTimestamp = emittedAt.toString();
+    this.stateAttributes = stateAttributes;
   }
 
-  public static MssqlCdcConnectorMetadataInjector getInstance(final Instant emittedAt) {
+  public static MssqlCdcConnectorMetadataInjector getInstance(final Instant emittedAt, MssqlDebeziumStateAttributes stateAttributes) {
     if (mssqlCdcConnectorMetadataInjector == null) {
-      mssqlCdcConnectorMetadataInjector = new MssqlCdcConnectorMetadataInjector(emittedAt);
+      mssqlCdcConnectorMetadataInjector = new MssqlCdcConnectorMetadataInjector(emittedAt, stateAttributes);
     }
 
     return mssqlCdcConnectorMetadataInjector;
@@ -48,12 +53,10 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Ms
   }
 
   @Override
-  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record,
-                                                      final String transactionTimestamp,
-                                                      final MssqlDebeziumStateAttributes debeziumStateAttributes) {
-    record.put(CDC_UPDATED_AT, transactionTimestamp);
+  public void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record) {
+    record.put(CDC_UPDATED_AT, emittedAtTimestamp);
     record.put(CDC_EVENT_SERIAL_NO, 1);
-    record.put(CDC_LSN, debeziumStateAttributes.lsn().toString());
+    record.put(CDC_LSN, stateAttributes.lsn().toString());
     record.put(CDC_DELETED_AT, (String) null);
     record.put(CDC_DEFAULT_CURSOR, getCdcDefaultCursor());
   }

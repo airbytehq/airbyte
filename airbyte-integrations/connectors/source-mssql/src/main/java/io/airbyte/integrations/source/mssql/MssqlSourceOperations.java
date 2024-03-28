@@ -16,8 +16,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
-import io.airbyte.integrations.source.mssql.initialsync.CdcMetadataInjector;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -38,26 +38,27 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSourceOperations.class);
 
-  private final Optional<CdcMetadataInjector> metadataInjector;
+  private final Optional<MssqlCdcConnectorMetadataInjector> metadataInjector;
 
   public MssqlSourceOperations() {
     super();
     this.metadataInjector = Optional.empty();
   }
 
-  public MssqlSourceOperations(final Optional<CdcMetadataInjector> metadataInjector) {
+  public MssqlSourceOperations(final Optional<MssqlCdcConnectorMetadataInjector> metadataInjector) {
     super();
     this.metadataInjector = metadataInjector;
   }
 
   @Override
-  public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    final ObjectNode jsonNode = (ObjectNode) super.rowToJson(queryContext);
+  public AirbyteRecordData convertDatabaseRowToAirbyteRecordData(final ResultSet queryContext) throws SQLException {
+    final AirbyteRecordData airbyteRecordData = super.convertDatabaseRowToAirbyteRecordData(queryContext);
+    final ObjectNode jsonNode = (ObjectNode) airbyteRecordData.rawRowData();
     if (!metadataInjector.isPresent()) {
-      return jsonNode;
+      return airbyteRecordData;
     }
-    metadataInjector.get().inject(jsonNode);
-    return jsonNode;
+    metadataInjector.get().addMetaDataToRowsFetchedOutsideDebezium(jsonNode);
+    return new AirbyteRecordData(jsonNode, airbyteRecordData.meta());
   }
 
   /**

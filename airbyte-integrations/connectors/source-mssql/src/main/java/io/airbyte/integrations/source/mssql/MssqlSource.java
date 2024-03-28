@@ -7,10 +7,7 @@ package io.airbyte.integrations.source.mssql;
 import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.logStreamSyncStatus;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.convertNameNamespacePairFromV0;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
@@ -161,36 +158,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       }
     }
     return super.check(config);
-  }
-
-  @Override
-  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final SyncMode syncMode,
-                                                               final Optional<String> cursorField) {
-    LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
-    // as intermediate state messages are emitted.
-    if (syncMode.equals(SyncMode.INCREMENTAL)) {
-      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
-      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-      final String preparedSqlQuery =
-          String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
-              getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
-      LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery, tableName, schemaName);
-    } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
-      // of the records.
-      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-      final String preparedSqlQuery =
-          String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
-
-      LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery, tableName, schemaName);
-    }
   }
 
   /**

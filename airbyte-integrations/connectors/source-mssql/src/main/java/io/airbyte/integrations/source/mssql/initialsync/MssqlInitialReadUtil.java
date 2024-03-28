@@ -128,7 +128,8 @@ public class MssqlInitialReadUtil {
             ? new CdcState().withState(initialDebeziumState)
             : stateManager.getCdcStateManager().getCdcState();
 
-    final MssqlCdcConnectorMetadataInjector metadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+    final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
+    final MssqlCdcConnectorMetadataInjector metadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt, stateAttributes);
     // If there are streams to sync via ordered column load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
       LOGGER.info("Streams to be synced via ordered column : {}", initialLoadStreams.streamsForInitialLoad().size());
@@ -138,9 +139,7 @@ public class MssqlInitialReadUtil {
               initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
               stateToBeUsed, catalog, namespacePair -> Jsons.emptyObject());
 
-      final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
-      final MssqlSourceOperations sourceOperations =
-          new MssqlSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
+      final MssqlSourceOperations sourceOperations = new MssqlSourceOperations(Optional.of(metadataInjector));
 
       final MssqlInitialLoadHandler initialLoadHandler = new MssqlInitialLoadHandler(sourceConfig, database,
           sourceOperations, quoteString, initialLoadStateManager,
