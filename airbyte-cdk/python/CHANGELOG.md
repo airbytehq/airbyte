@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.77.2
+Emit state recordCount as float instead of integer
+
 ## 0.77.1
 Fix empty , ,  extras packages
 

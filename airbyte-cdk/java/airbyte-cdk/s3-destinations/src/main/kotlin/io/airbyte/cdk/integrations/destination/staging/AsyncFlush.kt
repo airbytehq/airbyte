@@ -30,9 +30,9 @@ internal class AsyncFlush(
     private val stagingOperations: StagingOperations?,
     private val database: JdbcDatabase?,
     private val catalog: ConfiguredAirbyteCatalog?,
-    private val typerDeduperValve: TypeAndDedupeOperationValve?,
-    private val typerDeduper:
-        TyperDeduper?, // In general, this size is chosen to improve the performance of lower memory
+    private val typerDeduperValve: TypeAndDedupeOperationValve,
+    private val typerDeduper: TyperDeduper,
+    // In general, this size is chosen to improve the performance of lower memory
     // connectors. With 1 Gi
     // of
     // resource the connector will usually at most fill up around 150 MB in a single queue. By
@@ -46,7 +46,7 @@ internal class AsyncFlush(
         streamDescToWriteConfig
 
     @Throws(Exception::class)
-    override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage?>) {
+    override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val writer: CsvSerializedBuffer
         try {
             writer =
@@ -91,16 +91,15 @@ internal class AsyncFlush(
         }
 
         val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(decs)
-        val schemaName: String = writeConfig.getOutputSchemaName()
-        val stageName =
-            stagingOperations!!.getStageName(schemaName, writeConfig.getOutputTableName())
+        val schemaName: String = writeConfig.outputSchemaName
+        val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.outputTableName)
         val stagingPath =
             stagingOperations.getStagingPath(
                 GeneralStagingFunctions.RANDOM_CONNECTION_ID,
                 schemaName,
-                writeConfig.getStreamName(),
-                writeConfig.getOutputTableName(),
-                writeConfig.getWriteDatetime()
+                writeConfig.streamName,
+                writeConfig.outputTableName,
+                writeConfig.writeDatetime
             )
         try {
             val stagedFile =
@@ -116,11 +115,11 @@ internal class AsyncFlush(
                 stageName,
                 stagingPath,
                 List.of(stagedFile),
-                writeConfig.getOutputTableName(),
+                writeConfig.outputTableName,
                 schemaName,
                 stagingOperations,
-                writeConfig.getNamespace(),
-                writeConfig.getStreamName(),
+                writeConfig.namespace,
+                writeConfig.streamName,
                 typerDeduperValve,
                 typerDeduper
             )

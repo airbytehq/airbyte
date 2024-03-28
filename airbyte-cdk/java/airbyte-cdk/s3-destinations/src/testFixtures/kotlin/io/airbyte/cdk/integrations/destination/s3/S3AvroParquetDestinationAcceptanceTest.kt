@@ -31,7 +31,7 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
         val catalog = readCatalogFromFile(catalogFileName)
         val messages = readMessagesFromFile(messagesFileName)
 
-        val config = getConfig()
+        val config = this.getConfig()
         val defaultSchema = getDefaultSchema(config!!)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)

@@ -111,6 +111,10 @@ private constructor(
     }
 
     fun createAsync(): SerializedAirbyteMessageConsumer {
+        val typerDeduper = this.typerDeduper!!
+        val typerDeduperValve = this.typerDeduperValve!!
+        val stagingOperations = this.stagingOperations!!
+
         val writeConfigs: List<WriteConfig> =
             createWriteConfigs(
                 namingResolver,
@@ -135,7 +139,7 @@ private constructor(
         return AsyncStreamConsumer(
             outputRecordCollector!!,
             GeneralStagingFunctions.onStartFunction(
-                database,
+                database!!,
                 stagingOperations,
                 writeConfigs,
                 typerDeduper
@@ -170,13 +174,13 @@ private constructor(
         fun builder(
             outputRecordCollector: Consumer<AirbyteMessage>,
             database: JdbcDatabase?,
-            stagingOperations: StagingOperations?,
+            stagingOperations: StagingOperations,
             namingResolver: NamingConventionTransformer?,
             config: JsonNode?,
             catalog: ConfiguredAirbyteCatalog,
             purgeStagingData: Boolean,
-            typerDeduperValve: TypeAndDedupeOperationValve?,
-            typerDeduper: TyperDeduper?,
+            typerDeduperValve: TypeAndDedupeOperationValve,
+            typerDeduper: TyperDeduper,
             parsedCatalog: ParsedCatalog?,
             defaultNamespace: String?,
             useDestinationsV2Columns: Boolean
@@ -230,7 +234,7 @@ private constructor(
                             .stream()
                             .map<String>(
                                 Function<WriteConfig, String> { config: WriteConfig ->
-                                    config.getNamespace() + "." + config.getStreamName()
+                                    config.namespace + "." + config.streamName
                                 }
                             )
                             .collect(Collectors.joining(", "))
@@ -241,9 +245,7 @@ private constructor(
         }
 
         private fun toStreamDescriptor(config: WriteConfig): StreamDescriptor {
-            return StreamDescriptor()
-                .withName(config.getStreamName())
-                .withNamespace(config.getNamespace())
+            return StreamDescriptor().withName(config.streamName).withNamespace(config.namespace)
         }
 
         /**

@@ -15,10 +15,10 @@ import java.util.function.Consumer
 
 abstract class SpecModifyingDestination(private val destination: Destination) : Destination {
     @Throws(Exception::class)
-    abstract fun modifySpec(originalSpec: ConnectorSpecification?): ConnectorSpecification?
+    abstract fun modifySpec(originalSpec: ConnectorSpecification): ConnectorSpecification
 
     @Throws(Exception::class)
-    override fun spec(): ConnectorSpecification? {
+    override fun spec(): ConnectorSpecification {
         return modifySpec(destination.spec())
     }
 
@@ -31,7 +31,7 @@ abstract class SpecModifyingDestination(private val destination: Destination) : 
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
         return destination.getConsumer(config, catalog, outputRecordCollector)
     }
@@ -40,7 +40,7 @@ abstract class SpecModifyingDestination(private val destination: Destination) : 
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage?>?
+        outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         return destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)
     }

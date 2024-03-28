@@ -15,7 +15,7 @@ interface Integration {
      * @throws Exception
      * - any exception.
      */
-    @Throws(Exception::class) fun spec(): ConnectorSpecification?
+    @Throws(Exception::class) fun spec(): ConnectorSpecification
 
     /**
      * Check whether, given the current configuration, the integration can connect to the
