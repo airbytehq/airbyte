@@ -433,7 +433,6 @@ files = []
 develop = true
 
 [package.dependencies]
-cryptography = "^42"
 pyjwt = "^2.1.0"
 requests = "^2.31.0"
 
