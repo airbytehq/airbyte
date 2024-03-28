@@ -42,11 +42,12 @@ object Jsons {
     }
 
     private val YAML_OBJECT_MAPPER: ObjectMapper = MoreMappers.initYamlMapper(YAMLFactory())
-    private val OBJECT_WRITER: ObjectWriter = OBJECT_MAPPER!!.writer(JsonPrettyPrinter())
+    private val OBJECT_WRITER: ObjectWriter = OBJECT_MAPPER.writer(JsonPrettyPrinter())
 
+    @JvmStatic
     fun <T> serialize(`object`: T): String {
         try {
-            return OBJECT_MAPPER!!.writeValueAsString(`object`)
+            return OBJECT_MAPPER.writeValueAsString(`object`)
         } catch (e: JsonProcessingException) {
             throw RuntimeException(e)
         }
@@ -55,92 +56,102 @@ object Jsons {
     @JvmStatic
     fun <T> deserialize(jsonString: String?, klass: Class<T>?): T {
         try {
-            return OBJECT_MAPPER!!.readValue(jsonString, klass)
+            return OBJECT_MAPPER.readValue(jsonString, klass)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
 
+    @JvmStatic
     fun <T> deserialize(jsonString: String?, valueTypeRef: TypeReference<T>?): T {
         try {
-            return OBJECT_MAPPER!!.readValue(jsonString, valueTypeRef)
+            return OBJECT_MAPPER.readValue(jsonString, valueTypeRef)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
 
+    @JvmStatic
     fun <T> deserialize(file: File?, klass: Class<T>?): T {
         try {
-            return OBJECT_MAPPER!!.readValue(file, klass)
+            return OBJECT_MAPPER.readValue(file, klass)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
 
+    @JvmStatic
     fun <T> deserialize(file: File?, valueTypeRef: TypeReference<T>?): T {
         try {
-            return OBJECT_MAPPER!!.readValue(file, valueTypeRef)
+            return OBJECT_MAPPER.readValue(file, valueTypeRef)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
 
+    @JvmStatic
     fun <T> convertValue(`object`: Any?, klass: Class<T>?): T {
-        return OBJECT_MAPPER!!.convertValue(`object`, klass)
+        return OBJECT_MAPPER.convertValue(`object`, klass)
     }
 
     @JvmStatic
     fun deserialize(jsonString: String?): JsonNode {
         try {
-            return OBJECT_MAPPER!!.readTree(jsonString)
+            return OBJECT_MAPPER.readTree(jsonString)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
 
+    @JvmStatic
     fun deserializeExact(jsonString: String?): JsonNode {
         try {
-            return OBJECT_MAPPER_EXACT!!.readTree(jsonString)
+            return OBJECT_MAPPER_EXACT.readTree(jsonString)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
 
+    @JvmStatic
     fun deserialize(jsonBytes: ByteArray?): JsonNode {
         try {
-            return OBJECT_MAPPER!!.readTree(jsonBytes)
+            return OBJECT_MAPPER.readTree(jsonBytes)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
 
+    @JvmStatic
     fun deserializeExact(jsonBytes: ByteArray?): JsonNode {
         try {
-            return OBJECT_MAPPER_EXACT!!.readTree(jsonBytes)
+            return OBJECT_MAPPER_EXACT.readTree(jsonBytes)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
 
+    @JvmStatic
     fun <T : Any> tryDeserialize(jsonString: String, klass: Class<T>): Optional<T> {
         return try {
-            Optional.of(OBJECT_MAPPER!!.readValue(jsonString, klass))
+            Optional.of(OBJECT_MAPPER.readValue(jsonString, klass))
         } catch (e: Throwable) {
             handleDeserThrowable(e)
         }
     }
 
+    @JvmStatic
     fun <T : Any> tryDeserializeExact(jsonString: String?, klass: Class<T>?): Optional<T> {
         return try {
-            Optional.of(OBJECT_MAPPER_EXACT!!.readValue(jsonString, klass))
+            Optional.of(OBJECT_MAPPER_EXACT.readValue(jsonString, klass))
         } catch (e: Throwable) {
             handleDeserThrowable(e)
         }
     }
 
+    @JvmStatic
     fun tryDeserialize(jsonString: String?): Optional<JsonNode> {
         return try {
-            Optional.of(OBJECT_MAPPER!!.readTree(jsonString))
+            Optional.of(OBJECT_MAPPER.readTree(jsonString))
         } catch (e: Throwable) {
             handleDeserThrowable(e)
         }
@@ -153,9 +164,10 @@ object Jsons {
      * @param jsonString
      * @return
      */
+    @JvmStatic
     fun tryDeserializeWithoutWarn(jsonString: String?): Optional<JsonNode> {
         return try {
-            Optional.of(OBJECT_MAPPER!!.readTree(jsonString))
+            Optional.of(OBJECT_MAPPER.readTree(jsonString))
         } catch (e: Throwable) {
             Optional.empty()
         }
@@ -163,12 +175,12 @@ object Jsons {
 
     @JvmStatic
     fun <T> jsonNode(`object`: T): JsonNode {
-        return OBJECT_MAPPER!!.valueToTree(`object`)
+        return OBJECT_MAPPER.valueToTree(`object`)
     }
 
     @Throws(IOException::class)
     fun jsonNodeFromFile(file: File?): JsonNode {
-        return YAML_OBJECT_MAPPER!!.readTree(file)
+        return YAML_OBJECT_MAPPER.readTree(file)
     }
 
     @JvmStatic
@@ -177,22 +189,22 @@ object Jsons {
     }
 
     fun arrayNode(): ArrayNode {
-        return OBJECT_MAPPER!!.createArrayNode()
+        return OBJECT_MAPPER.createArrayNode()
     }
 
     @JvmStatic
     fun <T> `object`(jsonNode: JsonNode?, klass: Class<T>?): T {
-        return OBJECT_MAPPER!!.convertValue(jsonNode, klass)
+        return OBJECT_MAPPER.convertValue(jsonNode, klass)
     }
 
     @JvmStatic
     fun <T> `object`(jsonNode: JsonNode?, typeReference: TypeReference<T>): T {
-        return OBJECT_MAPPER!!.convertValue(jsonNode, typeReference)
+        return OBJECT_MAPPER.convertValue(jsonNode, typeReference)
     }
 
     fun <T : Any> tryObject(jsonNode: JsonNode?, klass: Class<T>?): Optional<T> {
         return try {
-            Optional.of(OBJECT_MAPPER!!.convertValue(jsonNode, klass))
+            Optional.of(OBJECT_MAPPER.convertValue(jsonNode, klass))
         } catch (e: Exception) {
             Optional.empty()
         }
@@ -200,7 +212,7 @@ object Jsons {
 
     fun <T : Any> tryObject(jsonNode: JsonNode?, typeReference: TypeReference<T>?): Optional<T> {
         return try {
-            Optional.of(OBJECT_MAPPER!!.convertValue(jsonNode, typeReference))
+            Optional.of(OBJECT_MAPPER.convertValue(jsonNode, typeReference))
         } catch (e: Exception) {
             Optional.empty()
         }

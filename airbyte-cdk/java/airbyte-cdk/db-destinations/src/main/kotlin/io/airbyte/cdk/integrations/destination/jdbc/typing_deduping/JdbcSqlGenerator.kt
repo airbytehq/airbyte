@@ -144,7 +144,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         cursorField: Optional<ColumnId>
     ): Field<Int>
 
-    protected val dslContext: DSLContext
+    protected open val dslContext: DSLContext
         get() = DSL.using(dialect)
 
     /**
@@ -596,7 +596,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             .getSQL(ParamType.INLINED)
     }
 
-    protected fun castedField(
+    protected open fun castedField(
         field: Field<*>?,
         type: AirbyteType,
         alias: String?,
@@ -625,7 +625,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         return DSL.cast(field, toDialectType(type))
     }
 
-    protected fun currentTimestamp(): Field<Timestamp> {
+    protected open fun currentTimestamp(): Field<Timestamp> {
         return DSL.currentTimestamp()
     }
 

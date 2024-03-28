@@ -58,7 +58,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     protected var cdcIncrementalAppendStream: StreamConfig? = null
 
     protected var generator: SqlGenerator? = null
-    protected abstract var destinationHandler: DestinationHandler<DestinationState>
+    protected abstract val destinationHandler: DestinationHandler<DestinationState>
     protected var namespace: String? = null
 
     protected lateinit var streamId: StreamId

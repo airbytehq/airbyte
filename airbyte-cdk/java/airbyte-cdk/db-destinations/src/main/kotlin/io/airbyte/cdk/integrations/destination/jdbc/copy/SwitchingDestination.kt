@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory
  * This class exists to make it easy to define a destination in terms of multiple other destination
  * implementations, switching between them based on the config provided.
  */
-class SwitchingDestination<T : Enum<T>>(
+open class SwitchingDestination<T : Enum<T>>(
     enumClass: Class<T>,
     configToType: Function<JsonNode, T>,
     typeToDestination: Map<T, Destination>

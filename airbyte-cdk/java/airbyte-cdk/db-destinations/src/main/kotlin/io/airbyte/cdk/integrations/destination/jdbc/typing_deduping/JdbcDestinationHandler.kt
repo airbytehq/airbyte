@@ -263,7 +263,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         // We can't directly call record.set here, because that will raise a
                         // ConcurrentModificationException on the fieldnames iterator.
                         // Instead, build up a map of new fields and set them all at once.
-                        newFields.put(fieldName.lowercase(Locale.getDefault()), record[fieldName])
+                        newFields[fieldName.lowercase(Locale.getDefault())] = record[fieldName]
                     }
 
                     record.setAll<JsonNode>(newFields)
@@ -271,16 +271,13 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 .collect(
                     toMap(
                         { record ->
-                            val nameNode: JsonNode = record.get(DESTINATION_STATE_TABLE_COLUMN_NAME)
-                            val namespaceNode: JsonNode =
-                                record.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)
                             AirbyteStreamNameNamespacePair(
-                                if (nameNode != null) nameNode.asText() else null,
-                                if (namespaceNode != null) namespaceNode.asText() else null
+                                record.get(DESTINATION_STATE_TABLE_COLUMN_NAME)?.asText(),
+                                record.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)?.asText()
                             )
                         },
                         { record ->
-                            val stateNode: JsonNode =
+                            val stateNode: JsonNode? =
                                 record.get(DESTINATION_STATE_TABLE_COLUMN_STATE)
                             val state =
                                 if (stateNode != null) Jsons.deserialize(stateNode.asText())

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.networknt.schema.*
-import io.airbyte.commons.string.Strings.join
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -59,11 +58,10 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
         if (validationMessages.isEmpty()) {
             return
         }
-
         throw JsonValidationException(
             String.format(
                 "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
-                join(validationMessages, ", "),
+                validationMessages.joinToString(", "),
                 schemaName
             )
         )
@@ -82,7 +80,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
         if (!validationMessages.isEmpty()) {
             LOGGER.info(
                 "JSON schema validation failed. \nerrors: {}",
-                join(validationMessages, ", ")
+                validationMessages.joinToString(", ")
             )
         }
 
@@ -120,7 +118,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
         throw JsonValidationException(
             String.format(
                 "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
-                join(validationMessages, ", "),
+                validationMessages.joinToString(", "),
                 schemaJson.toPrettyString()
             )
         )
@@ -207,6 +205,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
          * - the schema file
          * @return schema object processed from across all dependency files.
          */
+        @JvmStatic
         fun getSchema(schemaFile: File?): JsonNode {
             try {
                 return processor.process(schemaFile)
