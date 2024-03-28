@@ -516,6 +516,7 @@ constructor(
         }
 
         @Throws(Exception::class)
+        @JvmStatic
         fun sshWrap(
             config: JsonNode,
             hostKey: List<String>,

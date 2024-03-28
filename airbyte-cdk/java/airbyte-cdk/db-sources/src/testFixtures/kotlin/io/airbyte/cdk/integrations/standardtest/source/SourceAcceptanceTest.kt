@@ -444,6 +444,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
         private val LOGGER: Logger = LoggerFactory.getLogger(SourceAcceptanceTest::class.java)
 
+        @JvmStatic
         protected fun filterRecords(
             messages: Collection<AirbyteMessage?>?
         ): List<AirbyteRecordMessage> {
