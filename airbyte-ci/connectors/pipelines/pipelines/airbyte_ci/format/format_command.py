@@ -16,6 +16,7 @@ from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST, REPO_
 from pipelines.consts import GIT_IMAGE
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.cli import LogOptions, log_command_results
+from pipelines.helpers.git import get_current_git_revision, get_modified_files_local, get_current_git_branch
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.steps import CommandResult, StepStatus
@@ -30,7 +31,7 @@ class FormatCommand(click.Command):
     def __init__(
         self,
         formatter: Formatter,
-        file_filter: List[str],
+        file_extensions: List[str],
         get_format_container_fn: Callable,
         format_commands: List[str],
         export_formatted_code: bool,
@@ -41,7 +42,7 @@ class FormatCommand(click.Command):
 
         Args:
             formatter (Formatter): The formatter to run
-            file_filter (List[str]): The list of files to include in the formatter
+            fil_extensions (List[str]): The list of files to include in the formatter
             get_format_container_fn (Callable): A function to get the container to run the formatter in
             format_commands (List[str]): The list of commands to run in the container to format the repository
             export_formatted_code (bool): Whether to export the formatted code back to the host
@@ -50,7 +51,7 @@ class FormatCommand(click.Command):
         """
         super().__init__(formatter.value)
         self.formatter = formatter
-        self.file_filter = file_filter
+        self.file_extensions = file_extensions
         self.get_format_container_fn = get_format_container_fn
         self.format_commands = format_commands
         self.export_formatted_code = export_formatted_code
@@ -72,7 +73,7 @@ class FormatCommand(click.Command):
             message = f"{message}."
         return message
 
-    def get_dir_to_format(self, dagger_client: dagger.Client) -> dagger.Directory:
+    def get_files_to_format_filter(self, dagger_client: dagger.Client, isLocal: bool) -> List[str]:
         """Get a directory with all the source code to format according to the file_filter.
         We mount the files to format in a git container and remove all gitignored files.
         It ensures we're not formatting files that are gitignored.
@@ -84,26 +85,13 @@ class FormatCommand(click.Command):
             Directory: The directory with the files to format that are not gitignored.
         """
         # Load a directory from the host with all the files to format according to the file_filter and the .gitignore files
-        dir_to_format = dagger_client.host().directory(
-            self.LOCAL_REPO_PATH, include=self.file_filter + ["**/.gitignore"], exclude=DEFAULT_FORMAT_IGNORE_LIST
+        files_to_format_filter = (
+            list(file for file in get_modified_files_local(get_current_git_revision()) if file.endswith(tuple(self.file_extensions)))
+            if isLocal and get_current_git_branch() != "master"
+            else (["**/*." + fe for fe in self.file_extensions] + ["**/.gitignore"])
         )
-
-        return (
-            dagger_client.container()
-            .from_(GIT_IMAGE)
-            .with_workdir(REPO_MOUNT_PATH)
-            .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
-            # All with_exec commands below will re-run if the to_format directory changes
-            .with_exec(["init"])
-            # Remove all gitignored files
-            .with_exec(["clean", "-dfqX"])
-            # Delete all .gitignore files
-            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True)
-            # Delete .git
-            .with_exec(["rm", "-rf", ".git"], skip_entrypoint=True)
-            .directory(REPO_MOUNT_PATH)
-            .with_timestamps(0)
-        )
+        self.logger.info(f"files to format: - {str(files_to_format_filter)}")
+        return files_to_format_filter
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
@@ -119,7 +107,31 @@ class FormatCommand(click.Command):
         """
 
         dagger_client = await click_pipeline_context.get_dagger_client(pipeline_name=f"Format {self.formatter.value}")
-        dir_to_format = self.get_dir_to_format(dagger_client)
+        files_to_format = self.get_files_to_format_filter(dagger_client, ctx.obj["is_local"])
+
+        if not files_to_format:
+            return CommandResult(command=self, status=StepStatus.SUCCESS)
+
+        dir_to_format = dagger_client.host().directory(
+            self.LOCAL_REPO_PATH, include=list(files_to_format), exclude=DEFAULT_FORMAT_IGNORE_LIST
+        )
+
+        dir_to_format = (
+            dagger_client.container()
+            .from_(GIT_IMAGE)
+            .with_workdir(REPO_MOUNT_PATH)
+            .with_mounted_directory(REPO_MOUNT_PATH, dir_to_format)
+            # All with_exec commands below will re-run if the to_format directory changes
+            .with_exec(["init"])
+            # Remove all gitignored files
+            .with_exec(["clean", "-dfqX"])
+            # Delete all .gitignore files
+            .with_exec(sh_dash_c(['find . -type f -name ".gitignore" -exec rm {} \;']), skip_entrypoint=True)
+            # Delete .git
+            .with_exec(["rm", "-rf", ".git"], skip_entrypoint=True)
+            .directory(REPO_MOUNT_PATH)
+            .with_timestamps(0)
+        )
 
         container = self.get_format_container_fn(dagger_client, dir_to_format)
         command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)

@@ -52,14 +52,14 @@ async def fix() -> None:
 # Check and fix commands only differ in the export_formatted_code parameter value: check does not export, fix does.
 FORMATTERS_CHECK_COMMANDS: Dict[Formatter, FormatCommand] = {
     config.formatter: FormatCommand(
-        config.formatter, config.file_filter, config.get_format_container_fn, config.format_commands, export_formatted_code=False
+        config.formatter, config.file_extensions, config.get_format_container_fn, config.format_commands, export_formatted_code=False
     )
     for config in FORMATTERS_CONFIGURATIONS
 }
 
 FORMATTERS_FIX_COMMANDS: Dict[Formatter, FormatCommand] = {
     config.formatter: FormatCommand(
-        config.formatter, config.file_filter, config.get_format_container_fn, config.format_commands, export_formatted_code=True
+        config.formatter, config.file_extensions, config.get_format_container_fn, config.format_commands, export_formatted_code=True
     )
     for config in FORMATTERS_CONFIGURATIONS
 }
