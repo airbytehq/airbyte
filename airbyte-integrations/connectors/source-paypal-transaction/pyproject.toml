@@ -24,7 +24,7 @@ airbyte-cdk = "^0"
 source-paypal-transaction = "source_paypal_transaction.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-pytest-mock = "^3.12"
+pytest = "^8"
+pytest-mock = "^3"
 requests-mock = "^1.11.0"
 selenium = "^4.17.2"

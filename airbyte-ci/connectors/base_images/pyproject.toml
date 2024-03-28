@@ -17,8 +17,8 @@ inquirer = "^3.1.3"
 jinja2 = "^3.1.2"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2.5"
-pytest-mock = "^3.10.0"
+pytest = "^8"
+pytest-mock = "^3"
 pytest-cov = "^4.1.0"
 mypy = "^1.5.1"
 vulture = "^2.9.1"

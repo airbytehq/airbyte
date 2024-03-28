@@ -27,5 +27,5 @@ source-metabase = "source_metabase.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 requests_mock = "^1.8.0"
-pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest-mock = "^3"
+pytest = "^8"

@@ -22,7 +22,7 @@ airbyte-cdk = {version = "0.57.0", extras = ["vector-db-based"]}
 pinecone-client = {version = "2.2.4", extras = ["grpc"]}
 
 [tool.poetry.group.dev.dependencies]
-pytest = ">=6.2,<7.0"
+pytest = "^8"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 

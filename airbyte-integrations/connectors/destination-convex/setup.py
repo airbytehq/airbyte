@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.2",
+    "pytest",
     "responses~=0.13.3",
 ]
 

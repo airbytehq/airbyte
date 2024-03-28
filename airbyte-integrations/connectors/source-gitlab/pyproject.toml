@@ -24,6 +24,6 @@ vcrpy = "==4.1.1"
 source-gitlab = "source_gitlab.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.12.0"
+pytest-mock = "^3"
 requests-mock = "^1.9.3"
-pytest = "^6.1"
+pytest = "^8"

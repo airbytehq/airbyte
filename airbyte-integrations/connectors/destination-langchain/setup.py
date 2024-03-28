@@ -20,7 +20,7 @@ MAIN_REQUIREMENTS = [
     "chromadb==0.4.3",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.2"]
+TEST_REQUIREMENTS = ["pytest"]
 
 setup(
     name="destination_langchain",

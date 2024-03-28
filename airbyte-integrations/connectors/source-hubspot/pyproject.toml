@@ -25,5 +25,5 @@ source-hubspot = "source_hubspot.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 mock = "^5.1.0"
-pytest-mock = "^3.6"
-pytest = "^6.2"
+pytest-mock = "^3"
+pytest = "^8"

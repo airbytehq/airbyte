@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk"]
 
-TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "freezegun", "pytest~=6.1", "pytest-mock", "requests_mock"]
+TEST_REQUIREMENTS = ["requests-mock", "freezegun", "pytest", "pytest-mock", "requests_mock"]
 
 setup(
     entry_points={

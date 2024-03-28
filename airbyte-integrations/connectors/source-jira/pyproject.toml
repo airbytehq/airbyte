@@ -23,7 +23,7 @@ airbyte-cdk = "^0"
 source-jira = "source_jira.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "==6.2.5"
+pytest = "^8"
 requests-mock = "^1.9.3"
-pytest-mock = "^3.6.1"
+pytest-mock = "^3"
 responses = "^0.22.0"

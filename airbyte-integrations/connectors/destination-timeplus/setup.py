@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = [
     "timeplus~=1.2.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.2"]
+TEST_REQUIREMENTS = ["pytest"]
 
 setup(
     name="destination_timeplus",
