@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the idea category",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name or title of the idea category",
       "type": ["null", "string"]
     },
     "parent_id": {
+      "description": "The identifier of the parent idea category, if this category is nested",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the idea category was created",
       "type": ["null", "string"]
     }
   }
