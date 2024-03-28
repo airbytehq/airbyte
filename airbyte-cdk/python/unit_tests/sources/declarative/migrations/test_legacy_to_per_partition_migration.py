@@ -251,6 +251,7 @@ def _migrator_with_multiple_parent_streams():
     parameters = {}
     return LegacyToPerPartitionStateMigration(partition_router, cursor, config, parameters)
 
+
 @pytest.mark.parametrize(
     "retriever_type, partition_router_class, is_parent_stream_config, expected_exception, expected_error_message",
     [
@@ -269,7 +270,7 @@ def test_create_legacy_to_per_partition_state_migration(
 ):
     partition_router = partition_router_class(type="CustomPartitionRouter", class_name="a_class_namer") if partition_router_class else None
 
-    stream =  MagicMock()
+    stream = MagicMock()
     stream.retriever = MagicMock(spec=retriever_type)
     stream.retriever.partition_router = partition_router
 
