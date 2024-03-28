@@ -5,7 +5,7 @@
 import logging
 from http import HTTPStatus
 from itertools import chain
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Generator, List, Mapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -115,7 +115,9 @@ class SourceHubspot(AbstractSource):
         start_date = config.get("start_date", DEFAULT_START_DATE)
         credentials = config["credentials"]
         api = self.get_api(config=config)
-        return dict(api=api, start_date=start_date, credentials=credentials)
+        # Additional configuration is necessary for testing certain streams due to their specific restrictions.
+        acceptance_test_config = config.get("acceptance_test_config", {})
+        return dict(api=api, start_date=start_date, credentials=credentials, acceptance_test_config=acceptance_test_config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
@@ -218,7 +220,7 @@ class SourceHubspot(AbstractSource):
 
     def get_web_analytics_custom_objects_stream(
         self, custom_object_stream_instances: List[CustomObject], common_params: Any
-    ) -> WebAnalyticsStream:
+    ) -> Generator[WebAnalyticsStream, None, None]:
         for custom_object_stream_instance in custom_object_stream_instances:
 
             def __init__(self, **kwargs: Any):

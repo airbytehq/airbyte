@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
@@ -377,7 +378,14 @@ class Stream(HttpStream, ABC):
             return APIv2Property(properties)
         return APIv3Property(properties)
 
-    def __init__(self, api: API, start_date: Union[str, pendulum.datetime], credentials: Mapping[str, Any] = None, **kwargs):
+    def __init__(
+        self,
+        api: API,
+        start_date: Union[str, pendulum.datetime],
+        credentials: Mapping[str, Any] = None,
+        acceptance_test_config: Mapping[str, Any] = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._api: API = api
         self._credentials = credentials
@@ -391,6 +399,12 @@ class Stream(HttpStream, ABC):
         creds_title = self._credentials["credentials_title"]
         if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
+
+        # Additional configuration is necessary for testing certain streams due to their specific restrictions.
+        if acceptance_test_config is None:
+            acceptance_test_config = {}
+        self._is_test = self.name in acceptance_test_config
+        self._acceptance_test_config = acceptance_test_config.get(self.name, {})
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == HTTPStatus.UNAUTHORIZED:
@@ -1641,6 +1655,7 @@ class Engagements(EngagementsABC, IncrementalStream):
             "api": self._api,
             "start_date": since_date,
             "credentials": self._credentials,
+            "acceptance_test_config": {casing.camel_to_snake(EngagementsRecent.__name__): self._acceptance_test_config},
         }
 
         try:
@@ -2343,6 +2358,12 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
 
             object_id = parent_slice["parent"][self.object_id_field]
+
+            # We require this workaround to shorten the duration of the acceptance test run.
+            # The web analytics stream alone takes over 3 hours to complete.
+            # Consequently, we aim to run the test against a limited number of object IDs.
+            if self._is_test and object_id not in self._acceptance_test_config.get("object_ids", []):
+                continue
 
             # Take the initial datetime either form config or from state depending whichever value is higher
             # In case when state is detected add a 1 millisecond to avoid duplicates from previous sync
