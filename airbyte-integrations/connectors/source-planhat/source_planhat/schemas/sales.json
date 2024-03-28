@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "_currency": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "product": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "companyId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "companyName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "externalId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sourceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "salesDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "value": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "custom": {
+            "type": [
+                "object",
+                "null"
+            ]
+        }
+    }
+}

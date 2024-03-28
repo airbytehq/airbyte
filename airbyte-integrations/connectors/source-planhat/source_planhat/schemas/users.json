@@ -1,0 +1,113 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "email": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "nickName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "firstName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lastName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "roles": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "externalId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "inactive": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "image": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "radarOneLine": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "taskFilter": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "companyFilter": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "compressedView": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "isHidden": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "createDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "permissions": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "custom": {
+            "type": [
+                "object",
+                "null"
+            ]
+        }
+    }
+}

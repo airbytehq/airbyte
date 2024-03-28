@@ -1,0 +1,125 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "currency": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "product": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "extId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sourceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invoiceDate": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "lastUpdated": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invoiceNo": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "dueDate": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "paidDate": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "amountTotal": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "status": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lineItems": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "emails": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "addressCountry": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invoiceCycle": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "custom": {
+            "type": [
+                "object",
+                "null"
+            ]
+        }
+    }
+}

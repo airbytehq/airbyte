@@ -1,0 +1,183 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mainType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "companyId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "companyName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "startTime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "dateDone": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "action": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "description": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "repeat": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "repeatDays": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ownerId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ownerName": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "doneBy": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sourceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "noSpecificTime": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "shared": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "overdueNotified": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "activityTags": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "isArchived": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "status": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "checklist": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "snippet": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "endusers": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "users": {
+            "type": [
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "custom": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "createdAt": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "updatedAt": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}
