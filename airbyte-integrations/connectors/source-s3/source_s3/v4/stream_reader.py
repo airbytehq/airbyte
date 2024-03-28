@@ -65,7 +65,10 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 client_kv_args["region_name"] = self.config.region_name
 
             if self.config.role_arn:
-                self._s3_client = self._get_iam_s3_client(client_kv_args)
+                self._s3_client = self._get_iam_s3_client(
+                    aws_access_key_id=self.config.aws_access_key_id,
+                    aws_secret_access_key=self.config.aws_secret_access_key,
+                    client_kv_args=client_kv_args)
             else:
                 self._s3_client = boto3.client(
                     "s3",
@@ -76,7 +79,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         return self._s3_client
 
-    def _get_iam_s3_client(self, client_kv_args: dict) -> BaseClient:
+    def _get_iam_s3_client(self, aws_access_key_id: Optional[str], aws_secret_access_key: Optional[str], client_kv_args: dict) -> BaseClient:
         """
         Creates an S3 client using AWS Security Token Service (STS) with assumed role credentials. This method handles
         the authentication process by assuming an IAM role, optionally using an external ID for enhanced security.
@@ -90,7 +93,11 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         """
 
         def refresh():
-            client = boto3.client("sts")
+            client = boto3.client(
+                "sts",
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key
+            )
             if AWS_EXTERNAL_ID:
                 role = client.assume_role(
                     RoleArn=self.config.role_arn,
