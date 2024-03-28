@@ -74,11 +74,11 @@ class DestinationV1V2MigratorTest {
     @ArgumentsSource(ShouldMigrateTestArgumentProvider::class)
     @Throws(Exception::class)
     fun testShouldMigrate(
-        destinationSyncMode: DestinationSyncMode?,
+        destinationSyncMode: DestinationSyncMode,
         migrator: BaseDestinationV1V2Migrator<*>,
         expected: Boolean
     ) {
-        val config = StreamConfig(STREAM_ID, null, destinationSyncMode!!, null, null, null)
+        val config = StreamConfig(STREAM_ID, null, destinationSyncMode, null, null, null)
         val actual = migrator.shouldMigrate(config)
         Assertions.assertEquals(expected, actual)
     }
