@@ -1,53 +1,53 @@
 {
   "prospects": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "sequences": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "sequence_states": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "sequence_steps": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "accounts": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "opportunities": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "personas": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "mailings": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "mailboxes": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "stages": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "calls": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "call_purposes": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "call_dispositions": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "users": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "tasks": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "templates": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   },
   "snippets": {
-    "updatedAt": "2040-11-16T00:00:00Z"
+    "updatedAt": "2040-11-16T00:00:00.000Z"
   }
 }
