@@ -5,6 +5,7 @@ from typing import Any, Mapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ParentStreamConfig
 
 
 def _is_already_migrated(stream_state: Mapping[str, Any]) -> bool:
@@ -40,9 +41,21 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         self._config = config
         self._parameters = parameters
         self._partition_key_field = InterpolatedString.create(
-            self._partition_router.parent_stream_configs[0].parent_key, parameters=self._parameters
+            self._get_parent_key(self._partition_router), parameters=self._parameters
         ).eval(self._config)
         self._cursor_field = InterpolatedString.create(self._cursor.cursor_field, parameters=self._parameters).eval(self._config)
+
+    def _get_parent_key(self, partition_router: SubstreamPartitionRouter) -> str:
+        parent_stream_config = partition_router.parent_stream_configs[0]
+
+        # Retrieve the parent key with a condition, as properties are returned as a dictionary for custom components.
+        parent_key = (
+            parent_stream_config.parent_key
+            if isinstance(parent_stream_config, ParentStreamConfig)
+            else parent_stream_config.get("parent_key")
+        )
+
+        return parent_key
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if _is_already_migrated(stream_state):

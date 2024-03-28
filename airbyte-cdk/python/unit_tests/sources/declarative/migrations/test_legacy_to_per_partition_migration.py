@@ -4,6 +4,7 @@
 import pytest
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
 from airbyte_cdk.sources.declarative.models import (
+    CustomPartitionRouter,
     CustomRetriever,
     DatetimeBasedCursor,
     DeclarativeStream,
@@ -230,6 +231,36 @@ def _migrator_with_multiple_parent_streams():
                     )
                 )
             ),
+        ]
+    )
+    cursor = DatetimeBasedCursor(
+        type="DatetimeBasedCursor",
+        cursor_field="{{ parameters['cursor_field'] }}",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%fZ",
+        start_datetime="1970-01-01T00:00:00.0Z",
+    )
+    config = {}
+    parameters = {}
+    return LegacyToPerPartitionStateMigration(partition_router, cursor, config, parameters)
+
+
+def _migrator_with_custom_partition_router():
+    partition_router = CustomPartitionRouter(
+        type="CustomPartitionRouter",
+        class_name="a_class_namer",
+        parent_stream_configs=[
+            ParentStreamConfig(
+                type="ParentStreamConfig",
+                parent_key="id",
+                partition_field="parent_id",
+                stream=DeclarativeStream(
+                    type="DeclarativeStream",
+                    retriever=CustomRetriever(
+                        type="CustomRetriever",
+                        class_name="a_class_name"
+                    )
+                )
+            )
         ]
     )
     cursor = DatetimeBasedCursor(
