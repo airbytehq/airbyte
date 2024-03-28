@@ -1,0 +1,24 @@
+  documentation_url: https://docs.airbyte.com/integrations/sources/select-star
+  connectionSpecification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Select Star Spec
+    type: object
+    required:
+      - token
+    properties:
+      token:
+        type: string
+        title: Token
+        description: >-
+          Your Select Star Token
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated.
+        examples:
+          - '2023-08-05T00:43:59.244Z'
+        default: "2000-01-01T00:43:59.244Z"
+
