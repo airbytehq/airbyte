@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.77.1"
+version = "0.77.2"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.77.1-py3-none-any.whl", hash = "sha256:1530f4a5e44fc8a3e8f81132658222d9b89930385f7ecd9ef0a17a06cc16ea0b"},
-    {file = "airbyte_cdk-0.77.1.tar.gz", hash = "sha256:5a4526c3e83cae8144170ec823093b51962c21db8038058e467574ad7574e6c5"},
+    {file = "airbyte_cdk-0.77.2-py3-none-any.whl", hash = "sha256:6dffbe0c4b3454a5cdd20525b4f1e9cfef2e80c005b6b30473fc5bf6f75af64e"},
+    {file = "airbyte_cdk-0.77.2.tar.gz", hash = "sha256:84aeb27862a18e135c7bc3a5dfc363037665d428e7495e8824673f853adcca70"},
 ]
 
 [package.dependencies]
@@ -1023,22 +1023,20 @@ yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
 name = "requests-mock"
-version = "1.11.0"
+version = "1.12.0"
 description = "Mock out responses from the requests package"
 optional = false
 python-versions = "*"
 files = [
-    {file = "requests-mock-1.11.0.tar.gz", hash = "sha256:ef10b572b489a5f28e09b708697208c4a3b2b89ef80a9f01584340ea357ec3c4"},
-    {file = "requests_mock-1.11.0-py2.py3-none-any.whl", hash = "sha256:f7fae383f228633f6bececebdab236c478ace2284d6292c6e7e2867b9ab74d15"},
+    {file = "requests-mock-1.12.0.tar.gz", hash = "sha256:4e34f2a2752f0b78397fb414526605d95fcdeab021ac1f26d18960e7eb41f6a8"},
+    {file = "requests_mock-1.12.0-py2.py3-none-any.whl", hash = "sha256:4f6fdf956de568e0bac99eee4ad96b391c602e614cc0ad33e7f5c72edd699e70"},
 ]
 
 [package.dependencies]
-requests = ">=2.3,<3"
-six = "*"
+requests = ">=2.22,<3"
 
 [package.extras]
 fixture = ["fixtures"]
-test = ["fixtures", "mock", "purl", "pytest", "requests-futures", "sphinx", "testtools"]
 
 [[package]]
 name = "rsa"
