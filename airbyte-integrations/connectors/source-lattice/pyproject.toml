@@ -12,7 +12,7 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/lattice"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_lattice", from="src"}, {include = "main.py", from = "src"} ]
+# packages = [ { include = "source_lattice", from="src"}, {include = "main.py", from = "src"} ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
