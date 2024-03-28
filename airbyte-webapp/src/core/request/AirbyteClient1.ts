@@ -1265,6 +1265,7 @@ export interface DestinationCreate {
 export interface DestinationCoreConfig {
   destinationDefinitionId: DestinationDefinitionId;
   connectionConfiguration: DestinationConfiguration;
+  workspaceId: WorkspaceId;
 }
 
 export interface DestinationPageRequestBody {
@@ -1319,6 +1320,7 @@ export interface DestinationUpdate {
   destinationId: DestinationId;
   connectionConfiguration: DestinationConfiguration;
   name: string;
+  workspaceId: WorkspaceId;
 }
 
 export interface DestinationIdPageRequestBody {
@@ -1458,11 +1460,13 @@ export interface SourceUpdate {
   sourceId: SourceId;
   connectionConfiguration: SourceConfiguration;
   name: string;
+  workspaceId: WorkspaceId;
 }
 
 export interface SourceCoreConfig {
   sourceDefinitionId: SourceDefinitionId;
   connectionConfiguration: SourceConfiguration;
+  workspaceId: WorkspaceId;
 }
 
 export interface SourceCloneConfiguration {
