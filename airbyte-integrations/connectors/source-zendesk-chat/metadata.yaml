@@ -17,6 +17,7 @@ data:
   icon: zendesk-chat.svg
   license: MIT
   name: Zendesk Chat
+  maxSecondsBetweenMessages: 60
   remoteRegistries:
     pypi:
       enabled: true
