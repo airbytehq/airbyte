@@ -325,7 +325,7 @@ class ModelToComponentFactory:
             raise ValueError(
                 f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(declarative_stream.retriever)}"
             )
-        if not isinstance(declarative_stream.retriever.partition_router, SubstreamPartitionRouterModel):
+        if not isinstance(declarative_stream.retriever.partition_router, (SubstreamPartitionRouterModel, CustomPartitionRouterModel)):
             raise ValueError(
                 f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(declarative_stream.retriever.partition_router)}"
             )
