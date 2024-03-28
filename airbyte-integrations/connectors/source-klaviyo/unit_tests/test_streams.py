@@ -1,28 +1,52 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import Optional
+
+
+from typing import Any, List, Mapping, Optional
 from unittest import mock
 
 import pendulum
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.exceptions import KlaviyoBackoffError
-from source_klaviyo.streams import (
-    ArchivedRecordsStream,
-    Campaigns,
-    GlobalExclusions,
-    IncrementalKlaviyoStream,
-    KlaviyoStream,
-    Profiles,
-    SemiIncrementalKlaviyoStream,
-)
+from source_klaviyo.source import SourceKlaviyo
+from source_klaviyo.streams import ArchivedRecordsStream, Campaigns, Flows, IncrementalKlaviyoStream, KlaviyoStream
 
 API_KEY = "some_key"
 START_DATE = pendulum.datetime(2020, 10, 10)
+CONFIG = {"api_key": API_KEY, "start_date": START_DATE}
+
+
+def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
+    source = SourceKlaviyo()
+    matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
+    if not matches_by_name:
+        raise ValueError("Please provide a valid stream name.")
+    return matches_by_name[0]
+
+
+def get_records(
+    stream: Stream,
+    sync_mode: Optional[SyncMode] = SyncMode.full_refresh,
+    stream_state: Optional[Mapping[str, Any]] = None,
+) -> List[Mapping[str, Any]]:
+    records = []
+    for stream_slice in stream.stream_slices(sync_mode=sync_mode, stream_state=stream_state):
+        for record in stream.read_records(
+            sync_mode=sync_mode, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            records.append(dict(record))
+    return records
+
+
+@pytest.fixture(name="response")
+def response_fixture(mocker):
+    return mocker.Mock(spec=requests.Response)
 
 
 class SomeStream(KlaviyoStream):
@@ -41,29 +65,13 @@ class SomeIncrementalStream(IncrementalKlaviyoStream):
         return "sub_path"
 
 
-class SomeSemiIncrementalStream(SemiIncrementalKlaviyoStream):
-    schema = mock.Mock(spec=BaseModel)
-    cursor_field = "updated"
-
-    def path(self, **kwargs) -> str:
-        return "sub_path"
-
-
-@pytest.fixture(name="response")
-def response_fixture(mocker):
-    return mocker.Mock(spec=requests.Response)
-
-
 class TestKlaviyoStream:
     def test_request_headers(self):
         stream = SomeStream(api_key=API_KEY)
-        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
         expected_headers = {
-            "Accept": "application/json",
-            "Revision": stream.api_revision,
-            "Authorization": f"Klaviyo-API-Key {API_KEY}",
+            "Accept": "application/json", "Revision": stream.api_revision, "Authorization": f"Klaviyo-API-Key {API_KEY}"
         }
-        assert stream.request_headers(**inputs) == expected_headers
+        assert stream.request_headers() == expected_headers
 
     @pytest.mark.parametrize(
         ("next_page_token", "page_size", "expected_params"),
@@ -77,8 +85,7 @@ class TestKlaviyoStream:
     def test_request_params(self, next_page_token, page_size, expected_params):
         stream = SomeStream(api_key=API_KEY)
         stream.page_size = page_size
-        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
-        assert stream.request_params(**inputs) == expected_params
+        assert stream.request_params(stream_state=None, next_page_token=next_page_token) == expected_params
 
     @pytest.mark.parametrize(
         ("response_json", "next_page_token"),
@@ -90,11 +97,11 @@ class TestKlaviyoStream:
                     ],
                     "links": {
                         "self": "https://a.klaviyo.com/api/profiles/",
-                        "next": "https://a.klaviyo.com/api/profiles/?page%5Bcursor%5D=aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
+                        "next": "https://a.klaviyo.com/api/profiles/?page%5Bcursor%5D=aaA0aAo0aAA0AaAaAaa0AaaAAAaa",
                         "prev": "null",
                     },
                 },
-                {"page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa"},
+                {"page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaa"},
             ),
             (
                 {
@@ -114,7 +121,6 @@ class TestKlaviyoStream:
         response.json.return_value = response_json
         stream = SomeStream(api_key=API_KEY)
         result = stream.next_page_token(response)
-
         assert result == next_page_token
 
     def test_availability_strategy(self):
@@ -126,7 +132,9 @@ class TestKlaviyoStream:
             "This is most likely due to insufficient permissions on the credentials in use. "
             "Try to create and use an API key with read permission for the 'some_stream' stream granted"
         )
-        reasons_for_unavailable_status_codes = stream.availability_strategy.reasons_for_unavailable_status_codes(stream, None, None, None)
+        reasons_for_unavailable_status_codes = stream.availability_strategy.reasons_for_unavailable_status_codes(
+            stream, None, None, None
+        )
         assert expected_status_code in reasons_for_unavailable_status_codes
         assert reasons_for_unavailable_status_codes[expected_status_code] == expected_message
 
@@ -134,29 +142,31 @@ class TestKlaviyoStream:
         ("status_code", "retry_after", "expected_time"),
         ((429, 30, 30.0), (429, None, None), (200, 30, None), (200, None, None)),
     )
-    def test_backoff_time(self, status_code, retry_after, expected_time):
+    def test_backoff_time(self, response, status_code, retry_after, expected_time):
         stream = SomeStream(api_key=API_KEY)
-        response_mock = mock.MagicMock()
-        response_mock.status_code = status_code
-        response_mock.headers = {"Retry-After": retry_after}
-        assert stream.backoff_time(response_mock) == expected_time
+        response.status_code = status_code
+        response.headers = {"Retry-After": retry_after}
+        assert stream.backoff_time(response) == expected_time
 
-    def test_backoff_time_large_retry_after(self):
+    def test_backoff_time_large_retry_after(self, response):
         stream = SomeStream(api_key=API_KEY)
-        response_mock = mock.MagicMock()
-        response_mock.status_code = 429
+        response.status_code = 429
         retry_after = stream.max_time + 5
-        response_mock.headers = {"Retry-After": retry_after}
+        response.headers = {"Retry-After": retry_after}
         with pytest.raises(KlaviyoBackoffError) as e:
-            stream.backoff_time(response_mock)
-        error_message = f"Stream some_stream has reached rate limit with 'Retry-After' of {float(retry_after)} seconds, exit from stream."
+            stream.backoff_time(response)
+        error_message = (
+            f"Stream some_stream has reached rate limit with 'Retry-After' of {float(retry_after)} seconds, "
+            "exit from stream."
+        )
         assert str(e.value) == error_message
 
 
 class TestIncrementalKlaviyoStream:
     def test_cursor_field_is_required(self):
         with pytest.raises(
-            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path"
+            expected_exception=TypeError,
+            match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path",
         ):
             IncrementalKlaviyoStream(api_key=API_KEY, start_date=START_DATE.isoformat())
 
@@ -212,8 +222,7 @@ class TestIncrementalKlaviyoStream:
     )
     def test_request_params(self, config_start_date, stream_state_date, next_page_token, expected_params):
         stream = SomeIncrementalStream(api_key=API_KEY, start_date=config_start_date)
-        inputs = {"stream_state": stream_state_date, "next_page_token": next_page_token}
-        assert stream.request_params(**inputs) == expected_params
+        assert stream.request_params(stream_state=stream_state_date, next_page_token=next_page_token) == expected_params
 
     @pytest.mark.parametrize(
         ("config_start_date", "current_cursor", "latest_cursor", "expected_cursor"),
@@ -227,190 +236,129 @@ class TestIncrementalKlaviyoStream:
     )
     def test_get_updated_state(self, config_start_date, current_cursor, latest_cursor, expected_cursor):
         stream = SomeIncrementalStream(api_key=API_KEY, start_date=config_start_date)
-        inputs = {
-            "current_stream_state": {stream.cursor_field: current_cursor} if current_cursor else {},
-            "latest_record": {stream.cursor_field: latest_cursor},
-        }
-        assert stream.get_updated_state(**inputs) == {stream.cursor_field: expected_cursor}
+        assert stream.get_updated_state(
+            current_stream_state={stream.cursor_field: current_cursor} if current_cursor else {},
+            latest_record={stream.cursor_field: latest_cursor},
+        ) == {stream.cursor_field: expected_cursor}
 
 
 class TestSemiIncrementalKlaviyoStream:
-    def test_cursor_field_is_required(self):
-        with pytest.raises(
-            TypeError, match="Can't instantiate abstract class SemiIncrementalKlaviyoStream with abstract methods cursor_field, path"
-        ):
-            SemiIncrementalKlaviyoStream(api_key=API_KEY, start_date=START_DATE.isoformat())
-
     @pytest.mark.parametrize(
         ("start_date", "stream_state", "input_records", "expected_records"),
         (
             (
-                "2021-11-08T00:00:00",
-                "2022-11-07T00:00:00",
+                "2021-11-08T00:00:00+00:00",
+                "2022-11-07T00:00:00+00:00",
                 [
-                    {"attributes": {"updated": "2022-11-08T00:00:00"}},
-                    {"attributes": {"updated": "2023-11-08T00:00:00"}},
-                    {"attributes": {"updated": "2021-11-08T00:00:00"}},
+                    {"attributes": {"updated": "2022-11-08T00:00:00+00:00"}},
+                    {"attributes": {"updated": "2023-11-08T00:00:00+00:00"}},
+                    {"attributes": {"updated": "2021-11-08T00:00:00+00:00"}},
                 ],
                 [
-                    {"attributes": {"updated": "2022-11-08T00:00:00"}, "updated": "2022-11-08T00:00:00"},
-                    {"attributes": {"updated": "2023-11-08T00:00:00"}, "updated": "2023-11-08T00:00:00"},
-                ],
-            ),
-            (
-                "2021-11-08T00:00:00",
-                None,
-                [
-                    {"attributes": {"updated": "2022-11-08T00:00:00"}},
-                    {"attributes": {"updated": "2023-11-08T00:00:00"}},
-                    {"attributes": {"updated": "2021-11-08T00:00:00"}},
-                ],
-                [
-                    {"attributes": {"updated": "2022-11-08T00:00:00"}, "updated": "2022-11-08T00:00:00"},
-                    {"attributes": {"updated": "2023-11-08T00:00:00"}, "updated": "2023-11-08T00:00:00"},
+                    {"attributes": {"updated": "2022-11-08T00:00:00+00:00"}, "updated": "2022-11-08T00:00:00+00:00"},
+                    {"attributes": {"updated": "2023-11-08T00:00:00+00:00"}, "updated": "2023-11-08T00:00:00+00:00"},
                 ],
             ),
             (
-                None,
+                "2021-11-08T00:00:00+00:00",
                 None,
                 [
-                    {"attributes": {"updated": "2022-11-08T00:00:00"}},
-                    {"attributes": {"updated": "2023-11-08T00:00:00"}},
-                    {"attributes": {"updated": "2021-11-08T00:00:00"}},
+                    {"attributes": {"updated": "2022-11-08T00:00:00+00:00"}},
+                    {"attributes": {"updated": "2023-11-08T00:00:00+00:00"}},
+                    {"attributes": {"updated": "2021-11-08T00:00:00+00:00"}},
                 ],
                 [
-                    {"attributes": {"updated": "2022-11-08T00:00:00"}, "updated": "2022-11-08T00:00:00"},
-                    {"attributes": {"updated": "2023-11-08T00:00:00"}, "updated": "2023-11-08T00:00:00"},
-                    {"attributes": {"updated": "2021-11-08T00:00:00"}, "updated": "2021-11-08T00:00:00"},
+                    {"attributes": {"updated": "2022-11-08T00:00:00+00:00"}, "updated": "2022-11-08T00:00:00+00:00"},
+                    {"attributes": {"updated": "2023-11-08T00:00:00+00:00"}, "updated": "2023-11-08T00:00:00+00:00"},
                 ],
             ),
-            (
-                "2021-11-08T00:00:00",
-                "2022-11-07T00:00:00",
-                [],
-                [],
-            ),
+            ("2021-11-08T00:00:00+00:00", "2022-11-07T00:00:00+00:00", [], []),
         ),
     )
     def test_read_records(self, start_date, stream_state, input_records, expected_records, requests_mock):
-        stream = SomeSemiIncrementalStream(api_key=API_KEY, start_date=start_date)
-        requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/{stream.path()}", status_code=200, json={"data": input_records})
-        inputs = {
-            "sync_mode": SyncMode.incremental,
-            "cursor_field": stream.cursor_field,
-            "stream_slice": None,
-            "stream_state": {stream.cursor_field: stream_state} if stream_state else None,
-        }
-        assert list(stream.read_records(**inputs)) == expected_records
+        stream = get_stream_by_name("metrics", CONFIG | {"start_date": start_date})
+        requests_mock.register_uri(
+            "GET", f"https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records}
+        )
+        stream_state = {stream.cursor_field: stream_state if stream_state else start_date}
+        records = get_records(stream=stream, sync_mode=SyncMode.incremental, stream_state=stream_state)
+        assert records == expected_records
 
 
 class TestProfilesStream:
-    @pytest.mark.parametrize(
-        ("next_page_token", "page_size", "expected_params"),
-        (
-            (
-                {"page[cursor]": "aaA0aAo0aAA0A"},
-                None,
-                {"page[cursor]": "aaA0aAo0aAA0A", "additional-fields[profile]": "predictive_analytics", "sort": "updated"},
-            ),
-            (
-                {"page[cursor]": "aaA0aAo0aAA0A"},
-                100,
-                {"page[cursor]": "aaA0aAo0aAA0A", "additional-fields[profile]": "predictive_analytics", "sort": "updated"},
-            ),
-            (None, None, {"additional-fields[profile]": "predictive_analytics", "sort": "updated"}),
-            (None, 100, {"page[size]": 100, "additional-fields[profile]": "predictive_analytics", "sort": "updated"}),
-        ),
-    )
-    def test_request_params(self, next_page_token: Optional[dict], page_size: Optional[int], expected_params: dict):
-        stream = Profiles(api_key=API_KEY)
-        stream.page_size = page_size
-        inputs = {"stream_slice": None, "stream_state": None, "next_page_token": next_page_token}
-        assert stream.request_params(**inputs) == expected_params
+    def test_request_params(self):
+        stream = get_stream_by_name("profiles", CONFIG)
+        assert stream.retriever.requester.get_request_params() == {"additional-fields[profile]": "predictive_analytics"}
 
-    def test_parse_response(self, mocker):
-        stream = Profiles(api_key=API_KEY, start_date=START_DATE.isoformat())
+    def test_read_records(self, requests_mock):
+        stream = get_stream_by_name("profiles", CONFIG)
         json = {
             "data": [
                 {
                     "type": "profile",
                     "id": "00AA0A0AA0AA000AAAAAAA0AA0",
-                    "attributes": {"email": "name@airbyte.io", "phone_number": "+11111111111", "updated": "2023-03-10T20:36:36+00:00"},
+                    "attributes": {"email": "name@airbyte.io", "updated": "2023-03-10T20:36:36+00:00"},
                     "properties": {"Status": "onboarding_complete"},
                 },
                 {
                     "type": "profile",
                     "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
-                    "attributes": {"email": "name2@airbyte.io", "phone_number": "+2222222222", "updated": "2023-02-10T20:36:36+00:00"},
+                    "attributes": {"email": "name2@airbyte.io", "updated": "2023-02-10T20:36:36+00:00"},
                     "properties": {"Status": "onboarding_started"},
                 },
             ],
-            "links": {
-                "self": "https://a.klaviyo.com/api/profiles/",
-                "next": "https://a.klaviyo.com/api/profiles/?page%5Bcursor%5D=aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
-                "prev": "null",
-            },
         }
-        records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
+        requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/profiles", status_code=200, json=json)
+
+        records = get_records(stream=stream)
         assert records == [
             {
                 "type": "profile",
                 "id": "00AA0A0AA0AA000AAAAAAA0AA0",
                 "updated": "2023-03-10T20:36:36+00:00",
-                "attributes": {"email": "name@airbyte.io", "phone_number": "+11111111111", "updated": "2023-03-10T20:36:36+00:00"},
+                "attributes": {"email": "name@airbyte.io", "updated": "2023-03-10T20:36:36+00:00"},
                 "properties": {"Status": "onboarding_complete"},
             },
             {
                 "type": "profile",
                 "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
                 "updated": "2023-02-10T20:36:36+00:00",
-                "attributes": {"email": "name2@airbyte.io", "phone_number": "+2222222222", "updated": "2023-02-10T20:36:36+00:00"},
+                "attributes": {"email": "name2@airbyte.io", "updated": "2023-02-10T20:36:36+00:00"},
                 "properties": {"Status": "onboarding_started"},
             },
         ]
 
 
 class TestGlobalExclusionsStream:
-    def test_parse_response(self, mocker):
-        stream = GlobalExclusions(api_key=API_KEY, start_date=START_DATE.isoformat())
+    def test_read_records(self, requests_mock):
+        stream = get_stream_by_name("global_exclusions", CONFIG)
         json = {
             "data": [
                 {
                     "type": "profile",
                     "id": "00AA0A0AA0AA000AAAAAAA0AA0",
                     "attributes": {
-                        "email": "name@airbyte.io",
-                        "phone_number": "+11111111111",
                         "updated": "2023-03-10T20:36:36+00:00",
-                        "subscriptions": {
-                            "email": {"marketing": {"suppressions": [{"reason": "SUPPRESSED", "timestamp": "2021-05-18T01:29:51+00:00"}]}},
-                        },
+                        "subscriptions": {"email": {"marketing": {"suppressions": [{"reason": "SUPPRESSED"}]}}},
                     },
                 },
                 {
                     "type": "profile",
                     "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
-                    "attributes": {"email": "name2@airbyte.io", "phone_number": "+2222222222", "updated": "2023-02-10T20:36:36+00:00"},
+                    "attributes": {"updated": "2023-02-10T20:36:36+00:00"},
                 },
             ],
-            "links": {
-                "self": "https://a.klaviyo.com/api/profiles/",
-                "next": "https://a.klaviyo.com/api/profiles/?page%5Bcursor%5D=aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
-                "prev": "null",
-            },
         }
-        records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
+        requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/profiles", status_code=200, json=json)
+
+        records = get_records(stream=stream)
         assert records == [
             {
                 "type": "profile",
                 "id": "00AA0A0AA0AA000AAAAAAA0AA0",
                 "attributes": {
-                    "email": "name@airbyte.io",
-                    "phone_number": "+11111111111",
                     "updated": "2023-03-10T20:36:36+00:00",
-                    "subscriptions": {
-                        "email": {"marketing": {"suppressions": [{"reason": "SUPPRESSED", "timestamp": "2021-05-18T01:29:51+00:00"}]}},
-                    },
+                    "subscriptions": {"email": {"marketing": {"suppressions": [{"reason": "SUPPRESSED"}]}}},
                 },
                 "updated": "2023-03-10T20:36:36+00:00",
             }
@@ -429,17 +377,20 @@ class TestCampaignsStream:
 
         stream = Campaigns(api_key=API_KEY)
         requests_mock.register_uri(
-            "GET", "https://a.klaviyo.com/api/campaigns?sort=updated_at", status_code=200, json={"data": input_records}, complete_qs=True
+            "GET",
+            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals%28messages.channel%2C%27%7Bsms%7D%27%29&include=campaign-messages",
+            status_code=200,
+            json={"data": input_records},
+            complete_qs=True,
         )
         requests_mock.register_uri(
             "GET",
-            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals(archived,true)",
+            "https://a.klaviyo.com/api/campaigns?sort=updated_at&filter=equals%28messages.channel%2C%27%7Bsms%7D%27%29%2Cequals%28archived%2Ctrue%29&include=campaign-messages",
             status_code=200,
             json={"data": input_records_archived},
             complete_qs=True,
         )
 
-        inputs = {"sync_mode": SyncMode.full_refresh, "cursor_field": stream.cursor_field, "stream_slice": None, "stream_state": None}
         expected_records = [
             {
                 "attributes": {"name": "Some name 1", "archived": False, "updated_at": "2021-05-12T20:45:47+00:00"},
@@ -454,7 +405,9 @@ class TestCampaignsStream:
                 "updated_at": "2021-05-12T20:45:47+00:00",
             },
         ]
-        assert list(stream.read_records(**inputs)) == expected_records
+        assert list(
+            stream.read_records(SyncMode.full_refresh, stream_slice={"filter": "equals(messages.channel,'{sms}')"})
+        ) == expected_records
 
     @pytest.mark.parametrize(
         ("latest_record", "current_stream_state", "expected_state"),
@@ -495,45 +448,89 @@ class TestCampaignsStream:
         stream = Campaigns(api_key=API_KEY)
         assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
 
+    def test_stream_slices(self):
+        stream = Campaigns(api_key=API_KEY)
+        expected_slices = [{"filter": "equals(messages.channel,'email')"}, {"filter": "equals(messages.channel,'sms')"}]
+        assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected_slices
+
+    def test_get_campaign_messages(self, response):
+        response.json.return_value = {
+            "included": [{"id": "1", "type": "campaign-message"}, {"id": "2", "type": "campaign"}, {"id": "3"}]
+        }
+        assert Campaigns._get_campaign_messages(response) == {"1": {"id": "1", "type": "campaign-message"}}
+
+    @pytest.mark.parametrize(
+        ("input_record", "campaign_messages", "expected_record"),
+        (
+            (
+                {"attributes": {"name": "Campaign"}, "relationships": {"campaign-messages": {"data": [{"id": "1"}]}}},
+                {"1": {"id": "1", "type": "campaign-message", "attributes": {"channel": "email"}}},
+                {
+                    "attributes": {"name": "Campaign", "message": "1", "channel": "email"},
+                    "campaign_message": {"id": "1", "type": "campaign-message", "attributes": {"channel": "email"}},
+                    "relationships": {"campaign-messages": {"data": [{"id": "1"}]}},
+                },
+            ),
+            (
+                {"attributes": {"name": "Campaign"}, "relationships": {"campaign-messages": {"data": [{"id": "1"}]}}},
+                {"2": {"id": "2", "type": "campaign-message", "attributes": {"channel": "email"}}},
+                {
+                    "attributes": {"name": "Campaign", "message": "1"},
+                    "relationships": {"campaign-messages": {"data": [{"id": "1"}]}},
+                },
+            ),
+            (
+                {"attributes": {"name": "Campaign"}},
+                {"1": {"id": "1", "type": "campaign-message", "attributes": {"channel": "email"}}},
+                {"attributes": {"name": "Campaign"}},
+            ),
+        ),
+    )
+    def test_transform_record(self, input_record, campaign_messages, expected_record):
+        assert Campaigns._transform_record(input_record, campaign_messages) == expected_record
+
 
 class TestArchivedRecordsStream:
     @pytest.mark.parametrize(
-        "stream_state, next_page_token, expected_params",
+        ("stream_state", "next_page_token", "expected_params"),
         [
-            ({}, None, {"filter": "equals(archived,true)", "sort": "updated_at"}),
+            ({}, None, {"filter": "equals(archived,true)", "sort": "updated"}),
             (
-                {"archived": {"updated_at": "2023-10-10 00:00:00"}},
+                {"archived": {"updated": "2023-10-10 00:00:00"}},
                 None,
-                {"filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))", "sort": "updated_at"},
+                {"filter": "greater-than(updated,2023-10-10T00:00:00+00:00),equals(archived,true)", "sort": "updated"},
             ),
             (
-                {"archived": {"updated_at": "2023-10-10 00:00:00"}},
+                {"archived": {"updated": "2023-10-10 00:00:00"}},
                 {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
-                    "sort": "updated_at",
+                    "filter": "greater-than(updated,2023-10-10T00:00:00+00:00),equals(archived,true)",
+                    "sort": "updated",
                     "page[cursor]": "next_page_cursor",
                 },
                 {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
-                    "sort": "updated_at",
+                    "filter": "greater-than(updated,2023-10-10T00:00:00+00:00),equals(archived,true)",
+                    "sort": "updated",
                     "page[cursor]": "next_page_cursor",
                 },
             ),
             (
                 {},
                 {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
-                    "sort": "updated_at",
+                    "filter": "greater-than(updated,2023-10-10T00:00:00+00:00),equals(archived,true)",
+                    "sort": "updated",
                     "page[cursor]": "next_page_cursor",
                 },
                 {
-                    "filter": "and(greater-than(updated_at,2023-10-10T00:00:00+00:00),equals(archived,true))",
-                    "sort": "updated_at",
+                    "filter": "greater-than(updated,2023-10-10T00:00:00+00:00),equals(archived,true)",
+                    "sort": "updated",
                     "page[cursor]": "next_page_cursor",
                 },
             ),
         ],
     )
     def test_request_params(self, stream_state, next_page_token, expected_params):
-        archived_stream = ArchivedRecordsStream(api_key="API_KEY", cursor_field="updated_at", path="path")
-        assert archived_stream.request_params(stream_state=stream_state, next_page_token=next_page_token) == expected_params
+        base_stream = Flows(api_key=API_KEY)
+        archived_stream = ArchivedRecordsStream(base_stream=base_stream)
+        assert archived_stream.request_params(
+            stream_state=stream_state, next_page_token=next_page_token
+        ) == expected_params

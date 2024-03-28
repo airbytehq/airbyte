@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-klaviyo spec
 poetry run source-klaviyo check --config secrets/config.json
 poetry run source-klaviyo discover --config secrets/config.json
-poetry run source-klaviyo read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-klaviyo read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests
