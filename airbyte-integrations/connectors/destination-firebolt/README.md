@@ -8,7 +8,7 @@ For information about how to use this connector within Airbyte, see [the documen
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Minimum Python version required `= 3.7.0`
+#### Minimum Python version required `= 3.8.0`
 
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
@@ -96,4 +96,3 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
-

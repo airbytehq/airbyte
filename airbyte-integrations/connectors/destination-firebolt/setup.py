@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "firebolt-sdk>=0.8.0", "pyarrow"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "firebolt-sdk>=1.1.0", "pyarrow"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1"]
 
