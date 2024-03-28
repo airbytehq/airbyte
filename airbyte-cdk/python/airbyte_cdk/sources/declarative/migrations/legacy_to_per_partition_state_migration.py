@@ -57,7 +57,6 @@ class LegacyToPerPartitionStateMigration(StateMigration):
 
         return parent_key
 
-
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if _is_already_migrated(stream_state):
             return False
