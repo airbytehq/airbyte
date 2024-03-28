@@ -1,5 +1,5 @@
 {
   "api_token": "<abcd>",
-  "domain_name": "example.atlassian.net",
+  "base_url": "example.atlassian.net",
   "email": "test@example.com"
 }

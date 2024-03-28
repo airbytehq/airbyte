@@ -41,13 +41,21 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: https://{{ config['domain_name'] }}/wiki/rest/api/
+    url_base: https://{{ config['domain_name'] + '' if config.confluence_server else '/wiki' }}/rest/api
     path: "{{ parameters.path }}"
     http_method: GET
     authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config['email'] }}"
-      password: "{{ config['api_token'] }}"
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - auth
+      authenticators:
+        basic:
+          type: BasicHttpAuthenticator
+          username: "{{ config['email'] }}"
+          password: "{{ config['api_token'] }}"
+        bearer:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
     request_body_json: {}
     request_headers: {}
 
@@ -151,7 +159,19 @@ spec:
         airbyte_secret: true
         order: 1
       domain_name:
-        title: "Domain name"
+        title: "Domain Name"
         description: "Your Confluence domain name"
         type: string
+        examples: ["example.atlassian.net", "my.company.com/confluence"]
         order: 2
+      confluence_server:
+        title: "Confluence Server"
+        type: boolean
+        description: "If you are using Confluence Server, please check this box."
+        order: 3
+      auth:
+        title: "Authentication"
+        type: string
+        enum: ["basic", "bearer"]
+        default: "basic"
+        order: 4
