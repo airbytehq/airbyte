@@ -13,6 +13,7 @@ from abc import ABC
 from contextlib import closing
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
+import backoff
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
@@ -31,7 +32,7 @@ from requests.models import PreparedRequest
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
-from .rate_limiting import default_backoff_handler
+from .rate_limiting import TRANSIENT_EXCEPTIONS, default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -351,8 +352,15 @@ class BulkSalesforceStream(SalesforceStream):
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
-    @default_backoff_handler(max_tries=5, factor=15)
+    @default_backoff_handler(max_tries=5, backoff_method={"method": backoff.expo, "params": {"factor": 15}})
     def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
+        """
+        This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
+        the response buffer (which is either by calling `json` or `iter_content`)
+        """
+        return self._non_retryable_send_http_request(method, url, json, headers, stream)
+
+    def _non_retryable_send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
         headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
@@ -360,15 +368,22 @@ class BulkSalesforceStream(SalesforceStream):
         response.raise_for_status()
         return response
 
+    @default_backoff_handler(max_tries=5, backoff_method={"method": backoff.expo, "params": {"factor": 15}})
+    def _create_stream_job(self, query: str, url: str) -> Optional[str]:
+        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
+        response = self._non_retryable_send_http_request("POST", url, json=json)
+        job_id: str = response.json()["id"]
+        return job_id
+
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
+
+        Note that we want to retry during connection issues as well. Those can occur when calling `.json()`. Even in the case of a
+        connection error during a HTTPError, we will retry as else, we won't be able to take the right action.
         """
-        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
-            response = self._send_http_request("POST", url, json=json)
-            job_id: str = response.json()["id"]
-            return job_id
+            return self._create_stream_job(query, url)
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 # A part of streams can't be used by BULK API. Every API version can have a custom list of
@@ -520,6 +535,7 @@ class BulkSalesforceStream(SalesforceStream):
 
         return self.encoding
 
+    @default_backoff_handler(max_tries=5, backoff_method={"method": backoff.constant, "params": {"interval": 5}})
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
@@ -529,7 +545,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
-        with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
+        with closing(self._non_retryable_send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
             tmp_file, "wb"
         ) as data_file:
             response_headers = response.headers
@@ -615,6 +631,7 @@ class BulkSalesforceStream(SalesforceStream):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
+        call_count: int = 0,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
@@ -643,7 +660,16 @@ class BulkSalesforceStream(SalesforceStream):
         while True:
             req = PreparedRequest()
             req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator})
-            tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
+            try:
+                tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
+            except TRANSIENT_EXCEPTIONS as exception:
+                if call_count != 0:
+                    raise exception
+                call_count += 1
+                self.logger.warning("Downloading data failed even after retries. Retrying the whole job...")
+                yield from self.read_records(sync_mode, cursor_field, stream_slice, stream_state, call_count=call_count)
+                return
+
             for record in self.read_with_chunks(tmp_file, response_encoding):
                 yield record
 

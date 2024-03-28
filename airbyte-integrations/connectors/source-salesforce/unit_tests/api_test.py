@@ -29,7 +29,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
-from requests.exceptions import HTTPError
+from requests.exceptions import ChunkedEncodingError, HTTPError
 from source_salesforce.api import Salesforce
 from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
 from source_salesforce.source import SourceSalesforce
@@ -38,11 +38,18 @@ from source_salesforce.streams import (
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
     BulkSalesforceSubStream,
-    Describe,
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
-    SalesforceStream,
 )
+
+_A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
+_A_JSON_RESPONSE = {"id": "any id"}
+_A_SUCCESSFUL_JOB_CREATION_RESPONSE = {"state": "JobComplete"}
+_A_PK = "a_pk"
+_A_STREAM_NAME = "a_stream_name"
+
+_NUMBER_OF_DOWNLOAD_TRIES = 5
+_FIRST_CALL_FROM_JOB_CREATION = 1
 
 _ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
 _ANY_CONFIG = {}
@@ -587,6 +594,52 @@ def test_csv_reader_dialect_unix():
         tmp_file, response_encoding, _ = stream.download_data(url=url_results)
         result = [i for i in stream.read_with_chunks(tmp_file, response_encoding)]
         assert result == data
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_retryable_error_when_download_data_then_retry(send_http_request_patch):
+    send_http_request_patch.return_value.iter_content.side_effect = [HTTPError(), _A_CHUNKED_RESPONSE]
+    BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).download_data(url="any url")
+    assert send_http_request_patch.call_count == 2
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_first_download_fail_when_download_data_then_retry_job_only_once(send_http_request_patch):
+    sf_api = Mock()
+    sf_api.generate_schema.return_value = {}
+    sf_api.instance_url = "http://test_given_first_download_fail_when_download_data_then_retry_job.com"
+    job_creation_return_values = [_A_JSON_RESPONSE, _A_SUCCESSFUL_JOB_CREATION_RESPONSE]
+    send_http_request_patch.return_value.json.side_effect = job_creation_return_values * 2
+    send_http_request_patch.return_value.iter_content.side_effect = HTTPError()
+
+    with pytest.raises(Exception):
+        list(BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=sf_api, pk=_A_PK).read_records(SyncMode.full_refresh))
+
+    assert send_http_request_patch.call_count == (len(job_creation_return_values) + _NUMBER_OF_DOWNLOAD_TRIES) * 2
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_http_errors_when_create_stream_job_then_retry(send_http_request_patch):
+    send_http_request_patch.return_value.json.side_effect = [HTTPError(), _A_JSON_RESPONSE]
+    BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
+    assert send_http_request_patch.call_count == 2
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_fail_with_http_errors_when_create_stream_job_then_handle_error(send_http_request_patch):
+    mocked_response = Mock()
+    mocked_response.status_code = 666
+    send_http_request_patch.return_value.json.side_effect = HTTPError(response=mocked_response)
+
+    with pytest.raises(HTTPError):
+        BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
+
+
+@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
+def test_given_retryable_error_that_are_not_http_errors_when_create_stream_job_then_retry(send_http_request_patch):
+    send_http_request_patch.return_value.json.side_effect = [ChunkedEncodingError(), _A_JSON_RESPONSE]
+    BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
+    assert send_http_request_patch.call_count == 2
 
 
 @pytest.mark.parametrize(
