@@ -6,17 +6,11 @@
     "id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "title": {
       "type": ["null", "string"]
     },
     "isArchived": {
-      "type": ["null", "boolean"]
-    },
-    "address": {
-      "type": ["null", "object"]
-    },
-    "isRemote": {
-      "type": ["null", "boolean"]
+       "type": ["null", "boolean"]
     }
   }
 }

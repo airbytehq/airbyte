@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -28,13 +29,32 @@
     },
     "publishedDate": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "externalLink": {
       "type": ["null", "string"]
     },
     "locationIds": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "primaryLocationId": {
+          "type": ["null", "string"]
+        },
+        "secondaryLocationId": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "compensationTierSummary": {
+      "type": ["null", "string"]
+    },
+    "shouldDisplayCompensationOnJobBoard": {
+      "type": ["null", "boolean"]
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

@@ -6,22 +6,22 @@
     "id": {
       "type": ["null", "string"]
     },
-    "organizationId": {
-      "type": ["null", "string"]
-    },
     "title": {
       "type": ["null", "string"]
     },
     "isArchived": {
-      "type": ["null", "boolean"]
+       "type": ["null", "boolean"]
     },
-    "isDefaultForm": {
-      "type": ["null", "boolean"]
+    "instructionsHtml": {
+        "type": ["null", "string"]
     },
-    "formDefinition": {
-      "type": ["null", "object"]
+    "instructionsPlain": {
+        "type": ["null", "string"]
     },
-    "interviewId": {
+    "jobId": {
+      "type": ["null", "string"]
+    },
+    "feedbackFormDefinitionId": {
       "type": ["null", "string"]
     }
   }
