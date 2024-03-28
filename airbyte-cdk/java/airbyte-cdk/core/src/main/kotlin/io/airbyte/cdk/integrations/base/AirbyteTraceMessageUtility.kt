@@ -55,10 +55,12 @@ object AirbyteTraceMessageUtility {
         )
     }
 
+    @JvmStatic
     fun emitAnalyticsTrace(airbyteAnalyticsTraceMessage: AirbyteAnalyticsTraceMessage) {
         emitMessage(makeAnalyticsTraceAirbyteMessage(airbyteAnalyticsTraceMessage))
     }
 
+    @JvmStatic
     fun emitErrorTrace(
         e: Throwable,
         displayMessage: String?,

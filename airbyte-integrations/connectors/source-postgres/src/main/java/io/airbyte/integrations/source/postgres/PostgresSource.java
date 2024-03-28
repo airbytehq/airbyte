@@ -128,7 +128,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_MODE = "ssl_mode";
   public static final String SSL_ROOT_CERT = "sslrootcert";
 
-  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.driverClassName;
   public static final String CA_CERTIFICATE_PATH = "ca_certificate_path";
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
@@ -327,7 +327,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         sourceOperations,
         streamingQueryConfigProvider);
 
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    setQuoteString((getQuoteString() == null ? database.getMetaData().getIdentifierQuoteString() : getQuoteString()));
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
 
@@ -784,7 +784,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
     LOGGER.debug("null value query: {}", query);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
-        resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     final boolean nullValExist = jsonNodes.get(0).get(resultColName.toLowerCase()).booleanValue(); // For some reason value in node is lowercase
     LOGGER.debug("null value exist: {}", nullValExist);
@@ -837,7 +837,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         String.format(TABLE_ESTIMATE_QUERY, schemaName, tableName, ROW_COUNT_RESULT_COL, fullTableName, TOTAL_BYTES_RESULT_COL);
     LOGGER.debug("table estimate query: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
-        resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
   }

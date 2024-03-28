@@ -19,8 +19,8 @@ import java.util.stream.StreamSupport
 /** Database object for interacting with a JDBC connection. */
 abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSourceOperations<*>?) :
     SqlDatabase() {
-    protected val streamException: Exception? = null
-    protected val isStreamFailed: Boolean = false
+    protected var streamException: Exception? = null
+    protected var isStreamFailed: Boolean = false
 
     /**
      * Execute a database query.

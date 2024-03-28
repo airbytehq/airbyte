@@ -123,7 +123,7 @@ public class PostgresQueryUtils {
   public static XminStatus getXminStatus(final JdbcDatabase database) throws SQLException {
     LOGGER.debug("xmin status query: {}", XMIN_STATUS_QUERY);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(XMIN_STATUS_QUERY).executeQuery(),
-        resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     final JsonNode result = jsonNodes.get(0);
     return new XminStatus()
@@ -173,7 +173,7 @@ public class PostgresQueryUtils {
             fullTableName);
         LOGGER.debug("Querying for max cursor value: {}", cursorBasedSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
-            resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
+            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
         cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
         cursorBasedStatus.setVersion(2L);
@@ -227,7 +227,7 @@ public class PostgresQueryUtils {
         getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
         conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE_QUERY.formatted(fullTableName)).executeQuery(),
-        resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     Long relationFilenode = null;
     if (!jsonNodes.get(0).isEmpty()) {
@@ -252,7 +252,7 @@ public class PostgresQueryUtils {
       try {
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
             conn -> conn.prepareStatement(CTID_FULL_VACUUM_IN_PROGRESS_QUERY.formatted(fullTableName)).executeQuery(),
-            resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
+            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         if (!jsonNodes.isEmpty()) {
           Preconditions.checkState(jsonNodes.size() == 1);
           LOGGER.warn("Full Vacuum currently in progress for table {} in {} phase, the table will be skipped from syncing data", fullTableName,
@@ -292,7 +292,7 @@ public class PostgresQueryUtils {
           getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
           conn -> conn.prepareStatement(CTID_TABLE_BLOCK_SIZE.formatted(fullTableName)).executeQuery(),
-          resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
       Preconditions.checkState(jsonNodes.size() == 1);
       final long relationSize = jsonNodes.get(0).get("pg_relation_size").asLong();
       final long blockSize = jsonNodes.get(0).get("current_setting").asLong();
@@ -342,7 +342,7 @@ public class PostgresQueryUtils {
       LOGGER.debug("running {}", CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName));
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
           conn -> conn.prepareStatement(CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName)).executeQuery(),
-          resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
       Preconditions.checkState(jsonNodes.size() == 1);
       final int maxTuple = jsonNodes.get(0).get("max_tuple").asInt();
       LOGGER.info("Stream {} max tuple is {}", fullTableName, maxTuple);

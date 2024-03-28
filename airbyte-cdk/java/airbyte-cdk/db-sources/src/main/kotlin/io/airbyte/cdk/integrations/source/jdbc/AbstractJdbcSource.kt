@@ -81,7 +81,7 @@ import org.slf4j.LoggerFactory
 // This is onoly here because spotbugs complains about aggregatePrimateKeys and I wasn't able to
 // figure out what it's complaining about
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-open abstract class AbstractJdbcSource<Datatype>(
+abstract class AbstractJdbcSource<Datatype>(
     driverClass: String,
     @JvmField val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
     sourceOperations: JdbcCompatibleSourceOperations<Datatype>
