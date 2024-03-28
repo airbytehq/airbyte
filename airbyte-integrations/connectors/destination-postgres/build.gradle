@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.27.3'
+    cdkVersionRequired = '0.29.5'
     features = ['db-destinations', 'datastore-postgres', 'typing-deduping']
     useLocalCdk = false
 }

@@ -243,7 +243,7 @@ abstract class DestinationAcceptanceTest {
         return supportsDbt != null && supportsDbt.asBoolean(false)
     }
 
-    protected val destinationDefinitionKey: String
+    protected open val destinationDefinitionKey: String
         get() = imageNameWithoutTag
 
     protected open fun getNormalizationIntegrationType(): String? {
