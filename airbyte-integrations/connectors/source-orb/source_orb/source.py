@@ -186,6 +186,26 @@ class Subscriptions(IncrementalOrbStream):
         return subscription_record
 
 
+class SubscriptionVersions(IncrementalOrbStream):
+    @property
+    def cursor_field(self) -> str:
+        return "modified_at"
+
+    def path(self, **kwargs) -> str:
+        return "subscription_versions"
+
+    def transform_record(self, subscription_version):
+        # Transform the subscription_version record to be compatible with the subscription_version schema
+        flattened_subscription_version = {}
+
+        flattened_subscription_version["subscription_id"] = subscription_version["subscription_id"]
+        flattened_subscription_version["plan_id"] = subscription_version["plan"]["id"]
+        flattened_subscription_version["start_date"] = subscription_version["subscription_start_date"]
+        flattened_subscription_version["end_date"] = subscription_version["subscription_ended_at"]
+
+        return flattened_subscription_version
+
+
 # helpers for working with pendulum dates and strings
 def to_datetime(time) -> Optional[pendulum.DateTime]:
     if time is None:
@@ -763,4 +783,5 @@ class SourceOrb(AbstractSource):
                 plan_id=plan_id,
                 subscription_usage_grouping_key=subscription_usage_grouping_key,
             ),
+            SubscriptionVersions(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
         ]
