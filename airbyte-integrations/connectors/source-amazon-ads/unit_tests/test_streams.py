@@ -23,6 +23,7 @@ def setup_responses(
     product_ads_response=None,
     generic_response=None,
     creatives_response=None,
+    post_response=None,
 ):
     responses.add(
         responses.POST,
@@ -76,6 +77,12 @@ def setup_responses(
             responses.GET,
             f"https://advertising-api.amazon.com/{generic_response}",
             json=[],
+        )
+    if post_response:
+        responses.add(
+            responses.POST,
+            f"https://advertising-api.amazon.com/{post_response}",
+            json={},
         )
 
 
@@ -254,20 +261,23 @@ def test_streams_displays(
 @pytest.mark.parametrize(
     ("stream_name", "endpoint"),
     [
-        ("sponsored_brands_campaigns", "sb/campaigns"),
-        ("sponsored_brands_ad_groups", "sb/adGroups"),
+        ("sponsored_brands_campaigns", "sb/v4/campaigns/list"),
+        ("sponsored_brands_ad_groups", "sb/v4/adGroups/list"),
         ("sponsored_brands_keywords", "sb/keywords"),
-        ("sponsored_product_campaigns", "v2/sp/campaigns"),
-        ("sponsored_product_ad_groups", "v2/sp/adGroups"),
-        ("sponsored_product_keywords", "v2/sp/keywords"),
-        ("sponsored_product_negative_keywords", "v2/sp/negativeKeywords"),
-        ("sponsored_product_ads", "v2/sp/productAds"),
-        ("sponsored_product_targetings", "v2/sp/targets"),
+        ("sponsored_product_campaigns", "sp/campaigns/list"),
+        ("sponsored_product_ad_groups", "sp/adGroups/list"),
+        ("sponsored_product_keywords", "sp/keywords/list"),
+        ("sponsored_product_negative_keywords", "sp/negativeKeywords/list"),
+        ("sponsored_product_ads", "sp/productAds/list"),
+        ("sponsored_product_targetings", "sp/targets/list"),
     ],
 )
 @responses.activate
 def test_streams_brands_and_products(config, stream_name, endpoint, profiles_response):
-    setup_responses(profiles_response=profiles_response, generic_response=endpoint)
+    if endpoint != "sb/keywords":
+        setup_responses(profiles_response=profiles_response, post_response=endpoint)
+    else:
+        setup_responses(profiles_response=profiles_response, generic_response=endpoint)
 
     source = SourceAmazonAds()
     streams = source.streams(config)
@@ -282,8 +292,8 @@ def test_streams_brands_and_products(config, stream_name, endpoint, profiles_res
 def test_sponsored_product_ad_group_bid_recommendations_404_error(caplog, config, profiles_response):
     setup_responses(profiles_response=profiles_response)
     responses.add(
-        responses.GET,
-        "https://advertising-api.amazon.com/v2/sp/adGroups/xxx/bidRecommendations",
+        responses.POST,
+        "https://advertising-api.amazon.com/sp/targets/bid/recommendations",
         json={
             "code": "404",
             "details": "404 Either the specified ad group identifier was not found or the specified ad group was found but no associated bid was found.",
@@ -293,6 +303,6 @@ def test_sponsored_product_ad_group_bid_recommendations_404_error(caplog, config
     source = SourceAmazonAds()
     streams = source.streams(config)
     test_stream = get_stream_by_name(streams, "sponsored_product_ad_group_bid_recommendations")
-    records = get_all_stream_records(test_stream, stream_slice={"profileId": "1231", "adGroupId": "xxx"})
+    records = get_all_stream_records(test_stream, stream_slice={"campaignId": "1231", "adGroupId": "xxx"})
     assert records == []
     assert "Skip current AdGroup because the specified ad group has no associated bid" in caplog.text
