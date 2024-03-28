@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "_id": {
+      "type": ["string", "null"]
+    },
+    "product": {
+      "type": ["string", "null"]
+    },
+    "_currency": {
+      "type": ["string", "null"]
+    },
+    "companyId": {
+      "type": ["string", "null"]
+    },
+    "companyName": {
+      "type": ["string", "null"]
+    },
+    "externalId": {
+      "type": ["string", "null"]
+    },
+    "sourceId": {
+      "type": ["string", "null"]
+    },
+    "fromDate": {
+      "type": ["string", "null"]
+    },
+    "toDate": {
+      "type": ["string", "null"]
+    },
+    "fixedPeriod": {
+      "type": ["boolean", "null"]
+    },
+    "mrr": {
+      "type": ["number", "null"]
+    },
+    "arr": {
+      "type": ["number", "null"]
+    },
+    "renewalMrr": {
+      "type": ["number", "null"]
+    },
+    "renewalArr": {
+      "type": ["number", "null"]
+    },
+    "fcNewMrr": {
+      "type": ["number", "null"]
+    },
+    "fcNewArr": {
+      "type": ["number", "null"]
+    },
+    "fcNewMrrOptimistic": {
+      "type": ["number", "null"]
+    },
+    "fcNewArrOptimistic": {
+      "type": ["number", "null"]
+    },
+    "fcNewMrrPessimistic": {
+      "type": ["number", "null"]
+    },
+    "fcNewArrPessimistic": {
+      "type": ["number", "null"]
+    },
+    "value": {
+      "type": ["number", "null"]
+    },
+    "renewalStatus": {
+      "type": ["string", "null"]
+    },
+    "renewalPeriod": {
+      "type": ["integer", "null"]
+    },
+    "renewalDate": {
+      "type": ["string", "null"]
+    },
+    "renewalDaysFromNow": {
+      "type": ["integer", "null"]
+    },
+    "isOverdue": {
+      "type": ["boolean", "null"]
+    },
+    "autoRenews": {
+      "type": ["boolean", "null"]
+    },
+    "noticePeriod": {
+      "type": ["integer", "null"]
+    },
+    "noticeUnit": {
+      "type": ["string", "null"]
+    },
+    "renewalUnit": {
+      "type": ["string", "null"]
+    },
+    "parent": {
+      "type": ["string", "null"]
+    },
+    "invoicesGenerated": {
+      "type": ["boolean", "null"]
+    },
+    "invoiceMuted": {
+      "type": ["boolean", "null"]
+    },
+    "invoiceCycleInterval": {
+      "type": ["integer", "null"]
+    },
+    "invoiceCycle": {
+      "type": ["string", "null"]
+    },
+    "toDateIncluded": {
+      "type": ["boolean", "null"]
+    },
+    "length": {
+      "type": ["number", "null"]
+    },
+    "custom": {
+      "type": ["object", "null"]
+    }
+  }
+}

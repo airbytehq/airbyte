@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "_id": {
+      "type": ["string", "null"]
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "firstName": {
+      "type": ["string", "null"]
+    },
+    "lastName": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "companyId": {
+      "type": ["string", "null"]
+    },
+    "companyName": {
+      "type": ["string", "null"]
+    },
+    "externalId": {
+      "type": ["string", "null"]
+    },
+    "sourceId": {
+      "type": ["string", "null"]
+    },
+    "position": {
+      "type": ["string", "null"]
+    },
+    "phone": {
+      "type": ["string", "null"]
+    },
+    "tags": {
+      "type": ["array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "featured": {
+      "type": ["boolean", "null"]
+    },
+    "primary": {
+      "type": ["boolean", "null"]
+    },
+    "otherEmails": {
+      "type": ["array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "nps": {
+      "type": ["integer", "null"]
+    },
+    "npsComment": {
+      "type": ["string", "null"]
+    },
+    "npsDate": {
+      "type": ["string", "null"]
+    },
+    "npsSent": {
+      "type": ["string", "null"]
+    },
+    "beatTrend": {
+      "type": ["number", "null"]
+    },
+    "beats": {
+      "type": ["number", "null"]
+    },
+    "convs14": {
+      "type": ["number", "null"]
+    },
+    "convsTotal": {
+      "type": ["number", "null"]
+    },
+    "createDate": {
+      "type": ["string", "null"]
+    },
+    "createdAt": {
+      "type": ["string", "null"]
+    },
+    "updatedAt": {
+      "type": ["string", "null"]
+    },
+    "lastActivities": {
+      "type": ["array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "relevance": {
+      "type": ["number", "null"]
+    },
+    "usage": {
+      "type": ["object", "null"]
+    },
+    "custom": {
+      "type": ["object", "null"]
+    }
+  }
+}
