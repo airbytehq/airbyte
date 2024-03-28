@@ -318,7 +318,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         connectionProperties,
-        getConnectionTimeout(connectionProperties, driverClassName));
+        getConnectionTimeout(connectionProperties));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
@@ -784,7 +784,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
     LOGGER.debug("null value query: {}", query);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     final boolean nullValExist = jsonNodes.get(0).get(resultColName.toLowerCase()).booleanValue(); // For some reason value in node is lowercase
     LOGGER.debug("null value exist: {}", nullValExist);
@@ -837,7 +837,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         String.format(TABLE_ESTIMATE_QUERY, schemaName, tableName, ROW_COUNT_RESULT_COL, fullTableName, TOTAL_BYTES_RESULT_COL);
     LOGGER.debug("table estimate query: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        resultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
   }

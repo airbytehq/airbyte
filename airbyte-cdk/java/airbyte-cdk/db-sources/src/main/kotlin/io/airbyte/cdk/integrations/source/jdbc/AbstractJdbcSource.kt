@@ -81,15 +81,15 @@ import org.slf4j.LoggerFactory
 // This is onoly here because spotbugs complains about aggregatePrimateKeys and I wasn't able to
 // figure out what it's complaining about
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-abstract class AbstractJdbcSource<Datatype>(
+open abstract class AbstractJdbcSource<Datatype>(
     driverClass: String,
-    protected val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
+    @JvmField val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
     sourceOperations: JdbcCompatibleSourceOperations<Datatype>
 ) : AbstractDbSource<Datatype, JdbcDatabase>(driverClass), Source {
-    protected val sourceOperations: JdbcCompatibleSourceOperations<Datatype>
+    @JvmField val sourceOperations: JdbcCompatibleSourceOperations<Datatype>
 
     override var quoteString: String? = null
-    protected var dataSources: MutableCollection<DataSource> = ArrayList()
+    @JvmField val dataSources: MutableCollection<DataSource> = ArrayList()
 
     init {
         this.sourceOperations = sourceOperations
@@ -304,7 +304,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
     // needs to override isNotInternalSchema for connectors that override
     // getPrivilegesTableForCurrentUser()
-    protected fun isNotInternalSchema(jsonNode: JsonNode, internalSchemas: Set<String?>): Boolean {
+    protected open fun isNotInternalSchema(jsonNode: JsonNode, internalSchemas: Set<String?>): Boolean {
         return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText())
     }
 
