@@ -68,8 +68,6 @@ Optional parameters:
     `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns
     (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command
     completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
-- **File Buffer Count**
-  - Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects.
 
 NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel supports the SQL
 connection only. S3 is secured through public HTTPS access only. Subsequent typing and deduping queries on final table
@@ -187,10 +185,10 @@ characters.
 ### Data Size Limitations
 
 Redshift specifies a maximum limit of 16MB (and 65535 bytes for any VARCHAR fields within the JSON
-record) to store the raw JSON record data. Thus, when a row is too big to fit, the destination connector will 
-do one of the following. 
+record) to store the raw JSON record data. Thus, when a row is too big to fit, the destination connector will
+do one of the following.
 1. Null the value if the varchar size > 65535, The corresponding key information is added to `_airbyte_meta`.
-2. Null the whole record while trying to preserve the Primary Keys and cursor field declared as part of your stream configuration, if the total record size is > 16MB. 
+2. Null the whole record while trying to preserve the Primary Keys and cursor field declared as part of your stream configuration, if the total record size is > 16MB.
    * For DEDUPE sync mode, if we do not find Primary key(s), we fail the sync.
    * For OVERWRITE and APPEND mode, syncs will succeed with empty records emitted, if we fail to find Primary key(s).
 
