@@ -70,9 +70,10 @@
         "pattern_descriptor": "YYYY-MM-DDTHH:MM:SS.000Z",
         "examples": ["2020-01-01T00:00:00.000Z"]
       },
-      "campaign_id": {
+      "data_center": {
+        "title": "DataCenter",
+        "description": "Technical fields used to identify datacenter to send request to",
         "type": "string",
-        "title": "ID of a campaign to sync email activities",
         "airbyte_hidden": true
       }
     }
