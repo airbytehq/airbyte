@@ -6,6 +6,20 @@ import pytest
 from source_notion.components import *
 
 
+def test_users_stream_transformation():
+    input_record = {
+        "object": "user", "id": "123", "name": "Airbyte", "avatar_url": "some url", "type": "bot",
+        "bot": {"owner": {"type": "user", "user": {"object": "user", "id": "id", "name": "Test User", "avatar_url": None, "type": "person",
+                                                   "person": {"email": "email"}}}, "workspace_name": "test"}
+    }
+    output_record = {
+        "object": "user", "id": "123", "name": "Airbyte", "avatar_url": "some url", "type": "bot",
+        "bot": {"owner": {"type": "user", "info": {"object": "user", "id": "id", "name": "Test User", "avatar_url": None, "type": "person",
+                                                   "person": {"email": "email"}}}, "workspace_name": "test"}
+    }
+    assert NotionUserTransformation().transform(input_record) == output_record
+
+
 def test_notion_properties_transformation():
     input_record = {
         "id": "123", "properties": {
