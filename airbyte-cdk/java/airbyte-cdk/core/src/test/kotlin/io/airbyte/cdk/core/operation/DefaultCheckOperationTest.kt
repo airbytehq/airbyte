@@ -57,4 +57,11 @@ class DefaultCheckOperationTest {
         assertEquals(expectedMessage, result.getOrNull())
         verify { operationExecutor.execute() }
     }
+
+    @Test
+    internal fun testRequiresConfiguration() {
+        val operationExecutor: OperationExecutor = mockk()
+        val operation = DefaultCheckOperation(operationExecutor = operationExecutor)
+        assertTrue(operation.requiresConfiguration())
+    }
 }

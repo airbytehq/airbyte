@@ -39,4 +39,18 @@ class DefaultWriteOperationTest {
         val result2 = operation.execute()
         assertTrue(result2.isFailure)
     }
+
+    @Test
+    internal fun testRequiresCatalog() {
+        val operationExecutor: OperationExecutor = mockk()
+        val operation = DefaultWriteOperation(operationExecutor = operationExecutor)
+        assertTrue(operation.requiresCatalog())
+    }
+
+    @Test
+    internal fun testRequiresConfiguration() {
+        val operationExecutor: OperationExecutor = mockk()
+        val operation = DefaultWriteOperation(operationExecutor = operationExecutor)
+        assertTrue(operation.requiresConfiguration())
+    }
 }

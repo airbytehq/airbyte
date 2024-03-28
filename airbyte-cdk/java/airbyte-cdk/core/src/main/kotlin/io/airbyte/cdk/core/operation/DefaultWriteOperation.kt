@@ -32,4 +32,12 @@ class DefaultWriteOperation(
         logger.info { "Using default write operation." }
         return operationExecutor.execute()
     }
+
+    override fun requiresCatalog(): Boolean {
+        return true
+    }
+
+    override fun requiresConfiguration(): Boolean {
+        return true
+    }
 }

@@ -32,4 +32,12 @@ class DefaultReadOperation(
         logger.info { "Using default read operation." }
         return operationExecutor.execute()
     }
+
+    override fun requiresCatalog(): Boolean {
+        return true
+    }
+
+    override fun requiresConfiguration(): Boolean {
+        return true
+    }
 }

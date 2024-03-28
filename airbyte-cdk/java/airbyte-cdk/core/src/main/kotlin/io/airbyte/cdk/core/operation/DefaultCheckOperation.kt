@@ -44,4 +44,8 @@ class DefaultCheckOperation(
         }
         return result
     }
+
+    override fun requiresConfiguration(): Boolean {
+        return true
+    }
 }
