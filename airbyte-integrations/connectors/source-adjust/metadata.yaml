@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-adjust
   documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
   githubIssueLabel: source-adjust
@@ -24,6 +24,6 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
-    - cdk:python
+    - language:lowcode
+    - cdk:lowcode
 metadataSpecVersion: "1.0"
