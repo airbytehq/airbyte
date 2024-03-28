@@ -12,6 +12,9 @@ compileKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
+spotbugsTest.enabled = false
+spotbugsTestFixtures.enabled = false
+
 dependencies {
     api 'org.apache.commons:commons-csv:1.10.0'
 

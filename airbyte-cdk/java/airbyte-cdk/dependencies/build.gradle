@@ -25,6 +25,9 @@ compileKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
+spotbugsTest.enabled = false
+spotbugsTestFixtures.enabled = false
+
 String specFile = "$projectDir/src/main/openapi/config.yaml"
 String serverOutputDir = "$buildDir/generated/api/server"
 String clientOutputDir = "$buildDir/generated/api/client"
