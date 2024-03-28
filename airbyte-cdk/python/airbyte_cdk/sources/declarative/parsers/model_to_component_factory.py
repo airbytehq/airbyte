@@ -316,10 +316,10 @@ class ModelToComponentFactory:
         )
 
     def create_legacy_to_per_partition_state_migration(
-            self,
-            model: LegacyToPerPartitionStateMigrationModel,
-            config: Mapping[str, Any],
-            declarative_stream: DeclarativeStreamModel,
+        self,
+        model: LegacyToPerPartitionStateMigrationModel,
+        config: Mapping[str, Any],
+        declarative_stream: DeclarativeStreamModel,
     ) -> LegacyToPerPartitionStateMigration:
         retriever = declarative_stream.retriever
         partition_router = retriever.partition_router
@@ -333,9 +333,7 @@ class ModelToComponentFactory:
                 f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(partition_router)}"
             )
         if not hasattr(partition_router, "parent_stream_configs"):
-            raise ValueError(
-                "LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration."
-            )
+            raise ValueError("LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.")
 
         return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
 
