@@ -35,6 +35,9 @@
         "country": {
           "type": ["null", "string"]
         },
+        "country_code": {
+          "type": ["null", "string"]
+        },
         "customer_id": {
           "type": ["null", "integer"]
         },
@@ -71,6 +74,125 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "charge_attempts": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "email": {
+          "type": ["null", "string"]
+        },
+        "external_customer_id": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "ecommerce": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "hash": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "discounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "code": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "integer"]
+          },
+          "value_type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "external_order_id": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "external_transaction_id": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "payment_processor": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "external_variant_id_not_found": {
+      "type": ["null", "boolean"]
+    },
+    "external_variant_not_found": {
+      "type": ["null", "boolean"]
+    },
+    "has_uncommitted_changes": {
+      "type": ["null", "boolean"]
+    },
+    "last_charge_attempt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "merged_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "order_attributes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "orders_count": {
+      "type": ["null", "integer"]
+    },
+    "payment_processor": {
+      "type": ["null", "string"]
+    },
+    "total_duties": {
+      "type": ["null", "string"]
+    },
+    "total_weight_grams": {
+      "type": ["null", "integer"]
+    },
+    "taxable": {
+      "type": ["null", "boolean"]
+    },
+    "taxes_included": {
+      "type": ["null", "boolean"]
     },
     "client_details": {
       "type": ["null", "object"]
@@ -164,6 +286,9 @@
           "type": ["null", "string"]
         },
         "country": {
+          "type": ["null", "string"]
+        },
+        "country_code": {
           "type": ["null", "string"]
         },
         "customer_id": {
