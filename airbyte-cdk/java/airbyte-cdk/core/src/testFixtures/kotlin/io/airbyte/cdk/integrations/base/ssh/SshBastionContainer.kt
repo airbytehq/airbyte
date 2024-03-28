@@ -134,6 +134,7 @@ class SshBastionContainer : AutoCloseable {
         private val SSH_USER: String? = "sshuser"
         private val SSH_PASSWORD: String? = "secret"
 
+        @JvmStatic
         /**
          * Returns the inner docker network ip address and port of a container. This can be used to
          * reach a container from another container running on the same network
@@ -157,6 +158,7 @@ class SshBastionContainer : AutoCloseable {
             )
         }
 
+        @JvmStatic
         /**
          * Returns the outer docker network ip address and port of a container. This can be used to
          * reach a container from the host machine

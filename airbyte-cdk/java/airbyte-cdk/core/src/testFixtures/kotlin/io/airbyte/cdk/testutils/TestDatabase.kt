@@ -43,7 +43,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer
  */
 abstract class TestDatabase<
     C : JdbcDatabaseContainer<*>, T : TestDatabase<C, T, B>, B : TestDatabase.ConfigBuilder<T, B>>
-protected constructor(@JvmField val container: C) : AutoCloseable {
+protected constructor(val container: C) : AutoCloseable {
     private val suffix: String = Strings.addRandomSuffix("", "_", 10)
     private val cleanupSQL: ArrayList<String> = ArrayList()
     private val connectionProperties: MutableMap<String, String> = HashMap()
