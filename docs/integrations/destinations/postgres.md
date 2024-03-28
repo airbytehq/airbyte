@@ -15,7 +15,7 @@ Postgres, while an excellent relational database, is not a data warehouse.
    are likely to cause collisions when used as a destination receiving data from highly-nested and
    flattened sources, e.g. `{63 byte name}_a` and `{63 byte name}_b` will both be truncated to
    `{63 byte name}` which causes postgres to throw an error that a duplicate column name was
-   specified.
+   specified. This limit is applicable to table names too. 
 
 :::
 
@@ -105,7 +105,8 @@ From
 
 Airbyte Postgres destination will create raw tables and schemas using the Unquoted identifiers by
 replacing any special characters with an underscore. All final tables and their corresponding
-columns are created using Quoted identifiers preserving the case sensitivity.
+columns are created using Quoted identifiers preserving the case sensitivity. Special characters in final 
+tables are replaced with underscores. 
 
 :::
 
@@ -233,37 +234,38 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 ## Changelog
 
-| Version | Date       | Pull Request                                               | Subject                                                                                             |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| 2.0.4   | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.23.18; Null safety check in state parsing                                               |
-| 2.0.3   | 2024-03-01 | [\#35528](https://github.com/airbytehq/airbyte/pull/35528) | Adopt CDK 0.23.11; Use Migration framework                                                          |
-| 2.0.2   | 2024-03-01 | [\#35760](https://github.com/airbytehq/airbyte/pull/35760) | Mark as certified, add PSQL exception to deinterpolator                                             |
-| 2.0.1   | 2024-02-22 | [\#35385](https://github.com/airbytehq/airbyte/pull/35385) | Upgrade CDK to 0.23.0; Gathering required initial state upfront                                     |
-| 2.0.0   | 2024-02-09 | [\#35042](https://github.com/airbytehq/airbyte/pull/35042) | GA release V2 destinations format.                                                                  |
-| 0.6.3   | 2024-02-06 | [\#34891](https://github.com/airbytehq/airbyte/pull/34891) | Remove varchar limit, use system defaults                                                           |
-| 0.6.2   | 2024-01-30 | [\#34683](https://github.com/airbytehq/airbyte/pull/34683) | CDK Upgrade 0.16.3; Fix dependency mismatches in slf4j lib                                          |
-| 0.6.1   | 2024-01-29 | [\#34630](https://github.com/airbytehq/airbyte/pull/34630) | CDK Upgrade; Use lowercase raw table in T+D queries.                                                |
-| 0.6.0   | 2024-01-19 | [\#34372](https://github.com/airbytehq/airbyte/pull/34372) | Add dv2 flag in spec                                                                                |
-| 0.5.5   | 2024-01-18 | [\#34236](https://github.com/airbytehq/airbyte/pull/34236) | Upgrade CDK to 0.13.1; Add indexes in raw table for query optimization                              |
-| 0.5.4   | 2024-01-11 | [\#34177](https://github.com/airbytehq/airbyte/pull/34177) | Add code for DV2 beta (no user-visible changes)                                                     |
-| 0.5.3   | 2024-01-10 | [\#34135](https://github.com/airbytehq/airbyte/pull/34135) | Use published CDK missed in previous release                                                        |
-| 0.5.2   | 2024-01-08 | [\#33875](https://github.com/airbytehq/airbyte/pull/33875) | Update CDK to get Tunnel heartbeats feature                                                         |
-| 0.5.1   | 2024-01-04 | [\#33873](https://github.com/airbytehq/airbyte/pull/33873) | Install normalization to enable DV2 beta                                                            |
-| 0.5.0   | 2023-12-18 | [\#33507](https://github.com/airbytehq/airbyte/pull/33507) | Upgrade to latest CDK; Fix DATs and tests                                                           |
-| 0.4.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
-| 0.3.27  | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                               |
-| 0.3.26  | 2022-09-27 | [\#17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres destination                                      |
-| 0.3.24  | 2022-09-08 | [\#16046](https://github.com/airbytehq/airbyte/pull/16046) | Fix missing database name URL Encoding                                                              |
-| 0.3.23  | 2022-07-18 | [\#16260](https://github.com/airbytehq/airbyte/pull/16260) | Prevent traffic going on an unsecured channel in strict-encryption version of destination postgres  |
-| 0.3.22  | 2022-07-18 | [\#13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates                         |
-| 0.3.21  | 2022-07-06 | [\#14479](https://github.com/airbytehq/airbyte/pull/14479) | Publish amd64 and arm64 versions of the connector                                                   |
-| 0.3.20  | 2022-05-17 | [\#12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                              |
-| 0.3.19  | 2022-04-25 | [\#12195](https://github.com/airbytehq/airbyte/pull/12195) | Add support for additional JDBC URL Params input                                                    |
-| 0.3.18  | 2022-04-12 | [\#11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                  |
-| 0.3.17  | 2022-04-05 | [\#11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                |
-| 0.3.15  | 2022-02-25 | [\#10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
-| 0.3.14  | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
-| 0.3.13  | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371)   | Fixed incorrect handling "\n" in ssh key                                                            |
-| 0.3.12  | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719)   | Improve handling of wide rows by buffering records based on their byte size rather than their count |
-| 0.3.11  | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743)   | Add SSH Tunnel support                                                                              |
-| 0.3.10  | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336)   | Destination Postgres: fix \u0000\(NULL\) value processing                                           |
+| Version | Date       | Pull Request                                               | Subject                                                                                                  |
+|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.5   | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.27.3; Bugfix for case-senstive table names in v1-v2 migration, `_airbyte_meta` in raw tables |
+| 2.0.4   | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.23.18; Null safety check in state parsing                                                    |
+| 2.0.3   | 2024-03-01 | [\#35528](https://github.com/airbytehq/airbyte/pull/35528) | Adopt CDK 0.23.11; Use Migration framework                                                               |
+| 2.0.2   | 2024-03-01 | [\#35760](https://github.com/airbytehq/airbyte/pull/35760) | Mark as certified, add PSQL exception to deinterpolator                                                  |
+| 2.0.1   | 2024-02-22 | [\#35385](https://github.com/airbytehq/airbyte/pull/35385) | Upgrade CDK to 0.23.0; Gathering required initial state upfront                                          |
+| 2.0.0   | 2024-02-09 | [\#35042](https://github.com/airbytehq/airbyte/pull/35042) | GA release V2 destinations format.                                                                       |
+| 0.6.3   | 2024-02-06 | [\#34891](https://github.com/airbytehq/airbyte/pull/34891) | Remove varchar limit, use system defaults                                                                |
+| 0.6.2   | 2024-01-30 | [\#34683](https://github.com/airbytehq/airbyte/pull/34683) | CDK Upgrade 0.16.3; Fix dependency mismatches in slf4j lib                                               |
+| 0.6.1   | 2024-01-29 | [\#34630](https://github.com/airbytehq/airbyte/pull/34630) | CDK Upgrade; Use lowercase raw table in T+D queries.                                                     |
+| 0.6.0   | 2024-01-19 | [\#34372](https://github.com/airbytehq/airbyte/pull/34372) | Add dv2 flag in spec                                                                                     |
+| 0.5.5   | 2024-01-18 | [\#34236](https://github.com/airbytehq/airbyte/pull/34236) | Upgrade CDK to 0.13.1; Add indexes in raw table for query optimization                                   |
+| 0.5.4   | 2024-01-11 | [\#34177](https://github.com/airbytehq/airbyte/pull/34177) | Add code for DV2 beta (no user-visible changes)                                                          |
+| 0.5.3   | 2024-01-10 | [\#34135](https://github.com/airbytehq/airbyte/pull/34135) | Use published CDK missed in previous release                                                             |
+| 0.5.2   | 2024-01-08 | [\#33875](https://github.com/airbytehq/airbyte/pull/33875) | Update CDK to get Tunnel heartbeats feature                                                              |
+| 0.5.1   | 2024-01-04 | [\#33873](https://github.com/airbytehq/airbyte/pull/33873) | Install normalization to enable DV2 beta                                                                 |
+| 0.5.0   | 2023-12-18 | [\#33507](https://github.com/airbytehq/airbyte/pull/33507) | Upgrade to latest CDK; Fix DATs and tests                                                                |
+| 0.4.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                     |
+| 0.3.27  | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                                    |
+| 0.3.26  | 2022-09-27 | [\#17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres destination                                           |
+| 0.3.24  | 2022-09-08 | [\#16046](https://github.com/airbytehq/airbyte/pull/16046) | Fix missing database name URL Encoding                                                                   |
+| 0.3.23  | 2022-07-18 | [\#16260](https://github.com/airbytehq/airbyte/pull/16260) | Prevent traffic going on an unsecured channel in strict-encryption version of destination postgres       |
+| 0.3.22  | 2022-07-18 | [\#13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates                              |
+| 0.3.21  | 2022-07-06 | [\#14479](https://github.com/airbytehq/airbyte/pull/14479) | Publish amd64 and arm64 versions of the connector                                                        |
+| 0.3.20  | 2022-05-17 | [\#12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                                   |
+| 0.3.19  | 2022-04-25 | [\#12195](https://github.com/airbytehq/airbyte/pull/12195) | Add support for additional JDBC URL Params input                                                         |
+| 0.3.18  | 2022-04-12 | [\#11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                       |
+| 0.3.17  | 2022-04-05 | [\#11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                     |
+| 0.3.15  | 2022-02-25 | [\#10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                        |
+| 0.3.14  | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                               |
+| 0.3.13  | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371)   | Fixed incorrect handling "\n" in ssh key                                                                 |
+| 0.3.12  | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719)   | Improve handling of wide rows by buffering records based on their byte size rather than their count      |
+| 0.3.11  | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743)   | Add SSH Tunnel support                                                                                   |
+| 0.3.10  | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336)   | Destination Postgres: fix \u0000\(NULL\) value processing                                                |
