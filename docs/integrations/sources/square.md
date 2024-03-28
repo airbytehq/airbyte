@@ -100,7 +100,8 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 1.6.1   | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream|
+| 1.6.2   | 2023-09-11 | [30315](https://github.com/airbytehq/airbyte/pull/30315) | Fix `customer` stream pagination limit                                    |
+| 1.6.1   | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream                 |
 | 1.6.0   | 2023-10-18 | [31115](https://github.com/airbytehq/airbyte/pull/31115) | Add `customer_id` field to `Payments` and `Orders` streams                |
 | 1.5.0   | 2023-10-16 | [31045](https://github.com/airbytehq/airbyte/pull/31045) | Added New Stream bank_accounts                                            |
 | 1.4.0   | 2023-10-13 | [31106](https://github.com/airbytehq/airbyte/pull/31106) | Add new stream Loyalty                                                    |
