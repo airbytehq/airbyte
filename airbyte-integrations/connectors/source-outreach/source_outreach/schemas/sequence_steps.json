@@ -81,7 +81,7 @@
     "creator": {
       "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": ["string", "integer"]
       }
     },
     "mailings": {
