@@ -28,7 +28,7 @@ class DbtTransformationRunner(
     private val processFactory: ProcessFactory,
     private val normalizationRunner: NormalizationRunner
 ) : AutoCloseable {
-    private var process: Process? = null
+    private lateinit var process: Process
 
     @Throws(Exception::class)
     fun start() {
@@ -95,7 +95,7 @@ class DbtTransformationRunner(
                 dbtArguments,
                 *Commandline.translateCommandline(dbtConfig.dbtArguments)
             )
-            process =
+            val process =
                 processFactory.create(
                     Metadata.CUSTOM_STEP,
                     jobId,
@@ -119,25 +119,24 @@ class DbtTransformationRunner(
                     emptyMap(),
                     *dbtArguments.toTypedArray<String>()
                 )
+            this.process = process
             LineGobbler.gobble(
-                process!!.inputStream,
+                process.inputStream,
                 { msg: String? -> LOGGER.info(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
             LineGobbler.gobble(
-                process!!.errorStream,
+                process.errorStream,
                 { msg: String? -> LOGGER.error(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
 
             TestHarnessUtils.wait(process)
 
-            return process!!.exitValue() == 0
+            return process.exitValue() == 0
         } catch (e: Exception) {
             // make sure we kill the process on failure to avoid zombies.
-            if (process != null) {
-                TestHarnessUtils.cancelProcess(process)
-            }
+            process?.let { TestHarnessUtils.cancelProcess(process) }
             throw e
         }
     }
