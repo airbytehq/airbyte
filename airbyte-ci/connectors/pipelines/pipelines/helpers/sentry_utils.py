@@ -22,12 +22,12 @@ def initialize() -> None:
         sentry_sdk.init(
             dsn=os.environ.get("SENTRY_DSN"),
             environment=os.environ.get("SENTRY_ENVIRONMENT") or "production",
-            before_send=before_send,
+            before_send=before_send,  # type: ignore
             release=f"pipelines@{importlib.metadata.version('pipelines')}",
         )
 
 
-def before_send(event: sentry_sdk.Event, hint: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def before_send(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     # Ignore logged errors that do not contain an exception
     if "log_record" in hint and "exc_info" not in hint:
         return None
