@@ -27,11 +27,6 @@ data:
   license: MIT
   name: Okta
   releaseStage: alpha
-  releases:
-    breakingChanges:
-      1.0.0:
-        upgradeDeadline: "2024-12-31"
-        message: "Migrate Okta connector to Low Code Framework"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/okta
   tags:
