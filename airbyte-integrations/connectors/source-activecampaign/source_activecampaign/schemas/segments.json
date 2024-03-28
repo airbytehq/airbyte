@@ -2,28 +2,61 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": ["string", "null"],
-      "examples": ["Segment of Automation 1"]
+      "description": "Name of the segment that helps identify its purpose.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "examples": [
+        "Segment of Automation 1"
+      ]
     },
     "logic": {
-      "type": ["string", "null"],
-      "examples": ["and"]
+      "description": "Logical criteria applied to the segment for filtering contacts.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "examples": [
+        "and"
+      ]
     },
     "hidden": {
-      "type": ["string", "null"],
-      "examples": ["0"]
+      "description": "Indicates whether the segment is hidden or not.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "examples": [
+        "0"
+      ]
     },
     "seriesid": {
-      "type": ["string", "null"],
-      "examples": ["1"]
+      "description": "Identifier for the series or sequence the segment belongs to.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "examples": [
+        "1"
+      ]
     },
     "links": {
-      "type": ["array", "null"]
+      "description": "Related links or URLs associated with the segment.",
+      "type": [
+        "array",
+        "null"
+      ]
     },
     "id": {
+      "description": "Unique identifier for the segment.",
       "type": "string",
-      "examples": ["1"]
+      "examples": [
+        "1"
+      ]
     }
   },
-  "required": ["id"]
+  "required": [
+    "id"
+  ]
 }

@@ -2,120 +2,157 @@
   "type": "object",
   "properties": {
     "cdate": {
+      "description": "Date when the contact profile was created",
       "type": "string"
     },
     "email": {
+      "description": "Email address of the contact",
       "type": "string"
     },
     "phone": {
+      "description": "Phone number of the contact",
       "type": "string"
     },
     "firstName": {
+      "description": "First name of the contact",
       "type": "string"
     },
     "lastName": {
+      "description": "Last name of the contact",
       "type": "string"
     },
     "orgid": {
+      "description": "Identifier of the organization associated with the contact",
       "type": "string"
     },
     "orgname": {
+      "description": "Name of the organization associated with the contact",
       "type": "string"
     },
     "segmentio_id": {
+      "description": "Segment.io identifier for the contact",
       "type": "string"
     },
     "bounced_hard": {
+      "description": "Boolean flag indicating a hard bounce of the email",
       "type": "string"
     },
     "bounced_soft": {
+      "description": "Boolean flag indicating a soft bounce of the email",
       "type": "string"
     },
     "bounced_date": {
+      "description": "Date when the email bounced",
       "type": ["string", "null"]
     },
     "ip": {
+      "description": "IP address associated with the contact",
       "type": "string"
     },
     "ua": {
+      "description": "User agent string associated with the contact",
       "type": ["string", "null"]
     },
     "hash": {
+      "description": "Hash value of the contact information for internal use",
       "type": "string"
     },
     "socialdata_lastcheck": {
+      "description": "Date when social data was last checked for the contact",
       "type": ["string", "null"]
     },
     "email_local": {
+      "description": "Local part of the contact's email address",
       "type": "string"
     },
     "email_domain": {
+      "description": "Domain of the contact's email address",
       "type": "string"
     },
     "sentcnt": {
+      "description": "Count of sent emails to the contact",
       "type": "string"
     },
     "rating_tstamp": {
+      "description": "Timestamp of the contact's rating",
       "type": ["string", "null"]
     },
     "gravatar": {
+      "description": "Gravatar URL associated with the contact",
       "type": "string"
     },
     "deleted": {
+      "description": "Boolean flag indicating if the contact is deleted",
       "type": "string"
     },
     "anonymized": {
+      "description": "Boolean flag indicating if the contact data is anonymized",
       "type": "string"
     },
     "adate": {
+      "description": "Date when the contact was added",
       "type": ["string", "null"]
     },
     "udate": {
+      "description": "Date when the contact profile was last updated",
       "type": "string"
     },
     "edate": {
+      "description": "Date when the contact was last edited",
       "type": ["string", "null"]
     },
     "deleted_at": {
+      "description": "Date and time when the contact was deleted",
       "type": ["string", "null"]
     },
     "created_utc_timestamp": {
+      "description": "UTC timestamp when the contact profile was created",
       "type": "string"
     },
     "updated_utc_timestamp": {
+      "description": "UTC timestamp when the contact profile was last updated",
       "type": "string"
     },
     "created_timestamp": {
+      "description": "Timestamp when the contact profile was created",
       "type": "string"
     },
     "updated_timestamp": {
+      "description": "Timestamp when the contact profile was last updated",
       "type": "string"
     },
     "created_by": {
+      "description": "User ID of the creator of the contact profile",
       "type": ["string", "null"]
     },
     "updated_by": {
+      "description": "User ID of the last updater of the contact profile",
       "type": ["string", "null"]
     },
     "email_empty": {
+      "description": "Boolean flag indicating if the email field is empty",
       "type": "boolean"
     },
     "mpp_tracking": {
+      "description": "MPP tracking information related to the contact",
       "type": "string"
     },
     "scoreValues": {
+      "description": "Contains score values associated with the contact",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "accountContacts": {
+      "description": "Contains account-related contact information",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "links": {
+      "description": "Contains links to related resources for the contact",
       "type": "object",
       "properties": {
         "bounceLogs": {
@@ -195,9 +232,11 @@
       ]
     },
     "id": {
+      "description": "Unique identifier of the contact",
       "type": "string"
     },
     "organization": {
+      "description": "Organization associated with the contact",
       "type": "null"
     }
   },

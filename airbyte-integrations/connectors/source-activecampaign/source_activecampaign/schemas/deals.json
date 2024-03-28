@@ -2,130 +2,289 @@
   "type": "object",
   "properties": {
     "owner": {
-      "type": ["string", "null"]
+      "description": "Owner of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "contact": {
-      "type": ["string", "null"]
+      "description": "Contact associated with the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "organization": {
-      "type": ["string", "null"]
+      "description": "Organization linked to the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "group": {
-      "type": ["string", "null"]
+      "description": "Group to which the deal belongs",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "stage": {
-      "type": ["string", "null"]
+      "description": "Stage of the deal in the sales pipeline",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "title": {
-      "type": ["string", "null"]
+      "description": "Title or name of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "description": {
-      "type": ["string", "null"]
+      "description": "Description of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "percent": {
-      "type": ["string", "null"]
+      "description": "Percentage completion of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "cdate": {
-      "type": ["string", "null"]
+      "description": "Creation date of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "mdate": {
-      "type": ["string", "null"]
+      "description": "Last modified date of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "nextdate": {
-      "type": ["string", "null"]
+      "description": "Next important date related to the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "nexttaskid": {
-      "type": ["string", "null"]
+      "description": "ID of the next task related to the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "nextTask": {
-      "type": ["string", "null"]
+      "description": "Next task to be completed related to the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "value": {
-      "type": ["string", "null"]
+      "description": "Monetary value of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "currency": {
-      "type": ["string", "null"]
+      "description": "Currency used for the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "winProbability": {
-      "type": ["integer", "null"]
+      "description": "Probability of winning the deal",
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "winProbabilityMdate": {
-      "type": ["string", "null"]
+      "description": "Last modified date of the win probability value",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "status": {
-      "type": ["string", "null"]
+      "description": "Current status of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "activitycount": {
-      "type": ["string", "null"]
+      "description": "Number of activities related to the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "nextdealid": {
-      "type": ["string", "null"]
+      "description": "ID of the next deal in the sequence",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "edate": {
-      "type": ["string", "null"]
+      "description": "Expected closing date of the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "links": {
       "type": "object",
       "properties": {
         "dealActivities": {
-          "type": ["string", "null"]
+          "description": "Link to activities related to the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "contact": {
-          "type": ["string", "null"]
+          "description": "Link to the contact associated with the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "contactDeals": {
-          "type": ["string", "null"]
+          "description": "Link to all deals associated with the contact",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "group": {
-          "type": ["string", "null"]
+          "description": "Link to the group of the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "nextTask": {
-          "type": ["string", "null"]
+          "description": "Link to the next task related to the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "notes": {
-          "type": ["string", "null"]
+          "description": "Link to notes associated with the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "account": {
-          "type": ["string", "null"]
+          "description": "Link to the account associated with the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "customerAccount": {
-          "type": ["string", "null"]
+          "description": "Link to the customer account related to the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "organization": {
-          "type": ["string", "null"]
+          "description": "Link to the organization associated with the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "owner": {
-          "type": ["string", "null"]
+          "description": "Link to the owner of the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "scoreValues": {
-          "type": ["string", "null"]
+          "description": "Link to score values related to the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "stage": {
-          "type": ["string", "null"]
+          "description": "Link to the stage of the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "tasks": {
-          "type": ["string", "null"]
+          "description": "Link to tasks associated with the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "dealCustomFieldData": {
-          "type": ["string", "null"]
+          "description": "Link to custom field data specific to the deal",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "id": {
+      "description": "Unique identifier of the deal",
       "type": "string"
     },
     "hash": {
-      "type": ["string", "null"]
+      "description": "Hash code for the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "isDisabled": {
-      "type": ["boolean", "null"]
+      "description": "Flag indicating if the deal is disabled",
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "account": {
-      "type": ["string", "null"]
+      "description": "Account associated with the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "customerAccount": {
-      "type": ["string", "null"]
+      "description": "Customer account linked to the deal",
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
-  "required": ["id"]
+  "required": [
+    "id"
+  ]
 }
