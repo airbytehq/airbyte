@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "action": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type": ["null", "string"]
+        },
+        "key": {
+          "type": ["null", "string"]
+        },
+        "ocurred_at": {
+          "type": ["null", "string"]
+        },
+        "updated_at": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "properties": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {}
+        },
+        "tags": {
+          "type": ["null", "array"]
+        },
+        "orbit_url": {
+          "type": ["null", "string"]
+        },
+        "weight": {
+          "type": ["null", "string"]
+        },
+        "activity_link": {
+          "type": ["null", "string"]
+        },
+        "body": {
+          "type": ["null", "string"]
+        },
+        "body_html": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "activity_type": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {}
+        },
+        "member": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {}
+        }
+      }
+    }
+  }
+}

@@ -10,13 +10,15 @@ This Source is capable of syncing the following core Streams:
 
 * [Members](https://api.orbit.love/reference/get_workspace-slug-members) 
 * [Workspaces](https://docs.orbit.love/reference/get_workspaces-workspace-slug)
+* [Activity Type](https://api.orbit.love/reference/get_workspace-slug-activity-types)
+* [Activities](https://api.orbit.love/reference/get_workspace-slug-activities)
 
 ### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Incremental Sync | Yes |  |
 | Namespaces | No |  |
 | Pagination | Yes |  |
 
@@ -45,6 +47,7 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.4.0 | 2024-03-18 | [X](https://github.com/airbytehq/airbyte/pull/X)         | Add Incremental Sync and Activities Stream |
 | 0.3.0 | 2023-10-25 | [30976](https://github.com/airbytehq/airbyte/pull/30976) | Migrate to low-code framework |
 | 0.2.0 | 2023-10-23 | [31747](https://github.com/airbytehq/airbyte/pull/31747) | Update schema |
 | 0.1.1 | 2022-06-28 | [14208](https://github.com/airbytehq/airbyte/pull/14208) | Remove unused schema |
