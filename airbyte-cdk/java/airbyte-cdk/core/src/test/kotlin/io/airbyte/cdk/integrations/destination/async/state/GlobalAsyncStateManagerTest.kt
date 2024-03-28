@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destnation.async.state
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteStateMessage
@@ -54,7 +53,7 @@ class GlobalAsyncStateManagerTest {
                 serializedState(
                     STREAM1_DESC,
                     AirbyteStateMessage.AirbyteStateType.GLOBAL,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 1)),
+                    Jsons.jsonNode(mapOf("cursor" to 1)),
                 ),
             )
     private val GLOBAL_STATE_MESSAGE2: PartialAirbyteMessage =
@@ -67,7 +66,7 @@ class GlobalAsyncStateManagerTest {
                 serializedState(
                     STREAM2_DESC,
                     AirbyteStateMessage.AirbyteStateType.GLOBAL,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 2)),
+                    Jsons.jsonNode(mapOf("cursor" to 2)),
                 ),
             )
 
@@ -81,7 +80,7 @@ class GlobalAsyncStateManagerTest {
                 serializedState(
                     STREAM3_DESC,
                     AirbyteStateMessage.AirbyteStateType.GLOBAL,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 2)),
+                    Jsons.jsonNode(mapOf("cursor" to 2)),
                 ),
             )
     private val STREAM1_STATE_MESSAGE1: PartialAirbyteMessage =
@@ -96,7 +95,7 @@ class GlobalAsyncStateManagerTest {
                 serializedState(
                     STREAM1_DESC,
                     AirbyteStateMessage.AirbyteStateType.STREAM,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 1)),
+                    Jsons.jsonNode(mapOf("cursor" to 1)),
                 ),
             )
     private val STREAM1_STATE_MESSAGE2: PartialAirbyteMessage =
@@ -111,7 +110,7 @@ class GlobalAsyncStateManagerTest {
                 serializedState(
                     STREAM1_DESC,
                     AirbyteStateMessage.AirbyteStateType.STREAM,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 2)),
+                    Jsons.jsonNode(mapOf("cursor" to 2)),
                 ),
             )
 
@@ -127,7 +126,7 @@ class GlobalAsyncStateManagerTest {
                 serializedState(
                     STREAM1_DESC,
                     AirbyteStateMessage.AirbyteStateType.STREAM,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 3)),
+                    Jsons.jsonNode(mapOf("cursor" to 3)),
                 ),
             )
     private val STREAM2_STATE_MESSAGE: PartialAirbyteMessage =
@@ -142,7 +141,7 @@ class GlobalAsyncStateManagerTest {
                 serializedState(
                     STREAM2_DESC,
                     AirbyteStateMessage.AirbyteStateType.STREAM,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 4)),
+                    Jsons.jsonNode(mapOf("cursor" to 4)),
                 ),
             )
 

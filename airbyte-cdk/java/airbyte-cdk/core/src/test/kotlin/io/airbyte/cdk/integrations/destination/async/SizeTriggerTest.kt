@@ -44,7 +44,7 @@ class SizeTriggerTest {
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
-        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).getLeft())
+        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).first)
     }
 
     @Test
@@ -62,9 +62,9 @@ class SizeTriggerTest {
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
         // if above threshold, triggers
-        Assertions.assertEquals(true, detect.isSizeTriggered(DESC1, 0).getLeft())
+        Assertions.assertEquals(true, detect.isSizeTriggered(DESC1, 0).first)
         // if below threshold, no trigger
-        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).getLeft())
+        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).first)
     }
 
     @Test
@@ -84,7 +84,7 @@ class SizeTriggerTest {
             .thenReturn(listOf(Optional.of(SIZE_10MB)))
         val detect =
             DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
-        Assertions.assertEquals(true, detect.isSizeTriggered(DESC1, 0).getLeft())
-        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, 0).getLeft())
+        Assertions.assertEquals(true, detect.isSizeTriggered(DESC1, 0).first)
+        Assertions.assertEquals(false, detect.isSizeTriggered(DESC1, 0).first)
     }
 }

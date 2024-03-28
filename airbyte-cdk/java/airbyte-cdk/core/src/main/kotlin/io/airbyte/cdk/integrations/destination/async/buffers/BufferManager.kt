@@ -16,8 +16,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import org.apache.commons.io.FileUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -42,10 +40,9 @@ constructor(
      * reading unnecessarily, but small enough we apply back pressure before OOMing.
      */
     init {
-        LOGGER.info(
-            "Max 'memory' available for buffer allocation {}",
-            FileUtils.byteCountToDisplaySize(maxMemory),
-        )
+        logger.info {
+            "Max 'memory' available for buffer allocation ${FileUtils.byteCountToDisplaySize(maxMemory)}"
+        }
         memoryManager = GlobalMemoryManager(maxMemory)
         this.stateManager = GlobalAsyncStateManager(memoryManager)
         buffers = ConcurrentHashMap()
@@ -56,7 +53,7 @@ constructor(
             { this.printQueueInfo() },
             0,
             DEBUG_PERIOD_SECS,
-            TimeUnit.SECONDS,
+            TimeUnit.SECONDS
         )
     }
 
@@ -79,9 +76,7 @@ constructor(
             String.format(
                 "Global: max: %s, allocated: %s (%s MB), %% used: %s",
                 AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes),
-                AirbyteFileUtils.byteCountToDisplaySize(
-                    memoryManager.currentMemoryBytes.get(),
-                ),
+                AirbyteFileUtils.byteCountToDisplaySize(memoryManager.currentMemoryBytes.get()),
                 memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024,
                 memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes,
             ),
@@ -107,10 +102,7 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BufferManager::class.java)
-
         private const val DEBUG_PERIOD_SECS = 60L
-
         const val MEMORY_LIMIT_RATIO: Double = 0.7
     }
 }
