@@ -4,15 +4,15 @@ definitions:
   selector:
     extractor:
       field_path: ["{{ parameters.name }}"]
+
   requester:
-    url_base: "https://api.gong.io/v2/"
-    http_method: "GET"
+    url_base: https://api.gong.io/v2/
+    http_method: GET
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['access_key'] }}"
       password: "{{ config['access_key_secret'] }}"
-    request_parameters:
-      fromDateTime: "{{ config['start_date'] }}"
+
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -33,12 +33,10 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
 
-  # base stream
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
 
-  # streams
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -46,19 +44,34 @@ definitions:
       primary_key: "id"
       path: "/users"
 
-  calls_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "calls"
-      primary_key: "id"
-      path: "/calls"
-
   scorecards_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "scorecards"
       primary_key: "scorecardId"
       path: "/settings/scorecards"
+
+  calls_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "calls"
+      primary_key: "id"
+      path: "/calls"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: started
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: fromDateTime
+        type: RequestOption
 
   answered_scorecards_stream:
     $ref: "#/definitions/base_stream"
@@ -80,15 +93,27 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         http_method: "POST"
-        request_body_json:
-          filter: '{"callFromDate": "{{ config["start_date"] }}"}'
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_gong.components.IncrementalSingleBodyFilterCursor
+      cursor_field: reviewTime
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: body_json
+        type: RequestOption
+        field_name: filter, reviewFromDate
 
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/calls_stream"
   - "#/definitions/scorecards_stream"
   - "#/definitions/answered_scorecards_stream"
-
 check:
   stream_names:
-    - "users"
+    - users
