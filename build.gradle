@@ -7,7 +7,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 plugins {
     id 'base'
     id 'com.github.spotbugs' version '6.0.7' apply false
-    id 'org.jetbrains.kotlin.jvm' version '1.9.22' apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23' apply false
+    id 'com.google.devtools.ksp' version '1.9.23-1.0.19' apply false
 }
 
 allprojects {
@@ -17,7 +18,7 @@ allprojects {
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'idea'
-
+    apply plugin: 'com.google.devtools.ksp'
 
     // By default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.

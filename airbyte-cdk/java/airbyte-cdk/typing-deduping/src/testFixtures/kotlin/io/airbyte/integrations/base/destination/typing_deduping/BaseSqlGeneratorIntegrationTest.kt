@@ -267,10 +267,10 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "gatherInitialState returned the wrong number of futures"
         )
         Assertions.assertTrue(
-            initialState.first!!.isFinalTablePresent,
+            initialState.first()!!.isFinalTablePresent,
             "Destination handler could not find existing table"
         )
-        return initialState.first
+        return initialState.first()
     }
 
     /** Create a table and verify that we correctly recognize it as identical to itself. */
@@ -376,7 +376,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         initialStates: List<DestinationInitialStatus<DestinationState>>
     ): DestinationInitialStatus<DestinationState> {
         Assertions.assertEquals(1, initialStates!!.size)
-        return initialStates.first
+        return initialStates.first()
     }
 
     /**
@@ -483,7 +483,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val initialStates =
             destinationHandler!!.gatherInitialState(java.util.List.of(streamConfig!!))
         Assertions.assertEquals(1, initialStates!!.size)
-        return initialStates.first!!.initialRawTableStatus
+        return initialStates.first()!!.initialRawTableStatus
     }
 
     /**
@@ -1628,7 +1628,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val initialState =
             destinationHandler!!
                 .gatherInitialState(java.util.List.of((incrementalDedupStream!!)))!!
-                .first
+                .first()
         // The initial state should not need a soft reset.
         Assertions.assertFalse(
             initialState!!.destinationState!!.needsSoftReset(),
@@ -1645,7 +1645,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val updatedState =
             destinationHandler!!
                 .gatherInitialState(java.util.List.of((incrementalDedupStream!!)))!!
-                .first
+                .first()
         // When we re-fetch the state, it should now need a soft reset.
         Assertions.assertTrue(
             updatedState!!.destinationState!!.needsSoftReset(),
@@ -1664,7 +1664,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val refetchedState =
             destinationHandler!!
                 .gatherInitialState(java.util.List.of((incrementalDedupStream!!)))!!
-                .first
+                .first()
         // When we re-fetch the state, it should now need a soft reset.
         Assertions.assertTrue(
             refetchedState!!.destinationState!!.needsSoftReset(),
