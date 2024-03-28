@@ -19,7 +19,7 @@ data:
   name: Salesforce
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-salesforce
   registries:
     cloud:
