@@ -15,8 +15,12 @@ from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import M
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 factory = ModelToComponentFactory()
+
 resolver = ManifestReferenceResolver()
+
 transformer = ManifestComponentTransformer()
+
+
 def test_migrate_a_valid_legacy_state_to_per_partition():
     input_state = {
         "13506132": {
