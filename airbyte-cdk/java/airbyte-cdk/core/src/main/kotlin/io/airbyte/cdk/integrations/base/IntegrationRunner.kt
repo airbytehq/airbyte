@@ -46,12 +46,12 @@ class IntegrationRunner
 @VisibleForTesting
 internal constructor(
     cliParser: IntegrationCliParser,
-    outputRecordCollector: Consumer<AirbyteMessage?>,
+    outputRecordCollector: Consumer<AirbyteMessage>,
     destination: Destination?,
     source: Source?
 ) {
     private val cliParser: IntegrationCliParser
-    private val outputRecordCollector: Consumer<AirbyteMessage?>
+    private val outputRecordCollector: Consumer<AirbyteMessage>
     private val integration: Integration
     private val destination: Destination?
     private val source: Source?
@@ -61,7 +61,7 @@ internal constructor(
         destination: Destination?
     ) : this(
         IntegrationCliParser(),
-        Consumer<AirbyteMessage?> { message: AirbyteMessage? ->
+        Consumer<AirbyteMessage> { message: AirbyteMessage ->
             Destination.Companion.defaultOutputRecordCollector(message)
         },
         destination,
@@ -72,7 +72,7 @@ internal constructor(
         source: Source?
     ) : this(
         IntegrationCliParser(),
-        Consumer<AirbyteMessage?> { message: AirbyteMessage? ->
+        Consumer<AirbyteMessage> { message: AirbyteMessage ->
             Destination.Companion.defaultOutputRecordCollector(message)
         },
         null,
@@ -99,7 +99,7 @@ internal constructor(
     @VisibleForTesting
     internal constructor(
         cliParser: IntegrationCliParser,
-        outputRecordCollector: Consumer<AirbyteMessage?>,
+        outputRecordCollector: Consumer<AirbyteMessage>,
         destination: Destination?,
         source: Source?,
         jsonSchemaValidator: JsonSchemaValidator
@@ -254,7 +254,7 @@ internal constructor(
 
     private fun produceMessages(
         messageIterator: AutoCloseableIterator<AirbyteMessage>,
-        recordCollector: Consumer<AirbyteMessage?>
+        recordCollector: Consumer<AirbyteMessage>
     ) {
         messageIterator!!.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
             LOGGER.debug("Producing messages for stream {}...", s)

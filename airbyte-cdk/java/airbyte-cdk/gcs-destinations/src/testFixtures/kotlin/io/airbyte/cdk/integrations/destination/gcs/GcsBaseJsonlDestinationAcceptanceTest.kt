@@ -20,9 +20,7 @@ import kotlin.collections.MutableList
 
 abstract class GcsBaseJsonlDestinationAcceptanceTest :
     GcsDestinationAcceptanceTest(S3Format.JSONL) {
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
+    override fun getProtocolVersion() = ProtocolVersion.V1
 
     override val formatConfig: JsonNode?
         get() =
@@ -37,9 +35,9 @@ abstract class GcsBaseJsonlDestinationAcceptanceTest :
 
     @Throws(IOException::class)
     override fun retrieveRecords(
-        testEnv: TestDestinationEnv,
-        streamName: String,
-        namespace: String,
+        testEnv: TestDestinationEnv?,
+        streamName: String?,
+        namespace: String?,
         streamSchema: JsonNode
     ): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)

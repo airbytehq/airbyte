@@ -7,13 +7,13 @@ import java.time.Instant
 import java.util.*
 
 interface SqlGenerator {
-    fun buildStreamId(namespace: String?, name: String?, rawNamespaceOverride: String?): StreamId
+    fun buildStreamId(namespace: String, name: String, rawNamespaceOverride: String): StreamId
 
-    fun buildColumnId(name: String?): ColumnId {
+    fun buildColumnId(name: String): ColumnId {
         return buildColumnId(name, "")
     }
 
-    fun buildColumnId(name: String?, suffix: String?): ColumnId
+    fun buildColumnId(name: String, suffix: String?): ColumnId
 
     /**
      * Generate a SQL statement to create a fresh table to match the given stream.
@@ -26,7 +26,7 @@ interface SqlGenerator {
      * the table already exists. If you're passing a non-empty prefix, you likely want to set this
      * to true.
      */
-    fun createTable(stream: StreamConfig?, suffix: String?, force: Boolean): Sql
+    fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql
 
     /**
      * Used to create either the airbyte_internal or final schemas if they don't exist
@@ -64,11 +64,11 @@ interface SqlGenerator {
      * which handles casting exceptions.
      */
     fun updateTable(
-        stream: StreamConfig?,
+        stream: StreamConfig,
         finalSuffix: String?,
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
-    ): Sql?
+    ): Sql
 
     /**
      * Drop the previous final table, and rename the new final table to match the old final table.
@@ -76,7 +76,7 @@ interface SqlGenerator {
      * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is
      * non-empty. Callers are responsible for verifying those are true.
      */
-    fun overwriteFinalTable(stream: StreamId?, finalSuffix: String?): Sql?
+    fun overwriteFinalTable(stream: StreamId, finalSuffix: String?): Sql
 
     /**
      * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a
@@ -87,20 +87,20 @@ interface SqlGenerator {
      * @param tableName name of the v2 raw table
      * @return a string containing the necessary sql to migrate
      */
-    fun migrateFromV1toV2(streamId: StreamId?, namespace: String?, tableName: String?): Sql?
+    fun migrateFromV1toV2(streamId: StreamId, namespace: String?, tableName: String?): Sql
 
     /**
      * Typically we need to create a soft reset temporary table and clear loaded at values
      *
      * @return
      */
-    fun prepareTablesForSoftReset(stream: StreamConfig): Sql? {
+    fun prepareTablesForSoftReset(stream: StreamConfig): Sql {
         val createTempTable = createTable(stream, TypeAndDedupeTransaction.SOFT_RESET_SUFFIX, true)
         val clearLoadedAt = clearLoadedAt(stream.id)
         return Sql.Companion.concat(createTempTable, clearLoadedAt)
     }
 
-    fun clearLoadedAt(streamId: StreamId?): Sql
+    fun clearLoadedAt(streamId: StreamId): Sql
 
     /**
      * Implementation specific if there is no option to retry again with safe casted SQL or the

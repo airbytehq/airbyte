@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory
  * This should be deprecated as we slowly move towards using [SerializedBufferingStrategy] instead.
  */
 class InMemoryRecordBufferingStrategy(
-    private val recordWriter: RecordWriter<AirbyteRecordMessage?>,
+    private val recordWriter: RecordWriter<AirbyteRecordMessage>,
     private val checkAndRemoveRecordWriter: CheckAndRemoveRecordWriter?,
     private val maxQueueSizeInBytes: Long
 ) : BufferingStrategy {
     private var streamBuffer:
-        MutableMap<AirbyteStreamNameNamespacePair, MutableList<AirbyteRecordMessage?>> =
+        MutableMap<AirbyteStreamNameNamespacePair, MutableList<AirbyteRecordMessage>> =
         HashMap()
     private var fileName: String? = null
 
@@ -34,7 +34,7 @@ class InMemoryRecordBufferingStrategy(
     private var bufferSizeInBytes: Long = 0
 
     constructor(
-        recordWriter: RecordWriter<AirbyteRecordMessage?>,
+        recordWriter: RecordWriter<AirbyteRecordMessage>,
         maxQueueSizeInBytes: Long
     ) : this(recordWriter, null, maxQueueSizeInBytes)
 

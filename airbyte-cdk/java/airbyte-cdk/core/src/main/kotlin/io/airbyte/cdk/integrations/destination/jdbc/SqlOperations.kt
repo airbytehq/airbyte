@@ -52,7 +52,7 @@ interface SqlOperations {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun createTableIfNotExists(database: JdbcDatabase?, schemaName: String?, tableName: String?)
+    fun createTableIfNotExists(database: JdbcDatabase, schemaName: String?, tableName: String?)
 
     /**
      * Query to create a table with provided name in provided schema if it does not already exist.
@@ -72,7 +72,7 @@ interface SqlOperations {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun dropTableIfExists(database: JdbcDatabase?, schemaName: String?, tableName: String?)
+    fun dropTableIfExists(database: JdbcDatabase, schemaName: String?, tableName: String?)
 
     /**
      * Query to remove all records from a table. Assumes the table exists.
@@ -82,11 +82,7 @@ interface SqlOperations {
      * @param tableName Name of table
      * @return Query
      */
-    fun truncateTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        tableName: String?
-    ): String?
+    fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String
 
     /**
      * Insert records into table. Assumes the table exists.
@@ -99,8 +95,8 @@ interface SqlOperations {
      */
     @Throws(Exception::class)
     fun insertRecords(
-        database: JdbcDatabase?,
-        records: List<PartialAirbyteMessage?>?,
+        database: JdbcDatabase,
+        records: List<PartialAirbyteMessage>,
         schemaName: String?,
         tableName: String?
     )
@@ -131,8 +127,7 @@ interface SqlOperations {
      * @param queries Queries to execute
      * @throws Exception exception
      */
-    @Throws(Exception::class)
-    fun executeTransaction(database: JdbcDatabase?, queries: List<String?>?)
+    @Throws(Exception::class) fun executeTransaction(database: JdbcDatabase, queries: List<String>)
 
     /** Check if the data record is valid and ok to be written to destination */
     fun isValidData(data: JsonNode?): Boolean

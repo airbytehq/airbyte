@@ -172,7 +172,7 @@ abstract class AzureBlobStorageStreamCopier(
     }
 
     @Throws(Exception::class)
-    override fun generateMergeStatement(destTableName: String?): String? {
+    override fun generateMergeStatement(destTableName: String?): String {
         LOGGER.info(
             "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
             tmpTableName,

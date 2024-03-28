@@ -196,7 +196,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      */
     abstract fun schemaMatchesExpectation(
         existingTable: DialectTableDefinition,
-        columns: Collection<String?>?
+        columns: Collection<String>
     ): Boolean
 
     /**
@@ -219,7 +219,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      * @param streamConfig the stream in question
      * @return the valid v1 name and namespace for the same stream
      */
-    abstract fun convertToV1RawName(streamConfig: StreamConfig?): NamespacedTableName
+    abstract fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName
 
     companion object {
         protected val LOGGER: Logger =
