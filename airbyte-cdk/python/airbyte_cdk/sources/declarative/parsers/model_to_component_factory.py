@@ -328,9 +328,10 @@ class ModelToComponentFactory:
 
         partition_router = declarative_stream.retriever.partition_router
         router_class = partition_router[0].get("class_name") if partition_router else None
+        is_parent_stream_config = True if partition_router.parent_stream_configs else False
 
         is_default_substream_partition_router = isinstance(partition_router, SubstreamPartitionRouterModel)
-        is_custom_substream_partition_router = router_class == SubstreamPartitionRouterModel and isinstance(
+        is_custom_substream_partition_router = is_parent_stream_config and router_class == SubstreamPartitionRouterModel and isinstance(
             partition_router, CustomPartitionRouterModel
         )
 
