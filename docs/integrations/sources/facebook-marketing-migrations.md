@@ -1,5 +1,51 @@
 # Facebook Marketing Migration Guide
 
+## Upgrading to 3.0.0
+
+Custom Insights Reports now have updated schema for following breakdowns:
+- body_asset
+- call_to_action_asset
+- description_asset
+- image_asset
+- link_url_asset
+- title_asset
+- video_asset
+
+| Field                  | Old Type | New Type | Example                                                                                                                           |
+|:-----------------------|:---------|:---------|:----------------------------------------------------------------------------------------------------------------------------------|
+| `body_asset`           | string   | object   | `{"text": "Body Text", "id": "12653412653"}`                                                                                      |
+| `call_to_action_asset` | string   | object   | `{"name": "Action Name", "id": "12653412653"}`                                                                                    |
+| `description_asset`    | string   | object   | `{"text": "Description", "id": "12653412653"}`                                                                                    |
+| `image_asset`          | string   | object   | `{"hash": "hash_value", "url": "http://url","id": "12653412653" }`                                                                |
+| `link_url_asset`       | string   | object   | `{"website_url": "http://url","id": "12653412653" }`                                                                              |
+| `title_asset`          | string   | object   | `{"text": "Text", "id": "12653412653" }`                                                                                          |
+| `video_asset`          | string   | object   | `{"video_id": "2412334234", "url": "http://url", "thumbnail_url: "http://url", "video_name": "Video Name", "id": "12653412653" }` |
+
+
+### Refresh affected Custom Insights Report above and reset data if it uses breakdowns 
+
+1. Select **Connections** in the main navbar.
+    1. Select the connection(s) affected by the update.
+2. Select the **Replication** tab.
+    1. Select **Refresh source schema**.
+    2. Select **OK*
+:::note
+Any detected schema changes will be listed for your review.
+:::
+
+3. Select **Save changes** at the bottom of the page.
+    1. Ensure the **Reset affected streams** option is checked.
+:::note
+Depending on destination type you may not be prompted to reset your data.
+:::
+4. Select **Save connection**. 
+:::note
+This will reset the data in your destination and initiate a fresh sync.
+:::
+
+For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+
+
 ## Upgrading to 2.0.0
 
 Streams Ads-Insights-* streams now have updated schemas.

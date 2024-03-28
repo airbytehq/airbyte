@@ -3,10 +3,36 @@
     "ad_format_asset": { "type": ["null", "string"] },
     "age": { "type": ["null", "string"] },
     "app_id": { "type": ["null", "string"] },
-    "body_asset": { "type": ["null", "string"] },
-    "call_to_action_asset": { "type": ["null", "string"] },
+    "body_asset": {
+      "type": ["null", "object"],
+      "properties": {
+        "text": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
+    },
+    "call_to_action_asset": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "country": { "type": ["null", "string"] },
-    "description_asset": { "type": ["null", "string"] },
+    "description_asset": {
+      "type": ["null", "object"],
+      "properties": {
+        "text": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "device_platform": { "type": ["null", "string"] },
     "dma": { "type": ["null", "string"] },
     "frequency_value": { "type": ["null", "string"] },
@@ -17,16 +43,44 @@
     "hourly_stats_aggregated_by_audience_time_zone": {
       "type": ["null", "string"]
     },
-    "image_asset": { "type": ["null", "string"] },
+    "image_asset": {
+      "type": ["null", "object"],
+      "properties": {
+        "hash": { "type": ["null", "string"] },
+        "url": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
+    },
     "impression_device": { "type": ["null", "string"] },
-    "link_url_asset": { "type": ["null", "string"] },
+    "link_url_asset": {
+      "type": ["null", "object"],
+      "properties": {
+        "website_url": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
+    },
     "place_page_id": { "type": ["null", "string"] },
     "platform_position": { "type": ["null", "string"] },
     "product_id": { "type": ["null", "string"] },
     "publisher_platform": { "type": ["null", "string"] },
     "region": { "type": ["null", "string"] },
     "skan_conversion_id": { "type": ["null", "string"] },
-    "title_asset": { "type": ["null", "string"] },
-    "video_asset": { "type": ["null", "string"] }
+    "title_asset": {
+      "type": ["null", "object"],
+      "properties": {
+        "text": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
+    },
+    "video_asset": {
+      "type": ["null", "object"],
+      "properties": {
+        "video_id": { "type": ["null", "string"] },
+        "url": { "type": ["null", "string"] },
+        "thumbnail_url": { "type": ["null", "string"] },
+        "video_name": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
+    }
   }
 }
