@@ -1,0 +1,100 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": [
+        "null",
+        "object"
+    ],
+    "title": "Leads",
+    "properties": {
+        "owner": {
+            "type": "object",
+            "properties": {
+                "sponsoredAccount": {
+                    "type": "string"
+                }
+            }
+        },
+        "submitter": {
+            "type": "string"
+        },
+        "leadType": {
+            "type": "string"
+        },
+        "leadMetadata": {
+            "type": "object",
+            "properties": {
+                "sponsoredLeadMetadata": {
+                    "type": "object",
+                    "properties": {
+                        "campaign": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "versionedLeadGenFormUrn": {
+            "type": "string"
+        },
+        "id": {
+            "type": "string"
+        },
+        "submittedAt": {
+            "type": "integer"
+        },
+        "testLead": {
+            "type": "boolean"
+        },
+        "associatedEntity": {
+            "type": "object",
+            "properties": {
+                "associatedCreative": {
+                    "type": "string"
+                }
+            }
+        },
+        "formResponse": {
+            "type": "object",
+            "properties": {
+                "consentResponses": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean"
+                            },
+                            "consentId": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "answerDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "textQuestionAnswer": {
+                                        "type": "object",
+                                        "properties": {
+                                            "answer": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "questionId": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

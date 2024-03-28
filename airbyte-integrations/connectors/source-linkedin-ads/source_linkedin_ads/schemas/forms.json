@@ -1,0 +1,359 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": [
+        "null",
+        "object"
+    ],
+    "title": "Forms",
+    "additionalProperties": true,
+    "properties": {
+        "reviewInfo": {
+            "type": "object",
+            "properties": {
+                "rejectionReasons": {
+                    "type": "array",
+                    "items": {}
+                },
+                "lastUpdated": {
+                    "type": "number"
+                },
+                "reviewStatus": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "rejectionReasons",
+                "lastUpdated",
+                "reviewStatus"
+            ]
+        },
+        "owner": {
+            "type": "object",
+            "properties": {
+                "sponsoredAccount": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "sponsoredAccount"
+            ]
+        },
+        "hiddenFields": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "value"
+                ]
+            }
+        },
+        "versionId": {
+            "type": "number"
+        },
+        "created": {
+            "type": "number"
+        },
+        "creationLocale": {
+            "type": "object",
+            "properties": {
+                "country": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "country",
+                "language"
+            ]
+        },
+        "name": {
+            "type": "string"
+        },
+        "id": {
+            "type": "number"
+        },
+        "lastModified": {
+            "type": "number"
+        },
+        "state": {
+            "type": "string"
+        },
+        "content": {
+            "type": "object",
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "questionId": {
+                                "type": "number"
+                            },
+                            "question": {
+                                "type": "object",
+                                "properties": {
+                                    "localized": {
+                                        "type": "object",
+                                        "properties": {
+                                            "en_US": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "en_US"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "localized"
+                                ]
+                            },
+                            "responseEditable": {
+                                "type": "boolean"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "questionDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "textQuestionDetails": {
+                                        "type": "object",
+                                        "properties": {
+                                            "maxResponseLength": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": [
+                                            "maxResponseLength"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "textQuestionDetails"
+                                ]
+                            },
+                            "predefinedField": {
+                                "type": "string"
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "responseRequired": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "questionId",
+                            "question",
+                            "responseEditable",
+                            "name",
+                            "questionDetails",
+                            "predefinedField",
+                            "label",
+                            "responseRequired"
+                        ]
+                    }
+                },
+                "description": {
+                    "type": "object",
+                    "properties": {
+                        "localized": {
+                            "type": "object",
+                            "properties": {
+                                "en_US": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "en_US"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "localized"
+                    ]
+                },
+                "postSubmissionInfo": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "object",
+                            "properties": {
+                                "localized": {
+                                    "type": "object",
+                                    "properties": {
+                                        "en_US": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "en_US"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "localized"
+                            ]
+                        },
+                        "callToAction": {
+                            "type": "object",
+                            "properties": {
+                                "callToActionTarget": {
+                                    "type": "object",
+                                    "properties": {
+                                        "landingPageUrl": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "landingPageUrl"
+                                    ]
+                                },
+                                "callToActionLabel": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "callToActionTarget",
+                                "callToActionLabel"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "message",
+                        "callToAction"
+                    ]
+                },
+                "legalInfo": {
+                    "type": "object",
+                    "properties": {
+                        "consents": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "checkRequired": {
+                                        "type": "boolean"
+                                    },
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "consent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "localized": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "en_US": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "en_US"
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "localized"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "checkRequired",
+                                    "label",
+                                    "id",
+                                    "consent"
+                                ]
+                            }
+                        },
+                        "legalInfoId": {
+                            "type": "number"
+                        },
+                        "privacyPolicyUrl": {
+                            "type": "string"
+                        },
+                        "legalDisclaimer": {
+                            "type": "object",
+                            "properties": {
+                                "localized": {
+                                    "type": "object",
+                                    "properties": {
+                                        "en_US": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "en_US"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "localized"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "consents",
+                        "legalInfoId",
+                        "privacyPolicyUrl",
+                        "legalDisclaimer"
+                    ]
+                },
+                "headline": {
+                    "type": "object",
+                    "properties": {
+                        "localized": {
+                            "type": "object",
+                            "properties": {
+                                "en_US": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "en_US"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "localized"
+                    ]
+                }
+            },
+            "required": [
+                "questions",
+                "description",
+                "postSubmissionInfo",
+                "legalInfo",
+                "headline"
+            ]
+        }
+    },
+    "required": [
+        "reviewInfo",
+        "owner",
+        "hiddenFields",
+        "versionId",
+        "created",
+        "creationLocale",
+        "name",
+        "id",
+        "lastModified",
+        "state",
+        "content"
+    ]
+}
