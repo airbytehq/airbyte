@@ -7,7 +7,7 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.Iterables
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.functional.CheckedConsumer
 import java.sql.Connection
 import java.sql.SQLException

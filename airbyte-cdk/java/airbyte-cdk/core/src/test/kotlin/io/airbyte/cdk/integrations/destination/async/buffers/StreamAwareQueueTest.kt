@@ -4,8 +4,12 @@
 
 package io.airbyte.cdk.integrations.destination.async.buffers
 
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
-import org.junit.jupiter.api.Assertions
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -16,23 +20,23 @@ class StreamAwareQueueTest {
     internal fun test() {
         val queue = StreamAwareQueue(1024)
 
-        Assertions.assertEquals(0, queue.currentMemoryUsage)
-        Assertions.assertNull(queue.getTimeOfLastMessage().orElse(null))
+        assertEquals(0, queue.getCurrentMemoryUsage())
+        assertNull(queue.getTimeOfLastMessage().orElse(null))
 
         queue.offer(PartialAirbyteMessage(), 6, 1)
         queue.offer(PartialAirbyteMessage(), 6, 2)
         queue.offer(PartialAirbyteMessage(), 6, 3)
 
-        Assertions.assertEquals(18, queue.currentMemoryUsage)
-        Assertions.assertNotNull(queue.getTimeOfLastMessage().orElse(null))
+        assertEquals(18, queue.getCurrentMemoryUsage())
+        assertNotNull(queue.getTimeOfLastMessage().orElse(null))
 
         queue.take()
         queue.take()
         queue.take()
 
-        Assertions.assertEquals(0, queue.currentMemoryUsage)
+        assertEquals(0, queue.getCurrentMemoryUsage())
         // This should be null because the queue is empty
-        Assertions.assertTrue(
+        assertTrue(
             queue.getTimeOfLastMessage().isEmpty,
             "Expected empty optional; got " + queue.getTimeOfLastMessage(),
         )
@@ -43,39 +47,39 @@ class StreamAwareQueueTest {
     internal fun getMaxMemoryUsage(size: Long) {
         val queue = StreamAwareQueue(size)
 
-        Assertions.assertEquals(0, queue.currentMemoryUsage)
-        Assertions.assertEquals(size, queue.maxMemoryUsage)
+        assertEquals(0, queue.getCurrentMemoryUsage())
+        assertEquals(size, queue.getMaxMemoryUsage())
 
         queue.addMaxMemory(-100)
 
-        Assertions.assertEquals(size - 100, queue.maxMemoryUsage)
+        assertEquals(size - 100, queue.getMaxMemoryUsage())
 
         queue.addMaxMemory(123)
 
-        Assertions.assertEquals(size - 100 + 123, queue.maxMemoryUsage)
+        assertEquals(size - 100 + 123, queue.getMaxMemoryUsage())
     }
 
     @Test
     internal fun isEmpty() {
         val queue = StreamAwareQueue(1024)
 
-        Assertions.assertTrue(queue.isEmpty)
+        assertTrue(queue.isEmpty())
 
         queue.offer(PartialAirbyteMessage(), 10, 1)
 
-        Assertions.assertFalse(queue.isEmpty)
+        assertFalse(queue.isEmpty())
 
         queue.offer(PartialAirbyteMessage(), 10, 1)
         queue.offer(PartialAirbyteMessage(), 10, 1)
         queue.offer(PartialAirbyteMessage(), 10, 1)
 
-        Assertions.assertFalse(queue.isEmpty)
+        assertFalse(queue.isEmpty())
 
         queue.poll()
         queue.poll()
         queue.poll()
         queue.poll()
 
-        Assertions.assertTrue(queue.isEmpty)
+        assertTrue(queue.isEmpty())
     }
 }
