@@ -321,14 +321,20 @@ class ModelToComponentFactory:
         config: Mapping[str, Any],
         declarative_stream: DeclarativeStreamModel,
     ) -> LegacyToPerPartitionStateMigration:
-        if not isinstance(declarative_stream.retriever, SimpleRetrieverModel):
+        retriever = declarative_stream.retriever
+        partition_router = retriever.partition_router
+
+        if not isinstance(retriever, SimpleRetrieverModel):
             raise ValueError(
-                f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(declarative_stream.retriever)}"
+                f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(retriever)}"
             )
-        if not isinstance(declarative_stream.retriever.partition_router, SubstreamPartitionRouterModel):
+        if not isinstance(partition_router, (SubstreamPartitionRouterModel, CustomPartitionRouterModel)):
             raise ValueError(
-                f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(declarative_stream.retriever.partition_router)}"
+                f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(partition_router)}"
             )
+        if not hasattr(partition_router, "parent_stream_configs"):
+            raise ValueError("LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.")
+
         return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
