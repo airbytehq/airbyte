@@ -512,6 +512,75 @@ class CsvReaderTest(unittest.TestCase):
         return data_generator
 
 
+_TOO_MANY_VALUES = [
+    "header",
+    "too many values,value,value,value",
+]
+
+_TOO_FEW_VALUES = [
+    "header1,header2,header3",
+    "a value",
+    "value1,value2,value3",
+]
+
+
+@pytest.mark.parametrize(
+    "ignore_errors_on_fields_mismatch, data, error_message",
+    [
+        (
+            True,
+            _TOO_MANY_VALUES,
+            "Skipping record in line 2 of file a uri; invalid CSV row with missing column.",
+        ),
+        (
+            False,
+            _TOO_MANY_VALUES,
+            None,
+        ),
+        (
+            True,
+            _TOO_FEW_VALUES,
+            "Skipping record in line 2 of file a uri; invalid CSV row with extra column.",
+        ),
+        (
+            False,
+            _TOO_FEW_VALUES,
+            None,
+        ),
+    ],
+)
+def test_mismatch_between_values_and_header(ignore_errors_on_fields_mismatch, data, error_message) -> None:
+    config_format = CsvFormat()
+    config = Mock()
+    config.name = "config_name"
+    config.format = config_format
+
+    file = RemoteFile(uri="a uri", last_modified=datetime.now())
+    stream_reader = Mock(spec=AbstractFileBasedStreamReader)
+    logger = Mock(spec=logging.Logger)
+    csv_reader = _CsvReader()
+
+    config_format.ignore_errors_on_fields_mismatch = ignore_errors_on_fields_mismatch
+    stream_reader.open_file.return_value = CsvFileBuilder().with_data(data).build()
+
+    data_generator = csv_reader.read_data(
+        config,
+        file,
+        stream_reader,
+        logger,
+        FileReadMode.READ,
+    )
+
+    # Check if exception is raised only when skip_wrong_number_of_fields_error is False
+    if not ignore_errors_on_fields_mismatch:
+        with pytest.raises(RecordParseError):
+            print(list(data_generator))
+    else:
+        # Expect no exception when skip_wrong_number_of_fields_error is True
+        list(data_generator)
+        logger.error.assert_called_with(error_message)
+
+
 def test_encoding_is_passed_to_stream_reader() -> None:
     parser = CsvParser()
     encoding = "ascii"

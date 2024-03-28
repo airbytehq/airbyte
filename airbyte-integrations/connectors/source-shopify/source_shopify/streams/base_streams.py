@@ -89,7 +89,9 @@ class ShopifyStream(HttpStream, ABC):
                 self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
                 yield {}
 
-    def produce_records(self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None) -> Mapping[str, Any]:
+    def produce_records(
+        self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None
+    ) -> Iterable[Mapping[str, Any]]:
         # transform method was implemented according to issue 4841
         # Shopify API returns price fields as a string and it should be converted to number
         # this solution designed to convert string into number, but in future can be modified for general purpose
@@ -139,7 +141,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
         """
         return {}
 
-    def produce_deleted_records_from_events(self, delete_events: Iterable[Mapping[str, Any]] = []) -> Mapping[str, Any]:
+    def produce_deleted_records_from_events(self, delete_events: Iterable[Mapping[str, Any]] = []) -> Iterable[Mapping[str, Any]]:
         for event in delete_events:
             yield {
                 "id": event["subject_id"],
@@ -177,9 +179,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 
 class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the check point interval to the limit of the records output
-    @property
-    def state_checkpoint_interval(self) -> int:
-        return super().limit
+    state_checkpoint_interval = 250
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
@@ -218,7 +218,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     ) -> Iterable:
         # Getting records >= state
         if stream_state:
-            state_value = stream_state.get(self.cursor_field)
+            state_value = stream_state.get(self.cursor_field, self.default_state_comparison_value)
             for record in records_slice:
                 if self.cursor_field in record:
                     record_value = record.get(self.cursor_field, self.default_state_comparison_value)
@@ -489,6 +489,11 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_state = stream_state.get(self.parent_stream.name) if stream_state else {}
+        # `sub record buffer` tunes the STATE frequency, to `checkpoint_interval`
+        # for the `nested streams` with List[object], but doesn't handle List[{}] (list of one) case,
+        # thus sometimes, we've got duplicated STATE with 0 records,
+        # since we emit the STATE for every slice.
+        sub_records_buffer = []
         for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
             # updating the `stream_state` with the state of it's parent stream
             # to have the child stream sync independently from the parent stream
@@ -499,8 +504,20 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
             if self.nested_entity in record.keys():
                 # add parent_id key, value from mutation_map, if passed.
                 self.add_parent_id(record)
-                # yield nested sub-rcords
-                yield from [{self.nested_entity: sub_record} for sub_record in record.get(self.nested_entity, [])]
+                # unpack the nested list to the sub_set buffer
+                nested_records = [sub_record for sub_record in record.get(self.nested_entity, [])]
+                # add nested_records to the buffer, with no summarization.
+                sub_records_buffer += nested_records
+                # emit slice when there is a resonable amount of data collected,
+                # to reduce the amount of STATE messages after each slice.
+                if len(sub_records_buffer) >= self.state_checkpoint_interval:
+                    yield {self.nested_entity: sub_records_buffer}
+                    # clean the buffer for the next records batch
+                    sub_records_buffer.clear()
+
+        # emit leftovers
+        if len(sub_records_buffer) > 0:
+            yield {self.nested_entity: sub_records_buffer}
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
@@ -669,16 +686,19 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             updated_state[self.parent_stream.name] = {self.parent_stream.cursor_field: latest_record.get(self.parent_stream.cursor_field)}
         return updated_state
 
+    def get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]]) -> str:
+        if self.parent_stream_class:
+            # get parent stream state from the stream_state object.
+            parent_state = stream_state.get(self.parent_stream.name, {})
+            if parent_state:
+                return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
+        else:
+            # get the stream state, if no `parent_stream_class` was assigned.
+            return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+
     def get_state_value(self, stream_state: Mapping[str, Any] = None) -> Optional[Union[str, int]]:
         if stream_state:
-            if self.parent_stream_class:
-                # get parent stream state from the stream_state object.
-                parent_state = stream_state.get(self.parent_stream.name, {})
-                if parent_state:
-                    return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
-            else:
-                # get the stream state, if no `parent_stream_class` was assigned.
-                return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+            return self.get_stream_state_value(stream_state)
         else:
             # for majority of cases we fallback to start_date, otherwise.
             return self.config.get("start_date")

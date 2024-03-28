@@ -20,10 +20,12 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
@@ -41,15 +43,21 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -58,6 +66,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -66,7 +75,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftStagingS3Destination extends AbstractJdbcDestination implements Destination {
+public class RedshiftStagingS3Destination extends AbstractJdbcDestination<RedshiftState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3Destination.class);
 
@@ -176,8 +185,25 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
-    return new RedshiftDestinationHandler(databaseName, database);
+  protected JdbcDestinationHandler<RedshiftState> getDestinationHandler(final String databaseName,
+                                                                        final JdbcDatabase database,
+                                                                        String rawTableSchema) {
+    return new RedshiftDestinationHandler(databaseName, database, rawTableSchema);
+  }
+
+  @Override
+  protected List<Migration<RedshiftState>> getMigrations(JdbcDatabase database,
+                                                         String databaseName,
+                                                         SqlGenerator sqlGenerator,
+                                                         DestinationHandler<RedshiftState> destinationHandler) {
+    return List.of(new RedshiftRawTableAirbyteMetaMigration(database, databaseName));
+  }
+
+  @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    // Redundant override to keep in consistent with InsertDestination. TODO: Unify these 2 classes with
+    // composition.
+    return new RedshiftSuperLimitationTransformer(parsedCatalog, defaultNamespace);
   }
 
   @Override
@@ -217,23 +243,30 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
     final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-    final RedshiftDestinationHandler redshiftDestinationHandler = new RedshiftDestinationHandler(databaseName, database);
     final CatalogParser catalogParser;
+    final String rawNamespace;
     if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
-      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
+      rawNamespace = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get();
+      catalogParser = new CatalogParser(sqlGenerator, rawNamespace);
     } else {
+      rawNamespace = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
       catalogParser = new CatalogParser(sqlGenerator);
     }
+    final RedshiftDestinationHandler redshiftDestinationHandler = new RedshiftDestinationHandler(databaseName, database, rawNamespace);
     parsedCatalog = catalogParser.parseCatalog(catalog);
     final JdbcV1V2Migrator migrator = new JdbcV1V2Migrator(getNamingResolver(), database, databaseName);
     final NoopV2TableMigrator v2TableMigrator = new NoopV2TableMigrator();
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
+    List<Migration<RedshiftState>> redshiftMigrations = getMigrations(database, databaseName, sqlGenerator, redshiftDestinationHandler);
     if (disableTypeDedupe) {
-      typerDeduper = new NoOpTyperDeduperWithV1V2Migrations(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator);
+      typerDeduper =
+          new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog,
+              migrator, v2TableMigrator, redshiftMigrations);
     } else {
       typerDeduper =
-          new DefaultTyperDeduper(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator);
+          new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, redshiftMigrations);
     }
+
     return StagingConsumerFactory.builder(
         outputRecordCollector,
         database,
@@ -246,13 +279,16 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true).build().createAsync();
+        true)
+        .setDataTransformer(getDataTransformer(parsedCatalog, defaultNamespace))
+        .build()
+        .createAsync();
   }
 
   /**
    * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
    * file buffers and sets the minimum number to the default
-   *
+   * <p>
    * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
    * not been thoroughly load tested across all instance sizes
    *

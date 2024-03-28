@@ -8,6 +8,24 @@ java {
     }
 }
 
+compileKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+compileTestKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+compileTestFixturesKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
 dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
@@ -17,5 +35,6 @@ dependencies {
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 }
