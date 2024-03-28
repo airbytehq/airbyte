@@ -52,7 +52,7 @@ abstract class AbstractDbSource<DataType, Database : AbstractDatabase?>
 protected constructor(driverClassName: String) :
     JdbcConnector(driverClassName), Source, AutoCloseable {
     // TODO: Remove when the flag is not use anymore
-    var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
+    @JvmField protected var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
 
     @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
