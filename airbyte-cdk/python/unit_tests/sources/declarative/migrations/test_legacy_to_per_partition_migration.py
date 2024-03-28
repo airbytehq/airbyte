@@ -4,6 +4,7 @@
 import pytest
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
 from airbyte_cdk.sources.declarative.models import (
+    CustomPartitionRouter,
     CustomRetriever,
     DatetimeBasedCursor,
     DeclarativeStream,
