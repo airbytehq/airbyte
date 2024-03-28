@@ -12,13 +12,23 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from firebolt.client import DEFAULT_API_URL
-from firebolt.client.auth import UsernamePassword
+from firebolt.client.auth import UsernamePassword, ClientCredentials, Auth
 from firebolt.db import Connection, connect
 
 from .writer import create_firebolt_wirter
 
 logger = getLogger("airbyte")
 
+
+def _determine_auth(key: str, secret:str) -> Auth:
+    """
+    Determine between new auth based on key and secret or legacy email based auth.
+    """
+    if '@' in key:
+        # email auth can only be used with UsernamePassword
+        return UsernamePassword(key, secret)
+    else:
+        return ClientCredentials(key, secret)
 
 def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[str, Any]:
     """
@@ -27,9 +37,10 @@ def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[s
     :param logger: AirbyteLogger instance to print logs.
     :return: dictionary of firebolt.db.Connection-compatible kwargs
     """
+    auth = _determine_auth(config["client_id"], config["client_secret"])
     connection_args = {
         "database": config["database"],
-        "auth": UsernamePassword(config["username"], config["password"]),
+        "auth": auth,
         "api_endpoint": config.get("host", DEFAULT_API_URL),
         "account_name": config.get("account"),
     }

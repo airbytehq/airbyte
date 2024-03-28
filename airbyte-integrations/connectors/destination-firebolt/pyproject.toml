@@ -1,0 +1,31 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.4"
+name = "destination-firebolt"
+description = "Destination Implementation for Firebolt."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destination/firebolt"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_firebolt"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "==0.74.0"
+firebolt-sdk = "^1.1.0"
+pyarrow = "^15.0.2"
+
+[tool.poetry.scripts]
+destination-firebolt = "destination_firebolt.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+firebolt-sdk = "^1.1.0"
+pytest-mock = "^3.6.1"
+pytest = "^6.1"
