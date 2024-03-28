@@ -23,11 +23,14 @@ def with_integration_base(context: PipelineContext, build_platform: Platform) ->
 
 
 def with_integration_base_java(context: PipelineContext, build_platform: Platform) -> Container:
+    user, user_id, group_id = "airbyte", 1000, 1000
+
     integration_base = with_integration_base(context, build_platform)
     yum_packages_to_install = [
         "tar",  # required to untar java connector binary distributions.
         "openssl",  # required because we need to ssh and scp sometimes.
         "findutils",  # required for xargs, which is shipped as part of findutils.
+        "/usr/sbin/adduser",  # required to create a user.
     ]
     return (
         context.dagger_client.container(platform=build_platform)
@@ -47,9 +50,17 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
                 ]
             )
         )
+        .with_exec(
+            ["groupadd", "--gid", str(group_id), "--system", user],
+            skip_entrypoint=True,
+        )
+        .with_exec(
+            ["adduser", "--uid", str(user_id), "--gid", str(group_id), "--system", "--no-create-home", user],
+            skip_entrypoint=True,
+        )
         # Add what files we need to the /airbyte directory.
         # Copy base.sh from the airbyte/integration-base image.
-        .with_directory("/airbyte", integration_base.directory("/airbyte"))
+        .with_directory("/airbyte", integration_base.directory("/airbyte"), owner=user)
         .with_workdir("/airbyte")
         # Download a utility jar from the internet.
         .with_file("dd-java-agent.jar", context.dagger_client.http("https://dtdg.co/latest-java-tracer"))
@@ -137,7 +148,7 @@ def with_integration_base_java_and_normalization(context: ConnectorContext, buil
 
 async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform) -> Container:
     application = context.connector.technical_name
-
+    user = "airbyte"
     build_stage = (
         with_integration_base_java(context, build_platform)
         .with_workdir("/airbyte")
@@ -146,6 +157,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_exec(
             sh_dash_c(
                 [
+                    "chown -R airbyte:airbyte .",
                     f"tar xf {application}.tar --strip-components=1",
                     f"rm -rf {application}.tar",
                 ]
@@ -172,4 +184,10 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)
     )
-    return await finalize_build(context, connector_container)
+    connector_container = await finalize_build(context, connector_container)
+    connector_container = (
+        connector_container.with_exec(["chown", "-R", user, "/airbyte"], skip_entrypoint=True)
+        .with_exec(["chmod", "777", "/tmp"], skip_entrypoint=True)
+        .with_user(user)
+    )
+    return connector_container
