@@ -89,6 +89,7 @@
       "type": ["string", "null"]
     },
     "tags": {
+      "type": ["array", "null"],
       "items": {
         "properties": {
           "id": {
@@ -102,8 +103,15 @@
           }
         },
         "type": "object"
-      },
-      "type": ["array", "null"]
+      }
+    },
+    "life_cycle": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {},
+        "additionalProperties": true
+      }
     }
   }
 }

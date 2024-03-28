@@ -22,7 +22,8 @@
       "stream": {
         "name": "calls",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "full_refresh"
@@ -31,7 +32,8 @@
       "stream": {
         "name": "call_metrics",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["id"]]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "full_refresh"
