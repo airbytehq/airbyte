@@ -28,3 +28,7 @@ def test_config_convertation():
             }
         ],
     }
+
+
+def test_01():
+    assert True
