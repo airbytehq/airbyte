@@ -161,7 +161,7 @@ public class PostgresDebeziumStateUtilTest {
 
       final Map<String, String> databaseConfig = Map.of(JdbcUtils.USERNAME_KEY, container.getUsername(),
           JdbcUtils.PASSWORD_KEY, container.getPassword(),
-          JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
+          JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               container.getHost(),
               container.getFirstMappedPort(),
               dbName));
@@ -170,7 +170,7 @@ public class PostgresDebeziumStateUtilTest {
           DataSourceFactory.create(
               databaseConfig.get(JdbcUtils.USERNAME_KEY),
               databaseConfig.get(JdbcUtils.PASSWORD_KEY),
-              DatabaseDriver.POSTGRESQL.driverClassName,
+              DatabaseDriver.POSTGRESQL.getDriverClassName(),
               databaseConfig.get(JdbcUtils.JDBC_URL_KEY)));
 
       database.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + plugin + "');");
@@ -236,7 +236,7 @@ public class PostgresDebeziumStateUtilTest {
 
       final Map<String, String> databaseConfig = Map.of(JdbcUtils.USERNAME_KEY, container.getUsername(),
           JdbcUtils.PASSWORD_KEY, container.getPassword(),
-          JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
+          JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               container.getHost(),
               container.getFirstMappedPort(),
               dbName));
@@ -245,7 +245,7 @@ public class PostgresDebeziumStateUtilTest {
           DataSourceFactory.create(
               databaseConfig.get(JdbcUtils.USERNAME_KEY),
               databaseConfig.get(JdbcUtils.PASSWORD_KEY),
-              DatabaseDriver.POSTGRESQL.driverClassName,
+              DatabaseDriver.POSTGRESQL.getDriverClassName(),
               databaseConfig.get(JdbcUtils.JDBC_URL_KEY)));
 
       final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();

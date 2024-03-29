@@ -96,7 +96,7 @@ class PostgresStressTest extends JdbcStressTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
 
-    static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.driverClassName;
+    static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
     public PostgresTestSource() {
       super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
@@ -106,7 +106,7 @@ class PostgresStressTest extends JdbcStressTest {
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-          .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
+          .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               config.get(JdbcUtils.HOST_KEY).asText(),
               config.get(JdbcUtils.PORT_KEY).asInt(),
               config.get(JdbcUtils.DATABASE_KEY).asText()));

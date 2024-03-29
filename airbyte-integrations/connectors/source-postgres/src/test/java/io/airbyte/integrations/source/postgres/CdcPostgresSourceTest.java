@@ -209,7 +209,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   @Override
   protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<? extends AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
-    assertStateTypes((List<AirbyteStateMessage>) stateAfterFirstBatch, 24);
+    assertStateTypes(stateAfterFirstBatch, 24);
   }
 
   private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectCtidState) {
@@ -467,8 +467,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
         DataSourceFactory.create(
             config().get(JdbcUtils.USERNAME_KEY).asText(),
             config().get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.POSTGRESQL.driverClassName,
-            String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
+            DatabaseDriver.POSTGRESQL.getDriverClassName(),
+            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
                 config().get(JdbcUtils.HOST_KEY).asText(),
                 config().get(JdbcUtils.PORT_KEY).asInt(),
                 config().get(JdbcUtils.DATABASE_KEY).asText())));
@@ -731,8 +731,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     final DataSource dataSource = DataSourceFactory.create(
         config().get(JdbcUtils.USERNAME_KEY).asText(),
         config().get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.driverClassName,
-        String.format(DatabaseDriver.POSTGRESQL.urlFormatString,
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config().get(JdbcUtils.HOST_KEY).asText(),
             config().get(JdbcUtils.PORT_KEY).asInt(),
             config().get(JdbcUtils.DATABASE_KEY).asText()));

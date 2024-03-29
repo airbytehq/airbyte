@@ -128,7 +128,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_MODE = "ssl_mode";
   public static final String SSL_ROOT_CERT = "sslrootcert";
 
-  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.driverClassName;
+  static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   public static final String CA_CERTIFICATE_PATH = "ca_certificate_path";
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
@@ -318,7 +318,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         connectionProperties,
-        getConnectionTimeout(connectionProperties));
+        getConnectionTimeout(connectionProperties, driverClassName));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
