@@ -63,8 +63,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: '{{ response.get("next_cursor") }}'
-          stop_condition: '{{ not response.get("has_more") }}'
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       partition_router: []
     transformations:
       - type: CustomTransformation
@@ -132,8 +132,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: '{{ response.get("next_cursor") }}'
-          stop_condition: '{{ not response.get("has_more") }}'
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
@@ -212,8 +212,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: '{{ response.get("next_cursor") }}'
-          stop_condition: '{{ not response.get("has_more") }}'
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
@@ -299,8 +299,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: '{{ response.get("next_cursor") }}'
-          stop_condition: '{{ not response.get("has_more") }}'
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -372,8 +372,8 @@ streams:
                     pagination_strategy:
                       type: CursorPagination
                       page_size: 100
-                      cursor_value: '{{ response.get("next_cursor") }}'
-                      stop_condition: '{{ not response.get("has_more") }}'
+                      cursor_value: '{{ response.get("next_cursor", {}) }}'
+                      stop_condition: '{{ not response.get("next_cursor", {}) }}'
                   partition_router: []
                 incremental_sync:
                   type: DatetimeBasedCursor
