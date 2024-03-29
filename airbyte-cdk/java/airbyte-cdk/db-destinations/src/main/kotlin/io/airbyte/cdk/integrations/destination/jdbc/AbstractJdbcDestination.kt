@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory
 
 abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationState>(
     driverClass: String,
-    protected val namingResolver: NamingConventionTransformer,
+    protected open val namingResolver: NamingConventionTransformer,
     protected val sqlOperations: SqlOperations
 ) : JdbcConnector(driverClass), Destination {
     protected val configSchemaKey: String
@@ -106,14 +106,14 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
      * @throws Exception
      */
     @Throws(Exception::class)
-    protected fun destinationSpecificTableOperations(database: JdbcDatabase?) {}
+    protected open fun destinationSpecificTableOperations(database: JdbcDatabase?) {}
 
     /**
      * Subclasses which need to modify the DataSource should override [.modifyDataSourceBuilder]
      * rather than this method.
      */
     @VisibleForTesting
-    fun getDataSource(config: JsonNode): DataSource {
+    open fun getDataSource(config: JsonNode): DataSource {
         val jdbcConfig = toJdbcConfig(config)
         val connectionProperties = getConnectionProperties(config)
         val builder =
@@ -137,7 +137,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     }
 
     @VisibleForTesting
-    fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    open fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
 
@@ -195,7 +195,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         return config[JdbcUtils.DATABASE_KEY].asText()
     }
 
-    protected fun getDataTransformer(
+    protected open fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
         defaultNamespace: String?
     ): StreamAwareDataTransformer {
@@ -343,6 +343,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
          * - set true if need to make attempt to insert dummy records to newly created table. Set
          * false to skip insert step.
          */
+        @JvmStatic
         @Throws(Exception::class)
         fun attemptTableOperations(
             outputSchema: String?,

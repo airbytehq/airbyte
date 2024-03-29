@@ -90,7 +90,7 @@ abstract class DestinationAcceptanceTest {
     protected var localRoot: Path? = null
     open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
 
-    open fun getTestDataComparator(): TestDataComparator {
+    protected open fun getTestDataComparator(): TestDataComparator {
         return BasicTestDataComparator { this.resolveIdentifier(it) }
     }
 
@@ -102,7 +102,7 @@ abstract class DestinationAcceptanceTest {
          */
         get
 
-    protected fun supportsInDestinationNormalization(): Boolean {
+    protected open fun supportsInDestinationNormalization(): Boolean {
         return false
     }
 
@@ -208,7 +208,7 @@ abstract class DestinationAcceptanceTest {
     /**
      * Override to return true if a destination implements namespaces and should be tested as such.
      */
-    protected fun implementsNamespaces(): Boolean {
+    protected open fun implementsNamespaces(): Boolean {
         return false
     }
 
@@ -308,7 +308,7 @@ abstract class DestinationAcceptanceTest {
      * - can throw any exception, test framework will handle.
      */
     @Throws(Exception::class)
-    protected fun retrieveNormalizedRecords(
+    protected open fun retrieveNormalizedRecords(
         testEnv: TestDestinationEnv?,
         streamName: String?,
         namespace: String?
@@ -1036,7 +1036,7 @@ abstract class DestinationAcceptanceTest {
         }
     }
 
-    protected val maxRecordValueLimit: Int
+    protected open val maxRecordValueLimit: Int
         /** @return the max limit length allowed for values in the destination. */
         get() = 1000000000
 
@@ -1953,7 +1953,7 @@ abstract class DestinationAcceptanceTest {
         return false
     }
 
-    protected fun supportIncrementalSchemaChanges(): Boolean {
+    protected open fun supportIncrementalSchemaChanges(): Boolean {
         return false
     }
 
