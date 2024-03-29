@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory
 class AsyncStreamConsumer
 @VisibleForTesting
 constructor(
-    outputRecordCollector: Consumer<AirbyteMessage?>,
+    outputRecordCollector: Consumer<AirbyteMessage>,
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
     flusher: DestinationFlushFunction,
@@ -89,7 +89,7 @@ constructor(
     private val PARTIAL_DESERIALIZE_REF_BYTES: Int = 10 * 8
 
     constructor(
-        outputRecordCollector: Consumer<AirbyteMessage?>,
+        outputRecordCollector: Consumer<AirbyteMessage>,
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
         flusher: DestinationFlushFunction,
@@ -108,7 +108,7 @@ constructor(
     )
 
     constructor(
-        outputRecordCollector: Consumer<AirbyteMessage?>,
+        outputRecordCollector: Consumer<AirbyteMessage>,
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
         flusher: DestinationFlushFunction,
@@ -131,7 +131,7 @@ constructor(
     )
 
     constructor(
-        outputRecordCollector: Consumer<AirbyteMessage?>,
+        outputRecordCollector: Consumer<AirbyteMessage>,
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
         flusher: DestinationFlushFunction,
@@ -155,7 +155,7 @@ constructor(
 
     @VisibleForTesting
     constructor(
-        outputRecordCollector: Consumer<AirbyteMessage?>,
+        outputRecordCollector: Consumer<AirbyteMessage>,
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
         flusher: DestinationFlushFunction,
