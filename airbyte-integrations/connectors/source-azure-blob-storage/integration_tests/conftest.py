@@ -96,4 +96,6 @@ def configured_catalog_csv_fixture() -> ConfiguredAirbyteCatalog:
 
 @pytest.fixture(name="config_csv", scope="session")
 def config_csv_fixture() -> Mapping[str, Any]:
-    yield load_config("config_integration.json")
+    config = load_config("config_integration.json")
+    config["azure_blob_storage_endpoint"] = config["azure_blob_storage_endpoint"].replace('localhost', get_docker_ip())
+    yield config

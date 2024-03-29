@@ -11,4 +11,4 @@ docker run --rm \
   airbyte/source-faker:latest read \
   --config /secrets/secret_faker.json \
   --catalog /integration_tests/configured_catalog.json \
-  | tee >(./purchases.sh) >(./products.sh) >(./users.sh) > dev/null
+  | tee >(./purchases.sh) >(./products.sh) >(./users.sh) > /dev/null
