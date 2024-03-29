@@ -2,7 +2,6 @@
 
 import logging
 import os
-import platform
 import subprocess
 import time
 import uuid
@@ -14,13 +13,15 @@ import pytest
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from azure.storage.blob._shared.authentication import SharedKeyCredentialPolicy
-from source_azure_blob_storage import SourceAzureBlobStorage
 
+from source_azure_blob_storage import SourceAzureBlobStorage
 from .utils import get_docker_ip, load_config
 
 logger = logging.getLogger("airbyte")
 
 
+# Monkey patch credentials method to make it work with global-docker-host inside dagger
+# (original method handles only localhost and 127.0.0.1 addresses)
 def _format_shared_key_credential(account_name, credential):
     credentials = {'account_key': 'key1', 'account_name': 'account1'}
     return SharedKeyCredentialPolicy(**credentials)
@@ -37,7 +38,6 @@ def docker_client() -> docker.client.DockerClient:
 # @pytest.fixture()
 def get_container_client() -> ContainerClient:
     docker_ip = get_docker_ip()
-    # blob_service_client = BlobServiceClient(f'http://localhost:10000/account1', credential='key1')
     blob_service_client = BlobServiceClient(f'http://{docker_ip}:10000/account1', credential='key1')
     container_client = blob_service_client.get_container_client('testcontainer')
     return container_client
@@ -86,7 +86,6 @@ def generate_and_upload_files(container_client):
         csv_large_file = open(f'/tmp/csv/{table}.csv', "rb").read()
         for i in range(10):
             container_client.upload_blob(f'test_csv_{table}_{i}.csv', csv_large_file, validate_content=False)
-            print('big csv file uploaded _i', i)
 
 
 @pytest.fixture(name='configured_catalog_csv')
