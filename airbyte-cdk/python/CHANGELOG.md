@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.78.1
+connector-builder: return full url-encoded URL instead of separating parameters
+
+## 0.78.0
+low-code: Allow state migration with CustomPartitionRouter
+
 ## 0.77.2
 Emit state recordCount as float instead of integer
 
