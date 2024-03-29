@@ -22,7 +22,10 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateBlob, AirbyteStreamState, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from source_survey_monkey_demo import SourceSurveyMonkeyDemo
 
-_A_CONFIG = {}
+_A_CONFIG = {
+    "access_token": "1234",
+    "start_date": "2021-01-01T00:00:00Z",
+}
 _NOW = datetime.now(timezone.utc)
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -47,9 +50,7 @@ class FullRefreshTest(TestCase):
   "page": 1,
   "total": 1,
   "links": {
-    "self": "https://api.surveymonkey.com/v3/surveys?page=1&per_page=50",
-    "next": "https://api.surveymonkey.com/v3/surveys?page=2&per_page=50",
-    "last": "https://api.surveymonkey.com/v3/surveys?page=5&per_page=50"
+    "self": "https://api.surveymonkey.com/v3/surveys?page=1&per_page=50"
   }
 }
 """, status_code=200)
