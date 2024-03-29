@@ -82,7 +82,7 @@ class AesCbcEnvelopeEncryptionBlobDecoratorTest {
 
     @Test
     internal fun testMetadataInsertion() {
-        val metadata: Map<String, String> = HashMap()
+        val metadata: MutableMap<String, String> = HashMap()
 
         decorator.updateMetadata(
             metadata,

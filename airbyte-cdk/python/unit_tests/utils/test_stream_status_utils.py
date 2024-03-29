@@ -13,7 +13,7 @@ def test_started_as_message():
     stream_status = AirbyteStreamStatus.STARTED
     airbyte_message = stream_status_as_airbyte_message(stream, stream_status)
 
-    assert type(airbyte_message) == AirbyteMessage
+    assert isinstance(airbyte_message, AirbyteMessage)
     assert airbyte_message.type == MessageType.TRACE
     assert airbyte_message.trace.type == TraceType.STREAM_STATUS
     assert airbyte_message.trace.emitted_at > 0
@@ -26,7 +26,7 @@ def test_running_as_message():
     stream_status = AirbyteStreamStatus.RUNNING
     airbyte_message = stream_status_as_airbyte_message(stream, stream_status)
 
-    assert type(airbyte_message) == AirbyteMessage
+    assert isinstance(airbyte_message, AirbyteMessage)
     assert airbyte_message.type == MessageType.TRACE
     assert airbyte_message.trace.type == TraceType.STREAM_STATUS
     assert airbyte_message.trace.emitted_at > 0
@@ -39,7 +39,7 @@ def test_complete_as_message():
     stream_status = AirbyteStreamStatus.COMPLETE
     airbyte_message = stream_status_as_airbyte_message(stream, stream_status)
 
-    assert type(airbyte_message) == AirbyteMessage
+    assert isinstance(airbyte_message, AirbyteMessage)
     assert airbyte_message.type == MessageType.TRACE
     assert airbyte_message.trace.type == TraceType.STREAM_STATUS
     assert airbyte_message.trace.emitted_at > 0
@@ -52,7 +52,7 @@ def test_incomplete_failed_as_message():
     stream_status = AirbyteStreamStatus.INCOMPLETE
     airbyte_message = stream_status_as_airbyte_message(stream, stream_status)
 
-    assert type(airbyte_message) == AirbyteMessage
+    assert isinstance(airbyte_message, AirbyteMessage)
     assert airbyte_message.type == MessageType.TRACE
     assert airbyte_message.trace.type == TraceType.STREAM_STATUS
     assert airbyte_message.trace.emitted_at > 0

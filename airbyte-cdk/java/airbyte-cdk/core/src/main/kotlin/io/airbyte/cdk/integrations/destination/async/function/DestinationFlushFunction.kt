@@ -38,7 +38,7 @@ interface DestinationFlushFunction {
     @Throws(Exception::class)
     fun flush(
         decs: StreamDescriptor,
-        stream: Stream<PartialAirbyteMessage?>,
+        stream: Stream<PartialAirbyteMessage>,
     )
 
     /**
