@@ -144,6 +144,29 @@ Maven and Gradle will automatically reference the correct (pinned) version of th
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.28.19  | 2024-03-28 | [\#36610](https://github.com/airbytehq/airbyte/pull/36610) | remove airbyte-api generation, pull depdendency jars instead |
+| 0.28.19  | 2024-03-28 | [\#36611](https://github.com/airbytehq/airbyte/pull/36611) | disable spotbugs for CDK tes and testFixtures tasks |
+| 0.28.18  | 2024-03-28 | [\#36606](https://github.com/airbytehq/airbyte/pull/36574) | disable spotbugs for CDK tes and testFixtures tasks |
+| 0.28.18  | 2024-03-28 | [\#36574](https://github.com/airbytehq/airbyte/pull/36574) | Fix ContainerFactory |
+| 0.28.18  | 2024-03-27 | [\#36570](https://github.com/airbytehq/airbyte/pull/36570) | Convert missing s3-destinations tests to Kotlin |
+| 0.28.18  | 2024-03-27 | [\#36446](https://github.com/airbytehq/airbyte/pull/36446) | Convert dependencies submodule to Kotlin |
+| 0.28.18  | 2024-03-27 | [\#36445](https://github.com/airbytehq/airbyte/pull/36445) | Convert functional out Checked interfaces to kotlin
+| 0.28.18  | 2024-03-27 | [\#36444](https://github.com/airbytehq/airbyte/pull/36444) | Use apache-commons classes in our Checked functional interfaces |
+| 0.28.18  | 2024-03-27 | [\#36467](https://github.com/airbytehq/airbyte/pull/36467) | Convert #36465 to Kotlin
+| 0.28.18  | 2024-03-27 | [\#36473](https://github.com/airbytehq/airbyte/pull/36473) | Convert convert #36396 to Kotlin |
+| 0.28.18  | 2024-03-27 | [\#36439](https://github.com/airbytehq/airbyte/pull/36439) | Convert db-destinations submodule to Kotlin |
+| 0.28.18  | 2024-03-27 | [\#36438](https://github.com/airbytehq/airbyte/pull/36438) | Convert db-sources submodule to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36437](https://github.com/airbytehq/airbyte/pull/36437) | Convert gsc submodule to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36421](https://github.com/airbytehq/airbyte/pull/36421) | Convert typing-deduping submodule to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36420](https://github.com/airbytehq/airbyte/pull/36420) | Convert s3-destinations submodule to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36419](https://github.com/airbytehq/airbyte/pull/36419) | Convert azure submodule to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36413](https://github.com/airbytehq/airbyte/pull/36413) | Convert postgres submodule to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36412](https://github.com/airbytehq/airbyte/pull/36412) | Convert mongodb submodule to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36411](https://github.com/airbytehq/airbyte/pull/36411) | Convert datastore-bigquery submodule to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36205](https://github.com/airbytehq/airbyte/pull/36205) | Convert core/main to Kotlin                                                                                      |
+| 0.28.18  | 2024-03-26 | [\#36204](https://github.com/airbytehq/airbyte/pull/36204) | Convert core/test to Kotlin |
+| 0.28.18  | 2024-03-26 | [\#36190](https://github.com/airbytehq/airbyte/pull/36190) | Convert core/testFixtures to Kotlin                                                                                      |
+| 0.28.0  | 2024-03-26 | [\#36514](https://github.com/airbytehq/airbyte/pull/36514) | Bump CDK version to 0.28.0                                                                                       |
 | 0.27.7  | 2024-03-26 | [\#36466](https://github.com/airbytehq/airbyte/pull/36466) | Destinations: fix support for case-sensitive fields in destination state.                                                                                      |
 | 0.27.6  | 2024-03-26 | [\#36432](https://github.com/airbytehq/airbyte/pull/36432) | Sources support for AirbyteRecordMessageMeta during reading source data types.                                                                                 |
 | 0.27.5  | 2024-03-25 | [\#36461](https://github.com/airbytehq/airbyte/pull/36461) | Destinations: Handle case-sensitive columns in destination state handling.                                                                                     |
