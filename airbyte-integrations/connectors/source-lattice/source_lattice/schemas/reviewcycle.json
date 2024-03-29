@@ -12,6 +12,10 @@
     "updatedAt"
   ],
   "properties": {
+    "parent_id": {
+      "type": "string",
+      "description": "The parent id that caused the request, if any."
+    },
     "id": {
       "type": "string",
       "description": "The api id of the review"
