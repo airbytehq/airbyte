@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the tag.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the tag.",
       "type": ["null", "string"]
     },
     "list_id": {
+      "description": "Identifier of the list to which the tag belongs.",
       "type": ["null", "string"]
     }
   }
