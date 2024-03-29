@@ -422,6 +422,7 @@ constructor(
 
         const val TIMEOUT_MILLIS: Int = 15000 // 15 seconds
 
+        @JvmStatic
         fun getInstance(config: JsonNode, hostKey: List<String>, portKey: List<String>): SshTunnel {
             val tunnelMethod =
                 Jsons.getOptional(config, "tunnel_method", "tunnel_method")
@@ -515,6 +516,7 @@ constructor(
             )
         }
 
+        @JvmStatic
         @Throws(Exception::class)
         @JvmStatic
         fun sshWrap(
@@ -529,6 +531,7 @@ constructor(
             }
         }
 
+        @JvmStatic
         @Throws(Exception::class)
         fun sshWrap(
             config: JsonNode,
@@ -541,6 +544,7 @@ constructor(
             }
         }
 
+        @JvmStatic
         @Throws(Exception::class)
         fun <T> sshWrap(
             config: JsonNode,
@@ -553,6 +557,7 @@ constructor(
             }
         }
 
+        @JvmStatic
         @Throws(Exception::class)
         fun <T> sshWrap(
             config: JsonNode,

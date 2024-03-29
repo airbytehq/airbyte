@@ -52,16 +52,14 @@ protected constructor(val container: C) : AutoCloseable {
 
     @Volatile private lateinit var dslContext: DSLContext
 
-    protected val databaseId: Int
-    protected val containerId: Int
+    protected val databaseId: Int = nextDatabaseId.getAndIncrement()
+    protected val containerId: Int =
+        containerUidToId!!.computeIfAbsent(container.containerId) { k: String? ->
+            nextContainerId!!.getAndIncrement()
+        }!!
     private val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
     init {
-        this.databaseId = nextDatabaseId!!.getAndIncrement()
-        this.containerId =
-            containerUidToId!!.computeIfAbsent(container!!.containerId) { k: String? ->
-                nextContainerId!!.getAndIncrement()
-            }!!
         LOGGER!!.info(formatLogLine("creating database " + databaseName))
     }
 
@@ -300,7 +298,7 @@ protected constructor(val container: C) : AutoCloseable {
         }
 
         fun withSsl(sslMode: MutableMap<Any?, Any?>?): B {
-            return with(JdbcUtils.SSL_KEY, true)!!.with(JdbcUtils.SSL_MODE_KEY, sslMode)
+            return with(JdbcUtils.SSL_KEY, true).with(JdbcUtils.SSL_MODE_KEY, sslMode)
         }
 
         companion object {
@@ -311,7 +309,7 @@ protected constructor(val container: C) : AutoCloseable {
     companion object {
         private val LOGGER: Logger? = LoggerFactory.getLogger(TestDatabase::class.java)
 
-        private val nextDatabaseId: AtomicInteger? = AtomicInteger(0)
+        private val nextDatabaseId: AtomicInteger = AtomicInteger(0)
 
         private val nextContainerId: AtomicInteger? = AtomicInteger(0)
         private val containerUidToId: MutableMap<String?, Int?>? = ConcurrentHashMap()
