@@ -9,13 +9,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
-      # - config_path: "integration_tests/invalid_config.json"
-      #   status: "failed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 0.1.5        # The management_events Stream changed it EventTime field from integer to float 
+          disable_for_version: 0.1.5        # The management_events stream changed it's EventTime field from integer to float 
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -26,13 +26,12 @@ acceptance_tests:
 #          path: "integration_tests/expected_records.jsonl"
 #          exact_order: no
   incremental: 
-    bypass_reason: "This connector does not implement incremental sync"
-# TODO uncomment this block this block if your connector implements incremental sync: 
-#    tests:
-#      - config_path: "secrets/config.json"
-#        configured_catalog_path: "integration_tests/configured_catalog.json"
-#        future_state:
-#          future_state_path: "integration_tests/abnormal_state.json"
+    # bypass_reason: "This connector does not implement incremental sync"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

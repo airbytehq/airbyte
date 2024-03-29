@@ -27,27 +27,21 @@ class CustomAuthenticator(NoAuth):
         self._aws_region_name = InterpolatedString.create(self.aws_region_name, parameters=parameters).eval(self.config)
         self.path = "/"
         self.service = 'cloudtrail'
-        self.region = self._aws_region_name
-        self.method = 'POST'
+
+    def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
+        """Attach the HTTP headers required to authenticate on the HTTP request"""
         self.headers = {
             'Content-Type': 'application/x-amz-json-1.1',
             'Accept': 'application/json',
             'Host': f'cloudtrail.{self._aws_region_name}.amazonaws.com'
         }
-        self.json_payload = {
-            "LookupAttributes": [
-                {
-                    "AttributeKey": "EventName",
-                    "AttributeValue": "ConsoleLogin"
-                }
-            ],
-            "MaxResults": 50
-        }
-
-
-    def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
-        """Attach the HTTP headers required to authenticate on the HTTP request"""
-        authorization_header, amz_date = self.sign_aws_request(self.service, self.region, self.method, self.path, self.headers, self.json_payload, self._aws_key_id, self._aws_secret_key)
+        # StartTime and EndTime should be Unix timestamps with integer type
+        request_body_json = json.loads(request.body.decode('utf-8'))
+        request_body_json['StartTime'] = int(float(request_body_json['StartTime']))
+        request_body_json['EndTime'] = int(float(request_body_json['EndTime']))
+        request.body = json.dumps(request_body_json).encode('utf-8')
+        # Sign the AWS Request and update headers with timestamp
+        authorization_header, amz_date = self.sign_aws_request(self.service, self._aws_region_name, request.method, self.path, self.headers, request_body_json, self._aws_key_id, self._aws_secret_key)
         self.headers["X-Amz-Date"] = amz_date
         self.headers['Authorization'] = authorization_header
         request.headers.update(self.headers)
@@ -61,6 +55,7 @@ class CustomAuthenticator(NoAuth):
     def token(self):
         return None
 
+    # AWS Cloudtrail Requires custom sign process with request, Referred from botocore client - https://github.com/boto/botocore/issues/786 
     def sign_aws_request(self, service, region, method, path, headers, payload, aws_access_key, aws_secret_key):
         # Define required parameters for signing
         service = service

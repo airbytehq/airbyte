@@ -5,7 +5,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: []
+      field_path: ["{{ parameters.extractor_path }}"]
 
   requester:
     type: HttpRequester
@@ -18,19 +18,37 @@ definitions:
       aws_secret_key: "{{config['aws_secret_key']}}"
       aws_region_name: "{{config['aws_region_name']}}"
 
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
+  incremental_sync_base:
+    type: DatetimeBasedCursor
+    datetime_format: '%s' 
+    cursor_field: "EventTime"
+    start_time_option:
+      inject_into: body_json
+      field_name: StartTime
+      type: RequestOption
+    end_time_option:
+      inject_into: body_json
+      field_name: EndTime
+      type: RequestOption
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: '%Y-%m-%d'
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%s') }}"
+      datetime_format: '%s'
 
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/retriever"
+  paginator_base:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: 'NextToken'
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("NextToken", {}) }}'
+      stop_condition: '{{ not response.get("NextToken", {}) }}'
 
   management_events_stream:
     type: DeclarativeStream
@@ -38,48 +56,75 @@ definitions:
       name: "management_events"
       primary_key: "EventId"
       path: "/"
-      management_events_json_payload: {
-          "LookupAttributes": [
-              {
-                  "AttributeKey": "EventName",
-                  "AttributeValue": "ConsoleLogin"
-              }
-          ],
-          "MaxResults": 50
-      }
+      extractor_path: "Events"
     retriever:
       type: SimpleRetriever
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["Events"]
+        $ref: "#/definitions/selector"   
       paginator:
-        type: NoPagination
-        # type: DefaultPaginator
-        # page_token_option:
-        #   type: RequestOption
-        #   inject_into: request_parameter
-        #   field_name: 'NextToken'
-        # pagination_strategy:
-        #   type: CursorPagination
-        #   cursor_value: '{{ response.get("NextToken", {}) }}'
-        #   stop_condition: '{{ not response.get("NextToken", {}) }}'
+        $ref: "#/definitions/paginator_base"
       requester:
         $ref: "#/definitions/requester"
         authenticator:
           $ref: "#/definitions/requester/authenticator"
-          # path: "{{ parameters['path'] }}"
-        # request_parameters:
-        #   StartTime: '{{ config[''start_date''] }}'
         request_headers:
             x-amz-target: 'com.amazonaws.cloudtrail.v20131101.CloudTrail_20131101.LookupEvents'
-        request_body_json: "{{ parameters['management_events_json_payload'] }}"
+        request_body_json: 
+            LookupAttributes:
+            - AttributeKey: EventName
+              AttributeValue: ConsoleLogin
+            MaxResults: 50
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
 streams:
-  - "#/definitions/management_events_stream"
+  - "#/definitions/management_events_stream" #Ref: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html
 
 check:
   type: CheckStream
   stream_names:
     - "management_events"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/aws-cloudtrail
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Aws CloudTrail Spec
+    type: object
+    required:
+    - aws_key_id
+    - aws_secret_key
+    - aws_region_name
+    - start_date
+    additionalProperties: true
+    properties:
+      aws_key_id:
+        type: string
+        title: Key ID
+        description: AWS CloudTrail Access Key ID. See the <a href="https://docs.airbyte.com/integrations/sources/aws-cloudtrail">docs</a>
+          for more information on how to obtain this key.
+        airbyte_secret: true
+      aws_secret_key:
+        type: string
+        title: Secret Key
+        description: AWS CloudTrail Access Key ID. See the <a href="https://docs.airbyte.com/integrations/sources/aws-cloudtrail">docs</a>
+          for more information on how to obtain this key.
+        airbyte_secret: true
+      aws_region_name:
+        type: string
+        title: Region Name
+        description: The default AWS Region to use, for example, us-west-1 or us-west-2.
+          When specifying a Region inline during client initialization, this property
+          is named region_name.
+        default: 'us-east-1'
+      start_date:
+        type: string
+        title: Start Date
+        description: 'The date you would like to replicate data. Data in AWS CloudTrail
+          is available for last 90 days only. Format: YYYY-MM-DD.'
+        examples:
+        - '2021-01-01'
+        default: '1970-01-01'
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        format: date
