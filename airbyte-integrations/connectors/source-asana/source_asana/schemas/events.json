@@ -1,4 +1,6 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "type": ["null", "object"],
   "properties": {
     "user": {
@@ -24,7 +26,7 @@
       "properties": {
         "gid": { "type": ["null", "string"] },
         "resource_type": { "type": ["null", "string"] },
-        "name": "Bug Task"
+        "name":  { "type": ["null", "string"] }
       }
     },
     "created_at": { "type": ["null", "string"], "format": "date-time" },

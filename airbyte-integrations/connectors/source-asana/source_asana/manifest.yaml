@@ -1,0 +1,542 @@
+version: "0.44.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.extractor_path }}"]
+
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    client_id: '{{ config[''credentials''][''client_id''] }}'
+    client_secret: '{{ config[''credentials''][''client_secret''] }}'
+    refresh_token: '{{ config[''credentials''][''refresh_token''] }}'
+    token_refresh_endpoint: 'https://app.asana.com/-/oauth_token'
+    grant_type: refresh_token
+    access_token_name: access_token
+
+  pat_authenticator:
+    type: "BearerAuthenticator"
+    api_token: "{{ config['credentials']['personal_access_token'] }}"
+
+  selective_authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "option_title"]
+    authenticators:
+      "OAuth Credentials": "#/definitions/oauth_authenticator"
+      "PAT Credentials": "#/definitions/pat_authenticator"
+
+  requester:
+    type: HttpRequester
+    url_base: https://app.asana.com/api/1.0/
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/selective_authenticator"   # Uncomment for development with low code
+      # $ref: "#/definitions/oauth_authenticator"         # Uncomment for developing with connector builder
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: >-
+                {{ 'App Only access is not allowed' in response
+                }}
+              http_codes:
+                - 403
+                - 404
+                - 412
+              error_message: Resource is forbidden
+
+  token_paginator_base:
+    type: DefaultPaginator
+    page_token_option:
+      type: "RequestPath"
+      field_name: "sync"
+      inject_into: "request_parameter"
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("sync", {}) }}'
+      stop_condition: '{{ not response.get("sync", {}) }}'
+
+  paginator_base:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 50
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  projects_stream:
+    $ref: "#/definitions/base_stream"
+    name: "projects"
+    primary_key: "gid"
+    $parameters:
+      path: "/projects"
+      extractor_path: "data"
+
+  projects_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/projects_stream"
+        parent_key: "gid"
+        partition_field: "project_id"
+
+  sections_compact_stream:
+    $ref: "#/definitions/base_stream"
+    name: "sections_compact"
+    primary_key: "gid"
+    $parameters:
+      path: "/projects/{{ stream_slice['project_id'] }}/sections"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
+      partition_router:
+        $ref: "#/definitions/projects_partition_router"
+
+  sections_compact_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/sections_compact_stream"
+        parent_key: "gid"
+        partition_field: "section_gid"
+
+  sections_stream:
+    $ref: "#/definitions/base_stream"
+    name: "sections"
+    primary_key: "gid"
+    $parameters:
+      path: "/sections/{{ stream_slice['section_gid'] }}"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
+      partition_router:
+        $ref: "#/definitions/sections_compact_partition_router"
+
+  tasks_stream:
+    $ref: "#/definitions/base_stream"
+    name: "tasks"
+    primary_key: "gid"
+    $parameters:
+      path: "/projects/{{ stream_slice['project_id'] }}/tasks"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/projects_partition_router"
+
+  tasks_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/tasks_stream"
+        parent_key: "gid"
+        partition_field: "task_gid"
+
+  stories_compact_stream:
+    $ref: "#/definitions/base_stream"
+    name: "stories_compact"
+    primary_key: "gid"
+    $parameters:
+      path: "/tasks/{{ stream_slice['task_gid'] }}/stories"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/tasks_partition_router"
+
+  stories_compact_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/stories_compact_stream"
+        parent_key: "gid"
+        partition_field: "story_gid"
+
+  stories_stream:
+    $ref: "#/definitions/base_stream"
+    name: "stories"
+    primary_key: "gid"
+    $parameters:
+      path: "/stories/{{ stream_slice['story_gid'] }}"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
+      partition_router:
+        $ref: "#/definitions/stories_compact_partition_router"
+
+  workspaces_stream:
+    $ref: "#/definitions/base_stream"
+    name: "workspaces"
+    primary_key: "gid"
+    $parameters:
+      path: "/workspaces"
+      extractor_path: "data"
+
+  workspaces_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/workspaces_stream"
+        parent_key: "gid"
+        partition_field: "workspace_gid"
+
+  tags_stream:
+    $ref: "#/definitions/base_stream"
+    name: "tags"
+    primary_key: "gid"
+    $parameters:
+      path: "/workspaces/{{ stream_slice['workspace_gid'] }}/tags"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/workspaces_partition_router"
+
+  users_stream:
+    $ref: "#/definitions/base_stream"
+    name: "users"
+    primary_key: "gid"
+    $parameters:
+      path: "/users"
+      extractor_path: "data"
+
+  users_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/users_stream"
+        parent_key: "gid"
+        partition_field: "users_gid"
+
+  teams_stream:
+    $ref: "#/definitions/base_stream"
+    name: "teams"
+    primary_key: "gid"
+    $parameters:
+      path: "/organizations/{{ stream_slice['workspace_gid'] }}/teams"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/workspaces_partition_router"
+
+  teams_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/teams_stream"
+        parent_key: "gid"
+        partition_field: "team_gid"
+
+  team_memberships_stream:
+    $ref: "#/definitions/base_stream"
+    name: "team_memberships"
+    primary_key: "gid"
+    $parameters:
+      path: "/teams/{{ stream_slice['team_gid'] }}/team_memberships"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
+      partition_router:
+        $ref: "#/definitions/teams_partition_router"
+
+  attachments_compact_stream:
+    $ref: "#/definitions/base_stream"
+    name: "attachments_compact"
+    primary_key: "gid"
+    $parameters:
+      path: "/attachments"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters: 
+          parent: "{{ stream_slice.task_gid if stream_slice.task_gid else stream_slice.project_id }}"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/tasks_stream"
+              parent_key: "gid"
+              partition_field: "task_gid"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/projects_stream"
+              parent_key: "gid"
+              partition_field: "project_id"
+
+  attachments_compact_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/attachments_compact_stream"
+        parent_key: "gid"
+        partition_field: "attachments_gid"
+
+  attachments_stream:
+    $ref: "#/definitions/base_stream"
+    name: "attachments"
+    primary_key: "gid"
+    $parameters:
+      path: "/attachments/{{ stream_slice['attachments_gid'] }}"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
+      partition_router:
+        $ref: "#/definitions/attachments_compact_partition_router"
+
+  portfolios_compact_stream:
+    $ref: "#/definitions/base_stream"
+    name: "portfolios_compact"
+    primary_key: "gid"
+    $parameters:
+      path: "/portfolios"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters: 
+          owner: "{{ stream_slice['users_gid'] }}"
+          workspace: "{{ stream_slice['workspace_gid'] }}"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/workspaces_stream"
+              parent_key: "gid"
+              partition_field: "workspace_gid"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/users_stream"
+              parent_key: "gid"
+              partition_field: "users_gid"
+
+  portfolios_compact_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/portfolios_compact_stream"
+        parent_key: "gid"
+        partition_field: "portfolios_gid"
+
+  portfolios_stream:
+    $ref: "#/definitions/base_stream"
+    name: "portfolios"
+    primary_key: "gid"
+    $parameters:
+      path: "/portfolios/{{ stream_slice['portfolios_gid'] }}"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
+      partition_router:
+        $ref: "#/definitions/portfolios_compact_partition_router"
+
+  custom_fields_stream:
+    $ref: "#/definitions/base_stream"
+    name: "custom_fields"
+    primary_key: "gid"
+    $parameters:
+      path: "/workspaces/{{ stream_slice['workspace_gid'] }}/custom_fields"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/workspaces_partition_router"
+
+  organization_exports_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_exports"
+    primary_key: "gid"
+    $parameters:
+      path: "/organization_exports/{{ stream_slice.gid if stream_slice.gid else '1234567' }}"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        - type: ListPartitionRouter
+          values: '{{ config[''organization_export_ids'' ] }}'
+          cursor_field: gid
+
+  events_stream:
+    $ref: "#/definitions/base_stream"
+    name: "events"
+    primary_key: "created_at"
+    $parameters:
+      path: "/events"
+      extractor_path: "data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/token_paginator_base"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters: 
+          resource: "{{ stream_slice.task_gid if stream_slice.task_gid else stream_slice.project_id }}"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/tasks_stream"
+              parent_key: "gid"
+              partition_field: "task_gid"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/projects_stream"
+              parent_key: "gid"
+              partition_field: "project_id"
+
+streams:
+  - "#/definitions/projects_stream"
+  - "#/definitions/sections_compact_stream"
+  - "#/definitions/sections_stream"
+  - "#/definitions/tasks_stream"
+  - "#/definitions/stories_compact_stream"
+  - "#/definitions/stories_stream"
+  - "#/definitions/workspaces_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/teams_stream"
+  - "#/definitions/team_memberships_stream"
+  - "#/definitions/attachments_compact_stream"
+  - "#/definitions/attachments_stream"
+  - "#/definitions/portfolios_compact_stream"
+  - "#/definitions/portfolios_stream"
+  - "#/definitions/custom_fields_stream"
+  - "#/definitions/organization_exports_stream"
+  - "#/definitions/events_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "projects"
+
+spec:
+  type: Spec
+  documentation_url: https://docsurl.com
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Asana Spec
+    type: object
+    additionalProperties: true
+    properties:
+      credentials:
+        title: Authentication mechanism
+        description: Choose how to authenticate to Github
+        type: object
+        oneOf:
+        - type: object
+          title: Authenticate via Asana (Oauth)
+          required:
+          - client_id
+          - client_secret
+          - refresh_token
+          properties:
+            option_title:
+              type: string
+              title: Credentials title
+              description: OAuth Credentials
+              const: OAuth Credentials
+            client_id:
+              type: string
+              title: ''
+              description: ''
+              airbyte_secret: true
+            client_secret:
+              type: string
+              title: ''
+              description: ''
+              airbyte_secret: true
+            refresh_token:
+              type: string
+              title: ''
+              description: ''
+              airbyte_secret: true
+        - type: object
+          title: Authenticate with Personal Access Token
+          required:
+          - personal_access_token
+          properties:
+            option_title:
+              type: string
+              title: Credentials title
+              description: PAT Credentials
+              const: PAT Credentials
+            personal_access_token:
+              type: string
+              title: Personal Access Token
+              description: Asana Personal Access Token (generate yours <a href="https://app.asana.com/0/developer-console">here</a>).
+              airbyte_secret: true
+      test_mode:
+        type: boolean
+        title: Test Mode
+        description: This flag is used for testing purposes for certain streams that
+          return a lot of data. This flag is not meant to be enabled for prod.
+        airbyte_hidden: true
+      organization_export_ids:
+        title: Organization Export IDs
+        description: Globally unique identifiers for the organization exports
+        type: array
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+    - credentials
+    - option_title
+    predicate_value: OAuth Credentials
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - client_secret
