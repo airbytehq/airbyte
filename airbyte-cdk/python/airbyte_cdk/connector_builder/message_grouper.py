@@ -7,7 +7,6 @@ import logging
 from copy import deepcopy
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
-from urllib.parse import parse_qs, urlparse
 
 from airbyte_cdk.connector_builder.models import (
     AuxiliaryRequest,
