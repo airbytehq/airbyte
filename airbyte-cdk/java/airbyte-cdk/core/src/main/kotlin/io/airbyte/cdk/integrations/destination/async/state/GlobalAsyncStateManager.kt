@@ -7,7 +7,7 @@ package io.airbyte.cdk.integrations.destination.async.state
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
