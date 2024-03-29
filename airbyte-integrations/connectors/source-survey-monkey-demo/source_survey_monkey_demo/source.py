@@ -59,6 +59,7 @@ class SurveyMonkeyBaseStream(HttpStream, ABC):
     ) -> str:
             return self._path
 
+    @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return self._primary_key
 
