@@ -4,21 +4,13 @@
   "additionalProperties": true,
   "properties": {
     "summary": {
-      "type": [
-        "object"
-      ]
+      "type": ["object"]
     },
     "name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "check_id": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     }
   }
 }
