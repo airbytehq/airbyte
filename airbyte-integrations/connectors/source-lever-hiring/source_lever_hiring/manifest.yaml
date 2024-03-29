@@ -70,8 +70,6 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: /opportunities
-        request_parameters:
-          include: followers
       paginator:
         $ref: "#/definitions/paginator"
       partition_router: [ ]
@@ -209,6 +207,12 @@ definitions:
             type:
               - 'null'
               - boolean
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updatedAt
+            value: '{{ (record[''updatedAt''] | string)[:10] }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
