@@ -3,126 +3,158 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique ID of the engagement.",
       "type": ["null", "integer"]
     },
     "uid": {
+      "description": "Unique identifier of the engagement.",
       "type": ["null", "string"]
     },
     "teamId": {
+      "description": "ID of the team associated with the engagement.",
       "type": ["null", "integer"]
     },
     "portalId": {
+      "description": "ID of the portal associated with the engagement.",
       "type": ["null", "integer"]
     },
     "queueMembershipIds": {
+      "description": "IDs of queue memberships related to the engagement.",
       "type": ["null", "array"]
     },
     "scheduledTasks": {
+      "description": "Scheduled tasks related to the engagement.",
       "type": ["null", "array"]
     },
     "active": {
+      "description": "Indicates if the engagement is currently active or not.",
       "type": ["null", "boolean"]
     },
     "createdAt": {
+      "description": "Timestamp indicating when the engagement was created.",
       "type": ["null", "integer"]
     },
     "createdBy": {
+      "description": "ID of the user who created the engagement.",
       "type": ["null", "integer"]
     },
     "modifiedBy": {
+      "description": "ID of the user who last modified the engagement.",
       "type": ["null", "integer"]
     },
     "lastUpdated": {
+      "description": "Timestamp indicating when the engagement was last updated.",
       "type": ["null", "integer"]
     },
     "ownerId": {
+      "description": "ID of the owner of the engagement.",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "Type of the engagement.",
       "type": ["null", "string"]
     },
     "timestamp": {
+      "description": "Timestamp related to the engagement.",
       "type": ["null", "integer"]
     },
     "bodyPreview": {
+      "description": "Preview of the body content.",
       "type": ["null", "string"]
     },
     "bodyPreviewHtml": {
+      "description": "HTML preview of the body content.",
       "type": ["null", "string"]
     },
     "bodyPreviewIsTruncated": {
+      "description": "Indicates if the body preview is truncated.",
       "type": ["null", "boolean"]
     },
     "allAccessibleTeamIds": {
+      "description": "IDs of all teams with access to this engagement.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "activityType": {
+      "description": "Type of activity associated with the engagement.",
       "type": ["null", "string"]
     },
     "gdprDeleted": {
+      "description": "Indicates if the engagement is deleted due to GDPR compliance.",
       "type": ["null", "boolean"]
     },
     "source": {
+      "description": "Source of the engagement data.",
       "type": ["null", "string"]
     },
     "sourceId": {
+      "description": "ID of the source associated with the engagement.",
       "type": ["null", "string"]
     },
     "associations": {
+      "description": "Associations related to the engagement.",
       "type": ["null", "object"],
       "properties": {
         "contactIds": {
+          "description": "IDs of associated contacts.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "companyIds": {
+          "description": "IDs of associated companies.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "dealIds": {
+          "description": "IDs of associated deals.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "ownerIds": {
+          "description": "IDs of owners associated with the engagement.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "workflowIds": {
+          "description": "IDs of associated workflow.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "ticketIds": {
+          "description": "IDs of associated tickets.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "contentIds": {
+          "description": "IDs of associated content.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "quoteIds": {
+          "description": "IDs of associated quotes.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
           }
         },
         "marketingEventIds": {
+          "description": "IDs of associated marketing events.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
@@ -185,17 +217,20 @@
       }
     },
     "attachments": {
+      "description": "Attachments included in the engagement.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "ID of the attachment.",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "metadata": {
+      "description": "Metadata related to the engagement.",
       "type": ["null", "object"],
       "properties": {
         "body": {
@@ -229,42 +264,52 @@
           "type": ["null", "string"]
         },
         "preMeetingProspectReminders": {
+          "description": "Reminders for pre-meeting prospects.",
           "type": ["null", "array"],
           "items": {}
         },
         "attendeeOwnerIds": {
+          "description": "IDs of attendees' owners.",
           "type": ["null", "array"],
           "items": {}
         },
         "guestEmails": {
+          "description": "Emails of guest attendees.",
           "type": ["null", "array"],
           "items": {}
         },
         "ownerIdsBcc": {
+          "description": "IDs of BCC owners.",
           "type": ["null", "array"],
           "items": {}
         },
         "ownerIdsCc": {
+          "description": "IDs of CC owners.",
           "type": ["null", "array"],
           "items": {}
         },
         "ownerIdsFrom": {
+          "description": "IDs of 'from' owners.",
           "type": ["null", "array"],
           "items": {}
         },
         "ownerIdsTo": {
+          "description": "IDs of 'to' owners.",
           "type": ["null", "array"],
           "items": {}
         },
         "pendingInlineImageIds": {
+          "description": "IDs of pending inline image attachments.",
           "type": ["null", "array"],
           "items": {}
         },
         "validationSkipped": {
+          "description": "Validation details skipped.",
           "type": ["null", "array"],
           "items": {}
         },
         "from": {
+          "description": "Sender information.",
           "type": ["null", "object"],
           "properties": {
             "email": {
@@ -282,14 +327,17 @@
           }
         },
         "sender": {
+          "description": "Sender's email information.",
           "type": ["null", "object"],
           "properties": {
             "email": {
+              "description": "Email of the sender.",
               "type": ["null", "string"]
             }
           }
         },
         "to": {
+          "description": "Recipient information.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -310,31 +358,38 @@
           }
         },
         "cc": {
+          "description": "CC recipients of the engagement.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "email": {
+                "description": "Email of the CC recipient.",
                 "type": ["null", "string"]
               },
               "firstName": {
+                "description": "First name of the CC recipient.",
                 "type": ["null", "string"]
               },
               "lastName": {
+                "description": "Last name of the CC recipient.",
                 "type": ["null", "string"]
               },
               "raw": {
+                "description": "Raw data of the CC recipient.",
                 "type": ["null", "string"]
               }
             }
           }
         },
         "bcc": {
+          "description": "BCC recipients of the engagement.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "email": {
+                "description": "Email of the BCC recipient.",
                 "type": ["null", "string"]
               }
             }
@@ -395,6 +450,7 @@
           "type": ["null", "string"]
         },
         "reminders": {
+          "description": "Reminders related to the engagement.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer"]
@@ -475,6 +531,7 @@
       }
     },
     "metadata_attendeeOwnerIds": {
+      "description": "IDs of attendees' owners in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
@@ -488,40 +545,47 @@
       "type": ["null", "string"]
     },
     "ownerIdsBcc": {
+      "description": "IDs of BCC owners.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "ownerIdsFrom": {
+      "description": "IDs of 'from' owners.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "ownerIdsTo": {
+      "description": "IDs of 'to' owners.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "pendingInlineImageIds": {
+      "description": "IDs of pending inline image attachments.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "validationSkipped": {
+      "description": "Validation details skipped.",
       "type": ["null", "array"],
       "items": {}
     },
     "ownerIdsCc": {
+      "description": "IDs of CC owners.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "metadata_guestEmails": {
+      "description": "Guest attendee emails in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
@@ -547,6 +611,7 @@
       "type": ["null", "string"]
     },
     "metadata_preMeetingProspectReminders": {
+      "description": "Pre-meeting prospect reminders in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
@@ -554,6 +619,7 @@
       "type": ["null", "string"]
     },
     "metadata_from": {
+      "description": "Sender information in metadata.",
       "type": ["null", "object"],
       "properties": {
         "email": {
@@ -571,14 +637,17 @@
       }
     },
     "metadata_sender": {
+      "description": "Sender's email information in metadata.",
       "type": ["null", "object"],
       "properties": {
         "email": {
+          "description": "Email of the sender in metadata.",
           "type": ["null", "string"]
         }
       }
     },
     "metadata_to": {
+      "description": "Recipient information in metadata.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -599,6 +668,7 @@
       }
     },
     "metadata_cc": {
+      "description": "CC recipients in metadata.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -625,35 +695,43 @@
       "type": ["null", "object"]
     },
     "metadata_ownerIdsBcc": {
+      "description": "IDs of BCC owners in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
     "metadata_ownerIdsCc": {
+      "description": "IDs of CC owners in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
     "metadata_ownerIdsFrom": {
+      "description": "IDs of 'from' owners in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
     "metadata_ownerIdsTo": {
+      "description": "IDs of 'to' owners in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
     "metadata_pendingInlineImageIds": {
+      "description": "IDs of pending inline image attachments in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
     "metadata_validationSkipped": {
+      "description": "Validation details skipped in metadata.",
       "type": ["null", "array"],
       "items": {}
     },
     "metadata_bcc": {
+      "description": "BCC recipients in metadata.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "email": {
+            "description": "Email of the BCC recipient in metadata.",
             "type": ["null", "string"]
           }
         }
@@ -711,6 +789,7 @@
       "type": ["null", "string"]
     },
     "metadata_reminders": {
+      "description": "Reminders in metadata.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]

@@ -3,6 +3,7 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the engagement email",
       "type": ["null", "string"]
     },
     "properties": {
@@ -33,6 +34,7 @@
           "type": ["null", "number"]
         },
         "hs_createdate": {
+          "description": "Date and time when the engagement email was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -133,6 +135,7 @@
           "type": ["null", "string"]
         },
         "hs_email_send_event_id_created": {
+          "description": "Date and time when the email send event was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -194,6 +197,7 @@
           "type": ["null", "boolean"]
         },
         "hs_lastmodifieddate": {
+          "description": "Date and time when the engagement email was last modified",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -213,6 +217,7 @@
           "type": ["null", "string"]
         },
         "hs_timestamp": {
+          "description": "Date and time of the timestamp for the engagement email",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -235,6 +240,7 @@
           "type": ["null", "string"]
         },
         "hubspot_owner_assigneddate": {
+          "description": "Date and time when the owner was assigned to the engagement email",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -280,6 +286,7 @@
       "type": ["null", "number"]
     },
     "properties_hs_createdate": {
+      "description": "Date and time when the engagement email was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -380,6 +387,7 @@
       "type": ["null", "string"]
     },
     "properties_hs_email_send_event_id_created": {
+      "description": "Date and time when the email send event was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -441,6 +449,7 @@
       "type": ["null", "boolean"]
     },
     "properties_hs_lastmodifieddate": {
+      "description": "Date and time when the engagement email was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -460,6 +469,7 @@
       "type": ["null", "string"]
     },
     "properties_hs_timestamp": {
+      "description": "Date and time of the timestamp for the engagement email",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -482,6 +492,7 @@
       "type": ["null", "string"]
     },
     "properties_hubspot_owner_assigneddate": {
+      "description": "Date and time when the owner was assigned to the engagement email",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -501,35 +512,42 @@
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Date and time when the engagement email was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Date and time when the engagement email was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates if the engagement email is archived or not",
       "type": ["null", "boolean"]
     },
     "contacts": {
+      "description": "List of contacts associated with the engagement email",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "deals": {
+      "description": "List of deals associated with the engagement email",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "companies": {
+      "description": "List of companies associated with the engagement email",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "tickets": {
+      "description": "List of tickets associated with the engagement email",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
