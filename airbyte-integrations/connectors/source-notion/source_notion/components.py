@@ -69,10 +69,10 @@ class NotionDataFeedFilter(RecordFilter):
         current_state = stream_state.get("last_edited_time", {})
         cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
         if cursor_value:
-            return [record for record in records if record["last_edited_time"] > cursor_value]
+            return [record for record in records if record["last_edited_time"] >= cursor_value]
         return records
 
-    def get_filter_date(self, start_date: str, state_value: list) -> str:
+    def _get_filter_date(self, start_date: str, state_value: list) -> str:
         """
         Calculates the filter date to pass in the request parameters by comparing the start_date with the value of state obtained from the stream_slice.
         If only the start_date exists, use it by default.
@@ -107,10 +107,10 @@ class NotionSemiIncrementalFilter(RecordFilter):
         ]
         cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
         if cursor_value:
-            return [record for record in records if record["last_edited_time"] > cursor_value]
+            return [record for record in records if record["last_edited_time"] >= cursor_value]
         return records
 
-    def get_filter_date(self, start_date: str, state_value: list) -> str:
+    def _get_filter_date(self, start_date: str, state_value: list) -> str:
         """
         Calculates the filter date to pass in the request parameters by comparing the start_date with the value of state obtained from the stream_slice.
         If only the start_date exists, use it by default.
