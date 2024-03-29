@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of this discount",
       "type": ["null", "integer"]
     },
     "applies_to": {
+      "description": "The specific entity this discount applies to (e.g., specific products, customers)",
       "type": ["null", "string"]
     },
     "applies_to_id": {
+      "description": "The ID of the entity this discount applies to",
       "type": ["null", "integer"]
     },
     "applies_to_product_type": {
+      "description": "The type of product this discount applies to",
       "type": ["null", "string"]
     },
     "applies_to_resource": {
+      "description": "The type of resource this discount applies to",
       "type": ["null", "string"]
     },
     "channel_settings": {
@@ -24,6 +29,7 @@
           "type": "object",
           "properties": {
             "can_apply": {
+              "description": "Indicates if this discount can be applied via API",
               "type": "boolean"
             }
           }
@@ -32,6 +38,7 @@
           "type": "object",
           "properties": {
             "can_apply": {
+              "description": "Indicates if this discount can be applied on the checkout page",
               "type": "boolean"
             }
           }
@@ -40,6 +47,7 @@
           "type": "object",
           "properties": {
             "can_apply": {
+              "description": "Indicates if this discount can be applied on the customer portal",
               "type": "boolean"
             }
           }
@@ -48,6 +56,7 @@
           "type": "object",
           "properties": {
             "can_apply": {
+              "description": "Indicates if this discount can be applied on the merchant portal",
               "type": "boolean"
             }
           }
@@ -55,58 +64,75 @@
       }
     },
     "code": {
+      "description": "The code that customers can use to redeem this discount",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when this discount was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "discount_type": {
+      "description": "The type of the discount (e.g., percentage, fixed amount)",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "The duration of the discount (e.g., one-time, ongoing)",
       "type": ["null", "string"]
     },
     "duration_usage_limit": {
+      "description": "The usage limit per duration for this discount",
       "type": ["null", "integer"]
     },
     "ends_at": {
+      "description": "The date and time when this discount ends",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "external_discount_id": {
+      "description": "The ID of the external source providing this discount",
       "type": ["null", "string"]
     },
     "external_discount_source": {
+      "description": "The name of the external source providing this discount",
       "type": ["null", "string"]
     },
     "first_time_customer_restriction": {
+      "description": "Indicates if this discount is restricted to first-time customers",
       "type": ["null", "string"]
     },
     "once_per_customer": {
+      "description": "Indicates if this discount can only be used once per customer",
       "type": ["null", "boolean"]
     },
     "prerequisite_subtotal_min": {
+      "description": "The minimum subtotal required before this discount can be applied",
       "type": ["null", "number"]
     },
     "starts_at": {
+      "description": "The date and time when this discount starts",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "status": {
+      "description": "The status of this discount (e.g., active, inactive)",
       "type": ["null", "string"]
     },
     "times_used": {
+      "description": "The number of times this discount has been used",
       "type": ["null", "number"]
     },
     "updated_at": {
+      "description": "The date and time when this discount was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "usage_limit": {
+      "description": "The total number of times this discount can be used",
       "type": ["null", "number"]
     },
     "value": {
+      "description": "The value or amount of the discount (e.g., 10 for 10% discount)",
       "type": ["null", "number"]
     }
   }

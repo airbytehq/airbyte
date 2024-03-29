@@ -3,54 +3,70 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for this one-time recharge entry.",
       "type": ["null", "integer"]
     },
     "address_id": {
+      "description": "The unique identifier for the address associated with this one-time recharge data.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when this one-time recharge was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "customer_id": {
+      "description": "The unique identifier of the customer who made this one-time recharge.",
       "type": ["null", "string"]
     },
     "next_charge_scheduled_at": {
+      "description": "The date and time when the next charge is scheduled for this one-time recharge.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "price": {
+      "description": "The price of the product for this one-time recharge.",
       "type": ["null", "string"]
     },
     "product_title": {
+      "description": "The title of the product associated with this one-time recharge.",
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Additional properties or details related to this one-time recharge entry.",
       "type": ["null", "array"]
     },
     "quantity": {
+      "description": "The quantity of the product for this one-time recharge.",
       "type": ["null", "integer"]
     },
     "recharge_product_id": {
+      "description": "The unique identifier of the product for this one-time recharge (recharge-specific ID).",
       "type": ["null", "integer"]
     },
     "shopify_product_id": {
+      "description": "The unique identifier of the product on Shopify.",
       "type": ["null", "integer"]
     },
     "shopify_variant_id": {
+      "description": "The unique identifier of the variant on Shopify.",
       "type": ["null", "integer"]
     },
     "sku": {
+      "description": "The Stock Keeping Unit (SKU) of the product associated with this one-time recharge.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of this one-time recharge entry.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when this one-time recharge entry was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "variant_title": {
+      "description": "The title of the variant associated with this one-time recharge.",
       "type": ["null", "string"]
     }
   }

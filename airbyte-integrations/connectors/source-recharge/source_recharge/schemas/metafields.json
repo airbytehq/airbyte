@@ -3,35 +3,45 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the metafield",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the metafield was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "description": {
+      "description": "A description of the metafield data",
       "type": ["null", "string"]
     },
     "key": {
+      "description": "The key associated with the metafield",
       "type": ["null", "string"]
     },
     "namespace": {
+      "description": "The namespace of the metafield",
       "type": ["null", "string"]
     },
     "owner_id": {
+      "description": "The ID of the owner of the metafield",
       "type": ["null", "string"]
     },
     "owner_resource": {
+      "description": "The resource type of the owner (e.g., user, product)",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the metafield was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "value": {
+      "description": "The actual value of the metafield",
       "type": ["null", "string"]
     },
     "value_type": {
+      "description": "The data type of the metafield value (e.g., string, integer)",
       "type": ["null", "string"]
     }
   }

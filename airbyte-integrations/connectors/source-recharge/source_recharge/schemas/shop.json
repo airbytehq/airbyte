@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "shop": {
+      "description": "Details of the shop where the recharge service is available.",
       "type": ["null", "object"]
     },
     "store": {
+      "description": "Information about the store selling recharge service related products.",
       "type": ["null", "object"]
     }
   }
