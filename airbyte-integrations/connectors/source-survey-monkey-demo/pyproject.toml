@@ -25,4 +25,5 @@ source-survey-monkey-demo = "source_survey_monkey_demo.run:run"
 requests-mock = "*"
 pytest-mock = "*"
 pytest = "*"
+freezegun = "*"
 
