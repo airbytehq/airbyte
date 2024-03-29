@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "created": {
+      "description": "The timestamp when the email address was marked as invalid.",
       "type": "integer"
     },
     "email": {
+      "description": "The email address that has been identified as invalid.",
       "type": "string"
     },
     "reason": {
+      "description": "The reason why the email address is considered invalid.",
       "type": "string"
     }
   }

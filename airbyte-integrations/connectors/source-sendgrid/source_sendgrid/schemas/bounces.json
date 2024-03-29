@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "created": {
+      "description": "The timestamp when the bounce was created",
       "type": "integer"
     },
     "email": {
+      "description": "The email address that bounced",
       "type": "string"
     },
     "reason": {
+      "description": "The reason for the bounce",
       "type": "string"
     },
     "status": {
+      "description": "The status of the bounce (e.g., soft or hard bounce)",
       "type": "string"
     }
   }

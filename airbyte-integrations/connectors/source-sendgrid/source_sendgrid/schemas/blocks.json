@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "created": {
+      "description": "The date and time when the block record was created.",
       "type": "integer"
     },
     "email": {
+      "description": "The email address that has been blocked.",
       "type": "string"
     },
     "reason": {
+      "description": "The reason provided for blocking the email address.",
       "type": "string"
     },
     "status": {
+      "description": "The status of the block record, indicating the current state of the block.",
       "type": "string"
     }
   }
