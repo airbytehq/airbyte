@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
+import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
+import io.airbyte.cdk.integrations.source.relationaldb.InitialSnapshotUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
@@ -43,7 +45,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresCtidHandler {
+public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCtidHandler.class);
 
@@ -79,6 +81,33 @@ public class PostgresCtidHandler {
     this.tidRangeScanCapableDBServer = CtidUtils.isTidRangeScanCapableDBServer(database);
   }
 
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(
+      ConfiguredAirbyteStream airbyteStream,
+      final TableInfo<CommonField<PostgresType>> table,
+      final Instant emittedAt) {
+    InitialSnapshotUtil<PostgresType> snapshot = new InitialSnapshotUtil<>();
+    final AirbyteStream stream = airbyteStream.getStream();
+    final String streamName = stream.getName();
+    final String namespace = stream.getNamespace();
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
+    final List<String> selectedDatabaseFields = new ArrayList<>();
+    selectedDatabaseFields.addAll(snapshot.getSelectedDbFields(airbyteStream, tableNameToTable, emittedAt));
+
+    final AutoCloseableIterator<RowDataWithCtid> queryStream = queryTableCtid(
+        selectedDatabaseFields,
+        table.getNameSpace(),
+        table.getName(),
+        tableBlockSizes.get(pair).tableSize(),
+        tableBlockSizes.get(pair).blockSize(),
+        tablesMaxTuple.orElseGet(() -> Map.of(pair, -1)).get(pair));
+    final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
+        getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
+    final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
+    final AutoCloseableIterator<AirbyteMessage> logAugmented = augmentWithLogs(recordAndMessageIterator, pair, streamName);
+    return logAugmented;
+  }
+
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                 final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
@@ -94,28 +123,9 @@ public class PostgresCtidHandler {
         LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
         continue;
       }
+      final TableInfo<CommonField<PostgresType>> table = tableNameToTable.get(fullyQualifiedTableName);
       if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
-        // Grab the selected fields to sync
-        final TableInfo<CommonField<PostgresType>> table = tableNameToTable
-            .get(fullyQualifiedTableName);
-        final List<String> selectedDatabaseFields = table.getFields()
-            .stream()
-            .map(CommonField::getName)
-            .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
-            .toList();
-        final AutoCloseableIterator<RowDataWithCtid> queryStream = queryTableCtid(
-            selectedDatabaseFields,
-            table.getNameSpace(),
-            table.getName(),
-            tableBlockSizes.get(pair).tableSize(),
-            tableBlockSizes.get(pair).blockSize(),
-            tablesMaxTuple.orElseGet(() -> Map.of(pair, -1)).get(pair));
-        final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
-            getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
-        final AutoCloseableIterator<AirbyteMessage> logAugmented = augmentWithLogs(recordAndMessageIterator, pair, streamName);
-        iteratorList.add(logAugmented);
-
+        iteratorList.add(getIteratorForStream(airbyteStream, table, emmitedAt));
       }
     }
     return iteratorList;

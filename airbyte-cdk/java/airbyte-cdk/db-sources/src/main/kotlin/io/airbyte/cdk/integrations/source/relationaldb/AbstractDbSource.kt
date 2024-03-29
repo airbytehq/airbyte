@@ -442,7 +442,7 @@ protected constructor(driverClassName: String) :
                 airbyteMessageIterator =
                     getFullRefreshStream(
                         database,
-                        streamName,
+                        airbyteStream,
                         namespace,
                         selectedDatabaseFields,
                         table,
@@ -475,7 +475,7 @@ protected constructor(driverClassName: String) :
             iterator =
                 getFullRefreshStream(
                     database,
-                    streamName,
+                    airbyteStream,
                     namespace,
                     selectedDatabaseFields,
                     table,
@@ -560,7 +560,7 @@ protected constructor(driverClassName: String) :
      * Creates a AirbyteMessageIterator that contains all records for a database source connection
      *
      * @param database Source Database
-     * @param streamName name of an individual stream in which a stream represents a source (e.g.
+     * @param airbyteStream name of an individual stream in which a stream represents a source (e.g.
      * API endpoint or database table)
      * @param namespace Namespace of the database (e.g. public)
      * @param selectedDatabaseFields List of all interested database column names
@@ -569,9 +569,9 @@ protected constructor(driverClassName: String) :
      * @param syncMode The sync mode that this full refresh stream should be associated with.
      * @return AirbyteMessageIterator with all records for a database source
      */
-    private fun getFullRefreshStream(
+    protected fun getFullRefreshStream(
         database: Database,
-        streamName: String,
+        airbyteStream: ConfiguredAirbyteStream,
         namespace: String,
         selectedDatabaseFields: List<String>,
         table: TableInfo<CommonField<DataType>>,
@@ -588,7 +588,7 @@ protected constructor(driverClassName: String) :
                 syncMode,
                 cursorField
             )
-        return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli())
+        return getMessageIterator(queryStream, airbyteStream.stream.name, namespace, emittedAt.toEpochMilli())
     }
 
     /**
