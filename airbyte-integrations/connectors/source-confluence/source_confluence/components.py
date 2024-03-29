@@ -14,15 +14,16 @@ class CustomAuthenticator(NoAuth):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         confluence_server: bool = self.config.get("confluence_server")
-        self.authenticator = BearerAuthenticator(
-            InterpolatedStringTokenProvider(api_token=self.api_token or "", config=self.config, parameters=parameters),
-            config=self.config,
-            parameters=parameters,
-        )
-        if confluence_server else
-        BasicHttpAuthenticator(
-            password=self.api_token, username=self.email, config=self.config, parameters=self.parameters
-        )
+        if confluence_server:
+            self.authenticator = BearerAuthenticator(
+                InterpolatedStringTokenProvider(api_token=self.api_token or "", config=self.config, parameters=parameters),
+                config=self.config,
+                parameters=parameters,
+            )
+        else:
+            self.authenticator = BasicHttpAuthenticator(
+                password=self.api_token, username=self.email, config=self.config, parameters=self.parameters
+            )
 
     @property
     def auth_header(self) -> str:
