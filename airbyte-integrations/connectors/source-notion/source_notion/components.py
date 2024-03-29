@@ -12,10 +12,11 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 @dataclass
 class NotionUserTransformation(RecordTransformation):
     """
-    # TODO: Flesh out docstring
-    Custom transformation that conditionally moves the data in owner.{owner_type} 
-    to a new owner.info field when the record contains data for a "bot" type user.
+    Custom transformation that conditionally transforms Notion User records of type "bot",
+    only when the record contains additional nested "owner" info.
+    This transformation moves the data in the `owner.{owner_type}` field into a new `owner.info` field for clarity.
     """
+
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         owner = record.get("bot", {}).get("owner")
         if owner:
@@ -25,7 +26,7 @@ class NotionUserTransformation(RecordTransformation):
                 record["bot"]["owner"]["info"] = owner_info
                 del record["bot"]["owner"][owner_type]
         return record
-    
+
 
 @dataclass
 class NotionPropertiesTransformation(RecordTransformation):
@@ -45,15 +46,15 @@ class NotionPropertiesTransformation(RecordTransformation):
         transformed_properties = [{"name": name, "value": value} for name, value in properties.items()]
         record["properties"] = transformed_properties
         return record
-    
+
 
 @dataclass
 class NotionDataFeedFilter(RecordFilter):
     """
-    Custom filter to implement functioning incremental sync for Data Feed endpoints. 
+    Custom filter to implement functioning incremental sync for Data Feed endpoints.
     The Data Feed incremental logic doesn't seem to play nice with Notion's cursor-based pagination,
     and if the current state is not far enough in the future, at least one page will be queried,
-    causing any records in that page to be read despite not passing the state threshold. Setting the 
+    causing any records in that page to be read despite not passing the state threshold. Setting the
     page_size to a lower value can help mitigate this issue, but it's not a perfect solution, and the more
     granular the page size, the greater the traffic. By using this filter, we can ensure the value of state is respected,
     while still using the max page_size in requests.
