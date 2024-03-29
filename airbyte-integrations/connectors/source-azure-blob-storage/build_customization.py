@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -15,7 +17,7 @@ async def pre_connector_install(base_image_container: Container) -> Container:
         # Download install-docker.sh script
         .with_exec(["curl", "-fsSL", "https://get.docker.com", "-o", "/tmp/install-docker.sh"])
         # Run the install-docker.sh script with a pinned Docker version
-        .with_exec(["sh", "/tmp/install-docker.sh", "--version", "23.0"])
+        .with_exec(["sh", "/tmp/install-docker.sh", "--version", "25.0"])
         # Remove the install-docker.sh script
         .with_exec(["rm", "/tmp/install-docker.sh"])
     )
