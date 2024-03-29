@@ -51,6 +51,7 @@
       }
     },
     "business_type": {
+      "description": "The type of business the account belongs to.",
       "type": ["null", "string"]
     },
     "capabilities": {
@@ -123,6 +124,7 @@
       }
     },
     "charges_enabled": {
+      "description": "Indicates if charges can be made on this account.",
       "type": ["null", "boolean"]
     },
     "company": {
@@ -264,18 +266,23 @@
       }
     },
     "country": {
+      "description": "The country of the account.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp when the account was created.",
       "type": ["null", "integer"]
     },
     "default_currency": {
+      "description": "The default currency used for transactions.",
       "type": ["null", "string"]
     },
     "details_submitted": {
+      "description": "Specifies if details have been submitted for the account.",
       "type": ["null", "boolean"]
     },
     "email": {
+      "description": "The email associated with the account.",
       "type": ["null", "string"]
     },
     "external_accounts": {
@@ -298,6 +305,7 @@
       }
     },
     "id": {
+      "description": "The unique identifier of the account.",
       "type": ["null", "string"]
     },
     "individual": {
@@ -651,14 +659,17 @@
       }
     },
     "metadata": {
+      "description": "Additional information associated with the account.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "object": {
+      "description": "The object type representing the account.",
       "enum": ["account"],
       "type": ["null", "string"]
     },
     "payouts_enabled": {
+      "description": "Indicates if payouts are enabled for the account.",
       "type": ["null", "boolean"]
     },
     "requirements": {
@@ -733,6 +744,7 @@
       }
     },
     "settings": {
+      "description": "Settings specific to the account.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
@@ -741,20 +753,25 @@
       "additionalProperties": true,
       "properties": {
         "date": {
+          "description": "The date on which the terms of service were accepted.",
           "type": ["null", "string"]
         },
         "ip": {
+          "description": "The IP address of the user who accepted the terms of service.",
           "type": ["null", "string"]
         },
         "service_agreement": {
+          "description": "Specifies the agreement to the service terms.",
           "type": ["null", "string"]
         },
         "user_agent": {
+          "description": "The user agent used when accepting the terms of service.",
           "type": ["null", "string"]
         }
       }
     },
     "type": {
+      "description": "The type of account.",
       "enum": ["custom", "express", "standard"],
       "type": ["null", "string"]
     },
