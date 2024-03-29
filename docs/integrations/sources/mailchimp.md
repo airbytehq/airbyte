@@ -123,6 +123,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 1.2.0   | 2024-03-28 | [36600](https://github.com/airbytehq/airbyte/pull/36600) | Migrate to latest Airbyte-CDK.                                             |
 | 1.1.2   | 2024-02-09 | [35092](https://github.com/airbytehq/airbyte/pull/35092) | Manage dependencies with Poetry.                                           |
 | 1.1.1   | 2024-01-11 | [34157](https://github.com/airbytehq/airbyte/pull/34157) | Prepare for airbyte-lib                                                    |
 | 1.1.0   | 2023-12-20 | [32852](https://github.com/airbytehq/airbyte/pull/32852) | Add optional start_date for incremental streams                            |
