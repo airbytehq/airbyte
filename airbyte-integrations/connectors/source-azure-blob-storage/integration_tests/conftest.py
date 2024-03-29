@@ -69,7 +69,7 @@ def connector_setup_fixture(docker_client) -> None:
     container_client = get_container_client()
     container_client.create_container()
 
-    generate_and_upload_files(container_client)
+    upload_csv_files(container_client)
 
     yield
 
@@ -77,11 +77,8 @@ def connector_setup_fixture(docker_client) -> None:
     container.remove()
 
 
-def generate_and_upload_files(container_client):
-    """create container and upload 1000 csv"""
-
-    # TODO: change to /tmp/csv folder
-    # generate files of different types
+def upload_csv_files(container_client) -> None:
+    """upload 30 csv files"""
     for table in ("products", "purchases", "users"):
         csv_large_file = open(f'/tmp/csv/{table}.csv', "rb").read()
         for i in range(10):
