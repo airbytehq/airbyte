@@ -3,29 +3,53 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "type": { "type": "string" },
-    "id": { "type": "string" },
-    "updated_at": { "type": ["null", "string"], "format": "date-time" },
+    "type": {
+      "description": "Type of the campaign.",
+      "type": "string"
+    },
+    "id": {
+      "description": "Unique identifier of the campaign.",
+      "type": "string"
+    },
+    "updated_at": {
+      "description": "Timestamp when the campaign data was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "attributes": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "name": { "type": "string" },
-        "status": { "type": "string" },
-        "archived": { "type": "boolean" },
-        "channel": { "type": "string" },
+        "name": {
+          "description": "Name of the campaign.",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status of the campaign.",
+          "type": "string"
+        },
+        "archived": {
+          "description": "Indicates if the campaign is archived.",
+          "type": "boolean"
+        },
+        "channel": {
+          "description": "The channel used for the campaign.",
+          "type": "string"
+        },
         "audiences": {
           "type": ["null", "object"],
           "additionalProperties": true,
           "included": {
             "type": ["null", "array"],
             "items": {
+              "description": "List of included audiences for the campaign.",
               "type": ["null", "string"]
             }
           },
           "excluded": {
             "type": ["null", "array"],
             "items": {
+              "description": "List of excluded audiences for the campaign.",
               "type": ["null", "string"]
             }
           }
@@ -33,25 +57,49 @@
         "send_options": {
           "type": ["null", "object"],
           "properties": {
-            "ignore_unsubscribes": { "type": ["null", "boolean"] },
-            "use_smart_sending": { "type": ["null", "boolean"] }
+            "ignore_unsubscribes": {
+              "description": "Flag indicating if unsubscribed contacts should be ignored.",
+              "type": ["null", "boolean"]
+            },
+            "use_smart_sending": {
+              "description": "Flag indicating if smart sending option is enabled.",
+              "type": ["null", "boolean"]
+            }
           }
         },
-        "message": { "type": "string" },
+        "message": {
+          "description": "Content of the campaign message.",
+          "type": "string"
+        },
         "tracking_options": {
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
-            "is_tracking_opens": { "type": ["null", "boolean"] },
-            "is_tracking_clicks": { "type": ["null", "boolean"] },
-            "is_add_utm": { "type": ["null", "boolean"] },
+            "is_tracking_opens": {
+              "description": "Flag indicating if open tracking is enabled.",
+              "type": ["null", "boolean"]
+            },
+            "is_tracking_clicks": {
+              "description": "Flag indicating if click tracking is enabled.",
+              "type": ["null", "boolean"]
+            },
+            "is_add_utm": {
+              "description": "Flag indicating if UTM parameters should be added to the links.",
+              "type": ["null", "boolean"]
+            },
             "utm_params": {
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "object"],
                 "properties": {
-                  "name": { "type": "string" },
-                  "value": { "type": "string" }
+                  "name": {
+                    "description": "Name of the UTM parameter.",
+                    "type": "string"
+                  },
+                  "value": {
+                    "description": "Value of the UTM parameter.",
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -61,17 +109,25 @@
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
-            "method": { "type": "string" },
+            "method": {
+              "description": "Method used for sending the campaign.",
+              "type": "string"
+            },
             "options_static": {
               "type": ["null", "object"],
               "properties": {
                 "datetime": {
+                  "description": "Scheduled datetime for static sending.",
                   "type": "string",
                   "format": "date-time",
                   "airbyte_type": "timestamp_without_timezone"
                 },
-                "is_local": { "type": ["null", "boolean"] },
+                "is_local": {
+                  "description": "Flag indicating if sending is based on local timezones.",
+                  "type": ["null", "boolean"]
+                },
                 "send_past_recipients_immediately": {
+                  "description": "Flag indicating if past recipients should be sent the campaign immediately.",
                   "type": ["null", "boolean"]
                 }
               }
@@ -80,32 +136,59 @@
               "type": ["null", "object"],
               "properties": {
                 "datetime": {
+                  "description": "Scheduled datetime for throttled sending.",
                   "type": "string",
                   "format": "date-time",
                   "airbyte_type": "timestamp_without_timezone"
                 },
-                "throttle_percentage": { "type": "integer" }
+                "throttle_percentage": {
+                  "description": "Percentage of throttling for sending the campaign.",
+                  "type": "integer"
+                }
               }
             },
             "options_sto": {
               "type": ["null", "object"],
               "properties": {
-                "date": { "type": "string", "format": "date" }
+                "date": {
+                  "description": "Date for sto sending option.",
+                  "type": "string",
+                  "format": "date"
+                }
               }
             }
           }
         },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "scheduled_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-        "send_time": { "type": ["null", "string"], "format": "date-time" }
+        "created_at": {
+          "description": "Timestamp when the campaign was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "scheduled_at": {
+          "description": "Timestamp when the campaign is scheduled to be sent.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "description": "Timestamp when the campaign was last updated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "send_time": {
+          "description": "Timestamp when the campaign was sent.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
       }
     },
     "links": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "self": { "type": "string" }
+        "self": {
+          "description": "Link to the campaign resource itself.",
+          "type": "string"
+        }
       }
     },
     "relationships": {
@@ -120,16 +203,28 @@
               "items": {
                 "type": ["null", "object"],
                 "properties": {
-                  "type": { "type": "string" },
-                  "id": { "type": "string" }
+                  "type": {
+                    "description": "Type of the tag associated with the campaign.",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "ID of the tag associated with the campaign.",
+                    "type": "string"
+                  }
                 }
               }
             },
             "links": {
               "type": ["null", "object"],
               "properties": {
-                "self": { "type": "string" },
-                "related": { "type": "string" }
+                "self": {
+                  "description": "Link to the tags resource of the campaign.",
+                  "type": "string"
+                },
+                "related": {
+                  "description": "Link to related tags for the campaign.",
+                  "type": "string"
+                }
               }
             }
           }

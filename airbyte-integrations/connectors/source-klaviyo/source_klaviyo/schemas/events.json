@@ -3,48 +3,86 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "type": { "type": "string" },
-    "id": { "type": "string" },
-    "datetime": { "type": "string", "format": "date-time" },
+    "type": {
+      "description": "Type of the event",
+      "type": "string"
+    },
+    "id": {
+      "description": "Unique identifier for the event",
+      "type": "string"
+    },
+    "datetime": {
+      "description": "Date and time when the event occurred",
+      "type": "string",
+      "format": "date-time"
+    },
     "attributes": {
+      "description": "Additional attributes related to the event",
       "type": ["null", "object"],
       "properties": {
-        "timestamp": { "type": "integer" },
+        "timestamp": {
+          "description": "Timestamp of the event",
+          "type": "integer"
+        },
         "event_properties": {
+          "description": "Properties specific to the event",
           "type": ["null", "object"],
           "additionalProperties": true
         },
-        "datetime": { "type": "string", "format": "date-time" },
-        "uuid": { "type": "string" }
+        "datetime": {
+          "description": "Date and time of the event",
+          "type": "string",
+          "format": "date-time"
+        },
+        "uuid": {
+          "description": "Unique identifier for the event",
+          "type": "string"
+        }
       }
     },
     "links": {
+      "description": "Links related to the event",
       "type": ["null", "object"],
       "properties": {
-        "self": { "type": "string" }
+        "self": {
+          "description": "Link to the event resource itself",
+          "type": "string"
+        }
       }
     },
     "relationships": {
+      "description": "Relationships of the event with other entities",
       "type": ["null", "object"],
       "properties": {
         "profile": {
+          "description": "Profile associated with the event",
           "type": ["null", "object"],
           "properties": {
             "data": {
+              "description": "Data related to the profile",
               "type": ["null", "object"],
               "properties": {
-                "type": { "type": "string" },
-                "id": { "type": "string" }
+                "type": {
+                  "description": "Type of the profile data",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Unique identifier for the profile data",
+                  "type": "string"
+                }
               }
             },
             "links": {
+              "description": "Links related to the profile",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "self": {
+                  "description": "Link to the profile resource itself",
                   "type": "string"
                 },
                 "related": {
+                  "description": "Link to related profile resources",
                   "type": "string"
                 }
               }
@@ -52,23 +90,34 @@
           }
         },
         "metric": {
+          "description": "Metrics associated with the event",
           "type": ["null", "object"],
           "properties": {
             "data": {
+              "description": "Data related to the metric",
               "type": ["null", "object"],
               "properties": {
-                "type": { "type": "string" },
-                "id": { "type": "string" }
+                "type": {
+                  "description": "Type of the metric data",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Unique identifier for the metric data",
+                  "type": "string"
+                }
               }
             },
             "links": {
+              "description": "Links related to the metric",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "self": {
+                  "description": "Link to the metric resource itself",
                   "type": "string"
                 },
                 "related": {
+                  "description": "Link to related metric resources",
                   "type": "string"
                 }
               }

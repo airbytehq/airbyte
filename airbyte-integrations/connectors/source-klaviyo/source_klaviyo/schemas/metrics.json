@@ -3,16 +3,38 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "type": { "type": "string" },
-    "id": { "type": "string" },
-    "updated": { "type": "string", "format": "date-time" },
+    "type": {
+      "description": "The type or category of the metrics data.",
+      "type": "string"
+    },
+    "id": {
+      "description": "The unique identifier for the metrics data.",
+      "type": "string"
+    },
+    "updated": {
+      "description": "The timestamp when the metrics data was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
     "attributes": {
       "type": ["null", "object"],
       "properties": {
-        "name": { "type": "string" },
-        "created": { "type": "string", "format": "date-time" },
-        "updated": { "type": "string", "format": "date-time" },
+        "name": {
+          "description": "The name of the metrics data.",
+          "type": "string"
+        },
+        "created": {
+          "description": "The timestamp when the metrics data was created.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated": {
+          "description": "The timestamp when the metrics data was last updated.",
+          "type": "string",
+          "format": "date-time"
+        },
         "integration": {
+          "description": "Details about the integration used to fetch the metrics data.",
           "type": ["null", "object"],
           "additionalProperties": true
         }
@@ -22,7 +44,10 @@
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "self": { "type": "string" }
+        "self": {
+          "description": "The URL to fetch more details about the metrics data.",
+          "type": "string"
+        }
       }
     }
   }

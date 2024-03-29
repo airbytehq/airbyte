@@ -3,73 +3,141 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "type": { "type": "string" },
-    "id": { "type": "string" },
-    "updated": { "type": "string", "format": "date-time" },
+    "type": {
+      "description": "The type of the flow",
+      "type": "string"
+    },
+    "id": {
+      "description": "The unique identifier of the flow",
+      "type": "string"
+    },
+    "updated": {
+      "description": "The date and time when the flow was last updated",
+      "type": "string",
+      "format": "date-time"
+    },
     "attributes": {
+      "description": "The attributes of the flow including its metadata",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "name": { "type": "string" },
-        "status": { "type": "string" },
-        "archived": { "type": "boolean" },
-        "created": { "type": "string", "format": "date-time" },
-        "updated": { "type": "string", "format": "date-time" },
-        "trigger_type": { "type": "string" }
+        "name": {
+          "description": "The name of the flow",
+          "type": "string"
+        },
+        "status": {
+          "description": "The current status of the flow",
+          "type": "string"
+        },
+        "archived": {
+          "description": "Indicates whether the flow is archived or not",
+          "type": "boolean"
+        },
+        "created": {
+          "description": "The date and time when the flow was created",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated": {
+          "description": "The date and time when the flow was last updated",
+          "type": "string",
+          "format": "date-time"
+        },
+        "trigger_type": {
+          "description": "The type of trigger that activates the flow",
+          "type": "string"
+        }
       }
     },
     "links": {
+      "description": "Links related to the flow",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "self": { "type": "string" }
+        "self": {
+          "description": "The self link of the flow",
+          "type": "string"
+        }
       }
     },
     "relationships": {
+      "description": "Relationships associated with the flow",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "flow-actions": {
+          "description": "Actions associated with the flow",
           "type": ["null", "object"],
           "properties": {
             "data": {
+              "description": "Data related to flow actions",
               "type": "array",
               "items": {
+                "description": "Individual action data",
                 "type": ["null", "object"],
                 "additionalProperties": true,
                 "properties": {
-                  "type": { "type": "string" },
-                  "id": { "type": "string" }
+                  "type": {
+                    "description": "The type of action",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "The unique identifier of the action",
+                    "type": "string"
+                  }
                 }
               }
             },
             "links": {
+              "description": "Links related to flow actions",
               "type": ["null", "object"],
               "properties": {
-                "self": { "type": "string" },
-                "related": { "type": "string" }
+                "self": {
+                  "description": "The self link of the actions",
+                  "type": "string"
+                },
+                "related": {
+                  "description": "Related links of the actions",
+                  "type": "string"
+                }
               }
             }
           }
         },
         "tags": {
+          "description": "Tags associated with the flow",
           "type": ["null", "object"],
           "properties": {
             "data": {
+              "description": "Data related to flow tags",
               "type": "array",
               "items": {
+                "description": "Individual tag data",
                 "type": ["null", "object"],
                 "properties": {
-                  "type": { "type": "string" },
-                  "id": { "type": "string" }
+                  "type": {
+                    "description": "The type of tag",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "The unique identifier of the tag",
+                    "type": "string"
+                  }
                 }
               }
             },
             "links": {
+              "description": "Links related to flow tags",
               "type": ["null", "object"],
               "properties": {
-                "self": { "type": "string" },
-                "related": { "type": "string" }
+                "self": {
+                  "description": "The self link of the tags",
+                  "type": "string"
+                },
+                "related": {
+                  "description": "Related links of the tags",
+                  "type": "string"
+                }
               }
             }
           }
