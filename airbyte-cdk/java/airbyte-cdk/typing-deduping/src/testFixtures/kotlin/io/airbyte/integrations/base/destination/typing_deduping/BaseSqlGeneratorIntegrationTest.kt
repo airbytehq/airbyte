@@ -96,23 +96,23 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Throws(Exception::class) protected abstract fun createNamespace(namespace: String?)
 
     /** Create a raw table using the StreamId's rawTableId. */
-    @Throws(Exception::class) protected abstract fun createRawTable(streamId: StreamId?)
+    @Throws(Exception::class) protected abstract fun createRawTable(streamId: StreamId)
 
     /** Creates a raw table in the v1 format */
-    @Throws(Exception::class) protected abstract fun createV1RawTable(v1RawTable: StreamId?)
+    @Throws(Exception::class) protected abstract fun createV1RawTable(v1RawTable: StreamId)
 
     @Throws(Exception::class)
-    protected abstract fun insertRawTableRecords(streamId: StreamId?, records: List<JsonNode>?)
+    protected abstract fun insertRawTableRecords(streamId: StreamId, records: List<JsonNode>)
 
     @Throws(Exception::class)
-    protected abstract fun insertV1RawTableRecords(streamId: StreamId?, records: List<JsonNode>?)
+    protected abstract fun insertV1RawTableRecords(streamId: StreamId, records: List<JsonNode>)
 
     @Throws(Exception::class)
     protected abstract fun insertFinalTableRecords(
         includeCdcDeletedAt: Boolean,
-        streamId: StreamId?,
+        streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>?
+        records: List<JsonNode>
     )
 
     /**
@@ -125,11 +125,11 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * destination as a string.
      */
     @Throws(Exception::class)
-    protected abstract fun dumpRawTableRecords(streamId: StreamId?): List<JsonNode>
+    protected abstract fun dumpRawTableRecords(streamId: StreamId): List<JsonNode>
 
     @Throws(Exception::class)
     protected abstract fun dumpFinalTableRecords(
-        streamId: StreamId?,
+        streamId: StreamId,
         suffix: String?
     ): List<JsonNode>
 
@@ -1574,7 +1574,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    protected fun dumpV1RawTableRecords(streamId: StreamId?): List<JsonNode> {
+    protected fun dumpV1RawTableRecords(streamId: StreamId): List<JsonNode> {
         return dumpRawTableRecords(streamId)
     }
 
