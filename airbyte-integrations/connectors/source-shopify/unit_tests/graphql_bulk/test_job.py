@@ -7,6 +7,7 @@ import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkStatus
+from source_shopify.streams.base_streams import IncrementalShopifyGraphQlBulkStream
 from source_shopify.streams.streams import (
     Collections,
     CustomerAddress,
@@ -263,3 +264,36 @@ def test_bulk_stream_parse_response(
         assert test_records == [expected_result]
     elif isinstance(expected_result, list):
         assert test_records == expected_result
+
+
+@pytest.mark.parametrize(
+    "stream, stream_state, with_start_date, expected",
+    [
+        (DiscountCodes, {}, True, "updated_at:>='2023-01-01T00:00:00+00:00'"),
+        # here the config migration is applied and the value should be "2020-01-01"
+        (DiscountCodes, {}, False, "updated_at:>='2020-01-01T00:00:00+00:00'"),
+        (DiscountCodes, {"updated_at": "2022-01-01T00:00:00Z"}, True, "updated_at:>='2022-01-01T00:00:00+00:00'"),
+        (DiscountCodes, {"updated_at": "2021-01-01T00:00:00Z"}, False, "updated_at:>='2021-01-01T00:00:00+00:00'"),
+    ],
+    ids=[
+        "No State, but Start Date",
+        "No State, No Start Date - should fallback to 2018",
+        "With State, Start Date",
+        "With State, No Start Date",
+    ],
+)
+def test_stream_slices(
+    auth_config,
+    stream, 
+    stream_state, 
+    with_start_date, 
+    expected, 
+) -> None:
+    # simulating `None` for `start_date` and `config migration`
+    if not with_start_date:
+        auth_config["start_date"] = "2020-01-01"
+
+    stream = stream(auth_config)
+    test_result = list(stream.stream_slices(stream_state=stream_state))
+    test_query_from_slice = test_result[0].get("query")
+    assert expected in test_query_from_slice

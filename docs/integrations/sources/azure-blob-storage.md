@@ -34,7 +34,7 @@ Cloud storage may incur egress costs. Egress refers to data that is transferred 
 The Azure Blob Storage source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported? |
-| :--------------------------------------------- |:-----------|
+|:-----------------------------------------------|:-----------|
 | Full Refresh Sync                              | Yes        |
 | Incremental Sync                               | Yes        |
 | Replicate Incremental Deletes                  | No         |
@@ -45,7 +45,7 @@ The Azure Blob Storage source connector supports the following [sync modes](http
 ## File Compressions
 
 | Compression | Supported? |
-| :---------- | :--------- |
+|:------------|:-----------|
 | Gzip        | Yes        |
 | Zip         | No         |
 | Bzip2       | Yes        |
@@ -193,11 +193,12 @@ To perform the text extraction from PDF and Docx files, the connector uses the [
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.3.4   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936)  | Bump CDK version to avoid missing SyncMode errors                                            |
-| 0.3.3   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681)  | Unpin CDK version to make compatible with the Concurrent CDK                                 |
-| 0.3.2   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661)  | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
-| 0.3.1   | 2024-01-10 | [34084](https://github.com/airbytehq/airbyte/pull/34084)  | Fix bug for running check with document file format                                          |
-| 0.3.0   | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411)  | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
+| 0.3.5   | 2024-03-26 | [36487](https://github.com/airbytehq/airbyte/pull/36487) | Manage dependencies with Poetry.                                                             |
+| 0.3.4   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |
+| 0.3.3   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                 |
+| 0.3.2   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
+| 0.3.1   | 2024-01-10 | [34084](https://github.com/airbytehq/airbyte/pull/34084) | Fix bug for running check with document file format                                          |
+| 0.3.0   | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
 | 0.2.5   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                                          |
 | 0.2.4   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                                            |
 | 0.2.3   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                                          |

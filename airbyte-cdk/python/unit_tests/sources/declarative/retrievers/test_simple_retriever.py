@@ -445,7 +445,7 @@ def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name
         side_effect=retriever_read_pages,
     ):
         list(retriever.read_records(stream_slice=stream_slice, records_schema={}))
-        cursor.close_slice.assert_called_once_with(stream_slice, first_record if first_greater_than_second else second_record)
+        cursor.close_slice.assert_called_once_with(stream_slice)
 
 
 def test_given_stream_data_is_not_record_when_read_records_then_update_slice_with_optional_record():
@@ -477,7 +477,8 @@ def test_given_stream_data_is_not_record_when_read_records_then_update_slice_wit
         side_effect=retriever_read_pages,
     ):
         list(retriever.read_records(stream_slice=stream_slice, records_schema={}))
-        cursor.close_slice.assert_called_once_with(stream_slice, None)
+        cursor.observe.assert_not_called()
+        cursor.close_slice.assert_called_once_with(stream_slice)
 
 
 def _generate_slices(number_of_slices):
