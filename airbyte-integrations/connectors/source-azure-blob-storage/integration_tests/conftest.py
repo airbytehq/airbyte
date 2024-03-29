@@ -44,16 +44,7 @@ def get_container_client() -> ContainerClient:
 
 
 def generate_random_csv_with_source_faker():
-    # TOD: make it work in dagger env
-    if platform.system() == 'Linux':
-        subprocess.run(["cat", "/etc/os-release"])
-        # subprocess.run(["apt-get", "update", '-y', '--fix-missing'])
-        # subprocess.run(["apt-get", "upgrade", '-y', '--fix-missing'])
-        # subprocess.run(['apt-get', 'install', '-y', 'jq'])
-        # subprocess.run(['apt-get', 'install', '-y', 'curl'])
-        # subprocess.run(['apt-get', 'install', '-y', 'docker-ce', 'docker-ce-cli'])
-        # subprocess.run(['docker', '-v'])
-        # subprocess.run(['apt-get', 'install', '-y', 'docker'])
+    """Generate csv files using source-faker and save output to folder: /tmp/csv"""
     subprocess.run(f'{os.path.dirname(__file__)}/csv_export/main.sh')
     subprocess.run(['ls', '-lah', '/tmp/csv'])
     subprocess.run(['tail', '-10', '/tmp/csv/products.csv'])
@@ -92,13 +83,10 @@ def generate_and_upload_files(container_client):
     # TODO: change to /tmp/csv folder
     # generate files of different types
     for table in ("products", "purchases", "users"):
-        csv_large_file = open(
-            f'/tmp/csv/{table}.csv',
-            "rb").read()
+        csv_large_file = open(f'/tmp/csv/{table}.csv', "rb").read()
         for i in range(10):
             container_client.upload_blob(f'test_csv_{table}_{i}.csv', csv_large_file, validate_content=False)
             print('big csv file uploaded _i', i)
-
 
 
 @pytest.fixture(name='configured_catalog_csv')
