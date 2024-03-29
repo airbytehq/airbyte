@@ -18,7 +18,7 @@ open class SourceStateIterator<T>(
     private val stream: ConfiguredAirbyteStream?,
     private val sourceStateMessageProducer: SourceStateMessageProducer<T>,
     private val stateEmitFrequency: StateEmitFrequency
-) : AbstractIterator<AirbyteMessage?>(), MutableIterator<AirbyteMessage?> {
+) : AbstractIterator<AirbyteMessage>(), MutableIterator<AirbyteMessage> {
     private var hasEmittedFinalState = false
     private var recordCount = 0L
     private var lastCheckpoint: Instant = Instant.now()

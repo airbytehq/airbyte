@@ -35,7 +35,7 @@ protected constructor(
             S3BaseChecks.testSingleUpload(
                 s3Client,
                 destinationConfig.bucketName,
-                destinationConfig.bucketPath
+                destinationConfig.bucketPath!!
             )
             S3BaseChecks.testMultipartUpload(
                 s3Client,

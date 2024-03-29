@@ -89,7 +89,7 @@ protected constructor(driverClassName: String) :
 
     @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
-    override fun discover(config: JsonNode): AirbyteCatalog? {
+    override fun discover(config: JsonNode): AirbyteCatalog {
         try {
             val database = createDatabase(config)
             val tableInfos = discoverWithoutSystemTables(database)
@@ -498,10 +498,10 @@ protected constructor(driverClassName: String) :
         }
 
         val recordCount = AtomicLong()
-        return AutoCloseableIterators.transform<AirbyteMessage?, AirbyteMessage?>(
+        return AutoCloseableIterators.transform<AirbyteMessage, AirbyteMessage>(
             iterator,
             AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace)
-        ) { r: AirbyteMessage? ->
+        ) { r: AirbyteMessage ->
             val count = recordCount.incrementAndGet()
             if (count % 10000 == 0L) {
                 LOGGER.info("Reading stream {}. Records read: {}", streamName, count)

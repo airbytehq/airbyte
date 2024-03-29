@@ -26,11 +26,11 @@ import org.slf4j.LoggerFactory
  */
 open class S3DestinationConfig {
     @JvmField val endpoint: String?
-    @JvmField val bucketName: String
-    @JvmField val bucketPath: String
+    @JvmField val bucketName: String?
+    @JvmField val bucketPath: String?
     @JvmField val bucketRegion: String?
-    @JvmField val pathFormat: String
-    val s3CredentialConfig: S3CredentialConfig
+    @JvmField val pathFormat: String?
+    val s3CredentialConfig: S3CredentialConfig?
     @JvmField val formatConfig: S3FormatConfig?
     var fileNamePattern: String? = null
         private set
@@ -55,10 +55,10 @@ open class S3DestinationConfig {
     constructor(
         endpoint: String?,
         bucketName: String,
-        bucketPath: String,
+        bucketPath: String?,
         bucketRegion: String?,
-        pathFormat: String,
-        credentialConfig: S3CredentialConfig,
+        pathFormat: String?,
+        credentialConfig: S3CredentialConfig?,
         formatConfig: S3FormatConfig?,
         s3Client: AmazonS3
     ) {
@@ -74,11 +74,11 @@ open class S3DestinationConfig {
 
     constructor(
         endpoint: String?,
-        bucketName: String,
-        bucketPath: String,
+        bucketName: String?,
+        bucketPath: String?,
         bucketRegion: String?,
-        pathFormat: String,
-        credentialConfig: S3CredentialConfig,
+        pathFormat: String?,
+        credentialConfig: S3CredentialConfig?,
         formatConfig: S3FormatConfig?,
         s3Client: AmazonS3?,
         fileNamePattern: String?,
@@ -110,8 +110,8 @@ open class S3DestinationConfig {
     protected open fun createS3Client(): AmazonS3 {
         LOGGER.info("Creating S3 client...")
 
-        val credentialsProvider = s3CredentialConfig.s3CredentialsProvider
-        val credentialType = s3CredentialConfig.credentialType
+        val credentialsProvider = s3CredentialConfig!!.s3CredentialsProvider
+        val credentialType = s3CredentialConfig!!.credentialType
 
         if (S3CredentialType.DEFAULT_PROFILE == credentialType) {
             return AmazonS3ClientBuilder.standard()
@@ -173,7 +173,7 @@ open class S3DestinationConfig {
     }
 
     class Builder(
-        private var bucketName: String,
+        private var bucketName: String?,
         private var bucketPath: String,
         private var bucketRegion: String?
     ) {
@@ -271,15 +271,15 @@ open class S3DestinationConfig {
         private const val R2_INSTANCE_URL = "https://%s.r2.cloudflarestorage.com"
 
         @JvmStatic
-        fun create(bucketName: String, bucketPath: String, bucketRegion: String?): Builder {
+        fun create(bucketName: String?, bucketPath: String, bucketRegion: String?): Builder {
             return Builder(bucketName, bucketPath, bucketRegion)
         }
 
         @JvmStatic
         fun create(config: S3DestinationConfig): Builder {
-            return Builder(config.bucketName, config.bucketPath, config.bucketRegion)
+            return Builder(config.bucketName, config.bucketPath!!, config.bucketRegion)
                 .withEndpoint(config.endpoint)
-                .withCredentialConfig(config.s3CredentialConfig)
+                .withCredentialConfig(config.s3CredentialConfig!!)
                 .withFormatConfig(config.formatConfig)
         }
 
@@ -358,9 +358,9 @@ open class S3DestinationConfig {
             return builder.get()
         }
 
-        private fun getProperty(config: JsonNode, @Nonnull key: String): String {
-            val node = config.get(key)
-            return node.asText()
+        private fun getProperty(config: JsonNode, @Nonnull key: String): String? {
+            val node: JsonNode? = config.get(key)
+            return node?.asText()
         }
     }
 }

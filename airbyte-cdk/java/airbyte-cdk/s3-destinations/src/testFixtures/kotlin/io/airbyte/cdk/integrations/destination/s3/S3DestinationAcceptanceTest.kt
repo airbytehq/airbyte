@@ -78,7 +78,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                s3DestinationConfig!!.pathFormat
+                s3DestinationConfig!!.pathFormat!!
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)

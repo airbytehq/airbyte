@@ -26,6 +26,10 @@ compileTestFixturesKotlin {
     }
 }
 
+spotbugsTest.enabled = false
+spotbugsTestFixtures.enabled = false
+
+
 dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')

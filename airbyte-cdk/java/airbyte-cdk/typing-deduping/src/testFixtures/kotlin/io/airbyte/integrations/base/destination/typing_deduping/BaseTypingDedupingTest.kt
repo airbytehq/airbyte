@@ -58,10 +58,10 @@ abstract class BaseTypingDedupingTest {
     protected var config: JsonNode? = null
         private set
     protected var streamNamespace: String? = null
-    protected var streamName: String? = null
+    protected var streamName: String = "dummy"
     private var streamsToTearDown: MutableList<AirbyteStreamNameNamespacePair>? = null
 
-    protected abstract val imageName: String?
+    protected abstract val imageName: String
         /** @return the docker image to run, e.g. `"airbyte/destination-bigquery:dev"`. */
         get
 
@@ -124,10 +124,7 @@ abstract class BaseTypingDedupingTest {
      * streamNamespace may be null, in which case you should query from the default namespace.
      */
     @Throws(Exception::class)
-    abstract fun dumpFinalTableRecords(
-        streamNamespace: String?,
-        streamName: String?
-    ): List<JsonNode>
+    abstract fun dumpFinalTableRecords(streamNamespace: String?, streamName: String): List<JsonNode>
 
     /**
      * Delete any resources in the destination associated with this stream AND its namespace. We
@@ -927,7 +924,7 @@ abstract class BaseTypingDedupingTest {
         expectedRawRecords: List<JsonNode>,
         expectedFinalRecords: List<JsonNode>,
         streamNamespace: String?,
-        streamName: String?,
+        streamName: String,
         disableFinalTableComparison: Boolean
     ) {
         val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
@@ -952,7 +949,7 @@ abstract class BaseTypingDedupingTest {
     protected fun runSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         messages: List<AirbyteMessage>,
-        imageName: String? = this.imageName,
+        imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
     ) {
         val destination = startSync(catalog, imageName, configTransformer)
@@ -973,7 +970,7 @@ abstract class BaseTypingDedupingTest {
                     val destinationMessages:
                         MutableList<io.airbyte.protocol.models.AirbyteMessage> =
                         ArrayList()
-                    while (!destination.isFinished) {
+                    while (!destination.isFinished()) {
                         // attemptRead isn't threadsafe, we read stdout fully here.
                         // i.e. we shouldn't call attemptRead anywhere else.
                         destination.attemptRead().ifPresent {
@@ -1000,7 +997,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected fun startSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
-        imageName: String? = this.imageName,
+        imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
     ): AirbyteDestination {
         synchronized(this) {
@@ -1065,7 +1062,7 @@ abstract class BaseTypingDedupingTest {
         destination.close()
     }
 
-    protected fun readMessages(filename: String?): List<AirbyteMessage> {
+    protected fun readMessages(filename: String): List<AirbyteMessage> {
         return Companion.readMessages(filename, streamNamespace, streamName)
     }
 
@@ -1082,7 +1079,7 @@ abstract class BaseTypingDedupingTest {
         }
 
         @Throws(IOException::class)
-        fun readRecords(filename: String?): List<JsonNode> {
+        fun readRecords(filename: String): List<JsonNode> {
             return MoreResources.readResource(filename)
                 .lines()
                 .map { obj: String -> obj.trim { it <= ' ' } }
@@ -1094,7 +1091,7 @@ abstract class BaseTypingDedupingTest {
 
         @Throws(IOException::class)
         protected fun readMessages(
-            filename: String?,
+            filename: String,
             streamNamespace: String?,
             streamName: String?
         ): List<AirbyteMessage> {

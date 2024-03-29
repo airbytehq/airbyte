@@ -106,7 +106,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                config!!.pathFormat
+                config!!.pathFormat!!
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)

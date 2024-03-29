@@ -307,7 +307,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(stream.supportedSyncModes.contains(SyncMode.INCREMENTAL))
     }
 
-    protected fun filterOutOtherSchemas(catalog: AirbyteCatalog?): AirbyteCatalog? {
+    protected fun filterOutOtherSchemas(catalog: AirbyteCatalog): AirbyteCatalog {
         if (supportsSchemas()) {
             val filteredCatalog = Jsons.clone(catalog)
             filteredCatalog!!.streams =
