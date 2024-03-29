@@ -10,7 +10,6 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class CustomAuthenticator(NoAuth):
-    authenticator: DeclarativeAuthenticator
     config: Config
     email: Union[InterpolatedString, str]
     api_token: Union[InterpolatedString, str]
@@ -18,13 +17,13 @@ class CustomAuthenticator(NoAuth):
     def __post_init__(self, parameters: Mapping[str, Any]):
         confluence_server: bool = self.config.get("confluence_server")
         if confluence_server:
-            self.authenticator = BearerAuthenticator(
+            self._authenticator = BearerAuthenticator(
                 InterpolatedStringTokenProvider(api_token=self.api_token or "", config=self.config, parameters=parameters),
                 config=self.config,
                 parameters=parameters,
             )
         else:
-            self.authenticator = BasicHttpAuthenticator(
+            self._authenticator = BasicHttpAuthenticator(
                 password=self.api_token, username=self.email, config=self.config, parameters=parameters
             )
 
@@ -34,4 +33,4 @@ class CustomAuthenticator(NoAuth):
 
     @property
     def token(self) -> str:
-        return self.authenticator.token()
+        return self._authenticator.token
