@@ -76,6 +76,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
+          spaceKey: {{ config['space_key'] }}
           expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
     primary_key: "id"
     $parameters:
@@ -101,6 +102,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
+          spaceKey: {{ config['space_key'] }}
           expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
     primary_key: "id"
     $parameters:
@@ -162,3 +164,8 @@ spec:
         type: boolean
         description: "If you are using Confluence Server, please check this box."
         order: 3
+      space_key:
+        title: "Space Key"
+        type: string
+        description: "Filters content results (pages & blog posts) by space"
+        order: 4
