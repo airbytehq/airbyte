@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the close reason.",
       "type": "integer"
     },
     "name": {
+      "description": "The name or description of the close reason.",
       "type": "string"
     }
   }

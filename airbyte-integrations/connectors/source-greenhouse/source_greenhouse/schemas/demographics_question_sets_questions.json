@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the question.",
       "type": "integer"
     },
     "active": {
+      "description": "Specifies if the question is active or not.",
       "type": ["null", "boolean"]
     },
     "demographic_question_set_id": {
+      "description": "Unique identifier of the demographic question set to which this question belongs.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the question.",
       "type": ["null", "string"]
     },
     "translations": {
@@ -20,15 +24,18 @@
         "type": ["null", "object"],
         "properties": {
           "language": {
+            "description": "Specifies the language of the translation.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "Translated name of the question for the specified language.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "required": {
+      "description": "Indicates if this question is mandatory to answer.",
       "type": ["null", "boolean"]
     }
   }

@@ -4,12 +4,15 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the school.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the school.",
       "type": ["null", "string"]
     },
     "priority": {
+      "description": "Priority level of the school.",
       "type": ["null", "integer"]
     }
   }

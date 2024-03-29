@@ -4,9 +4,11 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the tag.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the tag.",
       "type": ["null", "string"]
     }
   }

@@ -4,18 +4,22 @@
   "additionalProperties": true,
   "properties": {
     "application_id": {
+      "description": "Unique identifier for the job application",
       "type": ["null", "integer"]
     },
     "candidate_id": {
+      "description": "Unique identifier for the candidate applying for the job",
       "type": ["null", "integer"]
     },
     "race": {
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the race",
           "type": ["null", "integer"]
         },
         "description": {
+          "description": "Description of the candidate's race",
           "type": ["null", "string"]
         }
       }
@@ -24,9 +28,11 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the gender",
           "type": ["null", "integer"]
         },
         "description": {
+          "description": "Description of the candidate's gender",
           "type": ["null", "string"]
         }
       }
@@ -35,9 +41,11 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the veteran status",
           "type": ["null", "integer"]
         },
         "message": {
+          "description": "Message related to the candidate's veteran status",
           "type": ["null", "string"]
         }
       }
@@ -46,14 +54,17 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the disability status",
           "type": ["null", "integer"]
         },
         "description": {
+          "description": "Description of the candidate's disability status",
           "type": ["null", "string"]
         }
       }
     },
     "submitted_at": {
+      "description": "Timestamp when the data was submitted",
       "type": ["null", "string"]
     }
   }
