@@ -300,15 +300,12 @@ class MessageGrouper:
 
     @staticmethod
     def _create_request_from_log_message(json_http_message: Dict[str, Any]) -> HttpRequest:
-        url = urlparse(json_http_message.get("url", {}).get("full", ""))
-        full_path = f"{url.scheme}://{url.hostname}{url.path}" if url else ""
+        url = json_http_message.get("url", {}).get("full", "")
         request = json_http_message.get("http", {}).get("request", {})
-        parameters = parse_qs(url.query) or None
         return HttpRequest(
-            url=full_path,
+            url=url,
             http_method=request.get("method", ""),
             headers=request.get("headers"),
-            parameters=parameters,
             body=request.get("body", {}).get("content", ""),
         )
 
