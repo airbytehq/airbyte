@@ -90,7 +90,7 @@ abstract class DestinationAcceptanceTest {
     protected var localRoot: Path? = null
     open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
 
-    open fun getTestDataComparator(): TestDataComparator {
+    protected open fun getTestDataComparator(): TestDataComparator {
         return BasicTestDataComparator { this.resolveIdentifier(it) }
     }
 
@@ -102,7 +102,7 @@ abstract class DestinationAcceptanceTest {
          */
         get
 
-    protected fun supportsInDestinationNormalization(): Boolean {
+    protected open fun supportsInDestinationNormalization(): Boolean {
         return false
     }
 
@@ -208,7 +208,7 @@ abstract class DestinationAcceptanceTest {
     /**
      * Override to return true if a destination implements namespaces and should be tested as such.
      */
-    protected fun implementsNamespaces(): Boolean {
+    protected open fun implementsNamespaces(): Boolean {
         return false
     }
 
@@ -308,7 +308,7 @@ abstract class DestinationAcceptanceTest {
      * - can throw any exception, test framework will handle.
      */
     @Throws(Exception::class)
-    protected fun retrieveNormalizedRecords(
+    protected open fun retrieveNormalizedRecords(
         testEnv: TestDestinationEnv?,
         streamName: String?,
         namespace: String?
@@ -865,7 +865,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
-    fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
+    open fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
         if (!normalizationFromDefinition()) {
             return
         }
@@ -898,7 +898,7 @@ abstract class DestinationAcceptanceTest {
      */
     @Test
     @Throws(Exception::class)
-    fun testIncrementalDedupeSync() {
+    open fun testIncrementalDedupeSync() {
         if (!implementsAppendDedup()) {
             LOGGER.info(
                 "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'"
@@ -1036,13 +1036,13 @@ abstract class DestinationAcceptanceTest {
         }
     }
 
-    protected val maxRecordValueLimit: Int
+    protected open val maxRecordValueLimit: Int
         /** @return the max limit length allowed for values in the destination. */
         get() = 1000000000
 
     @Test
     @Throws(Exception::class)
-    fun testCustomDbtTransformations() {
+    open fun testCustomDbtTransformations() {
         if (!dbtFromDefinition()) {
             return
         }
@@ -1953,7 +1953,7 @@ abstract class DestinationAcceptanceTest {
         return false
     }
 
-    protected fun supportIncrementalSchemaChanges(): Boolean {
+    protected open fun supportIncrementalSchemaChanges(): Boolean {
         return false
     }
 
@@ -1980,7 +1980,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataTypeTestArgumentProvider::class)
     @Throws(Exception::class)
-    fun testDataTypeTestWithNormalization(
+    open fun testDataTypeTestWithNormalization(
         messagesFilename: String,
         catalogFilename: String,
         testCompatibility: DataTypeTestArgumentProvider.TestCompatibility

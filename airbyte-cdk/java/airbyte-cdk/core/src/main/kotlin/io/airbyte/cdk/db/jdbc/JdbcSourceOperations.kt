@@ -15,7 +15,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /** Implementation of source operations with standard JDBC types. */
-class JdbcSourceOperations :
+open class JdbcSourceOperations :
     AbstractJdbcCompatibleSourceOperations<JDBCType>(), SourceOperations<ResultSet, JDBCType> {
     protected fun safeGetJdbcType(columnTypeInt: Int): JDBCType {
         return try {
