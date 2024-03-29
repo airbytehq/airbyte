@@ -113,7 +113,8 @@ class SurveyMonkeyBaseStream(HttpStream, ABC):
         return {self._cursor_field: datetime.datetime.strptime(state_value, "%Y-%m-%dT%H:%M:%SZ").timestamp()} 
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        start_ts = datetime.datetime.strptime(self._start_date, "%Y-%m-%dT%H:%M:%SZ").timestamp()
+        start_date = stream_state.get("start_date", self._start_date) if stream_state else self._start_date
+        start_ts = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ").timestamp()
         now_ts = datetime.datetime.now().timestamp()
         if start_ts >= now_ts:
             yield from []
