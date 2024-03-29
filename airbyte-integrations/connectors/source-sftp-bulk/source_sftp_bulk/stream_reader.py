@@ -57,9 +57,6 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        # TODO: check prefixes
-        # prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
-        # with self.sftp_client as sftp_client:
         directories = [self._config.folder_path or "/"]
 
         # Iterate through directories and subdirectories
