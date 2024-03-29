@@ -2,30 +2,37 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the form",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of the form",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the form was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "last_updated_at": {
+      "description": "Date and time when the form was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "published_at": {
+      "description": "Date and time when the form was published",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "title": {
+      "description": "Title of the form",
       "type": ["null", "string"]
     },
     "workspace": {
       "type": ["null", "object"],
       "properties": {
         "href": {
+          "description": "URL of the workspace",
           "type": ["null", "string"]
         }
       }
@@ -34,6 +41,7 @@
       "type": ["null", "object"],
       "properties": {
         "href": {
+          "description": "URL of the theme",
           "type": ["null", "string"]
         }
       }
@@ -42,27 +50,33 @@
       "type": ["null", "object"],
       "properties": {
         "language": {
+          "description": "Language of the form",
           "type": ["null", "string"]
         },
         "progress_bar": {
+          "description": "Progress bar settings",
           "type": ["null", "string"]
         },
         "meta": {
           "type": ["null", "object"],
           "properties": {
             "allow_indexing": {
+              "description": "Flag indicating if indexing is allowed",
               "type": ["null", "boolean"]
             },
             "title": {
+              "description": "Title of the form",
               "type": ["null", "string"]
             },
             "description": {
+              "description": "Description of the form",
               "type": ["null", "string"]
             },
             "image": {
               "type": ["null", "object"],
               "properties": {
                 "href": {
+                  "description": "URL of the form image",
                   "type": ["null", "string"]
                 }
               }
@@ -70,36 +84,47 @@
           }
         },
         "hide_navigation": {
+          "description": "Flag indicating if navigation is hidden",
           "type": ["null", "boolean"]
         },
         "is_public": {
+          "description": "Flag indicating if the form is public",
           "type": ["null", "boolean"]
         },
         "is_trial": {
+          "description": "Flag indicating if the form is a trial version",
           "type": ["null", "boolean"]
         },
         "show_progress_bar": {
+          "description": "Flag indicating if progress bar is displayed",
           "type": ["null", "boolean"]
         },
         "show_typeform_branding": {
+          "description": "Flag indicating if Typeform branding is displayed",
           "type": ["null", "boolean"]
         },
         "are_uploads_public": {
+          "description": "Flag indicating if uploads are public",
           "type": ["null", "boolean"]
         },
         "show_time_to_complete": {
+          "description": "Flag indicating if time to complete is displayed",
           "type": ["null", "boolean"]
         },
         "redirect_after_submit_url": {
+          "description": "URL to redirect after form submission",
           "type": ["null", "string"]
         },
         "google_analytics": {
+          "description": "Google Analytics settings",
           "type": ["null", "string"]
         },
         "facebook_pixel": {
+          "description": "Facebook Pixel settings",
           "type": ["null", "string"]
         },
         "google_tag_manager": {
+          "description": "Google Tag Manager settings",
           "type": ["null", "string"]
         },
         "capabilities": {
@@ -109,9 +134,11 @@
               "type": ["null", "object"],
               "properties": {
                 "enabled": {
+                  "description": "Flag indicating if end-to-end encryption is enabled",
                   "type": ["null", "boolean"]
                 },
                 "modifiable": {
+                  "description": "Flag indicating if encryption is modifiable",
                   "type": ["null", "boolean"]
                 }
               }
@@ -125,21 +152,26 @@
               "type": ["null", "object"],
               "properties": {
                 "enabled": {
+                  "description": "Flag indicating if self notifications are enabled",
                   "type": ["null", "boolean"]
                 },
                 "recipients": {
+                  "description": "Recipient list for self notifications",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
                   }
                 },
                 "subject": {
+                  "description": "Subject of self notifications",
                   "type": ["null", "string"]
                 },
                 "message": {
+                  "description": "Message for self notifications",
                   "type": ["null", "string"]
                 },
                 "reply_to": {
+                  "description": "Email address for self notifications",
                   "type": ["null", "string"]
                 }
               }
@@ -148,21 +180,26 @@
               "type": ["null", "object"],
               "properties": {
                 "enabled": {
+                  "description": "Flag indicating if respondent notifications are enabled",
                   "type": ["null", "boolean"]
                 },
                 "recipients": {
+                  "description": "Recipient list for respondent notifications",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
                   }
                 },
                 "subject": {
+                  "description": "Subject of respondent notifications",
                   "type": ["null", "string"]
                 },
                 "message": {
+                  "description": "Message for respondent notifications",
                   "type": ["null", "string"]
                 },
                 "reply_to": {
+                  "description": "Email address for respondent replies",
                   "type": ["null", "string"]
                 }
               }
@@ -173,12 +210,15 @@
           "type": ["null", "object"],
           "properties": {
             "avatar": {
+              "description": "Avatar settings",
               "type": ["null", "string"]
             },
             "is_typing_emulation_disabled": {
+              "description": "Flag indicating if typing emulation is disabled",
               "type": ["null", "boolean"]
             },
             "typing_emulation_speed": {
+              "description": "Speed of typing emulation",
               "type": ["null", "string"]
             }
           }
@@ -191,30 +231,38 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier of the welcome screen",
             "type": ["null", "string"]
           },
           "ref": {
+            "description": "Reference of the welcome screen",
             "type": ["null", "string"]
           },
           "title": {
+            "description": "Title of the welcome screen",
             "type": ["null", "string"]
           },
           "properties": {
             "type": ["null", "object"],
             "properties": {
               "show_button": {
+                "description": "Flag indicating if the button is displayed",
                 "type": ["null", "boolean"]
               },
               "share_icons": {
+                "description": "Icons for sharing the welcome screen",
                 "type": ["null", "boolean"]
               },
               "button_mode": {
+                "description": "Mode of the button",
                 "type": ["null", "string"]
               },
               "button_text": {
+                "description": "Text of the button",
                 "type": ["null", "string"]
               },
               "redirect_url": {
+                "description": "URL to redirect on button click",
                 "type": ["null", "string"]
               }
             }
@@ -223,9 +271,11 @@
             "type": ["null", "object"],
             "properties": {
               "type": {
+                "description": "Type of the attachment",
                 "type": ["null", "string"]
               },
               "placement": {
+                "description": "Placement of the attachment",
                 "type": ["null", "string"]
               }
             }
@@ -234,21 +284,26 @@
             "type": ["null", "object"],
             "properties": {
               "type": {
+                "description": "Type of the layout",
                 "type": ["null", "string"]
               },
               "placement": {
+                "description": "Placement of the welcome screen layout",
                 "type": ["null", "string"]
               },
               "attachment": {
                 "type": ["null", "object"],
                 "properties": {
                   "type": {
+                    "description": "Type of the attachment",
                     "type": ["null", "string"]
                   },
                   "href": {
+                    "description": "URL of the attached file",
                     "type": ["null", "string"]
                   },
                   "scale": {
+                    "description": "Scale of the attachment",
                     "type": ["null", "number"]
                   }
                 }
@@ -257,12 +312,15 @@
                 "type": ["null", "object"],
                 "properties": {
                   "brightness": {
+                    "description": "Brightness settings of the welcome screen",
                     "type": ["null", "number"]
                   },
                   "description": {
+                    "description": "Description of the welcome screen",
                     "type": ["null", "string"]
                   },
                   "focal_point": {
+                    "description": "Focal point coordinates of the welcome screen",
                     "type": ["null", "object"],
                     "properties": {
                       "x": {
@@ -286,30 +344,38 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier of the thank you screen",
             "type": ["null", "string"]
           },
           "ref": {
+            "description": "Reference of the thank you screen",
             "type": ["null", "string"]
           },
           "title": {
+            "description": "Title of the thank you screen",
             "type": ["null", "string"]
           },
           "properties": {
             "type": ["null", "object"],
             "properties": {
               "show_button": {
+                "description": "Flag indicating if the button is displayed",
                 "type": ["null", "boolean"]
               },
               "share_icons": {
+                "description": "Icons for sharing the thank you screen",
                 "type": ["null", "boolean"]
               },
               "button_mode": {
+                "description": "Mode of the button",
                 "type": ["null", "string"]
               },
               "button_text": {
+                "description": "Text of the button",
                 "type": ["null", "string"]
               },
               "redirect_url": {
+                "description": "URL to redirect on button click",
                 "type": ["null", "string"]
               }
             }
@@ -318,9 +384,11 @@
             "type": ["null", "object"],
             "properties": {
               "type": {
+                "description": "Type of the attachment",
                 "type": ["null", "string"]
               },
               "placement": {
+                "description": "Placement of the attachment",
                 "type": ["null", "string"]
               }
             }
@@ -329,21 +397,26 @@
             "type": ["null", "object"],
             "properties": {
               "type": {
+                "description": "Type of the layout",
                 "type": ["null", "string"]
               },
               "placement": {
+                "description": "Placement of the thank you screen layout",
                 "type": ["null", "string"]
               },
               "attachment": {
                 "type": ["null", "object"],
                 "properties": {
                   "type": {
+                    "description": "Type of the attachment",
                     "type": ["null", "string"]
                   },
                   "href": {
+                    "description": "URL of the attached file",
                     "type": ["null", "string"]
                   },
                   "scale": {
+                    "description": "Scale of the attachment",
                     "type": ["null", "number"]
                   }
                 }
@@ -352,12 +425,15 @@
                 "type": ["null", "object"],
                 "properties": {
                   "brightness": {
+                    "description": "Brightness settings of the thank you screen",
                     "type": ["null", "number"]
                   },
                   "description": {
+                    "description": "Description of the thank you screen",
                     "type": ["null", "string"]
                   },
                   "focal_point": {
+                    "description": "Focal point coordinates of the thank you screen",
                     "type": ["null", "object"],
                     "properties": {
                       "x": {
@@ -381,17 +457,21 @@
         "type": ["null", "object"],
         "properties": {
           "type": {
+            "description": "Type of logic",
             "type": ["null", "string"]
           },
           "ref": {
+            "description": "Reference of the logic",
             "type": ["null", "string"]
           },
           "actions": {
+            "description": "Actions defined based on logic",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
               "properties": {
                 "action": {
+                  "description": "Action to be taken",
                   "type": ["null", "string"]
                 },
                 "details": {
@@ -401,9 +481,11 @@
                       "type": ["null", "object"],
                       "properties": {
                         "type": {
+                          "description": "Type of activity",
                           "type": ["null", "string"]
                         },
                         "value": {
+                          "description": "Value of the activity",
                           "type": ["null", "string"]
                         }
                       }
@@ -412,9 +494,11 @@
                       "type": ["null", "object"],
                       "properties": {
                         "type": {
+                          "description": "Type of the target",
                           "type": ["null", "string"]
                         },
                         "value": {
+                          "description": "Value of the target",
                           "type": ["null", "string"]
                         }
                       }
@@ -423,9 +507,11 @@
                       "type": ["null", "object"],
                       "properties": {
                         "type": {
+                          "description": "Type of value",
                           "type": ["null", "string"]
                         },
                         "value": {
+                          "description": "Value to be assigned",
                           "type": ["null", "string"]
                         }
                       }
@@ -436,6 +522,7 @@
                   "type": ["null", "object"],
                   "properties": {
                     "op": {
+                      "description": "Operation to be performed",
                       "type": ["null", "string"]
                     },
                     "vars": {
@@ -444,9 +531,11 @@
                         "type": ["null", "object"],
                         "properties": {
                           "type": {
+                            "description": "Type of the variable",
                             "type": ["null", "string"]
                           },
                           "value": {
+                            "description": "Value of the variable",
                             "type": ["null", "string"]
                           }
                         }
@@ -466,41 +555,52 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier of the field",
             "type": ["null", "string"]
           },
           "title": {
+            "description": "Title of the field",
             "type": ["null", "string"]
           },
           "ref": {
+            "description": "Reference of the field",
             "type": ["null", "string"]
           },
           "properties": {
             "type": ["null", "object"],
             "properties": {
               "randomize": {
+                "description": "Flag indicating if choices should be randomized",
                 "type": ["null", "boolean"]
               },
               "allow_multiple_selection": {
+                "description": "Flag indicating if multiple selections are allowed",
                 "type": ["null", "boolean"]
               },
               "allow_other_choice": {
+                "description": "Flag indicating if an 'Other' choice is allowed",
                 "type": ["null", "boolean"]
               },
               "vertical_alignment": {
+                "description": "Vertical alignment of the choices",
                 "type": ["null", "boolean"]
               },
               "choices": {
+                "description": "List of choices available for selection",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "object"],
                   "properties": {
                     "id": {
+                      "description": "Unique identifier of the choice",
                       "type": ["null", "string"]
                     },
                     "ref": {
+                      "description": "Reference to the choice",
                       "type": ["null", "string"]
                     },
                     "label": {
+                      "description": "Label of the choice",
                       "type": ["null", "string"]
                     }
                   }
@@ -512,20 +612,24 @@
             "type": ["null", "object"],
             "properties": {
               "required": {
+                "description": "Flag indicating if the field is required",
                 "type": ["null", "boolean"]
               }
             }
           },
           "type": {
+            "description": "Type of the field",
             "type": ["null", "string"]
           },
           "attachment": {
             "type": ["null", "object"],
             "properties": {
               "type": {
+                "description": "Type of the attachment",
                 "type": ["null", "string"]
               },
               "href": {
+                "description": "URL of the attached file",
                 "type": ["null", "string"]
               }
             }
@@ -534,21 +638,26 @@
             "type": ["null", "object"],
             "properties": {
               "type": {
+                "description": "Type of the layout",
                 "type": ["null", "string"]
               },
               "placement": {
+                "description": "Placement of the field in the layout",
                 "type": ["null", "string"]
               },
               "attachment": {
                 "type": ["null", "object"],
                 "properties": {
                   "type": {
+                    "description": "Type of the attachment",
                     "type": ["null", "string"]
                   },
                   "href": {
+                    "description": "URL of the attached file",
                     "type": ["null", "string"]
                   },
                   "scale": {
+                    "description": "Scale of the attachment",
                     "type": ["null", "number"]
                   }
                 }
@@ -557,12 +666,15 @@
                 "type": ["null", "object"],
                 "properties": {
                   "brightness": {
+                    "description": "Brightness settings of the field",
                     "type": ["null", "number"]
                   },
                   "description": {
+                    "description": "Description of the field",
                     "type": ["null", "string"]
                   },
                   "focal_point": {
+                    "description": "Focal point coordinates of the field",
                     "type": ["null", "object"],
                     "properties": {
                       "x": {
@@ -584,6 +696,7 @@
       "type": ["null", "object"],
       "properties": {
         "display": {
+          "description": "Display information related to the form",
           "type": ["null", "string"]
         }
       }
