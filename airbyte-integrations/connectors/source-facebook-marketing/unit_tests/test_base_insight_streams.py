@@ -151,7 +151,7 @@ class TestBaseInsightsStream:
         )
 
         assert len(records) == 3
-    
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
