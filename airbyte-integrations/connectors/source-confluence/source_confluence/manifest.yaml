@@ -41,7 +41,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: https://{{ config['domain_name'] + '' if config.confluence_server else '/wiki' }}/rest/api
+    url_base: https://{{ config['domain_name'] + ('' if config.confluence_server else '/wiki') }}/rest/api
     path: "{{ parameters.path }}"
     http_method: GET
     authenticator:
