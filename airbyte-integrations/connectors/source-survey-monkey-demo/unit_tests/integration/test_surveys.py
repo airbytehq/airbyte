@@ -46,11 +46,11 @@ class FullRefreshTest(TestCase):
       "href": "https://api.surveymonkey.com/v3/surveys/1234"
     }
   ],
-  "per_page": 50,
+  "per_page": 100,
   "page": 1,
   "total": 1,
   "links": {
-    "self": "https://api.surveymonkey.com/v3/surveys?page=1&per_page=50"
+    "self": "https://api.surveymonkey.com/v3/surveys?page=1&per_page=100"
   }
 }
 """, status_code=200)
@@ -62,6 +62,57 @@ class FullRefreshTest(TestCase):
 
     def _read(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, configured_catalog=configured_catalog, expecting_exception=expecting_exception)
+
+    @HttpMocker()
+    def test_read_multiple_pages(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(
+            HttpRequest(url="https://api.surveymonkey.com/v3/surveys?per_page=100"),
+            HttpResponse(body="""
+            {
+    "data": [
+    {
+        "id": "1234",
+        "title": "My Survey",
+        "nickname": "",
+        "href": "https://api.surveymonkey.com/v3/surveys/1234"
+    }
+    ],
+    "per_page": 100,
+    "page": 1,
+    "total": 2,
+    "links": {
+    "self": "https://api.surveymonkey.com/v3/surveys?page=1&per_page=100",
+    "next": "https://api.surveymonkey.com/v3/surveys?page=2&per_page=100"
+    }
+    }
+    """, status_code=200)
+        )
+
+        http_mocker.get(
+            HttpRequest(url="https://api.surveymonkey.com/v3/surveys?page=2&per_page=100"),
+            HttpResponse(body="""
+            {
+    "data": [
+    {
+        "id": "5678",
+        "title": "My Survey",
+        "nickname": "",
+        "href": "https://api.surveymonkey.com/v3/surveys/5678"
+    }
+    ],
+    "per_page": 100,
+    "page": 2,
+    "total": 2,
+    "links": {
+    "self": "https://api.surveymonkey.com/v3/surveys?page=2&per_page=50"
+    }
+    }
+    """, status_code=200)
+        )
+
+        output = self._read(_A_CONFIG, _configured_catalog("surveys", SyncMode.full_refresh))
+
+        assert len(output.records) == 2
   
 def _read(
     config: Mapping[str, Any],
