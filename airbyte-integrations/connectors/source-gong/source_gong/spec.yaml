@@ -27,3 +27,5 @@ connectionSpecification:
       description: >-
         The date from which to list calls, in the ISO-8601 format; if not specified, the calls start with the earliest recorded call.
         For web-conference calls recorded by Gong, the date denotes its scheduled time, otherwise, it denotes its actual start time.
+      examples:
+        - "2018-02-18T08:00:00Z"
