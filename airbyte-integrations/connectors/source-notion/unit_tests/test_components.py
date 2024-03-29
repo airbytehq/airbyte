@@ -58,8 +58,68 @@ def test_notion_properties_transformation():
     assert NotionPropertiesTransformation().transform(input_record) == output_record
 
 
+state_test_records = [
+    {"id": "1", "last_edited_time": "2022-01-02T00:00:00Z"},
+    {"id": "2", "last_edited_time": "2022-01-03T00:00:00Z"},
+    {"id": "3", "last_edited_time": "2022-01-04T00:00:00Z"},
+]
+
 @pytest.fixture
-def config_start_date():
+def data_feed_config():
+    return NotionDataFeedFilter(parameters={}, config={"start_date": "2021-01-01T00:00:00.000Z"})
+
+@pytest.mark.parametrize(
+    "state_value, expected_return",
+    [
+        (
+            "2021-02-01T00:00:00Z", "2021-02-01T00:00:00Z"
+        ),
+        (
+            "2020-01-01T00:00:00Z", "2021-01-01T00:00:00Z"
+        ),
+        (
+            {}, "2021-01-01T00:00:00Z"
+        )       
+    ],
+    ids=["State value is greater than start_date", "State value is less than start_date", "Empty state, default to start_date"]
+)
+def test_data_feed_get_filter_date(data_feed_config, state_value, expected_return):
+    start_date = data_feed_config.config["start_date"]
+    
+    result = data_feed_config.get_filter_date(start_date, state_value)
+    assert result == expected_return, f"Expected {expected_return}, but got {result}."
+
+
+@pytest.mark.parametrize("stream_state,stream_slice,expected_records", [
+    (
+        {"last_edited_time": "2022-01-01T00:00:00Z"},
+        {"id": "some_id"},
+        state_test_records
+    ),
+    (
+        {"last_edited_time": "2022-01-03T00:00:00Z"},
+        {"id": "some_id"},
+        [state_test_records[-1]]
+    ),
+    (
+        {"last_edited_time": "2022-01-04T00:00:00Z"},
+        {"id": "some_id"},
+        []
+    ),
+    (
+        {},
+        {"id": "some_id"},
+        state_test_records
+    )
+],
+ids=["No records filtered", "Some records filtered", "All records filtered", "Empty state: no records filtered"])
+def test_data_feed_filter_records(data_feed_config, stream_state, stream_slice, expected_records):
+    filtered_records = data_feed_config.filter_records(state_test_records, stream_state, stream_slice)
+    assert filtered_records == expected_records, "Filtered records do not match the expected records."
+
+
+@pytest.fixture
+def semi_incremental_config_start_date():
     return NotionSemiIncrementalFilter(parameters={}, config={"start_date": "2021-01-01T00:00:00.000Z"})
 
 @pytest.mark.parametrize(
@@ -77,29 +137,23 @@ def config_start_date():
     ],
     ids=["State value is greater than start_date", "State value is less than start_date", "Empty state, default to start_date"]
 )
-def test_semi_incremental_get_filter_date(config_start_date, state_value, expected_return):
-    start_date = config_start_date.config["start_date"]
+def test_semi_incremental_get_filter_date(semi_incremental_config_start_date, state_value, expected_return):
+    start_date = semi_incremental_config_start_date.config["start_date"]
     
-    result = config_start_date.get_filter_date(start_date, state_value)
+    result = semi_incremental_config_start_date.get_filter_date(start_date, state_value)
     assert result == expected_return, f"Expected {expected_return}, but got {result}."
 
-
-semi_incremental_records = [
-    {"id": "1", "last_edited_time": "2022-01-02T00:00:00Z"},
-    {"id": "2", "last_edited_time": "2022-01-03T00:00:00Z"},
-    {"id": "3", "last_edited_time": "2022-01-04T00:00:00Z"},
-]
 
 @pytest.mark.parametrize("stream_state,stream_slice,expected_records", [
     (
         {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-01T00:00:00Z"}}]},
         {"id": "some_id"},
-        semi_incremental_records
+        state_test_records
     ),
     (
         {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-03T00:00:00Z"}}]},
         {"id": "some_id"},
-        [semi_incremental_records[-1]]
+        [state_test_records[-1]]
     ),
     (
         {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-04T00:00:00Z"}}]},
@@ -109,10 +163,10 @@ semi_incremental_records = [
     (
         {"states": []},
         {"id": "some_id"},
-        semi_incremental_records
+        state_test_records
     )
 ],
 ids=["No records filtered", "Some records filtered", "All records filtered", "Empty state: no records filtered"])
-def test_filter_records(config_start_date, stream_state, stream_slice, expected_records):
-    filtered_records = config_start_date.filter_records(semi_incremental_records, stream_state, stream_slice)
+def test_semi_incremental_filter_records(semi_incremental_config_start_date, stream_state, stream_slice, expected_records):
+    filtered_records = semi_incremental_config_start_date.filter_records(state_test_records, stream_state, stream_slice)
     assert filtered_records == expected_records, "Filtered records do not match the expected records."
