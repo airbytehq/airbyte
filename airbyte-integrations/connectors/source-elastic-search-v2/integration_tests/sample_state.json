@@ -1,9 +1,22 @@
-[{
-  "accounts": {"updated_at": "2024-03-22T14:53:38.246886"},
-  "campaigns": {
-    "updated_at": "2024-03-22T14:45:44.143633"
-  },
-  "creatives": {
-    "updated_at": "2024-03-22T14:55:02.836236"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "accounts": {
+          "updated_at": "2024-02-01T17:39:34.805794"
+        },
+        "campaigns": {
+          "updated_at": "2024-03-02T17:39:34.689756"
+        },
+        "creatives": {
+          "updated_at": "2024-03-01T17:40:41.740085"
+        }
+      },
+      "stream_descriptor": {
+        "name": "SourceElasticSearchV2",
+        "namespace": ""
+      }
+    }
   }
-}]
+]

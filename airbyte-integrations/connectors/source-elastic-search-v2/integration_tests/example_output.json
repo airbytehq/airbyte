@@ -1,21 +1,12 @@
 {"type": "DEBUG", "message": "Debug logs enabled", "data": {}}
-{"type": "LOG", "log": {"level": "INFO", "message": "Starting syncing SourceElasticSearchV2"}}
-{'updated_at': '2024-03-22T14:53:38.246886'}
+state_obj : [{'type': 'STREAM', 'stream': {'stream_state': {'accounts': {'updated_at': '2024-02-01T17:39:34.805794'}, 'campaigns': {'updated_at': '2024-03-02T17:39:34.689756'}, 'creatives': {'updated_at': '2024-03-01T17:40:41.740085'}}, 'stream_descriptor': {'name': 'SourceElasticSearchV2', 'namespace': ''}}}]
 Traceback (most recent call last):
   File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/main.py", line 13, in <module>
     launch(source, sys.argv[1:])
   File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/.venv/lib/python3.10/site-packages/airbyte_cdk/entrypoint.py", line 234, in launch
     for message in source_entrypoint.run(parsed_args):
-  File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/.venv/lib/python3.10/site-packages/airbyte_cdk/entrypoint.py", line 122, in run
-    yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.read(source_spec, config, config_catalog, state))
-  File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/.venv/lib/python3.10/site-packages/airbyte_cdk/entrypoint.py", line 165, in read
-    for message in self.source.read(self.logger, config, catalog, state):
-  File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/source_elastic_search_v2/source.py", line 291, in read
-    # get the streams once in case the connector needs to make any queries to generate them
-  File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/.venv/lib/python3.10/site-packages/airbyte_cdk/sources/connector_state_manager.py", line 44, in __init__
-    shared_state, per_stream_states = self._extract_from_state_message(state, stream_instance_map)
-  File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/source_elastic_search_v2/connector_state_manager.py", line 53, in _extract_from_state_message
-    streams = cls._create_descriptor_to_stream_state_mapping(state, stream_instance_map)  # type: ignore # We verified state is a dict in _is_legacy_dict_state
-  File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/source_elastic_search_v2/connector_state_manager.py", line 71, in _create_descriptor_to_stream_state_mapping
-    streams[stream_descriptor] = AirbyteStateBlob.parse_obj(state_value or {})
+  File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/.venv/lib/python3.10/site-packages/airbyte_cdk/entrypoint.py", line 120, in run
+    state = self.source.read_state(parsed_args.state)
+  File "/Users/nahidoulmi/dev/airbyte/airbyte-integrations/connectors/source-elastic-search-v2/source_elastic_search_v2/source.py", line 285, in read_state
+    state = state_obj[0].get("stream").get("stream_state")
 KeyboardInterrupt

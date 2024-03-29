@@ -116,7 +116,7 @@ class ElasticSearchV2Stream(HttpStream, ABC):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
 
-        if self.state == {}:
+        if self.state == {'updated_at': {}}:
             date_filter_start = self.date_start
         else:
             date_filter_start = self.state.get("updated_at")
@@ -189,13 +189,14 @@ class ElasticSearchV2Stream(HttpStream, ABC):
 
         return payload
 
+
 # Basic incremental stream
 class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, IncrementalMixin, ABC):
     # point in time
     pit = ""
     date_start = ""
     cursor_value = {}
-
+    cursor_field = "updated_at"
 
     @property
     def cursor_field(self) -> str:
@@ -230,6 +231,8 @@ class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, IncrementalMixin, 
             self.cursor_value = value[self.cursor_field]
         except KeyError:
             self.cursor_value = value["date"]
+        except TypeError:
+            pass
 
     def get_updated_state(self, a, b):
         return {self.cursor_field: self.cursor_value}
@@ -271,18 +274,28 @@ class SourceElasticSearchV2(AbstractSource):
         :param state_path: The filepath to where the stream states are located
         :return: The complete stream state based on the connector's previous sync
         """
-        state_obj = BaseConnector._read_json_file(state_path)
+        try:
+            state_obj = BaseConnector._read_json_file(state_path)
+        except FileNotFoundError:
+            state_obj = [
+                {'type': 'STREAM', 'stream': {'stream_state': {}, 'stream_descriptor': {'name': 'SourceElasticSearchV2', 'namespace': ''}}}]
+        except TypeError:
+            state_obj = [
+                {'type': 'STREAM', 'stream': {'stream_state': {}, 'stream_descriptor': {'name': 'SourceElasticSearchV2', 'namespace': ''}}}]
         print("state_obj : " + str(state_obj))
-        state = state_obj[0].get("stream").get("stream_state")
+        try:
+            state = state_obj[0].get("stream").get("stream_state")
+        except KeyError:
+            state = {}
         print("state : " + str(state))
         return state
 
     def read(
-        self,
-        logger: logging.Logger,
-        config: Mapping[str, Any],
-        catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+            self,
+            logger: logging.Logger,
+            config: Mapping[str, Any],
+            catalog: ConfiguredAirbyteCatalog,
+            state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
@@ -392,12 +405,12 @@ class SourceElasticSearchV2(AbstractSource):
         return [Campaigns(date_start), Accounts(date_start), Creatives(date_start)]
 
     def _read_stream(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        state_manager: ElasticConnectorStateManager,
-        internal_config: InternalConfig,
+            self,
+            logger: logging.Logger,
+            stream_instance: Stream,
+            configured_stream: ConfiguredAirbyteStream,
+            state_manager: ElasticConnectorStateManager,
+            internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         if internal_config.page_size and isinstance(stream_instance, HttpStream):
             logger.info(f"Setting page size for {stream_instance.name} to {internal_config.page_size}")
@@ -437,6 +450,11 @@ class SourceElasticSearchV2(AbstractSource):
                     logger.info(f"Marking stream {stream_name} as RUNNING")
                     # If we just read the first record of the stream, emit the transition to the RUNNING state
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.RUNNING)
+                if record_counter % 10000 == 0:
+                    self.state[stream_instance.name] = stream_instance.state
+                    airbyte_state_message = self._checkpoint_state(self.state, state_manager)
+                    logger.info(f"Checkpointing {record_counter} records from {stream_name} stream")
+                    yield airbyte_state_message
             yield from self._emit_queued_messages()
             yield record
 
@@ -446,9 +464,9 @@ class SourceElasticSearchV2(AbstractSource):
         yield airbyte_state_message
 
     def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
-        self,
-        stream_state: Mapping[str, Any],
-        state_manager,
+            self,
+            stream_state: Mapping[str, Any],
+            state_manager,
     ) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
         # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
@@ -462,10 +480,9 @@ class SourceElasticSearchV2(AbstractSource):
             state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)
 
+
 class Creatives(IncrementalElasticSearchV2Stream):
-    cursor_field = "updated_at"
     primary_key = "_id"
-    date_start = ""
     index = "statistics_ad_creative*"
 
     def request_body_data(
@@ -487,10 +504,7 @@ class Creatives(IncrementalElasticSearchV2Stream):
 
 
 class Campaigns(IncrementalElasticSearchV2Stream):
-    cursor_field = "updated_at"
     primary_key = "_id"
-    pit = ""
-    client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
     index = "statistics_campaign*"
 
     def request_body_data(
@@ -511,13 +525,8 @@ class Campaigns(IncrementalElasticSearchV2Stream):
 
 
 class Accounts(IncrementalElasticSearchV2Stream):
-    cursor_field = "updated_at"
     primary_key = "_id"
-    pit = ""
-    client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
     index = "statistics_account*"
-    _cursor_value = None
-    stream_name = "accounts"
 
     def request_body_data(
             self,
