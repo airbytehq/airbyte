@@ -5,35 +5,44 @@
   "type": ["null", "object"],
   "properties": {
     "sid": {
+      "description": "The unique identifier for the role.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the account associated with the role.",
       "type": ["null", "string"]
     },
     "service_sid": {
+      "description": "The unique identifier for the service associated with the role.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name assigned to the role.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type or category of the role.",
       "type": ["null", "string"]
     },
     "permissions": {
+      "description": "The list of permissions assigned to the role.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "date_created": {
+      "description": "The date and time when the role was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_updated": {
+      "description": "The date and time when the role was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "url": {
+      "description": "The URL for accessing the role data.",
       "type": ["null", "string"]
     }
   }

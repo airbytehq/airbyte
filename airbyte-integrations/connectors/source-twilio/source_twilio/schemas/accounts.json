@@ -1,29 +1,37 @@
 {
   "properties": {
     "auth_token": {
+      "description": "The authentication token for the account",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The timestamp when the account was created",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The timestamp when the account was last updated",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-defined friendly name for the account",
       "type": ["null", "string"]
     },
     "owner_account_sid": {
+      "description": "The SID of the owner account",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier for the account",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the account",
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "URIs for accessing various subresources related to the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -90,9 +98,11 @@
       }
     },
     "type": {
+      "description": "The type of the account",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI for accessing the account resource",
       "type": ["null", "string"]
     }
   },
