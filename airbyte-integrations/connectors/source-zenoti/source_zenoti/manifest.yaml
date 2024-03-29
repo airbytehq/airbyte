@@ -162,7 +162,7 @@ definitions:
         type: NoPagination
       requester:
         $ref: "#/definitions/requester"
-        path: invoices/{{ stream_partition.id }}
+        path: invoices/{{ stream_partition.id }}?expand=InvoiceItems&expand=Transactions
       record_selector:
         type: RecordSelector
         extractor:

@@ -17,45 +17,169 @@
     "is_refund": {
       "type": "boolean"
     },
+    "receipt_number": {
+      "type": "string"
+    },
+    "guest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "mobile_phone": {
+          "type": "string"
+        }
+      }
+    },
     "total_price": {
       "type": "object",
       "properties": {
-        "tax": {
+        "currency_id": {
           "type": "number"
         },
         "net_price": {
           "type": "number"
         },
+        "rounding_adjustment": {
+          "type": "number"
+        },
         "sum_total": {
           "type": "number"
         },
-        "currency_id": {
-          "type": "number"
-        },
-        "rounding_adjustment": {
+        "tax": {
           "type": "number"
         }
       }
     },
+    "transactions": {
+      "items": {
+        "properties": {
+          "amount_paid": {
+            "type": "number"
+          },
+          "cash_back_amount": {
+            "type": "number"
+          },
+          "donation_amount": {
+            "type": "number"
+          },
+          "fee_amount": {
+            "type": "number"
+          },
+          "payment_date": {
+            "type": "string"
+          },
+          "payment_option": {
+            "properties": {
+              "card_number": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "payment_mode": {
+                "type": "number"
+              },
+              "payment_name": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "ssg_amount": {
+            "type": "number"
+          },
+          "tip_amount": {
+            "type": "number"
+          },
+          "total_amount_paid": {
+            "type": "number"
+          },
+          "transaction_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
     "invoice_date": {
       "type": "string"
-    },
-    "transactions": {
-      "type": "array"
     },
     "invoice_number": {
       "type": "string"
     },
-    "receipt_number": {
+    "invoice_number_prefix": {
       "type": "string"
+    },
+    "invoice_items": {
+      "items": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "invoice_item_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "properties": {
+              "currency_id": {
+                "type": "number"
+              },
+              "discount": {
+                "type": "number"
+              },
+              "final": {
+                "type": "number"
+              },
+              "sales": {
+                "type": "number"
+              },
+              "tax": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "sale_by_id": {
+            "type": "string"
+          },
+          "therapist_name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
     },
     "additional_fields": {
       "type": "array"
     },
     "appointment_group_id": {
-      "type": "string"
-    },
-    "invoice_number_prefix": {
       "type": "string"
     }
   }
