@@ -44,10 +44,10 @@ definitions:
       type: CursorPagination
       cursor_value: "{{ response['endingCursor'] }}"
       # For debugging
-      stop_condition: "{{ true }}"
-      page_size: 1
-      # stop_condition: "{{ not response['hasMore']}}"
-      # page_size: 100
+      # stop_condition: "{{ true }}"
+      # page_size: 1
+      stop_condition: "{{ not response['hasMore']}}"
+      page_size: 100
     page_size_option:
       type: "RequestOption"
       inject_into: "request_parameter"
