@@ -28,4 +28,4 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------- |
-| 0.1.0   | 2024-03-29 | [25790](https://github.com/airbytehq/airbyte/pull/25790) | Add Pingdom API Source Connector |
+| 0.1.0   | 2024-03-29 | [36686](https://github.com/airbytehq/airbyte/pull/36686) | Add Pingdom API Source Connector |
