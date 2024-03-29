@@ -149,7 +149,10 @@ class TestInsightAsyncManager:
         ]
         manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_ids"][0])
 
-        with pytest.raises(JobException, match=f"{jobs[1]}: failed more than {InsightAsyncJobManager.MAX_NUMBER_OF_ATTEMPTS} times."):
+        with pytest.raises(
+            JobException,
+            match=f"{jobs[1]}: failed more than {InsightAsyncJobManager.MAX_NUMBER_OF_ATTEMPTS} times.",
+        ):
             next(manager.completed_jobs(), None)
 
     def test_nested_job_failed_too_many_times(self, api, mocker, time_mock, update_job_mock, some_config):
@@ -168,7 +171,13 @@ class TestInsightAsyncManager:
         ]
         jobs = [
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=True),
-            mocker.Mock(spec=ParentAsyncJob, _jobs=sub_jobs, attempt_number=1, failed=False, completed=False),
+            mocker.Mock(
+                spec=ParentAsyncJob,
+                _jobs=sub_jobs,
+                attempt_number=1,
+                failed=False,
+                completed=False,
+            ),
         ]
         manager = InsightAsyncJobManager(api=api, jobs=jobs, account_id=some_config["account_ids"][0])
 

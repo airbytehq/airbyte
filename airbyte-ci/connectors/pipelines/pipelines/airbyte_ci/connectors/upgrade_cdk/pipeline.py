@@ -59,9 +59,7 @@ class SetCDKVersion(Step):
                     status=StepStatus.FAILURE,
                     stdout="Could not export diff to local git repo.",
                 )
-            return StepResult(
-                step=self, status=StepStatus.SUCCESS, stdout=f"Updated CDK version to {self.new_version}", output_artifact=diff
-            )
+            return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"Updated CDK version to {self.new_version}", output=diff)
         except ValueError as e:
             return StepResult(
                 step=self,

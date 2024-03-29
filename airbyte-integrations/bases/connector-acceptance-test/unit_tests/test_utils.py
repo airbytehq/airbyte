@@ -164,20 +164,6 @@ def test_compare_two_records_nested_with_different_orders(obj1, obj2, is_same):
         assert output_diff, f"{obj1} shouldnt be equal to {obj2}"
 
 
-def test_exclude_fields():
-    """Test that check ignoring fields"""
-    data = [
-        sorted_data(),
-    ]
-    ignored_fields = [
-        "organization_id",
-    ]
-    serializer = partial(make_hashable, exclude_fields=ignored_fields)
-    output = map(serializer, data)
-    for item in output:
-        assert "organization_id" not in item
-
-
 class MockContainer:
     def __init__(self, status: dict, iter_logs: Iterable):
         self.wait = Mock(return_value=status)

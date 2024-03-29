@@ -26,5 +26,6 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-drive
   tags:
     - language:python
+    - cdk:python-file-based
   supportLevel: community
 metadataSpecVersion: "1.0"

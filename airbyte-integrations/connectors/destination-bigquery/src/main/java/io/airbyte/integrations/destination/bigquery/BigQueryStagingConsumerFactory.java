@@ -135,7 +135,8 @@ public class BigQueryStagingConsumerFactory {
                                           final TyperDeduper typerDeduper) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
-      typerDeduper.prepareTables();
+      typerDeduper.prepareSchemasAndRunMigrations();
+
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
             writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
@@ -156,6 +157,8 @@ public class BigQueryStagingConsumerFactory {
           bigQueryGcsOperations.truncateTableIfExists(rawDatasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
         }
       }
+
+      typerDeduper.prepareFinalTables();
       LOGGER.info("Preparing tables in destination completed.");
     };
   }

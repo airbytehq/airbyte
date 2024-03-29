@@ -174,13 +174,13 @@
     "updated_at": "2023-04-14T04:04:46-07:00"
   },
   "product_images": {
-    "id": 33290489659581,
     "products": {
-      "updated_at": "",
+      "updated_at": "2023-04-24T11:05:13-07:00",
       "deleted": {
         "deleted_at": "2023-09-05T13:32:22-07:00"
       }
-    }
+    },
+    "updated_at": "2023-04-24T10:27:15-07:00"
   },
   "metafield_product_images": {
     "products": {

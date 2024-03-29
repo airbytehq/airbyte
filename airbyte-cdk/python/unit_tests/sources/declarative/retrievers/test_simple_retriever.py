@@ -274,6 +274,46 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
 
 
 @pytest.mark.parametrize(
+    "test_name, paginator_mapping, ignore_stream_slicer_parameters_on_paginated_requests, next_page_token, expected_mapping",
+    [
+        ("test_do_not_ignore_stream_slicer_params_if_ignore_is_true_but_no_next_page_token", {"key_from_pagination": "1000"}, True, None, {"key_from_pagination": "1000"}),
+        ("test_do_not_ignore_stream_slicer_params_if_ignore_is_false_and_no_next_page_token", {"key_from_pagination": "1000"}, False, None, {"key_from_pagination": "1000", "key_from_slicer": "value"}),
+        ("test_ignore_stream_slicer_params_on_paginated_request", {"key_from_pagination": "1000"}, True, {"page": 2}, {"key_from_pagination": "1000"}),
+        ("test_do_not_ignore_stream_slicer_params_on_paginated_request", {"key_from_pagination": "1000"}, False, {"page": 2}, {"key_from_pagination": "1000", "key_from_slicer": "value"}),
+    ],
+)
+def test_ignore_stream_slicer_parameters_on_paginated_requests(test_name, paginator_mapping, ignore_stream_slicer_parameters_on_paginated_requests, next_page_token, expected_mapping):
+    # This test is separate from the other request options because request headers must be strings
+    paginator = MagicMock()
+    paginator.get_request_headers.return_value = paginator_mapping
+    requester = MagicMock(use_cache=False)
+
+    stream_slicer = MagicMock()
+    stream_slicer.get_request_headers.return_value = {"key_from_slicer": "value"}
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        stream_slicer=stream_slicer,
+        paginator=paginator,
+        ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
+        parameters={},
+        config={},
+    )
+
+    request_option_type_to_method = {
+        RequestOptionType.header: retriever._request_headers,
+    }
+
+    for _, method in request_option_type_to_method.items():
+        actual_mapping = method(None, None, next_page_token={"next_page_token": "1000"})
+        assert expected_mapping == actual_mapping
+
+
+@pytest.mark.parametrize(
     "test_name, slicer_body_data, paginator_body_data, expected_body_data",
     [
         ("test_only_slicer_mapping", {"key": "value"}, {}, {"key": "value"}),
@@ -405,7 +445,7 @@ def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name
         side_effect=retriever_read_pages,
     ):
         list(retriever.read_records(stream_slice=stream_slice, records_schema={}))
-        cursor.close_slice.assert_called_once_with(stream_slice, first_record if first_greater_than_second else second_record)
+        cursor.close_slice.assert_called_once_with(stream_slice)
 
 
 def test_given_stream_data_is_not_record_when_read_records_then_update_slice_with_optional_record():
@@ -437,7 +477,8 @@ def test_given_stream_data_is_not_record_when_read_records_then_update_slice_wit
         side_effect=retriever_read_pages,
     ):
         list(retriever.read_records(stream_slice=stream_slice, records_schema={}))
-        cursor.close_slice.assert_called_once_with(stream_slice, None)
+        cursor.observe.assert_not_called()
+        cursor.close_slice.assert_called_once_with(stream_slice)
 
 
 def _generate_slices(number_of_slices):

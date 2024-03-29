@@ -117,14 +117,14 @@ class TestBuildConnectorImage:
         container_built_from_base.with_exec.assert_called_with(["spec"])
         assert step_result.status is StepStatus.SUCCESS
         for platform in all_platforms:
-            assert step_result.output_artifact[platform] == container_built_from_base
+            assert step_result.output[platform] == container_built_from_base
 
     @pytest.mark.slow
     async def test_building_from_base_image_for_real(self, test_context_with_real_connector_using_base_image, current_platform):
         step = python_connectors.BuildConnectorImages(test_context_with_real_connector_using_base_image)
         step_result = await step._run()
         step_result.status is StepStatus.SUCCESS
-        built_container = step_result.output_artifact[current_platform]
+        built_container = step_result.output[current_platform]
         assert await built_container.env_variable("AIRBYTE_ENTRYPOINT") == " ".join(
             build_customization.get_entrypoint(step.context.connector)
         )
@@ -146,7 +146,7 @@ class TestBuildConnectorImage:
         step = python_connectors.BuildConnectorImages(test_context_with_real_connector_using_base_image_with_build_customization)
         step_result = await step._run()
         step_result.status is StepStatus.SUCCESS
-        built_container = step_result.output_artifact[current_platform]
+        built_container = step_result.output[current_platform]
         assert await built_container.env_variable("MY_PRE_BUILD_ENV_VAR") == "my_pre_build_env_var_value"
         assert await built_container.env_variable("MY_POST_BUILD_ENV_VAR") == "my_post_build_env_var_value"
 
@@ -161,7 +161,7 @@ class TestBuildConnectorImage:
         container_built_from_dockerfile.with_exec.assert_called_with(["spec"])
         assert step_result.status is StepStatus.SUCCESS
         for platform in all_platforms:
-            assert step_result.output_artifact[platform] == container_built_from_dockerfile
+            assert step_result.output[platform] == container_built_from_dockerfile
 
     async def test_building_from_dockerfile_for_real(self, test_context_with_real_connector_without_base_image):
         step = python_connectors.BuildConnectorImages(test_context_with_real_connector_without_base_image)

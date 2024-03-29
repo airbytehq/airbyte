@@ -1,5 +1,3 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
 plugins {
     id 'airbyte-docker-legacy'
     id 'airbyte-python'
@@ -36,6 +34,10 @@ generate.configure {
 
 tasks.named('check').configure {
     dependsOn generate
+}
+
+tasks.named("jar").configure {
+    dependsOn copySshScript
 }
 
 [

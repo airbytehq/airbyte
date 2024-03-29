@@ -8,6 +8,7 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from functools import cached_property
+from pathlib import Path
 from typing import ClassVar, List, Optional
 
 import requests  # type: ignore
@@ -124,16 +125,33 @@ class QaChecks(SimpleDockerStep):
     """
 
     def __init__(self, context: ConnectorContext) -> None:
+        code_directory = context.connector.code_directory
+        documentation_file_path = context.connector.documentation_file_path
+        migration_guide_file_path = context.connector.migration_guide_file_path
+        icon_path = context.connector.icon_path
+        technical_name = context.connector.technical_name
+
+        # When the connector is strict-encrypt, we should run QA checks on the main one as it's the one whose artifacts gets released
+        if context.connector.technical_name.endswith("-strict-encrypt"):
+            technical_name = technical_name.replace("-strict-encrypt", "")
+            code_directory = Path(str(code_directory).replace("-strict-encrypt", ""))
+            if documentation_file_path:
+                documentation_file_path = Path(str(documentation_file_path).replace("-strict-encrypt", ""))
+            if migration_guide_file_path:
+                migration_guide_file_path = Path(str(migration_guide_file_path).replace("-strict-encrypt", ""))
+            if icon_path:
+                icon_path = Path(str(icon_path).replace("-strict-encrypt", ""))
+
         super().__init__(
-            title=f"Run QA checks for {context.connector.technical_name}",
+            title=f"Run QA checks for {technical_name}",
             context=context,
             paths_to_mount=[
-                MountPath(context.connector.code_directory),
+                MountPath(code_directory),
                 # These paths are optional
                 # But their absence might make the QA check fail
-                MountPath(context.connector.documentation_file_path, optional=True),
-                MountPath(context.connector.migration_guide_file_path, optional=True),
-                MountPath(context.connector.icon_path, optional=True),
+                MountPath(documentation_file_path, optional=True),
+                MountPath(migration_guide_file_path, optional=True),
+                MountPath(icon_path, optional=True),
             ],
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
@@ -146,7 +164,7 @@ class QaChecks(SimpleDockerStep):
                 }.items()
                 if v
             },
-            command=["connectors-qa", "run", f"--name={context.connector.technical_name}"],
+            command=["connectors-qa", "run", f"--name={technical_name}"],
         )
 
 

@@ -24,11 +24,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadStateManager {
+public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
 
-  private final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
   private final CdcState cdcState;
 
@@ -39,11 +39,13 @@ public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadState
   public MssqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
                                             final CdcState cdcState,
-                                            final ConfiguredAirbyteCatalog catalog) {
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.cdcState = cdcState;
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToOrderedColInfo = pairToOrderedColInfo;
     this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(initialLoadStreams, catalog);
+    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
 
   private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final InitialLoadStreams initialLoadStreams,
@@ -84,11 +86,6 @@ public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadState
   }
 
   @Override
-  public void updateOrderedColumnLoadState(final AirbyteStreamNameNamespacePair pair, final OrderedColumnLoadStatus ocLoadStatus) {
-    pairToOrderedColLoadStatus.put(pair, ocLoadStatus);
-  }
-
-  @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     streamsThatHaveCompletedSnapshot.add(pair);
 
@@ -103,11 +100,6 @@ public class MssqlInitialLoadGlobalStateManager implements MssqlInitialLoadState
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(globalState);
-  }
-
-  @Override
-  public OrderedColumnLoadStatus getOrderedColumnLoadStatus(final AirbyteStreamNameNamespacePair pair) {
-    return pairToOrderedColLoadStatus.get(pair);
   }
 
   @Override

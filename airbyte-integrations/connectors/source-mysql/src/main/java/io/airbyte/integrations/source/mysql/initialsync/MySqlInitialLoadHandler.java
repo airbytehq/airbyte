@@ -15,7 +15,7 @@ import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
-import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIteratorManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -115,7 +115,7 @@ public class MySqlInitialLoadHandler {
                 calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
 
         iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
 
@@ -174,12 +174,10 @@ public class MySqlInitialLoadHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
+                                                                 final ConfiguredAirbyteStream airbyteStream,
                                                                  final AirbyteStreamNameNamespacePair pair) {
 
     final PrimaryKeyLoadStatus currentPkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
-    final JsonNode incrementalState =
-        (currentPkLoadStatus == null || currentPkLoadStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
-            : currentPkLoadStatus.getIncrementalState();
 
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
@@ -187,12 +185,11 @@ public class MySqlInitialLoadHandler {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
-    final SourceStateIteratorManager<AirbyteMessage> processor =
-        new MySqlInitialSyncStateIteratorManager(pair, initialLoadStateManager, incrementalState,
-            syncCheckpointDuration, syncCheckpointRecords);
+    initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
 
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator<>(r, processor),
+        r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager,
+            new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, pair);
   }
 

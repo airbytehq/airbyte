@@ -64,6 +64,13 @@ from source_hubspot.streams import (
     Workflows,
 )
 
+"""
+https://github.com/airbytehq/oncall/issues/3800
+we use start date 2006-01-01  as date of creation of Hubspot to retrieve all data if start date was not provided
+
+"""
+DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
+
 
 class SourceHubspot(AbstractSource):
     logger = AirbyteLogger()
@@ -105,7 +112,7 @@ class SourceHubspot(AbstractSource):
         return API(credentials=credentials)
 
     def get_common_params(self, config) -> Mapping[str, Any]:
-        start_date = config["start_date"]
+        start_date = config.get("start_date", DEFAULT_START_DATE)
         credentials = config["credentials"]
         api = self.get_api(config=config)
         return dict(api=api, start_date=start_date, credentials=credentials)

@@ -20,11 +20,6 @@ This document should contain a section for each breaking change, in order of the
 *Applies to the following connector languages: java, low-code, python*
 
 The user facing connector documentation should be stored under `./docs/integrations/<connector-type>s/<connector-name>.md`.
-### Connectors documentation follows our guidelines
-*Applies to the following connector types: source, destination*
-*Applies to the following connector languages: java, low-code, python*
-
-The user facing connector documentation should follow the guidelines defined in the [documentation standards](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
 ### Connectors must have a changelog entry for each version
 *Applies to the following connector types: source, destination*
 *Applies to the following connector languages: java, low-code, python*
@@ -38,6 +33,16 @@ Each new version of a connector must have a changelog entry defined in the user 
 *Applies to the following connector languages: java, low-code, python*
 
 Connectors must have a `metadata.yaml` file at the root of their directory. This file is used to build our connector registry. Its structure must follow our metadata schema. Field values are also validated. This is to ensure that all connectors have the required metadata fields and that the metadata is valid. More details in this [documentation](https://docs.airbyte.com/connector-development/connector-metadata-file).
+### Connector must have a language tag in metadata
+*Applies to the following connector types: source, destination*
+*Applies to the following connector languages: java, low-code, python*
+
+Connectors must have a language tag in their metadata. It must be set in the `tags` field in metadata.yaml. The values can be `language:python` or `language:java`. This checks infers the correct language tag based on the presence of certain files in the connector directory.
+### Python connectors must have a CDK tag in metadata
+*Applies to the following connector types: source, destination*
+*Applies to the following connector languages: python, low-code*
+
+Python connectors must have a CDK tag in their metadata. It must be set in the `tags` field in metadata.yaml. The values can be `cdk:low-code`, `cdk:python`, or `cdk:file`.
 
 ## 📦 Packaging
 
@@ -70,7 +75,7 @@ Connector version in metadata.yaml and pyproject.toml file must match. This is t
 *Applies to the following connector types: source*
 *Applies to the following connector languages: python, low-code*
 
-Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `metadata.yaml` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in metadata.yaml. This is to ensure that all connectors can be published to PyPi and can be used in `airbyte-lib`.
+Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `metadata.yaml` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in metadata.yaml. This is to ensure that all connectors can be published to PyPi and can be used in `PyAirbyte`.
 
 ## 💼 Assets
 

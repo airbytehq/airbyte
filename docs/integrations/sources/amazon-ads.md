@@ -83,6 +83,10 @@ This source is capable of syncing the following streams:
 * [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
 * [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
 
+:::note
+As of connector version 5.0.0, the `Sponsored Products Ad Group Bid Recommendations` stream provides bid recommendations and impact metrics for an existing automatic targeting ad group. The stream returns bid recommendations for match types `CLOSE_MATCH`, `LOOSE_MATCH`, `SUBSTITUTES`, and `COMPLEMENTS` per theme. For more detail on theme-based bid recommendations, review Amazon's [Theme-base bid suggestions - Quick-start guide](https://advertising.amazon.com/API/docs/en-us/guides/sponsored-products/bid-suggestions/theme-based-bid-suggestions-quickstart-guide).
+:::
+
 ## Connector-specific features and highlights
 
 All the reports are generated relative to the target profile's timezone.
@@ -110,7 +114,10 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 4.0.3 | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry. |
+| 5.0.0   | 2024-03-22 | [36169](https://github.com/airbytehq/airbyte/pull/36169) | Update `SponsoredBrand` and `SponsoredProduct` streams due to API endpoint deprecation                          |
+| 4.1.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                 |
+| 4.0.4   | 2024-02-23 | [35481](https://github.com/airbytehq/airbyte/pull/35481) | Migrate source to `YamlDeclarativeSource` with custom `check_connection`                                        |
+| 4.0.3   | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry                                                                                 |
 | 4.0.2   | 2024-02-08 | [35013](https://github.com/airbytehq/airbyte/pull/35013) | Add missing field to `sponsored_display_budget_rules` stream                                                    |
 | 4.0.1   | 2023-12-28 | [33833](https://github.com/airbytehq/airbyte/pull/33833) | Updated oauth spec to put region, so we can choose oauth consent url based on it                                |
 | 4.0.0   | 2023-12-28 | [33817](https://github.com/airbytehq/airbyte/pull/33817) | Fix schema for streams: `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords`                                 |
@@ -120,7 +127,7 @@ Information about expected report generation waiting time can be found [here](ht
 | 3.3.0   | 2023-09-22 | [30679](https://github.com/airbytehq/airbyte/pull/30679) | Fix unexpected column for `SponsoredProductCampaigns` and `SponsoredBrandsKeywords`                             |
 | 3.2.0   | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                              |
 | 3.1.2   | 2023-08-16 | [29233](https://github.com/airbytehq/airbyte/pull/29233) | Add filter for Marketplace IDs                                                                                  |
-| 3.1.1   | 2023-08-28 | [29900](https://github.com/airbytehq/airbyte/pull/29900) | Add 404 handling for no assotiated with bid ad groups                                                           |
+| 3.1.1   | 2023-08-28 | [29900](https://github.com/airbytehq/airbyte/pull/29900) | Add 404 handling for no associated with bid ad groups                                                           |
 | 3.1.0   | 2023-08-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |
 | 3.0.0   | 2023-07-24 | [27868](https://github.com/airbytehq/airbyte/pull/27868) | Fix attribution report stream schemas                                                                           |
 | 2.3.1   | 2023-07-11 | [28155](https://github.com/airbytehq/airbyte/pull/28155) | Bugfix: validation error when record values are missing                                                         |
@@ -161,7 +168,7 @@ Information about expected report generation waiting time can be found [here](ht
 | 0.1.6   | 2022-04-20 | [11659](https://github.com/airbytehq/airbyte/pull/11659) | Add adId to products report                                                                                     |
 | 0.1.5   | 2022-04-08 | [11430](https://github.com/airbytehq/airbyte/pull/11430) | Add support OAuth2.0                                                                                            |
 | 0.1.4   | 2022-02-21 | [10513](https://github.com/airbytehq/airbyte/pull/10513) | Increasing REPORT_WAIT_TIMEOUT for supporting report generation which takes longer time                         |
-| 0.1.3   | 2021-12-28 | [8388](https://github.com/airbytehq/airbyte/pull/8388)   | Add retry if recoverable error  occured for reporting stream processing                                         |
+| 0.1.3   | 2021-12-28 | [8388](https://github.com/airbytehq/airbyte/pull/8388)   | Add retry if recoverable error occurred for reporting stream processing                                         |
 | 0.1.2   | 2021-10-01 | [6367](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback |
 | 0.1.1   | 2021-09-22 | [6367](https://github.com/airbytehq/airbyte/pull/6367)   | Add seller and vendor filters to profiles stream                                                                |
 | 0.1.0   | 2021-08-13 | [5023](https://github.com/airbytehq/airbyte/pull/5023)   | Initial version                                                                                                 |

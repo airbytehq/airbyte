@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 java {
     // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
@@ -10,6 +13,46 @@ java {
         options.compilerArgs += "-Xlint:-cast,-deprecation"
     }
 }
+
+compileTestFixturesKotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+        languageVersion = KotlinVersion.KOTLIN_1_9
+        allWarningsAsErrors = false
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+    dependsOn {
+        tasks.matching { it.name == 'generate' }
+    }
+}
+
+compileTestKotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+        languageVersion = KotlinVersion.KOTLIN_1_9
+        allWarningsAsErrors = false
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+    dependsOn {
+        tasks.matching { it.name == 'generate' }
+    }
+}
+
+compileKotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+        languageVersion = KotlinVersion.KOTLIN_1_9
+        allWarningsAsErrors = false
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+    dependsOn {
+        tasks.matching { it.name == 'generate' }
+    }
+}
+
+spotbugsTest.enabled = false
+spotbugsTestFixtures.enabled = false
+
 
 dependencies {
 
@@ -45,4 +88,5 @@ dependencies {
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:postgresql:1.19.0'
     testImplementation 'org.xbib.elasticsearch:joptsimple:6.3.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 }

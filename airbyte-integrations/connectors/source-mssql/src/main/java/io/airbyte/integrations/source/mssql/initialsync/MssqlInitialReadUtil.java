@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.mssql.initialsync;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.FAIL_SYNC_OPTION;
+import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.getDebeziumProperties;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
@@ -28,6 +31,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -36,9 +40,9 @@ import io.airbyte.integrations.source.mssql.MssqlCdcSavedInfoFetcher;
 import io.airbyte.integrations.source.mssql.MssqlCdcStateHandler;
 import io.airbyte.integrations.source.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.mssql.MssqlQueryUtils;
+import io.airbyte.integrations.source.mssql.MssqlSourceOperations;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
-import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -52,15 +56,7 @@ import io.debezium.connector.sqlserver.Lsn;
 import java.sql.JDBCType;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -70,6 +66,8 @@ import org.slf4j.LoggerFactory;
 public class MssqlInitialReadUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialReadUtil.class);
+  private static final int MIN_QUEUE_SIZE = 1000;
+  private static final int MAX_QUEUE_SIZE = 10000;
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
                                    Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToInitialLoadStatus) {
@@ -93,6 +91,8 @@ public class MssqlInitialReadUtil {
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+    final int queueSize = getQueueSize(sourceConfig);
+    LOGGER.info("Queue size: {}", queueSize);
     // Determine the streams that need to be loaded via primary key sync.
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
     // Construct the initial state for Mssql. If there is already existing state, we use that instead
@@ -112,6 +112,12 @@ public class MssqlInitialReadUtil {
         savedOffset.isPresent() && mssqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
 
     if (!savedOffsetStillPresentOnServer) {
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
+      if (!sourceConfig.get("replication_method").has(INVALID_CDC_CURSOR_POSITION_PROPERTY) || sourceConfig.get("replication_method").get(
+          INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
+        throw new ConfigErrorException(
+            "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency.");
+      }
       LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
     }
 
@@ -130,15 +136,14 @@ public class MssqlInitialReadUtil {
       final MssqlInitialLoadStateManager initialLoadStateManager =
           new MssqlInitialLoadGlobalStateManager(initialLoadStreams,
               initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-              stateToBeUsed, catalog);
+              stateToBeUsed, catalog, namespacePair -> Jsons.emptyObject());
 
       final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
-      final MssqlInitialLoadSourceOperations sourceOperations =
-          new MssqlInitialLoadSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
+      final MssqlSourceOperations sourceOperations =
+          new MssqlSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
 
       final MssqlInitialLoadHandler initialLoadHandler = new MssqlInitialLoadHandler(sourceConfig, database,
           sourceOperations, quoteString, initialLoadStateManager,
-          namespacePair -> Jsons.emptyObject(),
           getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
@@ -157,7 +162,7 @@ public class MssqlInitialReadUtil {
         true,
         firstRecordWaitTime,
         subsequentRecordWaitTime,
-        AirbyteDebeziumHandler.QUEUE_CAPACITY,
+        queueSize,
         false);
 
     final var propertiesManager = new RelationalDbDebeziumPropertiesManager(getDebeziumProperties(database, catalog, false), sourceConfig, catalog);
@@ -327,6 +332,33 @@ public class MssqlInitialReadUtil {
     return new InitialLoadStreams(streamsForPkSync.stream().filter((stream) -> !stream.getStream().getSourceDefinedPrimaryKey()
         .isEmpty()).collect(Collectors.toList()),
         pairToInitialLoadStatus);
+  }
+
+  private static OptionalInt extractQueueSizeFromConfig(final JsonNode config) {
+    final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod != null && replicationMethod.has("queue_size")) {
+      final int queueSize = config.get("replication_method").get("queue_size").asInt();
+      return OptionalInt.of(queueSize);
+    }
+    return OptionalInt.empty();
+  }
+
+  public static int getQueueSize(final JsonNode config) {
+    final OptionalInt sizeFromConfig = extractQueueSizeFromConfig(config);
+    if (sizeFromConfig.isPresent()) {
+      final int size = sizeFromConfig.getAsInt();
+      if (size < MIN_QUEUE_SIZE) {
+        LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
+            MIN_QUEUE_SIZE);
+        return MIN_QUEUE_SIZE;
+      } else if (size > MAX_QUEUE_SIZE) {
+        LOGGER.warn("Queue size is overridden to {} , which is the max allowed for safety.",
+            MAX_QUEUE_SIZE);
+        return MAX_QUEUE_SIZE;
+      }
+      return size;
+    }
+    return MAX_QUEUE_SIZE;
   }
 
 }

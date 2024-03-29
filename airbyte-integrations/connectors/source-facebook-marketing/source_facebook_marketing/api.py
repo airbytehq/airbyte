@@ -108,7 +108,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
             if "headers" not in record:
                 continue
             headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-            usage_from_response, pause_interval_from_response = self._parse_call_rate_header(headers)
+            (
+                usage_from_response,
+                pause_interval_from_response,
+            ) = self._parse_call_rate_header(headers)
             usage = max(usage, usage_from_response)
             pause_interval = max(pause_interval_from_response, pause_interval)
         return usage, pause_interval

@@ -6,6 +6,7 @@ import datetime
 
 import pytest
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 
 date_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
@@ -110,3 +111,17 @@ def test_min_max_datetime_lazy_eval():
     assert datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(
         **kwargs, parameters={"max_datetime": "2021-01-01T00:00:00"}
     ).get_datetime({})
+
+
+@pytest.mark.parametrize(
+    "input_datetime", [
+        pytest.param("2022-01-01T00:00:00", id="test_create_min_max_datetime_from_string"),
+        pytest.param(InterpolatedString.create("2022-01-01T00:00:00", parameters={}), id="test_create_min_max_datetime_from_string"),
+        pytest.param(MinMaxDatetime("2022-01-01T00:00:00", parameters={}), id="test_create_min_max_datetime_from_minmaxdatetime")
+    ]
+)
+def test_create_min_max_datetime(input_datetime):
+    minMaxDatetime = MinMaxDatetime.create(input_datetime, parameters={})
+    expected_value = "2022-01-01T00:00:00"
+
+    assert minMaxDatetime.datetime.eval(config={}) == expected_value

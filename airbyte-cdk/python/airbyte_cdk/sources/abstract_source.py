@@ -23,7 +23,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import FULL_REFRESH_SENTINEL_STATE_KEY, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -181,10 +181,6 @@ class AbstractSource(Source, ABC):
     def raise_exception_on_missing_stream(self) -> bool:
         return True
 
-    @property
-    def per_stream_state_enabled(self) -> bool:
-        return True
-
     def _read_stream(
         self,
         logger: logging.Logger,
@@ -206,22 +202,32 @@ class AbstractSource(Source, ABC):
         )
         stream_instance.log_stream_sync_configuration()
 
-        use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
-        if use_incremental:
-            record_iterator = self._read_incremental(
-                logger,
-                stream_instance,
-                configured_stream,
-                state_manager,
-                internal_config,
-            )
-        else:
-            record_iterator = self._read_full_refresh(logger, stream_instance, configured_stream, internal_config)
+        stream_name = configured_stream.stream.name
+        # The platform always passes stream state regardless of sync mode. We shouldn't need to consider this case within the
+        # connector, but right now we need to prevent accidental usage of the previous stream state
+        stream_state = (
+            state_manager.get_stream_state(stream_name, stream_instance.namespace)
+            if configured_stream.sync_mode == SyncMode.incremental
+            else {}
+        )
+
+        if stream_state and "state" in dir(stream_instance) and not self._stream_state_is_full_refresh(stream_state):
+            stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
+            logger.info(f"Setting state of {self.name} stream to {stream_state}")
+
+        record_iterator = stream_instance.read(
+            configured_stream,
+            logger,
+            self._slice_logger,
+            stream_state,
+            state_manager,
+            internal_config,
+        )
 
         record_counter = 0
-        stream_name = configured_stream.stream.name
         logger.info(f"Syncing stream: {stream_name} ")
-        for record in record_iterator:
+        for record_data_or_message in record_iterator:
+            record = self._get_message(record_data_or_message, stream_instance)
             if record.type == MessageType.RECORD:
                 record_counter += 1
                 if record_counter == 1:
@@ -233,61 +239,10 @@ class AbstractSource(Source, ABC):
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
-    def _read_incremental(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        state_manager: ConnectorStateManager,
-        internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
-        """Read stream using incremental algorithm
-
-        :param logger:
-        :param stream_instance:
-        :param configured_stream:
-        :param state_manager:
-        :param internal_config:
-        :return:
-        """
-        stream_name = configured_stream.stream.name
-        stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
-
-        if stream_state and "state" in dir(stream_instance):
-            stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
-            logger.info(f"Setting state of {self.name} stream to {stream_state}")
-
-        for record_data_or_message in stream_instance.read_incremental(
-            configured_stream.cursor_field,
-            logger,
-            self._slice_logger,
-            stream_state,
-            state_manager,
-            self.per_stream_state_enabled,
-            internal_config,
-        ):
-            yield self._get_message(record_data_or_message, stream_instance)
-
     def _emit_queued_messages(self) -> Iterable[AirbyteMessage]:
         if self.message_repository:
             yield from self.message_repository.consume_queue()
         return
-
-    def _read_full_refresh(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
-        total_records_counter = 0
-        for record_data_or_message in stream_instance.read_full_refresh(configured_stream.cursor_field, logger, self._slice_logger):
-            message = self._get_message(record_data_or_message, stream_instance)
-            yield message
-            if message.type == MessageType.RECORD:
-                total_records_counter += 1
-                if internal_config.is_limit_reached(total_records_counter):
-                    return
 
     def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
         """
@@ -317,3 +272,9 @@ class AbstractSource(Source, ABC):
     def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> str:
         failures = ", ".join([f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exception in stream_failures.items()])
         return f"During the sync, the following streams did not sync successfully: {failures}"
+
+    @staticmethod
+    def _stream_state_is_full_refresh(stream_state: Mapping[str, Any]) -> bool:
+        # For full refresh syncs that don't have a suitable cursor value, we emit a state that contains a sentinel key.
+        # This key is never used by a connector and is needed during a read to skip assigning the incoming state.
+        return FULL_REFRESH_SENTINEL_STATE_KEY in stream_state

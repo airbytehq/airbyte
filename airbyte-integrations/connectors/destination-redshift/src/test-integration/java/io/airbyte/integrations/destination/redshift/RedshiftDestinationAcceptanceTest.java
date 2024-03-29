@@ -241,9 +241,4 @@ public abstract class RedshiftDestinationAcceptanceTest extends JdbcDestinationA
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 
-  @Override
-  protected int getGenerateBigStringAddExtraCharacters() {
-    return 1;
-  }
-
 }

@@ -21,6 +21,8 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 
 class SourceS3(FileBasedSource):
+    _concurrency_level = DEFAULT_CONCURRENCY
+
     @classmethod
     def read_config(cls, config_path: str) -> Mapping[str, Any]:
         """

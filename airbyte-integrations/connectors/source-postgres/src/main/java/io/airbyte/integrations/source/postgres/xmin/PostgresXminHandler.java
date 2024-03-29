@@ -13,6 +13,8 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -31,6 +33,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +102,7 @@ public class PostgresXminHandler {
         final AutoCloseableIterator<JsonNode> queryStream = queryTableXmin(selectedDatabaseFields, table.getNameSpace(), table.getName());
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
 
         iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
       }
@@ -233,12 +236,14 @@ public class PostgresXminHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
+                                                                 final ConfiguredAirbyteStream airbyteStream,
                                                                  final AirbyteStreamNameNamespacePair pair) {
+    xminStateManager.setCurrentXminStatus(currentXminStatus);
     return AutoCloseableIterators.transform(
-        autoCloseableIterator -> new XminStateIterator(
+        autoCloseableIterator -> new SourceStateIterator(
             autoCloseableIterator,
-            pair,
-            currentXminStatus),
+            airbyteStream,
+            xminStateManager, new StateEmitFrequency(0L, Duration.ofSeconds(1L))),
         recordIterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
   }

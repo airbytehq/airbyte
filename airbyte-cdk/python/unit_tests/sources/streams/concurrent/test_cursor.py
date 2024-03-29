@@ -112,7 +112,7 @@ class ConcurrentCursorTest(TestCase):
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            {'a_cursor_field_key': 10},
+            {"a_cursor_field_key": 10},
         )
 
     def test_given_no_boundary_fields_when_close_multiple_partitions_then_raise_exception(self) -> None:

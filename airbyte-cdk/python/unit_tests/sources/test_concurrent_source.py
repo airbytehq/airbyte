@@ -12,7 +12,7 @@ from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPool
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability, StreamAvailable, StreamUnavailable
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_protocol.models import AirbyteStream
@@ -42,10 +42,11 @@ MESSAGE_FROM_REPOSITORY = Mock()
 
 
 class _MockStream(AbstractStream):
-    def __init__(self, name: str, available: bool = True, json_schema: Dict[str, Any] = {}):
+    def __init__(self, name: str, message_repository: MessageRepository, available: bool = True, json_schema: Dict[str, Any] = {}):
         self._name = name
         self._available = available
         self._json_schema = json_schema
+        self._message_repository = message_repository
 
     def generate_partitions(self) -> Iterable[Partition]:
         yield _MockPartition(self._name)
@@ -75,7 +76,7 @@ class _MockStream(AbstractStream):
 
     @property
     def cursor(self) -> Cursor:
-        return NoopCursor()
+        return FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository)
 
 
 class _MockPartition(Partition):
@@ -103,8 +104,9 @@ class _MockPartition(Partition):
 
 
 def test_concurrent_source_reading_from_no_streams():
-    stream = _MockStream("my_stream", False, {})
-    source = _MockSource()
+    message_repository = InMemoryMessageRepository()
+    stream = _MockStream("my_stream", message_repository,False, {})
+    source = _MockSource(message_repository=message_repository)
     messages = []
     for m in source.read([stream]):
         messages.append(m)

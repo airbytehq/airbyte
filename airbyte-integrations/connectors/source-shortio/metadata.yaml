@@ -27,7 +27,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/shortio
   tags:
     - language:python
-    - language:low-code
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

@@ -33,7 +33,7 @@ class TestTeamsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
-            TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build()
+            TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
         )
 
         output = read_stream("teams", SyncMode.full_refresh, self._config)
@@ -50,17 +50,18 @@ class TestTeamsStreamFullRefresh(TestCase):
             TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
             [
                 ErrorResponseBuilder.response_with_status(200).build(),
-                TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build()
-            ]
+                TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
+            ],
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("teams", SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 1
 
         error_logs = [
-            error for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+            error
+            for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
             if f'Response Code: 200, Response Text: {json.dumps({"error_code": "ComplexityException", "status_code": 200})}' in error
         ]
         assert len(error_logs) == 1
@@ -73,17 +74,17 @@ class TestTeamsStreamFullRefresh(TestCase):
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
-            TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
-            ErrorResponseBuilder.response_with_status(200).build()
+            TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(), ErrorResponseBuilder.response_with_status(200).build()
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("teams", SyncMode.full_refresh, self._config)
-        
+
         assert len(output.records) == 0
 
         error_logs = [
-            error for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+            error
+            for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
             if f'Response Code: 200, Response Text: {json.dumps({"error_code": "ComplexityException", "status_code": 200})}' in error
         ]
         assert len(error_logs) == 5
@@ -96,17 +97,17 @@ class TestTeamsStreamFullRefresh(TestCase):
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
-            TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
-            ErrorResponseBuilder.response_with_status(500).build()
+            TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(), ErrorResponseBuilder.response_with_status(500).build()
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("teams", SyncMode.full_refresh, self._config)
-        
+
         assert len(output.records) == 0
 
         error_logs = [
-            error for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+            error
+            for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
             if f'Response Code: 500, Response Text: {json.dumps({"error_message": "Internal server error", "status_code": 500})}' in error
         ]
         assert len(error_logs) == 5
@@ -119,17 +120,17 @@ class TestTeamsStreamFullRefresh(TestCase):
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
-            TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
-            ErrorResponseBuilder.response_with_status(403).build()
+            TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(), ErrorResponseBuilder.response_with_status(403).build()
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("teams", SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 0
 
         error_logs = [
-            error for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-            if f'Ignoring response for failed request with error message None' in error
+            error
+            for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+            if "Ignoring response for failed request with error message None" in error
         ]
         assert len(error_logs) == 1
