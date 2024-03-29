@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "Description of the skill data.",
       "type": ["null", "string"]
     },
     "enabled": {
+      "description": "Flag indicating if the skill is currently enabled.",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "Unique identifier of the skill.",
       "type": ["integer"]
     },
     "members": {
+      "description": "List of members associated with the skill.",
       "items": {
+        "description": "Individual member data.",
         "type": "integer"
       },
       "type": ["null", "array"]
     },
     "name": {
+      "description": "Name of the skill.",
       "type": ["null", "string"]
     }
   }

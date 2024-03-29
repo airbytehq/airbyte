@@ -3,57 +3,73 @@
   "type": "object",
   "properties": {
     "routing_mode": {
+      "description": "The mode of routing used for incoming chats",
       "type": ["null", "string"]
     },
     "chat_limit": {
+      "description": "Settings related to chat limit control",
       "type": ["null", "object"],
       "properties": {
         "enabled": {
+          "description": "Flag indicating if chat limit feature is enabled",
           "type": ["null", "boolean"]
         },
         "limit": {
+          "description": "Maximum number of chats allowed",
           "type": ["null", "integer"]
         },
         "limit_type": {
+          "description": "Type of chat limit (e.g., per agent, per group)",
           "type": ["null", "string"]
         },
         "allow_agent_override": {
+          "description": "Flag indicating if agents can override chat limits",
           "type": ["null", "boolean"]
         }
       }
     },
     "skill_routing": {
+      "description": "Settings related to skill-based routing",
       "type": ["null", "object"],
       "properties": {
         "enabled": {
+          "description": "Flag indicating if skill-based routing is enabled",
           "type": ["null", "boolean"]
         },
         "max_wait_time": {
+          "description": "Maximum wait time in queue before re-routing",
           "type": ["null", "integer"]
         }
       }
     },
     "reassignment": {
+      "description": "Settings related to chat reassignment rules",
       "type": ["null", "object"],
       "properties": {
         "enabled": {
+          "description": "Flag indicating if chat reassignment is enabled",
           "type": ["null", "boolean"]
         },
         "timeout": {
+          "description": "Time duration before chat reassignment occurs",
           "type": ["null", "integer"]
         }
       }
     },
     "auto_idle": {
+      "description": "Settings related to automatic status change to idle",
       "type": ["null", "object"],
       "properties": {
         "enabled": {
+          "description": "Flag indicating if auto idle feature is enabled",
           "type": ["null", "boolean"]
         },
         "reassignments_before_idle": {
+          "description": "Number of reassignments allowed before auto idle sets in",
           "type": ["null", "integer"]
         },
         "new_status": {
+          "description": "New status to be set when auto idle is triggered",
           "type": ["null", "string"]
         }
       }

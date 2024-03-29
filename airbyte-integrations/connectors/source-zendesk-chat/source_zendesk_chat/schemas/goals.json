@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "attribution_model": {
+      "description": "The model used to attribute the goals",
       "type": ["null", "string"]
     },
     "attribution_period": {
+      "description": "The period over which the goals are attributed",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "A brief description of the goal",
       "type": ["null", "string"]
     },
     "enabled": {
+      "description": "Indicates whether the goal is currently enabled",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "The unique identifier of the goal",
       "type": ["integer"]
     },
     "name": {
+      "description": "The name of the goal",
       "type": ["null", "string"]
     },
     "settings": {
@@ -26,12 +32,15 @@
           "items": {
             "properties": {
               "operator": {
+                "description": "The comparison operator used in the condition",
                 "type": ["null", "string"]
               },
               "type": {
+                "description": "The type of condition",
                 "type": ["null", "string"]
               },
               "value": {
+                "description": "The value to be compared in the condition",
                 "type": ["null", "string"]
               }
             },

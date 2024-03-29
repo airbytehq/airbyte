@@ -3,25 +3,32 @@
   "type": "object",
   "properties": {
     "create_date": {
+      "description": "The date and time when the ban was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the ban.",
       "type": ["integer"]
     },
     "ip_address": {
+      "description": "The IP address of the banned visitor.",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason for the ban.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of ban (e.g., temporary or permanent).",
       "type": ["null", "string"]
     },
     "visitor_id": {
+      "description": "The ID of the banned visitor.",
       "type": ["null", "string"]
     },
     "visitor_name": {
+      "description": "The name of the banned visitor.",
       "type": ["null", "string"]
     }
   }

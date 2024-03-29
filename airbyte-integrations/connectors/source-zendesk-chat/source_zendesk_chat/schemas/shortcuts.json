@@ -3,27 +3,34 @@
   "type": "object",
   "properties": {
     "tags": {
+      "description": "List of tags or labels associated with the shortcut",
       "items": {
         "type": ["string"]
       },
       "type": ["null", "array"]
     },
     "name": {
+      "description": "Name or title of the shortcut",
       "type": ["string"]
     },
     "options": {
+      "description": "Additional configuration options for the shortcut",
       "type": ["null", "string"]
     },
     "message": {
+      "description": "The actual message content of the shortcut",
       "type": ["null", "string"]
     },
     "scope": {
+      "description": "Scope or visibility of the shortcut within the chat system",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the shortcut",
       "type": ["null", "string"]
     },
     "departments": {
+      "description": "List of departments associated with the shortcut",
       "items": {
         "type": "integer"
       },

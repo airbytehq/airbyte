@@ -2,23 +2,25 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": {
-      "type": ["null", "string"]
-    },
     "agent_id": {
+      "description": "The unique identifier of the agent who is being tracked in the timeline data.",
       "type": ["null", "integer"]
     },
     "duration": {
+      "description": "The duration of the agent's activity or engagement during the specified timeframe.",
       "type": ["null", "number"]
     },
     "engagement_count": {
+      "description": "The total number of engagements or interactions the agent had during the specified timeframe.",
       "type": ["null", "integer"]
     },
     "start_time": {
+      "description": "The timestamp indicating when the agent's activity started.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "status": {
+      "description": "The current status of the agent's activity or availability.",
       "type": ["null", "string"]
     }
   }
