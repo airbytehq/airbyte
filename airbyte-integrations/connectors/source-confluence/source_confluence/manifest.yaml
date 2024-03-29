@@ -45,17 +45,10 @@ definitions:
     path: "{{ parameters.path }}"
     http_method: GET
     authenticator:
-      type: SelectiveAuthenticator
-      authenticator_selection_path:
-        - auth
-      authenticators:
-        basic:
-          type: BasicHttpAuthenticator
-          username: "{{ config['email'] }}"
-          password: "{{ config['api_token'] }}"
-        bearer:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
+      type: CustomAuthenticator
+      class_name: source_confluence.components.CustomAuthenticator
+      email: "{{ config['email'] }}"
+      api_token: "{{ config['api_token'] }}"
     request_body_json: {}
     request_headers: {}
 
@@ -159,7 +152,7 @@ spec:
         airbyte_secret: true
         order: 1
       domain_name:
-        title: "Domain Name"
+        title: "Domain name"
         description: "Your Confluence domain name"
         type: string
         examples: ["example.atlassian.net", "my.company.com/confluence"]
@@ -169,9 +162,3 @@ spec:
         type: boolean
         description: "If you are using Confluence Server, please check this box."
         order: 3
-      auth:
-        title: "Authentication"
-        type: string
-        enum: ["basic", "bearer"]
-        default: "basic"
-        order: 4
