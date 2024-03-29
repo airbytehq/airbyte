@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "lock": {
+      "type": "boolean"
+    },
+    "center_id": {
+      "type": "string"
+    },
+    "is_closed": {
+      "type": "boolean"
+    },
+    "is_refund": {
+      "type": "boolean"
+    },
+    "total_price": {
+      "type": "object",
+      "properties": {
+        "tax": {
+          "type": "number"
+        },
+        "net_price": {
+          "type": "number"
+        },
+        "sum_total": {
+          "type": "number"
+        },
+        "currency_id": {
+          "type": "number"
+        },
+        "rounding_adjustment": {
+          "type": "number"
+        }
+      }
+    },
+    "invoice_date": {
+      "type": "string"
+    },
+    "transactions": {
+      "type": "array"
+    },
+    "invoice_number": {
+      "type": "string"
+    },
+    "receipt_number": {
+      "type": "string"
+    },
+    "additional_fields": {
+      "type": "array"
+    },
+    "appointment_group_id": {
+      "type": "string"
+    },
+    "invoice_number_prefix": {
+      "type": "string"
+    }
+  }
+}
