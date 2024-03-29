@@ -70,18 +70,18 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: users?$top={{ config['page_size'] }}
+        path: users?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -302,18 +302,18 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
-        path: groups?$top={{ config['page_size'] }}
+        path: groups?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -403,19 +403,18 @@ streams:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
-          groups/{{ stream_partition.group_id }}/members?$top={{
-          config['page_size'] }}
+          groups/{{ stream_partition.group_id }}/members?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -643,18 +642,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -748,19 +747,18 @@ streams:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
-          groups/{{ stream_partition.group_id }}/owners?$top={{
-          config['page_size'] }}
+          groups/{{ stream_partition.group_id }}/owners?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -988,18 +986,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -1071,19 +1069,18 @@ streams:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
-          groups/{{ stream_partition.group_id }}/conversations?$top={{
-          config['page_size'] }}
+          groups/{{ stream_partition.group_id }}/conversations?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -1321,18 +1318,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -1411,12 +1408,12 @@ streams:
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -1649,18 +1646,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -1741,18 +1738,18 @@ streams:
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
           teams/{{ stream_partition.group_id }}/channels/{{
-          stream_partition.channel_id }}/members?$top={{ config['page_size'] }}
+          stream_partition.channel_id }}/members?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -1991,18 +1988,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -2087,12 +2084,12 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -2325,19 +2322,19 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups?$top={{ config['page_size'] }}
+                                path: groups?$top={{ config.get('page_size', 20) }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
                                 authenticator:
                                   type: OAuthAuthenticator
-                                  client_id: '{{ config[''client_id''] }}'
-                                  client_secret: '{{ config[''client_secret''] }}'
+                                  client_id: '{{ config[''credentials''][''client_id''] }}'
+                                  client_secret: '{{ config[''credentials''][''client_secret''] }}'
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
                                     https://login.microsoftonline.com/{{
-                                    config['tenant_id'] }}/oauth2/v2.0/token
+                                    config['credentials']['tenant_id'] }}/oauth2/v2.0/token
                                   grant_type: client_credentials
                                   scopes: []
                                   access_token_name: access_token
@@ -2459,12 +2456,12 @@ streams:
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -2697,18 +2694,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -2793,12 +2790,12 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -3031,19 +3028,19 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups?$top={{ config['page_size'] }}
+                                path: groups?$top={{ config.get('page_size', 20) }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
                                 authenticator:
                                   type: OAuthAuthenticator
-                                  client_id: '{{ config[''client_id''] }}'
-                                  client_secret: '{{ config[''client_secret''] }}'
+                                  client_id: '{{ config[''credentials''][''client_id''] }}'
+                                  client_secret: '{{ config[''credentials''][''client_secret''] }}'
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
                                     https://login.microsoftonline.com/{{
-                                    config['tenant_id'] }}/oauth2/v2.0/token
+                                    config['credentials']['tenant_id'] }}/oauth2/v2.0/token
                                   grant_type: client_credentials
                                   scopes: []
                                   access_token_name: access_token
@@ -3125,19 +3122,18 @@ streams:
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
           groups/{{ stream_partition.group_id }}/conversations/{{
-          stream_partition.conversation_id }}/threads?$top={{
-          config['page_size'] }}
+          stream_partition.conversation_id }}/threads?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -3377,18 +3373,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -3467,18 +3463,18 @@ streams:
                     url_base: https://graph.microsoft.com/v1.0/
                     path: >-
                       groups/{{ stream_partition.group_id
-                      }}/conversations?$top={{ config['page_size'] }}
+                      }}/conversations?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -3716,19 +3712,19 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups?$top={{ config['page_size'] }}
+                                path: groups?$top={{ config.get('page_size', 20) }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
                                 authenticator:
                                   type: OAuthAuthenticator
-                                  client_id: '{{ config[''client_id''] }}'
-                                  client_secret: '{{ config[''client_secret''] }}'
+                                  client_id: '{{ config[''credentials''][''client_id''] }}'
+                                  client_secret: '{{ config[''credentials''][''client_secret''] }}'
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
                                     https://login.microsoftonline.com/{{
-                                    config['tenant_id'] }}/oauth2/v2.0/token
+                                    config['credentials']['tenant_id'] }}/oauth2/v2.0/token
                                   grant_type: client_credentials
                                   scopes: []
                                   access_token_name: access_token
@@ -3872,18 +3868,18 @@ streams:
         path: >-
           groups/{{ stream_partition.group_id }}/conversations/{{
           stream_partition.conversation_id }}/threads/{{
-          stream_partition.thread_id }}/posts?$top={{ config['page_size'] }}
+          stream_partition.thread_id }}/posts?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -4124,18 +4120,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -4214,18 +4210,18 @@ streams:
                     url_base: https://graph.microsoft.com/v1.0/
                     path: >-
                       groups/{{ stream_partition.group_id
-                      }}/conversations?$top={{ config['page_size'] }}
+                      }}/conversations?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -4463,19 +4459,19 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups?$top={{ config['page_size'] }}
+                                path: groups?$top={{ config.get('page_size', 20) }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
                                 authenticator:
                                   type: OAuthAuthenticator
-                                  client_id: '{{ config[''client_id''] }}'
-                                  client_secret: '{{ config[''client_secret''] }}'
+                                  client_id: '{{ config[''credentials''][''client_id''] }}'
+                                  client_secret: '{{ config[''credentials''][''client_secret''] }}'
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
                                     https://login.microsoftonline.com/{{
-                                    config['tenant_id'] }}/oauth2/v2.0/token
+                                    config['credentials']['tenant_id'] }}/oauth2/v2.0/token
                                   grant_type: client_credentials
                                   scopes: []
                                   access_token_name: access_token
@@ -4563,19 +4559,18 @@ streams:
                     url_base: https://graph.microsoft.com/v1.0/
                     path: >-
                       groups/{{ stream_partition.group_id }}/conversations/{{
-                      stream_partition.conversation_id }}/threads?$top={{
-                      config['page_size'] }}
+                      stream_partition.conversation_id }}/threads?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -4817,19 +4812,19 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: https://graph.microsoft.com/v1.0/
-                                path: groups?$top={{ config['page_size'] }}
+                                path: groups?$top={{ config.get('page_size', 20) }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
                                 authenticator:
                                   type: OAuthAuthenticator
-                                  client_id: '{{ config[''client_id''] }}'
-                                  client_secret: '{{ config[''client_secret''] }}'
+                                  client_id: '{{ config[''credentials''][''client_id''] }}'
+                                  client_secret: '{{ config[''credentials''][''client_secret''] }}'
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
                                     https://login.microsoftonline.com/{{
-                                    config['tenant_id'] }}/oauth2/v2.0/token
+                                    config['credentials']['tenant_id'] }}/oauth2/v2.0/token
                                   grant_type: client_credentials
                                   scopes: []
                                   access_token_name: access_token
@@ -4909,20 +4904,19 @@ streams:
                                 url_base: https://graph.microsoft.com/v1.0/
                                 path: >-
                                   groups/{{ stream_partition.group_id
-                                  }}/conversations?$top={{ config['page_size']
-                                  }}
+                                  }}/conversations?$top={{ config.get('page_size', 20) }}
                                 http_method: GET
                                 request_parameters: {}
                                 request_headers: {}
                                 authenticator:
                                   type: OAuthAuthenticator
-                                  client_id: '{{ config[''client_id''] }}'
-                                  client_secret: '{{ config[''client_secret''] }}'
+                                  client_id: '{{ config[''credentials''][''client_id''] }}'
+                                  client_secret: '{{ config[''credentials''][''client_secret''] }}'
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
                                     https://login.microsoftonline.com/{{
-                                    config['tenant_id'] }}/oauth2/v2.0/token
+                                    config['credentials']['tenant_id'] }}/oauth2/v2.0/token
                                   grant_type: client_credentials
                                   scopes: []
                                   access_token_name: access_token
@@ -5163,19 +5157,19 @@ streams:
                                           requester:
                                             type: HttpRequester
                                             url_base: https://graph.microsoft.com/v1.0/
-                                            path: groups?$top={{ config['page_size'] }}
+                                            path: groups?$top={{ config.get('page_size', 20) }}
                                             http_method: GET
                                             request_parameters: {}
                                             request_headers: {}
                                             authenticator:
                                               type: OAuthAuthenticator
-                                              client_id: '{{ config[''client_id''] }}'
-                                              client_secret: '{{ config[''client_secret''] }}'
+                                              client_id: '{{ config[''credentials''][''client_id''] }}'
+                                              client_secret: '{{ config[''credentials''][''client_secret''] }}'
                                               refresh_request_body:
                                                 scope: https://graph.microsoft.com/.default
                                               token_refresh_endpoint: >-
                                                 https://login.microsoftonline.com/{{
-                                                config['tenant_id'] }}/oauth2/v2.0/token
+                                                config['credentials']['tenant_id'] }}/oauth2/v2.0/token
                                               grant_type: client_credentials
                                               scopes: []
                                               access_token_name: access_token
@@ -5328,19 +5322,18 @@ streams:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
-          groups/{{ stream_partition.group_id }}/drives?$top={{
-          config['page_size'] }}
+          groups/{{ stream_partition.group_id }}/drives?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -5579,18 +5572,18 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: https://graph.microsoft.com/v1.0/
-                    path: groups?$top={{ config['page_size'] }}
+                    path: groups?$top={{ config.get('page_size', 20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
                     authenticator:
                       type: OAuthAuthenticator
-                      client_id: '{{ config[''client_id''] }}'
-                      client_secret: '{{ config[''client_secret''] }}'
+                      client_id: '{{ config[''credentials''][''client_id''] }}'
+                      client_secret: '{{ config[''credentials''][''client_secret''] }}'
                       refresh_request_body:
                         scope: https://graph.microsoft.com/.default
                       token_refresh_endpoint: >-
-                        https://login.microsoftonline.com/{{ config['tenant_id']
+                        https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
                         }}/oauth2/v2.0/token
                       grant_type: client_credentials
                       scopes: []
@@ -5694,18 +5687,18 @@ streams:
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
           reports/getTeamsDeviceUsageUserDetail(period='{{ config['period']
-          }}')?$top={{ config['page_size'] }}
+          }}')?$top={{ config.get('page_size', 20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
+          client_id: '{{ config[''credentials''][''client_id''] }}'
+          client_secret: '{{ config[''credentials''][''client_secret''] }}'
           refresh_request_body:
             scope: https://graph.microsoft.com/.default
           token_refresh_endpoint: >-
-            https://login.microsoftonline.com/{{ config['tenant_id']
+            https://login.microsoftonline.com/{{ config['credentials']['tenant_id']
             }}/oauth2/v2.0/token
           grant_type: client_credentials
           scopes: []
@@ -5736,55 +5729,145 @@ streams:
           cursor_value: '{{ response.get("@odata.nextLink", {}) }}'
           stop_condition: '{{ not response.get("@odata.nextLink", {}) }}'
 spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/microsoft-teams
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
+    title: Microsoft Teams Spec
     type: object
     required:
-      - client_id
-      - client_secret
-      - period
-      - tenant_id
-    properties:
-      client_id:
-        type: string
-        title: Client ID
-        airbyte_secret: true
-        description: The Client ID of your Microsoft Teams developer application.
-        order: 0
-      client_secret:
-        type: string
-        title: Client secret
-        airbyte_secret: true
-        description: The Client Secret of your Microsoft Teams developer application.
-        order: 1
-      period:
-        title: period
-        description: >-
-          Specifies the length of time over which the Team Device Report stream
-          is aggregated. The supported values are: D7, D30, D90, and D180.
-        default: D180
-        type: string
-        order: 2
-      tenant_id:
-        title: Tenant ID
-        description: >-
-          A globally unique identifier (GUID) that is different than your
-          organization name or domain. Follow these steps to obtain: open one of
-          the Teams where you belong inside the Teams Application -> Click on
-          the … next to the Team title -> Click on Get link to team -> Copy the
-          link to the team and grab the tenant ID form the URL
-        airbyte_secret: true
-        type: string
-        order: 3
-      page_size:
-        title: page_size
-        description: Default page size for pagination
-        default: '10'
-        type: string
-        order: 4
+    - period
     additionalProperties: true
-  documentation_url: https://example.org
-  type: Spec
+    properties:
+      period:
+        type: string
+        title: Period
+        description: 'Specifies the length of time over which the Team Device Report
+          stream is aggregated. The supported values are: D7, D30, D90, and D180.'
+        examples:
+        - D7
+      credentials:
+        title: Authentication mechanism
+        description: Choose how to authenticate to Microsoft
+        type: object
+        oneOf:
+        - type: object
+          title: Authenticate via Microsoft (OAuth 2.0)
+          required:
+          - tenant_id
+          - client_id
+          - client_secret
+          - refresh_token
+          properties:
+            auth_type:
+              type: string
+              const: Client
+              enum:
+              - Client
+              default: Client
+              order: 0
+            tenant_id:
+              title: Directory (tenant) ID
+              type: string
+              description: 'A globally unique identifier (GUID) that is different than
+                your organization name or domain. Follow these steps to obtain: open
+                one of the Teams where you belong inside the Teams Application -> Click
+                on the … next to the Team title -> Click on Get link to team -> Copy
+                the link to the team and grab the tenant ID form the URL'
+              airbyte_secret: true
+            client_id:
+              title: Client ID
+              type: string
+              description: The Client ID of your Microsoft Teams developer application.
+            client_secret:
+              title: Client Secret
+              type: string
+              description: The Client Secret of your Microsoft Teams developer application.
+              airbyte_secret: true
+            refresh_token:
+              title: Refresh Token
+              type: string
+              description: A Refresh Token to renew the expired Access Token.
+              airbyte_secret: true
+        - type: object
+          title: Authenticate via Microsoft
+          required:
+          - tenant_id
+          - client_id
+          - client_secret
+          properties:
+            auth_type:
+              type: string
+              const: Token
+              enum:
+              - Token
+              default: Token
+              order: 0
+            tenant_id:
+              title: Directory (tenant) ID
+              type: string
+              description: 'A globally unique identifier (GUID) that is different than
+                your organization name or domain. Follow these steps to obtain: open
+                one of the Teams where you belong inside the Teams Application -> Click
+                on the … next to the Team title -> Click on Get link to team -> Copy
+                the link to the team and grab the tenant ID form the URL'
+              airbyte_secret: true
+            client_id:
+              title: Client ID
+              type: string
+              description: The Client ID of your Microsoft Teams developer application.
+            client_secret:
+              title: Client Secret
+              type: string
+              description: The Client Secret of your Microsoft Teams developer application.
+              airbyte_secret: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+    - credentials
+    - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - client_secret
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          tenant_id:
+            type: string
+            path_in_connector_config:
+            - credentials
+            - tenant_id
 metadata:
   autoImportSchema:
     users: false

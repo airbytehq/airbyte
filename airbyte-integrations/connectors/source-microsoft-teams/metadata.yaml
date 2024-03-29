@@ -25,7 +25,7 @@ data:
   icon: microsoft-teams.svg
   license: MIT
   name: Microsoft Teams
-  releaseDate: 2024-04-18
+  releaseDate: 2020-12-21
   releaseStage: alpha
   releases:
     breakingChanges:
