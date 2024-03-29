@@ -1,5 +1,12 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "value"
+[
+  {"type": "STREAM",
+  "stream":   {
+    "stream_descriptor": {
+      "name": "surveys"
+    },
+    "stream_state": {
+      "date_modified": "2024-01-01T00:00:00Z"
+    }
   }
 }
+]

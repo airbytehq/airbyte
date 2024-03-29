@@ -78,7 +78,11 @@ class SurveyMonkeyBaseStream(HttpStream, ABC):
             #FIXME: need to make sure next_url includes the params
             return urlparse(next_page_token["next_url"]).query
         else:
-            return {"per_page": self._PAGE_SIZE, "include": "response_count,date_created,date_modified,language,question_count,analyze_url,preview,collect_stats"}
+            return {
+                "per_page": self._PAGE_SIZE, "include": "response_count,date_created,date_modified,language,question_count,analyze_url,preview,collect_stats",
+                "sort_by": "date_modified", "sort_order": "ASC",
+                "start_modified_at": stream_slice["start_date"], "end_modified_at": stream_slice["end_date"]
+                    }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json().get("data", [])
@@ -94,7 +98,7 @@ class SurveyMonkeyBaseStream(HttpStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-            return self._path
+        return self._path
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -113,7 +117,7 @@ class SurveyMonkeyBaseStream(HttpStream, ABC):
         return {self._cursor_field: datetime.datetime.strptime(state_value, "%Y-%m-%dT%H:%M:%SZ").timestamp()} 
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        start_date = stream_state.get("start_date", self._start_date) if stream_state else self._start_date
+        start_date = stream_state.get("date_modified", self._start_date) if stream_state else self._start_date
         start_ts = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ").timestamp()
         now_ts = datetime.datetime.now().timestamp()
         if start_ts >= now_ts:
