@@ -23,6 +23,7 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -32,8 +33,8 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Async version of the
@@ -79,14 +80,6 @@ constructor(
     private var hasStarted = false
     private var hasClosed = false
     private var hasFailed = false
-
-    // This is to account for the references when deserialization to a PartialAirbyteMessage. The
-    // calculation is as follows:
-    // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with
-    // PartialStateMessage being larger with more nested objects within it. Using 8 bytes as we
-    // assumed
-    // a 64 bit JVM.
-    private val PARTIAL_DESERIALIZE_REF_BYTES: Int = 10 * 8
 
     constructor(
         outputRecordCollector: Consumer<AirbyteMessage>,
@@ -184,7 +177,7 @@ constructor(
 
         flushWorkers.start()
 
-        LOGGER.info("{} started.", AsyncStreamConsumer::class.java)
+        logger.info { "${AsyncStreamConsumer::class.java} started." }
         onStart.call()
     }
 
@@ -250,7 +243,7 @@ constructor(
 
         // as this throws an exception, we need to be after all other close functions.
         propagateFlushWorkerExceptionIfPresent()
-        LOGGER.info("{} closed", AsyncStreamConsumer::class.java)
+        logger.info { "${AsyncStreamConsumer::class.java} closed" }
     }
 
     private fun getRecordCounter(streamDescriptor: StreamDescriptor): AtomicLong {
@@ -281,18 +274,20 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AsyncStreamConsumer::class.java)
+        // This is to account for the references when deserialization to a PartialAirbyteMessage.
+        // The calculation is as follows: PartialAirbyteMessage (4) + Max( PartialRecordMessage(4),
+        // PartialStateMessage(6)) with PartialStateMessage being larger with more nested objects
+        // within it. Using 8 bytes as we assumed a 64 bit JVM.
+        private const val PARTIAL_DESERIALIZE_REF_BYTES: Int = 10 * 8
 
         private fun throwUnrecognizedStream(
             catalog: ConfiguredAirbyteCatalog?,
             message: PartialAirbyteMessage,
         ) {
             throw IllegalArgumentException(
-                String.format(
-                    "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                    Jsons.serialize(catalog),
-                    Jsons.serialize(message),
-                ),
+                "Message contained record from a stream that was not in the catalog. " +
+                    "\ncatalog: ${Jsons.serialize(catalog)}, " +
+                    "\nmessage: ${Jsons.serialize(message)}",
             )
         }
     }
