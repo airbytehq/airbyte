@@ -1,9 +1,10 @@
-from typing import Any, Mapping, Optional, MutableMapping
-from typing import Any, Optional
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from typing import Any, Mapping, MutableMapping, Optional
+
+from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 
 
 class IncrementalSingleBodyFilterCursor(DatetimeBasedCursor):

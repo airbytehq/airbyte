@@ -1,11 +1,12 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import unittest
 from json import dumps, load
 from typing import Dict
 
-
-from source_gong.components import IncrementalSingleBodyFilterCursor
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
+from source_gong.components import IncrementalSingleBodyFilterCursor
 
 
 def config() -> Dict[str, str]:
