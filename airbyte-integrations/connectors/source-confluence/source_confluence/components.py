@@ -24,7 +24,7 @@ class CustomAuthenticator(NoAuth):
             )
         else:
             self._authenticator = BasicHttpAuthenticator(
-                password=self.api_token, username=self.email, config=self.config, parameters=self.parameters
+                password=self.api_token, username=self.email, config=self.config, parameters=parameters
             )
 
     @property
