@@ -3,36 +3,47 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the order risk entry.",
       "type": ["null", "integer"]
     },
     "order_id": {
+      "description": "The identifier of the order to which the risk is related.",
       "type": ["null", "integer"]
     },
     "checkout_id": {
+      "description": "The unique identifier of the checkout associated with the order.",
       "type": ["null", "integer"]
     },
     "source": {
+      "description": "Source of the risk notification.",
       "type": ["null", "string"]
     },
     "score": {
+      "description": "Numerical score indicating the level of risk.",
       "type": ["null", "number"]
     },
     "recommendation": {
+      "description": "Suggested action to mitigate the risk.",
       "type": ["null", "string"]
     },
     "display": {
+      "description": "Flag to determine if the risk should be displayed to the merchant.",
       "type": ["null", "boolean"]
     },
     "cause_cancel": {
+      "description": "Reason indicating why the order is at risk of cancellation.",
       "type": ["null", "boolean"]
     },
     "message": {
+      "description": "Description of the risk associated with the order.",
       "type": ["null", "string"]
     },
     "merchant_message": {
+      "description": "Message shown to the merchant regarding the risk.",
       "type": ["null", "string"]
     },
     "shop_url": {
+      "description": "URL of the shop where the order was placed.",
       "type": ["null", "string"]
     }
   }
