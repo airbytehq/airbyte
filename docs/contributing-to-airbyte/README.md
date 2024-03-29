@@ -44,7 +44,7 @@ The usual workflow of code contribution is:
 5. Push your local branch to your fork.
 6. Submit a Pull Request so that we can review your changes.
 7. [Link an existing Issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) that does not include the `needs triage` label to your Pull Request. A pull request without a linked issue will be closed, otherwise.
-8. Write a PR title and description that follows the [Pull Request Handbook](./resources/pull-requests-handbook.md) and [Pull Request Template](https://github.com/airbytehq/airbyte/blob/master/.github/pull_request_template.md).
+8. Write a PR title and description that follows the [Pull Request Handbook](./resources/pull-requests-handbook.md).
 9. An Airbyte maintainer will trigger the CI tests for you and review the code.
 10. Review and respond to feedback and questions by Airbyte maintainers.
 11. Merge the contribution.

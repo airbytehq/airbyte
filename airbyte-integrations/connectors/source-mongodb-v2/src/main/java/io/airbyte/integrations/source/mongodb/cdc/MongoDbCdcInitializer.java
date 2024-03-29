@@ -78,14 +78,15 @@ public class MongoDbCdcInitializer {
   public List<AutoCloseableIterator<AirbyteMessage>> createCdcIterators(
                                                                         final MongoClient mongoClient,
                                                                         final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector,
-                                                                        final ConfiguredAirbyteCatalog catalog,
+                                                                        final List<ConfiguredAirbyteStream> streams,
                                                                         final MongoDbStateManager stateManager,
                                                                         final Instant emittedAt,
                                                                         final MongoDbSourceConfig config) {
 
+    ConfiguredAirbyteCatalog incrementalOnlyStreamsCatalog = new ConfiguredAirbyteCatalog().withStreams(streams);
     final Duration firstRecordWaitTime = Duration.ofSeconds(config.getInitialWaitingTimeSeconds());
     // #35059: debezium heartbeats are not sent on the expected interval. this is
-    // a worksaround to allow making subsequent wait time configurable.
+    // a workaround to allow making subsequent wait time configurable.
     final Duration subsequentRecordWaitTime = firstRecordWaitTime;
     LOGGER.info("Subsequent cdc record wait time: {} seconds", subsequentRecordWaitTime);
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
@@ -93,15 +94,17 @@ public class MongoDbCdcInitializer {
     final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     logOplogInfo(mongoClient);
-    final BsonDocument initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, catalog);
+    final BsonDocument initialResumeToken =
+        MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, incrementalOnlyStreamsCatalog);
     final JsonNode initialDebeziumState =
         mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, mongoClient, databaseName);
-    final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
-        ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
-        : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
+    final MongoDbCdcState cdcState =
+        (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
+            ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
+            : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
     final Optional<BsonDocument> optSavedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
-        catalog,
+        incrementalOnlyStreamsCatalog,
         cdcState.state(),
         config.getDatabaseConfig(),
         mongoClient);
@@ -131,23 +134,26 @@ public class MongoDbCdcInitializer {
     }
 
     final MongoDbCdcState stateToBeUsed =
-        (!savedOffsetIsValid || stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
-            ? new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema())
-            : stateManager.getCdcState();
+        (!savedOffsetIsValid || stateManager.getCdcState() == null || stateManager.getCdcState().state() == null
+            || stateManager.getCdcState().state().isNull())
+                ? new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema())
+                : stateManager.getCdcState();
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
-        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);
+        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, incrementalOnlyStreamsCatalog, savedOffsetIsValid);
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName),
-            config.getCheckpointInterval(), isEnforceSchema);
+            config);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
-    final var propertiesManager = new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), catalog);
-    final var eventConverter = new MongoDbDebeziumEventConverter(cdcMetadataInjector, catalog, emittedAt, config.getDatabaseConfig());
+    final var propertiesManager =
+        new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog);
+    final var eventConverter =
+        new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);

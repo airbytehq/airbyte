@@ -23,7 +23,7 @@ from airbyte_cdk.sources.file_based.stream.concurrent.adapters import (
     FileBasedStreamPartition,
     FileBasedStreamPartitionGenerator,
 )
-from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedNoopCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedFinalStateCursor
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
@@ -36,7 +36,7 @@ _ANY_SYNC_MODE = SyncMode.full_refresh
 _ANY_STATE = {"state_key": "state_value"}
 _ANY_CURSOR_FIELD = ["a", "cursor", "key"]
 _STREAM_NAME = "stream"
-_ANY_CURSOR = Mock(spec=FileBasedNoopCursor)
+_ANY_CURSOR = Mock(spec=FileBasedFinalStateCursor)
 
 
 @pytest.mark.parametrize(
@@ -165,7 +165,7 @@ class StreamFacadeTest(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
         )
         self._legacy_stream = DefaultFileBasedStream(
-            cursor=FileBasedNoopCursor(MagicMock()),
+            cursor=FileBasedFinalStateCursor(stream_config=MagicMock(), stream_namespace=None, message_repository=Mock()),
             config=FileBasedStreamConfig(name="stream", format=CsvFormat()),
             catalog_schema={},
             stream_reader=MagicMock(),

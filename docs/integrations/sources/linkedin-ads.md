@@ -135,7 +135,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 
 :::info
 
-For Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `_pivot` to handle the data normalization correctly and avoid name conflicts with certain destinations.
+For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `pivotValue` to handle the data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). Please refer to the [LinkedIn documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for the format of the URN value for the Ad Analytics streams.
 
 :::
 
@@ -171,6 +171,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.8.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 0.7.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                        |
 | 0.6.8   | 2024-02-09 | [35086](https://github.com/airbytehq/airbyte/pull/35086) | Manage dependencies with Poetry.                                                                                |
 | 0.6.7   | 2024-01-11 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | prepare for airbyte-lib                                                                                         |

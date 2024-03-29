@@ -476,10 +476,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         logStreamSyncStatus(cursorBasedStreams.streamsForCursorBased(), "Cursor");
 
         final MssqlInitialLoadStreamStateManager mssqlInitialLoadStreamStateManager = new MssqlInitialLoadStreamStateManager(catalog,
-            initialLoadStreams, initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString));
+            initialLoadStreams, initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+            namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))));
         final MssqlInitialLoadHandler initialLoadHandler =
             new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), quoteString, mssqlInitialLoadStreamStateManager,
-                namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
                 getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
 
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(

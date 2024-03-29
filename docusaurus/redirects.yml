@@ -96,3 +96,6 @@
 - from:
     - /pyairbyte
   to: /using-airbyte/pyairbyte/getting-started
+- from:
+    - /telemetry
+  to: /operator-guides/telemetry

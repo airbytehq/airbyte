@@ -36,6 +36,6 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Description      |
+| Version | Date       | Pull Request                                             | Subject          |
 |---------|------------|----------------------------------------------------------|------------------|
 | 0.1.0   | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version. |

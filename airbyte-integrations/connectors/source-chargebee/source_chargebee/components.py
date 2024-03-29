@@ -47,7 +47,7 @@ class CustomFieldTransformation(RecordTransformation):
                 ...
             }
         """
-        record["custom_fields"] = [{"name": k, "value": v} for k, v in record.items() if k.startswith("cf_")]
+        record["custom_fields"] = [{"name": k, "value": record.pop(k)} for k in record.copy() if k.startswith("cf_")]
         return record
 
 
