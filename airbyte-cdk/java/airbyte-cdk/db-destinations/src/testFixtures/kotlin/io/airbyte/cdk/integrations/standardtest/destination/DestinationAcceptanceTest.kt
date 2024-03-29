@@ -79,7 +79,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class DestinationAcceptanceTest {
-    protected lateinit var TEST_SCHEMAS: HashSet<String>
+    protected var TEST_SCHEMAS: HashSet<String> = HashSet()
 
     private lateinit var testEnv: TestDestinationEnv
 
@@ -1606,13 +1606,11 @@ abstract class DestinationAcceptanceTest {
         val actualStateMessage =
             destinationOutput
                 .stream()
-                .filter { m: io.airbyte.protocol.models.v0.AirbyteMessage? ->
-                    m!!.type == io.airbyte.protocol.models.v0.AirbyteMessage.Type.STATE
-                }
+                .filter { it.type == Type.STATE }
                 .findFirst()
-                .map { msg: io.airbyte.protocol.models.v0.AirbyteMessage? ->
+                .map { msg: AirbyteMessage ->
                     // Modify state message to remove destination stats.
-                    val clone = msg!!.state
+                    val clone = msg.state
                     clone.destinationStats = null
                     msg.state = clone
                     msg
@@ -1628,10 +1626,10 @@ abstract class DestinationAcceptanceTest {
     @Throws(Exception::class)
     private fun runSync(
         config: JsonNode,
-        messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
-        catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        messages: List<AirbyteMessage>,
+        catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean
-    ): List<io.airbyte.protocol.models.v0.AirbyteMessage?> {
+    ): List<AirbyteMessage> {
         val destinationConfig =
             WorkerDestinationConfig()
                 .withConnectionId(UUID.randomUUID())
@@ -1664,11 +1662,10 @@ abstract class DestinationAcceptanceTest {
         )
         destination.notifyEndOfInput()
 
-        val destinationOutput: MutableList<io.airbyte.protocol.models.v0.AirbyteMessage?> =
-            ArrayList()
+        val destinationOutput: MutableList<AirbyteMessage> = ArrayList()
         while (!destination.isFinished()) {
-            destination.attemptRead().ifPresent { m: io.airbyte.protocol.models.AirbyteMessage ->
-                destinationOutput.add(convertProtocolObject(m, AirbyteMessage::class.java))
+            destination.attemptRead().ifPresent {
+                destinationOutput.add(convertProtocolObject(it, AirbyteMessage::class.java))
             }
         }
 
