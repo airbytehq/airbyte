@@ -42,7 +42,8 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: https://eu.mixpanel.com/api/
+#    class_name: "source_mixpanel.components.MixpanelXXXHtester"
+    url_base: "https://{{ config['region'] }}.mixpanel.com/api/"
     path: "{{ parameters['path'] }}"
     authenticator: "#/definitions/authenticator"
     http_method: GET
@@ -117,10 +118,43 @@ definitions:
 
   engage_stream:
     $ref: "#/definitions/stream_base"
+    primary_key: distinct_id
     $parameters:
       name: engage
       path: 2.0/engage
       field_path: results
+    transformations:
+      - class_name: "source_mixpanel.components.EngageTransformation"
+
+  cohort_members_stream:
+    $ref: "#/definitions/engage_stream"
+    $parameters:
+      name: cohort_members
+      path: 2.0/engage
+      field_path: results
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: POST
+      partition_router:
+        class_name: "source_mixpanel.components.CohortMembersSubstreamPartitionRouter"
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/cohorts_stream"
+            parent_key: id
+            partition_field: id
+            request_option:
+              inject_into: body_json
+              type: RequestOption
+              field_name: filter_by_cohort
+    transformations:
+      - class_name: "source_mixpanel.components.EngageTransformation"
+      - type: AddFields
+        fields:
+          - path:
+              - cohort_id
+            value: "{{ stream_partition.get('id') }}"
 
   revenue_stream:
     $ref: "#/definitions/stream_base"
@@ -138,8 +172,6 @@ definitions:
           field_path:
             - "{{ parameters['field_path'] }}"
     incremental_sync: "#/definitions/incremental_sync"
-#    transformations:
-#      - class_name: "source_mixpanel.components.RevenueTransformation"
 
   funnel_ids_stream:
     $ref: "#/definitions/stream_base"
@@ -169,7 +201,6 @@ definitions:
       path: 2.0/funnels
       field_path:
        - data
-    incremental_sync: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -183,6 +214,7 @@ definitions:
               type: RequestOption
               field_name: funnel_id
             stream: "#/definitions/funnel_ids_stream"
+    incremental_sync: "#/definitions/incremental_sync"
 
   annotations_stream:
     $ref: "#/definitions/stream_base"
@@ -196,34 +228,6 @@ definitions:
         $ref: "#/definitions/requester"
         path: "app/projects/{{ config['credentials']['project_id'] }}/annotations"
 
-  cohort_members_stream:
-    $ref: "#/definitions/engage_stream"
-    $parameters:
-      name: cohort_members
-      path: 2.0/engage
-      field_path: results
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        http_method: POST
-      partition_router:
-        class_name: "source_mixpanel.components.CohortMembersSubstreamPartitionRouter"
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream: "#/definitions/cohorts_stream"
-            parent_key: id
-            partition_field: id
-            request_option:
-              inject_into: body_json
-              type: RequestOption
-              field_name: filter_by_cohort
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - cohort_id
-            value: "{{ stream_partition.get('id') }}"
 
 streams:
   - "#/definitions/cohorts_stream"

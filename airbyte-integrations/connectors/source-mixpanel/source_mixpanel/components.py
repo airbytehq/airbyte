@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 import dpath.util
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters import HttpRequester
+# from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
@@ -21,8 +23,17 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
 
-
-
+@dataclass
+class MixpanelXXXHttpRequester(HttpRequester):
+    ...
+    # def get_url_base(self) -> str:
+    #     """
+    #     REGION: url
+    #     US    : https://mixpanel.com/api/2.0/
+    #     EU    : https://EU.mixpanel.com/api/2.0/
+    #     """
+    #     url_base = super().get_url_base().replace("US.", "")
+    #     return url_base
 
 class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
 
@@ -38,12 +49,7 @@ class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
 
 
 @dataclass
-class RevenueTransformation(RecordTransformation):
-    """
-    Make 'conversations.join' POST request for every found channel id
-    if we are not still a member of such channel
-    """
-
+class EngageTransformation(RecordTransformation):
     def transform(
         self,
         record: Record,
@@ -51,13 +57,22 @@ class RevenueTransformation(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
-        print("=====================================")
-        print("=====================================")
-        print(record)
-        # records = response.json().get(self.data_field, {})
-        # for date_entry in records:
-        #     if date_entry != "$overall":
-        #         yield {"date": date_entry, **records[date_entry]}
+        """
+        - flatten $properties fields
+        - remove leading '$'
+        """
+        record["distinct_id"] = record.pop("$distinct_id")
+        properties = record.pop("$properties")
+        for property_name in properties:
+            this_property_name = property_name
+            if property_name.startswith("$"):
+                # Just remove leading '$' for 'reserved' mixpanel properties name, example:
+                # from API: '$browser'
+                # to stream: 'browser'
+                this_property_name = this_property_name[1:]
+            record[this_property_name] = properties[property_name]
+
+        return record
 
 
 class RevenueDpathExtractor(DpathExtractor):
