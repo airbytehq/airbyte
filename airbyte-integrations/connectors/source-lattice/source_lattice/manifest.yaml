@@ -79,7 +79,8 @@ definitions:
         parent_key: "id"
         partition_field: "review_cycle_id"
   question_partition_router:
-    type: SubstreamPartitionRouter
+    type: CustomPartitionRouter
+    class_name: source_lattice.components.DedupedIdSubstreamPartitionRouter
     parent_stream_configs:
       - stream:
           $ref: "#/definitions/reviews_stream"
@@ -93,7 +94,8 @@ definitions:
         parent_key: "id"
         partition_field: "question_id"
   question_revision_partition_router:
-    type: SubstreamPartitionRouter
+    type: CustomPartitionRouter
+    class_name: source_lattice.components.DedupedIdSubstreamPartitionRouter
     parent_stream_configs:
       - stream:
           $ref: "#/definitions/reviews_stream"
