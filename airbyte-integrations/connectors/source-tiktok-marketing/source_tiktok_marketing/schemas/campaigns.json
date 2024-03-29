@@ -2,76 +2,99 @@
   "type": "object",
   "properties": {
     "campaign_id": {
+      "description": "The unique identifier of the campaign",
       "type": "integer"
     },
     "campaign_name": {
+      "description": "Name of the campaign for easy identification",
       "type": "string"
     },
     "campaign_type": {
+      "description": "Type of campaign (e.g., awareness, conversion)",
       "type": "string"
     },
     "advertiser_id": {
+      "description": "The unique identifier of the advertiser associated with the campaign",
       "type": "integer"
     },
     "budget": {
+      "description": "Total budget allocated for the campaign",
       "type": "number"
     },
     "budget_mode": {
+      "description": "Mode in which the budget is being managed (e.g., daily, lifetime)",
       "type": "string"
     },
     "secondary_status": {
+      "description": "Additional status information of the campaign",
       "type": "string"
     },
     "operation_status": {
+      "description": "Current operational status of the campaign (e.g., active, paused)",
       "type": ["null", "string"]
     },
     "objective": {
+      "description": "The objective or goal of the campaign",
       "type": ["null", "string"]
     },
     "objective_type": {
+      "description": "Type of objective selected for the campaign (e.g., brand awareness, app installs)",
       "type": ["null", "string"]
     },
     "budget_optimize_on": {
+      "description": "The metric or event that the budget optimization is based on",
       "type": ["null", "boolean"]
     },
     "bid_type": {
+      "description": "Type of bid strategy being used in the campaign",
       "type": ["null", "string"]
     },
     "deep_bid_type": {
+      "description": "Advanced bid type used for campaign optimization",
       "type": ["null", "string"]
     },
     "optimization_goal": {
+      "description": "Specific goal to be optimized for in the campaign",
       "type": ["null", "string"]
     },
     "split_test_variable": {
+      "description": "Variable being tested in a split test campaign",
       "type": ["null", "string"]
     },
     "is_new_structure": {
+      "description": "Flag indicating if the campaign utilizes a new campaign structure",
       "type": "boolean"
     },
     "create_time": {
+      "description": "Timestamp when the campaign was created",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "modify_time": {
+      "description": "Timestamp when the campaign was last modified",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "roas_bid": {
+      "description": "Return on ad spend goal set for the campaign",
       "type": ["null", "number"]
     },
     "is_smart_performance_campaign": {
+      "description": "Flag indicating if the campaign uses smart performance optimization",
       "type": ["null", "boolean"]
     },
     "is_search_campaign": {
+      "description": "Flag indicating if the campaign is a search campaign",
       "type": ["null", "boolean"]
     },
     "app_promotion_type": {
+      "description": "Type of app promotion being used in the campaign",
       "type": ["null", "string"]
     },
     "rf_campaign_type": {
+      "description": "Type of RF (reach and frequency) campaign being run",
       "type": ["null", "string"]
     }
   }
