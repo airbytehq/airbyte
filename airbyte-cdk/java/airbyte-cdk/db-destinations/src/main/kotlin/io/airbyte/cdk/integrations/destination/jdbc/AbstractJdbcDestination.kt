@@ -130,7 +130,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         return modifyDataSourceBuilder(builder).build()
     }
 
-    protected fun modifyDataSourceBuilder(
+    protected open fun modifyDataSourceBuilder(
         builder: DataSourceFactory.DataSourceBuilder
     ): DataSourceFactory.DataSourceBuilder {
         return builder
@@ -232,7 +232,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         }
 
         val defaultNamespace = config[configSchemaKey].asText()
-        addDefaultNamespaceToStreams(catalog!!, defaultNamespace)
+        addDefaultNamespaceToStreams(catalog, defaultNamespace)
         return getV2MessageConsumer(
             config,
             catalog,
@@ -248,7 +248,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
         defaultNamespace: String
-    ): SerializedAirbyteMessageConsumer? {
+    ): SerializedAirbyteMessageConsumer {
         val sqlGenerator = sqlGenerator
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
         val parsedCatalog =

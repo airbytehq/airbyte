@@ -22,7 +22,6 @@ import kotlin.Boolean
 import kotlin.IllegalArgumentException
 import kotlin.Int
 import kotlin.String
-import kotlin.UnsupportedOperationException
 import kotlin.plus
 import org.jooq.*
 import org.jooq.conf.ParamType
@@ -71,7 +70,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     }
 
     @VisibleForTesting
-    fun toDialectType(airbyteProtocolType: AirbyteProtocolType): DataType<*> {
+    open fun toDialectType(airbyteProtocolType: AirbyteProtocolType): DataType<*> {
         return when (airbyteProtocolType) {
             AirbyteProtocolType.STRING -> SQLDataType.VARCHAR(65535)
             AirbyteProtocolType.NUMBER -> SQLDataType.DECIMAL(38, 9)
@@ -491,15 +490,6 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         )
     }
 
-    private fun mergeTransaction(
-        streamConfig: StreamConfig,
-        finalSuffix: String,
-        minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
-    ): String {
-        throw UnsupportedOperationException("Not implemented yet")
-    }
-
     protected fun createSchemaSql(namespace: String?): String {
         val dsl = dslContext
         val createSchemaSql = dsl.createSchemaIfNotExists(DSL.quotedName(namespace))
@@ -523,7 +513,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
      * statement. This is useful if the destination's CREATE TABLE statement does not accept an
      * index definition.
      */
-    protected fun createIndexSql(stream: StreamConfig?, suffix: String?): List<String> {
+    protected open fun createIndexSql(stream: StreamConfig?, suffix: String?): List<String> {
         return emptyList()
     }
 
@@ -617,7 +607,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         }
     }
 
-    protected fun castedField(
+    protected open fun castedField(
         field: Field<*>?,
         type: AirbyteProtocolType,
         useExpensiveSaferCasting: Boolean

@@ -82,7 +82,10 @@ abstract class JdbcSqlOperations : SqlOperations {
      * For example, Postgres does not support index definitions within a CREATE TABLE statement, so
      * we need to run CREATE INDEX statements after creating the table.
      */
-    protected fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
+    protected open fun postCreateTableQueries(
+        schemaName: String?,
+        tableName: String?
+    ): List<String> {
         return listOf()
     }
 
