@@ -1,0 +1,28 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/pingdom
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Pingdom Spec
+  type: object
+  required:
+    - api_key
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      order: 0
+      title: API Key
+      airbyte_secret: true
+    probes:
+      type: string
+      order: 1
+      title: probes
+      examples: [probe1, probe2]
+    resolution:
+      enum:
+        - hour
+        - day
+        - week
+      type: string
+      order: 2
+      title: resolution
+      default: hour

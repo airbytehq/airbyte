@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ipv6": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "created": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "hostname": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "resolution": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "lastdownend": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "lasttesttime": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "lastdownstart": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "lasterrortime": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "lastresponsetime": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "verify_certificate": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    }
+  }
+}
