@@ -76,7 +76,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          spaceKey: {{ config['space_key'] }}
+          spaceKey: "{{ config['space_key'] }}"
           expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
     primary_key: "id"
     $parameters:
@@ -102,7 +102,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          spaceKey: {{ config['space_key'] }}
+          spaceKey: "{{ config['space_key'] }}"
           expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
     primary_key: "id"
     $parameters:
