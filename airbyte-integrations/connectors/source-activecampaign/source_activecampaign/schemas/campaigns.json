@@ -67,17 +67,11 @@
     },
     "sdate": {
       "description": "Start date of the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "ldate": {
       "description": "Last update date of the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "send_amt": {
       "description": "Amount sent for the campaign",
@@ -217,17 +211,11 @@
     },
     "htmlunsubdata": {
       "description": "Data related to HTML unsubscribe for the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "textunsubdata": {
       "description": "Data related to text unsubscribe for the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "recurring": {
       "description": "Recurring campaign settings",
@@ -279,10 +267,7 @@
     },
     "reminder_format": {
       "description": "Format of the reminder for the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "reminder_type": {
       "description": "Type of reminder set for the campaign",
@@ -302,10 +287,7 @@
     },
     "reminder_last_cron_run": {
       "description": "Last cron run time for reminders",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "activerss_interval": {
       "description": "The interval for Activerss feed updates",
@@ -313,10 +295,7 @@
     },
     "activerss_url": {
       "description": "URL of the Activerss feed",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "activerss_items": {
       "description": "Number of items in Activerss feed",
@@ -340,24 +319,15 @@
     },
     "scheduleddate": {
       "description": "Scheduled date for the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "waitpreview": {
       "description": "Preview settings for wait actions in the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "deletestamp": {
       "description": "Timestamp for deletion of the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "replysys": {
       "description": "Settings related to replies for the campaign",
@@ -411,10 +381,7 @@
     },
     "automation": {
       "description": "Automation settings for the campaign",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   },
   "required": [

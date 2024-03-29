@@ -5,20 +5,12 @@
   "properties": {
     "name": {
       "description": "Name of the form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "Testing"
-      ]
+      "type": ["string", "null"],
+      "examples": ["Testing"]
     },
     "action": {
       "description": "Action associated with the form",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "actiondata": {
       "description": "Data related to the action",
@@ -32,33 +24,18 @@
             "properties": {
               "type": {
                 "description": "Type of action",
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "examples": [
-                  "subscribe-to-list"
-                ]
+                "type": ["string", "null"],
+                "examples": ["subscribe-to-list"]
               },
               "email": {
                 "description": "Email associated with the action",
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "examples": [
-                  "johndoe@example.com"
-                ]
+                "type": ["string", "null"],
+                "examples": ["johndoe@example.com"]
               },
               "list": {
                 "description": "List associated with the action",
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "examples": [
-                  "1"
-                ]
+                "type": ["string", "null"],
+                "examples": ["1"]
               }
             }
           }
@@ -67,13 +44,8 @@
     },
     "submit": {
       "description": "Submission button of the form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "show-thank-you"
-      ]
+      "type": ["string", "null"],
+      "examples": ["show-thank-you"]
     },
     "submitdata": {
       "description": "Data related to form submission",
@@ -81,63 +53,36 @@
       "properties": {
         "url": {
           "description": "URL for form submission",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         }
       }
     },
     "url": {
       "description": "URL of the form",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "layout": {
       "description": "Layout of the form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "inline-form"
-      ]
+      "type": ["string", "null"],
+      "examples": ["inline-form"]
     },
     "title": {
       "description": "Title of the form",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "body": {
       "description": "Body of the form",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "button": {
       "description": "Button associated with the form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "Submit"
-      ]
+      "type": ["string", "null"],
+      "examples": ["Submit"]
     },
     "thanks": {
       "description": "Thank you message associated with form submission",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "Thanks for signing up!"
-      ]
+      "type": ["string", "null"],
+      "examples": ["Thanks for signing up!"]
     },
     "style": {
       "description": "Style elements of the form",
@@ -145,44 +90,23 @@
       "properties": {
         "background": {
           "description": "Background of the form",
-          "type": [
-            "string",
-            "null"
-          ],
-          "examples": [
-            "FFFFFF"
-          ]
+          "type": ["string", "null"],
+          "examples": ["FFFFFF"]
         },
         "dark": {
           "description": "Dark mode status",
-          "type": [
-            "boolean",
-            "null"
-          ],
-          "examples": [
-            true,
-            false
-          ]
+          "type": ["boolean", "null"],
+          "examples": [true, false]
         },
         "fontcolor": {
           "description": "Font color of the form",
-          "type": [
-            "string",
-            "null"
-          ],
-          "examples": [
-            "000000"
-          ]
+          "type": ["string", "null"],
+          "examples": ["000000"]
         },
         "layout": {
           "description": "Layout of the form",
-          "type": [
-            "string",
-            "null"
-          ],
-          "examples": [
-            "normal"
-          ]
+          "type": ["string", "null"],
+          "examples": ["normal"]
         },
         "border": {
           "description": "Border styles of the form",
@@ -190,67 +114,36 @@
           "properties": {
             "width": {
               "description": "Width of the border",
-              "type": [
-                "integer",
-                "null"
-              ],
-              "examples": [
-                0
-              ]
+              "type": ["integer", "null"],
+              "examples": [0]
             },
             "style": {
               "description": "Style of the border",
-              "type": [
-                "string",
-                "null"
-              ],
-              "examples": [
-                "solid"
-              ]
+              "type": ["string", "null"],
+              "examples": ["solid"]
             },
             "color": {
               "description": "Color of the border",
-              "type": [
-                "string",
-                "null"
-              ],
-              "examples": [
-                "B0B0B0"
-              ]
+              "type": ["string", "null"],
+              "examples": ["B0B0B0"]
             },
             "radius": {
               "description": "Radius of the border",
-              "type": [
-                "integer",
-                "null"
-              ],
+              "type": ["integer", "null"],
               "default": 0,
-              "examples": [
-                0
-              ]
+              "examples": [0]
             }
           }
         },
         "width": {
           "description": "Width of the form",
-          "type": [
-            "integer",
-            "null"
-          ],
-          "examples": [
-            500
-          ]
+          "type": ["integer", "null"],
+          "examples": [500]
         },
         "ac_branding": {
           "description": "ActiveCampaign branding status",
-          "type": [
-            "boolean",
-            "null"
-          ],
-          "examples": [
-            true,
-            false
-          ]
+          "type": ["boolean", "null"],
+          "examples": [true, false]
         },
         "button": {
           "description": "Button style of the form",
@@ -258,33 +151,18 @@
           "properties": {
             "padding": {
               "description": "Padding of the button",
-              "type": [
-                "integer",
-                "null"
-              ],
-              "examples": [
-                10
-              ]
+              "type": ["integer", "null"],
+              "examples": [10]
             },
             "background": {
               "description": "Background of the button",
-              "type": [
-                "string",
-                "null"
-              ],
-              "examples": [
-                "333333"
-              ]
+              "type": ["string", "null"],
+              "examples": ["333333"]
             },
             "fontcolor": {
               "description": "Font color of the button",
-              "type": [
-                "string",
-                "null"
-              ],
-              "examples": [
-                "FFFFFF"
-              ]
+              "type": ["string", "null"],
+              "examples": ["FFFFFF"]
             },
             "border": {
               "description": "Border styles of the button",
@@ -292,43 +170,23 @@
               "properties": {
                 "radius": {
                   "description": "Radius of the button border",
-                  "type": [
-                    "integer",
-                    "null"
-                  ],
-                  "examples": [
-                    4
-                  ]
+                  "type": ["integer", "null"],
+                  "examples": [4]
                 },
                 "color": {
                   "description": "Color of the button border",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "examples": [
-                    "333333"
-                  ]
+                  "type": ["string", "null"],
+                  "examples": ["333333"]
                 },
                 "style": {
                   "description": "Style of the button border",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "examples": [
-                    "solid"
-                  ]
+                  "type": ["string", "null"],
+                  "examples": ["solid"]
                 },
                 "width": {
                   "description": "Width of the button border",
-                  "type": [
-                    "integer",
-                    "null"
-                  ],
-                  "examples": [
-                    0
-                  ]
+                  "type": ["integer", "null"],
+                  "examples": [0]
                 }
               }
             }
@@ -342,64 +200,34 @@
       "properties": {
         "blanks_overwrite": {
           "description": "Whether to overwrite blanks",
-          "type": [
-            "boolean",
-            "null"
-          ],
-          "examples": [
-            true,
-            false
-          ]
+          "type": ["boolean", "null"],
+          "examples": [true, false]
         },
         "confaction": {
           "description": "Action confirmations",
-          "type": [
-            "string",
-            "null"
-          ],
-          "examples": [
-            "show-message"
-          ]
+          "type": ["string", "null"],
+          "examples": ["show-message"]
         },
         "sendoptin": {
           "description": "Sending opt-in status",
-          "type": [
-            "boolean",
-            "null"
-          ],
-          "examples": [
-            true,
-            false
-          ]
+          "type": ["boolean", "null"],
+          "examples": [true, false]
         },
         "optin_id": {
           "description": "ID of the opt-in",
-          "type": [
-            "integer",
-            "null"
-          ],
-          "examples": [
-            1
-          ]
+          "type": ["integer", "null"],
+          "examples": [1]
         },
         "optin_created": {
           "description": "Opt-in created status",
           "type": "boolean",
           "default": true,
-          "examples": [
-            true,
-            false
-          ]
+          "examples": [true, false]
         },
         "confform": {
           "description": "Form confirmations",
-          "type": [
-            "string",
-            "null"
-          ],
-          "examples": [
-            "2"
-          ]
+          "type": ["string", "null"],
+          "examples": ["2"]
         }
       }
     },
@@ -411,118 +239,63 @@
         "properties": {
           "type": {
             "description": "Type of the custom field",
-            "type": [
-              "string",
-              "null"
-            ],
-            "examples": [
-              "header"
-            ]
+            "type": ["string", "null"],
+            "examples": ["header"]
           },
           "header": {
             "description": "Header of the custom field",
-            "type": [
-              "string",
-              "null"
-            ],
-            "examples": [
-              "Subscribe for Email Updates"
-            ]
+            "type": ["string", "null"],
+            "examples": ["Subscribe for Email Updates"]
           },
           "class": {
             "description": "Class of the custom field",
-            "type": [
-              "string",
-              "null"
-            ],
-            "examples": [
-              "_x41699710"
-            ]
+            "type": ["string", "null"],
+            "examples": ["_x41699710"]
           }
         }
       }
     },
     "parentformid": {
       "description": "ID of the parent form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "0"
-      ]
+      "type": ["string", "null"],
+      "examples": ["0"]
     },
     "userid": {
       "description": "ID of the user associated with the form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "1"
-      ]
+      "type": ["string", "null"],
+      "examples": ["1"]
     },
     "addressid": {
       "description": "ID of the address",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "0"
-      ]
+      "type": ["string", "null"],
+      "examples": ["0"]
     },
     "cdate": {
       "description": "Creation date of the form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "2018-08-17T13:47:31-05:00"
-      ]
+      "type": ["string", "null"],
+      "examples": ["2018-08-17T13:47:31-05:00"]
     },
     "udate": {
       "description": "Update date of the form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "2018-08-17T13:47:38-05:00"
-      ]
+      "type": ["string", "null"],
+      "examples": ["2018-08-17T13:47:38-05:00"]
     },
     "entries": {
       "description": "Entries related to the form",
-      "type": [
-        "string",
-        "null"
-      ],
-      "examples": [
-        "0"
-      ]
+      "type": ["string", "null"],
+      "examples": ["0"]
     },
     "aid": {
       "description": "AID of the form",
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "default": "0",
-      "examples": [
-        "0"
-      ]
+      "examples": ["0"]
     },
     "defaultscreenshot": {
       "description": "Default screenshot of the form",
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "default": "http://img-us1.com/default-form.gif",
-      "examples": [
-        "http://img-us1.com/default-form.gif"
-      ]
+      "examples": ["http://img-us1.com/default-form.gif"]
     },
     "recent": {
       "description": "Recent changes related to the form",
@@ -532,17 +305,13 @@
       "description": "Contacts associated with the form",
       "type": "integer",
       "default": 0,
-      "examples": [
-        0
-      ]
+      "examples": [0]
     },
     "deals": {
       "description": "Deals associated with the form",
       "type": "integer",
       "default": 0,
-      "examples": [
-        0
-      ]
+      "examples": [0]
     },
     "links": {
       "description": "Links related to the form",
@@ -550,14 +319,9 @@
       "properties": {
         "address": {
           "description": "Address related to the form",
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": "https://:account.api-us1.com/api/3/forms/1/address",
-          "examples": [
-            "https://:account.api-us1.com/api/3/forms/1/address"
-          ]
+          "examples": ["https://:account.api-us1.com/api/3/forms/1/address"]
         }
       }
     },
@@ -565,19 +329,12 @@
       "description": "ID of the form",
       "type": "string",
       "default": "1",
-      "examples": [
-        "1"
-      ]
+      "examples": ["1"]
     },
     "address": {
       "description": "Address of the form",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   },
-  "required": [
-    "id"
-  ]
+  "required": ["id"]
 }
