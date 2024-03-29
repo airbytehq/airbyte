@@ -3,10 +3,20 @@
   "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
-    "id": { "type": ["null", "string"] },
-    "name": { "type": ["null", "string"] },
-    "description": { "type": ["null", "string"] },
+    "id": {
+      "description": "Unique identifier for the product",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name or title of the product",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "Detailed information or features of the product",
+      "type": ["null", "string"]
+    },
     "create_time": {
+      "description": "The time when the product was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -16,9 +26,18 @@
         "type": "object",
         "additionalProperties": true,
         "properties": {
-          "href": { "type": ["null", "string"] },
-          "rel": { "type": ["null", "string"] },
-          "method": { "type": ["null", "string"] }
+          "href": {
+            "description": "The URL for the link",
+            "type": ["null", "string"]
+          },
+          "rel": {
+            "description": "Relationship of the linked resource to the product",
+            "type": ["null", "string"]
+          },
+          "method": {
+            "description": "HTTP method used for the link (GET, POST, PUT, DELETE, etc.)",
+            "type": ["null", "string"]
+          }
         }
       }
     }

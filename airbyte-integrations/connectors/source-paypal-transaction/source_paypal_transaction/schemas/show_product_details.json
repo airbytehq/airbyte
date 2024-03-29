@@ -3,24 +3,62 @@
   "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
-    "id": { "type": ["null", "string"] },
-    "name": { "type": ["null", "string"] },
-    "description": { "type": ["null", "string"] },
-    "type": { "type": ["null", "string"] },
-    "category": { "type": ["null", "string"] },
-    "image_url": { "type": ["null", "string"] },
-    "home_url": { "type": ["null", "string"] },
-    "create_time": { "type": ["null", "string"], "format": "date-time" },
-    "update_time": { "type": ["null", "string"], "format": "date-time" },
+    "id": {
+      "description": "The unique identifier for the product",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name of the product",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The detailed description of the product",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "The type or category of the product",
+      "type": ["null", "string"]
+    },
+    "category": {
+      "description": "The category to which the product belongs",
+      "type": ["null", "string"]
+    },
+    "image_url": {
+      "description": "The URL to the image representing the product",
+      "type": ["null", "string"]
+    },
+    "home_url": {
+      "description": "The URL for the home page of the product",
+      "type": ["null", "string"]
+    },
+    "create_time": {
+      "description": "The date and time when the product was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "update_time": {
+      "description": "The date and time when the product was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "links": {
       "type": "array",
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "href": { "type": ["null", "string"] },
-          "rel": { "type": ["null", "string"] },
-          "method": { "type": ["null", "string"] }
+          "href": {
+            "description": "The URL associated with the link",
+            "type": ["null", "string"]
+          },
+          "rel": {
+            "description": "The relationship of the link to the product",
+            "type": ["null", "string"]
+          },
+          "method": {
+            "description": "The HTTP method used for the link",
+            "type": ["null", "string"]
+          }
         }
       }
     }
