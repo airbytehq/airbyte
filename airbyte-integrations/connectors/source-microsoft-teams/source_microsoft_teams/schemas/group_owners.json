@@ -6,47 +6,43 @@
     "id": {
       "type": ["null", "string"]
     },
-    "group_id": {
+    "groupId": {
       "type": ["null", "string"]
     },
-    "business_phones": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "display_name": {
+    "@odata.type": {
       "type": ["null", "string"]
     },
-    "given_name": {
+    "businessPhones": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "displayName": {
       "type": ["null", "string"]
     },
-    "job_title": {
+    "givenName": {
+      "type": ["null", "string"]
+    },
+    "jobTitle": {
       "type": ["null", "string"]
     },
     "mail": {
       "type": ["null", "string"]
     },
-    "mobile_phone": {
+    "mobilePhone": {
       "type": ["null", "string"]
     },
-    "office_location": {
+    "officeLocation": {
       "type": ["null", "string"]
     },
-    "preferred_language": {
+    "preferredLanguage": {
       "type": ["null", "string"]
     },
     "surname": {
       "type": ["null", "string"]
     },
-    "user_principal_name": {
+    "userPrincipalName": {
       "type": ["null", "string"]
     }
   }

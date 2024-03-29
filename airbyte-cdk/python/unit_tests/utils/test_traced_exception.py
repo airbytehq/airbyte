@@ -37,7 +37,7 @@ def test_exception_as_airbyte_message():
     traced_exc = AirbyteTracedException("an internal message")
     airbyte_message = traced_exc.as_airbyte_message()
 
-    assert type(airbyte_message) == AirbyteMessage
+    assert isinstance(airbyte_message, AirbyteMessage)
     assert airbyte_message.type == MessageType.TRACE
     assert airbyte_message.trace.type == TraceType.ERROR
     assert airbyte_message.trace.emitted_at > 0
@@ -51,7 +51,7 @@ def test_existing_exception_as_airbyte_message(raised_exception):
     traced_exc = AirbyteTracedException.from_exception(raised_exception)
     airbyte_message = traced_exc.as_airbyte_message()
 
-    assert type(airbyte_message) == AirbyteMessage
+    assert isinstance(airbyte_message, AirbyteMessage)
     assert airbyte_message.type == MessageType.TRACE
     assert airbyte_message.trace.type == TraceType.ERROR
     assert airbyte_message.trace.error.message == "Something went wrong in the connector. See the logs for more details."
@@ -66,7 +66,7 @@ def test_config_error_as_connection_status_message():
     traced_exc = AirbyteTracedException("an internal message", message="Config validation error", failure_type=FailureType.config_error)
     airbyte_message = traced_exc.as_connection_status_message()
 
-    assert type(airbyte_message) == AirbyteMessage
+    assert isinstance(airbyte_message, AirbyteMessage)
     assert airbyte_message.type == MessageType.CONNECTION_STATUS
     assert airbyte_message.connectionStatus.status == Status.FAILED
     assert airbyte_message.connectionStatus.message == "Config validation error"

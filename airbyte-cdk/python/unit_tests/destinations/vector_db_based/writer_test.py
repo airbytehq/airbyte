@@ -5,6 +5,7 @@
 from typing import Optional
 from unittest.mock import ANY, MagicMock, call
 
+import pytest
 from airbyte_cdk.destinations.vector_db_based import ProcessingConfigModel, Writer
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteLogMessage,
@@ -47,13 +48,14 @@ def generate_stream(name: str = "example_stream", namespace: Optional[str] = Non
 
 def generate_mock_embedder():
     mock_embedder = MagicMock()
-    mock_embedder.embed_chunks.return_value = [[0] * 1536] * (BATCH_SIZE + 5 + 5)
-    mock_embedder.embed_chunks.side_effect = lambda chunks: [[0] * 1536] * len(chunks)
+    mock_embedder.embed_documents.return_value = [[0] * 1536] * (BATCH_SIZE + 5 + 5)
+    mock_embedder.embed_documents.side_effect = lambda chunks: [[0] * 1536] * len(chunks)
 
     return mock_embedder
 
 
-def test_write():
+@pytest.mark.parametrize("omit_raw_text", [True, False])
+def test_write(omit_raw_text: bool):
     """
     Basic test for the write method, batcher and document processor.
     """
@@ -74,7 +76,7 @@ def test_write():
     mock_indexer.post_sync.return_value = [post_sync_log_message]
 
     # Create the DestinationLangchain instance
-    writer = Writer(config_model, mock_indexer, mock_embedder, BATCH_SIZE)
+    writer = Writer(config_model, mock_indexer, mock_embedder, BATCH_SIZE, omit_raw_text)
 
     output_messages = writer.write(configured_catalog, input_messages)
     output_message = next(output_messages)
@@ -86,7 +88,15 @@ def test_write():
     # 1 batches due to max batch size reached and 1 batch due to state message
     assert mock_indexer.index.call_count == 2
     assert mock_indexer.delete.call_count == 2
-    assert mock_embedder.embed_chunks.call_count == 2
+    assert mock_embedder.embed_documents.call_count == 2
+
+    if omit_raw_text:
+        for call_args in mock_indexer.index.call_args_list:
+            for chunk in call_args[0][0]:
+                if omit_raw_text:
+                    assert chunk.page_content is None
+                else:
+                    assert chunk.page_content is not None
 
     output_message = next(output_messages)
     assert output_message == post_sync_log_message
@@ -100,7 +110,7 @@ def test_write():
     # 1 batch due to end of message stream
     assert mock_indexer.index.call_count == 3
     assert mock_indexer.delete.call_count == 3
-    assert mock_embedder.embed_chunks.call_count == 3
+    assert mock_embedder.embed_documents.call_count == 3
 
     mock_indexer.post_sync.assert_called()
 
@@ -138,7 +148,7 @@ def test_write_stream_namespace_split():
     mock_indexer.post_sync.return_value = []
 
     # Create the DestinationLangchain instance
-    writer = Writer(config_model, mock_indexer, mock_embedder, BATCH_SIZE)
+    writer = Writer(config_model, mock_indexer, mock_embedder, BATCH_SIZE, False)
 
     output_messages = writer.write(configured_catalog, input_messages)
     next(output_messages)
@@ -159,4 +169,4 @@ def test_write_stream_namespace_split():
             call(ANY, None, "example_stream2"),
         ]
     )
-    assert mock_embedder.embed_chunks.call_count == 4
+    assert mock_embedder.embed_documents.call_count == 4

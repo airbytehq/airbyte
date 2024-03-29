@@ -3,6 +3,7 @@
 #
 
 import functools
+import logging
 import queue
 import re
 import threading
@@ -17,10 +18,12 @@ from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v15.errors.types.authentication_error import AuthenticationErrorEnum
 from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v15.errors.types.query_error import QueryErrorEnum
 from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
 from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import Unauthenticated
-from source_google_ads.google_ads import logger
+
+logger = logging.getLogger("airbyte")
 
 
 def get_resource_name(stream_name: str) -> str:
@@ -54,7 +57,12 @@ def is_error_type(error_value, target_enum_value):
     return int(error_value) == int(target_enum_value)
 
 
-def traced_exception(ga_exception: Union[GoogleAdsException, Unauthenticated], customer_id: str, catch_disabled_customer_error: bool):
+def traced_exception(
+    ga_exception: Union[GoogleAdsException, Unauthenticated],
+    customer_id: str,
+    catch_disabled_customer_error: bool,
+    query_name: Optional[str] = None,
+) -> None:
     """Add user-friendly message for GoogleAdsException"""
     messages = []
     raise_exception = AirbyteTracedException
@@ -83,6 +91,9 @@ def traced_exception(ga_exception: Union[GoogleAdsException, Unauthenticated], c
                 f"Ensure the customer is linked to your manager account or check your permissions to access this customer account."
             )
 
+        elif is_error_type(authentication_error, AuthenticationErrorEnum.AuthenticationError.TWO_STEP_VERIFICATION_NOT_ENROLLED):
+            message = "An account administrator changed this account's authentication settings. To access this Google Ads account, enable 2-Step Verification in your Google account at https://www.google.com/landing/2step"
+
         # If the error is encountered in the internally used class `ServiceAccounts`, an exception is raised.
         # For other classes, the error is logged and skipped to prevent sync failure. See: https://github.com/airbytehq/airbyte/issues/12486
         elif is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED):
@@ -96,6 +107,13 @@ def traced_exception(ga_exception: Union[GoogleAdsException, Unauthenticated], c
                     "For reactivating deactivated accounts, refer to: "
                     "https://support.google.com/google-ads/answer/2375392."
                 )
+
+        elif is_error_type(query_error, QueryErrorEnum.QueryError.UNRECOGNIZED_FIELD):
+            message = (
+                f"The Custom Query: `{query_name}` has {error.message.lower()} Please make sure the field exists or name entered is valid."
+            )
+            # additionally log the error for visability during `check_connection` in UI.
+            logger.error(message)
 
         elif query_error:
             message = f"Incorrect custom query. {error.message}"

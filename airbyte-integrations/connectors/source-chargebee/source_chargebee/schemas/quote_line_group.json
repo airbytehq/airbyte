@@ -9,6 +9,9 @@
     "id": {
       "type": ["string", "null"]
     },
+    "quote_id": {
+      "type": ["string", "null"]
+    },
     "sub_total": {
       "type": ["integer", "null"]
     },
@@ -25,15 +28,7 @@
       "type": ["integer", "null"]
     },
     "charge_event": {
-      "type": ["string", "null"],
-      "enum": [
-        "immediate",
-        "subscription_creation",
-        "trial_start",
-        "subscription_change",
-        "subscription_renewal",
-        "subscription_cancel"
-      ]
+      "type": ["string", "null"]
     },
     "billing_cycle_number": {
       "type": ["integer", "null"]
@@ -65,8 +60,7 @@
             "type": ["integer", "null"]
           },
           "pricing_model": {
-            "type": ["string", "null"],
-            "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+            "type": ["string", "null"]
           },
           "is_taxed": {
             "type": ["boolean", "null"]
@@ -102,32 +96,21 @@
             "type": ["string", "null"]
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "adhoc",
-              "plan_item_price",
-              "addon_item_price",
-              "charge_item_price"
-            ]
+            "type": ["string", "null"]
           },
           "tax_exempt_reason": {
-            "type": ["string", "null"],
-            "enum": [
-              "tax_not_configured",
-              "region_non_taxable",
-              "export",
-              "customer_exempt",
-              "product_exempt",
-              "zero_rated",
-              "reverse_charge",
-              "high_value_physical_goods",
-              "zero_value_item"
-            ]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "customer_id": {
+            "type": ["string", "null"]
+          },
+          "metered": {
+            "type": ["boolean", "null"]
+          },
+          "object": {
             "type": ["string", "null"]
           }
         }
@@ -148,24 +131,18 @@
             "type": ["string", "null"]
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits",
-              "item_level_discount",
-              "document_level_discount"
-            ]
+            "type": ["string", "null"]
           },
           "discount_type": {
-            "type": ["string", "null"],
-            "enum": ["fixed_amount", "percentage"]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "coupon_set_code": {
+            "type": ["string", "null"]
+          },
+          "object": {
             "type": ["string", "null"]
           }
         }
@@ -180,21 +157,16 @@
             "type": ["string", "null"]
           },
           "discount_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits",
-              "item_level_discount",
-              "document_level_discount"
-            ]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "discount_amount": {
             "type": ["integer", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
@@ -243,17 +215,7 @@
             "type": ["integer", "null"]
           },
           "tax_juris_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "country",
-              "federal",
-              "state",
-              "county",
-              "city",
-              "special",
-              "unincorporated",
-              "other"
-            ]
+            "type": ["string", "null"]
           },
           "tax_juris_name": {
             "type": ["string", "null"]
@@ -270,19 +232,11 @@
         }
       }
     },
+    "object": {
+      "type": ["string", "null"]
+    },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

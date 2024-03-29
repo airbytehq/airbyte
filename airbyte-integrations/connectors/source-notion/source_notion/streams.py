@@ -252,6 +252,22 @@ class Users(NotionStream):
             params["start_cursor"] = next_page_token["next_cursor"]
         return params
 
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        owner = record.get("bot", {}).get("owner")
+        if owner:
+            owner_type = owner.get("type")
+            owner_info = owner.get(owner_type)
+            if owner_type and owner_info:
+                record["bot"]["owner"]["info"] = owner_info
+                del record["bot"]["owner"][owner_type]
+        return record
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # sometimes notion api returns response without results object
+        data = response.json().get("results", [])
+        for record in data:
+            yield self.transform(record)
+
 
 class Databases(IncrementalNotionStream):
     """
@@ -313,6 +329,20 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
             yield {"page_id": page_id}
 
+    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        transform_object_field = record.get("type")
+
+        if transform_object_field:
+            rich_text = record.get(transform_object_field, {}).get("rich_text", [])
+            for r in rich_text:
+                mention = r.get("mention")
+                if mention:
+                    type_info = mention[mention["type"]]
+                    record[transform_object_field]["rich_text"][rich_text.index(r)]["mention"]["info"] = type_info
+                    del record[transform_object_field]["rich_text"][rich_text.index(r)]["mention"][mention["type"]]
+
+        return record
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         # pages and databases blocks are already fetched in their streams, so no
         # need to do it again
@@ -321,7 +351,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         records = super().parse_response(response, stream_state=stream_state, **kwargs)
         for record in records:
             if record["type"] not in ("child_page", "child_database", "ai_block"):
-                yield record
+                yield self.transform(record)
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         # if reached recursive limit, don't read anymore

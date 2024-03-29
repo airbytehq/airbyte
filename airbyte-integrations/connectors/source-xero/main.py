@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_xero import SourceXero
+from source_xero.run import run
 
 if __name__ == "__main__":
-    source = SourceXero()
-    launch(source, sys.argv[1:])
+    run()

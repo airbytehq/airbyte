@@ -69,6 +69,7 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 | Version | Date       | Pull Request                                                 | Subject                                                                     |
 | :------ | :--------- | :----------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 2.1.1 | 2023-12-14 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
 | 2.1.0   | 2023-10-13 | [31333](https://github.com/airbytehq/airbyte/pull/31333)     | Add stream for arbitrary datasets                                           |
 | 2.0.0   | 2023-09-18 | [30428](https://github.com/airbytehq/airbyte/pull/30428)     | Fix broken stream, manifest refactor                                        |
 | 1.0.0   | 2023-08-25 | [29859](https://github.com/airbytehq/airbyte/pull/29859)     | Migrate to lowcode                                                          |

@@ -127,9 +127,14 @@ class MilvusIndexer(Indexer):
         entities = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
-            entities.append(
-                {**self._normalize(chunk.metadata), self.config.vector_field: chunk.embedding, self.config.text_field: chunk.page_content}
-            )
+            entity = {
+                **self._normalize(chunk.metadata),
+                self.config.vector_field: chunk.embedding,
+                self.config.text_field: chunk.page_content,
+            }
+            if chunk.page_content is not None:
+                entity[self.config.text_field] = chunk.page_content
+            entities.append(entity)
         self._collection.insert(entities)
 
     def delete(self, delete_ids, namespace, stream):

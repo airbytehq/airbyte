@@ -18,10 +18,10 @@ def conversations_list(requests_mock):
         "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
         json={
             "channels": [
-                {"name": "advice-data-architecture", "id": 1},
-                {"name": "advice-data-orchestration", "id": 2},
-                {"name": "airbyte-for-beginners", "id": 3},
-                {"name": "good-reads", "id": 4},
+                {"name": "advice-data-architecture", "id": 1, "is_member": False},
+                {"name": "advice-data-orchestration", "id": 2, "is_member": True},
+                {"name": "airbyte-for-beginners", "id": 3, "is_member": False},
+                {"name": "good-reads", "id": 4, "is_member": True},
             ]
         },
     )

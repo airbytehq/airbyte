@@ -104,7 +104,7 @@ The Google Analytics (Universal Analytics) source connector can sync the followi
 
 Reach out to us on Slack or [create an issue](https://github.com/airbytehq/airbyte/issues) if you need to send custom Google Analytics report data with Airbyte.
 
-## Rate Limits and Performance Considerations \(Airbyte Open-Source\)
+## Rate Limits and Performance Considerations \(Airbyte Open Source\)
 
 [Analytics Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas)
 
@@ -282,8 +282,12 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| 0.2.2 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+|:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.3.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 0.2.5   | 2024-02-09 | [35101](https://github.com/airbytehq/airbyte/pull/35101) | Manage dependencies with Poetry.                                                             |
+| 0.2.4   | 2024-01-22 | [34323](https://github.com/airbytehq/airbyte/pull/34323) | Update setup dependencies                                                                    |
+| 0.2.3   | 2024-01-18 | [34353](https://github.com/airbytehq/airbyte/pull/34353) | Add End date option                                                                          |
+| 0.2.2   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image              |
 | 0.2.1   | 2023-07-11 | [28149](https://github.com/airbytehq/airbyte/pull/28149) | Specify date format to support datepicker in UI                                              |
 | 0.2.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                                         |
 | 0.1.36  | 2023-04-13 | [22223](https://github.com/airbytehq/airbyte/pull/22223) | Fix custom report with Segments dimensions                                                   |

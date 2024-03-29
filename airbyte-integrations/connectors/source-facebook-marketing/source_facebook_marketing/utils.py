@@ -11,7 +11,7 @@ from pendulum import Date, DateTime
 logger = logging.getLogger("airbyte")
 
 # Facebook store metrics maximum of 37 months old. Any time range that
-# older that 37 months from current date would result in 400 Bad request
+# older than 37 months from current date would result in 400 Bad request
 # HTTP response.
 # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
 DATA_RETENTION_PERIOD = 37

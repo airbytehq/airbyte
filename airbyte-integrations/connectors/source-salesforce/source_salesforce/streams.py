@@ -8,6 +8,7 @@ import math
 import os
 import time
 import urllib.parse
+import uuid
 from abc import ABC
 from contextlib import closing
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
@@ -17,8 +18,9 @@ import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
@@ -26,7 +28,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 from requests.models import PreparedRequest
 
-from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
@@ -36,15 +38,24 @@ CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 DEFAULT_ENCODING = "utf-8"
+LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
 
 
 class SalesforceStream(HttpStream, ABC):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     encoding = DEFAULT_ENCODING
 
     def __init__(
-        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
+        self,
+        sf_api: Salesforce,
+        pk: str,
+        stream_name: str,
+        sobject_options: Mapping[str, Any] = None,
+        schema: dict = None,
+        start_date=None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
@@ -52,6 +63,14 @@ class SalesforceStream(HttpStream, ABC):
         self.stream_name = stream_name
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
+        self.start_date = self.format_start_date(start_date)
+
+    @staticmethod
+    def format_start_date(start_date: Optional[str]) -> Optional[str]:
+        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
+        if start_date:
+            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
+        return None
 
     @property
     def max_properties_length(self) -> int:
@@ -92,6 +111,16 @@ class SalesforceStream(HttpStream, ABC):
             return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
         return super().get_error_display_message(exception)
 
+    def get_start_date_from_state(self, stream_state: Mapping[str, Any] = None) -> pendulum.DateTime:
+        if self.state_converter.is_state_message_compatible(stream_state):
+            # stream_state is in the concurrent format
+            if stream_state.get("slices", []):
+                return stream_state["slices"][0]["end"]
+        elif stream_state and not self.state_converter.is_state_message_compatible(stream_state):
+            # stream_state has not been converted to the concurrent format; this is not expected
+            return pendulum.parse(stream_state.get(self.cursor_field), tz="UTC")
+        return pendulum.parse(self.start_date, tz="UTC")
+
 
 class PropertyChunk:
     """
@@ -111,6 +140,8 @@ class PropertyChunk:
 
 
 class RestSalesforceStream(SalesforceStream):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert self.primary_key or not self.too_many_properties
@@ -140,13 +171,17 @@ class RestSalesforceStream(SalesforceStream):
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
         if next_page_token:
-            """
-            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
-            """
+            # If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
             return {}
 
         property_chunk = property_chunk or {}
         query = f"SELECT {','.join(property_chunk.keys())} FROM {self.name} "
+
+        if self.name in PARENT_SALESFORCE_OBJECTS:
+            # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', ...)"
+            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
+            query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
@@ -279,6 +314,31 @@ class RestSalesforceStream(SalesforceStream):
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         response = self._send_request(request, request_kwargs)
         return request, response
+
+
+class BatchedSubStream(HttpSubStream):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
+    SLICE_BATCH_SIZE = 200
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Instead of yielding one parent record at a time, make stream slice contain a batch of parent records.
+
+        It allows to get <SLICE_BATCH_SIZE> records by one requests (instead of only one).
+        """
+        batched_slice = []
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+            if len(batched_slice) == self.SLICE_BATCH_SIZE:
+                yield {"parents": batched_slice}
+                batched_slice = []
+            batched_slice.append(stream_slice["parent"])
+        if batched_slice:
+            yield {"parents": batched_slice}
+
+
+class RestSalesforceSubStream(BatchedSubStream, RestSalesforceStream):
+    pass
 
 
 class BulkSalesforceStream(SalesforceStream):
@@ -468,7 +528,7 @@ class BulkSalesforceStream(SalesforceStream):
         Return the tuple containing string with file path of downloaded binary data (Saved temporarily) and file encoding.
         """
         # set filepath for binary data from response
-        tmp_file = os.path.realpath(os.path.basename(url))
+        tmp_file = str(uuid.uuid4())
         with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
             tmp_file, "wb"
         ) as data_file:
@@ -541,6 +601,12 @@ class BulkSalesforceStream(SalesforceStream):
         if next_page_token:
             query += next_page_token["next_token"]
 
+        if self.name in PARENT_SALESFORCE_OBJECTS:
+            # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', '06905000000Mxp7XXX', ...)"
+            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
+            query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
+
         return {"q": query}
 
     def read_records(
@@ -604,6 +670,10 @@ class BulkSalesforceStream(SalesforceStream):
         return new_cls(**stream_kwargs)
 
 
+class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
+    pass
+
+
 @BulkSalesforceStream.transformer.registerCustomTransform
 def transform_empty_string_to_none(instance: Any, schema: Any):
     """
@@ -618,35 +688,34 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
-    STREAM_SLICE_STEP = 30
     _slice = None
 
-    def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
+    def __init__(self, replication_key: str, stream_slice_step: str = "P30D", **kwargs):
         super().__init__(**kwargs)
         self.replication_key = replication_key
-        self.start_date = self.format_start_date(start_date)
-
-    @staticmethod
-    def format_start_date(start_date: Optional[str]) -> Optional[str]:
-        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
-        if start_date:
-            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
-        return None
+        self._stream_slice_step = stream_slice_step
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        start, end = (None, None)
         now = pendulum.now(tz="UTC")
-        initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
+        assert LOOKBACK_SECONDS is not None and LOOKBACK_SECONDS >= 0
 
-        slice_number = 1
-        while not end == now:
-            start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
-            end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
-            self._slice = {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
-            yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
-            slice_number = slice_number + 1
+        initial_date = self.get_start_date_from_state(stream_state) - pendulum.Duration(seconds=LOOKBACK_SECONDS)
+        slice_start = initial_date
+        while slice_start < now:
+            slice_end = slice_start + self.stream_slice_step
+            self._slice = {
+                "start_date": slice_start.isoformat(timespec="milliseconds"),
+                "end_date": min(slice_end, now).isoformat(timespec="milliseconds"),
+            }
+            yield self._slice
+
+            slice_start += self.stream_slice_step
+
+    @property
+    def stream_slice_step(self) -> pendulum.Duration:
+        return pendulum.parse(self._stream_slice_step)
 
     def request_params(
         self,
@@ -722,6 +791,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
 
 class Describe(Stream):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
     """
     Stream of sObjects' (Salesforce Objects) describe:
     https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm

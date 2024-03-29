@@ -212,3 +212,33 @@ class TestExpectedRecordsConfig:
     def test_bypass_reason_behavior(self, path, bypass_reason, expectation):
         with expectation:
             config.ExpectedRecordsConfig(path=path, bypass_reason=bypass_reason)
+
+
+class TestFileTypesConfig:
+    @pytest.mark.parametrize(
+        ("skip_test", "bypass_reason", "unsupported_types", "expectation"),
+        (
+            (True, None, None, does_not_raise()),
+            (True, None, [config.UnsupportedFileTypeConfig(extension=".csv")], pytest.raises(ValidationError)),
+            (False, None, None, does_not_raise()),
+            (False, "bypass_reason", None, pytest.raises(ValidationError)),
+            (False, "", None, pytest.raises(ValidationError)),
+            (False, None, [config.UnsupportedFileTypeConfig(extension=".csv")], does_not_raise()),
+        ),
+    )
+    def test_skip_test_behavior(self, skip_test, bypass_reason, unsupported_types, expectation):
+        with expectation:
+            config.FileTypesConfig(skip_test=skip_test, bypass_reason=bypass_reason, unsupported_types=unsupported_types)
+
+    @pytest.mark.parametrize(
+        ("extension", "expectation"),
+        (
+            (".csv", does_not_raise()),
+            ("csv", pytest.raises(ValidationError)),
+            (".", pytest.raises(ValidationError)),
+            ("", pytest.raises(ValidationError)),
+        ),
+    )
+    def test_extension_validation(self, extension, expectation):
+        with expectation:
+            config.UnsupportedFileTypeConfig(extension=extension)

@@ -119,6 +119,17 @@
     "forced_view_setting": {
       "type": ["null", "string"]
     },
+    "event_sources": {
+      "type": ["null", "object"],
+      "properties": {
+        "PLACE": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "skadnetwork_properties": {
       "type": ["null", "object"],
       "properties": {

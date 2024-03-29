@@ -8,6 +8,10 @@ data:
   icon: pivotal-tracker.svg
   license: MIT
   name: Pivotal Tracker
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pivotal-tracker
   registries:
     cloud:
       enabled: false
@@ -17,6 +21,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pivotal-tracker
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100

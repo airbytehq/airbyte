@@ -20,9 +20,7 @@ class TypeformAuthenticator(DeclarativeAuthenticator):
     oauth2: DeclarativeSingleUseRefreshTokenOauth2Authenticator
 
     def __new__(cls, token_auth, oauth2, config, *args, **kwargs):
-        if config["credentials"]["access_token"]:
-            return token_auth
-        return oauth2
+        return token_auth if config["credentials"]["auth_type"] == "access_token" else oauth2
 
 
 @dataclass
@@ -32,10 +30,10 @@ class FormIdPartitionRouter(SubstreamPartitionRouter):
 
         if form_ids:
             for item in form_ids:
-                yield {"form_id": item}
+                yield StreamSlice(partition={"form_id": item}, cursor_slice={})
         else:
             for parent_stream_config in self.parent_stream_configs:
                 for item in parent_stream_config.stream.read_records(sync_mode=SyncMode.full_refresh):
-                    yield {"form_id": item["id"]}
+                    yield StreamSlice(partition={"form_id": item["id"]}, cursor_slice={})
 
         yield from []

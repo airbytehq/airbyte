@@ -58,7 +58,7 @@ class ChromaIndexer(Indexer):
                     "id": str(uuid.uuid4()),
                     "embedding": chunk.embedding,
                     "metadata": self._normalize(chunk.metadata),
-                    "document": chunk.page_content,
+                    "document": chunk.page_content if chunk.page_content is not None else "",
                 }
             )
         self._write_data(entities)

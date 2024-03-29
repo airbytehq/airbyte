@@ -7,6 +7,7 @@ import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
+from source_amazon_ads.declarative_source_adapter import DeclarativeSourceAdapter
 from source_amazon_ads.schemas import Profile
 
 from .utils import command_check, url_strip_query
@@ -40,7 +41,7 @@ def ensure_additional_property_is_boolean(root):
 @responses.activate
 def test_discover(config):
     setup_responses()
-    source = SourceAmazonAds()
+    source = DeclarativeSourceAdapter(source=SourceAmazonAds())
     catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
@@ -50,7 +51,7 @@ def test_discover(config):
 
 
 def test_spec():
-    source = SourceAmazonAds()
+    source = DeclarativeSourceAdapter(source=SourceAmazonAds())
     spec = source.spec(None)
     assert isinstance(spec, ConnectorSpecification)
 
@@ -58,7 +59,7 @@ def test_spec():
 @responses.activate
 def test_check(config_gen):
     setup_responses()
-    source = SourceAmazonAds()
+    source = DeclarativeSourceAdapter(source=SourceAmazonAds())
 
     assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 2
@@ -89,36 +90,34 @@ def test_check(config_gen):
 @responses.activate
 def test_source_streams(config):
     setup_responses()
-    source = SourceAmazonAds()
+    source = DeclarativeSourceAdapter(source=SourceAmazonAds())
     streams = source.streams(config)
     assert len(streams) == 29
     actual_stream_names = {stream.name for stream in streams}
-    expected_stream_names = set(
-        [
-            "profiles",
-            "portfolios",
-            "sponsored_display_campaigns",
-            "sponsored_product_campaigns",
-            "sponsored_product_ad_groups",
-            "sponsored_product_ad_group_suggested_keywords",
-            "sponsored_product_ad_group_bid_recommendations",
-            "sponsored_product_keywords",
-            "sponsored_product_negative_keywords",
-            "sponsored_product_campaign_negative_keywords",
-            "sponsored_product_ads",
-            "sponsored_product_targetings",
-            "sponsored_products_report_stream",
-            "sponsored_brands_campaigns",
-            "sponsored_brands_ad_groups",
-            "sponsored_brands_keywords",
-            "sponsored_brands_report_stream",
-            "attribution_report_performance_adgroup",
-            "attribution_report_performance_campaign",
-            "attribution_report_performance_creative",
-            "attribution_report_products",
-            "sponsored_display_budget_rules",
-        ]
-    )
+    expected_stream_names = {
+        "profiles",
+        "portfolios",
+        "sponsored_display_campaigns",
+        "sponsored_product_campaigns",
+        "sponsored_product_ad_groups",
+        "sponsored_product_ad_group_suggested_keywords",
+        "sponsored_product_ad_group_bid_recommendations",
+        "sponsored_product_keywords",
+        "sponsored_product_negative_keywords",
+        "sponsored_product_campaign_negative_keywords",
+        "sponsored_product_ads",
+        "sponsored_product_targetings",
+        "sponsored_products_report_stream",
+        "sponsored_brands_campaigns",
+        "sponsored_brands_ad_groups",
+        "sponsored_brands_keywords",
+        "sponsored_brands_report_stream",
+        "attribution_report_performance_adgroup",
+        "attribution_report_performance_campaign",
+        "attribution_report_performance_creative",
+        "attribution_report_products",
+        "sponsored_display_budget_rules",
+    }
     assert not expected_stream_names - actual_stream_names
 
 

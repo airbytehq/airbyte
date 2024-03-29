@@ -9,13 +9,26 @@ from typing import Any
 
 import backoff
 import pendulum
-from facebook_business.exceptions import FacebookRequestError
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
+from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
-FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
+FACEBOOK_RATE_LIMIT_ERROR_CODES = (
+    4,
+    17,
+    32,
+    613,
+    80000,
+    80001,
+    80002,
+    80003,
+    80004,
+    80005,
+    80006,
+    80008,
+)
 FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE = 2
 FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
@@ -61,12 +74,12 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def revert_request_record_limit(details):
         """
-        This method is triggered `on_success` after successfull retry,
+        This method is triggered `on_success` after successful retry,
         sets the internal class flags to provide the logic to restore the previously reduced
         `limit` param.
         """
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
-        # set the flag to the api class that the last api call was ssuccessfull
+        # set the flag to the api class that the last api call was successful
         details.get("args")[0].last_api_call_is_successfull = True
         # set the flag to the api class that the `limit` param is restored
         details.get("args")[0].request_record_limit_is_reduced = False
@@ -158,5 +171,9 @@ def traced_exception(fb_exception: FacebookRequestError):
         failure_type = FailureType.system_error
         friendly_msg = f"Error: {fb_exception.api_error_code()}, {fb_exception.api_error_message()}."
 
-    return AirbyteTracedException(message=friendly_msg or msg, internal_message=msg, failure_type=failure_type, exception=fb_exception)
-
+    return AirbyteTracedException(
+        message=friendly_msg or msg,
+        internal_message=msg,
+        failure_type=failure_type,
+        exception=fb_exception,
+    )

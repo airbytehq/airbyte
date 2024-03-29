@@ -2,13 +2,17 @@
 
 ## Overview
 
-The Airbyte MeilSearch destination allows you to sync data to MeiliSearch. MeiliSearch is a search engine that makes it easy for a non-developer to search through data. It does not require any SQL.
+The Airbyte MeilSearch destination allows you to sync data to MeiliSearch. MeiliSearch is a search
+engine that makes it easy for a non-developer to search through data. It does not require any SQL.
 
 ### Sync overview
 
 #### Output schema
 
-Each stream will be output into its own index in MeiliSearch. Each table will be named after the stream with all non-alpha numeric characters removed. Each table will contain one column per top-levelfield in a stream. In addition, it will contain a table called `_ab_pk`. This column is used internally by Airbyte to prevent records from getting overwritten and can be ignored.
+Each stream will be output into its own index in MeiliSearch. Each table will be named after the
+stream with all non-alpha numeric characters removed. Each table will contain one column per
+top-levelfield in a stream. In addition, it will contain a table called `_ab_pk`. This column is
+used internally by Airbyte to prevent records from getting overwritten and can be ignored.
 
 #### Features
 
@@ -23,17 +27,27 @@ Each stream will be output into its own index in MeiliSearch. Each table will be
 
 ### Requirements
 
-To use the MeiliSearch destination, you'll need an existing MeiliSearch instance. You can learn about how to create one in the [MeiliSearch docs](https://www.meilisearch.com/docs/learn/getting_started/installation).
+To use the MeiliSearch destination, you'll need an existing MeiliSearch instance. You can learn
+about how to create one in the
+[MeiliSearch docs](https://www.meilisearch.com/docs/learn/getting_started/installation).
 
 ### Setup guide
 
-The setup only requires two fields. First is the `host` which is the address at which MeiliSearch can be reached. If running on a localhost by default it will be on `http://localhost:7700`. Note that you must include the protocol. The second piece of information is the API key. If no API key is set for your MeiliSearch instance, then this field can be left blank. If it is set, you can find the value for your API by following these [instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in the MeiliSearch docs.
+The setup only requires two fields. First is the `host` which is the address at which MeiliSearch
+can be reached. If running on a localhost by default it will be on `http://localhost:7700`. Note
+that you must include the protocol. The second piece of information is the API key. If no API key is
+set for your MeiliSearch instance, then this field can be left blank. If it is set, you can find the
+value for your API by following these
+[instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in
+the MeiliSearch docs.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
-| 1.0.0   | 2022-10-26 | [18036](https://github.com/airbytehq/airbyte/pull/18036) | Migrate MeiliSearch to Python CDK                      |
-| 0.2.13  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
-| 0.2.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option           |
-| 0.2.11  | 2021-12-28 | [9156](https://github.com/airbytehq/airbyte/pull/9156)   | Update connector fields title/description              |
+| Version | Date       | Pull Request                                              | Subject                                                |
+| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------- |
+| 1.0.2   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                   |
+| 1.0.1   | 2023-12-19 | [27692](https://github.com/airbytehq/airbyte/pull/27692)  | Fix incomplete data indexing                           |
+| 1.0.0   | 2022-10-26 | [18036](https://github.com/airbytehq/airbyte/pull/18036)  | Migrate MeiliSearch to Python CDK                      |
+| 0.2.13  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)  | Updated stacktrace format for any trace message errors |
+| 0.2.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)  | Add `-XX:+ExitOnOutOfMemoryError` JVM option           |
+| 0.2.11  | 2021-12-28 | [9156](https://github.com/airbytehq/airbyte/pull/9156)    | Update connector fields title/description              |

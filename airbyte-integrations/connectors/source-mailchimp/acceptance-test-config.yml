@@ -36,7 +36,6 @@ acceptance_tests:
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_records: True
         fail_on_extra_columns: false
         empty_streams:
           - name: "automations"

@@ -69,6 +69,21 @@
     },
     "type": {
       "type": ["null", "string"]
+    },
+    "start_time": {
+      "type": ["null", "integer"]
+    },
+    "end_time": {
+      "type": ["null", "integer"]
+    },
+    "summary_status": {
+      "type": ["null", "string"]
+    },
+    "is_campaign_budget_optimization": {
+      "type": ["null", "boolean"]
+    },
+    "is_flexible_daily_budgets": {
+      "type": ["null", "boolean"]
     }
   }
 }

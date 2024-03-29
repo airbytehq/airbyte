@@ -23,48 +23,42 @@ acceptance_tests:
         timeout_seconds: 1200
         empty_streams:
           - name: "addon"
-            bypass_reason: "Not permitted for this site"
+            bypass_reason: "Not available for Product Catalog 2.0 sites. Tested with mocker server tests."
           - name: "plan"
-            bypass_reason: "Not permitted for this site"
+            bypass_reason: "Not available for Product Catalog 2.0 sites. Tested with mocker server tests."
           - name: "virtual_bank_account"
-            bypass_reason: "Cannot populate with test data"
-          - name: "subscription"
-            bypass_reason: "Unstable data. Field current_term_start updated daily"
-          - name: "customer"
-            bypass_reason: "Unstable data. Depends on subscription"
-          - name: "invoice"
-            bypass_reason: "Unstable data. Depends on subscription"
-          - name: "credit_note"
-            bypass_reason: "Unstable data. Depends on subscription"
+            bypass_reason: "Tested with mocker server tests."
           - name: "event"
-            bypass_reason: "Unstable data. Depends on subscription"
-          - name: "unbilled_charge"
-            bypass_reason: "Empty stream. Unstable data"
+            bypass_reason: "Unstable data. Test data is not persistent. Tested with mocker server tests."
+          - name: "site_migration_detail"
+            bypass_reason: "Cannnot populate with test data."
+          - name: "customer"
+            bypass_reason: "Tested with mocker server tests."
+          - name: "subscription"
+            bypass_reason: "Tested with mocker server tests."
+          - name: "coupon"
+            bypass_reason: "Tested with mocker server tests."
           - name: "hosted_page"
-            bypass_reason: "Empty stream. Unstable data"
+            bypass_reason: "Tested with mocker server tests."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
-        fail_on_extra_columns: false
+        validate_state_messages: False
+        fail_on_extra_columns: true
   incremental:
-    # tests:
-    # - config_path: "secrets/config.json"
-    #   timeout_seconds: 2400
-    #   configured_catalog_path: "integration_tests/configured_catalog.json"
-    #   future_state:
-    #     future_state_path: "integration_tests/future_state.json"
-    #     missing_streams:
-    #     - name: attached_item
-    #       bypass_reason: "This stream is Full-Refresh only"
-    #     - name: contact
-    #       bypass_reason: "This stream is Full-Refresh only"
-    #     - name: quote_line_group
-    #       bypass_reason: "This stream is Full-Refresh only"
-    bypass_reason: >
-      "Incrremental tests are disabled until CAT works with cursor data-types directly,
-      relatated slack thread: https://airbyte-globallogic.slack.com/archives/C02U9R3AF37/p1690810513681859"
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 2400
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/future_state.json"
+          missing_streams:
+            - name: contact
+              bypass_reason: "This stream is Full-Refresh only"
+            - name: quote_line_group
+              bypass_reason: "This stream is Full-Refresh only"
+            - name: attached_item
+              bypass_reason: "This stream is Full-Refresh only"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -2,10 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
+from unittest import mock
+
 import pendulum
 import pytest
 import requests
-from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents
+from airbyte_cdk.models import SyncMode
+from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents, RestockInventoryReports
 
 list_financial_event_groups_data = {
     "payload": {
@@ -103,8 +107,6 @@ def list_financial_event_groups_stream():
             authenticator=None,
             period_in_days=0,
             report_options=None,
-            advanced_stream_options=None,
-            max_wait_seconds=500,
         )
         return stream
 
@@ -122,8 +124,6 @@ def list_financial_events_stream():
             authenticator=None,
             period_in_days=0,
             report_options=None,
-            advanced_stream_options=None,
-            max_wait_seconds=500,
         )
         return stream
 
@@ -202,3 +202,33 @@ def test_financial_events_stream_parse_response(mocker, list_financial_events_st
         assert list_financial_events_data.get("payload").get("FinancialEvents").get("AdjustmentEventList") == record.get(
             "AdjustmentEventList"
         )
+
+
+def test_reports_read_records_exit_on_backoff(mocker, requests_mock, caplog):
+    mocker.patch("time.sleep", lambda x: None)
+    requests_mock.post("https://test.url/reports/2021-06-30/reports", status_code=429)
+
+    stream = RestockInventoryReports(
+        url_base="https://test.url",
+        replication_start_date=START_DATE_1,
+        replication_end_date=END_DATE_1,
+        marketplace_id="id",
+        authenticator=None,
+        period_in_days=0,
+        report_options=None,
+    )
+    assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == []
+    assert (
+        "The report for stream 'GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT' was cancelled due to several failed retry attempts."
+    ) in caplog.messages[-1]
+
+
+@pytest.mark.parametrize(
+    ("response_headers", "expected_backoff_time"),
+    (({"x-amzn-RateLimit-Limit": "2"}, 0.5), ({}, 60)),
+)
+def test_financial_events_stream_backoff_time(list_financial_events_stream, response_headers, expected_backoff_time):
+    stream = list_financial_events_stream()
+    response_mock = mock.MagicMock()
+    response_mock.headers = response_headers
+    assert stream.backoff_time(response_mock) == expected_backoff_time

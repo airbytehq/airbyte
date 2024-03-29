@@ -4,18 +4,8 @@
 
 from typing import Literal, Optional, Union
 
-import dpath.util
-from airbyte_cdk.destinations.vector_db_based.config import (
-    AzureOpenAIEmbeddingConfigModel,
-    CohereEmbeddingConfigModel,
-    FakeEmbeddingConfigModel,
-    FromFieldEmbeddingConfigModel,
-    OpenAICompatibleEmbeddingConfigModel,
-    OpenAIEmbeddingConfigModel,
-    ProcessingConfigModel,
-)
+from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
 
 
@@ -73,38 +63,5 @@ class MilvusIndexingConfigModel(BaseModel):
         }
 
 
-class ConfigModel(BaseModel):
-    processing: ProcessingConfigModel
-    embedding: Union[
-        OpenAIEmbeddingConfigModel,
-        CohereEmbeddingConfigModel,
-        FakeEmbeddingConfigModel,
-        FromFieldEmbeddingConfigModel,
-        AzureOpenAIEmbeddingConfigModel,
-        OpenAICompatibleEmbeddingConfigModel,
-    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
+class ConfigModel(VectorDBConfigModel):
     indexing: MilvusIndexingConfigModel
-
-    class Config:
-        title = "Milvus Destination Config"
-        schema_extra = {
-            "groups": [
-                {"id": "processing", "title": "Processing"},
-                {"id": "embedding", "title": "Embedding"},
-                {"id": "indexing", "title": "Indexing"},
-            ]
-        }
-
-    @staticmethod
-    def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
-        dpath.util.delete(schema, "properties/**/discriminator")
-
-    @classmethod
-    def schema(cls):
-        """we're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema()
-        schema = resolve_refs(schema)
-        cls.remove_discriminator(schema)
-        return schema

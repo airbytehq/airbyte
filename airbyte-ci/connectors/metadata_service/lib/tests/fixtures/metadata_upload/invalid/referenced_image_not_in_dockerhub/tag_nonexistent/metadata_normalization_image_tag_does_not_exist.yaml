@@ -1,0 +1,27 @@
+metadataSpecVersion: 1.0
+data:
+  name: AlloyDB for PostgreSQL
+  definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
+  connectorType: source
+  dockerRepository: airbyte/exists-1
+  githubIssueLabel: source-alloydb-strict-encrypt
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/existingsource
+  connectorSubtype: database
+  releaseStage: generally_available
+  license: MIT
+  normalizationConfig:
+    normalizationIntegrationType: postgres
+    normalizationRepository: airbyte/exists-2
+    normalizationTag: 99.99.99 # tag does not exist
+  registries:
+    cloud:
+      enabled: true
+      dockerRepository: airbyte/exists-3
+      dockerImageTag: 0.0.1
+    oss:
+      enabled: true
+      dockerRepository: airbyte/exists-4
+      dockerImageTag: 0.0.1
+  tags:
+    - language:java

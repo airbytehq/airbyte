@@ -299,7 +299,13 @@ class Contacts(SendgridStream):
             tmp_file, "wb"
         ) as data_file:
             for chunk in response.iter_content(chunk_size=chunk_size):
-                data_file.write(decompressor.decompress(chunk))
+                try:
+                    # see if it's compressed. we are seeing some that are not all of a sudden.
+                    # but let's also guard against the case where sendgrid changes it back.
+                    data_file.write(decompressor.decompress(chunk))
+                except zlib.error as e:
+                    # it's not actually compressed!
+                    data_file.write(chunk)
         # check the file exists
         if os.path.isfile(tmp_file):
             return tmp_file, self.encoding

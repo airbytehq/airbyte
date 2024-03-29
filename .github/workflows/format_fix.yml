@@ -1,4 +1,5 @@
-name: Automatic Formatting on PRs
+name: Fix formatting on a branch
+run-name: Fix formatting on ${{ github.ref }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -7,44 +8,25 @@ concurrency:
 
 on:
   workflow_dispatch:
-  pull_request:
 jobs:
   format-fix:
-    runs-on: "ci-runner-connector-format-medium-dagger-0-6-4"
-    name: "Apply All Formatting Rules"
-    timeout-minutes: 40
+    name: "Run airbyte-ci format fix all"
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.ref }}
           # Important that this is set so that CI checks are triggered again
           # Without this we would be forever waiting on required checks to pass
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
 
-      # IMPORTANT! This is necessary to make sure that a status is reported on the PR
-      # even if the workflow is skipped. If we used GitHub Actions filters, the workflow
-      # would not be reported as skipped, but instead would be forever pending.
-      #
-      # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
-      #
-      # Also, it gets worse
-      #
-      # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
-      # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
-      - name: Get changed files
-        uses: tj-actions/changed-files@v39
-        id: changes
-        with:
-          files_yaml: |
-            format:
-              - '**/*'
-              - '!**/*.md'
-
       - name: Run airbyte-ci format fix all
-        uses: ./.github/actions/run-dagger-pipeline
+        uses: ./.github/actions/run-airbyte-ci
+        continue-on-error: true
         with:
-          context: "pull_request"
+          context: "manual"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -58,20 +40,9 @@ jobs:
 
       - name: Commit Formatting Changes (PR)
         uses: stefanzweifel/git-auto-commit-action@v5
-        # do not commit if master branch
+        # Don't commit if we're on master
         if: github.ref != 'refs/heads/master'
         with:
-          commit_message: Automated Commit - Formatting Changes
+          commit_message: "chore: format code"
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
-
-      - name: Run airbyte-ci format check all
-        uses: ./.github/actions/run-dagger-pipeline
-        with:
-          context: "pull_request"
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "format check all"

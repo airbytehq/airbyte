@@ -29,9 +29,12 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_duckdb import DestinationDuckdb
+from destination_duckdb.destination import CONFIG_MOTHERDUCK_API_KEY
 
 CONFIG_PATH = "integration_tests/config.json"
-SECRETS_CONFIG_PATH = "secrets/config.json"  # Should contain a valid MotherDuck API token
+SECRETS_CONFIG_PATH = (
+    "secrets/config.json"  # Should contain a valid MotherDuck API token
+)
 
 
 def pytest_generate_tests(metafunc):
@@ -42,7 +45,9 @@ def pytest_generate_tests(metafunc):
     if Path(SECRETS_CONFIG_PATH).is_file():
         configs.append("motherduck_config")
     else:
-        print(f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}")
+        print(
+            f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}"
+        )
 
     # for test_name in ["test_check_succeeds", "test_write"]:
     metafunc.parametrize("config", configs, indirect=True)
@@ -98,7 +103,9 @@ def table_schema() -> str:
 
 
 @pytest.fixture
-def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
+def configured_catalogue(
+    test_table_name: str, table_schema: str
+) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
             name=test_table_name,
@@ -137,7 +144,9 @@ def airbyte_message2(test_table_name: str):
 
 @pytest.fixture
 def airbyte_message3():
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"}))
+    return AirbyteMessage(
+        type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"})
+    )
 
 
 @pytest.mark.disable_autouse
@@ -179,8 +188,14 @@ def test_write(
 
     result = list(generator)
     assert len(result) == 1
-
-    con = duckdb.connect(database=config.get("destination_path"), read_only=False)
+    motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
+    duckdb_config = {}
+    if motherduck_api_key:
+        duckdb_config["motherduck_token"] = motherduck_api_key
+        duckdb_config["custom_user_agent"] = "airbyte_intg_test"
+    con = duckdb.connect(
+        database=config.get("destination_path"), read_only=False, config=duckdb_config
+    )
     with con:
         cursor = con.execute(
             "SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data "

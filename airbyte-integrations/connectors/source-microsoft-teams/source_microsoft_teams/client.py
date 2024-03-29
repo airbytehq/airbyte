@@ -243,19 +243,24 @@ class Client:
         csv_response.readline()
         with io.TextIOWrapper(csv_response, encoding="utf-8-sig") as text_file:
             field_names = [
-                "report_refresh_date",
-                "user_principal_name",
-                "last_activity_date",
-                "is_deleted",
-                "deleted_date",
-                "used_web",
-                "used_windows_phone",
-                "used_i_os",
-                "used_mac",
-                "used_android_phone",
-                "used_windows",
-                "report_period",
+                "reportRefreshDate",
+                "userId",
+                "userPrincipalName",
+                "lastActivityDate",
+                "isDeleted",
+                "deletedDate",
+                "usedWeb",
+                "usedWindowsPhone",
+                "usedIOs",
+                "usedMac",
+                "usedAndroidPhone",
+                "usedWindows",
+                "usedChromeOS",
+                "usedLinux",
+                "isLisenced",
+                "reportPeriod",
             ]
+
             reader = csv.DictReader(text_file, fieldnames=field_names)
             for row in reader:
                 yield [

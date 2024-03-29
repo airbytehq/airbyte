@@ -31,11 +31,14 @@ def test_check_connection_empty_config(api):
     assert not ok
     assert error_msg
 
+
 def test_check_connection_invalid_config_future_date(api, some_config_future_date):
     ok, error_msg = SourceInstagram().check_connection(logger, config=some_config_future_date)
 
     assert not ok
     assert error_msg
+
+
 def test_check_connection_no_date_config(api, some_config):
     some_config.pop("start_date")
     ok, error_msg = SourceInstagram().check_connection(logger, config=some_config)

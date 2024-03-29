@@ -5,12 +5,8 @@
 from gevent import monkey
 monkey.patch_all(httplib=True, request=True, thread=False, select=True)
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_facebook_marketing import SourceFacebookMarketing
+from source_facebook_marketing.run import run
 
 
 if __name__ == "__main__":
-    source = SourceFacebookMarketing()
-    launch(source, sys.argv[1:])
+    run()
