@@ -148,7 +148,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         val recordMessages =
             allMessages!!
                 .stream()
-                .filter { m: AirbyteMessage? -> m!!.type == AirbyteMessage.Type.RECORD }
+                .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
                 .toList()
         val expectedValues: MutableMap<String?, MutableList<String?>?> = HashMap()
         val missedValuesByStream: MutableMap<String?, ArrayList<MissedRecords>> = HashMap()
