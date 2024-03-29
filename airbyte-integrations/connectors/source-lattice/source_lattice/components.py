@@ -8,7 +8,9 @@ from airbyte_cdk.sources.declarative.partition_routers.substream_partition_route
 class DedupedIdSubstreamPartitionRouter(SubstreamPartitionRouter):
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
-        # id_set = set[str]()
-        for slice in super().stream_slices():
-            print(f"The slice is {slice}")
-            yield slice
+        # This prevents us from making many duplicate requests
+        id_set = set[str]()
+        for stream_slice in super().stream_slices():
+            if stream_slice["parent_id"] not in id_set:
+                id_set.add(stream_slice["parent_id"])
+                yield stream_slice
