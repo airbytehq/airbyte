@@ -3,130 +3,172 @@
   "additional_properties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the channel.",
       "type": "string"
     },
     "name": {
+      "description": "The name of the channel.",
       "type": "string"
     },
     "is_channel": {
+      "description": "Indicates if the entity is a channel.",
       "type": "boolean"
     },
     "is_group": {
+      "description": "Indicates if the channel is a group (private channel) rather than a regular channel.",
       "type": "boolean"
     },
     "is_im": {
+      "description": "Indicates if the entity is a direct message (IM) channel.",
       "type": "boolean"
     },
     "context_team_id": {
+      "description": "The unique identifier of the team context in which the channel exists.",
       "type": "string"
     },
     "created": {
+      "description": "The timestamp when the channel was created.",
       "type": "integer"
     },
     "creator": {
+      "description": "The ID of the user who created the channel.",
       "type": "string"
     },
     "is_archived": {
+      "description": "Indicates if the channel is archived.",
       "type": "boolean"
     },
     "is_general": {
+      "description": "Indicates if the channel is a general channel in the workspace.",
       "type": "boolean"
     },
     "unlinked": {
+      "description": "Indicates if the channel is unlinked.",
       "type": "integer"
     },
     "updated": {
+      "description": "The timestamp when the channel was last updated.",
       "type": "integer"
     },
     "name_normalized": {
+      "description": "The normalized name of the channel.",
       "type": "string"
     },
     "is_read_only": {
+      "description": "Indicates if the channel is read-only.",
       "type": "boolean"
     },
     "is_shared": {
+      "description": "Indicates if the channel is shared.",
       "type": "boolean"
     },
     "is_ext_shared": {
+      "description": "Indicates if the channel is externally shared.",
       "type": "boolean"
     },
     "is_org_shared": {
+      "description": "Indicates if the channel is organization-wide shared.",
       "type": "boolean"
     },
     "pending_shared": {
+      "description": "The list of pending shared items of the channel.",
       "type": "array",
-      "items": {}
+      "items": {
+        "description": "List of pending shared items."
+      }
     },
     "is_pending_ext_shared": {
+      "description": "Indicates if the channel is pending external shared.",
       "type": "boolean"
     },
     "is_member": {
+      "description": "Indicates if the calling user is a member of the channel.",
       "type": "boolean"
     },
     "is_private": {
+      "description": "Indicates if the channel is a private channel.",
       "type": "boolean"
     },
     "is_mpim": {
+      "description": "Indicates if the entity is a multiple person direct message (MPIM) channel.",
       "type": "boolean"
     },
     "last_read": {
+      "description": "The timestamp of the user's last read message in the channel.",
       "type": "string"
     },
     "topic": {
+      "description": "The topic of the channel.",
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "value": {
+          "description": "The value of the channel topic.",
           "type": "string"
         },
         "creator": {
+          "description": "The ID of the user who last set the topic.",
           "type": "string"
         },
         "last_set": {
+          "description": "The timestamp when the topic was last set.",
           "type": "integer"
         }
       }
     },
     "purpose": {
+      "description": "The purpose of the channel.",
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "value": {
+          "description": "The value of the channel purpose.",
           "type": "string"
         },
         "creator": {
+          "description": "The ID of the user who last set the purpose.",
           "type": "string"
         },
         "last_set": {
+          "description": "The timestamp when the purpose was last set.",
           "type": "integer"
         }
       }
     },
     "shared_team_ids": {
+      "description": "The IDs of teams with which the channel is shared.",
       "type": "array",
       "items": {
+        "description": "List of shared team IDs.",
         "type": ["null", "string"]
       }
     },
     "previous_names": {
+      "description": "The previous names of the channel.",
       "type": "array",
       "items": {
+        "description": "List of previous names.",
         "type": "string"
       }
     },
     "num_members": {
+      "description": "The number of members in the channel.",
       "type": "integer"
     },
     "parent_conversation": {
+      "description": "The parent conversation of the channel.",
       "type": ["null", "string"]
     },
     "pending_connected_team_ids": {
+      "description": "The IDs of teams that are pending to be connected to the channel.",
       "type": "array",
       "items": {
+        "description": "List of pending connected team IDs.",
         "type": ["null", "string"]
       }
     },
     "locale": {
+      "description": "The locale of the channel.",
       "type": "string"
     }
   }
