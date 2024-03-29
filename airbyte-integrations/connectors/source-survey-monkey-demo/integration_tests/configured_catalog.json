@@ -2,11 +2,11 @@
   "streams": [
     {
       "stream": {
-        "name": "surveys",
+        "name": "survey_responses",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     }
   ]

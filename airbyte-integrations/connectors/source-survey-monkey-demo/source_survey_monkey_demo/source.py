@@ -129,6 +129,64 @@ class SurveyMonkeyBaseStream(HttpStream, ABC):
             yield after_ts, before_ts
             after_ts = before_ts + 1
 
+class SurveyMonkeySubstream(HttpStream, ABC):
+    state_converter = IsoMillisConcurrentStreamStateConverter()
+
+    def __init__(self, name: str, path: str, primary_key: Union[str, List[str]], parent_stream: Stream, **kwargs: Any) -> None:
+        self._name = name
+        self._path = path
+        self._primary_key = primary_key
+        self._parent_stream = parent_stream
+        super().__init__(**kwargs)
+
+    _PAGE_SIZE: int = 100
+
+    # TODO: Fill in the url base. Required.
+    url_base = "https://api.surveymonkey.com"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        links = response.json().get("links", {})
+        if "next" in links:
+            return {"next_url": links["next"]}
+        else:
+            return {}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            #FIXME: need to make sure next_url includes the params
+            return urlparse(next_page_token["next_url"]).query
+        else:
+            return {"per_page": self._PAGE_SIZE}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json().get("data", [])
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        try:
+            return self._path.format(stream_slice=stream_slice)
+        except Exception as e:
+            raise e
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._primary_key
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for _slice in self._parent_stream.stream_slices():
+            for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
+                yield parent_record
 
 # Source
 class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
@@ -154,8 +212,10 @@ class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
         auth = TokenAuthenticator(config["access_token"])
         start_date = config["start_date"]
 
+        survey_stream = SurveyMonkeyBaseStream(name="surveys", path="/v3/surveys", primary_key="id", authenticator=auth, cursor_field="date_modified", start_date=start_date)
         synchronous_streams = [
-            SurveyMonkeyBaseStream(name="surveys", path="/v3/surveys", primary_key=None, authenticator=auth, cursor_field="date_modified", start_date=start_date)
+            survey_stream,
+            SurveyMonkeySubstream(name="survey_responses", path="/v3/surveys/{stream_slice[id]}/responses/", primary_key="id", authenticator=auth, parent_stream=survey_stream)
         ]
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in synchronous_streams}, state=self._state)
 
@@ -177,6 +237,8 @@ class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
                     self._get_slice_boundary_fields(stream, state_manager),
                     config["start_date"],
                 )
+            else:
+                cursor = FinalStateCursor(stream.name, stream.namespace, self.message_repository)
             configured_streams.append (
                 StreamFacade.create_from_stream(stream,
                                                 self,
