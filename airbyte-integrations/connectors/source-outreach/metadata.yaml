@@ -11,7 +11,10 @@ data:
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2024-04-15"
-        message: "The verison migrates the Outreach connector to the low-code framework for greater maintainability."
+        message: 
+         - >-
+           "The verison migrates the Outreach connector to the low-code framework for greater maintainability.
+           !! Important: The sequence_steps stream schema has a breaking change to creator field from array containing both string and integers"
   remoteRegistries:
     pypi:
       enabled: true
