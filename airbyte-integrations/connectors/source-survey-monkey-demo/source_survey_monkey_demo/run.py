@@ -4,7 +4,6 @@
 
 
 import sys
-import sys
 import traceback
 from datetime import datetime
 from typing import List
@@ -12,9 +11,9 @@ from typing import List
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 
-from airbyte_cdk.entrypoint import launch
-
 from .source import SourceSurveyMonkeyDemo
+
+
 def _get_source(args: List[str]):
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
@@ -38,7 +37,6 @@ def _get_source(args: List[str]):
             ).json()
         )
         return None
-
 
 
 def run():

@@ -2,16 +2,10 @@
   "$schema": "http://json-schema.org/schema#",
   "properties": {
     "href": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   },
   "type": "object"

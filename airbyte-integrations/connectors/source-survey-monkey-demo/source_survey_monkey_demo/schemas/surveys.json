@@ -2,112 +2,61 @@
   "$schema": "http://json-schema.org/schema#",
   "properties": {
     "analyze_url": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "collect_stats": {
       "properties": {
         "status": {
           "properties": {
             "open": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           },
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": ["object", "null"]
         },
         "total_count": {
-          "type": [
-            "number",
-            "null"
-          ]
+          "type": ["number", "null"]
         },
         "type": {
           "properties": {
             "weblink": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             }
           },
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": ["object", "null"]
         }
       },
-      "type": [
-        "object",
-        "null"
-      ]
+      "type": ["object", "null"]
     },
     "date_created": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "date_modified": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "href": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "language": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "nickname": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "preview": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "question_count": {
-      "type": [
-        "number",
-        "null"
-      ]
+      "type": ["number", "null"]
     },
     "response_count": {
-      "type": [
-        "number",
-        "null"
-      ]
+      "type": ["number", "null"]
     },
     "title": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   },
   "type": "object"
