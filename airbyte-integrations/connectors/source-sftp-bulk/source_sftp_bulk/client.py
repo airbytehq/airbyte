@@ -4,6 +4,7 @@
 
 import io
 import logging
+from typing import Optional
 
 import backoff
 import paramiko
@@ -24,7 +25,15 @@ def handle_backoff(details):
 class SFTPClient:
     _connection: paramiko.SFTPClient = None
 
-    def __init__(self, host: str, username: str, password: str = None, private_key=None, port: int = None, timeout=REQUEST_TIMEOUT):
+    def __init__(
+        self,
+        host: str,
+        username: str,
+        password: str = None,
+        private_key: Optional[str] = None,
+        port: Optional[int] = None,
+        timeout: Optional[int] = REQUEST_TIMEOUT,
+    ):
         self.host = host
         self.username = username
         self.password = password

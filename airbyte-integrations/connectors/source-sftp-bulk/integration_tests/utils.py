@@ -9,7 +9,6 @@ from typing import Any, Mapping, Union
 
 logger = logging.getLogger("airbyte")
 
-PRIVATE_KEY = str
 TMP_FOLDER = "/tmp/test_sftp_source"
 
 

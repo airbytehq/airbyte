@@ -18,7 +18,7 @@ from .utils import get_docker_ip, load_config
 
 logger = logging.getLogger("airbyte")
 
-PRIVATE_KEY = str
+PRIVATE_KEY = str()
 TMP_FOLDER = "/tmp/test_sftp_source"
 
 

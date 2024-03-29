@@ -10,32 +10,11 @@ acceptance_tests:
           disable_for_version: 0.3.2 # `start_date` format changed to format: date-time
   connection:
     bypass_reason: "This connector uses integration tests"
-  #    tests:
-  #      - config_path: "integration_tests/configs/config_password.json"
-  #        status: "succeed"
-  #        timeout_seconds: 60
-  #      - config_path: "integration_tests/invalid_config.json"
-  #        status: "failed"
-  #        timeout_seconds: 60
   discovery:
     bypass_reason: "This connector uses integration tests"
-  #    tests:
-  #      - config_path: "integration_tests/configs/config_password.json"
   basic_read:
     bypass_reason: "This connector uses integration tests"
-  #    tests:
-  #      - config_path: "integration_tests/configs/config_password.json"
-  #        configured_catalog_path: "integration_tests/configured_catalog.json"
-  #        empty_streams: [ ]
   full_refresh:
     bypass_reason: "This connector uses integration tests"
-  #    tests:
-  #      - config_path: "integration_tests/configs/config_password.json"
-  #        configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
     bypass_reason: "This connector uses integration tests"
-#    tests:
-#      - config_path: "integration_tests/configs/config_password.json"
-#        configured_catalog_path: "integration_tests/configs/configured_catalog.json"
-#        future_state:
-#          future_state_path: "integration_tests/abnormal_state.json"
