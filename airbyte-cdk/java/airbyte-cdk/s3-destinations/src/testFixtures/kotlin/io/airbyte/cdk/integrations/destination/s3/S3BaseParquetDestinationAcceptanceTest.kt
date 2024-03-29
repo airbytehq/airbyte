@@ -29,8 +29,8 @@ abstract class S3BaseParquetDestinationAcceptanceTest protected constructor() :
     @Throws(IOException::class, URISyntaxException::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
         val nameUpdater =
