@@ -39,7 +39,7 @@ class MemoryAwareMessageBatch(
      */
     fun flushStates(
         stateIdToCount: Map<Long?, Long?>,
-        outputRecordCollector: Consumer<AirbyteMessage?>,
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ) {
         stateIdToCount.forEach { (stateId: Long?, count: Long?) ->
             stateManager.decrement(
