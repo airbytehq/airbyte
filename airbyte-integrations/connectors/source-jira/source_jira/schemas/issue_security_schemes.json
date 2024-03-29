@@ -3,28 +3,28 @@
   "type": "object",
   "properties": {
     "self": {
-      "type": "string",
       "description": "The URL of the issue security scheme.",
+      "type": "string",
       "readOnly": true
     },
     "id": {
-      "type": "integer",
       "description": "The ID of the issue security scheme.",
+      "type": "integer",
       "readOnly": true
     },
     "name": {
-      "type": "string",
       "description": "The name of the issue security scheme.",
+      "type": "string",
       "readOnly": true
     },
     "description": {
-      "type": "string",
       "description": "The description of the issue security scheme.",
+      "type": "string",
       "readOnly": true
     },
     "defaultSecurityLevelId": {
-      "type": "integer",
       "description": "The ID of the default security level.",
+      "type": "integer",
       "readOnly": true
     },
     "levels": {
@@ -33,23 +33,23 @@
         "type": "object",
         "properties": {
           "self": {
-            "type": "string",
             "description": "The URL of the issue level security item.",
+            "type": "string",
             "readOnly": true
           },
           "id": {
-            "type": "string",
             "description": "The ID of the issue level security item.",
+            "type": "string",
             "readOnly": true
           },
           "description": {
-            "type": "string",
             "description": "The description of the issue level security item.",
+            "type": "string",
             "readOnly": true
           },
           "name": {
-            "type": "string",
             "description": "The name of the issue level security item.",
+            "type": "string",
             "readOnly": true
           }
         }
