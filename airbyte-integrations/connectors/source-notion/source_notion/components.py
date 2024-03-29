@@ -67,7 +67,7 @@ class NotionDataFeedFilter(RecordFilter):
         Filters a list of records, returning only those with a cursor_value greater than the current value in state.
         """
         current_state = stream_state.get("last_edited_time", {})
-        cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
+        cursor_value = self._get_filter_date(self.config.get("start_date"), current_state)
         if cursor_value:
             return [record for record in records if record["last_edited_time"] >= cursor_value]
         return records
@@ -105,7 +105,7 @@ class NotionSemiIncrementalFilter(RecordFilter):
             for state_value in stream_state.get("states", [])
             if state_value.get("partition", {}).get("id") == stream_slice.get("id")
         ]
-        cursor_value = self.get_filter_date(self.config.get("start_date"), current_state)
+        cursor_value = self._get_filter_date(self.config.get("start_date"), current_state)
         if cursor_value:
             return [record for record in records if record["last_edited_time"] >= cursor_value]
         return records
