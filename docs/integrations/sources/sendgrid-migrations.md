@@ -1,15 +1,15 @@
 # Sendgrid Migration Guide
 
-## Upgrading to 0.5.0
+## Upgrading to 1.0.0
 
-  This release makes several changes that upgrade the Sendgrid connector.
+This release makes several changes that upgrade the Sendgrid connector.
   
-  * The configuration options have been renamed to `api_key` and `start_date`.
-  * The `unsubscribe_groups` stream has been removed. It was the same as `suppression_groups`. You can use that and get the same data.
-  * The `single_sends` stream has been renamed `singlesend_stats`. This is closer to the data and API.
-  * The `segments` stream has been upgraded to use the Sendgrid 2.0 API because the older one has been deprecated. The schema has changed as a result.
+* The configuration options have been renamed to `api_key` and `start_date`.
+* The `unsubscribe_groups` stream has been removed. It was the same as `suppression_groups`. You can use that and get the same data.
+* The `single_sends` stream has been renamed `singlesend_stats`. This is closer to the data and API.
+* The `segments` stream has been upgraded to use the Sendgrid 2.0 API because the older one has been deprecated. The schema has changed as a result.
 
-  To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
+To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
 
 ## Connector Upgrade Guide
 
@@ -40,7 +40,7 @@ Each instance of the connector must be updated separately. If you have created m
     1. Follow the prompt to confirm you are ready to upgrade to the new version.
 
 
-### Refresh schemas and reset data
+### Refresh all schemas and reset data
 
 1. Select **Connections** in the main navbar.
 2. Select the connection(s) affected by the update.

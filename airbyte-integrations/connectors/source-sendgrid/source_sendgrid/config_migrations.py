@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
 import pendulum
 from airbyte_cdk.config_observation import create_connector_config_control_message
@@ -18,7 +18,7 @@ class MigrateToLowcodeConfig:
     """
     This class stands for migrating the config at runtime.
     Specifically, starting from `0.5.0`, apikey moved to api_key and start_time moved to start_date.
-    start_time was not required and not start_date is.
+    start_time was not required and now start_date is.
     """
 
     message_repository: MessageRepository = InMemoryMessageRepository()
@@ -93,7 +93,7 @@ class MigrateToLowcodeConfig:
                 )
 
 
-def parse_config_int(value):
+def parse_config_int(value) -> Optional[int]:
     if isinstance(value, int):
         return value
     try:
