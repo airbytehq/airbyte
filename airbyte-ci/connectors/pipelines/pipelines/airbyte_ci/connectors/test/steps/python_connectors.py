@@ -192,10 +192,10 @@ class UnitTests(PytestStep):
         return super().default_params | coverage_options
 
 
-class AirbyteLibValidation(Step):
-    """A step to validate the connector will work with airbyte-lib, using the airbyte-lib validation helper."""
+class PyAirbyteValidation(Step):
+    """A step to validate the connector will work with PyAirbyte, using the PyAirbyte validation helper."""
 
-    title = "AirbyteLib validation tests"
+    title = "PyAirbyte validation tests"
 
     context: ConnectorContext
 
@@ -207,7 +207,7 @@ class AirbyteLibValidation(Step):
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
         if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
-            return self.skip("Connector is not published on pypi, skipping airbyte-lib validation.")
+            return self.skip("Connector is not published on pypi, skipping PyAirbyte validation.")
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
         test_execution = test_environment.with_(
@@ -220,7 +220,7 @@ class AirbyteLibValidation(Step):
         self,
         built_connector_container: Container,
     ) -> Container:
-        """Add airbyte-lib and secrets to the test environment."""
+        """Add PyAirbyte and secrets to the test environment."""
         context: ConnectorContext = self.context
 
         container_with_test_deps = await pipelines.dagger.actions.python.common.with_python_package(
@@ -230,7 +230,7 @@ class AirbyteLibValidation(Step):
             [
                 "pip",
                 "install",
-                "airbyte-lib",
+                "airbyte",
             ]
         )
 
@@ -266,7 +266,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
             ),
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
-                step=AirbyteLibValidation(context),
+                step=PyAirbyteValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),

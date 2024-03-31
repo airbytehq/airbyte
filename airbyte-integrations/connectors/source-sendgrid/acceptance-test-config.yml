@@ -23,8 +23,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/lowcode_config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.5.0"
-      - config_path: "secrets/old_config.json"
+          disable_for_version: "1.0.0"
+      - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
           disable_for_version: "0.3.0"
       - config_path: "secrets/python_config.json"

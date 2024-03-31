@@ -138,7 +138,7 @@ class DatetimeBasedCursor(Cursor):
         ):
             self._highest_observed_cursor_field_value = record_cursor_value
 
-    def close_slice(self, stream_slice: StreamSlice, _most_recent_record: Optional[Record]) -> None:
+    def close_slice(self, stream_slice: StreamSlice) -> None:
         if stream_slice.partition:
             raise ValueError(f"Stream slice {stream_slice} should not have a partition. Got {stream_slice.partition}.")
         cursor_value_str_by_cursor_value_datetime = dict(

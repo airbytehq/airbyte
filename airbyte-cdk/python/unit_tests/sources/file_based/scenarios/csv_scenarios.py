@@ -265,6 +265,12 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "airbyte_hidden": True,
                                                     "enum": ["None", "Primitive Types Only"],
                                                 },
+                                                "ignore_errors_on_fields_mismatch": {
+                                                    "type": "boolean",
+                                                    "title": "Ignore errors on field mismatch",
+                                                    "default": False,
+                                                    "description": "Whether to ignore errors that occur when the number of fields in the CSV does not match the number of columns in the schema.",
+                                                },
                                             },
                                             "required": ["filetype"],
                                         },

@@ -20,9 +20,9 @@ import static org.jooq.impl.DSL.val;
 import com.google.common.collect.Iterables;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -36,6 +36,7 @@ import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.conf.Settings;
 import org.jooq.conf.StatementType;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,6 +161,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           LOGGER.info("Executed batch size: {}, {}, {}", batch.size(), schemaName, tableName);
         }
       });
+    } catch (DataAccessException dae) {
+      // Suppressing exception to avoid printing sensitive customer record information.
+      LOGGER.error("Failed to insert records, SQLState class {}", dae.sqlStateClass());
+      throw new RuntimeException("Failed to insert records with DataAccessException");
     } catch (final Exception e) {
       LOGGER.error("Error while inserting records", e);
       throw new RuntimeException(e);

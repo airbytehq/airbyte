@@ -12,7 +12,12 @@ from airbyte_protocol.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateStats,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
@@ -783,6 +788,7 @@ async def test_read(mocker, schema, ignored_fields, expect_records_config, recor
             should_validate_schema=True,
             should_validate_data_points=False,
             should_validate_stream_statuses=False,
+            should_validate_state_messages=False,
             should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream=expected_records_by_stream,
@@ -1482,6 +1488,7 @@ async def test_read_validate_async_output_stream_statuses(mocker):
         should_validate_schema=False,
         should_validate_data_points=False,
         should_validate_stream_statuses=True,
+        should_validate_state_messages=False,
         should_fail_on_extra_columns=False,
         empty_streams=set(),
         expected_records_by_stream={},
@@ -1582,6 +1589,7 @@ async def test_read_validate_stream_statuses_exceptions(mocker, output):
             should_validate_schema=False,
             should_validate_data_points=False,
             should_validate_stream_statuses=True,
+            should_validate_state_messages=False,
             should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream={},
@@ -1699,3 +1707,105 @@ async def test_all_supported_file_types_present(mocker, file_types_found, should
             await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)
     else:
         await t.test_all_supported_file_types_present(certified_file_based_connector=True, inputs=config)
+
+@pytest.mark.parametrize(
+    ("state_message_params", "should_fail"),
+    (
+            ({"type": AirbyteStateType.STREAM, "sourceStats": AirbyteStateStats(recordCount=1.0)}, False),
+            ({"type": AirbyteStateType.STREAM}, True),
+            ({"type": AirbyteStateType.LEGACY}, True),
+            ({}, True),  # Case where state was not emitted
+
+    ),
+)
+async def test_read_validate_async_output_state_messages(mocker, state_message_params, should_fail):
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream.parse_obj({"name": f"test_stream_0", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}),
+                sync_mode="full_refresh",
+                destination_sync_mode="overwrite",
+            )
+        ]
+    )
+    stream = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name='test_stream_0', namespace=None),
+        stream_state=AirbyteStateBlob(__ab_full_refresh_state_message=True)
+    )
+    async_stream_output = [
+        AirbyteMessage(
+            type=Type.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.STARTED
+                ),
+            ),
+        ),
+        AirbyteMessage(
+            type=Type.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=114,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.RUNNING
+                ),
+            ),
+        ),
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream_0", data={"a": 1}, emitted_at=111)),
+        AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(stream=stream, **state_message_params)),
+        AirbyteMessage(
+            type=Type.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=120,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="test_stream_0"), status=AirbyteStreamStatus.COMPLETE
+                ),
+            ),
+        )
+    ]
+
+    if not state_message_params:
+        async_stream_output.pop()
+        print(async_stream_output)
+    docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(return_value=async_stream_output))
+
+    t = test_core.TestBasicRead()
+
+    if should_fail:
+        with pytest.raises((AssertionError, AttributeError)):
+            await t.test_read(
+                connector_config=None,
+                configured_catalog=configured_catalog,
+                expect_records_config=_DEFAULT_RECORD_CONFIG,
+                should_validate_schema=False,
+                should_validate_data_points=False,
+                should_validate_stream_statuses=True,
+                should_validate_state_messages=True,
+                should_fail_on_extra_columns=False,
+                empty_streams=set(),
+                expected_records_by_stream={},
+                docker_runner=docker_runner_mock,
+                ignored_fields=None,
+                detailed_logger=MagicMock(),
+                certified_file_based_connector=False
+            )
+    else:
+        await t.test_read(
+            connector_config=None,
+            configured_catalog=configured_catalog,
+            expect_records_config=_DEFAULT_RECORD_CONFIG,
+            should_validate_schema=False,
+            should_validate_data_points=False,
+            should_validate_stream_statuses=True,
+            should_validate_state_messages=True,
+            should_fail_on_extra_columns=False,
+            empty_streams=set(),
+            expected_records_by_stream={},
+            docker_runner=docker_runner_mock,
+            ignored_fields=None,
+            detailed_logger=MagicMock(),
+            certified_file_based_connector=False
+        )

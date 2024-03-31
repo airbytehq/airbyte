@@ -17,10 +17,8 @@ include = "source_sendgrid"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = ">=0.65"
-requests = "==2.31.0"
-pandas = "==2.1.1"
-backoff = "==2.2.1"
+airbyte-cdk = "^0"
+pandas = "^2.1.1"
 
 [tool.poetry.scripts]
 source-sendgrid = "source_sendgrid.run:run"

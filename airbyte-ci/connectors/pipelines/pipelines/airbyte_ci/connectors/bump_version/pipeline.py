@@ -42,12 +42,14 @@ class AddChangelogEntry(Step):
         new_version: str,
         comment: str,
         pull_request_number: str,
+        export_docs: bool = False,
     ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
         self.new_version = semver.VersionInfo.parse(new_version)
         self.comment = comment
         self.pull_request_number = int(pull_request_number)
+        self.export_docs = export_docs
 
     async def _run(self) -> StepResult:
         doc_path = self.context.connector.documentation_file_path
@@ -68,6 +70,8 @@ class AddChangelogEntry(Step):
                 step=self, status=StepStatus.FAILURE, stderr=f"Could not add changelog entry: {e}", output=self.repo_dir, exc_info=e
             )
         updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), contents=updated_doc)
+        if self.export_docs:
+            await updated_repo_dir.file(str(doc_path)).export(str(doc_path))
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
@@ -85,10 +89,12 @@ class BumpDockerImageTagInMetadata(Step):
         context: ConnectorContext,
         repo_dir: Directory,
         new_version: str,
+        export_metadata: bool = False,
     ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
         self.new_version = new_version
+        self.export_metadata = export_metadata
 
     @staticmethod
     def get_metadata_with_bumped_version(previous_version: str, new_version: str, metadata_str: str) -> str:
@@ -110,12 +116,13 @@ class BumpDockerImageTagInMetadata(Step):
         repo_dir_with_updated_metadata = metadata_change_helpers.get_repo_dir_with_updated_metadata_str(
             self.repo_dir, metadata_path, updated_metadata_str
         )
-
         metadata_validation_results = await MetadataValidation(self.context).run()
         # Exit early if the metadata file is invalid.
         if metadata_validation_results.status is not StepStatus.SUCCESS:
             return metadata_validation_results
 
+        if self.export_metadata:
+            await repo_dir_with_updated_metadata.file(str(metadata_path)).export(str(metadata_path))
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,

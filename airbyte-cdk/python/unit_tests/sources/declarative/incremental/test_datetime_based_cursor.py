@@ -426,8 +426,7 @@ def test_close_slice(test_name, previous_cursor, stream_slice, observed_records,
     for record_data in observed_records:
         record = Record(record_data, stream_slice)
         cursor.observe(stream_slice, record)
-    last_record = observed_records[-1] if observed_records else None
-    cursor.close_slice(stream_slice, Record(last_record, stream_slice) if last_record else None)
+    cursor.close_slice(stream_slice)
     updated_state = cursor.get_stream_state()
     assert updated_state == expected_state
 
@@ -442,7 +441,7 @@ def test_close_slice_fails_if_slice_has_a_partition():
     )
     stream_slice = StreamSlice(partition={"key": "value"}, cursor_slice={"end_time": "2022-01-01"})
     with pytest.raises(ValueError):
-        cursor.close_slice(stream_slice, Record({"id": 1}, stream_slice))
+        cursor.close_slice(stream_slice)
 
 
 def test_compares_cursor_values_by_chronological_order():
@@ -459,7 +458,7 @@ def test_compares_cursor_values_by_chronological_order():
     cursor.observe(_slice, first_record)
     second_record = Record({cursor_field: "01-03-2023"}, _slice)
     cursor.observe(_slice, second_record)
-    cursor.close_slice(_slice, second_record)
+    cursor.close_slice(_slice)
 
     assert cursor.get_stream_state()[cursor_field] == "01-03-2023"
 
@@ -478,7 +477,7 @@ def test_given_different_format_and_slice_is_highest_when_close_slice_then_state
     record_cursor_value = "2023-01-03"
     record = Record({cursor_field: record_cursor_value}, _slice)
     cursor.observe(_slice, record)
-    cursor.close_slice(_slice, record)
+    cursor.close_slice(_slice)
 
     assert cursor.get_stream_state()[cursor_field] == "2023-01-03"
 
