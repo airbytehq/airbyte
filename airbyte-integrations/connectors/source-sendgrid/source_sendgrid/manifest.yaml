@@ -29,12 +29,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/suppression/bounces
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -54,7 +51,6 @@ streams:
           type: OffsetIncrement
           page_size: 500
           inject_on_first_request: true
-      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created
@@ -101,12 +97,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/suppression/spam_reports
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -126,7 +119,6 @@ streams:
           type: OffsetIncrement
           page_size: 500
           inject_on_first_request: true
-      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created
@@ -172,12 +164,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/suppression/unsubscribes
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -197,7 +186,6 @@ streams:
           type: OffsetIncrement
           page_size: 500
           inject_on_first_request: true
-      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created
@@ -247,12 +235,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/suppression/blocks
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -272,7 +257,6 @@ streams:
           type: OffsetIncrement
           page_size: 500
           inject_on_first_request: true
-      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created
@@ -320,12 +304,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/suppression/invalid_emails
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -345,7 +326,6 @@ streams:
           type: OffsetIncrement
           page_size: 500
           inject_on_first_request: true
-      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created
@@ -396,12 +376,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/asm/groups
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -409,7 +386,6 @@ streams:
           field_path: []
       paginator:
         type: NoPagination
-      partition_router: []
   - type: DeclarativeStream
     name: suppression_group_members
     primary_key:
@@ -436,12 +412,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/asm/suppressions
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -460,7 +433,6 @@ streams:
         pagination_strategy:
           type: OffsetIncrement
           page_size: 500
-      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
@@ -513,12 +485,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/marketing/lists
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -538,7 +507,6 @@ streams:
           page_size: 1000
           cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
-      partition_router: []
   - type: DeclarativeStream
     name: segments
     primary_key:
@@ -587,12 +555,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/marketing/segments/2.0
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -601,7 +566,6 @@ streams:
             - results
       paginator:
         type: NoPagination
-      partition_router: []
   - type: DeclarativeStream
     name: singlesend_stats
     primary_key:
@@ -619,6 +583,7 @@ streams:
             type: string
           id:
             type: string
+            format: uuid
           stats:
             properties:
               bounce_drops:
@@ -654,12 +619,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/marketing/stats/singlesends
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -679,7 +641,6 @@ streams:
           page_size: 50
           cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
-      partition_router: []
   - type: DeclarativeStream
     name: stats_automations
     primary_key:
@@ -730,12 +691,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/marketing/stats/automations
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -755,7 +713,6 @@ streams:
           page_size: 50
           cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
-      partition_router: []
   - type: DeclarativeStream
     name: singlesends
     primary_key:
@@ -774,6 +731,7 @@ streams:
             type: string
           id:
             type: string
+            format: uuid
           is_abtest:
             type: boolean
           name:
@@ -796,12 +754,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/marketing/singlesends
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -821,7 +776,6 @@ streams:
           page_size: 100
           cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
-      partition_router: []
   - type: DeclarativeStream
     name: templates
     primary_key: []
@@ -851,11 +805,9 @@ streams:
         http_method: GET
         request_parameters:
           generations: legacy,dynamic
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -875,7 +827,6 @@ streams:
           page_size: 200
           cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
-      partition_router: []
   - type: DeclarativeStream
     name: campaigns
     primary_key:
@@ -885,22 +836,24 @@ streams:
       schema:
         $schema: http://json-schema.org/schema#
         properties:
-          channels:
-            items:
-              type: string
-            type: array
-          created_at:
-            type: string
           id:
             type: string
-          is_abtest:
-            type: boolean
           name:
             type: string
+          created_at:
+            type: string
+            format: date-time
           status:
             type: string
           updated_at:
             type: string
+            format: date-time
+          is_abtest:
+            type: boolean
+          channels:
+            items:
+              type: string
+            type: array
         type: object
     retriever:
       type: SimpleRetriever
@@ -909,12 +862,9 @@ streams:
         url_base: https://api.sendgrid.com
         path: /v3/marketing/campaigns
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -934,7 +884,6 @@ streams:
           page_size: 100
           cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
-      partition_router: []
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#

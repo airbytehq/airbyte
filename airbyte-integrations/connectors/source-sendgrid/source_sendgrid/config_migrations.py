@@ -33,9 +33,9 @@ class MigrateToLowcodeConfig:
         """
         has_api = "apikey" in config
         has_time = "start_time" in config
-        has_newapi = "api_key" in config
-        has_newdate = "start_date" in config
-        if has_newapi and has_newdate:
+        has_new_api = "api_key" in config
+        has_new_date = "start_date" in config
+        if has_new_api and has_new_date:
             return False
         return has_api or has_time
 
@@ -68,17 +68,13 @@ class MigrateToLowcodeConfig:
 
     @classmethod
     def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
-        # add the Airbyte Control Message to message repo
-        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
-        # emit the Airbyte Control Message from message queue to stdout
-        for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+        print(create_connector_config_control_message(migrated_config).json(exclude_unset=True))
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
         """
         This method checks the input args, should the config be migrated,
-        transform if neccessary and emit the CONTROL message.
+        transform if necessary and emit the CONTROL message.
         """
         # get config path
         config_path = AirbyteEntrypoint(source).extract_config(args)
@@ -88,9 +84,7 @@ class MigrateToLowcodeConfig:
             config = source.read_config(config_path)
             # migration check
             if cls.should_migrate(config):
-                cls.emit_control_message(
-                    cls.modify_and_save(config_path, source, config),
-                )
+                cls.emit_control_message(cls.modify_and_save(config_path, source, config))
 
 
 def parse_config_int(value) -> Optional[int]:
