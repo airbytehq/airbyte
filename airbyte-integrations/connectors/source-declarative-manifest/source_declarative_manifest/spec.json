@@ -1,22 +1,20 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/azure-blob-storage",
-  "supportsIncremental": false,
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/low-code",
+  "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
   "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "AzureBlobStorage Destination Spec",
+    "title": "Low-code source spec",
     "type": "object",
     "required": ["__injected_declarative_manifest"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "__injected_declarative_manifest": {
-        "title": "Endpoint Domain Name",
-        "type": "string",
-        "default": "blob.core.windows.net",
-        "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
-        "examples": ["blob.core.windows.net"]
+        "title": "Low-code manifest",
+        "type": "object",
+        "description": "The low-code manifest that defines the components of the source."
       }
     }
   }

@@ -1,0 +1,18 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/connector-acceptance-tests.md)
+# for more information about how to configure these tests
+connector_image: airbyte/source-declarative-manifest:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_declarative_manifest/spec.json"
+      - config_path: "integration_tests/pokeapi_config.json"
+  connection:
+    tests:
+      - config_path: "integration_tests/pokeapi_config.json"
+        status: "succeed"
+  discovery:
+    tests:
+      - config_path: "integration_tests/pokeapi_config.json"
+  basic_read:
+    tests:
+      - config_path: "integration_tests/pokeapi_config.json"
