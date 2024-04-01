@@ -49,13 +49,13 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         parent_stream_config = partition_router.parent_stream_configs[0]
 
         # Retrieve the parent key with a condition, as properties are returned as a dictionary for custom components.
-        parent_key = (
-            parent_stream_config.parent_key
+        partition_field = (
+            parent_stream_config.partition_field
             if isinstance(parent_stream_config, ParentStreamConfig)
             else parent_stream_config.get("parent_key")
         )
 
-        return parent_key
+        return partition_field
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if _is_already_migrated(stream_state):
