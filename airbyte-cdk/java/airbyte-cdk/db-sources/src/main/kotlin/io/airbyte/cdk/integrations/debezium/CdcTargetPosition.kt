@@ -70,7 +70,7 @@ interface CdcTargetPosition<T> {
      * @return Returns `true` if both offsets are at the same position. Otherwise, it returns
      * `false`
      */
-    fun isSameOffset(offsetA: Map<*, *>, offsetB: Map<String, String>): Boolean {
+    fun isSameOffset(offsetA: Map<String, String>, offsetB: Map<String, String>): Boolean {
         return false
     }
 }

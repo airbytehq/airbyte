@@ -36,6 +36,7 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
          * @param driverClassName name of the JDBC driver
          * @return DataSourceBuilder class used to create dynamic fields for DataSource
          */
+        @JvmStatic
         fun getConnectionTimeout(
             connectionProperties: Map<String, String>,
             driverClassName: String?

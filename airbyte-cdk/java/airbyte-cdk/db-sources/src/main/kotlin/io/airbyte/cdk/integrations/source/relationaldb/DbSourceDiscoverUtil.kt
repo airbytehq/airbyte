@@ -147,6 +147,7 @@ object DbSourceDiscoverUtil {
         return AirbyteCatalog().withStreams(streams)
     }
 
+    @JvmStatic
     fun getFullyQualifiedTableName(nameSpace: String?, tableName: String): String {
         return if (nameSpace != null) "$nameSpace.$tableName" else tableName
     }

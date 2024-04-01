@@ -94,20 +94,20 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected abstract fun addCdcDefaultCursorField(stream: AirbyteStream?)
 
-    protected abstract fun assertExpectedStateMessages(stateMessages: List<AirbyteStateMessage>?)
+    protected abstract fun assertExpectedStateMessages(stateMessages: List<AirbyteStateMessage>)
 
     // TODO: this assertion should be added into test cases in this class, we will need to implement
     // corresponding iterator for other connectors before
     // doing so.
-    protected fun assertExpectedStateMessageCountMatches(
-        stateMessages: List<AirbyteStateMessage>?,
+    protected open fun assertExpectedStateMessageCountMatches(
+        stateMessages: List<AirbyteStateMessage>,
         totalCount: Long
     ) {
         // Do nothing.
     }
 
     @BeforeEach
-    protected fun setup() {
+    protected open fun setup() {
         testdb = createTestDatabase()
         createTables()
         populateTables()
@@ -381,7 +381,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedStateMessageCountMatches(stateMessages, MODEL_RECORDS.size.toLong())
     }
 
-    protected fun compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(
+    protected open fun compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(
         targetPosition: CdcTargetPosition<*>?,
         record: AirbyteRecordMessage
     ) {
@@ -412,8 +412,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertCdcMetaData(recordMessages2[0].data, false)
     }
 
-    protected fun assertExpectedStateMessagesFromIncrementalSync(
-        stateMessages: List<AirbyteStateMessage>?
+    protected open fun assertExpectedStateMessagesFromIncrementalSync(
+        stateMessages: List<AirbyteStateMessage>
     ) {
         assertExpectedStateMessages(stateMessages)
     }
@@ -529,8 +529,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(
-        stateAfterFirstBatch: List<AirbyteStateMessage>?
+    protected open fun assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(
+        stateAfterFirstBatch: List<AirbyteStateMessage>
     ) {
         assertExpectedStateMessages(stateAfterFirstBatch)
     }
@@ -650,7 +650,9 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedStateMessageCountMatches(stateMessages, 0)
     }
 
-    protected fun assertExpectedStateMessagesForNoData(stateMessages: List<AirbyteStateMessage>?) {
+    protected open fun assertExpectedStateMessagesForNoData(
+        stateMessages: List<AirbyteStateMessage>
+    ) {
         assertExpectedStateMessages(stateMessages)
     }
 
@@ -703,7 +705,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    fun newTableSnapshotTest() {
+    open fun newTableSnapshotTest() {
         val firstBatchIterator = source().read(config()!!, configuredCatalog, null)
         val dataFromFirstBatch = AutoCloseableIterators.toListAndClose(firstBatchIterator)
         val recordsFromFirstBatch = extractRecordMessages(dataFromFirstBatch)
@@ -920,7 +922,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun assertStateMessagesForNewTableSnapshotTest(
+    protected open fun assertStateMessagesForNewTableSnapshotTest(
         stateMessages: List<AirbyteStateMessage>,
         stateMessageEmittedAfterFirstSyncCompletion: AirbyteStateMessage
     ) {
@@ -1042,13 +1044,14 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(CdcSourceTest::class.java)
 
-        protected const val MODELS_STREAM_NAME: String = "models"
-        protected val STREAM_NAMES: Set<String?> = java.util.Set.of(MODELS_STREAM_NAME)
+        const val MODELS_STREAM_NAME: String = "models"
+        @JvmField val STREAM_NAMES: Set<String?> = java.util.Set.of(MODELS_STREAM_NAME)
         protected const val COL_ID: String = "id"
         protected const val COL_MAKE_ID: String = "make_id"
         protected const val COL_MODEL: String = "model"
 
-        protected val MODEL_RECORDS: List<JsonNode> =
+        @JvmField
+        val MODEL_RECORDS: List<JsonNode> =
             ImmutableList.of(
                 Jsons.jsonNode(ImmutableMap.of(COL_ID, 11, COL_MAKE_ID, 1, COL_MODEL, "Fiesta")),
                 Jsons.jsonNode(ImmutableMap.of(COL_ID, 12, COL_MAKE_ID, 1, COL_MODEL, "Focus")),

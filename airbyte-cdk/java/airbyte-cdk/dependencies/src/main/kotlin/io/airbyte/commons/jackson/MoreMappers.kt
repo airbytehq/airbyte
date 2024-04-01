@@ -16,6 +16,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
  * All jackson mapper creation should use the following methods for instantiation.
  */
 object MoreMappers {
+    @JvmStatic
     fun initMapper(): ObjectMapper {
         val result = ObjectMapper().registerModule(JavaTimeModule())
         result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
