@@ -133,6 +133,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
             return matcher.replaceAll("$1?$3")
         }
 
+        @JvmStatic
         fun addThrowableForDeinterpolation(klass: Class<out Throwable>) {
             THROWABLES_TO_DEINTERPOLATE.add(klass)
         }
@@ -154,8 +155,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
             }
         }
 
-        @VisibleForTesting
-        fun addCommonStringsToDeinterpolate() {
+        internal fun addCommonStringsToDeinterpolate() {
             // Add some common strings to deinterpolate, regardless of what the connector is doing
             addStringForDeinterpolation("airbyte")
             addStringForDeinterpolation("config")
