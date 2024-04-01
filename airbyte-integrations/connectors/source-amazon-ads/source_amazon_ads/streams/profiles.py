@@ -19,7 +19,7 @@ class Profiles(AmazonAdsStream):
     primary_key = "profileId"
     model = Profile
 
-    def path(self, **kvargs) -> str:
+    def path(self, **kwargs) -> str:
         return "v2/profiles?profileTypeFilter=seller,vendor"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -30,13 +30,13 @@ class Profiles(AmazonAdsStream):
             self._profiles.append(profile_id_obj)
             yield record
 
-    def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         if self._profiles:
             # In case if we have _profiles populated we can use it instead of making API call.
             yield from [profile.dict(exclude_unset=True) for profile in self._profiles]
         else:
             # Make API call by the means of basic HttpStream class.
-            yield from super().read_records(*args, **kvargs)
+            yield from super().read_records(*args, **kwargs)
 
     def get_all_profiles(self) -> List[Profile]:
         """

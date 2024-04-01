@@ -47,11 +47,12 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 ## Supported streams and sync modes
 
-* [Surveys](https://developer.surveymonkey.com/api/v3/#surveys) \(Incremental\)
-* [SurveyPages](https://developer.surveymonkey.com/api/v3/#surveys-id-pages)
-* [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
-* [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
-* [SurveyCollectors](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-id-collectors)
+* [Surveys](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys) \(Incremental\)
+* [SurveyPages](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-pages)
+* [SurveyQuestions](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-pages-page_id-questions)
+* [SurveyResponses](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-id-responses-bulk) \(Incremental\)
+* [SurveyCollectors](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-collectors)
+* [Collectors](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-collectors-collector_id-)
 
 ### Performance considerations
 

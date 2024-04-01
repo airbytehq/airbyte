@@ -25,6 +25,7 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
@@ -56,6 +57,7 @@ import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDest
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -198,6 +200,13 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
   }
 
   @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    // Redundant override to keep in consistent with InsertDestination. TODO: Unify these 2 classes with
+    // composition.
+    return new RedshiftSuperLimitationTransformer(parsedCatalog, defaultNamespace);
+  }
+
+  @Override
   @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -257,6 +266,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
       typerDeduper =
           new DefaultTyperDeduper<>(sqlGenerator, redshiftDestinationHandler, parsedCatalog, migrator, v2TableMigrator, redshiftMigrations);
     }
+
     return StagingConsumerFactory.builder(
         outputRecordCollector,
         database,
@@ -269,7 +279,10 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true).build().createAsync();
+        true)
+        .setDataTransformer(getDataTransformer(parsedCatalog, defaultNamespace))
+        .build()
+        .createAsync();
   }
 
   /**

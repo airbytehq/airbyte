@@ -30,6 +30,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change;
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,7 +50,14 @@ import org.jooq.impl.SQLDataType;
 
 public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
-  public static final DataType<?> JSONB_TYPE = new DefaultDataType<>(null, Object.class, "jsonb");
+  public static final DataType<Object> JSONB_TYPE = new DefaultDataType<>(SQLDialect.POSTGRES, Object.class, "jsonb");
+
+  public static final String CASE_STATEMENT_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} ELSE {2} END ";
+
+  private static final String AB_META_COLUMN_CHANGES_KEY = "changes";
+  private static final String AB_META_CHANGES_FIELD_KEY = "field";
+  private static final String AB_META_CHANGES_CHANGE_KEY = "change";
+  private static final String AB_META_CHANGES_REASON_KEY = "reason";
 
   public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
@@ -62,11 +71,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     // To keep it consistent when querying raw table in T+D query, convert it to lowercase.
     // TODO: This logic should be unified across Raw and final table operations in a single class
     // operating on a StreamId.
+    final String streamName = namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase();
     return new StreamId(
         namingTransformer.getNamespace(namespace),
         namingTransformer.convertStreamName(name),
         namingTransformer.getNamespace(rawNamespaceOverride).toLowerCase(),
-        namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase(),
+        streamName.length() > 63 ? streamName.substring(0, 63) : streamName,
         namespace,
         name);
   }
@@ -218,60 +228,65 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     }
   }
 
-  // TODO this isn't actually used right now... can we refactor this out?
-  // (redshift is doing something interesting with this method, so leaving it for now)
   @Override
   protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type, final boolean useExpensiveSaferCasting) {
     return cast(field, toDialectType(type));
   }
 
+  private Field<?> jsonBuildObject(Field<?>... arguments) {
+    return function("JSONB_BUILD_OBJECT", JSONB_TYPE, arguments);
+  }
+
   @Override
   protected Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
-    final Field<?>[] dataFieldErrors = columns
+    final List<Field<Object>> dataFieldErrors = columns
         .entrySet()
         .stream()
         .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
-        .toArray(Field<?>[]::new);
-    return function(
-        "JSONB_BUILD_OBJECT",
-        JSONB_TYPE,
-        val("errors"),
-        function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors), val((String) null))).as(COLUMN_NAME_AB_META);
+        .toList();
+    final Field<?> rawTableChangesArray =
+        field("ARRAY(SELECT jsonb_array_elements_text({0}#>'{changes}'))::jsonb[]", field(name(COLUMN_NAME_AB_META)));
+
+    // Jooq is inferring and casting as int[] for empty fields array call. So explicitly casting it to
+    // jsonb[] on empty array
+    final Field<?> finalTableChangesArray = dataFieldErrors.isEmpty() ? field("ARRAY[]::jsonb[]")
+        : function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors).cast(JSONB_TYPE.getArrayDataType()), val((String) null));
+    return jsonBuildObject(val(AB_META_COLUMN_CHANGES_KEY),
+        field("ARRAY_CAT({0}, {1})", finalTableChangesArray, rawTableChangesArray)).as(COLUMN_NAME_AB_META);
   }
 
-  private Field<String> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
+  private Field<?> nulledChangeObject(String fieldName) {
+    return jsonBuildObject(val(AB_META_CHANGES_FIELD_KEY), val(fieldName),
+        val(AB_META_CHANGES_CHANGE_KEY), val(Change.NULLED),
+        val(AB_META_CHANGES_REASON_KEY), val(Reason.DESTINATION_TYPECAST_ERROR));
+  }
+
+  private Field<Object> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
     final Field<Object> extract = extractColumnAsJson(column);
-    if (type instanceof Struct) {
-      // If this field is a struct, verify that the raw data is an object or null.
-      return case_()
-          .when(
-              extract.isNotNull()
-                  .and(jsonTypeof(extract).notIn("object", "null")),
-              val("Problem with `" + column.originalName() + "`"))
-          .else_(val((String) null));
-    } else if (type instanceof Array) {
-      // Do the same for arrays.
-      return case_()
-          .when(
-              extract.isNotNull()
-                  .and(jsonTypeof(extract).notIn("array", "null")),
-              val("Problem with `" + column.originalName() + "`"))
-          .else_(val((String) null));
-    } else if (type == AirbyteProtocolType.UNKNOWN || type == AirbyteProtocolType.STRING) {
+
+    // If this field is a struct, verify that the raw data is an object or null.
+    // Do the same for arrays.
+    return switch (type) {
+      case Struct ignored -> field(CASE_STATEMENT_SQL_TEMPLATE,
+                                        extract.isNotNull().and(jsonTypeof(extract).notIn("object", "null")),
+                                        nulledChangeObject(column.originalName()),
+                                   cast(val((Object) null), JSONB_TYPE));
+      case Array ignored -> field(CASE_STATEMENT_SQL_TEMPLATE,
+                                       extract.isNotNull().and(jsonTypeof(extract).notIn("array", "null")),
+                                       nulledChangeObject(column.originalName()),
+                                       cast(val((Object) null), JSONB_TYPE));
       // Unknown types require no casting, so there's never an error.
       // Similarly, everything can cast to string without error.
-      return val((String) null);
-    } else {
-      // For other type: If the raw data is not NULL or 'null', but the casted data is NULL,
-      // then we have a typing error.
-      return case_()
-          .when(
-              extract.isNotNull()
-                  .and(jsonTypeof(extract).ne("null"))
-                  .and(castedField(extract, type, true).isNull()),
-              val("Problem with `" + column.originalName() + "`"))
-          .else_(val((String) null));
-    }
+      case AirbyteProtocolType airbyteProtocolType
+          when (airbyteProtocolType == AirbyteProtocolType.UNKNOWN || airbyteProtocolType == AirbyteProtocolType.STRING) ->
+          cast(val((Object) null), JSONB_TYPE);
+      default -> field(CASE_STATEMENT_SQL_TEMPLATE,
+                            extract.isNotNull()
+                                .and(jsonTypeof(extract).ne("null"))
+                                .and(castedField(extract, type, true).isNull()),
+                            nulledChangeObject(column.originalName()),
+                            cast(val((Object) null), JSONB_TYPE));
+    };
   }
 
   @Override

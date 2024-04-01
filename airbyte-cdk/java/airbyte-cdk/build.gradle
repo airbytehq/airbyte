@@ -1,4 +1,3 @@
-
 final var cdkVersion = {
     var props = new Properties()
     file("core/src/main/resources/version.properties").withInputStream(props::load)
@@ -51,6 +50,9 @@ allprojects {
         testFixturesImplementation.extendsFrom implementation
         testFixturesRuntimeOnly.extendsFrom runtimeOnly
     }
+
+    // This is necessary because the mockit.kotlin any() generates a bunch of bad casts
+    spotbugsTest.omitVisitors = ['FindBadCast2']
 }
 
 description = "Airbyte Connector Development Kit (CDK) for Java."
