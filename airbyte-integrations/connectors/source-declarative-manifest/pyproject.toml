@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "0.73.2"
 name = "source-declarative-manifest"
-description = "Source implementation for Dixa."
+description = "Base source implementation for low-code sources."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
