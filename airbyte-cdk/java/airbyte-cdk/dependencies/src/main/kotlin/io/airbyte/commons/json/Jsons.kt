@@ -188,6 +188,7 @@ object Jsons {
         return jsonNode(emptyMap<Any, Any>())
     }
 
+    @JvmStatic
     fun arrayNode(): ArrayNode {
         return OBJECT_MAPPER.createArrayNode()
     }
@@ -343,6 +344,7 @@ object Jsons {
      * provided for backward compatibility.
      */
     @JvmOverloads
+    @JvmStatic
     fun flatten(node: JsonNode, applyFlattenToArray: Boolean = false): Map<String?, Any> {
         if (node.isObject) {
             val output: MutableMap<String?, Any> = HashMap()
