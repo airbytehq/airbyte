@@ -73,7 +73,7 @@ The following steps need to be executed by an administrator of your company's Az
 
 You will need to create a new Entra ID application for Airbyte. Log into the [Azure Portal](https://portal.azure.com/) and search for the Entra ID service.
 
-From the overview page of Entra ID, press **Add** > **App registration** on the top of the screen. The name you select is your app integration name. Once chosen, configure a **Redirect URI** of type **Web** with the following value:
+From the overview page of Entra ID, press **Add** > **App registration** on the top of the screen. The name you select is your app integration name. Once chosen, **choose who can use the application, typically set to "Accounts in this organization directory only" for specific access,** and configure a **Redirect URI** of type **Web** with the following value:
 
 ```
 <your-airbyte-domain>/auth/realms/airbyte/broker/<app-integration-name>/endpoint
@@ -86,6 +86,10 @@ Hit **Register** to create the application.
 To create client credentials for Airbyte to interface with your application, head to **Certificates & Secrets** on the detail screen of your application and select the **Client secrets** tab. Then:
 1. Click **New client secret**, and enter the expiry date of your choosing. You'll need to pass in the new client secret every time the old one expires to continue being able to log in via Entra ID.
 2. Copy the **Value** (the client secret itself) immediately after creation. You won't be able to view this later on.
+
+:::caution
+If you want to avoid admin consent for these permissions, be sure to choose "Delegated permissions" that do not require admin consent for common scopes. Application permissions will specifically require admin approval.
+:::
 
 ### Setup information needed
 
