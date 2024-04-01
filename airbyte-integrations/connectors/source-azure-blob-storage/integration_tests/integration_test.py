@@ -30,4 +30,4 @@ def test_read_jsonl_files(configured_catalog: ConfiguredAirbyteCatalog, config: 
         cursor_cls=DefaultFileBasedCursor,
     )
     output = read(source=source, config=config, catalog=configured_catalog)
-    assert sum(x.state.sourceStats.recordCount for x in output.state_messages) == 300
+    assert sum(x.state.sourceStats.recordCount for x in output.state_messages) == 2_001_000
