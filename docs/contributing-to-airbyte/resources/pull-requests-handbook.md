@@ -18,7 +18,7 @@ For more information about [breaking changes](#breaking-changes-to-connectors). 
 
 Any refactors, cleanups, etc.. that are not visible improvements to the user should not have emojis.
 
-If you're code change is doing more than one change type at once we strongly recommend to break into multiple pull requests. It helps us to review and merge your contribution.
+If your code change is doing more than one change type at once, we strongly recommend to break into multiple pull requests. It helps us to review and merge your contribution.
 
 ## Descriptions
 
