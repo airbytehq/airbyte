@@ -7,7 +7,7 @@ import json
 
 import pytest
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from source_declarative_manifest.main import create_manifest
+from source_declarative_manifest.run import create_manifest
 
 CONFIG = {
     "__injected_declarative_manifest": {
