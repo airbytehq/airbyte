@@ -29,7 +29,9 @@ class LegacyToPerPartitionStateMigration(StateMigration):
     }
 
     Due to a bug in the original migration, this class also corrects a per_partition state that erroneously uses the parent_key
-    as the partition key instead of the partition_key_field
+    as the partition key instead of the partition_key_field.
+    See https://github.com/airbytehq/airbyte/pull/36719 for mor details
+
     Example output state:
     {
       "partition": {"id": "13506132"},
@@ -81,7 +83,7 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         parent_key = (
             parent_stream_config.parent_key
             if isinstance(parent_stream_config, ParentStreamConfig)
-            else parent_stream_config.get("parent_key")
+            else parent_stream_config.get("parent_key")  # type: ignore # There is a type check. parent_stream_config is known to be a mapping if not a ParentStreamConfig
         )
 
         return parent_key
@@ -98,7 +100,7 @@ class LegacyToPerPartitionStateMigration(StateMigration):
                 return False
             # If the state objects have the parent_key field, we might need to migrate due to a bug in the original implementation
             # see https://github.com/airbytehq/airbyte/pull/36719 for more details
-            elif not self._parent_key in first_state_message.get("partition"):
+            elif self._parent_key not in first_state_message.get("partition"):
                 return False
 
         # There is exactly one parent stream
