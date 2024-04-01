@@ -87,7 +87,7 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     return SourceAzureBlobStorage.read_catalog(f"{os.path.dirname(__file__)}/integration_configured_catalog/configured_catalog.json")
 
 
-@pytest.fixture(name="config_csv", scope="session")
+@pytest.fixture(name="config_csv", scope="function")
 def config_csv_fixture() -> Mapping[str, Any]:
     config = load_config("config_integration_csv.json")
     config["azure_blob_storage_endpoint"] = config["azure_blob_storage_endpoint"].replace("localhost", get_docker_ip())
@@ -108,7 +108,7 @@ def upload_jsonl_files(container_client: ContainerClient) -> None:
             container_client.upload_blob(f"test_jsonl_{table}_{i}.jsonl", jsonl_file, validate_content=False)
 
 
-@pytest.fixture(name="config_jsonl", scope="session")
+@pytest.fixture(name="config_jsonl", scope="function")
 def config_jsonl_fixture() -> Mapping[str, Any]:
     config = load_config("config_integration_jsonl.json")
     config["azure_blob_storage_endpoint"] = config["azure_blob_storage_endpoint"].replace("localhost", get_docker_ip())
