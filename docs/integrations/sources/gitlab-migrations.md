@@ -3,8 +3,12 @@
 
 ## Upgrading to 4.0.0
 
-In this release, a format of stream state has been changed due to migration to low-code.
-Also, the primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`.
+We're continuously striving to enhance the quality and reliability of our connectors at Airbyte.
+As part of our commitment to delivering exceptional service, we are transitioning Source Gitlab from the Python Connector Development Kit (CDK)
+to our new low-code framework improving maintainability and reliability of the connector.
+However, due to differences between the Python and low-code CDKs, this migration constitutes a breaking change.
+
+The primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`.
 Users will need to reset the affected streams after upgrading.
 
 ## Connector Upgrade Guide
