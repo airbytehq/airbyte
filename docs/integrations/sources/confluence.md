@@ -23,12 +23,16 @@ For detailed instructions on creating a PAT (Personal Access Token), which can b
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
 3. Enter a **Source name** of your choosing.
-4. In the **API Token** field, enter your Atlassian API Token or PAT.
-5. In the **Domain Name** field, enter your Confluence domain + path
-   1. Confluence Cloud example: my-confluence.atlassian.net
-   2. Confluence Server example: my.company.domain/confluence
-6. In the **Email** field, enter your Confluence login email.
-7. Click **Set up source** and wait for the tests to complete.
+4. Fill out the required fields:
+   1. In the **API Token** field, enter your Atlassian API Token or PAT.
+   2. In the **Domain Name** field, enter your Confluence domain + path
+      1. Confluence Cloud example: my-confluence.atlassian.net
+      2. Confluence Server example: my.company.domain/confluence
+   3. In the **Email** field, enter your Confluence login email.
+5. Fill out the optional fields if desired:
+   1. Enable **Confluence Server** if you are self-hosting Confluence, otherwise leave disabled for Confluence Cloud
+   2. In the **Space Key** field, enter the key of a space for pages and blog_posts filtering
+6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
