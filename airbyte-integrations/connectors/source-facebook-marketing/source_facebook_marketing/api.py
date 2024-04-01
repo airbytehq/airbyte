@@ -48,6 +48,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     # Insights async jobs throttle
     _ads_insights_throttle: Throttle
     _access_token = None
+    _app_secret = None
 
     @property
     def ads_insights_throttle(self) -> Throttle:
@@ -98,9 +99,12 @@ class MyFacebookAdsApi(FacebookAdsApi):
         cls._access_token = access_token
 
     @classmethod
+    def set_app_secret(cls, app_secret):
+        cls._app_secret = app_secret
+    @classmethod
     def reset_session(cls):
         logger.info("resetting session after sleep")
-        api = MyFacebookAdsApi.init(access_token=MyFacebookAdsApi._access_token, crash_log=False)
+        api = MyFacebookAdsApi.init(access_token=MyFacebookAdsApi._access_token, app_secret=MyFacebookAdsApi._app_secret, crash_log=False)
         FacebookAdsApi.set_default_api(api)
 
     def _compute_pause_interval(self, usage, pause_interval):
@@ -193,11 +197,13 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str):
+    def __init__(self, account_id: str, access_token: str, app_secret: str = None):
         self._account_id = account_id
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        self.api = MyFacebookAdsApi.init(access_token=access_token, app_secret=app_secret, crash_log=False)
         MyFacebookAdsApi.set_access_token(access_token)
+        if app_secret:
+            MyFacebookAdsApi.set_app_secret(app_secret=app_secret)
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property

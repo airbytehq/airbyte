@@ -75,7 +75,6 @@ class InsightConfig(BaseModel):
         default=28,
     )
 
-
 class ConnectorConfig(BaseConfig):
     """Connector config"""
 
@@ -161,4 +160,14 @@ class ConnectorConfig(BaseConfig):
         description="Allows action_breakdowns to be an empty list",
         default=True,
         airbyte_hidden=True,
+    )
+
+    client_id: Optional[str] = Field(
+        description="The Client Id for your OAuth app",
+        airbyte_secret=True,
+    )
+
+    client_secret: Optional[str] = Field(
+        description="The Client Secret for your OAuth app",
+        airbyte_secret=True,
     )

@@ -85,7 +85,7 @@ class SourceFacebookMarketing(AbstractSource):
             if config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token)
+            api = API(account_id=config.account_id, access_token=config.access_token, app_secret=config.client_secret)
             logger.info(f"Select account {api.account}")
         except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, f"error: {repr(e)}"
@@ -110,7 +110,7 @@ class SourceFacebookMarketing(AbstractSource):
         config.start_date = validate_start_date(config.start_date)
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        api = API(account_id=config.account_id, access_token=config.access_token, app_secret=config.client_secret)
 
         insights_args = dict(
             api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
