@@ -228,7 +228,6 @@ internal constructor(
             // be surfaced.
             if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
                 AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage)
-                return
             }
             if (parsed!!.command == Command.CHECK) {
                 // Currently, special handling is required for the CHECK case since the user display
