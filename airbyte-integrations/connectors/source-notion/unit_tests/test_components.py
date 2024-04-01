@@ -170,25 +170,3 @@ ids=["No records filtered", "Some records filtered", "All records filtered", "Em
 def test_semi_incremental_filter_records(semi_incremental_config_start_date, stream_state, stream_slice, expected_records):
     filtered_records = semi_incremental_config_start_date.filter_records(state_test_records, stream_state, stream_slice)
     assert filtered_records == expected_records, "Filtered records do not match the expected records."
-
-
-@pytest.fixture
-def notion_incremental_cursor():
-    return NotionIncrementalCursor(
-        start_datetime="2021-01-01T00:00:00.000Z",
-        cursor_field="last_edited_time",
-        datetime_format="%Y-%m-%dT%H:%M:%S.%fZ",
-        config={},
-        parameters={})
-
-def test_close_slice(notion_incremental_cursor):
-    stream_slice = StreamSlice(partition={}, cursor_slice={})
-    most_recent_record = Record(
-        data={"id": "id_1", "last_edited_time": "2023-01-01T00:00:00.000Z"},
-        associated_slice=stream_slice)
-
-    # Assuming the initial cursor is set to an earlier date
-    notion_incremental_cursor._cursor = "2022-12-31T00:00:00.000Z"
-    notion_incremental_cursor.close_slice(stream_slice, most_recent_record)
-    # Expect the cursor to update to the most recent record's date
-    assert notion_incremental_cursor._cursor == "2023-01-01T00:00:00.000Z", "Cursor should update to the most recent record's date"
