@@ -50,34 +50,34 @@ jobs:
       - name: Build CDK Package
         working-directory: airbyte-cdk/python
         run: poetry run poe build
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "Error during `build-cdk` while publishing Python CDK!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Error while publishing Python CDK!"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+  #      - name: Post failure to Slack channel dev-connectors-extensibility
+  #        if: ${{ failure() }}
+  #        uses: slackapi/slack-github-action@v1.23.0
+  #        continue-on-error: true
+  #        with:
+  #          channel-id: C04J1M66D8B
+  #          payload: |
+  #            {
+  #                "text": "Error during `build-cdk` while publishing Python CDK!",
+  #                "blocks": [
+  #                    {
+  #                        "type": "section",
+  #                        "text": {
+  #                            "type": "mrkdwn",
+  #                            "text": "Error while publishing Python CDK!"
+  #                        }
+  #                    },
+  #                    {
+  #                        "type": "section",
+  #                        "text": {
+  #                            "type": "mrkdwn",
+  #                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+  #                        }
+  #                    }
+  #                ]
+  #            }
+  #        env:
+  #          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   bump-version:
     needs: build-cdk
@@ -114,34 +114,36 @@ jobs:
           commit_message: 🤖 ${{ github.event.inputs.release-type }} bump Python CDK to version $NEW_VERSION
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "Error during `bump-version` while publishing Python CDK!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Error while publishing Python CDK!"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          branch: ella/test-cdk-bump
+          create_branch: true
+#      - name: Post failure to Slack channel dev-connectors-extensibility
+#        if: ${{ failure() }}
+#        uses: slackapi/slack-github-action@v1.23.0
+#        continue-on-error: true
+#        with:
+#          channel-id: C04J1M66D8B
+#          payload: |
+#            {
+#                "text": "Error during `bump-version` while publishing Python CDK!",
+#                "blocks": [
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "Error while publishing Python CDK!"
+#                        }
+#                    },
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+#                        }
+#                    }
+#                ]
+#            }
+#        env:
+#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   publish-cdk:
     name: Publish Python CDK to PyPi
@@ -153,40 +155,40 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-      - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v2.0
-        with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
-          python_version: "3.10"
-          package_directory: "airbyte-cdk/python"
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "Error during `publish-cdk` while publishing Python CDK!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Error while publishing Python CDK!"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+#      - name: Build and publish to pypi
+#        uses: JRubics/poetry-publish@v2.0
+#        with:
+#          pypi_token: ${{ secrets.PYPI_TOKEN }}
+#          python_version: "3.10"
+#          package_directory: "airbyte-cdk/python"
+#      - name: Post failure to Slack channel dev-connectors-extensibility
+#        if: ${{ failure() }}
+#        uses: slackapi/slack-github-action@v1.23.0
+#        continue-on-error: true
+#        with:
+#          channel-id: C04J1M66D8B
+#          payload: |
+#            {
+#                "text": "Error during `publish-cdk` while publishing Python CDK!",
+#                "blocks": [
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "Error while publishing Python CDK!"
+#                        }
+#                    },
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+#                        }
+#                    }
+#                ]
+#            }
+#        env:
+#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   bump-manifest-source:
     name: Bump CDK dependency of source-declarative-manifest
@@ -205,11 +207,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
+          ref: ella/test-cdk-bump
       - name: Bump CDK dependency of source-declarative-manifest
         run: |
           cd airbyte-integrations/connectors/source-declarative-manifest
-          poetry add airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}
+          poetry add airbyte-cdk==0.77.0
       - name: Bump version of source-declarative-manifest
         uses: ./.github/actions/run-airbyte-ci
         with:
@@ -236,143 +238,145 @@ jobs:
           commit_message: 🤖 Cut version ${{needs.bump-version.outputs.new_cdk_version}} of source-declarative-manifest
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": ":warning: A new version of Python CDK has been released but Connector Builder hasn't been automatically updated",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": ":warning: Could not automatically create a PR for Connector Builder>\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          branch: ella/test-cdk-bump
+          create_branch: true
+#      - name: Post failure to Slack channel dev-connectors-extensibility
+#        if: ${{ failure() }}
+#        uses: slackapi/slack-github-action@v1.23.0
+#        continue-on-error: true
+#        with:
+#          channel-id: C04J1M66D8B
+#          payload: |
+#            {
+#                "text": ":warning: A new version of Python CDK has been released but Connector Builder hasn't been automatically updated",
+#                "blocks": [
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+#                        }
+#                    },
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": ":warning: Could not automatically create a PR for Connector Builder>\n"
+#                        }
+#                    },
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+#                        }
+#                    }
+#                ]
+#            }
+#        env:
+#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
-  update-connector-builder:
-    needs:
-      - bump-version
-      - publish-docker-image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - name: Checkout Airbyte Platform Internal
-        uses: actions/checkout@v3
-        with:
-          repository: airbytehq/airbyte-platform-internal
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-      - name: Update CDK version
-        run: |
-          PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
-          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/Dockerfile
-          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" cloud/airbyte-connector-builder-server-wrapped/Dockerfile
-          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/requirements.in
-          echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
-          cd oss/airbyte-connector-builder-server
-          pip install pip-tools
-          pip-compile --upgrade
-      - name: Create Pull Request
-        id: create-pull-request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          commit-message: Updating CDK version following release
-          title: Updating CDK version following release
-          body: This is an automatically generated PR triggered by a CDK release
-          branch: automatic-cdk-release
-          base: master
-          delete-branch: true
-      - name: Post success to Slack channel dev-connectors-extensibility
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "A new version of Python CDK has been released!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "A PR has also been created for the <${{ steps.create-pull-request.outputs.pull-request-url }}|Connector Builder>\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": ":warning: A new version of Python CDK has been released but Connector Builder hasn't been automatically updated",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": ":warning: Could not automatically create a PR for Connector Builder>\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+#  update-connector-builder:
+#    needs:
+#      - bump-version
+#      - publish-docker-image
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/setup-python@v4
+#        with:
+#          python-version: "3.9"
+#      - name: Checkout Airbyte Platform Internal
+#        uses: actions/checkout@v3
+#        with:
+#          repository: airbytehq/airbyte-platform-internal
+#          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+#      - name: Update CDK version
+#        run: |
+#          PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
+#          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/Dockerfile
+#          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" cloud/airbyte-connector-builder-server-wrapped/Dockerfile
+#          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/requirements.in
+#          echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
+#          cd oss/airbyte-connector-builder-server
+#          pip install pip-tools
+#          pip-compile --upgrade
+#      - name: Create Pull Request
+#        id: create-pull-request
+#        uses: peter-evans/create-pull-request@v6
+#        with:
+#          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+#          commit-message: Updating CDK version following release
+#          title: Updating CDK version following release
+#          body: This is an automatically generated PR triggered by a CDK release
+#          branch: automatic-cdk-release
+#          base: master
+#          delete-branch: true
+#      - name: Post success to Slack channel dev-connectors-extensibility
+#        uses: slackapi/slack-github-action@v1.23.0
+#        continue-on-error: true
+#        with:
+#          channel-id: C04J1M66D8B
+#          payload: |
+#            {
+#                "text": "A new version of Python CDK has been released!",
+#                "blocks": [
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+#                        }
+#                    },
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "A PR has also been created for the <${{ steps.create-pull-request.outputs.pull-request-url }}|Connector Builder>\n"
+#                        }
+#                    },
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+#                        }
+#                    }
+#                ]
+#            }
+#        env:
+#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+#      - name: Post failure to Slack channel dev-connectors-extensibility
+#        if: ${{ failure() }}
+#        uses: slackapi/slack-github-action@v1.23.0
+#        continue-on-error: true
+#        with:
+#          channel-id: C04J1M66D8B
+#          payload: |
+#            {
+#                "text": ":warning: A new version of Python CDK has been released but Connector Builder hasn't been automatically updated",
+#                "blocks": [
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+#                        }
+#                    },
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": ":warning: Could not automatically create a PR for Connector Builder>\n"
+#                        }
+#                    },
+#                    {
+#                        "type": "section",
+#                        "text": {
+#                            "type": "mrkdwn",
+#                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+#                        }
+#                    }
+#                ]
+#            }
+#        env:
+#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
