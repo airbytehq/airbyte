@@ -13,8 +13,9 @@ import pytest
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from azure.storage.blob._shared.authentication import SharedKeyCredentialPolicy
-
+from pandas import read_csv
 from source_azure_blob_storage import SourceAzureBlobStorage
+
 from .utils import get_docker_ip, load_config
 
 logger = logging.getLogger("airbyte")
@@ -23,7 +24,7 @@ logger = logging.getLogger("airbyte")
 # Monkey patch credentials method to make it work with global-docker-host inside dagger
 # (original method handles only localhost and 127.0.0.1 addresses)
 def _format_shared_key_credential(account_name, credential):
-    credentials = {'account_key': 'key1', 'account_name': 'account1'}
+    credentials = {"account_key": "key1", "account_name": "account1"}
     return SharedKeyCredentialPolicy(**credentials)
 
 
@@ -38,16 +39,16 @@ def docker_client() -> docker.client.DockerClient:
 # @pytest.fixture()
 def get_container_client() -> ContainerClient:
     docker_ip = get_docker_ip()
-    blob_service_client = BlobServiceClient(f'http://{docker_ip}:10000/account1', credential='key1')
-    container_client = blob_service_client.get_container_client('testcontainer')
+    blob_service_client = BlobServiceClient(f"http://{docker_ip}:10000/account1", credential="key1")
+    container_client = blob_service_client.get_container_client("testcontainer")
     return container_client
 
 
 def generate_random_csv_with_source_faker():
     """Generate csv files using source-faker and save output to folder: /tmp/csv"""
-    subprocess.run(f'{os.path.dirname(__file__)}/csv_export/main.sh')
-    subprocess.run(['ls', '-lah', '/tmp/csv'])
-    subprocess.run(['tail', '-10', '/tmp/csv/products.csv'])
+    subprocess.run(f"{os.path.dirname(__file__)}/csv_export/main.sh")
+    subprocess.run(["ls", "-lah", "/tmp/csv"])
+    subprocess.run(["tail", "-10", "/tmp/csv/products.csv"])
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -59,9 +60,7 @@ def connector_setup_fixture(docker_client) -> None:
         command="azurite-blob --blobHost 0.0.0.0 -l /data --loose",
         name=f"azurite_integration_{uuid.uuid4().hex}",
         hostname="azurite",
-        ports={10000: ("0.0.0.0", 10000),
-               10001: ("0.0.0.0", 10001),
-               10002: ("0.0.0.0", 10002)},
+        ports={10000: ("0.0.0.0", 10000), 10001: ("0.0.0.0", 10001), 10002: ("0.0.0.0", 10002)},
         environment={"AZURITE_ACCOUNTS": "account1:key1"},
         detach=True,
     )
@@ -69,29 +68,52 @@ def connector_setup_fixture(docker_client) -> None:
     container_client = get_container_client()
     container_client.create_container()
 
-    upload_csv_files(container_client)
-
     yield
 
     container.kill()
     container.remove()
 
 
-def upload_csv_files(container_client) -> None:
+def upload_csv_files(container_client: ContainerClient) -> None:
     """upload 30 csv files"""
     for table in ("products", "purchases", "users"):
-        csv_large_file = open(f'/tmp/csv/{table}.csv', "rb").read()
+        csv_large_file = open(f"/tmp/csv/{table}.csv", "rb").read()
         for i in range(10):
-            container_client.upload_blob(f'test_csv_{table}_{i}.csv', csv_large_file, validate_content=False)
+            container_client.upload_blob(f"test_csv_{table}_{i}.csv", csv_large_file, validate_content=False)
 
 
-@pytest.fixture(name='configured_catalog_csv')
-def configured_catalog_csv_fixture() -> ConfiguredAirbyteCatalog:
-    return SourceAzureBlobStorage.read_catalog(f'{os.path.dirname(__file__)}/integration_configured_catalog/csv.json')
+@pytest.fixture(name="configured_catalog")
+def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
+    return SourceAzureBlobStorage.read_catalog(f"{os.path.dirname(__file__)}/integration_configured_catalog/configured_catalog.json")
 
 
 @pytest.fixture(name="config_csv", scope="session")
 def config_csv_fixture() -> Mapping[str, Any]:
-    config = load_config("config_integration.json")
-    config["azure_blob_storage_endpoint"] = config["azure_blob_storage_endpoint"].replace('localhost', get_docker_ip())
+    config = load_config("config_integration_csv.json")
+    config["azure_blob_storage_endpoint"] = config["azure_blob_storage_endpoint"].replace("localhost", get_docker_ip())
+    container_client = get_container_client()
+    upload_csv_files(container_client)
     yield config
+    for blob in container_client.list_blobs():
+        container_client.delete_blob(blob.name)
+
+
+def upload_jsonl_files(container_client: ContainerClient) -> None:
+    """upload 30 csv files"""
+    for table in ("products", "purchases", "users"):
+        df = read_csv(f"/tmp/csv/{table}.csv")
+        df.to_json(f"/tmp/csv/{table}.jsonl", orient="records", lines=True)
+        jsonl_file = open(f"/tmp/csv/{table}.jsonl", "rb").read()
+        for i in range(10):
+            container_client.upload_blob(f"test_jsonl_{table}_{i}.jsonl", jsonl_file, validate_content=False)
+
+
+@pytest.fixture(name="config_jsonl", scope="session")
+def config_jsonl_fixture() -> Mapping[str, Any]:
+    config = load_config("config_integration_jsonl.json")
+    config["azure_blob_storage_endpoint"] = config["azure_blob_storage_endpoint"].replace("localhost", get_docker_ip())
+    container_client = get_container_client()
+    upload_jsonl_files(container_client)
+    yield config
+    for blob in container_client.list_blobs():
+        container_client.delete_blob(blob.name)
