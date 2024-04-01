@@ -256,13 +256,13 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          channel: "{{ stream_slice.get('channel') }}"
+          channel: "{{ stream_slice['parent_slice']['channel'] }}"
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
-        class_name: "source_slack.components.threads_partition_router.ThreadsPartitionRouter"
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
@@ -292,7 +292,7 @@ definitions:
             value: "{{ record['ts']|float }}"
           - path:
               - channel_id
-            value: "{{ stream_slice.get('channel') }}"
+            value: "{{ stream_slice['parent_slice']['channel'] }}"
 
 streams:
   - "#/definitions/users_stream"
