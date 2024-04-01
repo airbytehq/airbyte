@@ -16,7 +16,7 @@ data:
   githubIssueLabel: source-sentry
   icon: sentry.svg
   license: MIT
-  maxSecondsBetweenMessages: 64800
+  maxSecondsBetweenMessages: 60
   name: Sentry
   remoteRegistries:
     pypi:
