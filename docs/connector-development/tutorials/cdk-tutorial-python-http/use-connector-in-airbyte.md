@@ -29,14 +29,15 @@ something like this:
 
 ```Dockerfile
 
-FROM airbyte/python-connector-base:1.1.0
+FROM airbyte/python-connector-base:1.2.0
 
-COPY . ./airbyte/integration_code
-RUN pip install ./airbyte/integration_code
+COPY ./ ./airbyte/integration_code
+RUN poetry install -C ./airbyte/integration_code
 
 # The entrypoint and default env vars are already set in the base image
-# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/src/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/src/main.py"]
+
 ```
 
 Please use this as an example. This is not optimized.
