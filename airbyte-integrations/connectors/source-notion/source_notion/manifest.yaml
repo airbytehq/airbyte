@@ -1,4 +1,4 @@
-version: 0.68.4
+version: 0.78.3
 type: DeclarativeSource
 
 check:
@@ -136,8 +136,7 @@ streams:
           stop_condition: '{{ not response.get("has_more") }}'
       partition_router: []
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_notion.components.NotionIncrementalCursor
+      type: DatetimeBasedCursor
       cursor_field: last_edited_time
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -146,7 +145,6 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      is_data_feed: true
     transformations:
       - type: CustomTransformation
         class_name: source_notion.components.NotionPropertiesTransformation
@@ -217,8 +215,7 @@ streams:
           stop_condition: '{{ not response.get("has_more") }}'
       partition_router: []
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_notion.components.NotionIncrementalCursor
+      type: DatetimeBasedCursor
       cursor_field: last_edited_time
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -236,8 +233,7 @@ streams:
     primary_key:
       - id
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_notion.components.NotionIncrementalCursor
+      type: DatetimeBasedCursor
       cursor_field: "last_edited_time"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -378,8 +374,7 @@ streams:
                       stop_condition: '{{ not response.get("has_more") }}'
                   partition_router: []
                 incremental_sync:
-                  type: CustomIncrementalSync
-                  class_name: source_notion.components.NotionIncrementalCursor
+                  type: DatetimeBasedCursor
                   cursor_field: last_edited_time
                   cursor_datetime_formats:
                     - "%Y-%m-%dT%H:%M:%S.%fZ"

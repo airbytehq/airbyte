@@ -5,9 +5,8 @@ from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass
@@ -123,30 +122,3 @@ class NotionSemiIncrementalFilter(RecordFilter):
         if state_date_parsed:
             return max(filter(None, [start_date_parsed, state_date_parsed]), default=start_date_parsed)
         return start_date_parsed
-
-
-@dataclass
-class NotionIncrementalCursor(DatetimeBasedCursor):
-    """
-    Custom component to slightly modify the behavior of the DatetimeBasedCursor component, to not include the present
-    date when evaluating the cursor value to use as state when closing a slice.
-    """
-
-    def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
-        if stream_slice.partition:
-            raise ValueError(f"Stream slice {stream_slice} should not have a partition. Got {stream_slice.partition}.")
-        last_record_cursor_value = most_recent_record.get(self._cursor_field.eval(self.config)) if most_recent_record else None
-        potential_cursor_values = [cursor_value for cursor_value in [self._cursor, last_record_cursor_value] if cursor_value]
-        cursor_value_str_by_cursor_value_datetime = dict(
-            map(
-                # we need to ensure the cursor value is preserved as is in the state else the CATs might complain of something like
-                # 2023-01-04T17:30:19.000Z' <= '2023-01-04T17:30:19.000000Z'
-                lambda datetime_str: (self.parse_date(datetime_str), datetime_str),
-                potential_cursor_values,
-            )
-        )
-        self._cursor = (
-            cursor_value_str_by_cursor_value_datetime[max(cursor_value_str_by_cursor_value_datetime.keys())]
-            if cursor_value_str_by_cursor_value_datetime
-            else None
-        )
