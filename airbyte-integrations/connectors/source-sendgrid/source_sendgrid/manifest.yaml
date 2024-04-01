@@ -520,17 +520,17 @@ streams:
             type: integer
           created_at:
             format: date-time
-            type: string
+            type: ["null", string]
           id:
             type: string
           name:
             type: string
           next_sample_update:
             format: date-time
-            type: string
+            type: ["null", string]
           parent_list_ids:
             items:
-              type: string
+              type: ["null", string]
             type:
               - array
               - "null"
@@ -538,7 +538,7 @@ streams:
             type: string
           sample_updated_at:
             format: date-time
-            type: string
+            type: ["null", string]
           status:
             properties:
               query_validation:
@@ -546,7 +546,7 @@ streams:
             type: object
           updated_at:
             format: date-time
-            type: string
+            type: ["null", string]
         type: object
     retriever:
       type: SimpleRetriever
@@ -792,7 +792,7 @@ streams:
             type: string
           updated_at:
             format: date-time
-            type: string
+            type: ["null", string]
           versions:
             type: array
         type: object
@@ -841,12 +841,12 @@ streams:
           name:
             type: string
           created_at:
-            type: string
+            type: ["null", string]
             format: date-time
           status:
             type: string
           updated_at:
-            type: string
+            type: ["null", string]
             format: date-time
           is_abtest:
             type: boolean
