@@ -5,10 +5,9 @@ from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 @dataclass
@@ -137,9 +136,7 @@ class NotionIncrementalCursor(DatetimeBasedCursor):
         if stream_slice.partition:
             raise ValueError(f"Stream slice {stream_slice} should not have a partition. Got {stream_slice.partition}.")
         last_record_cursor_value = most_recent_record.get(self._cursor_field.eval(self.config)) if most_recent_record else None
-        potential_cursor_values = [
-            cursor_value for cursor_value in [self._cursor, last_record_cursor_value] if cursor_value
-        ]
+        potential_cursor_values = [cursor_value for cursor_value in [self._cursor, last_record_cursor_value] if cursor_value]
         cursor_value_str_by_cursor_value_datetime = dict(
             map(
                 # we need to ensure the cursor value is preserved as is in the state else the CATs might complain of something like
