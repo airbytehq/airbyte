@@ -1,5 +1,6 @@
 import base64
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, ApiKeyAuthenticator
+from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 
@@ -27,8 +28,8 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.types import Config
 
 
-# class MixpanelBearerAuthenticator(BearerAuthenticator):
-class MixpanelBearerAuthenticator(ApiKeyAuthenticator):
+@dataclass
+class CustomAuthenticator(ApiKeyAuthenticator):
     @property
     def token(self) -> str:
         # class TokenAuthenticatorBase64(TokenAuthenticator):
@@ -41,6 +42,15 @@ class MixpanelBearerAuthenticator(ApiKeyAuthenticator):
 
 @dataclass
 class MixpanelHttpRequester(HttpRequester):
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        # encode provided api_secret
+        api_secret = self.config.get('credentials', {}).get('api_secret')
+        if api_secret and 'Basic' not in api_secret:
+            api_secret = base64.b64encode(api_secret.encode("utf8")).decode("utf8")
+            self.config['credentials']['api_secret'] = f"Basic {api_secret}"
+
     def get_url_base(self) -> str:
         """
         REGION: url

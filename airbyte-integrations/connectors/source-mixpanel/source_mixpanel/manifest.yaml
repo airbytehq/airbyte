@@ -1,46 +1,21 @@
-version: 0.72.1
+version: 0.78.1
 type: DeclarativeSource
 
 definitions:
+
   schema_loader:
     type: JsonFileSchemaLoader
     file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
 
-  default_paginator:
-    type: DefaultPaginator
-    page_token_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: cursor
-    page_size_option:
-      type: RequestOption
-      field_name: limit
-      inject_into: request_parameter
-    pagination_strategy:
-      type: CursorPagination
-      page_size: 1000
-      cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
-      stop_condition: >-
-        {{ not response.get("response_metadata", {}).get("next_cursor", {})
-        }}
-
-
   api_token_auth:
-#    type: BearerAuthenticator
-#    class_name: "source_mixpanel.components.MixpanelBearerAuthenticator"
+#    class_name: "source_mixpanel.components.CustomAuthenticator"
 #    type: CustomAuthenticator
-#    api_token: "{{ config['credentials']['api_secret'] }}"
-#    inject_into:
-#      type: RequestOption
-#      inject_into: header
-#      field_name: Autentication
     type: ApiKeyAuthenticator
-#    class_name: "source_mixpanel.components.MixpanelBearerAuthenticator"
     api_token: "{{ config['credentials']['api_secret'] }}"
     inject_into:
       type: RequestOption
       inject_into: header
-      field_name: Autentication
+      field_name: Authorization
 
   basic_http_authenticator:
     type: BasicHttpAuthenticator
@@ -288,4 +263,4 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - users
+    - cohorts
