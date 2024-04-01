@@ -88,8 +88,10 @@ To create client credentials for Airbyte to interface with your application, hea
 2. Copy the **Value** (the client secret itself) immediately after creation. You won't be able to view this later on.
 
 :::caution
-If you want to avoid admin consent for these permissions, be sure to choose "Delegated permissions" that do not require admin consent for common scopes. Application permissions will specifically require admin approval.
+Depending on the default "Admin consent require' value for your organization you may need to manually provide Admin consent within the **API Permissions** menu. To do so click **API Permissions** and then click **Grant admin consent for Airbtyte** 
 :::
+<img width="928" alt="4B47AC99-80B3-47F8-978E-3AC0834D4D0A" src="https://github.com/airbytehq/airbyte/assets/156025126/98fc5b1b-fbdf-4f9d-bcf7-ba314d51c677">
+
 
 ### Setup information needed
 
