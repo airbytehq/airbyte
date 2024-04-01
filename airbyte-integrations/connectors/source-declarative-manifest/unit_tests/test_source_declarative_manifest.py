@@ -65,13 +65,9 @@ def test_on_spec_command_then_raise_value_error():
 
 def test_given_no_injected_declarative_manifest_then_raise_value_error(config_file_without_injection):
     with pytest.raises(ValueError):
-        args = ["check", "--config", str(config_file_without_injection)]
-        parsed_args = AirbyteEntrypoint.parse_args(args)
-        create_manifest(parsed_args)
+        create_manifest(["check", "--config", str(config_file_without_injection)])
 
 
 def test_given_injected_declarative_manifest_then_return_declarative_manifest(valid_config_file):
-    args = ["check", "--config", str(valid_config_file)]
-    parsed_args = AirbyteEntrypoint.parse_args(args)
-    source = create_manifest(parsed_args)
+    source = create_manifest(["check", "--config", str(valid_config_file)])
     assert isinstance(source, ManifestDeclarativeSource)
