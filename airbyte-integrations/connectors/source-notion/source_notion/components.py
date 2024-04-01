@@ -128,6 +128,10 @@ class NotionSemiIncrementalFilter(RecordFilter):
 
 @dataclass
 class NotionIncrementalCursor(DatetimeBasedCursor):
+    """
+    Custom component to slightly modify the behavior of the DatetimeBasedCursor component, to not include the present
+    date when evaluating the cursor value to use as state when closing a slice.
+    """
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         if stream_slice.partition:

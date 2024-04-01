@@ -86,7 +86,7 @@ def data_feed_config():
 def test_data_feed_get_filter_date(data_feed_config, state_value, expected_return):
     start_date = data_feed_config.config["start_date"]
     
-    result = data_feed_config.get_filter_date(start_date, state_value)
+    result = data_feed_config._get_filter_date(start_date, state_value)
     assert result == expected_return, f"Expected {expected_return}, but got {result}."
 
 
@@ -99,10 +99,10 @@ def test_data_feed_get_filter_date(data_feed_config, state_value, expected_retur
     (
         {"last_edited_time": "2022-01-03T00:00:00Z"},
         {"id": "some_id"},
-        [state_test_records[-1]]
+        [state_test_records[-2], state_test_records[-1]]
     ),
     (
-        {"last_edited_time": "2022-01-04T00:00:00Z"},
+        {"last_edited_time": "2022-01-05T00:00:00Z"},
         {"id": "some_id"},
         []
     ),
@@ -140,7 +140,7 @@ def semi_incremental_config_start_date():
 def test_semi_incremental_get_filter_date(semi_incremental_config_start_date, state_value, expected_return):
     start_date = semi_incremental_config_start_date.config["start_date"]
     
-    result = semi_incremental_config_start_date.get_filter_date(start_date, state_value)
+    result = semi_incremental_config_start_date._get_filter_date(start_date, state_value)
     assert result == expected_return, f"Expected {expected_return}, but got {result}."
 
 
@@ -153,10 +153,10 @@ def test_semi_incremental_get_filter_date(semi_incremental_config_start_date, st
     (
         {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-03T00:00:00Z"}}]},
         {"id": "some_id"},
-        [state_test_records[-1]]
+        [state_test_records[-2], state_test_records[-1]]
     ),
     (
-        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-04T00:00:00Z"}}]},
+        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-05T00:00:00Z"}}]},
         {"id": "some_id"},
         []
     ),
