@@ -12,6 +12,7 @@ from logging import getLogger
 from typing import Any, Iterable, Mapping
 
 import duckdb
+import pyarrow as pa
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
@@ -109,7 +110,7 @@ class DestinationDuckdb(Destination):
 
             con.execute(query)
 
-        buffer = defaultdict(list)
+        buffer = defaultdict(lambda: defaultdict(list))
 
         for message in input_messages:
             if message.type == Type.STATE:
@@ -122,39 +123,32 @@ class DestinationDuckdb(Destination):
                       (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
                     VALUES (?,?,?)
                     """
-                    con.executemany(query, buffer[stream_name])
+                    pa_table = pa.Table.from_pydict(buffer[stream_name])
+                    con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
 
                 con.commit()
-                buffer = defaultdict(list)
+                buffer = defaultdict(lambda: defaultdict(list))
 
                 yield message
             elif message.type == Type.RECORD:
                 data = message.record.data
-                stream = message.record.stream
-                if stream not in streams:
-                    logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                stream_name = message.record.stream
+                if stream_name not in streams:
+                    logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
                     continue
-
                 # add to buffer
-                buffer[stream].append(
-                    (
-                        str(uuid.uuid4()),
-                        datetime.datetime.now().isoformat(),
-                        json.dumps(data),
-                    )
-                )
+                buffer[stream_name]["_airbyte_ab_id"].append(str(uuid.uuid4()))
+                buffer[stream_name]["_airbyte_emitted_at"].append(datetime.datetime.now().isoformat())
+                buffer[stream_name]["_airbyte_data"].append(json.dumps(data))
+
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
         for stream_name in buffer.keys():
             table_name = f"_airbyte_raw_{stream_name}"
-            query = f"""
-            INSERT INTO {schema_name}.{table_name}
-            VALUES (?,?,?)
-            """
-
-            con.executemany(query, buffer[stream_name])
+            pa_table = pa.Table.from_pydict(buffer[stream_name])
+            con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
             con.commit()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
