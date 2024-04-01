@@ -14,5 +14,8 @@ class ErrorResponseBuilder:
     def response_with_status(cls, status_code) -> "ErrorResponseBuilder":
         return cls(status_code)
 
-    def build(self) -> HttpResponse:
-        return HttpResponse(json.dumps(find_template(str(self._status_code), __file__)), self._status_code)
+    def build(self, file_path=None) -> HttpResponse:
+        if not file_path:
+            return HttpResponse(json.dumps(find_template(str(self._status_code), __file__)), self._status_code)
+        return HttpResponse(json.dumps(find_template(str(file_path), __file__)), self._status_code)
+
