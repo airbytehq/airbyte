@@ -17,6 +17,7 @@ data:
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: TikTok Marketing
   remoteRegistries:
     pypi:

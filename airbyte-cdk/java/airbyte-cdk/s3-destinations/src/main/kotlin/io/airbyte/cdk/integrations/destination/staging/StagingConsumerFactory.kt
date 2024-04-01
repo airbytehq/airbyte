@@ -171,6 +171,7 @@ private constructor(
 
         private val SYNC_DATETIME: Instant = Instant.now()
 
+        @JvmStatic
         fun builder(
             outputRecordCollector: Consumer<AirbyteMessage>,
             database: JdbcDatabase?,

@@ -37,6 +37,7 @@ The setup only requires two fields. First is the `host` which is the address at 
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.4   | 2024-03-25 | [36460](https://github.com/airbytehq/airbyte/pull/36460) | Added path config option      |
 | 0.1.3   | 2024-01-17 | [34336](https://github.com/airbytehq/airbyte/pull/34336) | Fix check() arguments error   |
 | 0.1.2   | 2023-08-25 | [29817](https://github.com/airbytehq/airbyte/pull/29817) | Fix writing multiple streams  |
 | 0.1.1   | 2023-08-24 | [29555](https://github.com/airbytehq/airbyte/pull/29555) | Increasing connection timeout |

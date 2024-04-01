@@ -1,12 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
-
 plugins {
     id "com.github.eirnym.js2p" version "1.0"
-    id "de.undercouch.download" version "5.4.0"
     id "java-library"
-    id "org.openapi.generator" version "6.2.1"
 }
 
 java {
@@ -25,126 +19,10 @@ compileKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
-String specFile = "$projectDir/src/main/openapi/config.yaml"
-String serverOutputDir = "$buildDir/generated/api/server"
-String clientOutputDir = "$buildDir/generated/api/client"
-String docsOutputDir = "$buildDir/generated/api/docs"
-Map<String,String> schemaMappingsValue = [
-        'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
-        'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
-        'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
-        'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
-        'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
-        'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
-        'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
-        'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
-]
+spotbugsTest.enabled = false
+spotbugsTestFixtures.enabled = false
 
 def generate = tasks.register('generate')
-
-def generateApiServer = tasks.register('generateApiServer', GenerateTask) {
-
-    inputs.file specFile
-    outputs.dir serverOutputDir
-
-    generatorName = "jaxrs-spec"
-    inputSpec = specFile
-    outputDir = serverOutputDir
-
-    apiPackage = "io.airbyte.api.generated"
-    invokerPackage = "io.airbyte.api.invoker.generated"
-    modelPackage = "io.airbyte.api.model.generated"
-
-    schemaMappings.set(schemaMappingsValue)
-
-    generateApiDocumentation = false
-
-    configOptions.set([
-            dateLibrary  : "java8",
-            generatePom  : "false",
-            interfaceOnly: "true",
-            /*
-            JAX-RS generator does not respect nullable properties defined in the OpenApi Spec.
-            It means that if a field is not nullable but not set it is still returning a null value for this field in the serialized json.
-            The below Jackson annotation is made to only keep non null values in serialized json.
-            We are not yet using nullable=true properties in our OpenApi so this is a valid workaround at the moment to circumvent the default JAX-RS behavior described above.
-            Feel free to read the conversation on https://github.com/airbytehq/airbyte/pull/13370 for more details.
-            */
-            additionalModelTypeAnnotations: "\n@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)",
-    ])
-}
-generate.configure {
-    dependsOn generateApiServer
-}
-
-def generateApiClient = tasks.register('generateApiClient', GenerateTask) {
-
-    inputs.file specFile
-    outputs.dir clientOutputDir
-
-    generatorName = "java"
-    inputSpec = specFile
-    outputDir = clientOutputDir
-
-    apiPackage = "io.airbyte.api.client.generated"
-    invokerPackage = "io.airbyte.api.client.invoker.generated"
-    modelPackage = "io.airbyte.api.client.model.generated"
-
-    schemaMappings.set(schemaMappingsValue)
-
-    library = "native"
-
-    generateApiDocumentation = false
-
-    configOptions.set([
-            dateLibrary  : "java8",
-            generatePom  : "false",
-            interfaceOnly: "true"
-    ])
-}
-generate.configure {
-    dependsOn generateApiClient
-}
-
-def generateApiDocs = tasks.register('generateApiDocs', GenerateTask) {
-
-    generatorName = "html"
-    inputSpec = specFile
-    outputDir = docsOutputDir
-
-    apiPackage = "io.airbyte.api.client.generated"
-    invokerPackage = "io.airbyte.api.client.invoker.generated"
-    modelPackage = "io.airbyte.api.client.model.generated"
-
-    schemaMappings.set(schemaMappingsValue)
-
-    generateApiDocumentation = false
-
-    configOptions.set([
-            dateLibrary  : "java8",
-            generatePom  : "false",
-            interfaceOnly: "true"
-    ])
-}
-def deleteExistingDocs = tasks.register('deleteOldApiDocs', Delete) {
-    delete rootProject.file("docs/reference/api/generated-api-html")
-}
-deleteExistingDocs.configure {
-    dependsOn generateApiDocs
-}
-def copyApiDocs = tasks.register('copyApiDocs', Copy) {
-    from(docsOutputDir) {
-        include "**/*.html"
-    }
-    into rootProject.file("docs/reference/api/generated-api-html")
-    includeEmptyDirs = false
-}
-copyApiDocs.configure {
-    dependsOn deleteExistingDocs
-}
-generate.configure {
-    dependsOn copyApiDocs
-}
 
 dependencies {
     api platform('com.fasterxml.jackson:jackson-bom:2.15.2')
@@ -178,6 +56,7 @@ dependencies {
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
 
+    testFixturesImplementation ('io.airbyte:airbyte-api:0.55.2') { transitive = false }
     testFixturesImplementation 'io.swagger:swagger-annotations:1.6.2'
     testFixturesImplementation 'org.apache.ant:ant:1.10.11'
 
@@ -204,29 +83,6 @@ jsonSchema2Pojo {
 
 generate.configure {
     dependsOn tasks.named('generateJsonSchema2Pojo')
-}
-
-
-sourceSets {
-    main {
-        java {
-            srcDirs([
-                "$projectDir/src/main/java",
-                "${serverOutputDir}/src/gen/java",
-                "${clientOutputDir}/src/main/java",
-            ])
-        }
-        kotlin {
-            srcDirs([
-                    "$projectDir/src/main/kotlin",
-                    "${serverOutputDir}/src/gen/kotlin",
-                    "${clientOutputDir}/src/main/kotlin",
-            ])
-        }
-        resources {
-            srcDir "$projectDir/src/main/openapi/"
-        }
-    }
 }
 
 tasks.named('compileJava').configure {
