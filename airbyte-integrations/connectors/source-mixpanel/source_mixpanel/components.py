@@ -32,10 +32,6 @@ from airbyte_cdk.sources.declarative.types import Config
 class CustomAuthenticator(ApiKeyAuthenticator):
     @property
     def token(self) -> str:
-        # class TokenAuthenticatorBase64(TokenAuthenticator):
-        #     def __init__(self, token: str):
-        #         token = base64.b64encode(token.encode("utf8")).decode("utf8")
-        #         super().__init__(token=token, auth_method="Basic")
         token = self.token_provider.get_token()
         token = base64.b64encode(token.encode("utf8")).decode("utf8")
         return f"Basic {token}"
