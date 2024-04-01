@@ -1627,7 +1627,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         @JvmField val COL_LAST_NAME_WITH_SPACE: String = "last name"
         @JvmField val COL_CURSOR: String = "cursor_field"
         @JvmField val COL_TIMESTAMP: String = "timestamp"
-        @JvmField val COL_TIMESTAMP_TYPE: String = "TIMESTAMP"
         @JvmField val ID_VALUE_1: Number = 1
         @JvmField val ID_VALUE_2: Number = 2
         @JvmField val ID_VALUE_3: Number = 3
@@ -1645,6 +1644,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         val INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY: String =
             "INSERT INTO %s (name, timestamp) VALUES ('%s', '%s')"
 
+        @JvmField protected var COL_TIMESTAMP_TYPE: String = "TIMESTAMP"
         @JvmField
         protected var COLUMN_CLAUSE_WITH_PK: String =
             "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL"
@@ -1656,10 +1656,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL"
 
         @JvmField
-        protected var CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY: String =
-            "CREATE TABLE %s (%s bit NOT NULL);"
-        @JvmField
-        protected var INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY: String = "INSERT INTO %s VALUES(0);"
+        var CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY: String = "CREATE TABLE %s (%s bit NOT NULL);"
+        @JvmField var INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY: String = "INSERT INTO %s VALUES(0);"
 
         @JvmStatic
         protected fun setEmittedAtToNull(messages: Iterable<AirbyteMessage>) {
