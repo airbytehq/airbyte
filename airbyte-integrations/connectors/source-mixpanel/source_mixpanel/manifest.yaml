@@ -26,8 +26,22 @@ definitions:
 
 
   api_token_auth:
-    type: BearerAuthenticator
+#    type: BearerAuthenticator
+#    class_name: "source_mixpanel.components.MixpanelBearerAuthenticator"
+#    type: CustomAuthenticator
+#    api_token: "{{ config['credentials']['api_secret'] }}"
+#    inject_into:
+#      type: RequestOption
+#      inject_into: header
+#      field_name: Autentication
+    type: ApiKeyAuthenticator
+#    class_name: "source_mixpanel.components.MixpanelBearerAuthenticator"
     api_token: "{{ config['credentials']['api_secret'] }}"
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: Autentication
+
   basic_http_authenticator:
     type: BasicHttpAuthenticator
     username: "{{ config['credentials']['username'] }}"
@@ -41,14 +55,25 @@ definitions:
       Service Account: "#/definitions/basic_http_authenticator"
 
   requester:
-    type: HttpRequester
-#    class_name: "source_mixpanel.components.MixpanelXXXHtester"
+    type: CustomRequester
+    class_name: "source_mixpanel.components.MixpanelHttpRequester"
     url_base: "https://{{ config['region'] }}.mixpanel.com/api/"
     path: "{{ parameters['path'] }}"
     authenticator: "#/definitions/authenticator"
     http_method: GET
     request_parameters:
       project_id: "{{ config['credentials']['project_id'] }}"
+    request_headers: {}
+    request_body_json: {}
+
+  requester_annotation:
+    type: CustomRequester
+    class_name: "source_mixpanel.components.AnnotationsHttpRequester"
+    url_base: "https://{{ config['region'] }}.mixpanel.com/api/app/projects/"
+    path: "{{ parameters['path'] }}"
+    authenticator: "#/definitions/authenticator"
+    http_method: GET
+    request_parameters: {}
     request_headers: {}
     request_body_json: {}
 
@@ -123,6 +148,29 @@ definitions:
       name: engage
       path: 2.0/engage
       field_path: results
+    retriever:
+      $ref: "#/definitions/retriever"
+#      paginator:
+#        type: DefaultPaginator
+#        pagination_strategy:
+#          class_name: "source_mixpanel.components.EngagePaginationStrategy"
+#          type: "CustomPaginationStrategy"
+      paginator:
+        type: DefaultPaginator
+#        class_name: "source_mixpanel.components.EngagePaginationStrategy"
+#        type: CustomDefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 1
     transformations:
       - class_name: "source_mixpanel.components.EngageTransformation"
 
@@ -221,13 +269,12 @@ definitions:
     $parameters:
       name: annotations
       field_path: results
+      path: annotations
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        $ref: "#/definitions/requester"
-        path: "app/projects/{{ config['credentials']['project_id'] }}/annotations"
-
+        $ref: "#/definitions/requester_annotation"
 
 streams:
   - "#/definitions/cohorts_stream"
