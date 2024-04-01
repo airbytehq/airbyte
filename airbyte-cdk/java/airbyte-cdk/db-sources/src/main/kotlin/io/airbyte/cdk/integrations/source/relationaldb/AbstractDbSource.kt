@@ -569,7 +569,7 @@ protected constructor(driverClassName: String) :
      * @param syncMode The sync mode that this full refresh stream should be associated with.
      * @return AirbyteMessageIterator with all records for a database source
      */
-    protected fun getFullRefreshStream(
+    protected open fun getFullRefreshStream(
         database: Database,
         airbyteStream: ConfiguredAirbyteStream,
         namespace: String,
@@ -798,7 +798,7 @@ protected constructor(driverClassName: String) :
         @JvmStatic
         protected val LOGGER: Logger = LoggerFactory.getLogger(AbstractDbSource::class.java)
 
-        private fun getMessageIterator(
+        fun getMessageIterator(
             recordIterator: AutoCloseableIterator<AirbyteRecordData>,
             streamName: String,
             namespace: String,
