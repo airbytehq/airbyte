@@ -1,110 +1,110 @@
 [
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "threads",
-        "namespace" : null
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "threads",
+        "namespace": null
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "float_ts" : "2534945416.931169",
-              "parent_slice" : {
-                "channel" : "C04KX3KEZ54",
-                "parent_slice" : {}
+            "partition": {
+              "float_ts": "2534945416.931169",
+              "parent_slice": {
+                "channel": "C04KX3KEZ54",
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "float_ts" : 2534945416.059569
+            "cursor": {
+              "float_ts": 2534945416.059569
             }
           },
           {
-            "partition" : {
-              "float_ts" : "2534945416.808709",
-              "parent_slice" : {
-                "channel" : "C04LTCM2Y56",
-                "parent_slice" : {}
+            "partition": {
+              "float_ts": "2534945416.808709",
+              "parent_slice": {
+                "channel": "C04LTCM2Y56",
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "float_ts" : 2534945416.084359
+            "cursor": {
+              "float_ts": 2534945416.084359
             }
           },
           {
-            "partition" : {
-              "float_ts" : "2534945416.186049",
-              "parent_slice" : {
-                "channel" : "C04LTCM2Y56",
-                "parent_slice" : {}
+            "partition": {
+              "float_ts": "2534945416.186049",
+              "parent_slice": {
+                "channel": "C04LTCM2Y56",
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "float_ts" : 2534945416.186049
+            "cursor": {
+              "float_ts": 2534945416.186049
             }
           },
           {
-            "partition" : {
-              "float_ts" : "2534945416.744249",
-              "parent_slice" : {
-                "channel" : "C04LTCM2Y56",
-                "parent_slice" : {}
+            "partition": {
+              "float_ts": "2534945416.744249",
+              "parent_slice": {
+                "channel": "C04LTCM2Y56",
+                "parent_slice": {}
               }
             },
-            "cursor" : {
-              "float_ts" : 2534945416.744249
+            "cursor": {
+              "float_ts": 2534945416.744249
             }
           }
         ]
       }
     },
-    "sourceStats" : {
-      "recordCount" : 1
+    "sourceStats": {
+      "recordCount": 1
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_descriptor" : {
-        "name" : "channel_messages"
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "channel_messages"
       },
-      "stream_state" : {
-        "states" : [
+      "stream_state": {
+        "states": [
           {
-            "partition" : {
-              "channel_id" : "C04LTCM2Y56",
-              "parent_slice" : {}
+            "partition": {
+              "channel_id": "C04LTCM2Y56",
+              "parent_slice": {}
             },
-            "cursor" : {
-              "float_ts" : "2534945416"
+            "cursor": {
+              "float_ts": "2534945416"
             }
           },
           {
-            "partition" : {
-              "channel" : "C04KX3KEZ54",
-              "parent_slice" : {}
+            "partition": {
+              "channel": "C04KX3KEZ54",
+              "parent_slice": {}
             },
-            "cursor" : {
-              "float_ts" : "2534945416"
+            "cursor": {
+              "float_ts": "2534945416"
             }
           },
           {
-            "partition" : {
-              "channel" : "C04L3M4PTJ6",
-              "parent_slice" : {}
+            "partition": {
+              "channel": "C04L3M4PTJ6",
+              "parent_slice": {}
             },
-            "cursor" : {
-              "float_ts" : "2534945416"
+            "cursor": {
+              "float_ts": "2534945416"
             }
           },
           {
-            "partition" : {
-              "channel" : "C04LTCM2Y56",
-              "parent_slice" : {}
+            "partition": {
+              "channel": "C04LTCM2Y56",
+              "parent_slice": {}
             },
-            "cursor" : {
-              "float_ts" : "2534945416"
+            "cursor": {
+              "float_ts": "2534945416"
             }
           }
         ]
