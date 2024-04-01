@@ -40,6 +40,21 @@ definitions:
       project_id: "{{ config['credentials']['project_id'] }}"
     request_headers: {}
     request_body_json: {}
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - http_codes: [400]
+          action: FAIL
+          error_message: Authentication has failed. Please update your config with valid credentials.
+        - error_message_contains: "Unable to authenticate request"
+          action: FAIL
+          error_message: Authentication has failed. Please update your config with valid credentials.
+        - http_codes: [402]
+          action: FAIL
+          error_message: Unable to perform a request. Payment Required.
+        - predicate: "{{ 'Retry-After' in headers }}"
+          action: RETRY
+          error_message: Unable to perform a request. Payment Required.
 
   requester_annotation:
     type: CustomRequester
