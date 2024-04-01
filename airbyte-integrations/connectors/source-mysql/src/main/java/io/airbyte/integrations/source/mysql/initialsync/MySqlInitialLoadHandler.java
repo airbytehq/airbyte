@@ -74,6 +74,11 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
     this.tableSizeInfoMap = tableSizeInfoMap;
   }
 
+  @Override
+  public boolean supportResumableFullRefresh() {
+    return true;
+  }
+
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
