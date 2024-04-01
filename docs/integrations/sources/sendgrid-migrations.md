@@ -2,7 +2,10 @@
 
 ## Upgrading to 1.0.0
 
-This release makes several changes that upgrade the Sendgrid connector.
+We're continuously striving to enhance the quality and reliability of our connectors at Airbyte.
+As part of our commitment to delivering exceptional service, we are transitioning Source Sendgrid from the Python Connector Development Kit (CDK)
+to our new low-code framework improving maintainability and reliability of the connector.
+However, due to differences between the Python and low-code CDKs, this migration constitutes a breaking change.
   
 * The configuration options have been renamed to `api_key` and `start_date`.
 * The `unsubscribe_groups` stream has been removed. It was the same as `suppression_groups`. You can use that and get the same data.
