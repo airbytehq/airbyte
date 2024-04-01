@@ -28,10 +28,7 @@ For detailed instructions on creating a PAT (Personal Access Token), which can b
    1. Confluence Cloud example: my-confluence.atlassian.net
    2. Confluence Server example: my.company.domain/confluence
 6. In the **Email** field, enter your Confluence login email.
-7. In the **Authentication** field:
-   1. Choose _basic_ for Confluence Cloud
-   2. Choose _bearer_ for Confluence Server
-8. Click **Set up source** and wait for the tests to complete.
+7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
