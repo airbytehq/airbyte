@@ -21,16 +21,34 @@ resolver = ManifestReferenceResolver()
 transformer = ManifestComponentTransformer()
 
 
-def test_migrate_a_valid_legacy_state_to_per_partition():
-    input_state = {
-        "13506132": {
-            "last_changed": "2022-12-27T08:34:39+00:00"
-        },
-        "14351124": {
-            "last_changed": "2022-12-27T08:35:39+00:00"
-        },
-    }
-
+@pytest.mark.parametrize(
+    "input_state", [
+        pytest.param({
+            "13506132": {
+                "last_changed": "2022-12-27T08:34:39+00:00"
+            },
+            "14351124": {
+                "last_changed": "2022-12-27T08:35:39+00:00"
+            },
+        }, id="migrate_a_valid_legacy_state_to_per_partition"),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {"id": "13506132"},
+                        "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
+                    },
+                    {
+                        "partition": {"id": "14351124"},
+                        "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}
+                    },
+                ]
+            },
+            id="migrate_per_partition_states_using_parent_key_instead_of_partition_field"
+        )
+    ]
+)
+def test_migrate_a_valid_legacy_state_to_per_partition(input_state):
     migrator = _migrator()
 
     assert migrator.should_migrate(input_state)
@@ -56,11 +74,11 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
         pytest.param({
             "states": [
                 {
-                    "partition": {"id": "13506132"},
+                    "partition": {"paren_id": "13506132"},
                     "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
                 },
                 {
-                    "partition": {"id": "14351124"},
+                    "partition": {"paren_id": "14351124"},
                     "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}
                 },
             ]
@@ -68,22 +86,22 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
         pytest.param({
             "states": [
                 {
-                    "partition": {"id": "13506132"},
+                    "partition": {"parent_id": "13506132"},
                     "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
                 },
                 {
-                    "partition": {"id": "14351124"},
+                    "partition": {"parent_id": "14351124"},
                 },
             ]
         }, id="test_should_not_migrate_state_without_a_cursor_component"),
         pytest.param({
             "states": [
                 {
-                    "partition": {"id": "13506132"},
+                    "partition": {"parent_id": "13506132"},
                     "cursor": {"updated_at": "2022-12-27T08:34:39+00:00"}
                 },
                 {
-                    "partition": {"id": "14351124"},
+                    "partition": {"parent_id": "14351124"},
                     "cursor": {"updated_at": "2022-12-27T08:35:39+00:00"}
                 },
             ]
@@ -91,11 +109,11 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
         pytest.param({
             "states": [
                 {
-                    "partition": {"id": "13506132"},
+                    "partition": {"parent_id": "13506132"},
                     "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
                 },
                 {
-                    "partition": {"id": "14351124"},
+                    "partition": {"parent_id": "14351124"},
                     "cursor": {"last_changed": "2022-12-27T08:35:39+00:00", "updated_at": "2021-01-01"}
                 },
             ]
@@ -104,7 +122,7 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
             {
                 "states": [
                     {
-                        "partition": {"id": "13506132"},
+                        "partition": {"parent_id": "13506132"},
                         "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
                     },
                     {
@@ -117,11 +135,11 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
             {
                 "states": [
                     {
-                        "partition": {"id": "13506132", "another_id": "A"},
+                        "partition": {"parent_id": "13506132", "another_id": "A"},
                         "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
                     },
                     {
-                        "partition": {"id": "13506134"},
+                        "partition": {"parent_id": "13506134"},
                         "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
                     },
                 ]
@@ -135,7 +153,7 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
                         "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
                     },
                     {
-                        "partition": {"id": "13506134"},
+                        "partition": {"parent_id": "13506134"},
                         "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
                     },
                 ]
