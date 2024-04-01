@@ -40,9 +40,9 @@ import io.airbyte.integrations.source.mssql.MssqlCdcSavedInfoFetcher;
 import io.airbyte.integrations.source.mssql.MssqlCdcStateHandler;
 import io.airbyte.integrations.source.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.mssql.MssqlQueryUtils;
+import io.airbyte.integrations.source.mssql.MssqlSourceOperations;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
-import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -139,8 +139,8 @@ public class MssqlInitialReadUtil {
               stateToBeUsed, catalog, namespacePair -> Jsons.emptyObject());
 
       final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
-      final MssqlInitialLoadSourceOperations sourceOperations =
-          new MssqlInitialLoadSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
+      final MssqlSourceOperations sourceOperations =
+          new MssqlSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
 
       final MssqlInitialLoadHandler initialLoadHandler = new MssqlInitialLoadHandler(sourceConfig, database,
           sourceOperations, quoteString, initialLoadStateManager,
