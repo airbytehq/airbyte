@@ -127,7 +127,7 @@ definitions:
         $ref: "#/definitions/selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ record.id in config.channel_filter or not config.channel_filter }}"
+          condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
         $parameters:
           transformations: [[]]
       paginator:
