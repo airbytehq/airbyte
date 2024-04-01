@@ -41,18 +41,18 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         self._config = config
         self._parameters = parameters
         self._partition_key_field = InterpolatedString.create(
-            self._get_parent_key(self._partition_router), parameters=self._parameters
+            self._get_partition_field(self._partition_router), parameters=self._parameters
         ).eval(self._config)
         self._cursor_field = InterpolatedString.create(self._cursor.cursor_field, parameters=self._parameters).eval(self._config)
 
-    def _get_parent_key(self, partition_router: SubstreamPartitionRouter) -> str:
+    def _get_partition_field(self, partition_router: SubstreamPartitionRouter) -> str:
         parent_stream_config = partition_router.parent_stream_configs[0]
 
-        # Retrieve the parent key with a condition, as properties are returned as a dictionary for custom components.
+        # Retrieve the partition field with a condition, as properties are returned as a dictionary for custom components.
         partition_field = (
             parent_stream_config.partition_field
             if isinstance(parent_stream_config, ParentStreamConfig)
-            else parent_stream_config.get("parent_key")
+            else parent_stream_config.get("partition_field")
         )
 
         return partition_field
