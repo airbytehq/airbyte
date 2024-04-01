@@ -14,7 +14,7 @@ java {
 airbyteJavaConnector {
     cdkVersionRequired = '0.28.20'
     features = ['db-sources', 'datastore-postgres']
-    useLocalCdk = true
+    useLocalCdk = false
 }
 
 application {
@@ -27,6 +27,8 @@ dependencies {
     implementation 'io.debezium:debezium-embedded:2.4.0.Final'
     implementation 'io.debezium:debezium-connector-postgres:2.4.0.Final'
 
+    testFixturesImplementation ('io.airbyte:airbyte-api:0.55.2') { transitive = false }
+    testFixturesImplementation ('org.jetbrains.kotlin:kotlin-test')
     testFixturesApi 'org.testcontainers:postgresql:1.19.0'
 
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
