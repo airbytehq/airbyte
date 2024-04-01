@@ -240,6 +240,7 @@ class AirbyteSchemaHistoryStorage(
             return string.toByteArray(StandardCharsets.UTF_8).size.toDouble() / (ONE_MB)
         }
 
+        @JvmStatic
         fun initializeDBHistory(
             schemaHistory: SchemaHistory<Optional<JsonNode>>?,
             compressSchemaHistoryForState: Boolean

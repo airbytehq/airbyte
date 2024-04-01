@@ -265,6 +265,7 @@ object StateGeneratorUtils {
      * @Param supportedStateType the [AirbyteStateType] supported by this connector.
      * @return The deserialized object representation of the state.
      */
+    @JvmStatic
     fun deserializeInitialState(
         initialStateJson: JsonNode?,
         supportedStateType: AirbyteStateMessage.AirbyteStateType
