@@ -17,6 +17,7 @@ pytest = "^7.4.0"
 ruff = "^0.0.286"
 black = "^23.7.0"
 mypy = "^1.5.1"
+faker = "24.4.0"
 
 [build-system]
 requires = ["poetry-core"]

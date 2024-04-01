@@ -118,11 +118,6 @@ class DestinationDuckdb(Destination):
                 for stream_name in buffer.keys():
                     logger.info(f"flushing buffer for state: {message}")
                     table_name = f"_airbyte_raw_{stream_name}"
-                    query = f"""
-                    INSERT INTO {schema_name}.{table_name}
-                      (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
-                    VALUES (?,?,?)
-                    """
                     pa_table = pa.Table.from_pydict(buffer[stream_name])
                     con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
 
