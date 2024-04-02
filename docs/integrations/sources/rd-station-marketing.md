@@ -41,6 +41,7 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 |:--------|:-----------|:----------------------------------------------------------|:---------------------------------|
+| 0.2.0   | 2024-04-02 | [](https://github.com/airbytehq/airbyte/pull//) | Migrated to LowCode CDK        |
 | 0.1.2   | 2022-07-06 | [28009](https://github.com/airbytehq/airbyte/pull/28009/) | Migrated to advancedOAuth        |
 | 0.1.1   | 2022-11-01 | [18826](https://github.com/airbytehq/airbyte/pull/18826)  | Fix stream analytics_conversions |
 | 0.1.0   | 2022-10-23 | [18348](https://github.com/airbytehq/airbyte/pull/18348)  | Initial Release                  |

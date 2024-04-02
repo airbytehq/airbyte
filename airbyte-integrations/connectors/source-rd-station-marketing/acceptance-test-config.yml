@@ -5,7 +5,7 @@ tests:
   spec:
     - spec_path: "source_rd_station_marketing/spec.json"
   connection:
-    - config_path: "secrets/config.json"
+    - config_path: "secrets/config.yaml"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"

@@ -1,0 +1,534 @@
+version: 0.78.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - AnalyticsConversions
+
+definitions:
+  streams:
+    AnalyticsConversions:
+      type: DeclarativeStream
+      name: AnalyticsConversions
+      primary_key:
+        - asset_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/analytics/conversions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversions
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: asset_updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%d'
+        datetime_format: '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start_date
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/AnalyticsConversions'
+    AnalyticsEmails:
+      type: DeclarativeStream
+      name: AnalyticsEmails
+      primary_key:
+        - campaign_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/analytics/emails
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - emails
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: send_at
+        cursor_datetime_formats:
+          - '%Y-%m-%d'
+        datetime_format: '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start_date
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/AnalyticsEmails'
+    AnalyticsFunnel:
+      type: DeclarativeStream
+      name: AnalyticsFunnel
+      primary_key:
+        - reference_day
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/analytics/funnel
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - funnel
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: reference_day
+        cursor_datetime_formats:
+          - '%Y-%m-%d'
+        datetime_format: '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start_date
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/AnalyticsFunnel'
+    AnalyticsWorkflowEmailsStatistics:
+      type: DeclarativeStream
+      name: AnalyticsWorkflowEmailsStatistics
+      primary_key:
+        - workflow_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/analytics/workflow_email_statistics
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - workflow_email_statistics
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%d'
+        datetime_format: '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start_date
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/AnalyticsWorkflowEmailsStatistics'
+    Emails:
+      type: DeclarativeStream
+      name: Emails
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/emails
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 125
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Emails'
+    Embeddables:
+      type: DeclarativeStream
+      name: Embeddables
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: embeddables
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 125
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Embeddables'
+    Fields:
+      type: DeclarativeStream
+      name: Fields
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/contacts/fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - fields
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 125
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Fields'
+    LandingPages:
+      type: DeclarativeStream
+      name: LandingPages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/landing_pages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 125
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/LandingPages'
+    Popups:
+      type: DeclarativeStream
+      name: Popups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/popups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 125
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Popups'
+    Segmentations:
+      type: DeclarativeStream
+      name: Segmentations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/segmentations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segmentations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 125
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Segmentations'
+    Workflows:
+      type: DeclarativeStream
+      name: Workflows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /platform/workflows
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - workflows
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 125
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Workflows'
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.rd.services
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: '{{ config[''client_id''] }}'
+      client_secret: '{{ config[''client_secret''] }}'
+      refresh_token: '{{ config[''client_refresh_token''] }}'
+      refresh_request_body: {}
+      token_refresh_endpoint: https://api.rd.services/auth/token
+      grant_type: refresh_token
+
+streams:
+  - $ref: '#/definitions/streams/AnalyticsConversions'
+  - $ref: '#/definitions/streams/AnalyticsEmails'
+  - $ref: '#/definitions/streams/AnalyticsFunnel'
+  - $ref: '#/definitions/streams/AnalyticsWorkflowEmailsStatistics'
+  - $ref: '#/definitions/streams/Emails'
+  - $ref: '#/definitions/streams/Embeddables'
+  - $ref: '#/definitions/streams/Fields'
+  - $ref: '#/definitions/streams/LandingPages'
+  - $ref: '#/definitions/streams/Popups'
+  - $ref: '#/definitions/streams/Segmentations'
+  - $ref: '#/definitions/streams/Workflows'
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.io/integrations/sources/rd-station-marketing
+  connection_specification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: RD Station Marketing Spec
+    type: object
+    additionalProperties: true
+    required:
+      - start_date
+    properties:
+      authorization:
+        type: object
+        title: Authentication Type
+        description: Choose one of the possible authorization method
+        oneOf:
+          - title: Sign in via RD Station (OAuth)
+            type: object
+            required:
+              - auth_type
+            properties:
+              auth_type:
+                type: string
+                const: Client
+                order: 0
+              client_id:
+                title: Client ID
+                type: string
+                description: The Client ID of your RD Station developer application.
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: The Client Secret of your RD Station developer application
+                airbyte_secret: true
+              refresh_token:
+                title: Refresh Token
+                type: string
+                description: The token for obtaining the new access token.
+                airbyte_secret: true
+      start_date:
+        title: Start Date
+        type: string
+        description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated. When specified and not None, then
+          stream will behave as incremental
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - '2017-01-25T00:00:00Z'
+  supportsIncremental: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - authorization
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - authorization
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - authorization
+              - client_secret
