@@ -1,0 +1,67 @@
+# Environment setup
+
+Let's first start by cloning the repository, optionally forking it first
+```bash
+git@github.com:airbytehq/airbyte.git
+cd airbyte
+```
+
+Next, we'll revert to using an older version of the platform because the latest one fails to add custom connectors.
+```
+git revert 558ead668dca749c39b2e6d68a288b2f8618ccdf -X theirs
+```
+
+Start the airbyte platform
+```
+./run-ab-platform.sh
+```
+
+Then from another terminal window:
+```
+cd workspace/airbyte/
+```
+Use the Airbyte provided code generator which bootstraps the scaffolding for our connector:
+```
+cd airbyte-integrations/connector-templates/generator
+./generate.sh
+```
+
+Select Python-source
+Set name to survey-monkey-demo
+
+Next change your working directory to the new connector module. Then create an initial python environment and install the dependencies required to run an API Source connector:
+```
+cd ../../connectors/source-survey-monkey-demo
+poetry install --with dev
+```
+
+Let's verify the unit tests pass
+```
+poetry run pytest unit_tests
+```
+
+And the check operation fails as expected
+```
+poetry run source-survey-monkey-demo check --config secrets/config.json
+```
+It should return a failed connection status
+> {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "Config validation error: 'TODO' is a required property"}}
+
+The discover operation should also fail as expected
+```
+poetry run source-survey-monkey-demo discover --config secrets/config.json
+```
+It should fail because `TODO' is a required property`
+
+The read operation should also fail as expected
+```
+poetry run source-survey-monkey-demo read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+```
+
+It should fail because `TODO' is a required property`
+```
+git add .
+git commit -m "Create connector module"
+```
+
+We're ready to start development. In the [next section](./2-reading-a-page.md), we'll read a page of records from the surveys endpoint.
