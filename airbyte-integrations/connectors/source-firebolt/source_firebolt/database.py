@@ -33,7 +33,9 @@ def parse_config(config: json, logger: AirbyteLogger) -> Dict[str, Any]:
 
     :return: dictionary of firebolt.db.Connection-compatible kwargs
     """
-    auth = _determine_auth(config["client_id"], config["client_secret"])
+    # We should use client_id/client_secret, this code supports username/password for legacy users
+    auth = _determine_auth(config.get("client_id", config.get("username")),
+                           config.get("client_secret", config.get("password")))
     connection_args = {
         "database": config["database"],
         "auth": auth,
