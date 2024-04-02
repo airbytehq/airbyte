@@ -54,7 +54,10 @@ definitions:
           error_message: Unable to perform a request. Payment Required.
         - predicate: "{{ 'Retry-After' in headers }}"
           action: RETRY
-          error_message: Unable to perform a request. Payment Required.
+          error_message: Query rate limit exceeded.
+        - error_message_contains: "Query rate limit exceeded"
+          action: RETRY
+          error_message: Query rate limit exceeded.
 
   requester_annotation:
     type: CustomRequester
@@ -89,6 +92,7 @@ definitions:
     partition_router: []
 
   stream_base:
+    type: DeclarativeStream
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -220,7 +224,10 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
-        $ref: "#/definitions/selector_empty_dpath"
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [ ]
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -231,28 +238,50 @@ definitions:
             type: number
           name:
             type: [string, null]
-
-  funnels_stream:
-    $ref: "#/definitions/stream_base"
-    $parameters:
-      name: funnels
-      path: 2.0/funnels
-      field_path:
-       - data
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: funnel_id
-            partition_field: funnel_id
-            request_option:
-              inject_into: request_parameter
-              type: RequestOption
-              field_name: funnel_id
-            stream: "#/definitions/funnel_ids_stream"
-    incremental_sync: "#/definitions/incremental_sync"
+#
+#  funnels_stream:
+#    $ref: "#/definitions/stream_base"
+#    $parameters:
+#      name: funnels
+#      path: 2.0/funnels
+#      field_path:
+#       - data
+#    retriever:
+#      $ref: "#/definitions/retriever"
+#      partition_router:
+#        type: SubstreamPartitionRouter
+#        parent_stream_configs:
+#          - type: ParentStreamConfig
+#            parent_key: funnel_id
+#            partition_field: funnel_id
+#            request_option:
+#              inject_into: request_parameter
+#              type: RequestOption
+#              field_name: funnel_id
+#            stream:
+#              $ref: "#/definitions/stream_base"
+#              $parameters:
+#                name: funnel_ids
+#                path: 2.0/funnels/list
+#              primary_key: "funnel_id"
+#              retriever:
+#                $ref: "#/definitions/retriever"
+#                record_selector:
+#                  type: RecordSelector
+#                  extractor:
+#                    type: DpathExtractor
+#                    field_path: []
+#              schema_loader:
+#                type: InlineSchemaLoader
+#                schema:
+#                  $schema: http://json-schema.org/schema#
+#                  type: object
+#                  properties:
+#                    funnel_id:
+#                      type: number
+#                    name:
+#                      type: [string, null]
+##    incremental_sync: "#/definitions/incremental_sync"
 
   annotations_stream:
     $ref: "#/definitions/stream_base"
@@ -266,14 +295,114 @@ definitions:
       requester:
         $ref: "#/definitions/requester_annotation"
 
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['region'] }}.mixpanel.com/api/
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['credentials']['username'] }}"
+      password: "{{ config['credentials']['secret'] }}"
+
+  funnelsx:
+    type: DeclarativeStream
+    name: funnels
+    $parameters:
+      name: funnels
+    primary_key:
+      - funnel_id
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: '#/definitions/base_requester'
+        path: 2.0/funnels
+        http_method: GET
+        request_parameters:
+          unit: day
+          project_id: "{{ config['credentials']['project_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: funnel_id
+              request_option:
+                type: RequestOption
+                field_name: funnel_id
+                inject_into: request_parameter
+              partition_field: funnel_id
+              stream:
+                type: DeclarativeStream
+                name: funnels_list
+                primary_key:
+                  - funnel_id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: '#/definitions/base_requester'
+                    path: 2.0/funnels/list
+                    http_method: GET
+                    request_parameters:
+                      project_id: "{{ config['credentials']['project_id'] }}"
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    type: object
+                    properties:
+                      funnel_id:
+                        type: number
+                      name:
+                        type: [string, null]
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      cursor_datetime_formats:
+        - '%Y-%m-%d'
+      datetime_format: '%Y-%m-%d'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: from_date
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to_date
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P1D
+      cursor_granularity: P1D
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+
 streams:
-  - "#/definitions/cohorts_stream"
-  - "#/definitions/engage_stream"
-  - "#/definitions/revenue_stream"
-  - "#/definitions/annotations_stream"
+  - "#/definitions/cohorts_stream"        # +
+  - "#/definitions/engage_stream"         # PAGINATION?
+  - "#/definitions/revenue_stream"        # +
+  - "#/definitions/annotations_stream"    # +
   - "#/definitions/funnel_ids_stream"
-  - "#/definitions/funnels_stream"
-  - "#/definitions/cohort_members_stream"
+#  - "#/definitions/funnels_stream"
+  - "#/definitions/cohort_members_stream" # +
+
+  - "#/definitions/funnelsx"
 
 check:
   type: CheckStream
