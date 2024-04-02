@@ -7,6 +7,14 @@ data:
       enabled: true
     cloud:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-04-15"
+        message: 
+          - >-
+            "The verison migrates the TrustPilot connector to the low-code framework for greater maintainability.
+            !! Important, The format of state messages has differences regarding sync_token in events stream"
   remoteRegistries:
     pypi:
       enabled: true

@@ -93,6 +93,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "projects"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/projects_schema"
     $parameters:
       path: "/projects"
       extractor_path: "data"
@@ -108,6 +112,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "sections_compact"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/sections_compact_schema"
     $parameters:
       path: "/projects/{{ stream_slice['project_id'] }}/sections"
       extractor_path: "data"
@@ -129,6 +137,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "sections"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/sections_schema"
     $parameters:
       path: "/sections/{{ stream_slice['section_gid'] }}"
       extractor_path: "data"
@@ -143,6 +155,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "tasks"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/tasks_schema"
     $parameters:
       path: "/projects/{{ stream_slice['project_id'] }}/tasks"
       extractor_path: "data"
@@ -162,6 +178,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "stories_compact"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/stories_compact_schema"
     $parameters:
       path: "/tasks/{{ stream_slice['task_gid'] }}/stories"
       extractor_path: "data"
@@ -181,6 +201,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "stories"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/stories_schema"
     $parameters:
       path: "/stories/{{ stream_slice['story_gid'] }}"
       extractor_path: "data"
@@ -195,6 +219,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "workspaces"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/workspaces_schema"
     $parameters:
       path: "/workspaces"
       extractor_path: "data"
@@ -210,6 +238,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "tags"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/tags_schema"
     $parameters:
       path: "/workspaces/{{ stream_slice['workspace_gid'] }}/tags"
       extractor_path: "data"
@@ -222,6 +254,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "users"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/users_schema"
     $parameters:
       path: "/users"
       extractor_path: "data"
@@ -237,6 +273,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "teams"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/teams_schema"
     $parameters:
       path: "/organizations/{{ stream_slice['workspace_gid'] }}/teams"
       extractor_path: "data"
@@ -256,6 +296,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "team_memberships"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/team_memberships_schema"
     $parameters:
       path: "/teams/{{ stream_slice['team_gid'] }}/team_memberships"
       extractor_path: "data"
@@ -270,6 +314,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "attachments_compact"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/attachments_compact_schema"
     $parameters:
       path: "/attachments"
       extractor_path: "data"
@@ -304,6 +352,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "attachments"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/attachments_schema"
     $parameters:
       path: "/attachments/{{ stream_slice['attachments_gid'] }}"
       extractor_path: "data"
@@ -318,6 +370,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "portfolios_compact"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/portfolios_compact_schema"
     $parameters:
       path: "/portfolios"
       extractor_path: "data"
@@ -351,6 +407,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "portfolios"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/portfolios_schema"
     $parameters:
       path: "/portfolios/{{ stream_slice['portfolios_gid'] }}"
       extractor_path: "data"
@@ -365,6 +425,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "custom_fields"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/custom_fields_schema"
     $parameters:
       path: "/workspaces/{{ stream_slice['workspace_gid'] }}/custom_fields"
       extractor_path: "data"
@@ -377,8 +441,12 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "organization_exports"
     primary_key: "gid"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/organization_exports_schema"
     $parameters:
-      path: "/organization_exports/{{ stream_slice.gid if stream_slice.gid else '1234567' }}"
+      path: "/organization_exports/{{ stream_slice.gid }}"
       extractor_path: "data"
     retriever:
       $ref: "#/definitions/retriever"
@@ -391,6 +459,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "events"
     primary_key: "created_at"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/events_schema"
     $parameters:
       path: "/events"
       extractor_path: "data"
@@ -413,6 +485,1937 @@ definitions:
             - stream: "#/definitions/projects_stream"
               parent_key: "gid"
               partition_field: "project_id"
+
+  projects_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      archived:
+        type:
+        - 'null'
+        - boolean
+      color:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      current_status:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          title:
+            type:
+            - 'null'
+            - string
+          author:
+            type:
+            - 'null'
+            - object
+            properties:
+              gid:
+                type:
+                - 'null'
+                - string
+              resource_type:
+                type:
+                - 'null'
+                - string
+              name:
+                type:
+                - 'null'
+                - string
+          color:
+            type:
+            - 'null'
+            - string
+          html_text:
+            type:
+            - 'null'
+            - string
+          modified_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          text:
+            type:
+            - 'null'
+            - string
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          created_by:
+            type:
+            - 'null'
+            - object
+            properties:
+              gid:
+                type:
+                - 'null'
+                - string
+              resource_type:
+                type:
+                - 'null'
+                - string
+              name:
+                type:
+                - 'null'
+                - string
+      custom_field_settings:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+      default_view:
+        type:
+        - 'null'
+        - string
+      due_date:
+        type:
+        - 'null'
+        - string
+        format: date
+      due_on:
+        type:
+        - 'null'
+        - string
+        format: date
+      html_notes:
+        type:
+        - 'null'
+        - string
+      is_template:
+        type:
+        - 'null'
+        - boolean
+      members:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+      modified_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      notes:
+        type:
+        - 'null'
+        - string
+      public:
+        type:
+        - 'null'
+        - boolean
+      start_on:
+        type:
+        - 'null'
+        - string
+        format: date
+      workspace:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      custom_fields:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            display_value:
+              type:
+              - 'null'
+              - string
+            enabled:
+              type:
+              - 'null'
+              - boolean
+            enum_options:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                properties:
+                  gid:
+                    type:
+                    - 'null'
+                    - string
+                  resource_type:
+                    type:
+                    - 'null'
+                    - string
+                  color:
+                    type:
+                    - 'null'
+                    - string
+                  enabled:
+                    type:
+                    - 'null'
+                    - boolean
+                  name:
+                    type:
+                    - 'null'
+                    - string
+            name:
+              type:
+              - 'null'
+              - string
+            number_value:
+              type:
+              - 'null'
+              - number
+            resource_subtype:
+              type:
+              - 'null'
+              - string
+            text_value:
+              type:
+              - 'null'
+              - boolean
+            type:
+              type:
+              - 'null'
+              - string
+      followers:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+      icon:
+        type:
+        - 'null'
+        - string
+      owner:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      permalink_url:
+        type:
+        - 'null'
+        - string
+      team:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+
+  sections_compact_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+
+  sections_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      project:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+
+  tasks_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      approval_status:
+        type:
+        - 'null'
+        - string
+      completed:
+        type:
+        - 'null'
+        - boolean
+      completed_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      completed_by:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      dependencies:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+      dependents:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+      due_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      due_on:
+        type:
+        - 'null'
+        - string
+        format: date
+      external:
+        type:
+        - 'null'
+        - object
+        properties:
+          data:
+            type:
+            - 'null'
+            - string
+          gid:
+            type:
+            - 'null'
+            - string
+      hearted:
+        type:
+        - 'null'
+        - boolean
+      hearts:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            user:
+              type:
+              - 'null'
+              - object
+              properties:
+                gid:
+                  type:
+                  - 'null'
+                  - string
+                resource_type:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+      html_notes:
+        type:
+        - 'null'
+        - string
+      is_rendered_as_separator:
+        type:
+        - 'null'
+        - boolean
+      liked:
+        type:
+        - 'null'
+        - boolean
+      likes:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            user:
+              type:
+              - 'null'
+              - object
+              properties:
+                gid:
+                  type:
+                  - 'null'
+                  - string
+                resource_type:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+      memberships:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            project:
+              type:
+              - 'null'
+              - object
+              properties:
+                gid:
+                  type:
+                  - 'null'
+                  - string
+                resource_type:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+            section:
+              type:
+              - 'null'
+              - object
+              properties:
+                gid:
+                  type:
+                  - 'null'
+                  - string
+                resource_type:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+      modified_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      notes:
+        type:
+        - 'null'
+        - string
+      num_hearts:
+        type:
+        - 'null'
+        - integer
+      num_likes:
+        type:
+        - 'null'
+        - integer
+      num_subtasks:
+        type:
+        - 'null'
+        - integer
+      resource_subtype:
+        type:
+        - 'null'
+        - string
+      start_on:
+        type:
+        - 'null'
+        - string
+        format: date
+      assignee:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      custom_fields:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            created_by:
+              type:
+              - 'null'
+              - object
+              properties:
+                gid:
+                  type:
+                  - 'null'
+                  - string
+                resource_type:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+            currency_code:
+              type:
+              - 'null'
+              - string
+            custom_label:
+              type:
+              - 'null'
+              - string
+            custom_label_position:
+              type:
+              - 'null'
+              - string
+            description:
+              type:
+              - 'null'
+              - string
+            display_value:
+              type:
+              - 'null'
+              - string
+            enabled:
+              type:
+              - 'null'
+              - boolean
+            enum_options:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                properties:
+                  gid:
+                    type:
+                    - 'null'
+                    - string
+                  resource_type:
+                    type:
+                    - 'null'
+                    - string
+                  color:
+                    type:
+                    - 'null'
+                    - string
+                  enabled:
+                    type:
+                    - 'null'
+                    - boolean
+                  name:
+                    type:
+                    - 'null'
+                    - string
+            enum_value:
+              type:
+              - 'null'
+              - object
+              properties:
+                gid:
+                  type:
+                  - 'null'
+                  - string
+                resource_type:
+                  type:
+                  - 'null'
+                  - string
+                color:
+                  type:
+                  - 'null'
+                  - string
+                enabled:
+                  type:
+                  - 'null'
+                  - boolean
+                name:
+                  type:
+                  - 'null'
+                  - string
+            format:
+              type:
+              - 'null'
+              - string
+            has_notifications_enabled:
+              type:
+              - 'null'
+              - boolean
+            is_global_to_workspace:
+              type:
+              - 'null'
+              - boolean
+            name:
+              type:
+              - 'null'
+              - string
+            number_value:
+              type:
+              - 'null'
+              - number
+            precision:
+              type:
+              - 'null'
+              - integer
+            resource_subtype:
+              type:
+              - 'null'
+              - string
+            text_value:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+      followers:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+      parent:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      permalink_url:
+        type:
+        - 'null'
+        - string
+      projects:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+      tags:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+      workspace:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+
+  stories_compact_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      created_by:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      resource_subtype:
+        type:
+        - 'null'
+        - string
+      text:
+        type:
+        - 'null'
+        - string
+
+  stories_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      created_by:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      resource_subtype:
+        type:
+        - 'null'
+        - string
+      text:
+        type:
+        - 'null'
+        - string
+      html_text:
+        type:
+        - 'null'
+        - string
+      is_pinned:
+        type:
+        - 'null'
+        - boolean
+      sticker_name:
+        type:
+        - 'null'
+        - string
+      is_editable:
+        type:
+        - 'null'
+        - boolean
+      is_edited:
+        type:
+        - 'null'
+        - boolean
+      liked:
+        type:
+        - 'null'
+        - boolean
+      likes:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            user:
+              type:
+              - 'null'
+              - object
+              properties:
+                gid:
+                  type:
+                  - 'null'
+                  - string
+                resource_type:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+      num_likes:
+        type:
+        - 'null'
+        - integer
+
+  workspaces_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      email_domains:
+        type:
+        - 'null'
+        - array
+        items:
+          type: string
+      is_organization:
+        type:
+        - 'null'
+        - boolean
+
+  tags_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      color:
+        type:
+        - 'null'
+        - string
+      followers:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+      name:
+        type:
+        - 'null'
+        - string
+      permalink_url:
+        type:
+        - 'null'
+        - string
+      workspace:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+
+  users_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      email:
+        type:
+        - 'null'
+        - string
+      photo:
+        type:
+        - 'null'
+        - object
+        properties:
+          image_128x128:
+            type:
+            - 'null'
+            - string
+          image_21x21:
+            type:
+            - 'null'
+            - string
+          image_27x27:
+            type:
+            - 'null'
+            - string
+          image_36x36:
+            type:
+            - 'null'
+            - string
+          image_60x60:
+            type:
+            - 'null'
+            - string
+      workspaces:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+
+  teams_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      description:
+        type:
+        - 'null'
+        - string
+      html_description:
+        type:
+        - 'null'
+        - string
+      organization:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      permalink_url:
+        type:
+        - 'null'
+        - string
+
+  team_memberships_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      is_guest:
+        type:
+        - 'null'
+        - boolean
+      team:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      user:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+
+  attachments_compact_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      resource_subtype:
+        type:
+        - 'null'
+        - string
+
+  attachments_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      resource_subtype:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      download_url:
+        type:
+        - 'null'
+        - string
+      permanent_url:
+        type:
+        - 'null'
+        - string
+      host:
+        type:
+        - 'null'
+        - string
+      parent:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+          resource_subtype:
+            type:
+            - 'null'
+            - string
+          created_by:
+            type:
+            - 'null'
+            - object
+            properties:
+              gid:
+                type:
+                - 'null'
+                - string
+              resource_type:
+                type:
+                - 'null'
+                - string
+      size:
+        type:
+        - 'null'
+        - integer
+      view_url:
+        type:
+        - 'null'
+        - string
+      connected_to_app:
+        type:
+        - 'null'
+        - boolean
+
+  portfolios_compact_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+
+  portfolios_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      color:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      created_by:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      current_status_update:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          title:
+            type:
+            - 'null'
+            - string
+          resource_subtype:
+            type:
+            - 'null'
+            - string
+      due_on:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      members:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      owner:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      start_on:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      workspace:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      permalink_url:
+        type:
+        - 'null'
+        - string
+      public:
+        type:
+        - 'null'
+        - boolean
+      project_templates:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+
+  custom_fields_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      created_by:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      currency_code:
+        type:
+        - 'null'
+        - string
+      custom_label:
+        type:
+        - 'null'
+        - string
+      custom_label_position:
+        type:
+        - 'null'
+        - string
+      description:
+        type:
+        - 'null'
+        - string
+      display_value:
+        type:
+        - 'null'
+        - string
+      enabled:
+        type:
+        - 'null'
+        - boolean
+      enum_options:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            gid:
+              type:
+              - 'null'
+              - string
+            resource_type:
+              type:
+              - 'null'
+              - string
+            color:
+              type:
+              - 'null'
+              - string
+            enabled:
+              type:
+              - 'null'
+              - boolean
+            name:
+              type:
+              - 'null'
+              - string
+      enum_value:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          color:
+            type:
+            - 'null'
+            - string
+          enabled:
+            type:
+            - 'null'
+            - boolean
+          name:
+            type:
+            - 'null'
+            - string
+      format:
+        type:
+        - 'null'
+        - string
+      has_notifications_enabled:
+        type:
+        - 'null'
+        - boolean
+      is_global_to_workspace:
+        type:
+        - 'null'
+        - boolean
+      number_value:
+        type:
+        - 'null'
+        - number
+      precision:
+        type:
+        - 'null'
+        - integer
+      resource_subtype:
+        type:
+        - 'null'
+        - string
+      text_value:
+        type:
+        - 'null'
+        - string
+
+  organization_exports_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      gid:
+        type:
+        - 'null'
+        - string
+      resource_type:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      download_url:
+        type:
+        - 'null'
+        - string
+      state:
+        type:
+        - 'null'
+        - string
+      organization:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+
+  events_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type:
+    - 'null'
+    - object
+    properties:
+      user:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      resource:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      action:
+        type:
+        - 'null'
+        - string
+      parent:
+        type:
+        - 'null'
+        - object
+        properties:
+          gid:
+            type:
+            - 'null'
+            - string
+          resource_type:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      change:
+        type:
+        - 'null'
+        - object
+        properties:
+          field:
+            type:
+            - 'null'
+            - string
+          action:
+            type:
+            - 'null'
+            - string
+          new_value:
+            type:
+            - 'null'
+            - object
+            properties:
+              gid:
+                type:
+                - 'null'
+                - string
+              resource_type:
+                type:
+                - 'null'
+                - string
+          added_value:
+            type:
+            - 'null'
+            - object
+            properties:
+              gid:
+                type:
+                - 'null'
+                - string
+              resource_type:
+                type:
+                - 'null'
+                - string
+          removed_value:
+            type:
+            - 'null'
+            - object
+            properties:
+              gid:
+                type:
+                - 'null'
+                - string
+              resource_type:
+                type:
+                - 'null'
+                - string
 
 streams:
   - "#/definitions/projects_stream"
@@ -540,3 +2543,23 @@ spec:
             path_in_connector_config:
             - credentials
             - client_secret
+metadata:
+  autoImportSchema:
+    projects: false
+    sections_compact: false
+    sections: false
+    tasks: false
+    stories_compact: false
+    stories: false
+    workspaces: false
+    tags: false
+    users: false
+    teams: false
+    team_memberships: false
+    attachments_compact: false
+    attachments: false
+    portfolios_compact: false
+    portfolios: false
+    custom_fields: false
+    organization_exports: false
+    events: false
