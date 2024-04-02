@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.78.3
+Fix dependencies for file-based extras
+
 ## 0.78.2
 low-code: fix retrieving partition key for legacy state migration 
 

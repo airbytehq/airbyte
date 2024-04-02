@@ -35,6 +35,7 @@ class PgLsn private constructor(private val lsn: Long) : Comparable<PgLsn> {
             return PgLsn(lsn)
         }
 
+        @JvmStatic
         fun fromPgString(lsn: String): PgLsn {
             return PgLsn(lsnToLong(lsn))
         }
