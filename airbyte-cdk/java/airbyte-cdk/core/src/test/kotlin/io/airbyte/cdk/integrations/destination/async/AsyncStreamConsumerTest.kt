@@ -32,7 +32,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.mockk.mockk
 import java.io.IOException
 import java.math.BigDecimal
 import java.time.Instant
@@ -158,15 +157,17 @@ class AsyncStreamConsumerTest {
         val configuration: ConnectorConfiguration = DefaultConnectorConfiguration("default_ns")
         consumer =
             AsyncStreamConsumer(
+                outputRecordCollector = outputRecordCollector,
                 onStart = onStart,
                 onClose = onClose,
+                flusher = flushFunction,
                 catalog = micronautConfiguredAirbyteCatalog,
                 bufferManager = BufferManager(),
                 flushFailure = flushFailure,
-                connectorConfiguration = configuration,
+                defaultNamespace = Optional.of("default_ns"),
                 dataTransformer = streamAwareDataTransformer,
-                flushWorkers = flusherWorkers,
                 deserializationUtil = deserializationUtil,
+                workerPool = Executors.newFixedThreadPool(5),
             )
 
         Mockito.`when`(flushFunction.optimalBatchSizeBytes).thenReturn(10000L)
@@ -278,13 +279,14 @@ class AsyncStreamConsumerTest {
         val configuration: ConnectorConfiguration = DefaultConnectorConfiguration("default_ns")
         consumer =
             AsyncStreamConsumer(
-                mockk(),
-                mockk(),
-                configuration,
+                {},
+                Mockito.mock(OnStartFunction::class.java),
+                Mockito.mock(OnCloseFunction::class.java),
+                flushFunction,
                 micronautConfiguredAirbyteCatalog,
                 BufferManager((1024 * 10).toLong()),
-                flushWorkers = mockk(),
-                flushFailure = flushFailure
+                Optional.of("default_ns"),
+                flushFailure
             )
         Mockito.`when`(flushFunction.optimalBatchSizeBytes).thenReturn(0L)
 

@@ -17,8 +17,8 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
-import io.airbyte.cdk.integrations.destination.async.FlushWorkers
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
+import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
@@ -86,13 +86,19 @@ object JdbcBufferedConsumerFactory {
         val configuration: ConnectorConfiguration = DefaultConnectorConfiguration(defaultNamespace)
         val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(catalog)
         return AsyncStreamConsumer(
+            outputRecordCollector,
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
             onCloseFunction(typerDeduper),
-            configuration,
+            JdbcInsertFlushFunction(
+                recordWriterFunction(database, sqlOperations, writeConfigs, catalog)
+            ),
             micronautConfiguredAirbyteCatalog,
-            bufferManager,
-            flushWorkers,
-            dataTransformer = dataTransformer,
+            BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
+            Optional.ofNullable(defaultNamespace),
+            dataTransformer,
+            FlushFailure(),
+            Executors.newFixedThreadPool(2),
+            DeserializationUtil()
         )
     }
 

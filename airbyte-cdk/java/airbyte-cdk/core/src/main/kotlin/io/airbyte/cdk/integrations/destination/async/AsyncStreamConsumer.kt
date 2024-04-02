@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
+import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
@@ -31,7 +32,10 @@ import jakarta.inject.Singleton
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Consumer
 import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
 
@@ -45,24 +49,31 @@ private val logger = KotlinLogging.logger {}
  * memory limit governed by [GlobalMemoryManager]. Record writing is decoupled via [FlushWorkers].
  * See the other linked class for more detail.
  */
-@Singleton
-@Requires(
-    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
-    value = "write",
-)
-@Requires(env = ["destination"])
-class AsyncStreamConsumer(
+class AsyncStreamConsumer
+@VisibleForTesting
+constructor(
+    outputRecordCollector: Consumer<AirbyteMessage>,
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
-    private val connectorConfiguration: ConnectorConfiguration,
+    flusher: DestinationFlushFunction,
     private val catalog: MicronautConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
-    private val flushWorkers: FlushWorkers,
-    private val flushFailure: FlushFailure = FlushFailure(),
-    private val dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
-    private val deserializationUtil: DeserializationUtil = DeserializationUtil(),
+    private val defaultNamespace: Optional<String>,
+    private val flushFailure: FlushFailure,
+    private val dataTransformer: StreamAwareDataTransformer,
+    workerPool: ExecutorService,
+    private val deserializationUtil: DeserializationUtil,
 ) : SerializedAirbyteMessageConsumer {
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
+    private val flushWorkers: FlushWorkers =
+        FlushWorkers(
+            bufferManager.bufferDequeue,
+            flusher,
+            outputRecordCollector,
+            flushFailure,
+            bufferManager.stateManager,
+            workerPool,
+        )
     private val streamNames: Set<StreamDescriptor> =
         StreamDescriptorUtils.fromConfiguredCatalog(
             catalog.getConfiguredCatalog(),
@@ -74,6 +85,95 @@ class AsyncStreamConsumer(
     private var hasStarted = false
     private var hasClosed = false
     private var hasFailed = false
+
+    constructor(
+        outputRecordCollector: Consumer<AirbyteMessage>,
+        onStart: OnStartFunction,
+        onClose: OnCloseFunction,
+        flusher: DestinationFlushFunction,
+        catalog: ConfiguredAirbyteCatalog,
+        bufferManager: BufferManager,
+        defaultNamespace: Optional<String>,
+    ) : this(
+        outputRecordCollector,
+        onStart,
+        onClose,
+        flusher,
+        catalog,
+        bufferManager,
+        defaultNamespace,
+        FlushFailure(),
+    )
+
+    constructor(
+        outputRecordCollector: Consumer<AirbyteMessage>,
+        onStart: OnStartFunction,
+        onClose: OnCloseFunction,
+        flusher: DestinationFlushFunction,
+        catalog: ConfiguredAirbyteCatalog,
+        bufferManager: BufferManager,
+        defaultNamespace: Optional<String>,
+        dataTransformer: StreamAwareDataTransformer,
+    ) : this(
+        outputRecordCollector,
+        onStart,
+        onClose,
+        flusher,
+        catalog,
+        bufferManager,
+        defaultNamespace,
+        dataTransformer,
+        FlushFailure(),
+        Executors.newFixedThreadPool(5),
+        DeserializationUtil(),
+    )
+
+    constructor(
+        outputRecordCollector: Consumer<AirbyteMessage>,
+        onStart: OnStartFunction,
+        onClose: OnCloseFunction,
+        flusher: DestinationFlushFunction,
+        catalog: ConfiguredAirbyteCatalog,
+        bufferManager: BufferManager,
+        defaultNamespace: Optional<String>,
+        workerPool: ExecutorService,
+    ) : this(
+        outputRecordCollector,
+        onStart,
+        onClose,
+        flusher,
+        catalog,
+        bufferManager,
+        defaultNamespace,
+        IdentityDataTransformer(),
+        FlushFailure(),
+        workerPool,
+        DeserializationUtil(),
+    )
+
+    @VisibleForTesting
+    constructor(
+        outputRecordCollector: Consumer<AirbyteMessage>,
+        onStart: OnStartFunction,
+        onClose: OnCloseFunction,
+        flusher: DestinationFlushFunction,
+        catalog: ConfiguredAirbyteCatalog,
+        bufferManager: BufferManager,
+        defaultNamespace: Optional<String>,
+        flushFailure: FlushFailure,
+    ) : this(
+        outputRecordCollector,
+        onStart,
+        onClose,
+        flusher,
+        catalog,
+        bufferManager,
+        defaultNamespace,
+        IdentityDataTransformer(),
+        flushFailure,
+        Executors.newFixedThreadPool(5),
+        DeserializationUtil(),
+    )
 
     @Throws(Exception::class)
     override fun start() {
@@ -88,7 +188,7 @@ class AsyncStreamConsumer(
 
     @Throws(Exception::class)
     override fun accept(
-        message: String,
+        messageString: String,
         sizeInBytes: Int,
     ) {
         Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started")
@@ -99,24 +199,23 @@ class AsyncStreamConsumer(
          * to try to use a thread pool to partially deserialize to get record type and stream name, we can
          * do it without touching buffer manager.
          */
-        val airbyteMessage =
+        val message =
             deserializationUtil.deserializeAirbyteMessage(
-                message,
+                messageString,
                 dataTransformer,
             )
-        if (AirbyteMessage.Type.RECORD == airbyteMessage.type) {
-            if (Strings.isNullOrEmpty(airbyteMessage.record?.namespace)) {
-                airbyteMessage.record?.namespace =
-                    connectorConfiguration.getDefaultNamespace().getOrNull()
+        if (AirbyteMessage.Type.RECORD == message.type) {
+            if (Strings.isNullOrEmpty(message.record?.namespace)) {
+                message.record?.namespace = defaultNamespace.getOrNull()
             }
-            validateRecord(airbyteMessage)
+            validateRecord(message)
 
-            airbyteMessage.record?.streamDescriptor?.let { getRecordCounter(it).incrementAndGet() }
+            message.record?.streamDescriptor?.let { getRecordCounter(it).incrementAndGet() }
         }
         bufferEnqueue.addRecord(
-            airbyteMessage,
+            message,
             sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
-            connectorConfiguration.getDefaultNamespace(),
+            defaultNamespace,
         )
     }
 
@@ -148,7 +247,7 @@ class AsyncStreamConsumer(
                 )
         onClose.accept(hasFailed, streamSyncSummaries)
 
-        // as this throws an exception, we need to be after all the other close functions.
+        // as this throws an exception, we need to be after all other close functions.
         propagateFlushWorkerExceptionIfPresent()
         logger.info { "${AsyncStreamConsumer::class.java} closed" }
     }
