@@ -26,7 +26,7 @@ TRANSIENT_EXCEPTIONS = (
     exceptions.JSONDecodeError,
 )
 
-_RETRYABLE_400_STATUS_CODE = {
+_RETRYABLE_400_STATUS_CODES = {
     # Using debug mode and breakpointing on the issue, we were able to validate that there issues are retryable. We've also opened a case
     # with Salesforce to try to understand what is causing that as the response does not have a body.
     406,
@@ -50,7 +50,7 @@ def default_backoff_handler(max_tries: int, backoff_method={"method": backoff.ex
     def should_give_up(exc):
         give_up = (
             exc.response is not None
-            and exc.response.status_code not in _RETRYABLE_400_STATUS_CODE
+            and exc.response.status_code not in _RETRYABLE_400_STATUS_CODES
             and 400 <= exc.response.status_code < 500
         )
 

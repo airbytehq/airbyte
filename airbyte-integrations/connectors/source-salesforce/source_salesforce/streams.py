@@ -11,7 +11,7 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union, Dict
 
 import backoff
 import pandas as pd
@@ -40,6 +40,8 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 DEFAULT_ENCODING = "utf-8"
 LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
+_JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
+
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -398,9 +400,7 @@ class BulkSalesforceStream(SalesforceStream):
                 #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
                 #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
                 #    And the main problem is these subqueries doesn't support CSV response format.
-                error_data = error.response.json()[0]
-                error_code = error_data.get("errorCode")
-                error_message = error_data.get("message", "")
+                error_code, error_message = self._extract_error_code_and_message(error.response)
                 if error_message == "Selecting compound data not supported in Bulk Query" or (
                     error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
                 ):
@@ -416,7 +416,7 @@ class BulkSalesforceStream(SalesforceStream):
                 elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
+                        f"sobject options: {self.sobject_options}, Error message: '{error_message}'"
                     )
                 elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
                     self.logger.error(
@@ -452,9 +452,7 @@ class BulkSalesforceStream(SalesforceStream):
             try:
                 job_info = self._send_http_request("GET", url=url).json()
             except exceptions.HTTPError as error:
-                error_data = error.response.json()[0]
-                error_code = error_data.get("errorCode")
-                error_message = error_data.get("message", "")
+                error_code, error_message = self._extract_error_code_and_message(error.response)
                 if (
                     "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
                     and error_code == "TXN_SECURITY_METERING_ERROR"
@@ -487,6 +485,17 @@ class BulkSalesforceStream(SalesforceStream):
 
         self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
         return job_status
+
+    def _extract_error_code_and_message(self, response: requests.Response) -> tuple[Optional[str], str]:
+        try:
+            error_data = response.json()[0]
+            return error_data.get("errorCode"), error_data.get("message", "")
+        except exceptions.JSONDecodeError:
+            self.logger.warning(f"The response for `{response.request.url}` is not a JSON but was `{response.content}`")
+        except IndexError:
+            self.logger.warning(f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`")
+
+        return None, ""
 
     def execute_job(self, query: str, url: str) -> Tuple[Optional[str], Optional[str]]:
         job_status = "Failed"
@@ -663,10 +672,11 @@ class BulkSalesforceStream(SalesforceStream):
             try:
                 tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
             except TRANSIENT_EXCEPTIONS as exception:
-                if call_count != 0:
+                if call_count >= _JOB_TRANSIENT_ERRORS_MAX_RETRY:
+                    self.logger.error(f"Downloading data failed even after {call_count} retries. Stopping retry and raising exception")
                     raise exception
+                self.logger.warning(f"Downloading data failed after {call_count} retries. Retrying the whole job...")
                 call_count += 1
-                self.logger.warning("Downloading data failed even after retries. Retrying the whole job...")
                 yield from self.read_records(sync_mode, cursor_field, stream_slice, stream_state, call_count=call_count)
                 return
 
