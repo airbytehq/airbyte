@@ -28,7 +28,7 @@ def session_mock():
 def test_stream_correct(config):
     start_date = pendulum.parse("2020-01-01 00:00:00+00:00")
     end_date = pendulum.parse("2021-01-01 00:00:00+00:00")
-    stream_slice = StreamSlice(partition={}, cursor_slice={"startDateTime": start_date, "endDateTime": end_date})
+    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": start_date, "end_time": end_date})
     record_js = {"profileUpdatedAt": "2020-01-01 00:00:00 +00:00"}
     number_of_records = 10 ** 2
     resp_body = "\n".join([json.dumps(record_js)] * number_of_records)

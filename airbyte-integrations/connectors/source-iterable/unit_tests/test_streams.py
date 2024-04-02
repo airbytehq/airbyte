@@ -114,6 +114,18 @@ def test_events_read_full_refresh(config):
     assert [r["email"] for r in records] == ["user1", "user2", "user3", "user4"]
 
 
+@responses.activate
+def test_campaigns_metric_slicer(config):
+    responses.get("https://api.iterable.com/api/campaigns", json={"campaigns": [{"id": 1}]})
+    responses.get("https://api.iterable.com/api/campaigns/metrics?campaignId=1&startDateTime=2019-10-10T00%3A00%3A00", json={"id": 1, "Total Email Sends": 1})
+
+
+    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
+    expected = [{'campaign_ids': [1]}]
+
+    assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected
+
+
 def test_templates_parse_response():
     stream = Templates(authenticator=None, start_date="2019-10-10T00:00:00")
     with responses.RequestsMock() as rsps:
