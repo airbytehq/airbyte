@@ -17,7 +17,6 @@ import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
-import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
@@ -32,10 +31,7 @@ import jakarta.inject.Singleton
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
-import java.util.function.Consumer
 import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
 
@@ -52,28 +48,17 @@ private val logger = KotlinLogging.logger {}
 class AsyncStreamConsumer
 @VisibleForTesting
 constructor(
-    outputRecordCollector: Consumer<AirbyteMessage>,
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
-    flusher: DestinationFlushFunction,
     private val catalog: MicronautConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
     private val defaultNamespace: Optional<String>,
+    private val flushWorkers: FlushWorkers,
     private val flushFailure: FlushFailure = FlushFailure(),
     private val dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
-    workerPool: ExecutorService = Executors.newFixedThreadPool(5),
     private val deserializationUtil: DeserializationUtil = DeserializationUtil(),
 ) : SerializedAirbyteMessageConsumer {
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
-    private val flushWorkers: FlushWorkers =
-        FlushWorkers(
-            bufferManager.stateManager,
-            bufferManager.bufferDequeue,
-            flusher,
-            outputRecordCollector,
-            workerPool,
-            flushFailure,
-        )
     private val streamNames: Set<StreamDescriptor> =
         StreamDescriptorUtils.fromConfiguredCatalog(
             catalog.getConfiguredCatalog(),

@@ -120,7 +120,7 @@ private constructor(
             micronautConfiguredAirbyteCatalog,
             bufferManager,
             flushWorkers,
-            dataTransformer = dataTransformer
+            dataTransformer
         )
     }
 
