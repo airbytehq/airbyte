@@ -131,7 +131,7 @@ protected constructor(val container: C) : AutoCloseable {
         return name + suffix
     }
 
-    val databaseName: String?
+    open val databaseName: String?
         get() = withNamespace("db")
 
     val userName: String?
