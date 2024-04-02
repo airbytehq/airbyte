@@ -15,8 +15,8 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
+import io.airbyte.cdk.integrations.destination.async.FlushWorkers
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
-import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
@@ -67,21 +67,29 @@ object JdbcBufferedConsumerFactory {
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs =
             createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired)
-        val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(catalog)
-        return AsyncStreamConsumer(
-            outputRecordCollector,
-            onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
-            onCloseFunction(typerDeduper),
+        val destinationFlushFunction =
             JdbcInsertFlushFunction(
                 recordWriterFunction(database, sqlOperations, writeConfigs, catalog)
-            ),
+            )
+        val bufferManager = BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong())
+        val flushWorkers =
+            FlushWorkers(
+                bufferManager.stateManager,
+                bufferManager.bufferDequeue,
+                destinationFlushFunction,
+                outputRecordCollector,
+                Executors.newFixedThreadPool(5),
+                FlushFailure(),
+            )
+        val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(catalog)
+        return AsyncStreamConsumer(
+            onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
+            onCloseFunction(typerDeduper),
             micronautConfiguredAirbyteCatalog,
-            BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
+            bufferManager,
             Optional.ofNullable(defaultNamespace),
-            FlushFailure(),
+            flushWorkers,
             dataTransformer,
-            Executors.newFixedThreadPool(2),
-            DeserializationUtil()
         )
     }
 
