@@ -98,7 +98,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putBoolean(
+    protected open fun putBoolean(
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,
@@ -156,7 +156,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putDouble(
+    protected open fun putDouble(
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,
@@ -188,7 +188,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putBigDecimal(
+    protected open fun putBigDecimal(
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,
@@ -208,12 +208,22 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putDate(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
+    protected open fun putDate(
+        node: ObjectNode,
+        columnName: String?,
+        resultSet: ResultSet,
+        index: Int
+    ) {
         node.put(columnName, resultSet.getString(index))
     }
 
     @Throws(SQLException::class)
-    protected fun putTime(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
+    protected open fun putTime(
+        node: ObjectNode,
+        columnName: String?,
+        resultSet: ResultSet,
+        index: Int
+    ) {
         node.put(
             columnName,
             DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime::class.java))
@@ -221,7 +231,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putTimestamp(
+    protected open fun putTimestamp(
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,
@@ -275,7 +285,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun setTimestamp(
+    protected open fun setTimestamp(
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         value: String?
@@ -288,7 +298,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun setDate(
+    protected open fun setDate(
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         value: String
@@ -419,7 +429,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putTimeWithTimezone(
+    protected open fun putTimeWithTimezone(
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,
@@ -430,7 +440,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putTimestampWithTimezone(
+    protected open fun putTimestampWithTimezone(
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,

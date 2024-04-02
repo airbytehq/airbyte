@@ -26,6 +26,7 @@ object StateManagerFactory {
      * manager.
      * @return A newly created [StateManager] implementation based on the provided state.
      */
+    @JvmStatic
     fun createStateManager(
         supportedStateType: AirbyteStateMessage.AirbyteStateType?,
         initialState: List<AirbyteStateMessage>?,
