@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime, timedelta
+
 import freezegun
 import pendulum
 import pytest
-from datetime import datetime, timedelta
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator
 
 TEST_DATE = pendulum.parse("2020-01-01")

@@ -65,11 +65,6 @@ class IterableStream(HttpStream, ABC):
         """
         return None
 
-    def check_unauthorized_key(self, response: requests.Response) -> bool:
-        if response.status_code == codes.UNAUTHORIZED:
-            self.logger.warning(f"Provided API Key has not sufficient permissions to read from stream: {self.data_field}")
-            return True
-
     def check_generic_error(self, response: requests.Response) -> bool:
         """
         https://github.com/airbytehq/oncall/issues/1592#issuecomment-1499109251
@@ -128,9 +123,6 @@ class IterableStream(HttpStream, ABC):
             yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         except (HTTPError, UserDefinedBackoffException, DefaultBackoffException) as e:
             response = e.response
-            if self.check_unauthorized_key(response):
-                self.ignore_further_slices = True
-                return
             if self.check_generic_error(response):
                 return
             raise e

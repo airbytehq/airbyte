@@ -3,9 +3,7 @@
 #
 
 import json
-from unittest.mock import MagicMock
 
-import pendulum
 import pytest
 import requests
 import responses
@@ -30,10 +28,12 @@ def test_campaigns_metrics_csv():
     output = [{"a": 1, "b": 2, "d": 3}, {"a": 6, "c": 1, "d": 2}]
     assert CampaignsMetrics._parse_csv_string_to_dict(csv_string) == output
 
+
 def test_campaigns_metrics_request_params():
     stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
     params = stream.request_params(stream_slice={"campaign_ids": "c101"}, stream_state=None)
     assert params == {"campaignId": "c101", "startDateTime": "2019-10-10T00:00:00"}
+
 
 @responses.activate
 def test_stream_stops_on_401(config):
@@ -46,6 +46,7 @@ def test_stream_stops_on_401(config):
         for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             slices += 1
             _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
+
 
 @responses.activate
 def test_listuser_stream_keep_working_on_500(config):
@@ -84,6 +85,7 @@ def test_listuser_stream_keep_working_on_500(config):
         records.extend(slice_records)
     assert records == expected_records
 
+
 @responses.activate
 def test_events_read_full_refresh(config):
     stream = next(filter(lambda x: x.name == "events", SourceIterable().streams(config=config)))
@@ -118,7 +120,6 @@ def test_events_read_full_refresh(config):
 def test_campaigns_metric_slicer(config):
     responses.get("https://api.iterable.com/api/campaigns", json={"campaigns": [{"id": 1}]})
     responses.get("https://api.iterable.com/api/campaigns/metrics?campaignId=1&startDateTime=2019-10-10T00%3A00%3A00", json={"id": 1, "Total Email Sends": 1})
-
 
     stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
     expected = [{'campaign_ids': [1]}]
