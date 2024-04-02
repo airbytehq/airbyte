@@ -9,7 +9,6 @@ import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -43,8 +42,7 @@ class RunningSizeEstimateTest {
             .thenReturn(
                 emptyList(),
             )
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         Assertions.assertEquals(0, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
     }
 
@@ -63,8 +61,7 @@ class RunningSizeEstimateTest {
                     Optional.of(SIZE_20MB),
                 ),
             )
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         Assertions.assertEquals(SIZE_20MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
     }
 
@@ -83,8 +80,7 @@ class RunningSizeEstimateTest {
                     Optional.empty(),
                 ),
             )
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         Assertions.assertEquals(SIZE_10MB, detect.estimateSizeOfRunningWorkers(DESC1, SIZE_10MB))
     }
 
@@ -103,8 +99,7 @@ class RunningSizeEstimateTest {
                     Optional.empty(),
                 ),
             )
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         Assertions.assertEquals(
             SIZE_200MB,
             detect.estimateSizeOfRunningWorkers(DESC1, SIZE_200MB + 1),

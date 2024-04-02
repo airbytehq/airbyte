@@ -63,12 +63,12 @@ constructor(
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
     private val flushWorkers: FlushWorkers =
         FlushWorkers(
+            bufferManager.stateManager,
             bufferManager.bufferDequeue,
             flusher,
             outputRecordCollector,
-            flushFailure,
-            bufferManager.stateManager,
             workerPool,
+            flushFailure,
         )
     private val streamNames: Set<StreamDescriptor> =
         StreamDescriptorUtils.fromConfiguredCatalog(

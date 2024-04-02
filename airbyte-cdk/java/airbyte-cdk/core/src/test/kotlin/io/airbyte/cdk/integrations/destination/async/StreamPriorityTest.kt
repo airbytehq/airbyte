@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Instant
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -42,8 +41,7 @@ class StreamPriorityTest {
             )
             .thenReturn(Optional.of(0L))
             .thenReturn(Optional.of(1L))
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
 
         Assertions.assertEquals(listOf(DESC1, DESC2), detect.orderStreamsByPriority(DESCS))
         Assertions.assertEquals(listOf(DESC2, DESC1), detect.orderStreamsByPriority(DESCS))
@@ -69,8 +67,7 @@ class StreamPriorityTest {
         Mockito.`when`(bufferDequeue.getTimeOfLastRecord(DESC2))
             .thenReturn(Optional.of(NOW))
             .thenReturn(Optional.of(FIVE_MIN_AGO))
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         Assertions.assertEquals(listOf(DESC1, DESC2), detect.orderStreamsByPriority(DESCS))
         Assertions.assertEquals(listOf(DESC2, DESC1), detect.orderStreamsByPriority(DESCS))
     }
@@ -91,8 +88,7 @@ class StreamPriorityTest {
                 bufferDequeue.getTimeOfLastRecord(org.mockito.kotlin.any()),
             )
             .thenReturn(Optional.of(NOW))
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         val descs = listOf(Jsons.clone(DESC1), Jsons.clone(DESC2))
         Assertions.assertEquals(
             listOf(

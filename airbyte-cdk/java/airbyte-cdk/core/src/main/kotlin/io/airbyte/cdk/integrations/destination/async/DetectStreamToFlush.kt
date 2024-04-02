@@ -26,19 +26,12 @@ class DetectStreamToFlush
 internal constructor(
     private val bufferDequeue: BufferDequeue,
     private val runningFlushWorkers: RunningFlushWorkers,
-    private val isClosing: AtomicBoolean,
     private val flusher: DestinationFlushFunction,
-    private val nowProvider: Clock,
+    private val nowProvider: Clock = Clock.systemUTC(),
 ) {
     private val latestFlushTimeMsPerStream: ConcurrentMap<StreamDescriptor, Long> =
         ConcurrentHashMap()
-
-    constructor(
-        bufferDequeue: BufferDequeue,
-        runningFlushWorkers: RunningFlushWorkers,
-        isClosing: AtomicBoolean,
-        flusher: DestinationFlushFunction,
-    ) : this(bufferDequeue, runningFlushWorkers, isClosing, flusher, Clock.systemUTC())
+    internal val isClosing = AtomicBoolean(false)
 
     val nextStreamToFlush: Optional<StreamDescriptor>
         /**

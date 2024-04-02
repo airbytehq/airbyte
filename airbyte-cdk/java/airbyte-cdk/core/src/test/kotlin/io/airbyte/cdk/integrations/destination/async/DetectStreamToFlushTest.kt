@@ -12,7 +12,6 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,8 +47,7 @@ class DetectStreamToFlushTest {
                 RunningFlushWorkers::class.java,
             )
 
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
 
@@ -65,8 +63,7 @@ class DetectStreamToFlushTest {
             Mockito.mock(
                 RunningFlushWorkers::class.java,
             )
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         // if above threshold, triggers
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
         // if below threshold, no trigger
@@ -93,8 +90,7 @@ class DetectStreamToFlushTest {
                     Optional.of(SIZE_10MB),
                 ),
             )
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
 
@@ -124,7 +120,6 @@ class DetectStreamToFlushTest {
             DetectStreamToFlush(
                 bufferDequeue,
                 runningFlushWorkers,
-                AtomicBoolean(false),
                 flusher,
                 mockedNowProvider,
             )

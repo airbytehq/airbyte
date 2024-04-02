@@ -7,7 +7,6 @@ package io.airbyte.cdk.integrations.destination.async
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import java.time.Clock
-import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -38,7 +37,6 @@ class TimeTriggerTest {
             DetectStreamToFlush(
                 bufferDequeue,
                 runningFlushWorkers,
-                AtomicBoolean(false),
                 flusher,
                 mockedNowProvider,
             )
