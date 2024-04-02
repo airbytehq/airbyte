@@ -2,65 +2,10 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": {
-        "name": "threads",
-        "namespace": null
-      },
       "stream_state": {
-        "states": [
-          {
-            "partition": {
-              "float_ts": "2534945416.931169",
-              "parent_slice": {
-                "channel": "C04KX3KEZ54",
-                "parent_slice": {}
-              }
-            },
-            "cursor": {
-              "float_ts": 2534945416.059569
-            }
-          },
-          {
-            "partition": {
-              "float_ts": "2534945416.808709",
-              "parent_slice": {
-                "channel": "C04LTCM2Y56",
-                "parent_slice": {}
-              }
-            },
-            "cursor": {
-              "float_ts": 2534945416.084359
-            }
-          },
-          {
-            "partition": {
-              "float_ts": "2534945416.186049",
-              "parent_slice": {
-                "channel": "C04LTCM2Y56",
-                "parent_slice": {}
-              }
-            },
-            "cursor": {
-              "float_ts": 2534945416.186049
-            }
-          },
-          {
-            "partition": {
-              "float_ts": "2534945416.744249",
-              "parent_slice": {
-                "channel": "C04LTCM2Y56",
-                "parent_slice": {}
-              }
-            },
-            "cursor": {
-              "float_ts": 2534945416.744249
-            }
-          }
-        ]
-      }
-    },
-    "sourceStats": {
-      "recordCount": 1
+        "float_ts": 7270247822
+      },
+      "stream_descriptor": { "name": "threads" }
     }
   },
   {
