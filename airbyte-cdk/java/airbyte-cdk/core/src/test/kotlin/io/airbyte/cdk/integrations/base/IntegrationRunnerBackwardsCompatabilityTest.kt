@@ -9,7 +9,7 @@ import java.util.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class IntegrationRunnerBackwardsCompatbilityTest {
+class IntegrationRunnerBackwardsCompatabilityTest {
     @Test
     @Throws(Exception::class)
     fun testByteArrayInputStreamVersusScanner() {
@@ -31,11 +31,7 @@ class IntegrationRunnerBackwardsCompatbilityTest {
             val stream1: InputStream =
                 ByteArrayInputStream(testInput.toByteArray(StandardCharsets.UTF_8))
             val consumer2 = MockConsumer()
-            BufferedInputStream(stream1).use { bis ->
-                ByteArrayOutputStream().use { baos ->
-                    IntegrationRunner.consumeWriteStream(consumer2, bis, baos)
-                }
-            }
+            IntegrationRunner.consumeWriteStream(consumer2, stream1)
             val newOutput = consumer2.getOutput()
 
             // get old output
