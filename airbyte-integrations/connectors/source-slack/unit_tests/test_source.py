@@ -10,6 +10,13 @@ from source_slack.source import SourceSlack
 from .conftest import parametrized_configs
 
 
+def get_stream_by_name(stream_name, config):
+    streams = SourceSlack().streams(config=config)
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
+
 @parametrized_configs
 def test_streams(conversations_list, config, is_valid):
     source = SourceSlack()
@@ -48,3 +55,19 @@ def test_check_connection(token_config, requests_mock, status_code, response, is
     assert success is is_connection_successful
     if not success:
         assert error_msg in error
+
+
+def test_threads_auth(token_config, oauth_config):
+    source = SourceSlack()
+    auth = source._threads_authenticator(token_config)
+    assert auth.token == "Bearer api-token"
+    source = SourceSlack()
+    auth = source._threads_authenticator(oauth_config)
+    assert auth.token == "Bearer access-token"
+
+
+def test_get_threads_stream(token_config):
+    source = SourceSlack()
+    channel_messages = get_stream_by_name("channel_messages", token_config)
+    threads_stream = source.get_threads_stream(token_config, channel_messages)
+    assert threads_stream

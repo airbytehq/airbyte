@@ -5,17 +5,12 @@ from unittest.mock import MagicMock
 import pendulum
 import pytest
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_protocol.models import SyncMode
-from freezegun import freeze_time
 from source_slack import SourceSlack
 from source_slack.components.channel_members_extractor import ChannelMembersExtractor
 from source_slack.components.join_channels import ChannelsRetriever, JoinChannelsStream
-from source_slack.components.threads_partition_router import ThreadsPartitionRouter
 
 
 def get_stream_by_name(stream_name, config):
@@ -37,73 +32,6 @@ def test_channel_members_extractor(token_config):
     assert records == [{"member_id": "U023BECGF"},
                        {"member_id": "U061F7AUR"},
                        {"member_id": "W012A3CDE"}]
-
-
-def get_threads_partition_router(config):
-    channel_messages_stream = get_stream_by_name("channel_messages", config)
-    return ThreadsPartitionRouter(
-        config=config,
-        parameters={},
-        parent_stream_configs=[
-            ParentStreamConfig(
-                config=config,
-                stream=channel_messages_stream,
-                parent_key="ts",
-                partition_field="float_ts",
-                parameters={},
-                request_option=RequestOption(field_name="ts", inject_into=RequestOptionType.request_parameter, parameters={})
-            ), ]
-    )
-
-
-@freeze_time("2024-03-10T20:00:00Z", tz_offset=-2)
-def test_threads_partition_router(token_config, requests_mock):
-    start_date = "2024-03-01T20:00:00Z"
-    end_date = pendulum.now()
-    oldest, latest = int(pendulum.parse(start_date).timestamp()), int(end_date.timestamp())
-    token_config["start_date"] = start_date
-    for channel in token_config["channel_filter"]:
-        requests_mock.get(
-            url=f"https://slack.com/api/conversations.history?"
-                f"inclusive=True&limit=1000&channel={channel}&"
-                f"oldest={oldest}&latest={latest}",
-            json={"messages": [{"ts": latest}, {"ts": oldest}]}
-        )
-
-    router = get_threads_partition_router(token_config)
-    slices = router.stream_slices()
-    expected = [{"channel": "airbyte-for-beginners", "float_ts": latest},
-                {"channel": "airbyte-for-beginners", "float_ts": oldest},
-                {"channel": "good-reads", "float_ts": latest},
-                {"channel": "good-reads", "float_ts": oldest}]
-
-    assert list(slices) == expected
-
-
-@pytest.mark.parametrize(
-    "stream_slice, stream_state, expected",
-    (
-        ({}, {}, {}),
-        (
-                {'float_ts': '1683104542.931169', 'channel': 'C04KX3KEZ54'},
-                {'states': [{'partition': {'channel': 'C04KX3KEZ54', 'float_ts': '1683104542.931169'}, 'cursor': {'float_ts': 1683104568}}]},
-                {}
-        ),
-        (
-                {'float_ts': '1783104542.931169', 'channel': 'C04KX3KEZ54'},
-                {'states': [{'partition': {'channel': 'C04KX3KEZ54', 'float_ts': '1683104542.931169'}, 'cursor': {'float_ts': 1683104568}}]},
-                {'ts': '1783104542.931169'}
-        ),
-    ),
-    ids=[
-        "empty_params_without_slice_and_state",
-        "empty_params_cursor_grater_then_slice_value",
-        "params_slice_value_greater_then_cursor_value"]
-)
-def test_threads_request_params(token_config, stream_slice, stream_state, expected):
-    router = get_threads_partition_router(token_config)
-    _slice = StreamSlice(partition=stream_slice, cursor_slice={})
-    assert router.get_request_params(stream_slice=_slice, stream_state=stream_state) == expected
 
 
 def test_join_channels(token_config, requests_mock, joined_channel):
