@@ -111,7 +111,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      * close the returned stream to release the database connection. Otherwise, there will be a
      * connection leak.
      *
-     * @param statementCreator create a [PreparedStatement] from a [Connection].
+     * @paramstatementCreator create a [PreparedStatement] from a [Connection].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
      * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
      * from recordTransform.
