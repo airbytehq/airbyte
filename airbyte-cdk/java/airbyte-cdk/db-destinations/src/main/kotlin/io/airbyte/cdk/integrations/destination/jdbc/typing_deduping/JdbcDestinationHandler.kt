@@ -26,7 +26,6 @@ import java.util.HashMap
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.function.Predicate
-import java.util.stream.Collectors.toMap
 import lombok.extern.slf4j.Slf4j
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -244,13 +243,11 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         .select(
                             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME)),
                             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)),
-                            field(quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE))
-                        )
-                        .from(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
-                        .getSQL()
-                )
-                .stream()
-                .peek { recordJson: JsonNode ->
+                            field(quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE)),
+                            field(quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT)),
+                        ).from(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
+                        .sql,
+                ).map { recordJson: JsonNode ->
                     // Forcibly downcase all key names.
                     // This is to handle any destinations that upcase the column names.
                     // For example - Snowflake with QUOTED_IDENTIFIERS_IGNORE_CASE=TRUE.
@@ -265,27 +262,32 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         // Instead, build up a map of new fields and set them all at once.
                         newFields[fieldName.lowercase(Locale.getDefault())] = record[fieldName]
                     }
-
                     record.setAll<JsonNode>(newFields)
-                }
-                .collect(
-                    toMap(
-                        { record ->
-                            AirbyteStreamNameNamespacePair(
-                                record.get(DESTINATION_STATE_TABLE_COLUMN_NAME)?.asText(),
-                                record.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)?.asText()
-                            )
-                        },
-                        { record ->
-                            val stateNode: JsonNode? =
-                                record.get(DESTINATION_STATE_TABLE_COLUMN_STATE)
-                            val state =
-                                if (stateNode != null) Jsons.deserialize(stateNode.asText())
-                                else Jsons.emptyObject()
-                            toDestinationState(state)
-                        }
+
+                    record
+                }.sortedBy {
+                    // Sort by updated_at, so that if there are duplicate state,
+                    // the most recent state is the one that gets used.
+                    // That shouldn't typically happen, but let's be defensive.
+                    val updatedAt = it.get(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT)?.asText()
+                    if (updatedAt != null) {
+                        OffsetDateTime.parse(updatedAt)
+                    } else {
+                        OffsetDateTime.MIN
+                    }
+                }.associate {
+                    val stateTextNode: JsonNode? =
+                        it.get(DESTINATION_STATE_TABLE_COLUMN_STATE)
+                    val stateNode =
+                        if (stateTextNode != null) Jsons.deserialize(stateTextNode.asText())
+                        else Jsons.emptyObject()
+                    val airbyteStreamNameNamespacePair = AirbyteStreamNameNamespacePair(
+                        it.get(DESTINATION_STATE_TABLE_COLUMN_NAME)?.asText(),
+                        it.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)?.asText(),
                     )
-                )
+
+                    airbyteStreamNameNamespacePair to toDestinationState(stateNode)
+                }
         }
 
     private fun retrieveState(
