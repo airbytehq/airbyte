@@ -169,35 +169,29 @@ definitions:
           type: DpathExtractor
           field_path:
             - invoice
-      partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/appointments_stream"
-                $parameters:
-                  record_filter:
-                    condition: "{{ record['invoice_id'] != '00000000-0000-0000-0000-000000000000' }}"
-                    type: RecordFilter
-              parent_key: invoice_id
-              partition_field: id
     primary_key:
       - id
     incremental_sync:
-      cursor_field: invoice_date
-      type: DatetimeBasedCursor
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc() }}'
-        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ now_utc() }}'
-        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-      cursor_granularity: "P1D"
-      lookback_window: "P1D"
-      step: "P1D"
+      type: CustomIncrementalSync
+      class_name: source_zenoti.components.IncrementalSubstreamSlicerCursor
+      cursor_field: "last_imported"
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream:
+            $ref: "#/definitions/appointments_stream"
+            $parameters:
+              record_filter:
+                condition: "{{ record['invoice_id'] != '00000000-0000-0000-0000-000000000000' }}"
+                type: RecordFilter
+          parent_key: invoice_id
+          partition_field: id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - last_imported
+            type: AddedFieldDefinition
+            value: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
 
 check:
   type: CheckStream
