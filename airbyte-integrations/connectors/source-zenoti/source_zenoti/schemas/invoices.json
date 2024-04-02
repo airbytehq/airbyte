@@ -181,6 +181,9 @@
     },
     "appointment_group_id": {
       "type": "string"
+    },
+    "last_imported": {
+      "type": "string"
     }
   }
 }
