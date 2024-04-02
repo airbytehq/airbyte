@@ -145,5 +145,3 @@ def test_threads_parse_response(mocker, authenticator, token_config):
     assert len(actual_response) == 1
     assert actual_response[0]["float_ts"] == 1482960137.003543
     assert actual_response[0]["channel_id"] == "airbyte-for-beginners"
-
-

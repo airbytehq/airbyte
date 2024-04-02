@@ -91,7 +91,6 @@ parametrized_configs = pytest.mark.parametrize(
     (
         (_token_config(), True),
         (_oauth_config(), True),
-        # (_legacy_token_config(), True),
         (_invalid_config(), False),
     ),
 )
