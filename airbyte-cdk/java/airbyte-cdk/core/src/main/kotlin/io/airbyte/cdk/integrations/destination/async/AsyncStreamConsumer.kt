@@ -55,10 +55,10 @@ constructor(
     private val catalog: MicronautConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
     private val defaultNamespace: Optional<String>,
-    private val flushFailure: FlushFailure,
-    private val dataTransformer: StreamAwareDataTransformer,
-    workerPool: ExecutorService,
-    private val deserializationUtil: DeserializationUtil,
+    private val flushFailure: FlushFailure = FlushFailure(),
+    private val dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
+    workerPool: ExecutorService = Executors.newFixedThreadPool(5),
+    private val deserializationUtil: DeserializationUtil = DeserializationUtil(),
 ) : SerializedAirbyteMessageConsumer {
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
     private val flushWorkers: FlushWorkers =
@@ -81,95 +81,6 @@ constructor(
     private var hasStarted = false
     private var hasClosed = false
     private var hasFailed = false
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: MicronautConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        defaultNamespace,
-        FlushFailure(),
-    )
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: MicronautConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-        dataTransformer: StreamAwareDataTransformer,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        defaultNamespace,
-        FlushFailure(),
-        dataTransformer,
-        Executors.newFixedThreadPool(5),
-        DeserializationUtil(),
-    )
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: MicronautConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-        workerPool: ExecutorService,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        defaultNamespace,
-        FlushFailure(),
-        IdentityDataTransformer(),
-        workerPool,
-        DeserializationUtil(),
-    )
-
-    @VisibleForTesting
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: MicronautConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-        flushFailure: FlushFailure,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        defaultNamespace,
-        flushFailure,
-        IdentityDataTransformer(),
-        Executors.newFixedThreadPool(5),
-        DeserializationUtil(),
-    )
 
     @Throws(Exception::class)
     override fun start() {

@@ -273,7 +273,7 @@ class AsyncStreamConsumerTest {
                 micronautConfiguredAirbyteCatalog,
                 BufferManager((1024 * 10).toLong()),
                 Optional.of("default_ns"),
-                flushFailure
+                flushFailure = flushFailure
             )
         Mockito.`when`(flushFunction.optimalBatchSizeBytes).thenReturn(0L)
 
