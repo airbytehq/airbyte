@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.78.4
+low-code: Add last_record and last_page_size interpolation variables to pagination
+
+## 0.78.3
+Fix dependencies for file-based extras
+
+## 0.78.2
+low-code: fix retrieving partition key for legacy state migration 
+
 ## 0.78.1
 connector-builder: return full url-encoded URL instead of separating parameters
 

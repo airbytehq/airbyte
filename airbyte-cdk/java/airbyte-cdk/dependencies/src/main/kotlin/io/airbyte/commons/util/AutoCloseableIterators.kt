@@ -20,6 +20,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return closeable iterator </T>
      */
+    @JvmStatic
     fun <T> fromIterator(iterator: Iterator<T>): AutoCloseableIterator<T> {
         return DefaultAutoCloseableIterator(iterator, VoidCallable.NOOP, null)
     }
@@ -31,6 +32,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return closeable iterator </T>
      */
+    @JvmStatic
     fun <T> fromIterator(
         iterator: Iterator<T>,
         airbyteStream: AirbyteStreamNameNamespacePair?
@@ -47,6 +49,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return new autocloseable iterator with the close function appended </T>
      */
+    @JvmStatic
     fun <T> fromIterator(
         iterator: Iterator<T>,
         onClose: VoidCallable,
@@ -63,6 +66,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return autocloseable iterator </T>
      */
+    @JvmStatic
     fun <T> fromStream(
         stream: Stream<T>,
         airbyteStream: AirbyteStreamNameNamespacePair?
@@ -72,6 +76,7 @@ object AutoCloseableIterators {
 
     /** Consumes entire iterator and collect it into a list. Then it closes the iterator. */
     @Throws(Exception::class)
+    @JvmStatic
     fun <T> toListAndClose(iterator: AutoCloseableIterator<T>): List<T> {
         iterator.use {
             return MoreIterators.toList(iterator)
@@ -88,6 +93,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return autocloseable iterator </T>
      */
+    @JvmStatic
     fun <T> lazyIterator(
         iteratorSupplier: Supplier<AutoCloseableIterator<T>>,
         airbyteStream: AirbyteStreamNameNamespacePair?
@@ -149,6 +155,7 @@ object AutoCloseableIterators {
      * @param <T> output type
      * @return mapped autocloseable iterator </T></F>
      */
+    @JvmStatic
     fun <F, T> transform(
         fromIterator: AutoCloseableIterator<F>,
         function: Function<in F, out T>
@@ -166,6 +173,7 @@ object AutoCloseableIterators {
      * @param <T> output type
      * @return mapped autocloseable iterator </T></F>
      */
+    @JvmStatic
     fun <F, T> transform(
         fromIterator: AutoCloseableIterator<F>,
         airbyteStream: AirbyteStreamNameNamespacePair?,
@@ -189,6 +197,7 @@ object AutoCloseableIterators {
      * @return autocloseable iterator that still has the close functionality of the original input
      * iterator but is transformed by the iterator output by the iteratorCreator </T>
      */
+    @JvmStatic
     fun <T> transform(
         iteratorCreator: Function<AutoCloseableIterator<T>, Iterator<T>>,
         autoCloseableIterator: AutoCloseableIterator<T>,
@@ -201,6 +210,7 @@ object AutoCloseableIterators {
         )
     }
 
+    @JvmStatic
     fun <T, F> transformIterator(
         iteratorCreator: Function<AutoCloseableIterator<T>, Iterator<F>>,
         autoCloseableIterator: AutoCloseableIterator<T>,

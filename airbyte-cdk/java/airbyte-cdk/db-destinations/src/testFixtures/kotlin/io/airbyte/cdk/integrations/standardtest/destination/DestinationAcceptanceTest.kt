@@ -802,7 +802,7 @@ abstract class DestinationAcceptanceTest {
             )
         }
 
-        var messages: List<AirbyteMessage> =
+        var messages =
             MoreResources.readResource(
                     DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
                         ProtocolVersion.V0
@@ -810,6 +810,7 @@ abstract class DestinationAcceptanceTest {
                 )
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+                .toMutableList()
 
         val config = getConfig()
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
@@ -832,6 +833,7 @@ abstract class DestinationAcceptanceTest {
                 )
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+                .toMutableList()
         messages.addLast(
             Jsons.deserialize(
                 "{\"type\": \"RECORD\", \"record\": {\"stream\": \"exchange_rate\", \"emitted_at\": 1602637989500, \"data\": { \"id\": 2, \"currency\": \"EUR\", \"date\": \"2020-09-02T00:00:00Z\", \"NZD\": 1.14, \"USD\": 10.16}}}\n",
