@@ -14,12 +14,11 @@ from source_azure_blob_storage import Config, SourceAzureBlobStorage, SourceAzur
     [
         "config_csv",
         "config_jsonl",
+        "config_parquet",
     ],
 )
-def test_read_jsonl_files(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any], request):
-    """Read about 300Mb of raw csv files
-    Test 3 streams: 2 * 1_000_000 recs + 1 * 1000 recs
-    """
+def test_read_files(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any], request):
+    """Read 2_001_000 records in 30 files"""
     config = request.getfixturevalue(config)
     source = SourceAzureBlobStorage(
         SourceAzureBlobStorageStreamReader(),

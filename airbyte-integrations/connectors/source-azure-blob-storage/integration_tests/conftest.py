@@ -21,7 +21,7 @@ from .utils import get_docker_ip, load_config
 logger = logging.getLogger("airbyte")
 
 
-# Monkey patch credentials method to make it work with global-docker-host inside dagger
+# Monkey patch credentials method to make it work with "global-docker-host" inside dagger
 # (original method handles only localhost and 127.0.0.1 addresses)
 def _format_shared_key_credential(account_name, credential):
     credentials = {"account_key": "key1", "account_name": "account1"}
@@ -36,7 +36,6 @@ def docker_client() -> docker.client.DockerClient:
     return docker.from_env()
 
 
-# @pytest.fixture()
 def get_container_client() -> ContainerClient:
     docker_ip = get_docker_ip()
     blob_service_client = BlobServiceClient(f"http://{docker_ip}:10000/account1", credential="key1")
@@ -47,13 +46,10 @@ def get_container_client() -> ContainerClient:
 def generate_random_csv_with_source_faker():
     """Generate csv files using source-faker and save output to folder: /tmp/csv"""
     subprocess.run(f"{os.path.dirname(__file__)}/csv_export/main.sh")
-    subprocess.run(["ls", "-lah", "/tmp/csv"])
-    subprocess.run(["tail", "-10", "/tmp/csv/products.csv"])
 
 
 @pytest.fixture(scope="session", autouse=True)
 def connector_setup_fixture(docker_client) -> None:
-    # TODO: fix to make it work with dagger and not save
     generate_random_csv_with_source_faker()
     container = docker_client.containers.run(
         image="mcr.microsoft.com/azure-storage/azurite",
@@ -114,6 +110,26 @@ def config_jsonl_fixture() -> Mapping[str, Any]:
     config["azure_blob_storage_endpoint"] = config["azure_blob_storage_endpoint"].replace("localhost", get_docker_ip())
     container_client = get_container_client()
     upload_jsonl_files(container_client)
+    yield config
+    for blob in container_client.list_blobs():
+        container_client.delete_blob(blob.name)
+
+
+def upload_parquet_files(container_client: ContainerClient) -> None:
+    """upload 30 parquet files"""
+    for table in ("products", "purchases", "users"):
+        df = read_csv(f"/tmp/csv/{table}.csv")
+        parquet_file = df.to_parquet()
+        for i in range(10):
+            container_client.upload_blob(f"test_parquet_{table}_{i}.parquet", parquet_file, validate_content=False)
+
+
+@pytest.fixture(name="config_parquet", scope="function")
+def config_parquet_fixture() -> Mapping[str, Any]:
+    config = load_config("config_integration_parquet.json")
+    config["azure_blob_storage_endpoint"] = config["azure_blob_storage_endpoint"].replace("localhost", get_docker_ip())
+    container_client = get_container_client()
+    upload_parquet_files(container_client)
     yield config
     for blob in container_client.list_blobs():
         container_client.delete_blob(blob.name)
