@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.78.4
+low-code: Add last_record and last_page_size interpolation variables to pagination
+
 ## 0.78.3
 Fix dependencies for file-based extras
 
