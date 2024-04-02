@@ -13,7 +13,6 @@ definitions:
     refresh_token: '{{ config[''credentials''][''refresh_token''] }}'
     refresh_request_body: { }
     token_refresh_endpoint: 'https://www.linkedin.com/oauth/v2/accessToken'
-    grant_type: authorization_code
 
   selective_authenticator:
     type: SelectiveAuthenticator
