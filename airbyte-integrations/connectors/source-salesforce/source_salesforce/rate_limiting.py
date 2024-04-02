@@ -41,7 +41,13 @@ _RETRYABLE_400_STATUS_CODES = {
 logger = logging.getLogger("airbyte")
 
 
-def default_backoff_handler(max_tries: int, backoff_method={"method": backoff.expo, "params": {"factor": 15}}, **kwargs):
+def default_backoff_handler(max_tries: int, backoff_method=None, backoff_params=None):
+    if backoff_method is None or backoff_params is None:
+        if not (backoff_method is None and backoff_params is None):
+            raise ValueError("Both `backoff_method` and `backoff_params` need to be provided if one is provided")
+        backoff_method = backoff.expo
+        backoff_params = {"factor": 15}
+
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
         logger.info(str(exc))
@@ -65,11 +71,11 @@ def default_backoff_handler(max_tries: int, backoff_method={"method": backoff.ex
         return give_up
 
     return backoff.on_exception(
-        backoff_method["method"],
+        backoff_method,
         TRANSIENT_EXCEPTIONS,
         jitter=None,
         on_backoff=log_retry_attempt,
         giveup=should_give_up,
         max_tries=max_tries,
-        **backoff_method["params"],
+        **backoff_params,
     )

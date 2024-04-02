@@ -354,7 +354,7 @@ class BulkSalesforceStream(SalesforceStream):
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
-    @default_backoff_handler(max_tries=5, backoff_method={"method": backoff.expo, "params": {"factor": 15}})
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 15})
     def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
         """
         This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
@@ -370,7 +370,7 @@ class BulkSalesforceStream(SalesforceStream):
         response.raise_for_status()
         return response
 
-    @default_backoff_handler(max_tries=5, backoff_method={"method": backoff.expo, "params": {"factor": 15}})
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 15})
     def _create_stream_job(self, query: str, url: str) -> Optional[str]:
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         response = self._non_retryable_send_http_request("POST", url, json=json)
@@ -544,7 +544,7 @@ class BulkSalesforceStream(SalesforceStream):
 
         return self.encoding
 
-    @default_backoff_handler(max_tries=5, backoff_method={"method": backoff.constant, "params": {"interval": 5}})
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.constant, backoff_params={"interval": 5})
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
