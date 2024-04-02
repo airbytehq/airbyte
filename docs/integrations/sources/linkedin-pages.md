@@ -105,7 +105,7 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 | Version | Date       | Pull Request                                             | Subject                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| 2.0.0   | 2024-04-02 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add time bound incremental streams for follower & share statistics. Migrate to Low Code |
+| 2.0.0   | 2024-04-02 | [36744](https://github.com/airbytehq/airbyte/pull/36744) | Add time bound incremental streams for follower & share statistics. Migrate to Low Code |
 | 1.0.2   | 2023-05-30 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove duplicate streams                                                                |
 | 1.0.1   | 2023-03-22 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove `authSpecification` as it's not yet supported                                    |
 | 1.0.0   | 2023-03-16 | [18967](https://github.com/airbytehq/airbyte/pull/18967) | Fixed failing connection checks                                                         |
