@@ -11,7 +11,7 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union, Dict
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import backoff
 import pandas as pd
@@ -41,7 +41,6 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 DEFAULT_ENCODING = "utf-8"
 LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
 _JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
-
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -493,7 +492,9 @@ class BulkSalesforceStream(SalesforceStream):
         except exceptions.JSONDecodeError:
             self.logger.warning(f"The response for `{response.request.url}` is not a JSON but was `{response.content}`")
         except IndexError:
-            self.logger.warning(f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`")
+            self.logger.warning(
+                f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
+            )
 
         return None, ""
 
