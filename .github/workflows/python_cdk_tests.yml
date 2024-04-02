@@ -37,7 +37,7 @@ jobs:
     needs:
       - changes
     if: needs.changes.outputs.python_cdk == 'true'
-    runs-on: connector-test-large
+    runs-on: ubuntu-latest
     name: Python CDK Tests
     timeout-minutes: 30
     steps:

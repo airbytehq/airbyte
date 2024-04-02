@@ -188,7 +188,7 @@ class CsvSerializedBufferTest {
                     if (withCompression) {
                         GZIPInputStream(writer.inputStream)
                     } else {
-                        writer.inputStream
+                        writer.inputStream!!
                     }
                 val actualData: String
                 if (config == null) {
