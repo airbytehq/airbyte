@@ -34,6 +34,7 @@ enum class DatabaseDriver(val driverClassName: String, val urlFormatString: Stri
          * @param driverClassName The driver class name.
          * @return The matching [DatabaseDriver] enumerated value or `null` if no match is found.
          */
+        @JvmStatic
         fun findByDriverClassName(driverClassName: String?): DatabaseDriver {
             lateinit var selected: DatabaseDriver
 
