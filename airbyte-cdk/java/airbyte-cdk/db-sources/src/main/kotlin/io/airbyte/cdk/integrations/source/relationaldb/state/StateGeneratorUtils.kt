@@ -197,6 +197,7 @@ object StateGeneratorUtils {
      * @param airbyteStateMessage A [AirbyteStateType.LEGACY] state message.
      * @return A [AirbyteStateType.GLOBAL] state message.
      */
+    @JvmStatic
     fun convertLegacyStateToGlobalState(
         airbyteStateMessage: AirbyteStateMessage
     ): AirbyteStateMessage {

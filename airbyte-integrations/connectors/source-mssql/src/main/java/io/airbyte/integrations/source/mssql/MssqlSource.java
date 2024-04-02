@@ -138,7 +138,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return super.check(config);
   }
 
-  @Override
+/*  @Override
   public AutoCloseableIterator<AirbyteRecordData> queryTableFullRefresh(final JdbcDatabase database,
                                                                         final List<String> columnNames,
                                                                         final String schemaName,
@@ -166,7 +166,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
       return queryTable(database, preparedSqlQuery, tableName, schemaName);
     }
-  }
+  }*/
 
   /**
    * See {@link MssqlQueryUtils#getWrappedColumnNames}

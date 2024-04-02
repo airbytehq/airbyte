@@ -1312,7 +1312,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     )
             )
 
-    protected fun createExpectedTestMessages(
+    protected open fun createExpectedTestMessages(
         states: List<DbStreamState>,
         numRecords: Long
     ): List<AirbyteMessage> {

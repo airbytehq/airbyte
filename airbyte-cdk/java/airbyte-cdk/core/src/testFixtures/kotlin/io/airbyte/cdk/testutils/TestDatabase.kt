@@ -52,8 +52,8 @@ protected constructor(val container: C) : AutoCloseable {
 
     @Volatile private lateinit var dslContext: DSLContext
 
-    protected val databaseId: Int = nextDatabaseId.getAndIncrement()
-    protected val containerId: Int =
+    @JvmField protected val databaseId: Int = nextDatabaseId.getAndIncrement()
+    @JvmField protected val containerId: Int =
         containerUidToId!!.computeIfAbsent(container.containerId) { k: String? ->
             nextContainerId!!.getAndIncrement()
         }!!
@@ -98,7 +98,7 @@ protected constructor(val container: C) : AutoCloseable {
      * object. This typically entails at least a CREATE DATABASE and a CREATE USER. Also Initializes
      * the [DataSource] and [DSLContext] owned by this object.
      */
-    fun initialized(): T? {
+    open fun initialized(): T? {
         inContainerBootstrapCmd()!!.forEach { cmds: Stream<String> -> this.execInContainer(cmds) }
         this.dataSource =
             DataSourceFactory.create(
@@ -137,7 +137,7 @@ protected constructor(val container: C) : AutoCloseable {
     val userName: String?
         get() = withNamespace("user")
 
-    val password: String?
+    open val password: String?
         get() = "password"
 
     fun getDataSource(): DataSource? {
@@ -154,7 +154,7 @@ protected constructor(val container: C) : AutoCloseable {
         return dslContext
     }
 
-    val jdbcUrl: String?
+    open val jdbcUrl: String?
         get() =
             String.format(
                 databaseDriver!!.urlFormatString,
@@ -293,11 +293,11 @@ protected constructor(val container: C) : AutoCloseable {
                 .with(JdbcUtils.PORT_KEY, testDatabase.container!!.firstMappedPort)
         }
 
-        fun withoutSsl(): B {
+        open fun withoutSsl(): B {
             return with(JdbcUtils.SSL_KEY, false)
         }
 
-        fun withSsl(sslMode: MutableMap<Any?, Any?>?): B {
+        open fun withSsl(sslMode: MutableMap<Any?, Any?>?): B {
             return with(JdbcUtils.SSL_KEY, true).with(JdbcUtils.SSL_MODE_KEY, sslMode)
         }
 

@@ -168,7 +168,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     @AfterEach
-    protected fun tearDown() {
+    protected open fun tearDown() {
         try {
             testdb!!.close()
         } catch (e: Throwable) {
@@ -176,7 +176,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
     }
 
-    protected fun columnClause(
+    protected open fun columnClause(
         columnsWithDataType: Map<String, String>,
         primaryKey: Optional<String>
     ): String {
@@ -228,7 +228,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         testdb!!.with("DELETE FROM %s.%s WHERE %s = %s", modelsSchema(), streamName, idCol, idValue)
     }
 
-    protected fun deleteCommand(streamName: String?) {
+    protected open fun deleteCommand(streamName: String?) {
         testdb!!.with("DELETE FROM %s.%s", modelsSchema(), streamName)
     }
 
@@ -1039,7 +1039,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     @Throws(Exception::class)
-    protected fun waitForCdcRecords(schemaName: String?, tableName: String?, recordCount: Int) {}
+    protected open fun waitForCdcRecords(schemaName: String?, tableName: String?, recordCount: Int) {}
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(CdcSourceTest::class.java)
@@ -1063,7 +1063,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         protected const val RANDOM_TABLE_NAME: String = MODELS_STREAM_NAME + "_random"
 
-        protected val MODEL_RECORDS_RANDOM: List<JsonNode> =
+        @JvmField
+        val MODEL_RECORDS_RANDOM: List<JsonNode> =
             MODEL_RECORDS.stream()
                 .map { r: JsonNode ->
                     Jsons.jsonNode(
