@@ -15,6 +15,7 @@ from source_azure_blob_storage import Config, SourceAzureBlobStorage, SourceAzur
         "config_csv",
         "config_jsonl",
         "config_parquet",
+        "config_avro",
     ],
 )
 def test_read_files(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any], request):
