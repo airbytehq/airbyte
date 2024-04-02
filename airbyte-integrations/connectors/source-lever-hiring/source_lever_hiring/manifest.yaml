@@ -207,30 +207,30 @@ definitions:
             type:
               - 'null'
               - boolean
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - updatedAt
-            value: '{{ (record[''updatedAt''] | string)[:10] }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
       cursor_datetime_formats:
-        - '%s'
-      datetime_format: '%s'
+        - '%ms'
+      datetime_format: '%ms'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       start_time_option:
-        inject_into: request_parameter
-        field_name: updated_at_start
         type: RequestOption
+        field_name: updated_at_start
+        inject_into: request_parameter
+      end_time_option:
+        inject_into: request_parameter
+        type: RequestOption
+        field_name: updated_at_end
       end_datetime:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P30D
+      cursor_granularity: PT1S
 
 check:
   type: CheckStream
