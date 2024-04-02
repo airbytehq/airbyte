@@ -13,6 +13,7 @@ import java.util.*
 
 object SshHelpers {
     @get:Throws(IOException::class)
+    @JvmStatic
     val specAndInjectSsh: ConnectorSpecification?
         get() = getSpecAndInjectSsh(Optional.empty())
 
