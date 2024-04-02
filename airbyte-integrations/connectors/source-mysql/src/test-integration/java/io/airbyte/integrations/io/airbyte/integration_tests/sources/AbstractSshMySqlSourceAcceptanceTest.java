@@ -28,6 +28,8 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
 
+  private static final String DEFAULT_NAMESPACE = "namespace";
+
   private JsonNode config;
 
   public abstract Path getConfigFilePath();
@@ -64,6 +66,7 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME),
+                DEFAULT_NAMESPACE,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -72,7 +75,7 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME2),
+                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME2), DEFAULT_NAMESPACE,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
