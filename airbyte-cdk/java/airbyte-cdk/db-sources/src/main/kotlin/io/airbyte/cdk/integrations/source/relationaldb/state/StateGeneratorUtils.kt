@@ -67,6 +67,7 @@ object StateGeneratorUtils {
      * @param cursorInfo The current cursor.
      * @return The [AirbyteStreamState] representing the current state of the stream.
      */
+    @JvmStatic
     fun generateStreamState(
         airbyteStreamNameNamespacePair: AirbyteStreamNameNamespacePair,
         cursorInfo: CursorInfo
@@ -92,6 +93,7 @@ object StateGeneratorUtils {
      * @return The list of stream states derived from the state information extracted from the
      * provided map.
      */
+    @JvmStatic
     fun generateStreamStateList(
         pairToCursorInfoMap: Map<AirbyteStreamNameNamespacePair, CursorInfo>
     ): List<AirbyteStreamState> {
@@ -112,6 +114,7 @@ object StateGeneratorUtils {
      * information for that stream
      * @return The legacy [DbState].
      */
+    @JvmStatic
     fun generateDbState(
         pairToCursorInfoMap: Map<AirbyteStreamNameNamespacePair, CursorInfo>
     ): DbState {
@@ -137,6 +140,7 @@ object StateGeneratorUtils {
      * @param cursorInfo The current cursor.
      * @return The [DbStreamState].
      */
+    @JvmStatic
     fun generateDbStreamState(
         airbyteStreamNameNamespacePair: AirbyteStreamNameNamespacePair,
         cursorInfo: CursorInfo
@@ -163,6 +167,7 @@ object StateGeneratorUtils {
      * @return An [Optional] possibly containing the deserialized representation of the stream state
      * or an empty [Optional] if the state is not present or could not be deserialized.
      */
+    @JvmStatic
     fun extractState(state: AirbyteStreamState): Optional<DbStreamState> {
         try {
             return Optional.ofNullable(Jsons.`object`(state.streamState, DbStreamState::class.java))
@@ -183,6 +188,7 @@ object StateGeneratorUtils {
      * @param streamDescriptor A [StreamDescriptor] to be validated.
      * @return `true` if the provided [StreamDescriptor] is valid or `false` if it is invalid.
      */
+    @JvmStatic
     fun isValidStreamDescriptor(streamDescriptor: StreamDescriptor?): Boolean {
         return if (streamDescriptor != null) {
             streamDescriptor.name != null
@@ -197,6 +203,7 @@ object StateGeneratorUtils {
      * @param airbyteStateMessage A [AirbyteStateType.LEGACY] state message.
      * @return A [AirbyteStateType.GLOBAL] state message.
      */
+    @JvmStatic
     fun convertLegacyStateToGlobalState(
         airbyteStateMessage: AirbyteStateMessage
     ): AirbyteStateMessage {
@@ -230,6 +237,7 @@ object StateGeneratorUtils {
      * @param airbyteStateMessage A [AirbyteStateType.LEGACY] state message.
      * @return A list [AirbyteStateType.STREAM] state messages.
      */
+    @JvmStatic
     fun convertLegacyStateToStreamState(
         airbyteStateMessage: AirbyteStateMessage
     ): List<AirbyteStateMessage> {
@@ -252,6 +260,7 @@ object StateGeneratorUtils {
             .collect(Collectors.toList())
     }
 
+    @JvmStatic
     fun convertStateMessage(
         state: io.airbyte.protocol.models.AirbyteStateMessage
     ): AirbyteStateMessage {
@@ -265,6 +274,7 @@ object StateGeneratorUtils {
      * @Param supportedStateType the [AirbyteStateType] supported by this connector.
      * @return The deserialized object representation of the state.
      */
+    @JvmStatic
     fun deserializeInitialState(
         initialStateJson: JsonNode?,
         supportedStateType: AirbyteStateMessage.AirbyteStateType

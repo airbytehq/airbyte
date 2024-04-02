@@ -1312,7 +1312,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     )
             )
 
-    protected fun createExpectedTestMessages(
+    protected open fun createExpectedTestMessages(
         states: List<DbStreamState>,
         numRecords: Long
     ): List<AirbyteMessage> {
@@ -1342,7 +1342,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             .collect(Collectors.toList())
     }
 
-    protected fun createState(states: List<DbStreamState>): List<AirbyteStateMessage> {
+    protected open fun createState(states: List<DbStreamState>): List<AirbyteStateMessage> {
         return states
             .stream()
             .map { s: DbStreamState ->

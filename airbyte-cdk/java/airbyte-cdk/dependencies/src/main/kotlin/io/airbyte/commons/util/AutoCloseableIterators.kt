@@ -245,6 +245,7 @@ object AutoCloseableIterators {
      * @return A [CompositeIterator].
      * @param <T> The type of data contained in each iterator. </T>
      */
+    @JvmStatic
     fun <T> concatWithEagerClose(
         iterators: List<AutoCloseableIterator<T>>,
         airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?

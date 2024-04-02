@@ -725,6 +725,7 @@ abstract class AbstractJdbcSource<Datatype>(
          * @return a map by StreamName to associated list of primary keys
          */
         @VisibleForTesting
+        @JvmStatic
         fun aggregatePrimateKeys(
             entries: List<PrimaryKeyAttributesFromDb>
         ): Map<String, MutableList<String>> {

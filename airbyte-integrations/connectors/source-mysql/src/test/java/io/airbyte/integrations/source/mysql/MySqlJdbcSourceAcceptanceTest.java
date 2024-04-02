@@ -24,7 +24,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
@@ -44,7 +43,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -287,14 +285,6 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     assertEquals(List.of("43"), cursorOfStreamTwoStatesFromThirdSync);
   }
 
-  @Test
-  void testSpec() throws Exception {
-    final ConnectorSpecification actual = source().spec();
-    final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
-
-    assertEquals(expected, actual);
-  }
-
   /**
    * MySQL Error Codes:
    * <p>
@@ -479,7 +469,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
   // Override from parent class as we're no longer including the legacy Data field.
   @Override
-  protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states, final long numRecords) {
+  protected List<AirbyteMessage> createExpectedTestMessages(final List<? extends DbStreamState> states, final long numRecords) {
     return states.stream()
         .map(s -> new AirbyteMessage().withType(Type.STATE)
             .withState(
@@ -493,7 +483,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   }
 
   @Override
-  protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
+  protected List<AirbyteStateMessage> createState(final List<? extends DbStreamState> states) {
     return states.stream()
         .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()

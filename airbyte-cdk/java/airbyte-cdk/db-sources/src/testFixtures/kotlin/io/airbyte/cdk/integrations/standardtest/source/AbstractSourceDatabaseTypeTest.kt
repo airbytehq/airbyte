@@ -132,7 +132,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
      */
     @Test
     @Throws(Exception::class)
-    fun testDataContent() {
+    open fun testDataContent() {
         // Class used to make easier the error reporting
         class MissedRecords( // Stream that is missing any value
             var streamName:

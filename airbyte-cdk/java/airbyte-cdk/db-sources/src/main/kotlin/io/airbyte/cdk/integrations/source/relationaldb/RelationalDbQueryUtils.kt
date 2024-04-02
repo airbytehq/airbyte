@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 object RelationalDbQueryUtils {
     private val LOGGER: Logger = LoggerFactory.getLogger(RelationalDbQueryUtils::class.java)
 
+    @JvmStatic
     fun getIdentifierWithQuoting(identifier: String, quoteString: String): String {
         // double-quoted values within a database name or column name should be wrapped with extra
         // quoteString
@@ -53,15 +54,18 @@ object RelationalDbQueryUtils {
     }
 
     /** @return fully qualified table name with the schema (if a schema exists) without quotes. */
+    @JvmStatic
     fun getFullyQualifiedTableName(schemaName: String?, tableName: String): String {
         return if (schemaName != null) "$schemaName.$tableName" else tableName
     }
 
     /** @return the input identifier with quotes. */
+    @JvmStatic
     fun enquoteIdentifier(identifier: String?, quoteString: String?): String {
         return quoteString + identifier + quoteString
     }
 
+    @JvmStatic
     fun <Database : SqlDatabase?> queryTable(
         database: Database,
         sqlQuery: String?,
@@ -87,6 +91,7 @@ object RelationalDbQueryUtils {
         )
     }
 
+    @JvmStatic
     fun logStreamSyncStatus(streams: List<ConfiguredAirbyteStream>, syncType: String?) {
         if (streams.isEmpty()) {
             LOGGER.info("No Streams will be synced via {}.", syncType)
@@ -96,6 +101,7 @@ object RelationalDbQueryUtils {
         }
     }
 
+    @JvmStatic
     fun prettyPrintConfiguredAirbyteStreamList(streamList: List<ConfiguredAirbyteStream>): String {
         return streamList
             .stream()

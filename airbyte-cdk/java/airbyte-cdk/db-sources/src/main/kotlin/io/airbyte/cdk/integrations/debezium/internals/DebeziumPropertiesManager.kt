@@ -93,6 +93,7 @@ abstract class DebeziumPropertiesManager(
         const val NAME_KEY: String = "name"
         const val TOPIC_PREFIX_KEY: String = "topic.prefix"
 
+        @JvmStatic
         fun sanitizeTopicPrefix(topicName: String): String {
             val sanitizedNameBuilder = StringBuilder(topicName.length)
             var changed = false
@@ -118,6 +119,7 @@ abstract class DebeziumPropertiesManager(
 
         // We need to keep the validation rule the same as debezium engine, which is defined here:
         // https://github.com/debezium/debezium/blob/c51ef3099a688efb41204702d3aa6d4722bb4825/debezium-core/src/main/java/io/debezium/schema/AbstractTopicNamingStrategy.java#L178
+        @JvmStatic
         private fun isValidCharacter(c: Char): Boolean {
             return c == '.' ||
                 c == '_' ||
