@@ -45,7 +45,7 @@ class DeserializationUtil {
             // Transform data provided by destination.
             val transformedData =
                 dataTransformer.transform(
-                    partial.record?.streamDescriptor,
+                    partial.record?.getStreamDescriptor(),
                     partial.record?.data,
                     partial.record?.meta,
                 )

@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.async.state
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferMemory
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteStateMessage
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteStreamState
@@ -16,6 +17,8 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.every
+import io.mockk.mockk
 import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -196,9 +199,13 @@ class GlobalAsyncStateManagerTest {
 
     @Test
     internal fun testBasic() {
+        val bufferMemory: BufferMemory = mockk()
+
+        every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
         val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
         val stateManager =
-            GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+            GlobalAsyncStateManager(globalMemoryManager = GlobalMemoryManager(bufferMemory))
 
         val firstStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC)
         val secondStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC)
@@ -266,9 +273,15 @@ class GlobalAsyncStateManagerTest {
     internal inner class GlobalState {
         @Test
         fun testEmptyQueuesGlobalState() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             // GLOBAL
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -315,9 +328,15 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testConversion() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             val preConvertId1: Long = simulateIncomingRecords(STREAM2_DESC, 10, stateManager)
@@ -374,9 +393,15 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testCorrectFlushingOneStream() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -446,9 +471,15 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testZeroRecordFlushing() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -551,9 +582,15 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testCorrectFlushingManyStreams() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             val preConvertId1: Long = simulateIncomingRecords(STREAM2_DESC, 10, stateManager)
@@ -630,9 +667,15 @@ class GlobalAsyncStateManagerTest {
     internal inner class PerStreamState {
         @Test
         internal fun testEmptyQueues() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             // GLOBAL
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -678,9 +721,15 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testCorrectFlushingOneStream() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             var stateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -754,9 +803,15 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testZeroRecordFlushing() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             var stateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
@@ -863,9 +918,15 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testCorrectFlushingManyStream() {
+            val bufferMemory: BufferMemory = mockk()
+
+            every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
             val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
             val stateManager =
-                GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+                GlobalAsyncStateManager(
+                    globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+                )
 
             val stream1StateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
             val stream2StateId: Long = simulateIncomingRecords(STREAM2_DESC, 7, stateManager)
@@ -960,9 +1021,15 @@ class GlobalAsyncStateManagerTest {
 
     @Test
     internal fun flushingRecordsShouldNotReduceStatsCounterForGlobalState() {
+        val bufferMemory: BufferMemory = mockk()
+
+        every { bufferMemory.getMemoryLimit() } returns TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES
+
         val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
         val stateManager =
-            GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
+            GlobalAsyncStateManager(
+                globalMemoryManager = GlobalMemoryManager(bufferMemory = bufferMemory)
+            )
         val stateId = simulateIncomingRecords(STREAM1_DESC, 6, stateManager)
         stateManager.decrement(stateId, 4)
         stateManager.trackState(GLOBAL_STATE_MESSAGE1, 1, STREAM1_DESC.namespace)

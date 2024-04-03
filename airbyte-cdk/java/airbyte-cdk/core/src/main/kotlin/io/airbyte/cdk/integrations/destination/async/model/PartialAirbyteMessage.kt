@@ -10,21 +10,13 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.util.Objects
 
 class PartialAirbyteMessage {
-    @get:JsonProperty("type")
-    @set:JsonProperty("type")
     @JsonProperty("type")
     @JsonPropertyDescription("Message type")
     var type: AirbyteMessage.Type? = null
 
-    @get:JsonProperty("record")
-    @set:JsonProperty("record")
-    @JsonProperty("record")
-    var record: PartialAirbyteRecordMessage? = null
+    @JsonProperty("record") var record: PartialAirbyteRecordMessage? = null
 
-    @get:JsonProperty("state")
-    @set:JsonProperty("state")
-    @JsonProperty("state")
-    var state: PartialAirbyteStateMessage? = null
+    @JsonProperty("state") var state: PartialAirbyteStateMessage? = null
 
     /**
      * For record messages, this stores the serialized data blob (i.e.
@@ -55,6 +47,15 @@ class PartialAirbyteMessage {
         return this
     }
 
+    /**
+     * For record messages, this stores the serialized data blob (i.e.
+     * `Jsons.serialize(message.getRecord().getData())`). For state messages, this stores the
+     * _entire_ message (i.e. `Jsons.serialize(message)`).
+     *
+     * See
+     * [io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer.deserializeAirbyteMessage]
+     * for the exact logic of how this field is populated.
+     */
     fun withSerialized(serialized: String?): PartialAirbyteMessage {
         this.serialized = serialized
         return this

@@ -11,23 +11,25 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
 class StreamAwareQueue(maxMemoryUsage: Long) {
-    private val timeOfLastMessage: AtomicReference<Instant> = AtomicReference()
-
     private val memoryAwareQueue: MemoryBoundedLinkedBlockingQueue<MessageWithMeta> =
         MemoryBoundedLinkedBlockingQueue(maxMemoryUsage)
+    private val timeOfLastMessage: AtomicReference<Instant> = AtomicReference()
 
-    val currentMemoryUsage: Long
-        get() = memoryAwareQueue.currentMemoryUsage
+    fun getCurrentMemoryUsage(): Long {
+        return memoryAwareQueue.getCurrentMemoryUsage()
+    }
 
-    val maxMemoryUsage: Long
-        get() = memoryAwareQueue.maxMemoryUsage
+    fun getMaxMemoryUsage(): Long {
+        return memoryAwareQueue.getMaxMemoryUsage()
+    }
 
     fun addMaxMemory(maxMemoryUsage: Long) {
         memoryAwareQueue.addMaxMemory(maxMemoryUsage)
     }
 
-    val isEmpty: Boolean
-        get() = memoryAwareQueue.size() == 0
+    fun isEmpty(): Boolean {
+        return memoryAwareQueue.size() == 0
+    }
 
     fun getTimeOfLastMessage(): Optional<Instant> {
         // if the queue is empty, the time of last message is irrelevant
@@ -37,7 +39,7 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
         return Optional.ofNullable(timeOfLastMessage.get())
     }
 
-    fun peek(): Optional<MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?>> {
+    fun peek(): Optional<MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta>> {
         return Optional.ofNullable(memoryAwareQueue.peek())
     }
 
@@ -59,11 +61,11 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
     }
 
     @Throws(InterruptedException::class)
-    fun take(): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?> {
+    fun take(): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta> {
         return memoryAwareQueue.take()
     }
 
-    fun poll(): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?>? {
+    fun poll(): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta>? {
         return memoryAwareQueue.poll()
     }
 
@@ -71,7 +73,7 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
     fun poll(
         timeout: Long,
         unit: TimeUnit,
-    ): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?>? {
+    ): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta>? {
         return memoryAwareQueue.poll(timeout, unit)
     }
 

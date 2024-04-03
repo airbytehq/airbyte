@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
+
 package io.airbyte.cdk.core.command.option
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings

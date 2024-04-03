@@ -9,15 +9,9 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import java.util.Objects
 
 class PartialAirbyteStateMessage {
-    @get:JsonProperty("type")
-    @set:JsonProperty("type")
-    @JsonProperty("type")
-    var type: AirbyteStateMessage.AirbyteStateType? = null
+    @JsonProperty("type") var type: AirbyteStateMessage.AirbyteStateType? = null
 
-    @get:JsonProperty("stream")
-    @set:JsonProperty("stream")
-    @JsonProperty("stream")
-    var stream: PartialAirbyteStreamState? = null
+    @JsonProperty("stream") var stream: PartialAirbyteStreamState? = null
 
     fun withType(type: AirbyteStateMessage.AirbyteStateType?): PartialAirbyteStateMessage {
         this.type = type

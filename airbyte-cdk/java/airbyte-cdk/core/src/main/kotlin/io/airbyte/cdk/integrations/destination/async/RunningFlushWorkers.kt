@@ -39,16 +39,8 @@ class RunningFlushWorkers {
         flushWorkerId: UUID,
     ) {
         streamToFlushWorkerToBatchSize
-            .computeIfAbsent(
-                stream,
-            ) {
-                ConcurrentHashMap()
-            }
-            .computeIfAbsent(
-                flushWorkerId,
-            ) {
-                Optional.empty()
-            }
+            .computeIfAbsent(stream) { ConcurrentHashMap() }
+            .computeIfAbsent(flushWorkerId) { Optional.empty() }
     }
 
     /**

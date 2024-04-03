@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.stream.Collectors
+import kotlin.jvm.optionals.getOrDefault
 import kotlin.math.min
 
 private val logger = KotlinLogging.logger {}
@@ -33,20 +34,27 @@ private val logger = KotlinLogging.logger {}
 class DetectStreamToFlush(
     private val bufferDequeue: BufferDequeue,
     private val runningFlushWorkers: RunningFlushWorkers,
-    private val flusher: DestinationFlushFunction,
-    private val nowProvider: Clock = Clock.systemUTC(),
+    private val destinationFlushFunction: DestinationFlushFunction,
+    private val airbyteFileUtils: AirbyteFileUtils,
+    private val nowProvider: Optional<Clock>,
 ) {
     private val latestFlushTimeMsPerStream: ConcurrentMap<StreamDescriptor, Long> =
         ConcurrentHashMap()
-    internal val isClosing = AtomicBoolean(false)
+    val flushAllStreams = AtomicBoolean(false)
 
-    val nextStreamToFlush: Optional<StreamDescriptor>
-        /**
-         * Get the best, next stream that is ready to be flushed.
-         *
-         * @return best, next stream to flush. If no stream is ready to be flushed, return empty.
-         */
-        get() = getNextStreamToFlush(computeQueueThreshold())
+    companion object {
+        const val EAGER_FLUSH_THRESHOLD = 0.90
+        const val MAX_TIME_BETWEEN_FLUSH_MS = (5 * 60 * 1000).toLong()
+    }
+
+    /**
+     * Get the best, next stream that is ready to be flushed.
+     *
+     * @return best, next stream to flush. If no stream is ready to be flushed, return empty.
+     */
+    fun getNextStreamToFlush(): Optional<StreamDescriptor> {
+        return getNextStreamToFlush(computeQueueThreshold())
+    }
 
     /**
      * We have a minimum threshold for the size of a queue before we will flush it. The threshold
@@ -66,12 +74,14 @@ class DetectStreamToFlush(
      */
     @VisibleForTesting
     fun computeQueueThreshold(): Long {
-        val isBuffer90Full =
+        val isBuffer90Full: Boolean =
             EAGER_FLUSH_THRESHOLD <=
-                bufferDequeue.totalGlobalQueueSizeBytes.toDouble() / bufferDequeue.maxQueueSizeBytes
+                bufferDequeue.getTotalGlobalQueueSizeBytes().toDouble() /
+                    bufferDequeue.getMaxQueueSizeBytes()
         // when we are closing or queues are very full, flush regardless of how few items are in the
         // queue.
-        return if (isClosing.get() || isBuffer90Full) 0 else flusher.queueFlushThresholdBytes
+        return if (flushAllStreams.get() || isBuffer90Full) 0
+        else destinationFlushFunction.queueFlushThresholdBytes
     }
 
     // todo (cgardens) - improve prioritization by getting a better estimate of how much data
@@ -91,12 +101,12 @@ class DetectStreamToFlush(
      */
     @VisibleForTesting
     fun getNextStreamToFlush(queueSizeThresholdBytes: Long): Optional<StreamDescriptor> {
-        for (stream in orderStreamsByPriority(bufferDequeue.bufferedStreams)) {
-            val latestFlushTimeMs =
+        for (stream in orderStreamsByPriority(bufferDequeue.getBufferedStreams())) {
+            val latestFlushTimeMs: Long =
                 latestFlushTimeMsPerStream.computeIfAbsent(
                     stream,
-                ) { _: StreamDescriptor ->
-                    nowProvider.millis()
+                ) {
+                    nowProvider.getOrDefault(Clock.systemUTC()).millis()
                 }
             val isTimeTriggeredResult = isTimeTriggered(latestFlushTimeMs)
             val isSizeTriggeredResult = isSizeTriggered(stream, queueSizeThresholdBytes)
@@ -108,7 +118,8 @@ class DetectStreamToFlush(
 
             if (isSizeTriggeredResult.first || isTimeTriggeredResult.first) {
                 logger.info { "flushing: $debugString" }
-                latestFlushTimeMsPerStream[stream] = nowProvider.millis()
+                latestFlushTimeMsPerStream[stream] =
+                    nowProvider.getOrDefault(Clock.systemUTC()).millis()
                 return Optional.of(stream)
             }
         }
@@ -129,7 +140,8 @@ class DetectStreamToFlush(
      */
     @VisibleForTesting
     fun isTimeTriggered(latestFlushTimeMs: Long): Pair<Boolean, String> {
-        val timeSinceLastFlushMs = nowProvider.millis() - latestFlushTimeMs
+        val timeSinceLastFlushMs =
+            nowProvider.getOrDefault(Clock.systemUTC()).millis() - latestFlushTimeMs
         val isTimeTriggered = timeSinceLastFlushMs >= MAX_TIME_BETWEEN_FLUSH_MS
         val debugString = "time trigger: $isTimeTriggered"
 
@@ -165,10 +177,10 @@ class DetectStreamToFlush(
 
         val debugString =
             "size trigger: $isSizeTriggered " +
-                "current threshold b: ${AirbyteFileUtils.byteCountToDisplaySize(queueSizeThresholdBytes)}, " +
-                "queue size b: ${AirbyteFileUtils.byteCountToDisplaySize(currentQueueSize)}, " +
-                "penalty b: ${AirbyteFileUtils.byteCountToDisplaySize(sizeOfRunningWorkersEstimate)}, " +
-                "after penalty b: ${AirbyteFileUtils.byteCountToDisplaySize(queueSizeAfterRunningWorkers)}"
+                "current threshold b: ${airbyteFileUtils.byteCountToDisplaySize(queueSizeThresholdBytes)}, " +
+                "queue size b: ${airbyteFileUtils.byteCountToDisplaySize(currentQueueSize)}, " +
+                "penalty b: ${airbyteFileUtils.byteCountToDisplaySize(sizeOfRunningWorkersEstimate)}, " +
+                "after penalty b: ${airbyteFileUtils.byteCountToDisplaySize(queueSizeAfterRunningWorkers)}"
 
         return Pair(isSizeTriggered, debugString)
     }
@@ -202,7 +214,7 @@ class DetectStreamToFlush(
             runningWorkerBatchesSizes.stream().filter { obj: Optional<Long> -> obj.isEmpty }.count()
         val workersWithoutBatchesSizeEstimate =
             (min(
-                    flusher.optimalBatchSizeBytes.toDouble(),
+                    destinationFlushFunction.optimalBatchSizeBytes.toDouble(),
                     currentQueueSize.toDouble(),
                 ) * workersWithoutBatchesCount)
                 .toLong()
@@ -252,9 +264,7 @@ class DetectStreamToFlush(
                     Collectors.toMap(
                         { s: StreamDescriptor -> s },
                         { streamDescriptor: StreamDescriptor ->
-                            bufferDequeue.getTimeOfLastRecord(
-                                streamDescriptor,
-                            )
+                            bufferDequeue.getTimeOfLastRecord(streamDescriptor)
                         },
                     ),
                 )
@@ -268,16 +278,11 @@ class DetectStreamToFlush(
                     ) // if no time is present, it suggests the queue has no records. set MAX time
                     // as a sentinel value to
                     // represent no records.
-                    .thenComparing { s: StreamDescriptor ->
+                    .thenComparing { s: StreamDescriptor? ->
                         sdToTimeOfLastRecord[s]!!.orElse(Instant.MAX)
                     }
                     .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
             )
             .collect(Collectors.toList())
-    }
-
-    companion object {
-        private const val EAGER_FLUSH_THRESHOLD = 0.90
-        private const val MAX_TIME_BETWEEN_FLUSH_MS = (5 * 60 * 1000).toLong()
     }
 }

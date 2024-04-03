@@ -6,84 +6,96 @@ package io.airbyte.cdk.integrations.destination.async
 
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
-import org.junit.jupiter.api.Assertions
+import io.mockk.every
+import io.mockk.mockk
+import java.time.Clock
+import java.util.Optional
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 
 class FlushThresholdTest {
-    private val SIZE_10MB = (10 * 1024 * 1024).toLong()
+    companion object {
+        private const val SIZE_10MB = (10 * 1024 * 1024).toLong()
+    }
 
+    private lateinit var bufferDequeue: BufferDequeue
     private lateinit var flusher: DestinationFlushFunction
 
     @BeforeEach
     internal fun setup() {
-        flusher = Mockito.mock(DestinationFlushFunction::class.java)
-        Mockito.`when`(flusher.queueFlushThresholdBytes).thenReturn(SIZE_10MB)
+        bufferDequeue = mockk()
+        flusher = mockk()
+
+        every { bufferDequeue.getMaxQueueSizeBytes() } returns 10L
+        every { bufferDequeue.getTotalGlobalQueueSizeBytes() } returns 0L
+        every { flusher.queueFlushThresholdBytes } returns SIZE_10MB
     }
 
     @Test
     internal fun testBaseThreshold() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val runningFlushWorkers: RunningFlushWorkers = mockk()
+
         val detect =
             DetectStreamToFlush(
-                bufferDequeue,
-                Mockito.mock(RunningFlushWorkers::class.java),
-                flusher,
+                bufferDequeue = bufferDequeue,
+                runningFlushWorkers = runningFlushWorkers,
+                destinationFlushFunction = flusher,
+                airbyteFileUtils = AirbyteFileUtils(),
+                nowProvider = Optional.of(Clock.systemUTC()),
             )
-        Assertions.assertEquals(SIZE_10MB, detect.computeQueueThreshold())
+
+        assertEquals(SIZE_10MB, detect.computeQueueThreshold())
     }
 
     @Test
     internal fun testClosingThreshold() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
+        val runningFlushWorkers: RunningFlushWorkers = mockk()
+
         val detect =
             DetectStreamToFlush(
-                bufferDequeue,
-                Mockito.mock(RunningFlushWorkers::class.java),
-                flusher,
+                bufferDequeue = bufferDequeue,
+                runningFlushWorkers = runningFlushWorkers,
+                destinationFlushFunction = flusher,
+                airbyteFileUtils = AirbyteFileUtils(),
+                nowProvider = Optional.of(Clock.systemUTC()),
             )
-        detect.isClosing.set(true)
-        Assertions.assertEquals(0, detect.computeQueueThreshold())
+        detect.flushAllStreams.set(true)
+
+        assertEquals(0, detect.computeQueueThreshold())
     }
 
     @Test
     internal fun testEagerFlushThresholdBelowThreshold() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
-        Mockito.`when`(bufferDequeue.totalGlobalQueueSizeBytes).thenReturn(8L)
-        Mockito.`when`(bufferDequeue.maxQueueSizeBytes).thenReturn(10L)
+        val runningFlushWorkers: RunningFlushWorkers = mockk()
+
         val detect =
             DetectStreamToFlush(
-                bufferDequeue,
-                Mockito.mock(RunningFlushWorkers::class.java),
-                flusher,
+                bufferDequeue = bufferDequeue,
+                runningFlushWorkers = runningFlushWorkers,
+                destinationFlushFunction = flusher,
+                airbyteFileUtils = AirbyteFileUtils(),
+                nowProvider = Optional.of(Clock.systemUTC()),
             )
-        Assertions.assertEquals(SIZE_10MB, detect.computeQueueThreshold())
+
+        assertEquals(SIZE_10MB, detect.computeQueueThreshold())
     }
 
     @Test
     internal fun testEagerFlushThresholdAboveThreshold() {
-        val bufferDequeue =
-            Mockito.mock(
-                BufferDequeue::class.java,
-            )
-        Mockito.`when`(bufferDequeue.totalGlobalQueueSizeBytes).thenReturn(9L)
-        Mockito.`when`(bufferDequeue.maxQueueSizeBytes).thenReturn(10L)
+        val runningFlushWorkers: RunningFlushWorkers = mockk()
+
+        every { bufferDequeue.getTotalGlobalQueueSizeBytes() } returns 9L
+
         val detect =
             DetectStreamToFlush(
-                bufferDequeue,
-                Mockito.mock(RunningFlushWorkers::class.java),
-                flusher,
+                bufferDequeue = bufferDequeue,
+                runningFlushWorkers = runningFlushWorkers,
+                destinationFlushFunction = flusher,
+                airbyteFileUtils = AirbyteFileUtils(),
+                nowProvider = Optional.of(Clock.systemUTC()),
             )
-        Assertions.assertEquals(0, detect.computeQueueThreshold())
+
+        assertEquals(0, detect.computeQueueThreshold())
     }
 }

@@ -11,7 +11,8 @@ import io.airbyte.protocol.models.StreamDescriptor
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import java.time.Instant
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class PartialAirbyteMessageTest {
@@ -37,11 +38,11 @@ class PartialAirbyteMessageTest {
                     PartialAirbyteMessage::class.java,
                 )
                 .get()
-        Assertions.assertEquals(AirbyteMessage.Type.RECORD, rec.type)
-        Assertions.assertEquals("users", rec.record?.stream)
-        Assertions.assertEquals("public", rec.record?.namespace)
-        Assertions.assertEquals("\"data\"", rec.record?.data.toString())
-        Assertions.assertEquals(emittedAt, rec.record?.emittedAt)
+        assertEquals(AirbyteMessage.Type.RECORD, rec.type)
+        assertEquals("users", rec.record?.stream)
+        assertEquals("public", rec.record?.namespace)
+        assertEquals("\"data\"", rec.record?.data.toString())
+        assertEquals(emittedAt, rec.record?.emittedAt)
     }
 
     @Test
@@ -70,12 +71,12 @@ class PartialAirbyteMessageTest {
                     PartialAirbyteMessage::class.java,
                 )
                 .get()
-        Assertions.assertEquals(AirbyteMessage.Type.STATE, rec.type)
+        assertEquals(AirbyteMessage.Type.STATE, rec.type)
 
         val streamDesc = rec.state?.stream?.streamDescriptor
-        Assertions.assertEquals("user", streamDesc?.name)
-        Assertions.assertEquals("public", streamDesc?.namespace)
-        Assertions.assertEquals(
+        assertEquals("user", streamDesc?.name)
+        assertEquals("public", streamDesc?.namespace)
+        assertEquals(
             io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType.STREAM,
             rec.state?.type,
         )
@@ -90,6 +91,6 @@ class PartialAirbyteMessageTest {
                 badSerialization,
                 PartialAirbyteMessage::class.java,
             )
-        Assertions.assertTrue(rec.isEmpty)
+        assertTrue(rec.isEmpty)
     }
 }

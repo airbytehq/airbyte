@@ -4,40 +4,41 @@
 
 package io.airbyte.cdk.integrations.destination.async.function
 
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
+import io.airbyte.cdk.integrations.destination.async.DetectStreamToFlush
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import java.util.stream.Stream
 import kotlin.math.max
 
+private val logger = KotlinLogging.logger {}
+
 /**
- * An interface meant to be used with [FlushWorkers].
- *
- * A destination instructs workers how to write data by specifying [.flush]. This keeps the worker
- * abstraction generic and reusable.
- *
- * e.g. A database destination's flush function likely involves parsing the stream into SQL
- * statements.
- *
- * There are 2 different destination types as of this writing:
- *
- * * 1. Destinations that upload files. This includes warehouses and databases.
- * * 2. Destinations that upload data streams. This mostly includes various Cloud storages. This
- * will include reverse-ETL in the future
- *
- * In both cases, the simplest way to model the incoming data is as a stream.
+ * An interface meant to be used with {@link FlushWorkers}. <p> A destination instructs workers how
+ * to write data by specifying {@link #flush(StreamDescriptor, Stream)}. This keeps the worker
+ * abstraction generic and reusable. <p> e.g. A database destination's flush function likely
+ * involves parsing the stream into SQL statements. <p> There are 2 different destination types as
+ * of this writing: <ul> <li>1. Destinations that upload files. This includes warehouses and
+ * databases.</li> <li>2. Destinations that upload data streams. This mostly includes various Cloud
+ * storages. This will include reverse-ETL in the future</li> </ul> In both cases, the simplest way
+ * to model the incoming data is as a stream.
  */
 interface DestinationFlushFunction {
     /**
      * Flush a batch of data to the destination.
      *
-     * @param decs the Airbyte stream the data stream belongs to
+     * @param streamDescriptor the Airbyte stream the data stream belongs to
      * @param stream a bounded [AirbyteMessage] stream ideally of [.getOptimalBatchSizeBytes] size
      * @throws Exception
      */
     @Throws(Exception::class)
     fun flush(
-        decs: StreamDescriptor,
+        streamDescriptor: StreamDescriptor,
         stream: Stream<PartialAirbyteMessage>,
     )
 
@@ -59,4 +60,23 @@ interface DestinationFlushFunction {
          * vague because I don't understand the specifics.
          */
         get() = max((10 * 1024 * 1024).toDouble(), optimalBatchSizeBytes.toDouble()).toLong()
+}
+
+@Singleton
+@Named("destinationFlushFunction")
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
+class DefaultDestinationFlushFunction : DestinationFlushFunction {
+    override fun flush(
+        streamDescriptor: StreamDescriptor,
+        stream: Stream<PartialAirbyteMessage>,
+    ) {
+        logger.info { "Using default no-op destination flush function." }
+    }
+
+    override val optimalBatchSizeBytes: Long
+        get() = 1024L
 }
