@@ -54,10 +54,10 @@ constructor(
     flusher: DestinationFlushFunction,
     private val catalog: MicronautConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
-    private val flushFailure: FlushFailure,
     private val defaultNamespace: Optional<String>,
-    workerPool: ExecutorService,
+    private val flushFailure: FlushFailure,
     private val dataTransformer: StreamAwareDataTransformer,
+    workerPool: ExecutorService,
     private val deserializationUtil: DeserializationUtil,
 ) : SerializedAirbyteMessageConsumer {
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
@@ -97,8 +97,8 @@ constructor(
         flusher,
         catalog,
         bufferManager,
-        FlushFailure(),
         defaultNamespace,
+        FlushFailure(),
     )
 
     constructor(
@@ -117,10 +117,10 @@ constructor(
         flusher,
         catalog,
         bufferManager,
-        FlushFailure(),
         defaultNamespace,
-        Executors.newFixedThreadPool(5),
+        FlushFailure(),
         dataTransformer,
+        Executors.newFixedThreadPool(5),
         DeserializationUtil(),
     )
 
@@ -140,10 +140,10 @@ constructor(
         flusher,
         catalog,
         bufferManager,
-        FlushFailure(),
         defaultNamespace,
-        workerPool,
+        FlushFailure(),
         IdentityDataTransformer(),
+        workerPool,
         DeserializationUtil(),
     )
 
@@ -155,8 +155,8 @@ constructor(
         flusher: DestinationFlushFunction,
         catalog: MicronautConfiguredAirbyteCatalog,
         bufferManager: BufferManager,
-        flushFailure: FlushFailure,
         defaultNamespace: Optional<String>,
+        flushFailure: FlushFailure,
     ) : this(
         outputRecordCollector,
         onStart,
@@ -164,10 +164,10 @@ constructor(
         flusher,
         catalog,
         bufferManager,
-        flushFailure,
         defaultNamespace,
-        Executors.newFixedThreadPool(5),
+        flushFailure,
         IdentityDataTransformer(),
+        Executors.newFixedThreadPool(5),
         DeserializationUtil(),
     )
 

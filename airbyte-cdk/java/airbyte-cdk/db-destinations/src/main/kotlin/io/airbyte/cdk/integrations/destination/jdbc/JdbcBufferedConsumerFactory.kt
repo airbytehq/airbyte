@@ -77,10 +77,10 @@ object JdbcBufferedConsumerFactory {
             ),
             micronautConfiguredAirbyteCatalog,
             BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
-            FlushFailure(),
             Optional.ofNullable(defaultNamespace),
-            Executors.newFixedThreadPool(2),
+            FlushFailure(),
             dataTransformer,
+            Executors.newFixedThreadPool(2),
             DeserializationUtil()
         )
     }
