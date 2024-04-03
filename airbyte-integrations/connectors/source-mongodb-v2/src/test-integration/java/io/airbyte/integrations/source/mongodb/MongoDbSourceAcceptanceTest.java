@@ -110,6 +110,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     otherCollection2Name = "collection_" + RandomStringUtils.randomAlphabetic(8);
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
+    System.out.println(config.asText());
     final ObjectNode databaseConfig = (ObjectNode) config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
     databaseConfig.put(MongoConstants.DATABASE_CONFIGURATION_KEY, databaseName);
     databaseConfig.put(MongoConstants.IS_TEST_CONFIGURATION_KEY, true);
@@ -511,6 +512,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
     // Re-run the sync to prove that a config error is thrown due to invalid resume token
+    List<AirbyteMessage> messages1 = runRead(configuredCatalog, state);
+    System.out.println("Message size from sync test: " + messages1.size());
     //assertThrows(Exception.class, () -> runRead(configuredCatalog, state));
   }
 
