@@ -36,7 +36,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
 
     protected abstract fun getDataSource(config: JsonNode?): DataSource?
 
-    protected val sourceOperations: JdbcCompatibleSourceOperations<*>
+    protected open val sourceOperations: JdbcCompatibleSourceOperations<*>
         /**
          * Subclasses may need to return a custom source operations if the default one does not
          * handle vendor-specific types correctly. For example, you most likely need to override
@@ -44,7 +44,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
          */
         get() = JdbcUtils.defaultSourceOperations
 
-    protected val rawSchema: String
+    protected open val rawSchema: String
         /**
          * Subclasses using a config with a nonstandard raw table schema should override this
          * method.

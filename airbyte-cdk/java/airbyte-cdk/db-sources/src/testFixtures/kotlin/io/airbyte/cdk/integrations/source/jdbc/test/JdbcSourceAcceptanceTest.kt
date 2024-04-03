@@ -110,7 +110,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @BeforeEach
     @Throws(Exception::class)
-    fun setup() {
+    open fun setup() {
         testdb = createTestDatabase()
         if (supportsSchemas()) {
             createSchemas()
@@ -178,7 +178,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
     }
 
-    protected fun maybeSetShorterConnectionTimeout(config: JsonNode?) {
+    protected open fun maybeSetShorterConnectionTimeout(config: JsonNode?) {
         // Optionally implement this to speed up test cases which will result in a connection
         // timeout.
     }
@@ -419,7 +419,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
     }
 
-    protected val airbyteMessagesReadOneColumn: List<AirbyteMessage>
+    protected open val airbyteMessagesReadOneColumn: List<AirbyteMessage>
         get() {
             val expectedMessages =
                 testMessages
@@ -472,7 +472,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
     }
 
-    protected fun getAirbyteMessagesSecondSync(streamName: String?): List<AirbyteMessage> {
+    protected open fun getAirbyteMessagesSecondSync(streamName: String?): List<AirbyteMessage> {
         return testMessages
             .stream()
             .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
@@ -513,7 +513,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
     }
 
-    protected fun getAirbyteMessagesForTablesWithQuoting(
+    protected open fun getAirbyteMessagesForTablesWithQuoting(
         streamForTableWithSpaces: ConfiguredAirbyteStream
     ): List<AirbyteMessage> {
         return testMessages
@@ -586,7 +586,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun getAirbyteMessagesCheckCursorSpaceInColumnName(
+    protected open fun getAirbyteMessagesCheckCursorSpaceInColumnName(
         streamWithSpaces: ConfiguredAirbyteStream
     ): List<AirbyteMessage> {
         val firstMessage = testMessages[0]
@@ -615,7 +615,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     @Throws(Exception::class)
-    protected fun incrementalDateCheck() {
+    protected open fun incrementalDateCheck() {
         incrementalCursorCheck(
             COL_UPDATED_AT,
             "2005-10-18",
@@ -698,7 +698,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualMessagesSecondSync.containsAll(expectedMessages))
     }
 
-    protected fun executeStatementReadIncrementallyTwice() {
+    protected open fun executeStatementReadIncrementallyTwice() {
         testdb
             .with(
                 "INSERT INTO %s (id, name, updated_at) VALUES (4, 'riker', '2006-10-19')",
@@ -710,7 +710,9 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
     }
 
-    protected fun getExpectedAirbyteMessagesSecondSync(namespace: String?): List<AirbyteMessage> {
+    protected open fun getExpectedAirbyteMessagesSecondSync(
+        namespace: String?
+    ): List<AirbyteMessage> {
         val expectedMessages: MutableList<AirbyteMessage> = ArrayList()
         expectedMessages.add(
             AirbyteMessage()
@@ -767,7 +769,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    protected fun testReadMultipleTablesIncrementally() {
+    protected open fun testReadMultipleTablesIncrementally() {
         val tableName2 = TABLE_NAME + 2
         val streamName2 = streamName() + 2
         val fqTableName2 = getFullyQualifiedTableName(tableName2)
@@ -865,7 +867,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualMessagesFirstSync.containsAll(expectedMessagesFirstSync))
     }
 
-    protected fun getAirbyteMessagesSecondStreamWithNamespace(
+    protected open fun getAirbyteMessagesSecondStreamWithNamespace(
         streamName2: String?
     ): List<AirbyteMessage> {
         return testMessages
@@ -1105,7 +1107,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
     }
 
-    protected fun getStateData(airbyteMessage: AirbyteMessage, streamName: String): JsonNode {
+    protected open fun getStateData(airbyteMessage: AirbyteMessage, streamName: String): JsonNode {
         for (stream in airbyteMessage.state.data["streams"]) {
             if (stream["stream_name"].asText() == streamName) {
                 return stream
@@ -1174,7 +1176,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
     }
 
-    protected fun buildStreamState(
+    protected open fun buildStreamState(
         configuredAirbyteStream: ConfiguredAirbyteStream,
         cursorField: String?,
         cursorValue: String?
@@ -1202,7 +1204,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         return catalog
     }
 
-    protected fun getCatalog(defaultNamespace: String?): AirbyteCatalog {
+    protected open fun getCatalog(defaultNamespace: String?): AirbyteCatalog {
         return AirbyteCatalog()
             .withStreams(
                 java.util.List.of(
@@ -1248,7 +1250,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
     }
 
-    protected val testMessages: List<AirbyteMessage>
+    protected open val testMessages: List<AirbyteMessage>
         get() =
             java.util.List.of(
                 AirbyteMessage()
@@ -1603,53 +1605,61 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     companion object {
-        @JvmStatic protected var SCHEMA_NAME: String = "jdbc_integration_test1"
-        protected var SCHEMA_NAME2: String = "jdbc_integration_test2"
-        protected var TEST_SCHEMAS: Set<String> = java.util.Set.of(SCHEMA_NAME, SCHEMA_NAME2)
+        @JvmField val SCHEMA_NAME: String = "jdbc_integration_test1"
+        @JvmField val SCHEMA_NAME2: String = "jdbc_integration_test2"
+        @JvmField val TEST_SCHEMAS: Set<String> = java.util.Set.of(SCHEMA_NAME, SCHEMA_NAME2)
 
-        protected var TABLE_NAME: String = "id_and_name"
-        protected var TABLE_NAME_WITH_SPACES: String = "id and name"
-        protected var TABLE_NAME_WITHOUT_PK: String = "id_and_name_without_pk"
-        protected var TABLE_NAME_COMPOSITE_PK: String = "full_name_composite_pk"
-        protected var TABLE_NAME_WITHOUT_CURSOR_TYPE: String = "table_without_cursor_type"
-        protected var TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE: String = "table_with_null_cursor_type"
+        @JvmField val TABLE_NAME: String = "id_and_name"
+        @JvmField val TABLE_NAME_WITH_SPACES: String = "id and name"
+        @JvmField val TABLE_NAME_WITHOUT_PK: String = "id_and_name_without_pk"
+        @JvmField val TABLE_NAME_COMPOSITE_PK: String = "full_name_composite_pk"
+        @JvmField val TABLE_NAME_WITHOUT_CURSOR_TYPE: String = "table_without_cursor_type"
+        @JvmField val TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE: String = "table_with_null_cursor_type"
 
         // this table is used in testing incremental sync with concurrent insertions
-        protected var TABLE_NAME_AND_TIMESTAMP: String = "name_and_timestamp"
+        @JvmField val TABLE_NAME_AND_TIMESTAMP: String = "name_and_timestamp"
 
-        protected var COL_ID: String = "id"
-        protected var COL_NAME: String = "name"
-        protected var COL_UPDATED_AT: String = "updated_at"
-        protected var COL_FIRST_NAME: String = "first_name"
-        protected var COL_LAST_NAME: String = "last_name"
-        protected var COL_LAST_NAME_WITH_SPACE: String = "last name"
-        protected var COL_CURSOR: String = "cursor_field"
-        protected var COL_TIMESTAMP: String = "timestamp"
-        protected var COL_TIMESTAMP_TYPE: String = "TIMESTAMP"
-        protected var ID_VALUE_1: Number = 1
-        protected var ID_VALUE_2: Number = 2
-        protected var ID_VALUE_3: Number = 3
-        protected var ID_VALUE_4: Number = 4
-        protected var ID_VALUE_5: Number = 5
+        @JvmField val COL_ID: String = "id"
+        @JvmField val COL_NAME: String = "name"
+        @JvmField val COL_UPDATED_AT: String = "updated_at"
+        @JvmField val COL_FIRST_NAME: String = "first_name"
+        @JvmField val COL_LAST_NAME: String = "last_name"
+        @JvmField val COL_LAST_NAME_WITH_SPACE: String = "last name"
+        @JvmField val COL_CURSOR: String = "cursor_field"
+        @JvmField val COL_TIMESTAMP: String = "timestamp"
+        @JvmField val ID_VALUE_1: Number = 1
+        @JvmField val ID_VALUE_2: Number = 2
+        @JvmField val ID_VALUE_3: Number = 3
+        @JvmField val ID_VALUE_4: Number = 4
+        @JvmField val ID_VALUE_5: Number = 5
 
-        protected var DROP_SCHEMA_QUERY: String = "DROP SCHEMA IF EXISTS %s CASCADE"
+        @JvmField val DROP_SCHEMA_QUERY: String = "DROP SCHEMA IF EXISTS %s CASCADE"
+        @JvmField
+        val CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY: String =
+            "CREATE TABLE %s (%s VARCHAR(20));"
+        @JvmField
+        val INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY: String =
+            "INSERT INTO %s VALUES('Hello world :)');"
+        @JvmField
+        val INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY: String =
+            "INSERT INTO %s (name, timestamp) VALUES ('%s', '%s')"
+
+        @JvmField protected var COL_TIMESTAMP_TYPE: String = "TIMESTAMP"
+        @JvmField
         protected var COLUMN_CLAUSE_WITH_PK: String =
             "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL"
+        @JvmField
         protected var COLUMN_CLAUSE_WITHOUT_PK: String =
             "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL"
+        @JvmField
         protected var COLUMN_CLAUSE_WITH_COMPOSITE_PK: String =
             "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL"
 
         @JvmField
         var CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY: String = "CREATE TABLE %s (%s bit NOT NULL);"
         @JvmField var INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY: String = "INSERT INTO %s VALUES(0);"
-        protected var CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY: String =
-            "CREATE TABLE %s (%s VARCHAR(20));"
-        protected var INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY: String =
-            "INSERT INTO %s VALUES('Hello world :)');"
-        protected var INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY: String =
-            "INSERT INTO %s (name, timestamp) VALUES ('%s', '%s')"
 
+        @JvmStatic
         protected fun setEmittedAtToNull(messages: Iterable<AirbyteMessage>) {
             for (actualMessage in messages) {
                 if (actualMessage.record != null) {

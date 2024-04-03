@@ -38,6 +38,7 @@ object TestingNamespaces {
      *
      * @return convention-compliant namespace
      */
+    @JvmStatic
     @JvmOverloads
     fun generate(prefix: String? = null): String {
         val userDefinedPrefix = if (prefix != null) prefix + "_" else ""
@@ -58,6 +59,7 @@ object TestingNamespaces {
      * @param namespace to check
      * @return true if the namespace is older than 2 days, otherwise false
      */
+    @JvmStatic
     fun isOlderThan2Days(namespace: String): Boolean {
         return isOlderThan(namespace, 2, ChronoUnit.DAYS)
     }

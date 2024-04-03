@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: badc5925-0485-42be-8caa-b34096cb71b5
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-surveymonkey
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   githubIssueLabel: source-surveymonkey
@@ -30,5 +30,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

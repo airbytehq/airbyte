@@ -15,6 +15,9 @@ compileKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
+spotbugsTestFixtures.enabled = false
+spotbugsTest.enabled = false
+
 
 // Convert yaml to java: relationaldb.models
 jsonSchema2Pojo {
@@ -49,6 +52,7 @@ dependencies {
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:core')
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
 
+    testFixturesImplementation ('io.airbyte:airbyte-api:0.55.2') { transitive = false }
     testFixturesImplementation 'net.sourceforge.argparse4j:argparse4j:0.9.0'
     testFixturesImplementation 'io.swagger:swagger-annotations:1.6.13'
     testFixturesImplementation 'org.hamcrest:hamcrest-all:1.3'

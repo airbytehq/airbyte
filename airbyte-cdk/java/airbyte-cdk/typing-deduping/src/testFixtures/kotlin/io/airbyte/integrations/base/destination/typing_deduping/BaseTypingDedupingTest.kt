@@ -183,7 +183,7 @@ abstract class BaseTypingDedupingTest {
      *
      * @return
      */
-    protected fun disableFinalTableComparison(): Boolean {
+    protected open fun disableFinalTableComparison(): Boolean {
         return false
     }
 
@@ -560,7 +560,7 @@ abstract class BaseTypingDedupingTest {
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
-        val trimmedSchema = SCHEMA!!.deepCopy<JsonNode>()
+        val trimmedSchema = SCHEMA.deepCopy<JsonNode>()
         (trimmedSchema["properties"] as ObjectNode).remove("name")
         stream.jsonSchema = trimmedSchema
 
@@ -573,7 +573,7 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
                 .stream()
                 .peek { record: JsonNode ->
-                    (record as ObjectNode).remove(sqlGenerator.buildColumnId("name")!!.name)
+                    (record as ObjectNode).remove(sqlGenerator.buildColumnId("name").name)
                 }
                 .toList()
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
@@ -711,7 +711,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    fun identicalNameSimultaneousSync() {
+    open fun identicalNameSimultaneousSync() {
         val namespace1 = streamNamespace + "_1"
         val catalog1 =
             io.airbyte.protocol.models.v0
@@ -816,7 +816,7 @@ abstract class BaseTypingDedupingTest {
     @Test
     @Throws(Exception::class)
     fun incrementalDedupChangeCursor() {
-        val mangledSchema = SCHEMA!!.deepCopy<JsonNode>()
+        val mangledSchema = SCHEMA.deepCopy<JsonNode>()
         (mangledSchema["properties"] as ObjectNode).remove("updated_at")
         (mangledSchema["properties"] as ObjectNode).set<JsonNode>(
             "old_cursor",
@@ -945,6 +945,7 @@ abstract class BaseTypingDedupingTest {
      * !!!!!! WARNING !!!!!! The code below was mostly copypasted from DestinationAcceptanceTest. If you
      * make edits here, you probably want to also edit there.
      */
+    @JvmOverloads
     @Throws(Exception::class)
     protected fun runSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
@@ -1066,9 +1067,15 @@ abstract class BaseTypingDedupingTest {
         return Companion.readMessages(filename, streamNamespace, streamName)
     }
 
+    protected fun readRecords(filename: String): List<JsonNode> {
+        return Companion.readRecords(filename)
+    }
+
+    protected val schema: JsonNode = SCHEMA
+
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(BaseTypingDedupingTest::class.java)
-        protected var SCHEMA: JsonNode? = null
+        protected val SCHEMA: JsonNode
 
         init {
             try {
