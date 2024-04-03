@@ -91,7 +91,7 @@ class PerPartitionCursor(Cursor):
             StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), record
         )
 
-    def close_slice(self, stream_slice: StreamSlice, *args) -> None:
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         try:
             self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(
                 StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args
