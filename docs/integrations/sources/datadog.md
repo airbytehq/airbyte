@@ -71,12 +71,13 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                                                      |
-|:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------|
-| 0.4.0   | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999)  | Add `monitors` and `service_level_objectives` Streams |
-| 0.3.0   | 2023-08-27 | [29885](https://github.com/airbytehq/airbyte/pull/29885)  | Migrate to low code                                                          |
-| 0.2.2   | 2023-07-10 | [28089](https://github.com/airbytehq/airbyte/pull/28089)  | Additional stream and query details in response                              |
-| 0.2.1   | 2023-06-28 | [26534](https://github.com/airbytehq/airbyte/pull/26534)  | Support multiple query streams and pulling data from different datadog sites |
-| 0.2.0   | 2023-06-28 | [27784](https://github.com/airbytehq/airbyte/pull/27784)  | Add necessary fields to schemas                                              |
-| 0.1.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562)  | Update testing dependencies                                                  |
-| 0.1.0   | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150)  | New Source: Datadog                                                          |
+| Version | Date       | Pull Request                                              | Subject                                                                                                                                                                |
+|:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.1 | 2024-04-02 | [0](https://github.com/airbytehq/airbyte/pull/0) | Base image migration: remove Dockerfile and use the python-connector-base image, use poetry to manage dependencies, and stop using last_records interpolation variable |
+| 0.4.0 | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999) | Add `monitors` and `service_level_objectives` Streams                                                                                                                  |
+| 0.3.0 | 2023-08-27 | [29885](https://github.com/airbytehq/airbyte/pull/29885) | Migrate to low code                                                                                                                                                    |
+| 0.2.2 | 2023-07-10 | [28089](https://github.com/airbytehq/airbyte/pull/28089) | Additional stream and query details in response                                                                                                                        |
+| 0.2.1 | 2023-06-28 | [26534](https://github.com/airbytehq/airbyte/pull/26534) | Support multiple query streams and pulling data from different datadog sites                                                                                           |
+| 0.2.0 | 2023-06-28 | [27784](https://github.com/airbytehq/airbyte/pull/27784) | Add necessary fields to schemas                                                                                                                                        |
+| 0.1.1 | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562) | Update testing dependencies                                                                                                                                            |
+| 0.1.0 | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150) | New Source: Datadog                                                                                                                                                    |
