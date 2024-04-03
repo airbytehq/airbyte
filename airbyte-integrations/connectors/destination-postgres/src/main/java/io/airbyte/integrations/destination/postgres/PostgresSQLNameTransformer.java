@@ -37,7 +37,7 @@ public class PostgresSQLNameTransformer extends StandardNameTransformer {
    * explicitly, so that we can detect e.g. name collisions.
    */
   private String truncate(String str) {
-    return str.substring(0, 64);
+    return str.substring(0, Math.min(str.length(), 64));
   }
 
 }

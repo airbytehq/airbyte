@@ -1657,41 +1657,45 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val rawNamespace = "a".repeat(512) + randomSuffix
         val finalNamespace = "b".repeat(512) + randomSuffix
         val streamName = "c".repeat(512) + randomSuffix
-        val columnName1 = "d".repeat(512) + randomSuffix
-        val columnName2 = "e".repeat(512) + randomSuffix
+        val baseColumnName = "d".repeat(512) + randomSuffix
+        val columnName1 = baseColumnName + "1"
+        val columnName2 = baseColumnName + "2"
 
-        try {
-            val catalogParser = CatalogParser(generator!!, rawNamespace)
-            val stream = catalogParser.parseCatalog(
-                ConfiguredAirbyteCatalog().withStreams(
-                    listOf(
-                        ConfiguredAirbyteStream()
-                            .withStream(
-                                AirbyteStream()
-                                    .withName(streamName)
-                                    .withNamespace(rawNamespace)
-                                    .withJsonSchema(
-                                        Jsons.jsonNode(
-                                            mapOf(
-                                                "type" to "object",
-                                                "properties" to mapOf(
-                                                    columnName1 to mapOf("type" to "string"),
-                                                    columnName2 to mapOf("type" to "string")
-                                                )
+        val catalogParser = CatalogParser(generator!!, rawNamespace)
+        val stream = catalogParser.parseCatalog(
+            ConfiguredAirbyteCatalog().withStreams(
+                listOf(
+                    ConfiguredAirbyteStream()
+                        .withStream(
+                            AirbyteStream()
+                                .withName(streamName)
+                                .withNamespace(rawNamespace)
+                                .withJsonSchema(
+                                    Jsons.jsonNode(
+                                        mapOf(
+                                            "type" to "object",
+                                            "properties" to mapOf(
+                                                columnName1 to mapOf("type" to "string"),
+                                                columnName2 to mapOf("type" to "string")
                                             )
                                         )
                                     )
-                            )
-                            .withSyncMode(SyncMode.INCREMENTAL)
-                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    )
+                                )
+                        )
+                        .withSyncMode(SyncMode.INCREMENTAL)
+                        .withDestinationSyncMode(DestinationSyncMode.APPEND)
                 )
-            ).streams[0]
+            )
+        ).streams[0]
 
-            val streamId = stream.id
-            val columnId1: ColumnId = stream.columns?.filter { columnName1 == it.key.originalName }?.keys?.first()!!
-            val columnId2: ColumnId = stream.columns?.filter { columnName2 == it.key.originalName }?.keys?.first()!!
+        val streamId = stream.id
+        val columnId1: ColumnId = stream.columns?.filter { columnName1 == it.key.originalName }?.keys?.first()!!
+        val columnId2: ColumnId = stream.columns?.filter { columnName2 == it.key.originalName }?.keys?.first()!!
+        LOGGER.info("Trying to use column names {} AND {}", columnId1.name, columnId2.name)
 
+        try {
+            createNamespace(rawNamespace)
+            createNamespace(finalNamespace)
             createRawTable(streamId)
             insertRawTableRecords(
                 streamId,
@@ -1715,6 +1719,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
             val rawRecords = dumpRawTableRecords(streamId)
             val finalRecords = dumpFinalTableRecords(streamId, "")
+            LOGGER.info("Dumped raw records: {}", rawRecords)
+            LOGGER.info("Dumped final records: {}", finalRecords)
             assertAll(
                 { Assertions.assertEquals(1, rawRecords.size) },
                 { Assertions.assertEquals(1, finalRecords.size) },
