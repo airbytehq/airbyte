@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import pendulum
 from itertools import product
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -99,6 +100,11 @@ class SourceBingAds(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
+            # end_date must be equal or after start_date
+            if "reports_end_date" in config and "reports_start_date" in config:
+                if pendulum.parse(config["reports_end_date"]) < pendulum.parse(config["reports_start_date"]):
+                    raise ValueError("end_date must be equal or after start_date.")
+            
             client = Client(**config)
             accounts = Accounts(client, config)
             account_ids = set()

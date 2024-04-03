@@ -55,6 +55,7 @@ class Client:
         self,
         tenant_id: str,
         reports_start_date: str = None,
+        reports_end_date: str = None,
         developer_token: str = None,
         client_id: str = None,
         client_secret: str = None,
@@ -71,6 +72,10 @@ class Client:
         self.oauth: OAuthTokens = self._get_access_token()
         if reports_start_date:
             self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
+        if reports_end_date:
+            self.reports_end_date = pendulum.parse(reports_end_date).astimezone(tz=timezone.utc) 
+        else:
+            self.reports_end_date = datetime.utcnow()
 
     def _get_auth_client(self, client_id: str, tenant_id: str, client_secret: str = None) -> OAuthWebAuthCodeGrant:
         # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
