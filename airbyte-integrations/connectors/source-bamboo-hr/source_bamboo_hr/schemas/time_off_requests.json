@@ -54,6 +54,30 @@
                 "string"
             ],
             "default": {}
+        },
+        "type": {
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "amount": {
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "actions": {
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "notes": {
+            "type": [
+                "null",
+                "object"
+            ]
         }
     }
 }
