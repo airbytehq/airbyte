@@ -17,7 +17,6 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.function.Function
 import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -68,9 +67,9 @@ object TestHarnessUtils {
         }
     }
 
-    fun wait(process: Process?) {
+    fun wait(process: Process) {
         try {
-            process!!.waitFor()
+            process.waitFor()
         } catch (e: InterruptedException) {
             LOGGER.error("Exception while while waiting for process to finish", e)
         }
@@ -118,10 +117,10 @@ object TestHarnessUtils {
     fun getMostRecentConfigControlMessage(
         messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
     ): Optional<AirbyteControlConnectorConfigMessage> {
-        return messagesByType!!
-            .getOrDefault(AirbyteMessage.Type.CONTROL, ArrayList())!!
+        return messagesByType
+            .getOrDefault(AirbyteMessage.Type.CONTROL, ArrayList())
             .stream()
-            .map { obj: AirbyteMessage? -> obj!!.control }
+            .map { obj: AirbyteMessage -> obj.control }
             .filter { control: AirbyteControlMessage ->
                 control.type == AirbyteControlMessage.Type.CONNECTOR_CONFIG
             }
@@ -136,10 +135,10 @@ object TestHarnessUtils {
     private fun getTraceMessageFromMessagesByType(
         messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
     ): Optional<AirbyteTraceMessage> {
-        return messagesByType!!
-            .getOrDefault(AirbyteMessage.Type.TRACE, ArrayList())!!
+        return messagesByType
+            .getOrDefault(AirbyteMessage.Type.TRACE, ArrayList())
             .stream()
-            .map { obj: AirbyteMessage? -> obj!!.trace }
+            .map { obj: AirbyteMessage -> obj.trace }
             .filter { trace: AirbyteTraceMessage -> trace.type == AirbyteTraceMessage.Type.ERROR }
             .findFirst()
     }
@@ -155,16 +154,16 @@ object TestHarnessUtils {
 
     @Throws(IOException::class)
     fun getMessagesByType(
-        process: Process?,
+        process: Process,
         streamFactory: AirbyteStreamFactory,
         timeOut: Int
     ): Map<AirbyteMessage.Type, List<AirbyteMessage>> {
         val messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
-        process!!.inputStream.use { stdout ->
+        process.inputStream.use { stdout ->
             messagesByType =
                 streamFactory
                     .create(IOs.newBufferedReader(stdout))
-                    .collect(Collectors.groupingBy(Function { obj: AirbyteMessage -> obj!!.type }))
+                    .collect(Collectors.groupingBy { obj: AirbyteMessage -> obj.type })
             gentleClose(process, timeOut.toLong(), TimeUnit.MINUTES)
             return messagesByType
         }
@@ -193,20 +192,13 @@ object TestHarnessUtils {
     fun mapStreamNamesToSchemas(
         syncInput: StandardSyncInput
     ): Map<AirbyteStreamNameNamespacePair, JsonNode> {
-        return syncInput.catalog.streams
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    Function { k: ConfiguredAirbyteStream ->
-                        AirbyteStreamNameNamespacePair.fromAirbyteStream(k.stream)
-                    },
-                    Function { v: ConfiguredAirbyteStream -> v.stream.jsonSchema }
-                )
-            )
+        return syncInput.catalog.streams.associate {
+            AirbyteStreamNameNamespacePair.fromAirbyteStream(it.stream) to it.stream.jsonSchema
+        }
     }
 
     @Throws(IOException::class)
-    fun getStdErrFromErrorStream(errorStream: InputStream?): String {
+    fun getStdErrFromErrorStream(errorStream: InputStream): String {
         val reader = BufferedReader(InputStreamReader(errorStream, StandardCharsets.UTF_8))
         val errorOutput = StringBuilder()
         var line: String?
@@ -218,8 +210,8 @@ object TestHarnessUtils {
     }
 
     @Throws(TestHarnessException::class, IOException::class)
-    fun throwWorkerException(errorMessage: String, process: Process?) {
-        val stderr = getStdErrFromErrorStream(process!!.errorStream)
+    fun throwWorkerException(errorMessage: String, process: Process) {
+        val stderr = getStdErrFromErrorStream(process.errorStream)
         if (stderr.isEmpty()) {
             throw TestHarnessException(errorMessage)
         } else {
