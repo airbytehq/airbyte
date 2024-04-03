@@ -30,7 +30,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
-  
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, getContainerModifiers())
@@ -86,7 +86,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s.%s", testdb.getDatabaseName(), STREAM_NAME2),
-                    testdb.getDatabaseName(),
+                testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
