@@ -429,11 +429,23 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
         ],
         [
             StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.REGRESSION_TEST,
+                step=RegressionTest(context),
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+                args=lambda results: {
+                    "new_connector_container": results["BUILD_CONNECTOR_IMAGE"].output[LOCAL_BUILD_PLATFORM],
+                    "original_dependencies": results["POETRY_INIT"].output[0],
+                    "original_dev_dependencies": results["POETRY_INIT"].output[1],
+                },
+            )
+        ],
+        [
+            StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
                 step=BumpDockerImageTagInMetadata(
                     context, await context.get_repo_dir(include=[str(context.connector.code_directory)]), new_version, export_metadata=True
                 ),
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
             )
         ],
         [
@@ -447,12 +459,12 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
                     "0",
                     export_docs=True,
                 ),
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
             )
         ],
         [
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.UPDATE_README, step=UpdateReadMe(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]
+                id=CONNECTOR_TEST_STEP_ID.UPDATE_README, step=UpdateReadMe(context), depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST]
             )
         ],
     ]
