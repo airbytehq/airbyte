@@ -108,13 +108,10 @@ streams:
                     - 400
                   error_message_contains: "The start_cursor provided is invalid:"
         request_body_json:
-          sort: '{ "direction": "ascending", "timestamp": "last_edited_time" }'
+          sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
           filter: '{ "property": "object", "value": "database" }'
       record_selector:
         type: RecordSelector
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_notion.components.NotionDataFeedFilter
         extractor:
           type: DpathExtractor
           field_path:
@@ -145,6 +142,7 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      is_data_feed: true
     transformations:
       - type: CustomTransformation
         class_name: source_notion.components.NotionPropertiesTransformation
@@ -187,13 +185,10 @@ streams:
                     - 400
                   error_message_contains: "The start_cursor provided is invalid:"
         request_body_json:
-          sort: '{ "direction": "ascending", "timestamp": "last_edited_time" }'
+          sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
           filter: '{ "property": "object", "value": "page" }'
       record_selector:
         type: RecordSelector
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_notion.components.NotionDataFeedFilter
         extractor:
           type: DpathExtractor
           field_path:
@@ -224,6 +219,7 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      is_data_feed: true
     transformations:
       - type: CustomTransformation
         class_name: source_notion.components.NotionPropertiesTransformation
@@ -348,7 +344,7 @@ streams:
                               error_message_contains: "The start_cursor provided is invalid:"
                     request_body_json:
                       sort: >-
-                        { "direction": "ascending", "timestamp":
+                        { "direction": "descending", "timestamp":
                         "last_edited_time" }
                       filter: '{ "property": "object", "value": "page" }'
                   record_selector:
@@ -383,3 +379,4 @@ streams:
                     type: MinMaxDatetime
                     datetime: "{{ config['start_date'] }}"
                     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+                  is_data_feed: true
