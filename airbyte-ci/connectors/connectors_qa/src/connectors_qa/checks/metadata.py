@@ -7,7 +7,8 @@ import toml
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
-from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load  # type: ignore
+from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, \
+    validate_and_load  # type: ignore
 
 
 class MetadataCheck(Check):
@@ -59,7 +60,7 @@ class CheckConnectorLanguageTag(MetadataCheck):
 
     def get_expected_language_tag(self, connector: Connector) -> str:
         if (connector.code_directory / consts.SETUP_PY_FILE_NAME).exists() or (
-            connector.code_directory / consts.PYPROJECT_FILE_NAME
+                connector.code_directory / consts.PYPROJECT_FILE_NAME
         ).exists():
             return self.PYTHON_LANGUAGE_TAG
         elif (connector.code_directory / consts.GRADLE_FILE_NAME).exists():
@@ -110,7 +111,8 @@ class CheckConnectorCDKTag(MetadataCheck):
         FILE = "cdk:python-file-based"
 
     def get_expected_cdk_tag(self, connector: Connector) -> str:
-        manifest_file = connector.code_directory / connector.technical_name.replace("-", "_") / consts.LOW_CODE_MANIFEST_FILE_NAME
+        manifest_file = connector.code_directory / connector.technical_name.replace("-",
+                                                                                    "_") / consts.LOW_CODE_MANIFEST_FILE_NAME
         pyproject_file = connector.code_directory / consts.PYPROJECT_FILE_NAME
         setup_py_file = connector.code_directory / consts.SETUP_PY_FILE_NAME
         if manifest_file.exists():
@@ -149,8 +151,33 @@ class CheckConnectorCDKTag(MetadataCheck):
         )
 
 
+class CheckConnectorMaxSecondsBetweenMessagesValue(MetadataCheck):
+    name = "Certified connector must have a value filled out for maxSecondsBetweenMessages in metadata"
+    description = f"Certified connectors must have a value filled out for maxSecondsBetweenMessages in metadata. It must be set in the 'data' field in {consts.METADATA_FILE_NAME}"
+    applies_to_connector_languages = [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]
+
+    @staticmethod
+    def check_connector_certified(connector: Connector) -> bool:
+        connector_sl_value = connector.metadata.get("ab_internal", {}).get("sl", 0)
+        return connector_sl_value >= 200
+
+    def _run(self, connector: Connector) -> CheckResult:
+        if self.check_connector_certified(connector):
+            max_seconds_between_messages = connector.metadata.get("maxSecondsBetweenMessages")
+            if not max_seconds_between_messages:
+                return self.fail(
+                    connector=connector,
+                    message="Missing required for certified connectors field 'maxSecondsBetweenMessages'",
+                )
+        return self.pass_(
+            connector=connector,
+            message="Value for maxSecondsBetweenMessages is set",
+        )
+
+
 ENABLED_CHECKS = [
     ValidateMetadata(),
     CheckConnectorLanguageTag(),
     CheckConnectorCDKTag(),
+    CheckConnectorMaxSecondsBetweenMessagesValue(),
 ]
