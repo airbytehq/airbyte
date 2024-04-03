@@ -36,10 +36,10 @@ spotbugsTest.enabled = false
 spotbugsTestFixtures.enabled = false
 
 dependencies {
-    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
-    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-    implementation project(':airbyte-cdk:java:airbyte-cdk:db-destinations')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations')
 
     // Re-export dependencies for gcs-destinations.
     api 'com.amazonaws:aws-java-sdk-s3:1.12.647'
@@ -54,14 +54,14 @@ dependencies {
     api 'org.apache.parquet:parquet-avro:1.13.1'
     runtimeOnly 'com.hadoop.gplcompression:hadoop-lzo:0.4.20'
 
-    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:dependencies')
-    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))
-    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:core')
-    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
-    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
-    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:db-destinations')
-    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-destinations'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations'))
 
     testImplementation 'org.mockito:mockito-inline:5.2.0'
 }
