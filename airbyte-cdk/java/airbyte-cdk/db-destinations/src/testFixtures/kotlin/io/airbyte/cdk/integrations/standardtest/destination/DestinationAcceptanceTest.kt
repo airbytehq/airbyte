@@ -804,7 +804,7 @@ abstract class DestinationAcceptanceTest {
 
         var messages =
             MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
+                    DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
                         ProtocolVersion.V0
                     )
                 )
@@ -827,7 +827,7 @@ abstract class DestinationAcceptanceTest {
         // timestamps.
         messages =
             MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
+                    DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
                         ProtocolVersion.V0
                     )
                 )

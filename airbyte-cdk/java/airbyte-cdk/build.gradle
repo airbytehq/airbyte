@@ -12,6 +12,12 @@ allprojects {
 
     project.version = cdkVersion
 
+    dependencies {
+        ksp "info.picocli:picocli-codegen:${libs.versions.picocli.get()}"
+        ksp "io.micronaut:micronaut-inject-java:${libs.versions.micronaut.inject.get()}"
+        ksp "io.micronaut:micronaut-inject-kotlin:${libs.versions.micronaut.inject.get()}"
+    }
+
     publishing {
         publications {
             cdk(MavenPublication) {
