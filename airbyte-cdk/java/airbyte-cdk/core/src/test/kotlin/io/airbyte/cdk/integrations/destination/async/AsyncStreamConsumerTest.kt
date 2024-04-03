@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.async
 
 import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.core.command.option.DefaultMicronautConfiguredAirbyteCatalog
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
@@ -141,13 +142,14 @@ class AsyncStreamConsumerTest {
         flushFailure = Mockito.mock(FlushFailure::class.java)
         deserializationUtil = DeserializationUtil()
         streamAwareDataTransformer = IdentityDataTransformer()
+        val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(CATALOG)
         consumer =
             AsyncStreamConsumer(
                 outputRecordCollector = outputRecordCollector,
                 onStart = onStart,
                 onClose = onClose,
                 flusher = flushFunction,
-                catalog = CATALOG,
+                catalog = micronautConfiguredAirbyteCatalog,
                 bufferManager = BufferManager(),
                 flushFailure = flushFailure,
                 defaultNamespace = Optional.of("default_ns"),
@@ -261,13 +263,14 @@ class AsyncStreamConsumerTest {
     internal fun testBackPressure() {
         flushFunction = Mockito.mock(DestinationFlushFunction::class.java)
         flushFailure = Mockito.mock(FlushFailure::class.java)
+        val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(CATALOG)
         consumer =
             AsyncStreamConsumer(
                 {},
                 Mockito.mock(OnStartFunction::class.java),
                 Mockito.mock(OnCloseFunction::class.java),
                 flushFunction,
-                CATALOG,
+                micronautConfiguredAirbyteCatalog,
                 BufferManager((1024 * 10).toLong()),
                 flushFailure,
                 Optional.of("default_ns"),

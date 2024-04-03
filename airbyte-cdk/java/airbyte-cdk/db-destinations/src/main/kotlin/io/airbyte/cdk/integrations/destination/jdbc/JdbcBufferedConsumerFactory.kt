@@ -5,6 +5,7 @@ package io.airbyte.cdk.integrations.destination.jdbc
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
+import io.airbyte.cdk.core.command.option.DefaultMicronautConfiguredAirbyteCatalog
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
@@ -66,6 +67,7 @@ object JdbcBufferedConsumerFactory {
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs =
             createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired)
+        val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(catalog)
         return AsyncStreamConsumer(
             outputRecordCollector,
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
@@ -73,7 +75,7 @@ object JdbcBufferedConsumerFactory {
             JdbcInsertFlushFunction(
                 recordWriterFunction(database, sqlOperations, writeConfigs, catalog)
             ),
-            catalog,
+            micronautConfiguredAirbyteCatalog,
             BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
             FlushFailure(),
             Optional.ofNullable(defaultNamespace),
