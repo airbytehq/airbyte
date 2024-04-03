@@ -4,11 +4,14 @@
 
 package io.airbyte.cdk.integrations.destination.async.buffers
 
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.util.Optional
 import java.util.concurrent.ConcurrentMap
 
@@ -16,6 +19,12 @@ import java.util.concurrent.ConcurrentMap
  * Represents the minimal interface over the underlying buffer queues required for enqueue
  * operations with the aim of minimizing lower-level queue access.
  */
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
 class BufferEnqueue(
     private val memoryManager: GlobalMemoryManager,
     private val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>,

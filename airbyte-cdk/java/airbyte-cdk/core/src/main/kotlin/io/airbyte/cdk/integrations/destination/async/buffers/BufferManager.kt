@@ -5,11 +5,14 @@
 package io.airbyte.cdk.integrations.destination.async.buffers
 
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.integrations.destination.async.AirbyteFileUtils
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Executors
@@ -19,9 +22,13 @@ import org.apache.commons.io.FileUtils
 
 private val logger = KotlinLogging.logger {}
 
-class BufferManager
-@JvmOverloads
-constructor(
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
+class BufferManager (
     maxMemory: Long = (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO).toLong(),
 ) {
     @get:VisibleForTesting val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>
