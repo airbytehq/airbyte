@@ -183,50 +183,22 @@ def test_user_insights_read(api, config, user_insight_data, requests_mock):
     assert records
 
 
-def test_user_lifetime_insights_read(api, config, user_insight_data, requests_mock):
+def test_user_lifetime_insights_read(api, config, user_lifetime_insight_data, requests_mock):
     test_id = "test_id"
 
     stream = UserLifetimeInsights(api=api)
 
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_insight_data}])
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_lifetime_insight_data}])
 
     records = read_full_refresh(stream)
-    assert records == [
-        {
-            "page_id": "act_unknown_account",
-            "business_account_id": "test_id",
-            "metric": "impressions",
-            "date": "2020-05-04T07:00:00+0000",
-            "value": 4,
-        }
-    ]
-
-
-@pytest.mark.parametrize(
-    "values,expected",
-    [
-        ({"end_time": "2020-05-04T07:00:00+0000", "value": "test_value"}, {"date": "2020-05-04T07:00:00+0000", "value": "test_value"}),
-        ({"value": "test_value"}, {"date": None, "value": "test_value"}),
-        ({"end_time": "2020-05-04T07:00:00+0000"}, {"date": "2020-05-04T07:00:00+0000", "value": None}),
-        ({}, {"date": None, "value": None}),
-    ],
-    ids=[
-        "`end_time` and `value` are present",
-        "no `end_time`, but `value` is present",
-        "`end_time` is present, but no `value`",
-        "no `end_time` and no `value`",
-    ],
-)
-def test_user_lifetime_insights_read_with_missing_keys(api, user_lifetime_insights, values, expected):
-    """
-    This tests shows the behaviour of the `read_records` when either `end_time` or `value` key is not present in the data.
-    """
-    stream = UserLifetimeInsights(api=api)
-    user_lifetime_insights(values)
-    test_slice = {"account": {"page_id": 1, "instagram_business_account": user_lifetime_insights}}
-    for insight in stream.read_records(sync_mode=None, stream_slice=test_slice):
-        assert insight["date"] == expected.get("date")
-        assert insight["value"] == expected.get("value")
+    expected_record = {
+        "breakdown": "city",
+        "business_account_id": "test_id",
+        "metric": "impressions",
+        "page_id": "act_unknown_account",
+        "value": {"London, England": 22, "Sydney, New South Wales": 33}
+    }
+    assert expected_record in records
 
 
 @pytest.mark.parametrize(

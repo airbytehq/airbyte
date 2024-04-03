@@ -22,6 +22,7 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 - [Users](https://developer.genesys.cloud/useragentman/users/)
 
 ## Changelog
+
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
 | 0.1.1   | 2023-04-27 | [25598](https://github.com/airbytehq/airbyte/pull/25598) | Use region specific API server |

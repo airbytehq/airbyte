@@ -86,6 +86,8 @@ acceptance_tests:
         status: succeed
       - config_path: secrets/jsonl_newlines_config.json
         status: succeed
+      - config_path: secrets/unstructured_config.json
+        status: succeed
   discovery:
     tests:
       - config_path: secrets/config.json

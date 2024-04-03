@@ -68,7 +68,7 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
     )
 
 
-def with_integration_base_java_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
+def with_integration_base_java_and_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
     yum_packages_to_install = [
         "python3",
         "python3-devel",
@@ -81,7 +81,9 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     yum_packages_to_install += additional_yum_packages
 
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
+    assert isinstance(dbt_adapter_package, str)
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
+    assert isinstance(normalization_integration_name, str)
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 

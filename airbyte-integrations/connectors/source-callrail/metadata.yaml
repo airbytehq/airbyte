@@ -8,6 +8,10 @@ data:
   icon: callrail.svg
   license: MIT
   name: CallRail
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-callrail
   registries:
     cloud:
       enabled: false
@@ -16,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/callrail
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

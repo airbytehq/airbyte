@@ -13,7 +13,7 @@ Developer updates will be announced via our #help-connector-development Slack ch
 
 The connector builder is the right tool if the following points are met:
 * You want to integrate with a JSON-based HTTP API as a source of records
-* The API you want to integrate with doesn't exist yet as a connector in the [connector catalog](/category/sources).
+* The API you want to integrate with doesn't exist yet as a connector in the [connector catalog](/integrations/sources/).
 * The API is suitable for the connector builder as per the
 [compatibility guide](./connector-builder-compatibility.md).
 

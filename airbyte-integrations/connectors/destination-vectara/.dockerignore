@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!main.py
+!destination_vectara
+!pyproject.toml
+!poetry.lock

@@ -3,21 +3,21 @@
 #
 
 from contextlib import nullcontext as does_not_raise
-from typing import Any, Iterable, List, Mapping
+from typing import List
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    StreamDescriptor,
+    SyncMode,
+)
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, HashableStreamDescriptor
-from airbyte_cdk.sources.streams import Stream
-
-
-class StreamWithNamespace(Stream):
-    primary_key = None
-    namespace = "public"
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return {}
 
 
 @pytest.mark.parametrize(
@@ -156,7 +156,14 @@ class StreamWithNamespace(Stream):
     ),
 )
 def test_initialize_state_manager(input_stream_state, expected_stream_state, expected_error):
-    stream_to_instance_map = {"actors": StreamWithNamespace()}
+    stream_to_instance_map = {
+        "actors": AirbyteStream(
+            name="actors",
+            namespace="public",
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+        )
+    }
 
     if isinstance(input_stream_state, List):
         input_stream_state = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in list(input_stream_state)]
@@ -264,68 +271,17 @@ def test_initialize_state_manager(input_stream_state, expected_stream_state, exp
     ],
 )
 def test_get_stream_state(input_state, stream_name, namespace, expected_state):
-    stream_to_instance_map = {"users": StreamWithNamespace()}
+    stream_to_instance_map = {
+        stream_name: AirbyteStream(
+            name=stream_name, namespace=namespace, json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+        )
+    }
     state_messages = [AirbyteStateMessage.parse_obj(state_obj) for state_obj in list(input_state)]
     state_manager = ConnectorStateManager(stream_to_instance_map, state_messages)
 
     actual_state = state_manager.get_stream_state(stream_name, namespace)
 
     assert actual_state == expected_state
-
-
-@pytest.mark.parametrize(
-    "input_state, expected_legacy_state, expected_error",
-    [
-        pytest.param(
-            [AirbyteStateMessage(type=AirbyteStateType.LEGACY, data={"actresses": {"id": "seehorn_rhea"}})],
-            {"actresses": {"id": "seehorn_rhea"}},
-            does_not_raise(),
-            id="test_get_legacy_legacy_state_message",
-        ),
-        pytest.param(
-            [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="actresses", namespace="public"),
-                        stream_state=AirbyteStateBlob.parse_obj({"id": "seehorn_rhea"}),
-                    ),
-                )
-            ],
-            {"actresses": {"id": "seehorn_rhea"}},
-            does_not_raise(),
-            id="test_get_legacy_from_stream_state",
-        ),
-        pytest.param(
-            {
-                "actors": {"created_at": "1962-10-22"},
-                "actresses": {"id": "seehorn_rhea"},
-            },
-            {"actors": {"created_at": "1962-10-22"}, "actresses": {"id": "seehorn_rhea"}},
-            does_not_raise(),
-            id="test_get_legacy_from_legacy_state_blob",
-        ),
-        pytest.param(
-            [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="actresses", namespace="public"),
-                        stream_state=None,
-                    ),
-                )
-            ],
-            {"actresses": {}},
-            does_not_raise(),
-            id="test_get_legacy_from_stream_state",
-        ),
-    ],
-)
-def test_get_legacy_state(input_state, expected_legacy_state, expected_error):
-    with expected_error:
-        state_manager = ConnectorStateManager({}, input_state)
-        actual_legacy_state = state_manager._get_legacy_state()
-        assert actual_legacy_state == expected_legacy_state
 
 
 def test_get_state_returns_deep_copy():
@@ -411,11 +367,10 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
     assert state_manager.per_stream_states[
         HashableStreamDescriptor(name=update_name, namespace=update_namespace)
     ] == AirbyteStateBlob.parse_obj(update_value)
-    assert state_manager._get_legacy_state() == expected_legacy_state
 
 
 @pytest.mark.parametrize(
-    "start_state, update_name, update_namespace, send_per_stream, expected_state_message",
+    "start_state, update_name, update_namespace, expected_state_message",
     [
         pytest.param(
             [
@@ -436,7 +391,6 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
             ],
             "episodes",
             "public",
-            True,
             AirbyteMessage(
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
@@ -445,7 +399,6 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
                         stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
                         stream_state=AirbyteStateBlob.parse_obj({"created_at": "2022_05_22"}),
                     ),
-                    data={"episodes": {"created_at": "2022_05_22"}, "seasons": {"id": 1}},
                 ),
             ),
             id="test_emit_state_message_with_stream_and_legacy",
@@ -462,7 +415,6 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
             ],
             "episodes",
             "public",
-            True,
             AirbyteMessage(
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
@@ -471,7 +423,6 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
                         stream_descriptor=StreamDescriptor(name="episodes", namespace="public"),
                         stream_state=AirbyteStateBlob(),
                     ),
-                    data={"episodes": {}},
                 ),
             ),
             id="test_always_emit_message_with_stream_state_blob",
@@ -488,7 +439,6 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
             ],
             "missing",
             "public",
-            True,
             AirbyteMessage(
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
@@ -496,7 +446,6 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="missing", namespace="public"), stream_state=AirbyteStateBlob()
                     ),
-                    data={"episodes": {"id": 507}},
                 ),
             ),
             id="test_emit_state_nonexistent_stream_name",
@@ -513,7 +462,6 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
             ],
             "episodes",
             "nonexistent",
-            True,
             AirbyteMessage(
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
@@ -521,72 +469,14 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="episodes", namespace="nonexistent"), stream_state=AirbyteStateBlob()
                     ),
-                    data={"episodes": {"id": 507}},
                 ),
             ),
             id="test_emit_state_wrong_namespace",
         ),
-        pytest.param(
-            [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="episodes", namespace=None),
-                        stream_state=AirbyteStateBlob.parse_obj({"created_at": "2022_05_22"}),
-                    ),
-                ),
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="seasons", namespace=None),
-                        stream_state=AirbyteStateBlob.parse_obj({"id": 1}),
-                    ),
-                ),
-            ],
-            "episodes",
-            "",
-            False,
-            AirbyteMessage(
-                type=MessageType.STATE,
-                state=AirbyteStateMessage(
-                    data={"episodes": {"created_at": "2022_05_22"}, "seasons": {"id": 1}},
-                ),
-            ),
-            id="test_emit_legacy_state_format",
-        ),
     ],
 )
-def test_create_state_message(start_state, update_name, update_namespace, send_per_stream, expected_state_message):
+def test_create_state_message(start_state, update_name, update_namespace, expected_state_message):
     state_manager = ConnectorStateManager({}, start_state)
 
-    actual_state_message = state_manager.create_state_message(
-        stream_name=update_name, namespace=update_namespace, send_per_stream_state=send_per_stream
-    )
+    actual_state_message = state_manager.create_state_message(stream_name=update_name, namespace=update_namespace)
     assert actual_state_message == expected_state_message
-
-
-def test_do_not_set_stream_descriptor_namespace_when_none():
-    """
-    This is a very specific test to ensure that the None value is not set and emitted back to the platform for namespace.
-    The platform performs validation on the state message sent by the connector and namespace must be a string or not
-    included at all. The None value registers as null by the platform which is not valid input. We can verify that fields
-    on a pydantic model are not defined using exclude_unset parameter.
-    """
-    expected_stream_state_descriptor = {"name": "episodes"}
-
-    state_manager = ConnectorStateManager(
-        {},
-        [
-            AirbyteStateMessage(
-                type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name="episodes"),
-                    stream_state=None,
-                ),
-            ),
-        ],
-    )
-
-    actual_state_message = state_manager.create_state_message(stream_name="episodes", namespace=None, send_per_stream_state=True)
-
-    assert actual_state_message.state.stream.stream_descriptor.dict(exclude_unset=True) == expected_stream_state_descriptor

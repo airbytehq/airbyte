@@ -44,19 +44,19 @@
     "campaign.status": {
       "type": ["null", "string"]
     },
-    "segments.product_bidding_category_level1": {
+    "segments.product_category_level1": {
       "type": ["null", "string"]
     },
-    "segments.product_bidding_category_level2": {
+    "segments.product_category_level2": {
       "type": ["null", "string"]
     },
-    "segments.product_bidding_category_level3": {
+    "segments.product_category_level3": {
       "type": ["null", "string"]
     },
-    "segments.product_bidding_category_level4": {
+    "segments.product_category_level4": {
       "type": ["null", "string"]
     },
-    "segments.product_bidding_category_level5": {
+    "segments.product_category_level5": {
       "type": ["null", "string"]
     },
     "segments.product_channel": {

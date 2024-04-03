@@ -21,16 +21,6 @@ acceptance_tests:
             bypass_reason: "unable to seed, this stream requires third party system"
           - name: settlements
             bypass_reason: "unable to seed, this stream requires third party system"
-        ignored_fields:
-          subscriptions:
-            - name: next_payment_date
-              bypass_reason: "Payment data is updated every month"
-            - name: open_invoice
-              bypass_reason: "Payment data is updated every month"
-            - name: payments_count
-              bypass_reason: "Payment data is updated every month"
-            - name: most_recent_invoice
-              bypass_reason: "Payment data is updated every month"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         fail_on_extra_columns: false

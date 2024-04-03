@@ -1,0 +1,7 @@
+{
+  "message": "Sorry,Something went wrong when trying to process the request.",
+  "api_error_code": "internal_error",
+  "error_code": "internal_error",
+  "error_msg": "Sorry,Something went wrong when trying to process the request.",
+  "http_status_code": 500
+}

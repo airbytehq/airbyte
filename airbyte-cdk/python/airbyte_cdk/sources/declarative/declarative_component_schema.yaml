@@ -224,6 +224,49 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  SelectiveAuthenticator:
+    title: Selective Authenticator
+    description: Authenticator that selects concrete authenticator based on config property.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - authenticators
+      - authenticator_selection_path
+    properties:
+      type:
+        type: string
+        enum: [SelectiveAuthenticator]
+      authenticator_selection_path:
+        title: Authenticator Selection Path
+        description: Path of the field in config with selected authenticator name
+        type: array
+        items:
+          type: string
+        examples:
+          - ["auth"]
+          - ["auth", "type"]
+      authenticators:
+        title: Authenticators
+        description: Authenticators to select from.
+        type: object
+        additionalProperties:
+          anyOf:
+            - "$ref": "#/definitions/ApiKeyAuthenticator"
+            - "$ref": "#/definitions/BasicHttpAuthenticator"
+            - "$ref": "#/definitions/BearerAuthenticator"
+            - "$ref": "#/definitions/CustomAuthenticator"
+            - "$ref": "#/definitions/OAuthAuthenticator"
+            - "$ref": "#/definitions/NoAuth"
+            - "$ref": "#/definitions/SessionTokenAuthenticator"
+            - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
+        examples:
+          - authenticators:
+              token: "#/definitions/ApiKeyAuthenticator"
+              oauth: "#/definitions/OAuthAuthenticator"
+      $parameters:
+        type: object
+        additionalProperties: true
   CheckStream:
     title: Streams to Check
     description: Defines the streams to try reading when running a check operation.
@@ -310,11 +353,12 @@ definitions:
         interpolation_context:
           - config
           - headers
-          - last_records
+          - last_page_size
+          - last_record
           - response
         examples:
           - "{{ headers.link.next.cursor }}"
-          - "{{ last_records[-1]['key'] }}"
+          - "{{ last_record['key'] }}"
           - "{{ response['nextPage'] }}"
       page_size:
         title: Page Size
@@ -329,7 +373,7 @@ definitions:
         interpolation_context:
           - config
           - headers
-          - last_records
+          - last_record
           - response
         examples:
           - "{{ response.data.has_more is false }}"
@@ -473,6 +517,27 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CustomRecordFilter:
+    title: Custom Record Filter
+    description: Record filter component whose behavior is derived from a custom code implementation of the connector.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRecordFilter]
+      class_name:
+        title: Class Name
+        description: Fully-qualified name of the class that will be implementing the custom record filter strategy. The format is `source_<name>.<package>.<class_name>`.
+        type: string
+        examples:
+          - "source_railz.components.MyCustomCustomRecordFilter"
+      $parameters:
+        type: object
+        additionalProperties: true
   CustomRequester:
     title: Custom Requester
     description: Requester component whose behavior is derived from a custom code implementation of the connector.
@@ -538,6 +603,48 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CustomSchemaLoader:
+    title: Custom Schema Loader
+    description: Schema Loader component whose behavior is derived from a custom code implementation of the connector.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomSchemaLoader]
+      class_name:
+        title: Class Name
+        description: Fully-qualified name of the class that will be implementing the custom schema loader. The format is `source_<name>.<package>.<class_name>`.
+        type: string
+        examples:
+          - "source_railz.components.MyCustomSchemaLoader"
+      $parameters:
+        type: object
+        additionalProperties: true
+  CustomStateMigration:
+    title: Custom State Migration
+    description: Apply a custom transformation on the input state.
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomStateMigration]
+      class_name:
+        title: Class Name
+        description: Fully-qualified name of the class that will be implementing the custom state migration. The format is `source_<name>.<package>.<class_name>`.
+        type: string
+        examples:
+          - "source_railz.components.MyCustomStateMigration"
+      $parameters:
+        type: object
+        additionalProperties: true
   CustomTransformation:
     title: Custom Transformation
     description: Transformation component whose behavior is derived from a custom code implementation of the connector.
@@ -559,6 +666,29 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  LegacyToPerPartitionStateMigration:
+    title: Legacy To Per-partition-state Migration
+    description:
+      'Transforms the input state for per-partitioned streams from the legacy format to the low-code format.
+      The cursor field and partition ID fields are automatically extracted from the stream''s DatetimebasedCursor and SubstreamPartitionRouter.
+
+      Example input state:
+      {
+      "13506132": {
+      "last_changed": "2022-12-27T08:34:39+00:00"
+      }
+      Example output state:
+      {
+      "partition": {"id": "13506132"},
+      "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
+      }
+      '
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+        enum: [LegacyToPerPartitionStateMigration]
   DatetimeBasedCursor:
     title: Datetime Based Cursor
     description: Cursor to provide incremental capabilities over datetime.
@@ -839,6 +969,31 @@ definitions:
             default: ["credentials", "token_expiry_date"]
             examples:
               - ["credentials", "token_expiry_date"]
+          refresh_token_error_status_codes:
+            title: Refresh Token Error Status Codes
+            description: Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified). Responses with one of the error status code and containing an error value will be flagged as a config error
+            type: array
+            items:
+              type: integer
+            default: []
+            examples:
+              - [400, 500]
+          refresh_token_error_key:
+            title: Refresh Token Error Key
+            description: Key to Identify refresh token error in response (Refresh Token Error Status Codes and Refresh Token Error Values should be also specified).
+            type: string
+            default: ""
+            examples:
+              - "error"
+          refresh_token_error_values:
+            title: Refresh Token Error Values
+            description: 'List of values to check for exception during token refresh process. Used to check if the error found in the response matches the key from the Refresh Token Error Key field (e.g. response={"error": "invalid_grant"}). Only responses with one of the error status code and containing an error value will be flagged as a config error'
+            type: array
+            items:
+              type: string
+            default: []
+            examples:
+              - ["invalid_grant", "invalid_permissions"]
       $parameters:
         type: object
         additionalProperties: true
@@ -884,6 +1039,7 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
+          - "$ref": "#/definitions/CustomSchemaLoader"
       # TODO we have move the transformation to the RecordSelector level in the code but kept this here for
       # compatibility reason. We should eventually move this to align with the code.
       transformations:
@@ -895,6 +1051,15 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
+      state_migrations:
+        title: State Migrations
+        description: Array of state migrations to be applied on the input state
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/LegacyToPerPartitionStateMigration"
+            - "$ref": "#/definitions/CustomStateMigration"
+        default: []
       $parameters:
         type: object
         additional_properties: true
@@ -1149,6 +1314,7 @@ definitions:
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
           - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
+          - "$ref": "#/definitions/SelectiveAuthenticator"
       error_handler:
         title: Error Handler
         description: Error handler component that defines how to handle errors.
@@ -1159,12 +1325,10 @@ definitions:
       http_method:
         title: HTTP Method
         description: The HTTP method used to fetch data from the source (can be GET or POST).
-        anyOf:
-          - type: string
-          - type: string
-            enum:
-              - GET
-              - POST
+        type: string
+        enum:
+          - GET
+          - POST
         default: GET
         examples:
           - GET
@@ -1244,6 +1408,11 @@ definitions:
           - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_interval.start_time }}" AND TIMESTAMP "{{ stream_interval.end_time }}"'
           - searchIn: "{{ ','.join(config.get('search_in', [])) }}"
           - sort_by[asc]: updated_at
+      use_cache:
+        title: Use Cache
+        description: Enables stream requests caching. This field is automatically set by the CDK.
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1651,10 +1820,15 @@ definitions:
       page_size:
         title: Page Size
         description: The number of records to include in each pages.
-        type: integer
+        interpolation_context:
+          - config
+        anyOf:
+          - type: integer
+          - type: string
         examples:
           - 100
           - "100"
+          - "{{ config['page_size'] }}"
       start_from_page:
         title: Start From Page
         description: Index of the first page to request.
@@ -1772,10 +1946,25 @@ definitions:
       record_filter:
         title: Record Filter
         description: Responsible for filtering records to be emitted by the Source.
-        "$ref": "#/definitions/RecordFilter"
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordFilter"
+          - "$ref": "#/definitions/RecordFilter"
+      schema_normalization:
+        "$ref": "#/definitions/SchemaNormalization"
+        default: None
       $parameters:
         type: object
         additionalProperties: true
+  SchemaNormalization:
+    title: Schema Normalization
+    description: Responsible for normalization according to the schema.
+    type: string
+    enum:
+      - None
+      - Default
+    examples:
+      - None
+      - Default
   RemoveFields:
     title: Remove Fields
     description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
@@ -1787,6 +1976,19 @@ definitions:
       type:
         type: string
         enum: [RemoveFields]
+      condition:
+        description: The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.,
+        type: string
+        default: ""
+        interpolation_context:
+          - config
+          - property
+          - parameters
+        examples:
+          - "{{ property|string == '' }}"
+          - "{{ property is integer }}"
+          - "{{ property|length > 5 }}"
+          - "{{ property == 'some_string_to_match' }}"
       field_pointers:
         title: Field Paths
         description: Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove.
@@ -1825,6 +2027,9 @@ definitions:
         type: string
         examples:
           - segment_id
+        interpolation_context:
+          - config
+          - parameters
       inject_into:
         title: Inject Into
         description: Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.
@@ -1928,6 +2133,10 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
+      ignore_stream_slicer_parameters_on_paginated_requests:
+        description: If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.
+        type: boolean
+        default: false
       partition_router:
         title: Partition Router
         description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.
@@ -2077,6 +2286,13 @@ interpolation:
       examples:
         - start_date: 2010-01-01
           api_key: "*****"
+    - title: parameters
+      description: Additional runtime parameters, to be used for string interpolation. Parameters can be passed down from a parent component to its subcomponents using the $parameters key. This can be used to avoid repetitions.
+      type: object
+      examples:
+        - path: "automations"
+          data_export_path: "automations"
+          cursor_field: "updated_at"
     - title: headers
       description: The HTTP headers from the last response received from the API. The object's keys are the header names from the response.
       type: object
@@ -2091,20 +2307,20 @@ interpolation:
           x-ratelimit-limit: "600"
           x-ratelimit-remaining: "598"
           x-ratelimit-reset: "39"
-    - title: last_records
-      description: List of records extracted from the last response received from the API.
-      type: list
+    - title: last_record
+      description: Last record extracted from the response received from the API.
+      type: object
       examples:
-        - - name: "Test List: 19"
-            id: 0236d6d2
-            contact_count: 20
-            _metadata:
-              self: https://api.sendgrid.com/v3/marketing/lists/0236d6d2
-          - name: List for CI tests, number 30
-            id: 041ee031
-            contact_count: 0
-            _metadata:
-              self: https://api.sendgrid.com/v3/marketing/lists/041ee031
+        - name: "Test List: 19"
+          id: 0236d6d2
+          contact_count: 20
+          _metadata:
+            self: https://api.sendgrid.com/v3/marketing/lists/0236d6d2
+    - title: last_page_size
+      description: Number of records extracted from the last response received from the API.
+      type: object
+      examples:
+        - 2
     - title: next_page_token
       description: Object describing the token to fetch the next page of records. The object has a single key "next_page_token".
       type: object
@@ -2236,3 +2452,10 @@ interpolation:
       return_type: str
       examples:
         - "{{ 'ZmFrZSByZWZyZXNoX3Rva2VuIHZhbHVl' | base64decode }} -> 'fake refresh_token value'"
+    - title: String
+      description: Converts the specified value to a string.
+      arguments: {}
+      return_type: str
+      examples:
+        - '{{ 1 | string }} -> "1"'
+        - '{{ ["hello", "world" | string }} -> "["hello", "world"]"'

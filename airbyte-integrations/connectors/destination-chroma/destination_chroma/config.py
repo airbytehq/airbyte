@@ -4,16 +4,15 @@
 
 from typing import Literal, Optional, Union
 
-import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
+    AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
     OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
-    ProcessingConfigModel,
+    VectorDBConfigModel,
 )
-from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
 
 
@@ -66,38 +65,14 @@ class NoEmbeddingConfigModel(BaseModel):
         }
 
 
-class ConfigModel(BaseModel):
-    processing: ProcessingConfigModel
+class ConfigModel(VectorDBConfigModel):
+    indexing: ChromaIndexingConfigModel
     embedding: Union[
+        AzureOpenAIEmbeddingConfigModel,
         OpenAIEmbeddingConfigModel,
         CohereEmbeddingConfigModel,
-        FakeEmbeddingConfigModel,
         FromFieldEmbeddingConfigModel,
-        NoEmbeddingConfigModel,
+        FakeEmbeddingConfigModel,
         OpenAICompatibleEmbeddingConfigModel,
+        NoEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
-    indexing: ChromaIndexingConfigModel
-
-    class Config:
-        title = "Chroma Destination Config"
-        schema_extra = {
-            "groups": [
-                {"id": "processing", "title": "Processing"},
-                {"id": "embedding", "title": "Embedding"},
-                {"id": "indexing", "title": "Indexing"},
-            ]
-        }
-
-    @staticmethod
-    def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
-        dpath.util.delete(schema, "properties/**/discriminator")
-
-    @classmethod
-    def schema(cls):
-        """we're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema()
-        schema = resolve_refs(schema)
-        cls.remove_discriminator(schema)
-        return schema

@@ -55,12 +55,8 @@ bank_accounts_full_refresh_test_case = (
                 }
             ],
         },
-        "https://api.stripe.com/v1/customers/cus_HezytZRkaQJC8W/sources?object=bank_account&starting_after=cs_2": {
+        "https://api.stripe.com/v1/customers/cus_HezytZRkaQJC8W/bank_accounts?starting_after=cs_2": {
             "data": [
-                {
-                    "id": "cs_3",
-                    "object": "card",
-                },
                 {
                     "id": "cs_4",
                     "object": "bank_account",
@@ -68,8 +64,7 @@ bank_accounts_full_refresh_test_case = (
             ],
             "has_more": False,
             "object": "list",
-            "total_count": 4,
-            "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
+            "url": "/v1/customers/cus_HezytZRkaQJC8W/bank_accounts",
         },
     },
     "bank_accounts",
@@ -339,7 +334,7 @@ def test_created_cursor_incremental_stream(
     for url, response in requests_mock_map.items():
         requests_mock.get(url, response)
 
-    slices = list(stream.stream_slices(sync_mode, stream_state=state))
+    slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
     assert slices == expected_slices
     records = read_from_stream(stream, sync_mode, state)
     assert records == expected_records
@@ -651,7 +646,7 @@ def test_cursorless_incremental_substream(requests_mock, stream_by_name, sync_mo
             "has_more": False,
         },
     )
-    requests_mock.get("/v1/customers/1/sources", json={"has_more": False, "data": [{"id": 2, "object": "bank_account"}]})
+    requests_mock.get("/v1/customers/1/bank_accounts", json={"has_more": False, "data": [{"id": 2, "object": "bank_account"}]})
     requests_mock.get(
         "/v1/events",
         json={

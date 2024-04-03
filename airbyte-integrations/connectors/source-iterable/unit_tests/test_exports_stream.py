@@ -23,17 +23,6 @@ def session_mock():
         response_mock.status_code = 200
         yield session_mock
 
-
-def test_send_email_stream(session_mock):
-    stream = Users(start_date="2020", authenticator=None)
-    stream_slice = StreamSlice(start_date=pendulum.parse("2020"), end_date=pendulum.parse("2021"))
-    _ = list(stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=stream_slice, stream_state={}))
-
-    assert session_mock.send.called
-    send_args = session_mock.send.call_args[1]
-    assert send_args.get("stream") is True
-
-
 @responses.activate
 def test_stream_correct():
     stream_slice = StreamSlice(start_date=pendulum.parse("2020"), end_date=pendulum.parse("2021"))

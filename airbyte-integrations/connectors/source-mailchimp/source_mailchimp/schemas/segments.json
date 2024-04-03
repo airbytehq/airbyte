@@ -17,11 +17,13 @@
     },
     "created_at": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "updated_at": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "options": {
       "type": ["null", "object"],
@@ -33,6 +35,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "condition_type": {
                 "type": ["null", "string"]
@@ -41,9 +44,6 @@
                 "type": ["null", "string"]
               },
               "op": {
-                "type": ["null", "string"]
-              },
-              "value": {
                 "type": ["null", "string"]
               }
             }

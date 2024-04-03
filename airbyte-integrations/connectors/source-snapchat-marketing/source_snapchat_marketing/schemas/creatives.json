@@ -74,6 +74,14 @@
     },
     "ad_product": {
       "type": ["null", "string"]
+    },
+    "ad_to_place_properties": {
+      "type": ["null", "object"],
+      "properties": {
+        "place_id": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }
