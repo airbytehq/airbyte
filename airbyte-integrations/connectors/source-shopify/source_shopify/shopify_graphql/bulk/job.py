@@ -33,8 +33,8 @@ class ShopifyBulkManager:
     session: requests.Session
     base_url: str
 
-    # 5Mb chunk size to save the file
-    retrieve_chunk_size: int = 1024 * 1024 * 5
+    # 10Mb chunk size to save the file
+    retrieve_chunk_size: int = 1024 * 1024 * 10
     # time between job status checks
     job_check_interval_sec: int = 5
 
@@ -58,6 +58,13 @@ class ShopifyBulkManager:
     # currents: job_id, job_state
     job_id: Optional[str] = field(init=False, default=None)
     job_state: ShopifyBulkStatus = field(init=False, default=None)
+    # each job should be executed within the set value (in sec),
+    # to maximize the performance for multi-connection syncs
+    job_elapsed_time_threshold_sec: float = field(init=False, default=420.0)  # 7 mins
+    # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
+    job_last_elapsed_time_sec: float = field(init=False, default=2.0)  # 2 sec
+    job_should_increase_slice_size: bool = field(init=False, default=False)
+    job_should_decrease_slice_size: bool = field(init=False, default=False)
 
     @property
     def tools(self) -> BulkTools:
@@ -237,6 +244,32 @@ class ShopifyBulkManager:
             request: requests.PreparedRequest = response.request
             return self.job_retry_on_concurrency(request)
 
+    def should_increase_slice_size(self) -> bool:
+        return self.job_should_increase_slice_size and not self.job_should_decrease_slice_size
+
+    def should_decrease_slice_size(self) -> bool:
+        return not self.job_should_increase_slice_size and self.job_should_decrease_slice_size
+
+    def _increase_slice_size(self) -> None:
+        self.job_should_increase_slice_size = True
+        self.job_should_decrease_slice_size = False
+
+    def _decrease_slice_size(self) -> None:
+        self.job_should_increase_slice_size = False
+        self.job_should_decrease_slice_size = True
+
+    def adjust_slice_size(self, current_job_elapsed_time: float) -> None:
+        if current_job_elapsed_time > self.job_elapsed_time_threshold_sec:
+            self._decrease_slice_size()
+        elif current_job_elapsed_time < 1 or current_job_elapsed_time < self.job_last_elapsed_time_sec:
+            self._increase_slice_size()
+        elif current_job_elapsed_time > self.job_last_elapsed_time_sec < self.job_elapsed_time_threshold_sec:
+            # continue with adjusted slice size
+            pass
+
+        # set the last job time
+        self.job_last_elapsed_time_sec = current_job_elapsed_time
+
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def job_check(self, created_job_response: requests.Response) -> Optional[str]:
         """
@@ -256,7 +289,9 @@ class ShopifyBulkManager:
         ) as bulk_job_error:
             raise bulk_job_error
         finally:
-            time_elapsed = round((time() - job_started), 3)
-            self.logger.info(f"The BULK Job: `{self.job_id}` time elapsed: {time_elapsed} sec.")
+            current_job_elapsed_time = round((time() - job_started), 3)
+            self.logger.info(f"The BULK Job: `{self.job_id}` time elapsed: {current_job_elapsed_time} sec.")
+            # check whether or not we should increase or decrease the size of the slice
+            self.adjust_slice_size(current_job_elapsed_time)
             # reset the state for COMPLETED job
             self.__reset_state()

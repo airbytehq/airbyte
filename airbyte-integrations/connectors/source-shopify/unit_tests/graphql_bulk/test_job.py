@@ -294,6 +294,51 @@ def test_stream_slices(
         auth_config["start_date"] = "2020-01-01"
 
     stream = stream(auth_config)
+    stream.slice_interval_in_days = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
     test_query_from_slice = test_result[0].get("query")
     assert expected in test_query_from_slice
+
+
+@pytest.mark.parametrize(
+    "stream, json_content_example, init_slice_size, job_elapsed_time_threshold_sec, job_last_elapsed_time, expected_slice_size",
+    [
+        (CustomerAddress, "customer_address_jsonl_content_example", 1, 10, 10, 2),
+        (CustomerAddress, "customer_address_jsonl_content_example", 10, 4, 10, 5),
+        (CustomerAddress, "customer_address_jsonl_content_example", 10, 100, 4, 10),
+    ],
+    ids=[
+        "Increased Slice Size",
+        "Decreased Slice Size",
+        "Remains unchanged",
+    ],
+)
+def test_bulk_stream_adjust_slice_size(
+    request,
+    requests_mock,
+    bulk_job_completed_response,
+    stream,
+    json_content_example,
+    init_slice_size,
+    job_elapsed_time_threshold_sec,
+    job_last_elapsed_time,
+    expected_slice_size,
+    auth_config,
+) -> None:
+    stream = stream(auth_config)
+    # get the mocked job_result_url
+    test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
+    # mocking the result url with jsonl content
+    requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
+    # getting mock response
+    test_bulk_response: requests.Response = requests.post(stream.job_manager.base_url)
+    # mocking nested api call to get data from result url
+    requests_mock.get(test_result_url, text=request.getfixturevalue(json_content_example))
+    # simulate slice_interval_in_days, job_last_elapsed_time_sec and job_elapsed_time_threshold_sec
+    stream.slice_interval_in_days = init_slice_size
+    stream.job_manager.job_last_elapsed_time_sec = job_last_elapsed_time
+    stream.job_manager.job_elapsed_time_threshold_sec = job_elapsed_time_threshold_sec
+    # parsing result from completed job, adjusting the slice
+    list(stream.parse_response(test_bulk_response))
+    # check the adjusted slice value
+    assert stream.slice_interval_in_days == expected_slice_size

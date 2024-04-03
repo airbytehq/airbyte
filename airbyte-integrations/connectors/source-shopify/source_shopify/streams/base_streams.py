@@ -592,6 +592,8 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     parent_stream_class: Optional[Union[ShopifyStream, IncrementalShopifyStream]] = None
 
+    slice_interval_in_days_min: int = 1  # P1D, default value
+
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
         # init BULK Query instance, pass `shop_id` from config
@@ -600,6 +602,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(self._session, f"{self.url_base}/{self.path()}")
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
+        # accept the slice_size from the input configuration
+        self.bulk_window_in_days: Optional[int] = config.get("bulk_window_in_days")
+        # dynamically adjusted slice size
+        self.slice_interval_in_days = self.bulk_window_in_days if self.bulk_window_in_days else self.slice_interval_in_days_min
 
     @cached_property
     def parent_stream(self) -> object:
@@ -607,13 +613,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
         """
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
-
-    @property
-    def slice_interval_in_days(self) -> int:
-        """
-        Defines date range per single BULK Job.
-        """
-        return self.config.get("bulk_window_in_days", 30)
 
     @property
     @abstractmethod
@@ -715,15 +714,37 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 slice_end = slice_end if slice_end < end else end
                 # making pre-defined sliced query to pass it directly
                 prepared_query = self.query.get(self.filter_field, start.to_rfc3339_string(), slice_end.to_rfc3339_string())
-                self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}.")
+                self.logger.info(
+                    f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}. Slice size: P{self.slice_interval_in_days}D"
+                )
                 yield {"query": prepared_query}
                 start = slice_end
         else:
             # for the streams that don't support filtering
             yield {"query": self.query.get()}
 
+    def slice_size_increase(self) -> None:
+        self.slice_interval_in_days = int(self.slice_interval_in_days * 2)
+
+    def slice_size_decrease(self) -> None:
+        self.slice_interval_in_days = int(self.slice_interval_in_days / 2)
+
+    def slice_size_min_check(self) -> None:
+        if self.slice_interval_in_days < self.slice_interval_in_days_min:
+            self.slice_interval_in_days = self.slice_interval_in_days_min
+
+    def adjust_slice_size(self) -> None:
+        if self.job_manager.should_increase_slice_size():
+            self.slice_size_increase()
+        elif self.job_manager.should_decrease_slice_size():
+            self.slice_size_decrease()
+        # preserve non-negative values only
+        self.slice_size_min_check()
+
     def process_bulk_results(
-        self, response: requests.Response, stream_state: Optional[Mapping[str, Any]] = None
+        self,
+        response: requests.Response,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         # get results fetched from COMPLETED BULK Job or `None`
         filename = self.job_manager.job_check(response)
@@ -735,6 +756,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.record_producer.read_file(filename)
             )
             yield from self.filter_records_newer_than_state(stream_state, records)
+
+        # adjust the slice interval
+        self.adjust_slice_size()
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
