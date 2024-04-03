@@ -17,7 +17,6 @@ spotbugsTestFixtures.enabled = false
 
 dependencies {
     api 'org.apache.commons:commons-csv:1.10.0'
-    api "io.micronaut:micronaut-context:${libs.versions.micronaut.platform.get()}"
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')

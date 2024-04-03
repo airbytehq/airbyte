@@ -64,7 +64,6 @@ dependencies {
     api "io.micronaut:micronaut-runtime:${libs.versions.micronaut.platform.get()}"
     api 'io.micronaut.picocli:micronaut-picocli:5.2.0'
     api "info.picocli:picocli:${libs.versions.picocli.get()}"
-    api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
 
