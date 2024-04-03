@@ -39,7 +39,7 @@ import org.mockito.Mockito
         "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
-    protected lateinit var testdb: T
+    protected var testdb: T = createTestDatabase()
 
     protected fun streamName(): String {
         return TABLE_NAME
@@ -314,8 +314,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 filteredCatalog.streams
                     .stream()
                     .filter { stream: AirbyteStream ->
-                        TEST_SCHEMAS.stream().anyMatch { schemaName: String? ->
-                            stream.namespace.startsWith(schemaName!!)
+                        TEST_SCHEMAS.stream().anyMatch { schemaName: String ->
+                            stream.namespace.startsWith(schemaName)
                         }
                     }
                     .collect(Collectors.toList())
