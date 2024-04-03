@@ -110,7 +110,7 @@ jobs:
       - name: Bump version of source-declarative-manifest
         uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "master" # TODO change to ref
+          context: "master" # TODO change to ref?
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -123,7 +123,8 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '12345' 'Bump CDK version to ${{ steps.bumpversion.outputs.NEW_VERSION }}'"
+          # The pull request number doesn't matter in this bump_version as the documentation file doesn't exist
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '00000' 'Bump CDK version to ${{ steps.bumpversion.outputs.NEW_VERSION }}'"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
