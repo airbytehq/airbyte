@@ -31,7 +31,7 @@ class AsanaConfigMigration:
             > False, otherwise.
             > Raises the Exception if the structure could not be migrated.
         """
-        return "access_token" in config
+        return "access_token" in config     #if access_token is directly given in config, transform it into PAT credentials
 
     @classmethod
     def modify(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
