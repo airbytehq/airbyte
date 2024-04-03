@@ -156,9 +156,7 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
 
     def set_initial_state(self, stream_state: StreamState):
         super().set_initial_state(stream_state=stream_state)
-        print('hello')
-        print(stream_state.get('states', [{}])[0])
-        self._state = stream_state.get('states', [{}])[0] or {}
+        self._state = stream_state
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         parent_state = self._state.get(self.parent_stream_name, {})

@@ -55,6 +55,11 @@ airbyte-ci connectors --name=source-zenoti build
 
 An image will be available on your host with the tag `airbyte/source-zenoti:dev`.
 
+3. Push docker image to the CorralData private docker registry:
+```bash
+docker tag airbyte/source-zenoti:dev 705212330674.dkr.ecr.us-east-2.amazonaws.com/corral-airbyte/source-zenoti:x.y.z
+docker push 705212330674.dkr.ecr.us-east-2.amazonaws.com/corral-airbyte/source-zenoti:x.y.z
+```
 
 ### Running as a docker container
 
