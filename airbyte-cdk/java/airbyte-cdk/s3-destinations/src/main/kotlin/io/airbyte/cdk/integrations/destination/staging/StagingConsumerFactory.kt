@@ -56,65 +56,6 @@ private constructor(
     private val optimalBatchSizeBytes: Long,
     private val dataTransformer: StreamAwareDataTransformer
 ) : SerialStagingConsumerFactory() {
-    class Builder {
-        // Required (?) fields
-        // (TODO which of these are _actually_ required, and which have we just coincidentally
-        // always
-        // provided?)
-        var outputRecordCollector: Consumer<AirbyteMessage>? = null
-        var database: JdbcDatabase? = null
-        var stagingOperations: StagingOperations? = null
-        var namingResolver: NamingConventionTransformer? = null
-        var config: JsonNode? = null
-        var catalog: ConfiguredAirbyteCatalog? = null
-        var purgeStagingData: Boolean = false
-        var typerDeduperValve: TypeAndDedupeOperationValve? = null
-        var typerDeduper: TyperDeduper? = null
-        var parsedCatalog: ParsedCatalog? = null
-        var defaultNamespace: String? = null
-        var useDestinationsV2Columns: Boolean = false
-
-        // Optional fields
-        private var bufferMemoryLimit = Optional.empty<Long>()
-        private var optimalBatchSizeBytes = (50 * 1024 * 1024).toLong()
-
-        private var dataTransformer: StreamAwareDataTransformer? = null
-
-        fun setBufferMemoryLimit(bufferMemoryLimit: Optional<Long>): Builder {
-            this.bufferMemoryLimit = bufferMemoryLimit
-            return this
-        }
-
-        fun setOptimalBatchSizeBytes(optimalBatchSizeBytes: Long): Builder {
-            this.optimalBatchSizeBytes = optimalBatchSizeBytes
-            return this
-        }
-
-        fun setDataTransformer(dataTransformer: StreamAwareDataTransformer?): Builder {
-            this.dataTransformer = dataTransformer
-            return this
-        }
-
-        fun build(): StagingConsumerFactory {
-            return StagingConsumerFactory(
-                outputRecordCollector,
-                database,
-                stagingOperations,
-                namingResolver,
-                config,
-                catalog,
-                purgeStagingData,
-                typerDeduperValve,
-                typerDeduper,
-                parsedCatalog,
-                defaultNamespace,
-                useDestinationsV2Columns,
-                bufferMemoryLimit,
-                optimalBatchSizeBytes,
-                (if (dataTransformer != null) dataTransformer else IdentityDataTransformer())!!
-            )
-        }
-    }
 
     fun createAsync(): SerializedAirbyteMessageConsumer {
         val typerDeduper = this.typerDeduper!!
@@ -187,37 +128,6 @@ private constructor(
         private val LOGGER: Logger = LoggerFactory.getLogger(StagingConsumerFactory::class.java)
 
         private val SYNC_DATETIME: Instant = Instant.now()
-
-        @JvmStatic
-        fun builder(
-            outputRecordCollector: Consumer<AirbyteMessage>,
-            database: JdbcDatabase?,
-            stagingOperations: StagingOperations,
-            namingResolver: NamingConventionTransformer?,
-            config: JsonNode?,
-            catalog: ConfiguredAirbyteCatalog,
-            purgeStagingData: Boolean,
-            typerDeduperValve: TypeAndDedupeOperationValve,
-            typerDeduper: TyperDeduper,
-            parsedCatalog: ParsedCatalog?,
-            defaultNamespace: String?,
-            useDestinationsV2Columns: Boolean
-        ): Builder {
-            val builder = Builder()
-            builder.outputRecordCollector = outputRecordCollector
-            builder.database = database
-            builder.stagingOperations = stagingOperations
-            builder.namingResolver = namingResolver
-            builder.config = config
-            builder.catalog = catalog
-            builder.purgeStagingData = purgeStagingData
-            builder.typerDeduperValve = typerDeduperValve
-            builder.typerDeduper = typerDeduper
-            builder.parsedCatalog = parsedCatalog
-            builder.defaultNamespace = defaultNamespace
-            builder.useDestinationsV2Columns = useDestinationsV2Columns
-            return builder
-        }
 
         private fun getMemoryLimit(bufferMemoryLimit: Optional<Long>): Long {
             return bufferMemoryLimit.orElse(
