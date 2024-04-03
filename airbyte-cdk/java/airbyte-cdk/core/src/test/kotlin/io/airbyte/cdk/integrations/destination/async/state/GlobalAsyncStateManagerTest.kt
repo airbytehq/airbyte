@@ -171,7 +171,7 @@ class GlobalAsyncStateManagerTest {
                                                 ),
                                             ),
                                     ),
-                            ),
+                            )
                     )
                 }
                 AirbyteStateMessage.AirbyteStateType.STREAM -> {
