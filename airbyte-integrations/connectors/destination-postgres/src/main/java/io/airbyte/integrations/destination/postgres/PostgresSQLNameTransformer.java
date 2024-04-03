@@ -8,6 +8,17 @@ import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 public class PostgresSQLNameTransformer extends StandardNameTransformer {
 
+  // I _think_ overriding these two methods is sufficient to apply the truncation logic everywhere
+  // but this interface + our superclass are weirdly complicated, so plausibly something is missing
+  @Override
+  public String getIdentifier(final String name) {
+    return truncate(super.getIdentifier(name));
+  }
+
+  public String convertStreamName(String input) {
+    return truncate(super.convertStreamName(input));
+  }
+
   @Override
   public String applyDefaultCase(final String input) {
     return input.toLowerCase();
@@ -19,6 +30,14 @@ public class PostgresSQLNameTransformer extends StandardNameTransformer {
   // migration
   public String getRawTableName(final String streamName) {
     return convertStreamName("_airbyte_raw_" + streamName.toLowerCase());
+  }
+
+  /**
+   * Postgres silently truncates identifiers to 64 characters. Utility method to do that truncation
+   * explicitly, so that we can detect e.g. name collisions.
+   */
+  private String truncate(String str) {
+    return str.substring(0, 64);
   }
 
 }
