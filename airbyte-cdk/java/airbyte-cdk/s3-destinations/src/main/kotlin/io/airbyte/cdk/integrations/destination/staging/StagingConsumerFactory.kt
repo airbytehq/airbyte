@@ -10,6 +10,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
+import io.airbyte.cdk.integrations.destination.async.FlushWorkers
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
@@ -23,6 +24,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -138,9 +140,18 @@ private constructor(
                 optimalBatchSizeBytes,
                 useDestinationsV2Columns
             )
+        val bufferManager = BufferManager(getMemoryLimit(bufferMemoryLimit))
+        val flushWorkers =
+            FlushWorkers(
+                bufferManager.stateManager,
+                bufferManager.bufferDequeue,
+                flusher,
+                outputRecordCollector!!,
+                Executors.newFixedThreadPool(5),
+                FlushFailure(),
+            )
         val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(catalog!!)
         return AsyncStreamConsumer(
-            outputRecordCollector!!,
             GeneralStagingFunctions.onStartFunction(
                 database!!,
                 stagingOperations,
@@ -161,11 +172,10 @@ private constructor(
                     throw RuntimeException(e)
                 }
             },
-            flusher,
             micronautConfiguredAirbyteCatalog,
-            BufferManager(getMemoryLimit(bufferMemoryLimit)),
+            bufferManager,
             Optional.ofNullable(defaultNamespace),
-            FlushFailure(),
+            flushWorkers,
             dataTransformer
         )
     }
