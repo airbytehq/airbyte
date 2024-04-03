@@ -10,24 +10,31 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import java.util.List
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 
 internal class CatalogParserTest {
     private lateinit var sqlGenerator: SqlGenerator
-    private var parser: CatalogParser? = null
+    private lateinit var parser: CatalogParser
 
     @BeforeEach
     fun setup() {
         sqlGenerator = Mockito.mock(SqlGenerator::class.java)
         // noop quoting logic
-        Mockito.`when`(sqlGenerator.buildColumnId(any())).thenAnswer { invocation: InvocationOnMock
+        Mockito.`when`(sqlGenerator.buildColumnId(any(), any())).thenAnswer { invocation: InvocationOnMock
             ->
             val fieldName = invocation.getArgument<String>(0)
-            ColumnId(fieldName, fieldName, fieldName)
+            val suffix = invocation.getArgument<String>(1)
+            ColumnId(fieldName + suffix, fieldName + suffix, fieldName + suffix)
+        }
+        Mockito.`when`(sqlGenerator.buildColumnId(any())).thenAnswer { invocation: InvocationOnMock
+            ->
+            sqlGenerator.buildColumnId(invocation.getArgument<String>(0), "")
         }
         Mockito.`when`(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer {
             invocation: InvocationOnMock ->
@@ -46,7 +53,7 @@ internal class CatalogParserTest {
      */
     @Test
     fun finalNameCollision() {
-        Mockito.`when`(sqlGenerator!!.buildStreamId(any(), any(), any())).thenAnswer {
+        Mockito.`when`(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer {
             invocation: InvocationOnMock ->
             val originalNamespace = invocation.getArgument<String>(0)
             val originalName = (invocation.getArgument<String>(1))
@@ -67,11 +74,13 @@ internal class CatalogParserTest {
             ConfiguredAirbyteCatalog()
                 .withStreams(List.of(stream("a", "foobarfoo"), stream("a", "foofoo")))
 
-        val parsedCatalog = parser!!.parseCatalog(catalog)
+        val parsedCatalog = parser.parseCatalog(catalog)
 
-        Assertions.assertNotEquals(
-            parsedCatalog.streams.get(0).id.finalName,
-            parsedCatalog.streams.get(1).id.finalName
+        assertAll(
+            { Assertions.assertEquals("a_abab_foofoo", parsedCatalog.streams.get(0).id.rawName) },
+            { Assertions.assertEquals("foofoo", parsedCatalog.streams.get(0).id.finalName) },
+            { Assertions.assertEquals("a_abab_foofoo_3fd", parsedCatalog.streams.get(1).id.rawName) },
+            { Assertions.assertEquals("foofoo_3fd", parsedCatalog.streams.get(1).id.finalName) }
         )
     }
 
@@ -81,9 +90,9 @@ internal class CatalogParserTest {
      */
     @Test
     fun columnNameCollision() {
-        Mockito.`when`(sqlGenerator!!.buildColumnId(any(), any())).thenAnswer {
+        Mockito.`when`(sqlGenerator.buildColumnId(any(), any())).thenAnswer {
             invocation: InvocationOnMock ->
-            val originalName = invocation.getArgument<String>(0)
+            val originalName = invocation.getArgument<String>(0) + invocation.getArgument<String>(1)
             // emulate quoting logic that causes a name collision
             val quotedName = originalName.replace("bar".toRegex(), "")
             ColumnId(quotedName, originalName, quotedName)
@@ -103,9 +112,52 @@ internal class CatalogParserTest {
             )
         val catalog = ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)))
 
-        val parsedCatalog = parser!!.parseCatalog(catalog)
+        val parsedCatalog = parser.parseCatalog(catalog)
+        val columnsList = parsedCatalog.streams[0].columns!!.keys.toList()
 
-        Assertions.assertEquals(2, parsedCatalog.streams.get(0).columns!!.size)
+        assertAll(
+            { Assertions.assertEquals(2, parsedCatalog.streams[0].columns!!.size) },
+            { Assertions.assertEquals("foofoo", columnsList[0].name) },
+            { Assertions.assertEquals("foofoo_1", columnsList[1].name) }
+        )
+    }
+
+    /**
+     * Test behavior when the sqlgenerator truncates column names. We should end generate new names
+     * that still avoid collision.
+     */
+    @Test
+    fun truncatingColumnNameCollision() {
+        whenever(sqlGenerator.buildColumnId(any(), any())).thenAnswer {
+            invocation: InvocationOnMock ->
+            val originalName = invocation.getArgument<String>(0) + invocation.getArgument<String>(1)
+            // truncate to 10 characters
+            val truncatedName = originalName.substring(0, 10.coerceAtMost(originalName.length))
+            ColumnId(truncatedName, originalName, truncatedName)
+        }
+        val schema =
+            Jsons.deserialize(
+                """
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "aVeryLongColumnName": {"type": "string"},
+                                                  "aVeryLongColumnNameWithMoreTextAfterward": {"type": "string"}
+                                                }
+                                              }
+                                              
+                                              """.trimIndent()
+            )
+        val catalog = ConfiguredAirbyteCatalog().withStreams(listOf(stream("a", "a", schema)))
+
+        val parsedCatalog = parser.parseCatalog(catalog)
+        val columnsList = parsedCatalog.streams[0].columns!!.keys.toList()
+
+        assertAll(
+            { Assertions.assertEquals(2, parsedCatalog.streams[0].columns!!.size) },
+            { Assertions.assertEquals("aVeryLongC", columnsList[0].name) },
+            { Assertions.assertEquals("aV36rd", columnsList[1].name) }
+        )
     }
 
     companion object {

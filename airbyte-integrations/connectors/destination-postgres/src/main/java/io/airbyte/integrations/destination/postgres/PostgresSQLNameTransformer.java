@@ -33,11 +33,11 @@ public class PostgresSQLNameTransformer extends StandardNameTransformer {
   }
 
   /**
-   * Postgres silently truncates identifiers to 64 characters. Utility method to do that truncation
+   * Postgres silently truncates identifiers to 63 characters. Utility method to do that truncation
    * explicitly, so that we can detect e.g. name collisions.
    */
   private String truncate(String str) {
-    return str.substring(0, Math.min(str.length(), 64));
+    return str.substring(0, Math.min(str.length(), 63));
   }
 
 }

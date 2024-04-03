@@ -161,6 +161,45 @@ constructor(
                 var i = 1
                 while (true) {
                     columnId = sqlGenerator.buildColumnId(key, "_$i")
+
+                    // Verify that we're making progress, e.g. we haven't immediately truncated away
+                    // the suffix.
+                    if (columnId.canonicalName == originalColumnId.canonicalName) {
+                        // If we're not making progress, do a more powerful mutation instead of
+                        // appending numbers.
+                        // We'll generate a name of the format <prefix><length><suffix>
+                        // e.g. for affixLength=3: "veryLongName" -> "ver6ame"
+                        // This is based on the "i18n"-ish naming convention.
+                        // Assume that we're being truncated, and that the column ID's name is the
+                        // maximum length.
+                        val maximumColumnNameLength = columnId.name.length
+                        // Assume that the <length> portion can be expressed in at most 5 characters.
+                        // If someone is giving us a column name that's longer than 99999 characters,
+                        // that's just being silly.
+                        val affixLength = (maximumColumnNameLength - 5) / 2
+                        // If, after reserving 5 characters for the length, we can't fit the affixes,
+                        // just give up. That means the destination is trying to restrict us to a
+                        // 6-character column name, which is just silly.
+                        if (affixLength <= 0) {
+                            throw IllegalArgumentException("Cannot solve column name collision: " + columnId.originalName)
+                        }
+                        val prefix = key.substring(0, affixLength)
+                        val suffix = key.substring(key.length - affixLength, key.length)
+                        val length = key.length - 2 * affixLength
+                        columnId = sqlGenerator.buildColumnId(prefix + length + suffix)
+                        // if there's _still_ a collision after this, just give up.
+                        // we could try to be more clever, but this is already a pretty rare case.
+                        if (
+                            columns.keys.stream().anyMatch { c: ColumnId ->
+                                c.canonicalName == columnId!!.canonicalName
+                            }
+                        ) {
+                            throw IllegalArgumentException("Cannot solve column name collision: " + columnId.originalName)
+                        }
+
+                        break
+                    }
+
                     val canonicalName = columnId!!.canonicalName
                     if (
                         columns.keys.stream().noneMatch { c: ColumnId ->
