@@ -76,7 +76,7 @@ The Trello connector should not run into Trello API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
-| 1.0.3   | 2024-03-28 | [](https://github.com/airbytehq/airbyte/pull/) | Use python-connector-base image, poetry, and update CDK version                    |
+| 1.0.3   | 2024-04-02 | [36592](https://github.com/airbytehq/airbyte/pull/36592) | Use python-connector-base image, poetry, and update CDK version                    |
 | 1.0.2   | 2023-10-13 | [31205](https://github.com/airbytehq/airbyte/pull/31205) | Improve spec description for board ids                                             |
 | 1.0.1   | 2023-10-13 | [31168](https://github.com/airbytehq/airbyte/pull/31168) | Fix `cards` schema                                                                 |
 | 1.0.0   | 2023-09-08 | [29876](https://github.com/airbytehq/airbyte/pull/29876) | Migrate to Low Code CDK                                                            |
