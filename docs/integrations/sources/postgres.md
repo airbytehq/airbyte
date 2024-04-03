@@ -292,18 +292,19 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.22  | 2024-04-01 | [36739](https://github.com/airbytehq/airbyte/pull/36739) | Fix useLocalCdk flag.                                                                                                                                                      |
-| 3.3.21  | 2024-03-25 | [36584](https://github.com/airbytehq/airbyte/pull/36584) | Adopt Kotlin CDK.                                                                                                                                                          |
-| 3.3.20  | 2024-03-25 | [36432](https://github.com/airbytehq/airbyte/pull/36432) | Failure to serialize values from Postgres DB shouldn't fail sync.                                                                                                          |
-| 3.3.19  | 2024-03-12 | [36333](https://github.com/airbytehq/airbyte/pull/36333) | Use newest CDK - deprecate dbz iterator                                                                                                                                    |
-| 3.3.18  | 2024-03-12 | [35599](https://github.com/airbytehq/airbyte/pull/35599) | Use newest CDK                                                                                                                                                             |
-| 3.3.17  | 2024-03-12 | [35939](https://github.com/airbytehq/airbyte/pull/35939) | Use lsn_commit value instead of lsn_proc for CDC checkpointing logic.                                                                                                      |
-| 3.3.16  | 2024-03-11 | [35904](https://github.com/airbytehq/airbyte/pull/35904) | Adopt Java CDK 0.23.1- debezium retries.                                                                                                                                   |
-| 3.3.15  | 2024-02-29 | [34724](https://github.com/airbytehq/airbyte/pull/34724) | Add record count in state message.                                                                                                                                         |
-| 3.3.14  | 2024-03-06 | [35842](https://github.com/airbytehq/airbyte/pull/35842) | Add logging to understand cases with a large number of records with the same LSN.                                                                                          |
-| 3.3.12  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug.                                                                                                                                                           |
-| 3.3.13  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message.                                                                                                                                             |
-| 3.3.11  | 2024-02-20 | [35304](https://github.com/airbytehq/airbyte/pull/35304) | Add config to throw an error on invalid CDC position and enable it by default.                                                                                             |
+| 3.3.23 | 2024-04-02 | [36759](https://github.com/airbytehq/airbyte/pull/36759) | Track latest CDK |
+| 3.3.22 | 2024-04-01 | [36739](https://github.com/airbytehq/airbyte/pull/36739) | Fix useLocalCdk flag. |
+| 3.3.21 | 2024-03-25 | [36584](https://github.com/airbytehq/airbyte/pull/36584) | Adopt Kotlin CDK. |
+| 3.3.20 | 2024-03-25 | [36432](https://github.com/airbytehq/airbyte/pull/36432) | Failure to serialize values from Postgres DB shouldn't fail sync. |
+| 3.3.19 | 2024-03-12 | [36333](https://github.com/airbytehq/airbyte/pull/36333) | Use newest CDK - deprecate dbz iterator |
+| 3.3.18 | 2024-03-12 | [35599](https://github.com/airbytehq/airbyte/pull/35599) | Use newest CDK |
+| 3.3.17 | 2024-03-12 | [35939](https://github.com/airbytehq/airbyte/pull/35939) | Use lsn_commit value instead of lsn_proc for CDC checkpointing logic. |
+| 3.3.16 | 2024-03-11 | [35904](https://github.com/airbytehq/airbyte/pull/35904) | Adopt Java CDK 0.23.1- debezium retries. |
+| 3.3.15 | 2024-02-29 | [34724](https://github.com/airbytehq/airbyte/pull/34724) | Add record count in state message. |
+| 3.3.14 | 2024-03-06 | [35842](https://github.com/airbytehq/airbyte/pull/35842) | Add logging to understand cases with a large number of records with the same LSN. |
+| 3.3.13 | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message. |
+| 3.3.12 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
+| 3.3.11 | 2024-02-20 | [35304](https://github.com/airbytehq/airbyte/pull/35304) | Add config to throw an error on invalid CDC position and enable it by default. |
 | 3.3.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751) | Emit analytics message for invalid CDC cursor.                                                                                                                             |
 | 3.3.9   | 2024-02-13 | [35224](https://github.com/airbytehq/airbyte/pull/35224) | Adopt CDK 0.20.4                                                                                                                                                           |
 | 3.3.8   | 2024-02-08 | [34751](https://github.com/airbytehq/airbyte/pull/34751) | Adopt CDK 0.19.0                                                                                                                                                           |
