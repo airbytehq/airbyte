@@ -36,7 +36,7 @@ constructor(
         recordTransform: CheckedFunction<ResultSet, T, SQLException?>
     ): List<T> {
         dataSource.connection.use { connection ->
-            JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform)
+            toUnsafeStream<T>(query.apply(connection), recordTransform)
                 .use { results ->
                     return results.toList()
                 }
