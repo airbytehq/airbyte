@@ -17,7 +17,7 @@ include = "source_coda"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.51.6"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-coda = "source_coda.run:run"
