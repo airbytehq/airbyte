@@ -40,27 +40,25 @@ tasks.register('generate').configure {
 
 dependencies {
 
-    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
-    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
 
     implementation 'io.debezium:debezium-api:2.4.0.Final'
     implementation 'io.debezium:debezium-embedded:2.4.0.Final'
     implementation 'org.codehaus.plexus:plexus-utils:4.0.0'
 
-    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
-    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:dependencies'))
-    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 
-    testFixturesImplementation ('io.airbyte:airbyte-api:0.55.2') { transitive = false }
     testFixturesImplementation 'net.sourceforge.argparse4j:argparse4j:0.9.0'
     testFixturesImplementation 'io.swagger:swagger-annotations:1.6.13'
     testFixturesImplementation 'org.hamcrest:hamcrest-all:1.3'
     testFixturesImplementation 'org.junit.platform:junit-platform-launcher:1.10.1'
-    testFixturesImplementation 'org.jetbrains.kotlin:kotlin-test'
 
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:datastore-postgres')
-    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:datastore-postgres'))
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres')
+    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres'))
 
     testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'

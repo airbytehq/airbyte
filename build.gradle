@@ -48,6 +48,8 @@ allprojects {
     // Common java configurations
 
     java {
+        withSourcesJar()
+        withJavadocJar()
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
         compileJava {
@@ -62,6 +64,10 @@ allprojects {
             //rawtypes and unchecked are necessary for mockito
             options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked"]
         }
+    }
+
+    tasks.named('sourcesJar').configure {
+        dependsOn tasks.matching { it.name == 'generate' }
     }
 
     compileKotlin {

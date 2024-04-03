@@ -58,7 +58,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
     }
 
     fun getConfigWithConnectionProperties(
-        psqlDb: PostgreSQLContainer<*>?,
+        psqlDb: PostgreSQLContainer<*>,
         dbName: String?,
         additionalParameters: String?
     ): JsonNode {

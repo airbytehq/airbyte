@@ -880,7 +880,7 @@ class CursorPagination(BaseModel):
         description='Value of the cursor defining the next page to fetch.',
         examples=[
             '{{ headers.link.next.cursor }}',
-            "{{ last_records[-1]['key'] }}",
+            "{{ last_record['key'] }}",
             "{{ response['nextPage'] }}",
         ],
         title='Cursor Value',
