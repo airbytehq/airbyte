@@ -107,34 +107,11 @@ jobs:
           new_version="$(poetry version -s)"
           awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="${{ github.event.inputs.changelog-message }}" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
           echo NEW_VERSION=$new_version >> $GITHUB_OUTPUT
-      - name: Bump CDK dependency of source-declarative-manifest
-        run: |
-          cd airbyte-integrations/connectors/source-declarative-manifest
-          poetry add airbyte-cdk==${{ steps.bumpversion.outputs.NEW_VERSION }}
-      - name: Bump version of source-declarative-manifest
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "master" # TODO change to ref?
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          # The pull request number doesn't matter in this bump_version as the documentation file doesn't exist
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '00000' 'Bump CDK version to ${{ steps.bumpversion.outputs.NEW_VERSION }}'"
-          python_registry_token: ${{ secrets.PYPI_TOKEN }}
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          file_pattern: airbyte-cdk/python/pyproject.toml airbyte-cdk/python/CHANGELOG.md airbyte-integrations/connectors/source-declarative-manifest/*
-          commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Python CDK
+          file_pattern: airbyte-cdk/python/pyproject.toml airbyte-cdk/python/CHANGELOG.md
+          commit_message: 🤖 ${{ github.event.inputs.release-type }} bump Python CDK to version $NEW_VERSION
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
       - name: Post failure to Slack channel dev-connectors-extensibility
@@ -210,6 +187,55 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+  bump-manifest-source:
+    name: Bump CDK dependency of source-declarative-manifest
+    needs:
+    - bump-version
+    - publish-cdk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install Poetry
+        id: install_poetry
+        uses: snok/install-poetry@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Bump CDK dependency of source-declarative-manifest
+        run: |
+          cd airbyte-integrations/connectors/source-declarative-manifest
+          poetry add airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}
+      - name: Bump version of source-declarative-manifest
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "master" # TODO change to ref?
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          # The pull request number doesn't matter in this bump_version as the documentation file doesn't exist
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '00000' 'Bump CDK version to ${{ steps.bumpversion.outputs.NEW_VERSION }}'"
+          python_registry_token: ${{ secrets.PYPI_TOKEN }}
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: airbyte-integrations/connectors/source-declarative-manifest/*
+          commit_message: 🤖 Cut version ${{needs.bump-version.outputs.new_cdk_version}} of source-declarative-manifest
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
   update-connector-builder:
     needs:
