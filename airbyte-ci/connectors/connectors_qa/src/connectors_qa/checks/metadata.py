@@ -59,7 +59,7 @@ class CheckConnectorLanguageTag(MetadataCheck):
 
     def get_expected_language_tag(self, connector: Connector) -> str:
         if (connector.code_directory / consts.SETUP_PY_FILE_NAME).exists() or (
-                connector.code_directory / consts.PYPROJECT_FILE_NAME
+            connector.code_directory / consts.PYPROJECT_FILE_NAME
         ).exists():
             return self.PYTHON_LANGUAGE_TAG
         elif (connector.code_directory / consts.GRADLE_FILE_NAME).exists():
@@ -110,8 +110,7 @@ class CheckConnectorCDKTag(MetadataCheck):
         FILE = "cdk:python-file-based"
 
     def get_expected_cdk_tag(self, connector: Connector) -> str:
-        manifest_file = connector.code_directory / connector.technical_name.replace("-",
-                                                                                    "_") / consts.LOW_CODE_MANIFEST_FILE_NAME
+        manifest_file = connector.code_directory / connector.technical_name.replace("-", "_") / consts.LOW_CODE_MANIFEST_FILE_NAME
         pyproject_file = connector.code_directory / consts.PYPROJECT_FILE_NAME
         setup_py_file = connector.code_directory / consts.SETUP_PY_FILE_NAME
         if manifest_file.exists():
