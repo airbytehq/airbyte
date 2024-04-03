@@ -62,7 +62,7 @@ dependencies {
     api 'org.jooq:jooq:3.16.23'
     api 'org.apache.commons:commons-csv:1.10.0'
 
-    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
 
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'io.aesy:datasize:1.0.0'
@@ -79,9 +79,9 @@ dependencies {
     testFixturesApi 'org.testcontainers:testcontainers:1.19.0'
     testFixturesApi 'org.testcontainers:jdbc:1.19.0'
 
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
-    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources'))
-    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:datastore-postgres'))
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-sources'))
+    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres'))
 
     testImplementation 'mysql:mysql-connector-java:8.0.33'
     testImplementation 'org.postgresql:postgresql:42.6.0'
