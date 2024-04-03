@@ -8,6 +8,8 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import datadog.trace.api.Trace
+import io.airbyte.cdk.core.util.ShutdownUtils
+import io.airbyte.cdk.core.util.WriteStreamConsumer
 import io.airbyte.cdk.integrations.util.ApmTraceUtils
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer
@@ -17,7 +19,6 @@ import io.airbyte.commons.io.IOs
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.commons.stream.StreamStatusUtils
-import io.airbyte.commons.string.Strings
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
@@ -25,15 +26,10 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.validation.json.JsonSchemaValidator
 import java.io.*
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.*
 import java.util.function.Consumer
-import java.util.function.Predicate
-import java.util.stream.Collectors
-import org.apache.commons.lang3.ThreadUtils
-import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -56,13 +52,14 @@ internal constructor(
     private val destination: Destination?
     private val source: Source?
     private val featureFlags: FeatureFlags
+    private val shutdownUtils: ShutdownUtils
 
     constructor(
         destination: Destination?
     ) : this(
         IntegrationCliParser(),
         Consumer<AirbyteMessage> { message: AirbyteMessage ->
-            Destination.Companion.defaultOutputRecordCollector(message)
+            Destination.defaultOutputRecordCollector(message)
         },
         destination,
         null
@@ -73,7 +70,7 @@ internal constructor(
     ) : this(
         IntegrationCliParser(),
         Consumer<AirbyteMessage> { message: AirbyteMessage ->
-            Destination.Companion.defaultOutputRecordCollector(message)
+            Destination.defaultOutputRecordCollector(message)
         },
         null,
         source
@@ -91,6 +88,7 @@ internal constructor(
         this.source = source
         this.destination = destination
         this.featureFlags = EnvVariableFeatureFlags()
+        this.shutdownUtils = ShutdownUtils()
         validator = JsonSchemaValidator()
 
         Thread.setDefaultUncaughtExceptionHandler(AirbyteExceptionHandler())
@@ -125,7 +123,7 @@ internal constructor(
         LOGGER.info("Integration config: {}", parsed)
 
         try {
-            when (parsed!!.command) {
+            when (parsed.command) {
                 Command.SPEC ->
                     outputRecordCollector.accept(
                         AirbyteMessage()
@@ -133,16 +131,12 @@ internal constructor(
                             .withSpec(integration.spec())
                     )
                 Command.CHECK -> {
-                    val config = parseConfig(parsed!!.getConfigPath())
+                    val config = parseConfig(parsed.getConfigPath())
                     if (integration is Destination) {
                         DestinationConfig.Companion.initialize(config, integration.isV2Destination)
                     }
                     try {
-                        validateConfig(
-                            integration.spec()!!.connectionSpecification,
-                            config,
-                            "CHECK"
-                        )
+                        validateConfig(integration.spec().connectionSpecification, config, "CHECK")
                     } catch (e: Exception) {
                         // if validation fails don't throw an exception, return a failed connection
                         // check message
@@ -164,8 +158,8 @@ internal constructor(
                     )
                 }
                 Command.DISCOVER -> {
-                    val config = parseConfig(parsed!!.getConfigPath())
-                    validateConfig(integration.spec()!!.connectionSpecification, config, "DISCOVER")
+                    val config = parseConfig(parsed.getConfigPath())
+                    validateConfig(integration.spec().connectionSpecification, config, "DISCOVER")
                     outputRecordCollector.accept(
                         AirbyteMessage()
                             .withType(AirbyteMessage.Type.CATALOG)
@@ -173,8 +167,8 @@ internal constructor(
                     )
                 }
                 Command.READ -> {
-                    val config = parseConfig(parsed!!.getConfigPath())
-                    validateConfig(integration.spec()!!.connectionSpecification, config, "READ")
+                    val config = parseConfig(parsed.getConfigPath())
+                    validateConfig(integration.spec().connectionSpecification, config, "READ")
                     val catalog =
                         parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)
                     val stateOptional =
@@ -193,10 +187,10 @@ internal constructor(
                     }
                 }
                 Command.WRITE -> {
-                    val config = parseConfig(parsed!!.getConfigPath())
-                    validateConfig(integration.spec()!!.connectionSpecification, config, "WRITE")
+                    val config = parseConfig(parsed.getConfigPath())
+                    validateConfig(integration.spec().connectionSpecification, config, "WRITE")
                     // save config to singleton
-                    DestinationConfig.Companion.initialize(
+                    DestinationConfig.initialize(
                         config,
                         (integration as Destination).isV2Destination
                     )
@@ -206,12 +200,15 @@ internal constructor(
                     try {
                         destination!!
                             .getSerializedMessageConsumer(config, catalog, outputRecordCollector)
-                            .use { consumer -> consumeWriteStream(consumer!!) }
+                            ?.let {
+                                it.use { consumer ->
+                                    WriteStreamConsumer(consumer).consumeWriteStream()
+                                }
+                            }
                     } finally {
-                        stopOrphanedThreads()
+                        shutdownUtils.stopOrphanedThreads()
                     }
                 }
-                else -> throw IllegalStateException("Unexpected value: " + parsed!!.command)
             }
         } catch (e: Exception) {
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
@@ -229,7 +226,7 @@ internal constructor(
             if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
                 AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage)
             }
-            if (parsed!!.command == Command.CHECK) {
+            if (parsed.command == Command.CHECK) {
                 // Currently, special handling is required for the CHECK case since the user display
                 // information in
                 // the trace message is
@@ -256,7 +253,7 @@ internal constructor(
         messageIterator: AutoCloseableIterator<AirbyteMessage>,
         recordCollector: Consumer<AirbyteMessage>
     ) {
-        messageIterator!!.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
             LOGGER.debug("Producing messages for stream {}...", s)
         }
         messageIterator.forEachRemaining(recordCollector)
@@ -286,7 +283,7 @@ internal constructor(
                      * stream consumer.
                      */
                     val partitionSize = streamConsumer.parallelism
-                    val partitions = Lists.partition(streams.stream().toList(), partitionSize!!)
+                    val partitions = Lists.partition(streams.stream().toList(), partitionSize)
 
                     // Submit each stream partition for concurrent execution
                     partitions.forEach(
@@ -304,7 +301,7 @@ internal constructor(
             LOGGER.error("Unable to perform concurrent read.", e)
             throw e
         } finally {
-            stopOrphanedThreads()
+            shutdownUtils.stopOrphanedThreads()
         }
     }
 
@@ -319,7 +316,7 @@ internal constructor(
                 produceMessages(messageIterator, outputRecordCollector)
             }
         } finally {
-            stopOrphanedThreads()
+            shutdownUtils.stopOrphanedThreads()
         }
     }
 
@@ -337,7 +334,7 @@ internal constructor(
                 )
             produceMessages(stream, streamStatusTrackingRecordConsumer)
         } catch (e: Exception) {
-            stream!!.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
                 LOGGER.error("Failed to consume from stream {}.", s, e)
             }
             throw RuntimeException(e)
@@ -347,153 +344,7 @@ internal constructor(
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(IntegrationRunner::class.java)
 
-        const val TYPE_AND_DEDUPE_THREAD_NAME: String = "type-and-dedupe"
-
-        /**
-         * Filters threads that should not be considered when looking for orphaned threads at
-         * shutdown of the integration runner.
-         *
-         * **N.B.** Daemon threads don't block the JVM if the main `currentThread` exits, so they
-         * are not problematic. Additionally, ignore database connection pool threads, which stay
-         * active so long as the database connection pool is open.
-         */
-        @VisibleForTesting
-        val ORPHANED_THREAD_FILTER: Predicate<Thread> = Predicate { runningThread: Thread ->
-            (runningThread.name != Thread.currentThread().name &&
-                !runningThread.isDaemon &&
-                TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
-        }
-
-        const val INTERRUPT_THREAD_DELAY_MINUTES: Int = 1
-        const val EXIT_THREAD_DELAY_MINUTES: Int = 2
-
-        const val FORCED_EXIT_CODE: Int = 2
-
-        private val EXIT_HOOK = Runnable { System.exit(FORCED_EXIT_CODE) }
-
         private lateinit var validator: JsonSchemaValidator
-
-        @Throws(Exception::class)
-        internal fun consumeWriteStream(
-            consumer: SerializedAirbyteMessageConsumer,
-            inputStream: InputStream = System.`in`
-        ) {
-            LOGGER.info("Starting buffered read of input stream")
-            consumer.start()
-            inputStream.bufferedReader(StandardCharsets.UTF_8).use {
-                var emptyLines = 0
-                it.lines().forEach { line: String ->
-                    if (line.isNotEmpty()) {
-                        consumer.accept(line, line.toByteArray(StandardCharsets.UTF_8).size)
-                    } else {
-                        emptyLines++
-                        // We've occasionally seen this loop not exit
-                        // maybe it's because we keep getting streams of empty lines?
-                        // TODO: Monitor the logs for occurrences of this log line and if this isn't
-                        // an issue, remove it.
-                        if (emptyLines % 1_000 == 0 && emptyLines < 10_000) {
-                            LOGGER.warn("Encountered $emptyLines empty lines during execution")
-                        }
-                    }
-                }
-                if (emptyLines > 0) {
-                    LOGGER.warn("Encountered $emptyLines empty lines in the input stream.")
-                }
-            }
-            LOGGER.info("Finished buffered read of input stream")
-        }
-
-        /**
-         * Stops any non-daemon threads that could block the JVM from exiting when the main thread
-         * is done.
-         *
-         * If any active non-daemon threads would be left as orphans, this method will schedule some
-         * interrupt/exit hooks after giving it some time delay to close up properly. It is
-         * generally preferred to have a proper closing sequence from children threads instead of
-         * interrupting or force exiting the process, so this mechanism serve as a fallback while
-         * surfacing warnings in logs for maintainers to fix the code behavior instead.
-         *
-         * @param exitHook The [Runnable] exit hook to execute for any orphaned threads.
-         * @param interruptTimeDelay The time to delay execution of the orphaned thread interrupt
-         * attempt.
-         * @param interruptTimeUnit The time unit of the interrupt delay.
-         * @param exitTimeDelay The time to delay execution of the orphaned thread exit hook.
-         * @param exitTimeUnit The time unit of the exit delay.
-         */
-        @VisibleForTesting
-        fun stopOrphanedThreads(
-            exitHook: Runnable = EXIT_HOOK,
-            interruptTimeDelay: Int = INTERRUPT_THREAD_DELAY_MINUTES,
-            interruptTimeUnit: TimeUnit = TimeUnit.MINUTES,
-            exitTimeDelay: Int = EXIT_THREAD_DELAY_MINUTES,
-            exitTimeUnit: TimeUnit = TimeUnit.MINUTES
-        ) {
-            val currentThread = Thread.currentThread()
-
-            val runningThreads =
-                ThreadUtils.getAllThreads()
-                    .stream()
-                    .filter(ORPHANED_THREAD_FILTER)
-                    .collect(Collectors.toList())
-            if (runningThreads.isNotEmpty()) {
-                LOGGER.warn(
-                    """
-                  The main thread is exiting while children non-daemon threads from a connector are still active.
-                  Ideally, this situation should not happen...
-                  Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
-                  The main thread is: {}
-                  """.trimIndent(),
-                    dumpThread(currentThread)
-                )
-                val scheduledExecutorService =
-                    Executors.newSingleThreadScheduledExecutor(
-                        BasicThreadFactory
-                            .Builder() // this thread executor will create daemon threads, so it
-                            // does not block exiting if all other active
-                            // threads are already stopped.
-                            .daemon(true)
-                            .build()
-                    )
-                for (runningThread in runningThreads) {
-                    val str = "Active non-daemon thread: " + dumpThread(runningThread)
-                    LOGGER.warn(str)
-                    // even though the main thread is already shutting down, we still leave some
-                    // chances to the children
-                    // threads to close properly on their own.
-                    // So, we schedule an interrupt hook after a fixed time delay instead...
-                    scheduledExecutorService.schedule(
-                        { runningThread.interrupt() },
-                        interruptTimeDelay.toLong(),
-                        interruptTimeUnit
-                    )
-                }
-                scheduledExecutorService.schedule(
-                    {
-                        if (
-                            ThreadUtils.getAllThreads().stream().anyMatch { runningThread: Thread ->
-                                !runningThread.isDaemon && runningThread.name != currentThread.name
-                            }
-                        ) {
-                            LOGGER.error(
-                                "Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n"
-                            )
-                            exitHook.run()
-                        }
-                    },
-                    exitTimeDelay.toLong(),
-                    exitTimeUnit
-                )
-            }
-        }
-
-        private fun dumpThread(thread: Thread): String {
-            return String.format(
-                "%s (%s)\n Thread stacktrace: %s",
-                thread.name,
-                thread.state,
-                Strings.join(java.util.List.of(*thread.stackTrace), "\n        at ")
-            )
-        }
 
         @Throws(Exception::class)
         private fun validateConfig(
