@@ -277,7 +277,7 @@ protected constructor(val container: C) : AutoCloseable {
 
         fun withCredentials(): B {
             return this.with(JdbcUtils.USERNAME_KEY, testDatabase!!.userName)
-                .with(JdbcUtils.PASSWORD_KEY, testDatabase.password)
+                .with(JdbcUtils.PASSWORD_KEY, testDatabase.password!!)
         }
 
         fun withResolvedHostAndPort(): B {
@@ -298,7 +298,7 @@ protected constructor(val container: C) : AutoCloseable {
         }
 
         open fun withSsl(sslMode: MutableMap<Any?, Any?>?): B {
-            return with(JdbcUtils.SSL_KEY, true)!!.with(JdbcUtils.SSL_MODE_KEY, sslMode)
+            return with(JdbcUtils.SSL_KEY, true)!!.with(JdbcUtils.SSL_MODE_KEY, sslMode!!)
         }
 
         companion object {
