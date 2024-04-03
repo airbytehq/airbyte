@@ -44,11 +44,11 @@ Connectors must have a language tag in their metadata. It must be set in the `ta
 
 Python connectors must have a CDK tag in their metadata. It must be set in the `tags` field in metadata.yaml. The values can be `cdk:low-code`, `cdk:python`, or `cdk:file`.
 
-### Python certified connectors must have value for maximum rate limit reset time set in metadata
+### Python certified connectors must have value for maximum requests rate limit reset time set in metadata
 *Applies to the following connector types: source*
 *Applies to the following connector languages: python, low-code*
 
-Python [certified](https://docs.airbyte.com/integrations/connector-support-levels/#certified) connectors must have value for maximum rate limit reset time 'maxSecondsBetweenMessages' set in their metadata.yaml files.
+Python [certified](https://docs.airbyte.com/integrations/connector-support-levels/#certified) connectors must have value for maximum requests rate limit reset time 'maxSecondsBetweenMessages' set in their metadata.yaml files. This value represents time in seconds.
 ## 📦 Packaging
 
 ### Connectors must use Poetry for dependency management
