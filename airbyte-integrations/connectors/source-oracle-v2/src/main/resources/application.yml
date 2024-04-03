@@ -1,0 +1,7 @@
+micronaut:
+  application:
+    name: source-oracle-v2
+
+airbyte:
+  connector:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/oracle"

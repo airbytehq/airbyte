@@ -59,6 +59,9 @@ dependencies {
     api 'org.jooq:jooq:3.16.23'
     api 'org.apache.commons:commons-csv:1.10.0'
 
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
 
     implementation 'commons-cli:commons-cli:1.4'
@@ -75,6 +78,9 @@ dependencies {
 
     testFixturesApi 'org.testcontainers:testcontainers:1.19.0'
     testFixturesApi 'org.testcontainers:jdbc:1.19.0'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-sources'))

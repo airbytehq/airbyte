@@ -1,0 +1,51 @@
+plugins {
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = true
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.oracle.OracleSource'
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError',
+            '-XX:MaxRAMPercentage=75.0',
+            '-Dmicronaut.environments=connector,source'
+    ]
+}
+
+dependencies {
+    // CDK
+
+    implementation 'com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39'
+    implementation 'com.networknt:json-schema-validator:1.4.0'
+    implementation 'org.apache.sshd:sshd-mina:2.12.1'
+    api 'com.fasterxml.jackson.module:jackson-module-kotlin'
+
+    api "info.picocli:picocli:4.7.5"
+    api "io.micronaut:micronaut-inject-java:4.3.13"
+    api "io.micronaut:micronaut-runtime:4.3.7"
+    api 'io.micronaut.picocli:micronaut-picocli:5.2.0'
+    api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+
+    ksp "info.picocli:picocli-codegen:4.7.5"
+    ksp "io.micronaut:micronaut-inject-java:4.3.13"
+    ksp "io.micronaut:micronaut-inject-kotlin:4.3.13"
+
+
+    // Pin to 1.13.6 due to https://github.com/mockk/mockk/issues/1133
+    testImplementation 'io.mockk:mockk:1.13.6'
+    testImplementation 'io.micronaut.test:micronaut-test-core:4.2.1'
+    testImplementation 'io.micronaut.test:micronaut-test-junit5:4.2.1'
+
+    // CONNECTOR
+    // https://mvnrepository.com/artifact/com.oracle.database.jdbc/ojdbc11
+    implementation 'com.oracle.database.jdbc:ojdbc11-production:23.3.0.23.09'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
+
+    testImplementation 'io.github.deblockt:json-diff:1.0.1'
+    testImplementation 'org.testcontainers:oracle-xe:1.19.4'
+}

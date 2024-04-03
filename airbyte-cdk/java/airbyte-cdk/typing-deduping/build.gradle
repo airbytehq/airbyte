@@ -32,10 +32,14 @@ dependencies {
 
     implementation 'commons-codec:commons-codec:1.16.0'
 
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
     testFixturesImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 }
