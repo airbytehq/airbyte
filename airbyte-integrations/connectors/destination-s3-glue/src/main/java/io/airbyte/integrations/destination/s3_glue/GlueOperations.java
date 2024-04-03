@@ -124,7 +124,15 @@ public class GlueOperations implements MetastoreOperations {
         };
       }
       case "boolean" -> "boolean";
-      case "integer" -> "bigint"; // bigint required here for Parquet + Glue + Redshift queryability
+      case "integer" -> {yield switch (s3Format) { 
+          // Default to use decimal as it is a more precise type and allows for large values
+          // Set the default scale 38 to allow for the widest range of values
+          case JSONL -> "decimal(38)";
+          // Avro conversion uses doubles:
+          case PARQUET -> "bigint"; // bigint required here for Parquet + Glue + Redshift queryability
+          default -> throw new RuntimeException("Unexpected output format: " + s3Format);
+        };
+      }
       case "array" -> {
         String arrayType = "array<";
         Set<String> itemTypes;
