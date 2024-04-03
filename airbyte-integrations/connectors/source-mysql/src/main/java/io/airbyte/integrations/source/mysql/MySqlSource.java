@@ -396,7 +396,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       LOGGER.info("Using PK + CDC");
       return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
     } else {
+      LOGGER.info("catalog to be judged:  " + catalog);
       if (isAnyStreamIncrementalSyncMode(catalog)) {
+        LOGGER.info("catalog judged to be incremental true:  " + catalog);
+
         LOGGER.info("Syncing via Primary Key");
         final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
         final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
