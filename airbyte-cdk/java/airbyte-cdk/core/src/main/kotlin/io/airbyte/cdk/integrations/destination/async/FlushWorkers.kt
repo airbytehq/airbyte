@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination.async
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.buffers.StreamAwareQueue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
@@ -18,7 +19,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
@@ -46,26 +46,23 @@ private val logger = KotlinLogging.logger {}
 class FlushWorkers
 @JvmOverloads
 constructor(
-    private val bufferDequeue: io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue,
+    private val stateManager: GlobalAsyncStateManager,
+    private val bufferDequeue: BufferDequeue,
     private val flusher: DestinationFlushFunction,
     private val outputRecordCollector: Consumer<AirbyteMessage>,
+    private val workerPool: ExecutorService,
     private val flushFailure: FlushFailure,
-    private val stateManager: GlobalAsyncStateManager,
-    private val workerPool: ExecutorService = Executors.newFixedThreadPool(5),
 ) : AutoCloseable {
     private val supervisorThread: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
     private val debugLoop: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val runningFlushWorkers = RunningFlushWorkers()
     private val detectStreamToFlush: DetectStreamToFlush
 
-    private val isClosing = AtomicBoolean(false)
-
     init {
         detectStreamToFlush =
             DetectStreamToFlush(
                 bufferDequeue,
                 runningFlushWorkers,
-                isClosing,
                 flusher,
             )
     }
@@ -203,7 +200,7 @@ constructor(
     @Throws(Exception::class)
     override fun close() {
         logger.info { "Closing flush workers -- waiting for all buffers to flush" }
-        isClosing.set(true)
+        detectStreamToFlush.isClosing.set(true)
         // wait for all buffers to be flushed.
         while (true) {
             val streamDescriptorToRemainingRecords =

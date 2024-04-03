@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.destination.async
 
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
-import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,7 +24,6 @@ class FlushThresholdTest {
 
     @Test
     internal fun testBaseThreshold() {
-        val isClosing = AtomicBoolean(false)
         val bufferDequeue =
             Mockito.mock(
                 BufferDequeue::class.java,
@@ -34,7 +32,6 @@ class FlushThresholdTest {
             DetectStreamToFlush(
                 bufferDequeue,
                 Mockito.mock(RunningFlushWorkers::class.java),
-                isClosing,
                 flusher,
             )
         Assertions.assertEquals(SIZE_10MB, detect.computeQueueThreshold())
@@ -42,7 +39,6 @@ class FlushThresholdTest {
 
     @Test
     internal fun testClosingThreshold() {
-        val isClosing = AtomicBoolean(true)
         val bufferDequeue =
             Mockito.mock(
                 BufferDequeue::class.java,
@@ -51,15 +47,14 @@ class FlushThresholdTest {
             DetectStreamToFlush(
                 bufferDequeue,
                 Mockito.mock(RunningFlushWorkers::class.java),
-                isClosing,
                 flusher,
             )
+        detect.isClosing.set(true)
         Assertions.assertEquals(0, detect.computeQueueThreshold())
     }
 
     @Test
     internal fun testEagerFlushThresholdBelowThreshold() {
-        val isClosing = AtomicBoolean(false)
         val bufferDequeue =
             Mockito.mock(
                 BufferDequeue::class.java,
@@ -70,7 +65,6 @@ class FlushThresholdTest {
             DetectStreamToFlush(
                 bufferDequeue,
                 Mockito.mock(RunningFlushWorkers::class.java),
-                isClosing,
                 flusher,
             )
         Assertions.assertEquals(SIZE_10MB, detect.computeQueueThreshold())
@@ -78,7 +72,6 @@ class FlushThresholdTest {
 
     @Test
     internal fun testEagerFlushThresholdAboveThreshold() {
-        val isClosing = AtomicBoolean(false)
         val bufferDequeue =
             Mockito.mock(
                 BufferDequeue::class.java,
@@ -89,7 +82,6 @@ class FlushThresholdTest {
             DetectStreamToFlush(
                 bufferDequeue,
                 Mockito.mock(RunningFlushWorkers::class.java),
-                isClosing,
                 flusher,
             )
         Assertions.assertEquals(0, detect.computeQueueThreshold())

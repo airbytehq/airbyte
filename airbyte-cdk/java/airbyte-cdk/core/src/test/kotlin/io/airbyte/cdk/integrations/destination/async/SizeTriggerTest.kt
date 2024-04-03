@@ -9,7 +9,6 @@ import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -43,8 +42,7 @@ class SizeTriggerTest {
             )
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L))
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).first)
     }
 
@@ -60,8 +58,7 @@ class SizeTriggerTest {
             )
         Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
         Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L))
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         // if above threshold, triggers
         assertEquals(true, detect.isSizeTriggered(DESC1, 0).first)
         // if below threshold, no trigger
@@ -83,8 +80,7 @@ class SizeTriggerTest {
         Mockito.`when`(runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()))
             .thenReturn(emptyList())
             .thenReturn(listOf(Optional.of(SIZE_10MB)))
-        val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+        val detect = DetectStreamToFlush(bufferDequeue, runningFlushWorkers, flusher)
         assertEquals(true, detect.isSizeTriggered(DESC1, 0).first)
         assertEquals(false, detect.isSizeTriggered(DESC1, 0).first)
     }
