@@ -1,0 +1,199 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "url",
+    "directReports",
+    "email",
+    "tasks",
+    "title",
+    "status",
+    "isAdmin",
+    "customAttributes"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The api id of the user"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "url": {
+      "type": "string",
+      "description": "The URL of this object"
+    },
+    "manager": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the referenced object"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of the referenced object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url of the referenced object"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "directReports": {
+      "type": "object",
+      "required": [
+        "object",
+        "url"
+      ],
+      "properties": {
+        "object": {
+          "type": "string",
+          "description": "undefined"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url to retrieve the list"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "department": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the referenced object"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of the referenced object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url of the referenced object"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "name": {
+      "type": "string",
+      "description": "The full name of the user"
+    },
+    "preferredName": {
+      "type": "string",
+      "description": "The preferred name of the user"
+    },
+    "email": {
+      "type": "string",
+      "description": "The email of the user"
+    },
+    "tasks": {
+      "type": "object",
+      "required": [
+        "object",
+        "url"
+      ],
+      "properties": {
+        "object": {
+          "type": "string",
+          "description": "undefined"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url to retrieve the list"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "title": {
+      "type": "string",
+      "description": "The title of the user"
+    },
+    "status": {
+      "type": "string",
+      "description": "A lifecycle status for a user",
+      "enum": [
+        "ACTIVE",
+        "INVITED",
+        "CREATED",
+        "DEACTIVATED"
+      ],
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date",
+      "description": "The day the user started"
+    },
+    "birthDate": {
+      "type": "string",
+      "format": "date",
+      "description": "The day the user was born"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "The user's preferred timezone. This does NOT fallback to the company timezone."
+    },
+    "gender": {
+      "type": "string",
+      "description": "The gender a user can set on their profile",
+      "enum": [
+        "Female",
+        "Male",
+        "NonBinary"
+      ],
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "isAdmin": {
+      "type": "boolean",
+      "description": "Does this user have admin permissions in Lattice"
+    },
+    "externalUserId": {
+      "type": "string",
+      "description": "The external user ID associated with the user (typically set by their HRIS)"
+    },
+    "createdAt": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The time the user was created"
+    },
+    "updatedAt": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The time the user was last updated"
+    },
+    "customAttributes": {
+      "type": "object",
+      "required": [
+        "object",
+        "url"
+      ],
+      "properties": {
+        "object": {
+          "type": "string",
+          "description": "undefined"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url to retrieve the list"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

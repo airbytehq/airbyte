@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "enum": [
+    "Admin",
+    "AdminManager",
+    "AdminManagerEmployee",
+    "Everyone"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

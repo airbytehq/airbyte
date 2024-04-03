@@ -1,0 +1,364 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "type"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The api id of the user"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the task"
+    },
+    "goal": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url",
+        "owners",
+        "childGoals",
+        "tags",
+        "name",
+        "state",
+        "goalType",
+        "isPrivate",
+        "dueDate",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The api id of the user"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of this object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The URL of this object"
+        },
+        "owners": {
+          "type": "object",
+          "required": [
+            "object",
+            "hasMore",
+            "data"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "description": "undefined"
+            },
+            "endingCursor": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "object",
+                  "url"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The id of the referenced object"
+                  },
+                  "object": {
+                    "type": "string",
+                    "description": "The type of the referenced object"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The url of the referenced object"
+                  }
+                },
+                "$schema": "http://json-schema.org/schema#"
+              },
+              "description": "undefined"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "department": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "parentGoal": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "childGoals": {
+          "type": "object",
+          "required": [
+            "object",
+            "hasMore",
+            "data"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "description": "undefined"
+            },
+            "endingCursor": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "object",
+                  "url"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The id of the referenced object"
+                  },
+                  "object": {
+                    "type": "string",
+                    "description": "The type of the referenced object"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The url of the referenced object"
+                  }
+                },
+                "$schema": "http://json-schema.org/schema#"
+              },
+              "description": "undefined"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "tags": {
+          "type": "object",
+          "required": [
+            "object",
+            "hasMore",
+            "data"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "description": "undefined"
+            },
+            "endingCursor": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "object",
+                  "url"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The id of the referenced object"
+                  },
+                  "object": {
+                    "type": "string",
+                    "description": "The type of the referenced object"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The url of the referenced object"
+                  }
+                },
+                "$schema": "http://json-schema.org/schema#"
+              },
+              "description": "undefined"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "name": {
+          "type": "string",
+          "description": "The given name of the goal. This is often the objective"
+        },
+        "description": {
+          "type": "string",
+          "description": "The markdown text description of the goal"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "Draft",
+            "Active",
+            "Ended",
+            "Archived"
+          ],
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "NotUpdated",
+            "OnTrack",
+            "Progressing",
+            "OffTrack"
+          ],
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "goalType": {
+          "type": "string",
+          "enum": [
+            "Company",
+            "Department",
+            "Group",
+            "Individual"
+          ],
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "priority": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The priority set for the goal"
+        },
+        "amountType": {
+          "type": "string",
+          "enum": [
+            "Percent",
+            "Dollar",
+            "Digit",
+            "Binary"
+          ],
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "startingAmount": {
+          "type": "number",
+          "format": "float",
+          "description": "The starting amount when the goal was set. Should not change after goal is set (unless edited). null if the goal is binary"
+        },
+        "endingAmount": {
+          "type": "number",
+          "format": "float",
+          "description": "The target amount to get to. Should not change after goal is set (unless edited). null if the goal is binary"
+        },
+        "currentAmount": {
+          "type": "number",
+          "format": "float",
+          "description": "The current amount the goal is at. This will change over time as the goal is updated. Should no longer change once the goal is ended or archived"
+        },
+        "isPrivate": {
+          "type": "boolean",
+          "description": "True if the goal is private and should only be shown to a subset of users"
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The scheduled date the goal should be completed by"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The date the goal starts"
+        },
+        "lastUpdatedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The last time an update was made against this goal. This is different than the \"updatedAt\" field which is the last time the goal itself was changed"
+        },
+        "publishedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the goal was taken active"
+        },
+        "completedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the goal was archived"
+        },
+        "archivedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the goal was archived"
+        },
+        "createdAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the goal was created"
+        },
+        "updatedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the goal was last updated"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,235 @@
+version: "0.29.0"
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_lattice/schemas/{{ parameters['name'] }}.json"
+  requester:
+    type: HttpRequester
+    url_base: "https://api.latticehq.com/v1"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      error_handler:
+        type: CompositeErrorHandler
+        # ignore 403 error but retry default retriable http errors (429, 500 - 600)
+        error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [403, 404]
+                action: IGNORE
+          - type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [429]
+                action: RETRY
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+  single_record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: [ ]
+  paginated_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: [ "data" ]
+  single_record_paginator:
+    type: NoPagination
+  paginated_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response['endingCursor'] }}"
+      # For debugging
+      # stop_condition: "{{ true }}"
+      # page_size: 1
+      stop_condition: "{{ not response['hasMore']}}"
+      page_size: 100
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "limit"
+    page_token_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "startingAfter"
+  paginated_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/paginated_selector"
+    paginator:
+      $ref: "#/definitions/paginated_paginator"
+  single_record_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/single_record_selector"
+    paginator:
+      type: NoPagination
+  review_cycle_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/review_cycles_stream"
+        parent_key: "id"
+        partition_field: "parent_id"
+  question_partition_router:
+    type: CustomPartitionRouter
+    class_name: source_lattice.components.DedupedIdSubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/reviews_stream"
+          retriever:
+            $ref: "#/definitions/reviews_retriever"
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: [ "data", "*", "question" ]
+        parent_key: "id"
+        partition_field: "parent_id"
+  question_revision_partition_router:
+    type: CustomPartitionRouter
+    class_name: source_lattice.components.DedupedIdSubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/reviews_stream"
+          retriever:
+            $ref: "#/definitions/reviews_retriever"
+            record_selector:
+              type: RecordSelector
+              extractor:
+                type: DpathExtractor
+                field_path: [ "data", "*", "questionRevision" ]
+        parent_key: "id"
+        partition_field: "parent_id"
+  add_parent_id_transformation:
+    type: AddFields
+    fields:
+      - path: [ "parent_id" ]
+        value: "{{ stream_slice.parent_id }}"
+  single_record_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/single_record_retriever"
+    primary_key: "id"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    transformations:
+      - $ref: "#/definitions/add_parent_id_transformation"
+  paginated_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/paginated_retriever"
+    primary_key: "id"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    transformations:
+      - $ref: "#/definitions/add_parent_id_transformation"
+  users_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "user"
+      path: "/users"
+  departments_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "department"
+      path: "/departments"
+  goals_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "goal"
+      path: "/goals"
+  feedbacks_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "feedback"
+      path: "/feedbacks"
+  review_cycles_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "reviewcycle"
+      path: "/reviewCycles"
+  reviews_retriever:
+      $ref: "#/definitions/paginated_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/reviewCycle/{{ stream_slice.parent_id }}/reviews"
+      partition_router:
+        $ref: "#/definitions/review_cycle_partition_router"
+  reviews_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "review"
+    retriever:
+      $ref: "#/definitions/reviews_retriever"
+  reviewees_stream:
+    $ref: "#/definitions/paginated_base_stream"
+    $parameters:
+      name: "reviewee"
+    retriever:
+      $ref: "#/definitions/paginated_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/reviewCycle/{{ stream_slice.parent_id }}/reviewees"
+      partition_router:
+        $ref: "#/definitions/review_cycle_partition_router"
+  questions_stream:
+    $ref: "#/definitions/single_record_base_stream"
+    $parameters:
+      name: "question"
+    retriever:
+      $ref: "#/definitions/single_record_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/question/{{ stream_slice.parent_id }}"
+      partition_router:
+        $ref: "#/definitions/question_partition_router"
+  question_revisions_stream:
+    $ref: "#/definitions/single_record_base_stream"
+    $parameters:
+      name: "questionrevision"
+    retriever:
+      $ref: "#/definitions/single_record_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/questionRevision/{{ stream_slice.parent_id }}"
+      partition_router:
+        $ref: "#/definitions/question_revision_partition_router"
+
+streams:
+  - "#/definitions/users_stream"
+  - "#/definitions/departments_stream"
+  - "#/definitions/goals_stream"
+  - "#/definitions/feedbacks_stream"
+  - "#/definitions/review_cycles_stream"
+  - "#/definitions/reviews_stream"
+  - "#/definitions/reviewees_stream"
+  - "#/definitions/questions_stream"
+  - "#/definitions/question_revisions_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "user"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/lattice
+  connection_specification:
+    title: Lattice Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        description: API Key
+        airbyte_secret: true

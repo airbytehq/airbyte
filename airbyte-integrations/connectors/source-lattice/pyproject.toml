@@ -1,0 +1,27 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-lattice"
+description = "Source implementation for lattice."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/lattice"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+# packages = [ { include = "source_lattice", from="src"}, {include = "main.py", from = "src"} ]
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0"
+
+[tool.poetry.scripts]
+source-lattice = "source_lattice.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+pytest-mock = "^3.6.1"
+pytest = "^6.1"

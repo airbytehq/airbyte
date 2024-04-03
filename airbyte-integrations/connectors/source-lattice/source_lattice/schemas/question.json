@@ -1,0 +1,71 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "url",
+    "body",
+    "hasFreeFormText"
+  ],
+  "properties": {
+    "parent_id": {
+      "type": "string",
+      "description": "The parent id that caused the request, if any."
+    },
+    "id": {
+      "type": "string",
+      "description": "The api id of the review"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "url": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "body": {
+      "type": "string",
+      "description": "The text of the question being asked"
+    },
+    "description": {
+      "type": "string",
+      "description": "The description of the question. This text can be in markdown"
+    },
+    "hasFreeFormText": {
+      "type": "boolean",
+      "description": "Does this question ask for a free form text response"
+    },
+    "ratingScale": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "value",
+          "descriptor"
+        ],
+        "properties": {
+          "value": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The numeric rating value"
+          },
+          "descriptor": {
+            "type": "string",
+            "description": "The qualitative descriptor for this rating"
+          }
+        },
+        "$schema": "http://json-schema.org/schema#"
+      },
+      "description": "The qualitative rating scale for this question. null if this is not a rating question"
+    },
+    "choices": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The choices aviable for multiple choice/select. null if this is not a multiple choice question"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

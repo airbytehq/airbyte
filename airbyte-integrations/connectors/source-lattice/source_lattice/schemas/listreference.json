@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "required": [
+    "object",
+    "url"
+  ],
+  "properties": {
+    "object": {
+      "type": "string",
+      "description": "undefined"
+    },
+    "url": {
+      "type": "string",
+      "description": "The url to retrieve the list"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

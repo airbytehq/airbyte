@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "enum": [
+    "Self",
+    "Peer",
+    "Upward",
+    "Downward",
+    "ScoredAttribute"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

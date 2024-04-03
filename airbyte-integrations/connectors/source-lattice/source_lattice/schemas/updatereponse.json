@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "question"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The api id of the value"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "question": {
+      "type": "string",
+      "description": "The question that was asked by the manager"
+    },
+    "answer": {
+      "type": "string",
+      "description": "(markdown) The response given by the update author"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

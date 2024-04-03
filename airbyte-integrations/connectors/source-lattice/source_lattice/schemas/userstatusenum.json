@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "description": "A lifecycle status for a user",
+  "enum": [
+    "ACTIVE",
+    "INVITED",
+    "CREATED",
+    "DEACTIVATED"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

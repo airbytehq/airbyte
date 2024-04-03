@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "description": "The gender a user can set on their profile",
+  "enum": [
+    "Female",
+    "Male",
+    "NonBinary"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,281 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "type",
+    "reviewCycle",
+    "reviewee"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The api id of the user"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the task"
+    },
+    "reviewCycle": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url",
+        "reviewees",
+        "reviews",
+        "name",
+        "stage",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The api id of the review"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of this object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The type of this object"
+        },
+        "creator": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "reviewees": {
+          "type": "object",
+          "required": [
+            "object",
+            "url"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url to retrieve the list"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "reviews": {
+          "type": "object",
+          "required": [
+            "object",
+            "url"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url to retrieve the list"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "name": {
+          "type": "string",
+          "description": "The given name of the review cycle"
+        },
+        "stage": {
+          "type": "string",
+          "description": "The type of stages a review cycle can be in",
+          "enum": [
+            "Draft",
+            "PreLaunch",
+            "Launching",
+            "PeerSelection",
+            "CollectingReviews",
+            "Calibration",
+            "Ended"
+          ],
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "peerSelectionStartedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time peer selection was kicked off"
+        },
+        "reviewsStartedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time writting reviews was kicked off"
+        },
+        "reviewsEndedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time writting reviews was ended"
+        },
+        "createdAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the review cycle was created"
+        },
+        "updatedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the review cycle was last updated"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "reviewee": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url",
+        "reviewCycle",
+        "user",
+        "reviews",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The api id of the reviewee"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of this object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The type of this object"
+        },
+        "reviewCycle": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "user": {
+          "type": "object",
+          "required": [
+            "id",
+            "object",
+            "url"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id of the referenced object"
+            },
+            "object": {
+              "type": "string",
+              "description": "The type of the referenced object"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url of the referenced object"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "reviews": {
+          "type": "object",
+          "required": [
+            "object",
+            "url"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "description": "undefined"
+            },
+            "url": {
+              "type": "string",
+              "description": "The url to retrieve the list"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#"
+        },
+        "revieweeFacingPDFUrl": {
+          "type": "string",
+          "description": "The URL of PDF that is shared with the reviewee. If the reviewee is not yet closed returns null"
+        },
+        "managerFacingPDFUrl": {
+          "type": "string",
+          "description": "The URL of PDF that is shared with the reviewee's manager. This PDF may have more sensitive information than what is shared with the reviewee. If the reviewee is not yet closed returns null"
+        },
+        "closedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the reviewee was \"closed\". A reviewee is closed when reviews can no longer be summited for the reviewee"
+        },
+        "esignatureGivenAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the reviewee gave their \"e-signature\" in Lattice. Confirming that they received their review packet"
+        },
+        "createdAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the reviewee was created"
+        },
+        "updatedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the reviewee was last updated"
+        },
+        "responsesReleasedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the reviewee was last updated"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

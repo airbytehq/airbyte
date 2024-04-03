@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "enum": [
+    "Draft",
+    "Active",
+    "Ended",
+    "Archived"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

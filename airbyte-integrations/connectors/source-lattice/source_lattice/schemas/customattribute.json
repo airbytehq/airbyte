@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "url",
+    "name",
+    "type",
+    "visibility"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The API id of this object"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "url": {
+      "type": "string",
+      "description": "The URL of this object"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the custom attribute"
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of the custom attribute"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "Admin",
+        "AdminManager",
+        "AdminManagerEmployee",
+        "Everyone"
+      ],
+      "$schema": "http://json-schema.org/schema#"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

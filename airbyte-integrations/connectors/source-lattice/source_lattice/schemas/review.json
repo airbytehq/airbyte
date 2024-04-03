@@ -1,0 +1,277 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "object",
+    "url",
+    "reviewee",
+    "reviewer",
+    "question",
+    "questionRevision",
+    "reviewType"
+  ],
+  "properties": {
+    "parent_id": {
+      "type": "string",
+      "description": "The parent id that caused the request, if any."
+    },
+    "id": {
+      "type": "string",
+      "description": "The api id of the review request"
+    },
+    "object": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "url": {
+      "type": "string",
+      "description": "The type of this object"
+    },
+    "reviewee": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the referenced object"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of the referenced object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url of the referenced object"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "reviewer": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the referenced object"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of the referenced object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url of the referenced object"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the referenced object"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of the referenced object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url of the referenced object"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "questionRevision": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the referenced object"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of the referenced object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url of the referenced object"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "competency": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the referenced object"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of the referenced object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url of the referenced object"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "goal": {
+      "type": "object",
+      "required": [
+        "id",
+        "object",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The id of the referenced object"
+        },
+        "object": {
+          "type": "string",
+          "description": "The type of the referenced object"
+        },
+        "url": {
+          "type": "string",
+          "description": "The url of the referenced object"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "reviewType": {
+      "type": "string",
+      "enum": [
+        "Self",
+        "Peer",
+        "Upward",
+        "Downward",
+        "ScoredAttribute"
+      ],
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "response": {
+      "type": "object",
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "rating": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The numeric rating given by the reviewer. null if the question is not a rating question"
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The choices the review chose for the question. If the question only allows for one choice there will be only one choice in the list. null if the question was not multiple choice or select"
+        },
+        "comment": {
+          "type": "string",
+          "description": "The free form text response given by the reiewer. null if the question did not contain free form text"
+        },
+        "commentSentiment": {
+          "type": "number",
+          "format": "float",
+          "description": "The NLP sentiment of the free form text response. Is a number between 1 and 10. Where 1 is the lowest sentiment and 10 is the highest. null if the question did not ask for free form text or sentiment has not been calculated yet"
+        },
+        "createdAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the response was first created"
+        },
+        "updatedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the response was last updated"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "calibratedResponse": {
+      "type": "object",
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "rating": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The numeric rating given by the reviewer. null if the question is not a rating question"
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The choices the review chose for the question. If the question only allows for one choice there will be only one choice in the list. null if the question was not multiple choice or select"
+        },
+        "comment": {
+          "type": "string",
+          "description": "The free form text response given by the reiewer. null if the question did not contain free form text"
+        },
+        "commentSentiment": {
+          "type": "number",
+          "format": "float",
+          "description": "The NLP sentiment of the free form text response. Is a number between 1 and 10. Where 1 is the lowest sentiment and 10 is the highest. null if the question did not ask for free form text or sentiment has not been calculated yet"
+        },
+        "createdAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the response was first created"
+        },
+        "updatedAt": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The time the response was last updated"
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "submittedAt": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The time the review request was finalized by the reviewer"
+    },
+    "declinedAt": {
+      "type": "integer",
+      "format": "int32",
+      "description": "The time the reviewer marked the review request as \"declined\"."
+    },
+    "calibrationEnded": {
+      "type": "boolean",
+      "description": "Whether the calibration phase has ended"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}
