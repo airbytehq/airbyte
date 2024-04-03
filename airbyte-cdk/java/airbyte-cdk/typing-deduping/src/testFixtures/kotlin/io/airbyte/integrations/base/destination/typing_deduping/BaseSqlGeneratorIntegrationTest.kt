@@ -1669,7 +1669,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                         .withStream(
                             AirbyteStream()
                                 .withName(streamName)
-                                .withNamespace(rawNamespace)
+                                .withNamespace(finalNamespace)
                                 .withJsonSchema(
                                     Jsons.jsonNode(
                                         mapOf(
@@ -1691,7 +1691,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val streamId = stream.id
         val columnId1: ColumnId = stream.columns?.filter { columnName1 == it.key.originalName }?.keys?.first()!!
         val columnId2: ColumnId = stream.columns?.filter { columnName2 == it.key.originalName }?.keys?.first()!!
-        LOGGER.info("Trying to use column names {} AND {}", columnId1.name, columnId2.name)
+        LOGGER.info("Trying to use column names {} and {}", columnId1.name, columnId2.name)
 
         try {
             createNamespace(rawNamespace)
