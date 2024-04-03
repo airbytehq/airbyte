@@ -107,6 +107,10 @@ jobs:
           new_version="$(poetry version -s)"
           awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="${{ github.event.inputs.changelog-message }}" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
           echo NEW_VERSION=$new_version >> $GITHUB_OUTPUT
+      - name: Bump CDK dependency of source-declarative-manifest
+        run: |
+          cd airbyte-integrations/connectors/source-declarative-manifest
+          poetry add airbyte-cdk==${{ steps.bumpversion.outputs.NEW_VERSION }}
       - name: Bump version of source-declarative-manifest
         uses: ./.github/actions/run-airbyte-ci
         with:
