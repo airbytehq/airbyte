@@ -122,6 +122,7 @@ class ConnectorConfigurationPropertySource(commandLine: CommandLine) :
             return map.flatMap { flattenValue(it, prefix).toList() }.toMap()
         }
 
+        @Suppress("UNCHECKED_CAST")
         private fun flattenValue(
             entry: Map.Entry<String, Any>,
             prefix: String,
