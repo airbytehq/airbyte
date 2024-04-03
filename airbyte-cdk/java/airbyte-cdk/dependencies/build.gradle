@@ -54,7 +54,7 @@ dependencies {
     implementation 'me.andrz.jackson:jackson-json-reference-core:0.3.2' // needed so that we can follow $ref when parsing json
     implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
 
-    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 
     testFixturesApi ('io.airbyte:airbyte-api:0.55.2') { transitive = false }
     testFixturesApi 'org.jetbrains.kotlin:kotlin-test'
