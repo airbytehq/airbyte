@@ -8,8 +8,8 @@ RUN apk --no-cache upgrade \
 
 WORKDIR /airbyte/integration_code
 COPY setup.py ./
-RUN pip install --prefix=/install .
-
+#RUN pip install --prefix=/install .
+RUN echo "Cython<3" > cython_constraint.txt && PIP_CONSTRAINT=cython_constraint.txt pip install --prefix=/install .
 
 FROM base
 COPY --from=builder /install /usr/local
