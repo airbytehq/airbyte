@@ -28,17 +28,12 @@ class CustomAuthenticator(NoAuth):
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._email = InterpolatedString.create(self.email, parameters=parameters).eval(self.config)
         self._password = InterpolatedString.create(self.password, parameters=parameters).eval(self.config)
-        
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Attach the page access token to params to authenticate on the HTTP request"""
         if self._access_token is None or self._refreshToken is None:
             self._access_token, self._refreshToken = self.generate_access_token()
-        headers = {
-            self.auth_header: f"Bearer {self._access_token}", 
-            "Accept": "application/json", 
-            "api-version": "1.0"
-        }
+        headers = {self.auth_header: f"Bearer {self._access_token}", "Accept": "application/json", "api-version": "1.0"}
         request.headers.update(headers)
         return request
 
@@ -50,14 +45,9 @@ class CustomAuthenticator(NoAuth):
     def token(self) -> str:
         return self._access_token
 
-    
     def _get_refresh_access_token_response(self):
         url = f"https://api2.myhours.com/api/tokens/refresh"
-        headers = {
-            "Content-Type": "application/json",
-            "api-version": "1.0",
-            self.auth_header: f"Bearer {self._access_token}"
-        }
+        headers = {"Content-Type": "application/json", "api-version": "1.0", self.auth_header: f"Bearer {self._access_token}"}
 
         data = {
             "refreshToken": self._refreshToken,
@@ -69,7 +59,7 @@ class CustomAuthenticator(NoAuth):
             modified_response = {
                 "access_token": response.json().get("accessToken"),
                 "refresh_token": response.json().get("refreshToken"),
-                "expires_in": response.json().get("expiresIn")
+                "expires_in": response.json().get("expiresIn"),
             }
             return modified_response
         except Exception as e:
@@ -77,10 +67,7 @@ class CustomAuthenticator(NoAuth):
 
     def generate_access_token(self) -> tuple[str, str]:
         try:
-            headers = {
-                "Content-Type": "application/json",
-                "api-version": "1.0"
-            }
+            headers = {"Content-Type": "application/json", "api-version": "1.0"}
 
             data = {
                 "email": self._email,
