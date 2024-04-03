@@ -171,13 +171,13 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
   public void verifyCatalog(@NotNull ParsedCatalog parsedCatalog) {
     super.verifyCatalog(parsedCatalog);
 
-    // Check for collisions between column names, after applying the 64-character truncation
+    // Check for collisions between column names, after applying the 63-character truncation
     List<String> streamErrorMessages = new ArrayList<>();
     for (StreamConfig stream : parsedCatalog.getStreams()) {
       Set<String> truncatedColumnNames = new HashSet<>();
       Set<String> collidingColumnNames = new HashSet<>();
       for (ColumnId column : stream.getColumns().keySet()) {
-        String truncatedColumnName = column.getName().substring(0, Math.min(column.getName().length(), 64));
+        String truncatedColumnName = column.getName().substring(0, Math.min(column.getName().length(), 63));
         if (truncatedColumnNames.contains(truncatedColumnName)) {
           collidingColumnNames.add(truncatedColumnName);
         }
@@ -191,7 +191,7 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
     }
     if (!streamErrorMessages.isEmpty()) {
       throw new ConfigErrorException(
-          "Postgres truncates column names to 64 characters, which may result in multiple source fields having the same column name in your destination. Remove columns within each stream to prevent these collisions.\n"
+          "Postgres truncates column names to 63 characters, which may result in multiple source fields having the same column name in your destination. Remove columns within each stream to prevent these collisions.\n"
               + String.join("\n", streamErrorMessages));
     }
   }
