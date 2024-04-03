@@ -102,14 +102,11 @@ class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
                         updates_object_id = parent_record.get("id")
 
                         for stream_state_value in stream_state_values:
-                            yield StreamSlice(
-                                partition={
-                                    parent_stream_config.partition_field: stream_state_value,
-                                    "updates_object_id": updates_object_id,
-                                    "parent_slice": parent_slice,
-                                },
-                                cursor_slice={},
-                            )
+                            yield {
+                                parent_stream_config.partition_field: stream_state_value,
+                                "updates_object_id": updates_object_id,
+                                "parent_slice": parent_slice,
+                            }
 
                     # If the parent slice contains no records,
                     if empty_parent_slice:
