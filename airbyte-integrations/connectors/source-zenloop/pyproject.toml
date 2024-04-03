@@ -17,7 +17,7 @@ include = "source_zenloop"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "==0.44.2"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-zenloop = "source_zenloop.run:run"
