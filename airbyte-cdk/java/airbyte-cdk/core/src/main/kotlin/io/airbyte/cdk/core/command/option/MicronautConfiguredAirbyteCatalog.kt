@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.cdk.core.command.option
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
@@ -20,7 +19,6 @@ import io.micronaut.context.annotation.ConfigurationProperties
 )
 open class MicronautConfiguredAirbyteCatalog {
     lateinit var json: String
-
     open fun getConfiguredCatalog(): ConfiguredAirbyteCatalog {
         return if (json.isNotBlank()) {
             Jsons.deserialize(
