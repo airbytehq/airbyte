@@ -106,8 +106,7 @@ def test_get_grouped_messages(mock_entrypoint_read: Mock) -> None:
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -117,8 +116,7 @@ def test_get_grouped_messages(mock_entrypoint_read: Mock) -> None:
         ),
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -166,8 +164,7 @@ def test_get_grouped_messages_with_logs(mock_entrypoint_read: Mock) -> None:
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -177,8 +174,7 @@ def test_get_grouped_messages_with_logs(mock_entrypoint_read: Mock) -> None:
         ),
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -351,8 +347,7 @@ def test_get_grouped_messages_no_records(mock_entrypoint_read: Mock) -> None:
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -362,8 +357,7 @@ def test_get_grouped_messages_no_records(mock_entrypoint_read: Mock) -> None:
         ),
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
