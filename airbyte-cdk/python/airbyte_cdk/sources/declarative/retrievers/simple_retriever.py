@@ -328,6 +328,7 @@ class SimpleRetriever(Retriever):
 
             # Latest record read, not necessarily within slice boundaries.
             # TODO Remove once all custom components implement `observe` method.
+            # https://github.com/airbytehq/airbyte-internal-issues/issues/6955
             most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, current_record, _slice)
             yield stream_data
 
