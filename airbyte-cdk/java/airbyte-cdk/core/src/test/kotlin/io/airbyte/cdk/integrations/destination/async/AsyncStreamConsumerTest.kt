@@ -163,7 +163,7 @@ class AsyncStreamConsumerTest {
                 catalog = micronautConfiguredAirbyteCatalog,
                 bufferManager = BufferManager(),
                 flushFailure = flushFailure,
-                defaultNamespace = Optional.of("default_ns"),
+                connectorConfiguration = configuration,
                 dataTransformer = streamAwareDataTransformer,
                 flushWorkers = flusherWorkers,
                 deserializationUtil = deserializationUtil,
@@ -283,7 +283,7 @@ class AsyncStreamConsumerTest {
                 Mockito.mock(OnCloseFunction::class.java),
                 micronautConfiguredAirbyteCatalog,
                 BufferManager((1024 * 10).toLong()),
-                Optional.of("default_ns"),
+                configuration,
                 flushWorkers = mockk(),
                 flushFailure = flushFailure
             )

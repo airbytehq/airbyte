@@ -90,9 +90,9 @@ object JdbcBufferedConsumerFactory {
             onCloseFunction(typerDeduper),
             micronautConfiguredAirbyteCatalog,
             BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
-            Optional.ofNullable(defaultNamespace),
+            configuration,
             flushWorkers,
-            dataTransformer,
+            dataTransformer = dataTransformer,
         )
     }
 

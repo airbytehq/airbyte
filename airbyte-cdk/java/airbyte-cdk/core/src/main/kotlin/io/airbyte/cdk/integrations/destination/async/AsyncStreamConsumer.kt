@@ -52,7 +52,7 @@ constructor(
     private val onClose: OnCloseFunction,
     private val catalog: MicronautConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
-    private val defaultNamespace: Optional<String>,
+    private val connectorConfiguration: ConnectorConfiguration,
     private val flushWorkers: FlushWorkers,
     private val flushFailure: FlushFailure = FlushFailure(),
     private val dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
@@ -102,7 +102,7 @@ constructor(
             )
         if (AirbyteMessage.Type.RECORD == airbyteMessage.type) {
             if (Strings.isNullOrEmpty(airbyteMessage.record?.namespace)) {
-                airbyteMessage.record?.namespace = defaultNamespace.getOrNull()
+                airbyteMessage.record?.namespace = connectorConfiguration.getDefaultNamespace().getOrNull()
             }
             validateRecord(airbyteMessage)
 
@@ -111,7 +111,7 @@ constructor(
         bufferEnqueue.addRecord(
             airbyteMessage,
             sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
-            defaultNamespace,
+            connectorConfiguration.getDefaultNamespace(),
         )
     }
 
