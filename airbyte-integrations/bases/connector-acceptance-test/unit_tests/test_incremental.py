@@ -26,7 +26,7 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig, TestWithStateProgressionConfiguration
 from connector_acceptance_test.tests import test_incremental
 from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
 from connector_acceptance_test.tests.test_incremental import future_state_configuration_fixture, future_state_fixture
@@ -224,27 +224,11 @@ async def test_incremental_two_sequential_reads(
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
             ],
             [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
+                [],
+                []
             ],
-            pytest.raises(AssertionError, match="First Read should produce at least one record"),
-            id="test_incremental_no_record_on_first_read_raises_error",
+            does_not_raise(),
+            id="test_incremental_no_record_on_first_read_skips_stream",
         ),
         pytest.param(
             [
@@ -430,33 +414,13 @@ async def test_incremental_two_sequential_reads(
         ),
         pytest.param(
             [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": None},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-            ],
-            [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-            ],
-            does_not_raise(),
-            id="test_incremental_with_none_state",
-        ),
-        pytest.param(
-            [
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
                 {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
                 {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
             ],
             [
+                [],
                 [],
             ],
             does_not_raise(),
@@ -605,9 +569,10 @@ async def test_state_skip_test(mocker):
     docker_runner_mock.call_read = mocker.AsyncMock(return_value=call_read_output_messages)
 
     t = _TestIncremental()
+    incremental_config = IncrementalConfig(test_with_state_progression=[TestWithStateProgressionConfiguration(name="test_stream")])
     with patch.object(pytest, "skip", return_value=None):
         await t.test_read_sequential_slices(
-            inputs=IncrementalConfig(),
+            inputs=incremental_config,
             connector_config=MagicMock(),
             configured_catalog_for_incremental=ConfiguredAirbyteCatalog(
                 streams=[

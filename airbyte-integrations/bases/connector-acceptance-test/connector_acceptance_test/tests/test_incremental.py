@@ -170,70 +170,97 @@ class TestIncremental(BaseTest):
             pytest.skip("Skipping new incremental test based on acceptance-test-config.yml")
             return
 
-        output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
-        records_1 = filter_output(output_1, type_=Type.RECORD)
-        states_1 = filter_output(output_1, type_=Type.STATE)
+        state_progression_stream_names = {
+            state_progression_stream.name: state_progression_stream for state_progression_stream in inputs.test_with_state_progression
+        }
+        for stream in configured_catalog_for_incremental.streams:
+            is_testing_state_progression = stream.stream.name in state_progression_stream_names
 
-        # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
-        unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
+            configured_catalog_for_incremental_per_stream = ConfiguredAirbyteCatalog(streams=[stream])
 
-        # Important!
+            output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental_per_stream)
 
-        # There is only a small subset of assertions we can make
-        # in the absense of enforcing that all connectors return 3 or more state messages
-        # during the first read.
-
-        # To learn more: https://github.com/airbytehq/airbyte/issues/29926
-        if len(unique_state_messages) < 3:
-            pytest.skip("Skipping test because there are not enough state messages to test with")
-            return
-
-        assert records_1, "First Read should produce at least one record"
-
-        # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
-        # the complete final state of streams must be assembled by going through all prior state messages received
-        is_per_stream = is_per_stream_state(states_1[-1])
-
-        # To avoid spamming APIs we only test a fraction of batches (10%) and enforce a minimum of 10 tested
-        min_batches_to_test = 5
-        sample_rate = len(unique_state_messages) // min_batches_to_test
-
-        mutating_stream_name_to_per_stream_state = dict()
-        for idx, state_message in enumerate(unique_state_messages):
-            assert state_message.type == Type.STATE
-
-            # if first state message, skip
-            # this is because we cannot assert if the first state message will result in new records
-            # as in this case it is possible for a connector to return an empty state message when it first starts.
-            # e.g. if the connector decides it wants to let the caller know that it has started with an empty state.
-            if idx == 0:
+            records_1 = filter_output(output_1, type_=Type.RECORD)
+            # If the output of a full read is empty, there is no reason to iterate over its state.
+            # So, reading from any checkpoint of an empty stream will also produce nothing.
+            if len(records_1) == 0:
                 continue
 
-            # if last state message, skip
-            # this is because we cannot assert if the last state message will result in new records
-            # as in this case it is possible for a connector to return a previous state message.
-            # e.g. if the connector is using pagination and the last page is only partially full
-            if idx == len(unique_state_messages) - 1:
+            states_1 = filter_output(output_1, type_=Type.STATE)
+            # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
+            unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
+            if not is_testing_state_progression:
+                unique_state_messages = unique_state_messages[-1:]
+
+            # Important!
+
+            # There is only a small subset of assertions we can make
+            # in the absense of enforcing that all connectors return 3 or more state messages
+            # during the first read.
+
+            # To learn more: https://github.com/airbytehq/airbyte/issues/29926
+            if len(unique_state_messages) == 0:
+                pytest.skip("Skipping test because there are not enough state messages to test with")
+                return
+
+            if len(unique_state_messages) < 3 and is_testing_state_progression:
                 continue
 
-            # if batching required, and not a sample, skip
-            if len(unique_state_messages) >= min_batches_to_test and idx % sample_rate != 0:
-                continue
+            # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
+            # the complete final state of streams must be assembled by going through all prior state messages received
+            is_per_stream = is_per_stream_state(states_1[-1])
 
-            state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
-                state_message, mutating_stream_name_to_per_stream_state, is_per_stream
+            # To avoid spamming APIs we only test a fraction of batches (2 or 3 states by default)
+            min_batches_to_test = (
+                3 if not is_testing_state_progression else state_progression_stream_names[stream.stream.name].fraction_of_batches
             )
+            sample_rate = len(unique_state_messages) // min_batches_to_test
 
-            output_N = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
-            records_N = filter_output(output_N, type_=Type.RECORD)
-            assert (
-                records_N
-            ), f"Read {idx + 2} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 2}: {records_N}"
+            mutating_stream_name_to_per_stream_state = dict()
+            for idx, state_message in enumerate(unique_state_messages):
+                assert state_message.type == Type.STATE
 
-            diff = naive_diff_records(records_1, records_N)
-            assert (
-                diff
-            ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
+                is_first_state_message = idx == 0
+                is_last_state_message = idx == len(unique_state_messages) - 1
+
+                if is_testing_state_progression:
+                    # if first state message, skip
+                    # this is because we cannot assert if the first state message will result in new records
+                    # as in this case it is possible for a connector to return an empty state message when it first starts.
+                    # e.g. if the connector decides it wants to let the caller know that it has started with an empty state.
+                    if is_first_state_message:
+                        continue
+
+                    # if last state message, skip
+                    # this is because we cannot assert if the last state message will result in new records
+                    # as in this case it is possible for a connector to return a previous state message.
+                    # e.g. if the connector is using pagination and the last page is only partially full
+                    if is_last_state_message:
+                        continue
+
+                    # if batching required, and not a sample, skip
+                    if len(unique_state_messages) >= min_batches_to_test and idx % sample_rate != 0:
+                        continue
+
+                state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
+                    state_message, mutating_stream_name_to_per_stream_state, is_per_stream
+                )
+
+                output_N = await docker_runner.call_read_with_state(
+                    connector_config, configured_catalog_for_incremental_per_stream, state=state_input
+                )
+                records_N = filter_output(output_N, type_=Type.RECORD)
+
+                assert (
+                    # We assume that the output may be empty when we read the latest state, or it must produce some data if we are in the middle of our progression
+                    records_N
+                    or is_last_state_message
+                ), f"Read {idx + 2} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 2}: {records_N}"
+
+                diff = naive_diff_records(records_1, records_N)
+                assert (
+                    diff
+                ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
         self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner

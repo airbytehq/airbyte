@@ -132,6 +132,18 @@ class SuggestedStreamsConfiguration(BaseConfig):
     )
 
 
+class TestWithStateProgressionConfiguration(BaseConfig):
+    name: str
+    fraction_of_batches: Optional[int] = Field(
+        default=3,
+        description=(
+            "To avoid spamming APIs, we only test a fraction of batches, skipping the first and last states to avoid corner cases. "
+            "The formula we use is: `state_num % (total_states // fraction_of_batches)`. "
+            "For instance, if there are 10 state messages, we would execute tests solely on the third and sixth states."
+        ),
+    )
+
+
 class UnsupportedFileTypeConfig(BaseConfig):
     extension: str
     bypass_reason: Optional[str] = Field(description="Reason why this type is considered unsupported.")
@@ -211,6 +223,9 @@ class IncrementalConfig(BaseConfig):
     deployment_mode: Optional[str] = deployment_mode
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
+    )
+    test_with_state_progression: List[TestWithStateProgressionConfiguration] = Field(
+        default_factory=list, description="Test with states progression"
     )
 
     class Config:
