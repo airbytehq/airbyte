@@ -39,8 +39,8 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
     @Throws(Exception::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
         val nameUpdater =

@@ -17,7 +17,7 @@ data:
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
   license: ELv2
-  maxSecondsBetweenMessages: 10800
+  maxSecondsBetweenMessages: 60
   name: Zendesk Support
   remoteRegistries:
     pypi:
