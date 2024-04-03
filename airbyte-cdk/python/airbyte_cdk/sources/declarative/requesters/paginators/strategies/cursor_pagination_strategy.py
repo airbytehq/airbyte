@@ -40,9 +40,9 @@ class CursorPaginationStrategy(PaginationStrategy):
         else:
             self._cursor_value = self.cursor_value
         if isinstance(self.stop_condition, str):
-            self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
+            self._stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
         else:
-            self._stop_condition = self.stop_condition
+            self._stop_condition = self.stop_condition  # type: ignore # the type has been checked
 
     @property
     def initial_token(self) -> Optional[Any]:

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.78.6
+low-code: add backward compatibility for old close slice behavior 
+
+## 0.78.5
+low-code: fix stop_condition instantiation in the cursor pagination
+
 ## 0.78.4
 low-code: Add last_record and last_page_size interpolation variables to pagination
 
