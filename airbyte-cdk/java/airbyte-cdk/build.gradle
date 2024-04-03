@@ -33,12 +33,6 @@ allprojects {
         }
     }
 
-    project.configurations {
-        testImplementation.extendsFrom implementation
-        testFixturesImplementation.extendsFrom implementation
-        testFixturesRuntimeOnly.extendsFrom runtimeOnly
-    }
-
     // This is necessary because the mockit.kotlin any() generates a bunch of bad casts
     spotbugsTest.omitVisitors = ['FindBadCast2']
 }
