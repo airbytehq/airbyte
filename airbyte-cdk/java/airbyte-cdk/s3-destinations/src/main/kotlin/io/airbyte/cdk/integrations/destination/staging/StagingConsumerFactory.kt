@@ -5,6 +5,8 @@ package io.airbyte.cdk.integrations.destination.staging
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
+import io.airbyte.cdk.core.command.option.ConnectorConfiguration
+import io.airbyte.cdk.core.command.option.DefaultConnectorConfiguration
 import io.airbyte.cdk.core.command.option.DefaultMicronautConfiguredAirbyteCatalog
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
@@ -151,6 +153,7 @@ private constructor(
                 FlushFailure(),
             )
         val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(catalog!!)
+        val configuration: ConnectorConfiguration = DefaultConnectorConfiguration(defaultNamespace)
         return AsyncStreamConsumer(
             GeneralStagingFunctions.onStartFunction(
                 database!!,
@@ -172,11 +175,11 @@ private constructor(
                     throw RuntimeException(e)
                 }
             },
+            configuration,
             micronautConfiguredAirbyteCatalog,
             bufferManager,
-            Optional.ofNullable(defaultNamespace),
             flushWorkers,
-            dataTransformer
+            dataTransformer = dataTransformer
         )
     }
 

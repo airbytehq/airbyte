@@ -6,6 +6,8 @@ package io.airbyte.cdk.integrations.destination.async
 
 import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.core.command.option.ConnectorConfiguration
+import io.airbyte.cdk.core.command.option.DefaultConnectorConfiguration
 import io.airbyte.cdk.core.command.option.DefaultMicronautConfiguredAirbyteCatalog
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
@@ -34,7 +36,6 @@ import io.mockk.mockk
 import java.io.IOException
 import java.math.BigDecimal
 import java.time.Instant
-import java.util.Optional
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -154,6 +155,7 @@ class AsyncStreamConsumerTest {
                 flushFailure,
             )
         val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(CATALOG)
+        val configuration: ConnectorConfiguration = DefaultConnectorConfiguration("default_ns")
         consumer =
             AsyncStreamConsumer(
                 onStart = onStart,
@@ -161,7 +163,7 @@ class AsyncStreamConsumerTest {
                 catalog = micronautConfiguredAirbyteCatalog,
                 bufferManager = BufferManager(),
                 flushFailure = flushFailure,
-                defaultNamespace = Optional.of("default_ns"),
+                connectorConfiguration = configuration,
                 dataTransformer = streamAwareDataTransformer,
                 flushWorkers = flusherWorkers,
                 deserializationUtil = deserializationUtil,
@@ -273,13 +275,14 @@ class AsyncStreamConsumerTest {
         flushFunction = mockk()
         flushFailure = mockk()
         val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(CATALOG)
+        val configuration: ConnectorConfiguration = DefaultConnectorConfiguration("default_ns")
         consumer =
             AsyncStreamConsumer(
                 mockk(),
                 mockk(),
+                configuration,
                 micronautConfiguredAirbyteCatalog,
                 BufferManager((1024 * 10).toLong()),
-                Optional.of("default_ns"),
                 flushWorkers = mockk(),
                 flushFailure = flushFailure
             )

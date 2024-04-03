@@ -5,6 +5,8 @@ package io.airbyte.cdk.integrations.destination.jdbc
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
+import io.airbyte.cdk.core.command.option.ConnectorConfiguration
+import io.airbyte.cdk.core.command.option.DefaultConnectorConfiguration
 import io.airbyte.cdk.core.command.option.DefaultMicronautConfiguredAirbyteCatalog
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
@@ -81,15 +83,16 @@ object JdbcBufferedConsumerFactory {
                 Executors.newFixedThreadPool(5),
                 FlushFailure(),
             )
+        val configuration: ConnectorConfiguration = DefaultConnectorConfiguration(defaultNamespace)
         val micronautConfiguredAirbyteCatalog = DefaultMicronautConfiguredAirbyteCatalog(catalog)
         return AsyncStreamConsumer(
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
             onCloseFunction(typerDeduper),
+            configuration,
             micronautConfiguredAirbyteCatalog,
             bufferManager,
-            Optional.ofNullable(defaultNamespace),
             flushWorkers,
-            dataTransformer,
+            dataTransformer = dataTransformer,
         )
     }
 
