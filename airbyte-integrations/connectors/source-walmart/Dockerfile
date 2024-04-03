@@ -37,5 +37,5 @@ COPY source_walmart ./source_walmart
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.2
+LABEL io.airbyte.version=0.1.4
 LABEL io.airbyte.name=yuanrui2014/source-walmart

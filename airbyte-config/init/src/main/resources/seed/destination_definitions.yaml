@@ -77,6 +77,7 @@
   dockerImageTag: 0.1.12
   documentationUrl: https://docs.daspire.com/setup-guide/destinations/clickhouse
   releaseStage: alpha
+  public: true
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-databricks
