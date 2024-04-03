@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.async
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
+import io.airbyte.cdk.core.command.option.ConnectorConfiguration
 import io.airbyte.cdk.core.command.option.MicronautConfiguredAirbyteCatalog
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
@@ -46,9 +47,9 @@ class AsyncStreamConsumer
 constructor(
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
+    private val connectorConfiguration: ConnectorConfiguration,
     private val catalog: MicronautConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
-    private val defaultNamespace: Optional<String>,
     private val flushWorkers: FlushWorkers,
     private val flushFailure: FlushFailure = FlushFailure(),
     private val dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
@@ -98,7 +99,8 @@ constructor(
             )
         if (AirbyteMessage.Type.RECORD == airbyteMessage.type) {
             if (Strings.isNullOrEmpty(airbyteMessage.record?.namespace)) {
-                airbyteMessage.record?.namespace = defaultNamespace.getOrNull()
+                airbyteMessage.record?.namespace =
+                    connectorConfiguration.getDefaultNamespace().getOrNull()
             }
             validateRecord(airbyteMessage)
 
@@ -107,7 +109,7 @@ constructor(
         bufferEnqueue.addRecord(
             airbyteMessage,
             sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
-            defaultNamespace,
+            connectorConfiguration.getDefaultNamespace(),
         )
     }
 
