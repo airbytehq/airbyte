@@ -72,6 +72,7 @@ object IOs {
     }
 
     @Throws(IOException::class)
+    @JvmStatic
     fun getTail(numLines: Int, path: Path?): List<String?> {
         if (path == null) {
             return emptyList<String>()

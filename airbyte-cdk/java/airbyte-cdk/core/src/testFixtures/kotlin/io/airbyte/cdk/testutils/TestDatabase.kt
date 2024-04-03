@@ -302,10 +302,7 @@ protected constructor(val container: C) : AutoCloseable {
         }
 
         companion object {
-            private val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration = Duration.ofSeconds(5)
-            fun getDefaultCdcReplicationInitialWait(): Duration {
-                return DEFAULT_CDC_REPLICATION_INITIAL_WAIT
-            }
+            @JvmField val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration? = Duration.ofSeconds(5)
         }
     }
 

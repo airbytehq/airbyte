@@ -391,8 +391,9 @@ develop = false
 [package.dependencies]
 click = "^8.1.3"
 common_utils = {path = "../common_utils", develop = true}
+cryptography = ">=42.0"
 pyyaml = "^6.0"
-requests = "^2.28.2"
+requests = "^2.31"
 
 [package.source]
 type = "directory"
@@ -433,7 +434,7 @@ files = []
 develop = true
 
 [package.dependencies]
-pyjwt = "^2.1.0"
+pyjwt = "^2.8.0"
 requests = "^2.31.0"
 
 [package.source]
@@ -459,7 +460,7 @@ pydantic = "^1.9"
 pydash = "^6.0.2"
 PyGithub = "^1.58.0"
 PyYAML = "^6.0"
-requests = "^2.28.2"
+requests = "^2.31"
 rich = "^13.0.0"
 simpleeval = "^0.9.13"
 
@@ -2489,4 +2490,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "cc999d31f1c5111833dc2d09a6c66a25e50b3179193d011ff3141e992f4846d8"
+content-hash = "271217ba1dec9fbd68098b86489275f011c13d8a5beae495e08220ca0adc3b0f"
