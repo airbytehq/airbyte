@@ -197,11 +197,10 @@ class TestCheckConnectorCDKTag:
 
     def test_fail_when_python_tag_on_low_code_connector(self, mocker, tmp_path):
         # Arrange
-        connector = mocker.MagicMock(technical_name="source-test", metadata={"tags": ["cdk:python"]},
-                                     code_directory=tmp_path)
+        connector = mocker.MagicMock(technical_name="source-test", metadata={"tags": ["cdk:python"]}, code_directory=tmp_path)
         code_directory = tmp_path
         (code_directory / "source_test").mkdir()
-        (code_directory / "source_test" / consts.LOW_CODE_MANIFEST_FILE_NAME).touch()
+        (code_directory / "source_test"/ consts.LOW_CODE_MANIFEST_FILE_NAME).touch()
 
         # Act
         result = metadata.CheckConnectorCDKTag()._run(connector)
