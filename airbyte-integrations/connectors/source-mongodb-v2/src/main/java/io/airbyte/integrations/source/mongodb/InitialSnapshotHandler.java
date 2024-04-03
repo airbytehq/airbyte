@@ -18,9 +18,12 @@ import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import org.bson.*;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -83,6 +86,7 @@ public class InitialSnapshotHandler {
             case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
             case INT -> new BsonInt32(Integer.parseInt(state.id()));
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
+            case BINARY -> new BsonBinary(state.id().getBytes(StandardCharsets.UTF_8));
           }))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);

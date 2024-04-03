@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 class IdTypeTest {
 
   @Test
@@ -17,6 +19,7 @@ class IdTypeTest {
     assertEquals(202L, IdType.LONG.convert("202"));
     assertEquals("example", IdType.STRING.convert("example"));
     assertEquals(new ObjectId("012301230123012301230123"), IdType.OBJECT_ID.convert("012301230123012301230123"));
+    assertEquals(UUID.fromString("8f8c1010-4388-4663-9a58-d0b2a113b81a"), IdType.BINARY.convert("8f8c1010-4388-4663-9a58-d0b2a113b81a"));
   }
 
   @Test
@@ -36,7 +39,7 @@ class IdTypeTest {
 
   @Test
   void supported() {
-    assertEquals("objectId, string, int, long", IdType.SUPPORTED);
+    assertEquals("objectId, string, int, long, binData", IdType.SUPPORTED);
   }
 
 }
