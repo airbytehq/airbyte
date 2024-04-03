@@ -13,7 +13,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import java.sql.DatabaseMetaData
 import java.sql.SQLException
 import java.util.*
-import lombok.SneakyThrows
 
 /**
  * Largely based on
@@ -24,7 +23,6 @@ class JdbcV1V2Migrator(
     private val database: JdbcDatabase,
     private val databaseName: String
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
-    @SneakyThrows
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
         val retrievedSchema =
             database.executeMetadataQuery<String> { dbMetadata: DatabaseMetaData? ->
@@ -54,7 +52,6 @@ class JdbcV1V2Migrator(
         return existingTable.columns.keys.containsAll(columns)
     }
 
-    @SneakyThrows
     @Throws(Exception::class)
     override fun getTableIfExists(
         namespace: String?,

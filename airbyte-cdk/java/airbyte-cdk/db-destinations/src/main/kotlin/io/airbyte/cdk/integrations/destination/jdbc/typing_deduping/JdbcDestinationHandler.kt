@@ -27,6 +27,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.function.Predicate
 import lombok.extern.slf4j.Slf4j
+import java.util.stream.Collectors.toMap
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
@@ -39,7 +40,6 @@ import org.jooq.impl.SQLDataType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-@Slf4j
 abstract class JdbcDestinationHandler<DestinationState>(
     protected val databaseName: String,
     protected val jdbcDatabase: JdbcDatabase,
