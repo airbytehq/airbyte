@@ -5,16 +5,17 @@ connectionSpecification:
   type: object
   required:
     - api_key
+    - start_date
   additionalProperties: true
   properties:
     api_key:
       type: string
-      order: 0
+      order: 1
       title: API Key
       airbyte_secret: true
     probes:
       type: string
-      order: 1
+      order: 2
       title: probes
       examples: [probe1, probe2]
     resolution:
@@ -23,6 +24,12 @@ connectionSpecification:
         - day
         - week
       type: string
-      order: 2
+      order: 3
       title: resolution
       default: hour
+    start_date:
+      type: string
+      order: 0
+      title: Start date
+      format: date-time
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$

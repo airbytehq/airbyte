@@ -11,6 +11,9 @@
     },
     "check_id": {
       "type": ["null", "number"]
+    },
+    "stream_end_time": {
+      "type": ["null", "number"]
     }
   }
 }

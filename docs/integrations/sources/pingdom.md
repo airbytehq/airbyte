@@ -21,6 +21,7 @@ This Source is capable of syncing the following core Streams:
 ## Requirements
 
 - **Pingdom API Key**.[required] See the [PingDom API docs](https://docs.pingdom.com/api/#section/Authentication) for information on how to obtain the API token.
+- **Start date**.[required]. To Fetch data from. Only use for Incremental way.
 - **Probes**[optional]. Filter to only use results from a list of probes. Format is a comma separated list of probe identifiers.
 - **Resolution**[optional]. Interval Size. Should be `hour`, `day`, `week`. Default: `hour`
 

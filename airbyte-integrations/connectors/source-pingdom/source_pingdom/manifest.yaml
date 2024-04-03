@@ -85,6 +85,25 @@ definitions:
           - path:
               - check_id
             value: "{{stream_partition.check_id}}"
+      - type: AddFields
+        fields:
+          - path:
+              - stream_end_time
+            value: "{{stream_interval.end_time}}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: stream_end_time
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%s"
 streams:
   - "#/definitions/checks_stream"
   - "#/definitions/performance_stream"
