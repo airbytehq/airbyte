@@ -95,7 +95,7 @@ constructor(
 
     @Throws(Exception::class)
     override fun accept(
-        messageString: String,
+        message: String,
         sizeInBytes: Int,
     ) {
         Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started")
@@ -106,21 +106,21 @@ constructor(
          * to try to use a thread pool to partially deserialize to get record type and stream name, we can
          * do it without touching buffer manager.
          */
-        val message =
+        val airbyteMessage =
             deserializationUtil.deserializeAirbyteMessage(
-                messageString,
+                message,
                 dataTransformer,
             )
-        if (AirbyteMessage.Type.RECORD == message.type) {
-            if (Strings.isNullOrEmpty(message.record?.namespace)) {
-                message.record?.namespace = defaultNamespace.getOrNull()
+        if (AirbyteMessage.Type.RECORD == airbyteMessage.type) {
+            if (Strings.isNullOrEmpty(airbyteMessage.record?.namespace)) {
+                airbyteMessage.record?.namespace = defaultNamespace.getOrNull()
             }
-            validateRecord(message)
+            validateRecord(airbyteMessage)
 
-            message.record?.streamDescriptor?.let { getRecordCounter(it).incrementAndGet() }
+            airbyteMessage.record?.streamDescriptor?.let { getRecordCounter(it).incrementAndGet() }
         }
         bufferEnqueue.addRecord(
-            message,
+            airbyteMessage,
             sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
             defaultNamespace,
         )
@@ -154,7 +154,7 @@ constructor(
                 )
         onClose.accept(hasFailed, streamSyncSummaries)
 
-        // as this throws an exception, we need to be after all other close functions.
+        // as this throws an exception, we need to be after all the other close functions.
         propagateFlushWorkerExceptionIfPresent()
         logger.info { "${AsyncStreamConsumer::class.java} closed" }
     }
