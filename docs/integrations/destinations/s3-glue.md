@@ -241,10 +241,28 @@ The json objects can have the following formats:
 
 Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.jsonl.gz`).
 
+### Parquet
+
+#### Configuration
+
+The following configuration is available to configure the Parquet output:
+
+| Parameter                 |  Type   |    Default     | Description                                                                                                                                                                                                                       |
+| :------------------------ | :-----: | :------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compression_codec`       |  enum   | `UNCOMPRESSED` | **Compression algorithm**. Available candidates are: `UNCOMPRESSED`, `SNAPPY`, `GZIP`, `LZO`, `BROTLI`, `LZ4`, and `ZSTD`.                                                                                                        |
+| `block_size_mb`           | integer |   128 \(MB\)   | **Block size \(row group size\)** in MB. This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. |
+| `max_padding_size_mb`     | integer |    8 \(MB\)    | **Max padding size** in MB. This is the maximum size allowed as padding to align row groups. This is also the minimum size of a row group.                                                                                        |
+| `page_size_kb`            | integer |  1024 \(KB\)   | **Page size** in KB. The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. |
+| `dictionary_page_size_kb` | integer |  1024 \(KB\)   | **Dictionary Page Size** in KB. There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary.                                     |
+| `dictionary_encoding`     | boolean |     `true`     | **Dictionary encoding**. This parameter controls whether dictionary encoding is turned on.                                                                                                                                        |
+
+These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/docs/file-format/configurations/) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
+
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
+| 0.1.8   | 2023-10-08 | [31192](https://github.com/airbytehq/airbyte/pull/31192) | Add Parquet Output Format                                                               |
 | 0.1.7   | 2023-05-01 | [25724](https://github.com/airbytehq/airbyte/pull/25724) | Fix decimal type creation syntax to avoid overflow                                      |
 | 0.1.6   | 2023-04-13 | [25178](https://github.com/airbytehq/airbyte/pull/25178) | Fix decimal precision and scale to allow for a wider range of numeric values            |
 | 0.1.5   | 2023-04-11 | [25048](https://github.com/airbytehq/airbyte/pull/25048) | Fix config schema to support new JSONL flattening configuration interface               |
