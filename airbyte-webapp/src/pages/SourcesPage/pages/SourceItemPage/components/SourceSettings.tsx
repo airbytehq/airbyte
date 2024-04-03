@@ -10,6 +10,7 @@ import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "views/Connector/ServiceForm";
@@ -38,7 +39,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({
   const { mutateAsync: updateSource } = useUpdateSource();
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
   const formId = useUniqueFormId();
-
+  const { workspaceId } = useCurrentWorkspace();
   useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {
     return () => {
@@ -54,10 +55,12 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
+    workspaceId?: any;
   }) => {
     await updateSource({
       values,
       sourceId: currentSource.sourceId,
+      workspaceId,
     });
     if (afterSubmit) {
       afterSubmit();

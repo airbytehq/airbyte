@@ -10,6 +10,7 @@ import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useUpdateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "views/Connector/ServiceForm";
@@ -40,7 +41,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
   const { mutateAsync: updateDestination } = useUpdateDestination();
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
   const formId = useUniqueFormId();
-
+  const { workspaceId } = useCurrentWorkspace();
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM_SETTINGS);
 
   useEffect(() => {
@@ -57,6 +58,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
     await updateDestination({
       values,
       destinationId: currentDestination.destinationId,
+      workspaceId,
     });
 
     if (afterSubmit) {

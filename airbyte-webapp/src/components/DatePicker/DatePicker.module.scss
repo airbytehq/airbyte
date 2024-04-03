@@ -107,11 +107,16 @@
   border-left-width: variables.$border-thick;
   border-bottom-right-radius: variables.$border-radius-md;
   overflow: hidden;
+  width: 130px;
 }
 
 :global(.react-datepicker-time__header) {
   font-weight: 500;
   color: colors.$dark-blue-900;
+}
+
+:global(.react-datepicker__time-box) {
+  width: 130px !important;
 }
 
 :global(.react-datepicker__time-list-item) {

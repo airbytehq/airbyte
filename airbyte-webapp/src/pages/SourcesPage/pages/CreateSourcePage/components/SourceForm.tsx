@@ -6,6 +6,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import useRouter from "hooks/useRouter";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
@@ -15,6 +16,7 @@ interface SourceFormProps {
     serviceType: string;
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
+    workspaceId?: any;
   }) => void;
   afterSelectConnector?: () => void;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
@@ -44,7 +46,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   onBack,
 }) => {
   const { location } = useRouter();
-
+  const { workspaceId } = useCurrentWorkspace();
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
     hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
   );
@@ -67,6 +69,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({
     await onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
+      workspaceId,
     });
   };
 

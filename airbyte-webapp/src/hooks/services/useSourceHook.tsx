@@ -209,11 +209,12 @@ const useUpdateSource = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    (updateSourcePayload: { values: ValuesProps; sourceId: string }) => {
+    (updateSourcePayload: { values: ValuesProps; sourceId: string; workspaceId: any }) => {
       return service.update({
         name: updateSourcePayload.values.name,
         sourceId: updateSourcePayload.sourceId,
         connectionConfiguration: updateSourcePayload.values.connectionConfiguration,
+        workspaceId: updateSourcePayload?.workspaceId,
       });
     },
     {

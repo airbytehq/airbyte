@@ -862,7 +862,7 @@
   "permission.user": "普通用户:",
   "permission.user.role": "该角色可以访问除了计费和付款及用户管理外的所有内容。",
   "form.openDatepicker": "打开日期选择器",
-  "form.datepickerTimeCaption": "时间（协调世界时",
+  "form.datepickerTimeCaption": "时间(世界调整时间)",
   "connection.configuration.inprogress": "正在保存您的配置。请查看“状态”页面以获取更多信息。",
   "connection.configuration.success": "更改已保存！",
   "connection.configuration.failure": "保存更改时出现问题。请再试一次。"
