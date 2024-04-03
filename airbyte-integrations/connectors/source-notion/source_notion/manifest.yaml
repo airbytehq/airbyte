@@ -112,6 +112,9 @@ streams:
           filter: '{ "property": "object", "value": "database" }'
       record_selector:
         type: RecordSelector
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_notion.components.NotionDataFeedFilter
         extractor:
           type: DpathExtractor
           field_path:
@@ -189,6 +192,9 @@ streams:
           filter: '{ "property": "object", "value": "page" }'
       record_selector:
         type: RecordSelector
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_notion.components.NotionDataFeedFilter
         extractor:
           type: DpathExtractor
           field_path:

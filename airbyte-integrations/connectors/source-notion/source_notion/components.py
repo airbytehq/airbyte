@@ -78,12 +78,12 @@ class NotionDataFeedFilter(RecordFilter):
         If only the start_date exists, use it by default.
         """
 
-        start_date_parsed = pendulum.parse(start_date).to_iso8601_string() if start_date else None
-        state_date_parsed = pendulum.parse(state_value).to_iso8601_string() if state_value else None
+        start_date_timestamp = start_date or None
+        state_value_timestamp = state_value or None
 
-        if state_date_parsed:
-            return max(filter(None, [start_date_parsed, state_date_parsed]), default=start_date_parsed)
-        return start_date_parsed
+        if state_value_timestamp:
+            return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)
+        return start_date_timestamp
 
 
 @dataclass
@@ -116,9 +116,9 @@ class NotionSemiIncrementalFilter(RecordFilter):
         If only the start_date exists, use it by default.
         """
 
-        start_date_parsed = pendulum.parse(start_date).to_iso8601_string() if start_date else None
-        state_date_parsed = pendulum.parse(state_value[0]["cursor"]["last_edited_time"]).to_iso8601_string() if state_value else None
+        start_date_timestamp = start_date or None
+        state_value_timestamp = state_value[0]["cursor"]["last_edited_time"] if state_value else None
 
-        if state_date_parsed:
-            return max(filter(None, [start_date_parsed, state_date_parsed]), default=start_date_parsed)
-        return start_date_parsed
+        if state_value_timestamp:
+            return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)
+        return start_date_timestamp

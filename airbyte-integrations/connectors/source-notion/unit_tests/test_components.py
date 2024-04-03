@@ -59,9 +59,9 @@ def test_notion_properties_transformation():
 
 
 state_test_records = [
-    {"id": "1", "last_edited_time": "2022-01-02T00:00:00Z"},
-    {"id": "2", "last_edited_time": "2022-01-03T00:00:00Z"},
-    {"id": "3", "last_edited_time": "2022-01-04T00:00:00Z"},
+    {"id": "1", "last_edited_time": "2022-01-02T00:00:00.000Z"},
+    {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
+    {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
 
 @pytest.fixture
@@ -72,13 +72,13 @@ def data_feed_config():
     "state_value, expected_return",
     [
         (
-            "2021-02-01T00:00:00Z", "2021-02-01T00:00:00Z"
+            "2021-02-01T00:00:00.000Z", "2021-02-01T00:00:00.000Z"
         ),
         (
-            "2020-01-01T00:00:00Z", "2021-01-01T00:00:00Z"
+            "2020-01-01T00:00:00.000Z", "2021-01-01T00:00:00.000Z"
         ),
         (
-            {}, "2021-01-01T00:00:00Z"
+            {}, "2021-01-01T00:00:00.000Z"
         )       
     ],
     ids=["State value is greater than start_date", "State value is less than start_date", "Empty state, default to start_date"]
@@ -92,17 +92,17 @@ def test_data_feed_get_filter_date(data_feed_config, state_value, expected_retur
 
 @pytest.mark.parametrize("stream_state,stream_slice,expected_records", [
     (
-        {"last_edited_time": "2022-01-01T00:00:00Z"},
+        {"last_edited_time": "2022-01-01T00:00:00.000Z"},
         {"id": "some_id"},
         state_test_records
     ),
     (
-        {"last_edited_time": "2022-01-03T00:00:00Z"},
+        {"last_edited_time": "2022-01-03T00:00:00.000Z"},
         {"id": "some_id"},
         [state_test_records[-2], state_test_records[-1]]
     ),
     (
-        {"last_edited_time": "2022-01-05T00:00:00Z"},
+        {"last_edited_time": "2022-01-05T00:00:00.000Z"},
         {"id": "some_id"},
         []
     ),
@@ -126,13 +126,13 @@ def semi_incremental_config_start_date():
     "state_value, expected_return",
     [
         (
-            [{"cursor": {"last_edited_time": "2021-02-01T00:00:00Z"}}], "2021-02-01T00:00:00Z"
+            [{"cursor": {"last_edited_time": "2021-02-01T00:00:00.000Z"}}], "2021-02-01T00:00:00.000Z"
         ),
         (
-            [{"cursor": {"last_edited_time": "2020-01-01T00:00:00Z"}}], "2021-01-01T00:00:00Z"
+            [{"cursor": {"last_edited_time": "2020-01-01T00:00:00.000Z"}}], "2021-01-01T00:00:00.000Z"
         ),
         (
-            [], "2021-01-01T00:00:00Z"
+            [], "2021-01-01T00:00:00.000Z"
         )       
     ],
     ids=["State value is greater than start_date", "State value is less than start_date", "Empty state, default to start_date"]
@@ -146,17 +146,17 @@ def test_semi_incremental_get_filter_date(semi_incremental_config_start_date, st
 
 @pytest.mark.parametrize("stream_state,stream_slice,expected_records", [
     (
-        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-01T00:00:00Z"}}]},
+        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-01T00:00:00.000Z"}}]},
         {"id": "some_id"},
         state_test_records
     ),
     (
-        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-03T00:00:00Z"}}]},
+        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-03T00:00:00.000Z"}}]},
         {"id": "some_id"},
         [state_test_records[-2], state_test_records[-1]]
     ),
     (
-        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-05T00:00:00Z"}}]},
+        {"states": [{"partition": {"id": "some_id"}, "cursor": {"last_edited_time": "2022-01-05T00:00:00.000Z"}}]},
         {"id": "some_id"},
         []
     ),
