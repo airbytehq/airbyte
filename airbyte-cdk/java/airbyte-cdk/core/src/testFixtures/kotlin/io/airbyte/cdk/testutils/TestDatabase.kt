@@ -117,7 +117,7 @@ protected constructor(val container: C) : AutoCloseable {
     }
 
     val isInitialized: Boolean
-        get() = this::dslContext.isInitialized
+        get() = dslContext != null
 
     protected abstract fun inContainerBootstrapCmd(): Stream<Stream<String>>
 
