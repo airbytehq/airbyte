@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.async.state
 
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
@@ -14,6 +15,8 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.time.Instant
 import java.util.Optional
 import java.util.UUID
@@ -45,6 +48,12 @@ private val logger = KotlinLogging.logger {}
  * state ids to a single global state id via a set of alias ids. From then onwards, we use one id -
  * [.SENTINEL_GLOBAL_DESC] regardless of stream. Read [.convertToGlobalIfNeeded] for more detail.
  */
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
 class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     /** Memory that the manager has allocated to it to use. It can ask for more memory as needed. */
     private val memoryAllocated: AtomicLong = AtomicLong(memoryManager.requestMemory())

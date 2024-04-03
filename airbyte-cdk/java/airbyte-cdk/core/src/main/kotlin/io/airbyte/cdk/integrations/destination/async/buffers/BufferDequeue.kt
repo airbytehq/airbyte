@@ -4,9 +4,12 @@
 
 package io.airbyte.cdk.integrations.destination.async.buffers
 
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.time.Instant
 import java.util.LinkedList
 import java.util.Optional
@@ -23,6 +26,12 @@ import java.util.concurrent.locks.ReentrantLock
  * determine buffer flushing.
  */
 // todo (cgardens) - make all the metadata methods more efficient.
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
 class BufferDequeue(
     private val memoryManager: GlobalMemoryManager,
     private val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>,

@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.integrations.destination.async
 
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.min
 import org.apache.commons.io.FileUtils
@@ -34,6 +37,12 @@ private val logger = KotlinLogging.logger {}
  * Here, dynamic allocation let us create as many queues as possible, allowing all streams to be
  * processed in parallel without accidental backpressure from unnecessary eager flushing.
  */
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
 class GlobalMemoryManager(val maxMemoryBytes: Long) {
     val currentMemoryBytes = AtomicLong(0)
 

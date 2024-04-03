@@ -5,10 +5,13 @@
 package io.airbyte.cdk.integrations.destination.async
 
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.time.Clock
 import java.time.Instant
 import java.util.Optional
@@ -21,9 +24,13 @@ import kotlin.math.min
 private val logger = KotlinLogging.logger {}
 
 /** This class finds the best, next stream to flush. */
-class DetectStreamToFlush
-@VisibleForTesting
-internal constructor(
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
+class DetectStreamToFlush(
     private val bufferDequeue: BufferDequeue,
     private val runningFlushWorkers: RunningFlushWorkers,
     private val flusher: DestinationFlushFunction,

@@ -4,9 +4,18 @@
 
 package io.airbyte.cdk.integrations.destination.async.state
 
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
 class FlushFailure {
     private val isFailed = AtomicBoolean(false)
 

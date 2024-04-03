@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination.async
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferDequeue
 import io.airbyte.cdk.integrations.destination.async.buffers.StreamAwareQueue
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
@@ -13,6 +14,8 @@ import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManag
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -43,9 +46,13 @@ private val logger = KotlinLogging.logger {}
  * [DestinationFlushFunction.flush] on the returned data.
  */
 @SuppressFBWarnings(value = ["NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE"])
-class FlushWorkers
-@JvmOverloads
-constructor(
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
+class FlushWorkers(
     private val stateManager: GlobalAsyncStateManager,
     private val bufferDequeue: BufferDequeue,
     private val flusher: DestinationFlushFunction,
