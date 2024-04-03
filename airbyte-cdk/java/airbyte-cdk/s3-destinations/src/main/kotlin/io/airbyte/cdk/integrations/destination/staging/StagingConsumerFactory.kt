@@ -13,6 +13,7 @@ import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
+import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.commons.exceptions.ConfigErrorException
@@ -164,6 +165,7 @@ private constructor(
             micronautConfiguredAirbyteCatalog,
             BufferManager(getMemoryLimit(bufferMemoryLimit)),
             Optional.ofNullable(defaultNamespace),
+            FlushFailure(),
             dataTransformer
         )
     }
