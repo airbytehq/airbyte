@@ -256,6 +256,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 .map { override: String -> CatalogParser(sqlGenerator, override) }
                 .orElse(CatalogParser(sqlGenerator))
                 .parseCatalog(catalog!!)
+        verifyCatalog(parsedCatalog)
         val databaseName = getDatabaseName(config)
         val migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
         val v2TableMigrator = NoopV2TableMigrator()
@@ -302,6 +303,15 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             getDataTransformer(parsedCatalog, defaultNamespace)
         )
     }
+
+    /**
+     * Subclasses can override this method to check that the catalog is valid for the destination.
+     * This is kind of hacky, in that ideally a destination should be able to inject logic into the
+     * CatalogParser to _make_ a valid catalog... but that's not how we live for now.
+     *
+     * Also ideally, we'd return something interesting instead of just throwing exceptions, but alas
+     */
+    open fun verifyCatalog(parsedCatalog: ParsedCatalog) {}
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(AbstractJdbcDestination::class.java)

@@ -24,10 +24,13 @@ import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDataTransformer;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler;
@@ -37,10 +40,15 @@ import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresStat
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,6 +165,35 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
   @Override
   public boolean isV2Destination() {
     return true;
+  }
+
+  @Override
+  public void verifyCatalog(@NotNull ParsedCatalog parsedCatalog) {
+    super.verifyCatalog(parsedCatalog);
+
+    // Check for collisions between column names, after applying the 64-character truncation
+    List<String> streamErrorMessages = new ArrayList<>();
+    for (StreamConfig stream : parsedCatalog.getStreams()) {
+      Set<String> truncatedColumnNames = new HashSet<>();
+      Set<String> collidingColumnNames = new HashSet<>();
+      for (ColumnId column : stream.getColumns().keySet()) {
+        String truncatedColumnName = column.getName().substring(0, Math.min(column.getName().length(), 64));
+        if (truncatedColumnNames.contains(truncatedColumnName)) {
+          collidingColumnNames.add(truncatedColumnName);
+        }
+        truncatedColumnNames.add(truncatedColumnName);
+      }
+
+      streamErrorMessages.add(String.format(
+          "Stream %s.%s has collisions for columns starting with these prefixes: %s",
+          stream.getId().getOriginalNamespace(),
+          stream.getId().getOriginalName(), String.join(", ", collidingColumnNames)));
+    }
+    if (!streamErrorMessages.isEmpty()) {
+      throw new ConfigErrorException(
+          "Postgres truncates column names to 64 characters, which may result in multiple source fields having the same column name in your destination. Remove columns within each stream to prevent these collisions.\n"
+              + String.join("\n", streamErrorMessages));
+    }
   }
 
   public static void main(final String[] args) throws Exception {
