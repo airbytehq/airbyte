@@ -109,14 +109,14 @@ The Bing Ads source connector supports the following streams. For more informati
 
 ### Basic streams
 
-- [Accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13)
-- [Ad Groups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13)
+- [Accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13) (Full Refresh)
+- [Ad Groups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13) (Full Refresh)
 - [Ad Group Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13)
-- [Ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13)
+- [Ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13) (Full Refresh)
 - [App Install Ads](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13)
 - [App Install Ad Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13)
 - [Budget](https://learn.microsoft.com/en-us/advertising/bulk-service/budget?view=bingads-13&viewFallbackFrom=bingads-13)
-- [Campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13)
+- [Campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13) (Full Refresh)
 - [Campaign Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13)
 - [Keywords](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13)
 - [Keyword Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13)
@@ -253,6 +253,8 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.0   | 2024-03-21 | [35891](https://github.com/airbytehq/airbyte/pull/35891)                                                                         | Accounts stream: add TaxCertificate field to schema.                                                                                            |
+| 2.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)                                                                         | Pin airbyte-cdk version to `^0`                                                                                                                 |
 | 2.3.0   | 2024-03-05 | [35812](https://github.com/airbytehq/airbyte/pull/35812)                                                                         | New streams: Audience Performance Report, Goals And Funnels Report, Product Dimension Performance Report.                                       |
 | 2.2.0   | 2024-02-13 | [35201](https://github.com/airbytehq/airbyte/pull/35201)                                                                         | New streams: Budget and Product Dimension Performance.                                                                                          |
 | 2.1.4   | 2024-02-12 | [35179](https://github.com/airbytehq/airbyte/pull/35179)                                                                         | Manage dependencies with Poetry.                                                                                                                |

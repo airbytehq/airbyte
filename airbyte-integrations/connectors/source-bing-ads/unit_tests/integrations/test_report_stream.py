@@ -53,23 +53,13 @@ class TestSuiteReportStream(TestReportStream):
     @HttpMocker()
     def test_return_records_from_given_csv_file(self, http_mocker: HttpMocker):
         self.auth_client(http_mocker)
-        output, _ = self.read_stream(
-            self.stream_name,
-            SyncMode.full_refresh,
-            self._config,
-            self.report_file
-        )
+        output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
         assert len(output.records) == self.records_number
 
     @HttpMocker()
     def test_transform_records_from_given_csv_file(self, http_mocker: HttpMocker):
         self.auth_client(http_mocker)
-        output, _ = self.read_stream(
-            self.stream_name,
-            SyncMode.full_refresh,
-            self._config,
-            self.report_file
-        )
+        output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, self.report_file)
 
         assert len(output.records) == self.records_number
         for record in output.records:
@@ -78,33 +68,24 @@ class TestSuiteReportStream(TestReportStream):
     @HttpMocker()
     def test_incremental_read_returns_records(self, http_mocker: HttpMocker):
         self.auth_client(http_mocker)
-        output, _ = self.read_stream(
-            self.stream_name,
-            SyncMode.incremental,
-            self._config,
-            self.report_file
-        )
+        output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
-        assert output.most_recent_state == self.first_read_state
+        assert output.most_recent_state.stream_state == self.first_read_state
 
     @HttpMocker()
     def test_incremental_read_with_state_returns_records(self, http_mocker: HttpMocker):
         state = self._state(self.state_file, self.stream_name)
         self.auth_client(http_mocker)
         output, service_call_mock = self.read_stream(
-            self.stream_name,
-            SyncMode.incremental,
-            self._config,
-            self.incremental_report_file,
-            state
+            self.stream_name, SyncMode.incremental, self._config, self.incremental_report_file, state
         )
         if not self.second_read_records_number:
             assert len(output.records) == self.records_number
         else:
             assert len(output.records) == self.second_read_records_number
 
-        actual_cursor = output.most_recent_state.get(self.stream_name).get(self.account_id)
-        expected_cursor = self.second_read_state.get(self.stream_name).get(self.account_id)
+        actual_cursor = output.most_recent_state.stream_state.dict().get(self.account_id)
+        expected_cursor = self.second_read_state.get(self.account_id)
         assert actual_cursor == expected_cursor
 
         provided_state = state[0].stream.stream_state.dict()[self.account_id][self.cursor_field]

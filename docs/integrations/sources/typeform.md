@@ -90,7 +90,8 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 1.2.5 | 2024-02-12 | [35152](https://github.com/airbytehq/airbyte/pull/35152) | Manage dependencies with Poetry. |
+| 1.2.6   | 2024-03-13 | [36164](https://github.com/airbytehq/airbyte/pull/36164) | Unpin CDK version                                                                               |
+| 1.2.5   | 2024-02-12 | [35152](https://github.com/airbytehq/airbyte/pull/35152) | Manage dependencies with Poetry.                                                                |
 | 1.2.4   | 2024-01-24 | [34484](https://github.com/airbytehq/airbyte/pull/34484) | Fix pagination stop condition                                                                   |
 | 1.2.3   | 2024-01-11 | [34145](https://github.com/airbytehq/airbyte/pull/34145) | prepare for airbyte-lib                                                                         |
 | 1.2.2   | 2023-12-12 | [33345](https://github.com/airbytehq/airbyte/pull/33345) | Fix single use refresh token authentication                                                     |
