@@ -60,7 +60,7 @@ open class S3DestinationConfig {
         pathFormat: String?,
         credentialConfig: S3CredentialConfig?,
         formatConfig: S3FormatConfig?,
-        s3Client: AmazonS3
+        s3Client: AmazonS3,
     ) {
         this.endpoint = endpoint
         this.bucketName = bucketName
@@ -83,7 +83,7 @@ open class S3DestinationConfig {
         s3Client: AmazonS3?,
         fileNamePattern: String?,
         checkIntegrity: Boolean,
-        uploadThreadsCount: Int
+        uploadThreadsCount: Int,
     ) {
         this.endpoint = endpoint
         this.bucketName = bucketName
@@ -137,7 +137,7 @@ open class S3DestinationConfig {
 
         return AmazonS3ClientBuilder.standard()
             .withEndpointConfiguration(
-                AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion)
+                AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion),
             )
             .withPathStyleAccessEnabled(true)
             .withClientConfiguration(clientConfiguration)
@@ -168,14 +168,14 @@ open class S3DestinationConfig {
             bucketPath,
             bucketRegion,
             s3CredentialConfig,
-            formatConfig
+            formatConfig,
         )
     }
 
     class Builder(
         private var bucketName: String?,
         private var bucketPath: String,
-        private var bucketRegion: String?
+        private var bucketRegion: String?,
     ) {
         private var endpoint: String? = ""
         private var pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT
@@ -261,7 +261,7 @@ open class S3DestinationConfig {
                 s3Client,
                 fileNamePattern,
                 checkIntegrity,
-                uploadThreadsCount
+                uploadThreadsCount,
             )
         }
     }
@@ -297,7 +297,7 @@ open class S3DestinationConfig {
                 create(
                     getProperty(config, S3Constants.S_3_BUCKET_NAME),
                     "",
-                    getProperty(config, S3Constants.S_3_BUCKET_REGION)
+                    getProperty(config, S3Constants.S_3_BUCKET_REGION),
                 )
 
             if (config!!.has(S3Constants.S_3_BUCKET_PATH)) {
@@ -319,14 +319,14 @@ open class S3DestinationConfig {
                         val endpoint =
                             String.format(
                                 R2_INSTANCE_URL,
-                                getProperty(config, S3Constants.ACCOUNT_ID)
+                                getProperty(config, S3Constants.ACCOUNT_ID),
                             )
                         builder = builder.withEndpoint(endpoint)
                     }
                     builder =
                         builder
                             .withCheckIntegrity(
-                                false
+                                false,
                             ) // https://developers.cloudflare.com/r2/platform/s3-compatibility/api/#implemented-object-level-operations
                             // 3 or less
                             .withUploadThreadsCount(S3StorageOperations.R2_UPLOAD_THREADS)
@@ -341,7 +341,7 @@ open class S3DestinationConfig {
                 if (config.has(S3Constants.ACCESS_KEY_ID)) {
                     S3AccessKeyCredentialConfig(
                         getProperty(config, S3Constants.ACCESS_KEY_ID),
-                        getProperty(config, S3Constants.SECRET_ACCESS_KEY)
+                        getProperty(config, S3Constants.SECRET_ACCESS_KEY),
                     )
                 } else {
                     S3AWSDefaultProfileCredentialConfig()

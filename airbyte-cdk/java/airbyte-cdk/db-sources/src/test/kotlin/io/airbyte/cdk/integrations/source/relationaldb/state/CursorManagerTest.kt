@@ -19,7 +19,7 @@ class CursorManagerTest {
             createCursorManager(
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
-                StateTestConstants.NAME_NAMESPACE_PAIR1
+                StateTestConstants.NAME_NAMESPACE_PAIR1,
             )
         val actual =
             cursorManager.createCursorInfoForStream(
@@ -27,12 +27,12 @@ class CursorManagerTest {
                 StateTestConstants.getState(
                     StateTestConstants.CURSOR_FIELD1,
                     StateTestConstants.CURSOR,
-                    StateTestConstants.CURSOR_RECORD_COUNT
+                    StateTestConstants.CURSOR_RECORD_COUNT,
                 ),
                 StateTestConstants.getStream(StateTestConstants.CURSOR_FIELD1),
                 { obj: DbStreamState? -> obj!!.cursor },
                 { obj: DbStreamState? -> obj!!.cursorField },
-                CURSOR_RECORD_COUNT_FUNCTION
+                CURSOR_RECORD_COUNT_FUNCTION,
             )
         Assertions.assertEquals(
             CursorInfo(
@@ -41,9 +41,9 @@ class CursorManagerTest {
                 StateTestConstants.CURSOR_RECORD_COUNT,
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
-                StateTestConstants.CURSOR_RECORD_COUNT
+                StateTestConstants.CURSOR_RECORD_COUNT,
             ),
-            actual
+            actual,
         )
     }
 
@@ -53,7 +53,7 @@ class CursorManagerTest {
             createCursorManager(
                 StateTestConstants.CURSOR_FIELD1,
                 null,
-                StateTestConstants.NAME_NAMESPACE_PAIR1
+                StateTestConstants.NAME_NAMESPACE_PAIR1,
             )
         val actual =
             cursorManager.createCursorInfoForStream(
@@ -62,16 +62,16 @@ class CursorManagerTest {
                 StateTestConstants.getStream(StateTestConstants.CURSOR_FIELD1),
                 { obj: DbStreamState? -> obj!!.cursor },
                 { obj: DbStreamState? -> obj!!.cursorField },
-                CURSOR_RECORD_COUNT_FUNCTION
+                CURSOR_RECORD_COUNT_FUNCTION,
             )
         Assertions.assertEquals(
             CursorInfo(
                 StateTestConstants.CURSOR_FIELD1,
                 null,
                 StateTestConstants.CURSOR_FIELD1,
-                null
+                null,
             ),
-            actual
+            actual,
         )
     }
 
@@ -81,28 +81,28 @@ class CursorManagerTest {
             createCursorManager(
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
-                StateTestConstants.NAME_NAMESPACE_PAIR1
+                StateTestConstants.NAME_NAMESPACE_PAIR1,
             )
         val actual =
             cursorManager.createCursorInfoForStream(
                 StateTestConstants.NAME_NAMESPACE_PAIR1,
                 StateTestConstants.getState(
                     StateTestConstants.CURSOR_FIELD1,
-                    StateTestConstants.CURSOR
+                    StateTestConstants.CURSOR,
                 ),
                 StateTestConstants.getStream(StateTestConstants.CURSOR_FIELD2),
                 { obj: DbStreamState? -> obj!!.cursor },
                 { obj: DbStreamState? -> obj!!.cursorField },
-                CURSOR_RECORD_COUNT_FUNCTION
+                CURSOR_RECORD_COUNT_FUNCTION,
             )
         Assertions.assertEquals(
             CursorInfo(
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
                 StateTestConstants.CURSOR_FIELD2,
-                null
+                null,
             ),
-            actual
+            actual,
         )
     }
 
@@ -112,7 +112,7 @@ class CursorManagerTest {
             createCursorManager(
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
-                StateTestConstants.NAME_NAMESPACE_PAIR1
+                StateTestConstants.NAME_NAMESPACE_PAIR1,
             )
         val actual =
             cursorManager.createCursorInfoForStream(
@@ -121,11 +121,11 @@ class CursorManagerTest {
                 StateTestConstants.getStream(StateTestConstants.CURSOR_FIELD1),
                 Function { obj: DbStreamState? -> obj!!.cursor },
                 Function { obj: DbStreamState? -> obj!!.cursorField },
-                CURSOR_RECORD_COUNT_FUNCTION
+                CURSOR_RECORD_COUNT_FUNCTION,
             )
         Assertions.assertEquals(
             CursorInfo(null, null, StateTestConstants.CURSOR_FIELD1, null),
-            actual
+            actual,
         )
     }
 
@@ -135,23 +135,23 @@ class CursorManagerTest {
             createCursorManager(
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
-                StateTestConstants.NAME_NAMESPACE_PAIR1
+                StateTestConstants.NAME_NAMESPACE_PAIR1,
             )
         val actual =
             cursorManager.createCursorInfoForStream(
                 StateTestConstants.NAME_NAMESPACE_PAIR1,
                 StateTestConstants.getState(
                     StateTestConstants.CURSOR_FIELD1,
-                    StateTestConstants.CURSOR
+                    StateTestConstants.CURSOR,
                 ),
                 Optional.empty(),
                 { obj: DbStreamState? -> obj!!.cursor },
                 { obj: DbStreamState? -> obj!!.cursorField },
-                CURSOR_RECORD_COUNT_FUNCTION
+                CURSOR_RECORD_COUNT_FUNCTION,
             )
         Assertions.assertEquals(
             CursorInfo(StateTestConstants.CURSOR_FIELD1, StateTestConstants.CURSOR, null, null),
-            actual
+            actual,
         )
     }
 
@@ -162,7 +162,7 @@ class CursorManagerTest {
             createCursorManager(
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
-                StateTestConstants.NAME_NAMESPACE_PAIR1
+                StateTestConstants.NAME_NAMESPACE_PAIR1,
             )
         val actual =
             cursorManager.createCursorInfoForStream(
@@ -171,7 +171,7 @@ class CursorManagerTest {
                 Optional.empty(),
                 Function { obj: DbStreamState? -> obj!!.cursor },
                 Function { obj: DbStreamState? -> obj!!.cursorField },
-                CURSOR_RECORD_COUNT_FUNCTION
+                CURSOR_RECORD_COUNT_FUNCTION,
             )
         Assertions.assertEquals(CursorInfo(null, null, null, null), actual)
     }
@@ -182,23 +182,23 @@ class CursorManagerTest {
             createCursorManager(
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
-                StateTestConstants.NAME_NAMESPACE_PAIR1
+                StateTestConstants.NAME_NAMESPACE_PAIR1,
             )
         val actual =
             cursorManager.createCursorInfoForStream(
                 StateTestConstants.NAME_NAMESPACE_PAIR1,
                 StateTestConstants.getState(
                     StateTestConstants.CURSOR_FIELD1,
-                    StateTestConstants.CURSOR
+                    StateTestConstants.CURSOR,
                 ),
                 StateTestConstants.getStream(null),
                 { obj: DbStreamState? -> obj!!.cursor },
                 { obj: DbStreamState? -> obj!!.cursorField },
-                CURSOR_RECORD_COUNT_FUNCTION
+                CURSOR_RECORD_COUNT_FUNCTION,
             )
         Assertions.assertEquals(
             CursorInfo(StateTestConstants.CURSOR_FIELD1, StateTestConstants.CURSOR, null, null),
-            actual
+            actual,
         )
     }
 
@@ -208,35 +208,35 @@ class CursorManagerTest {
             createCursorManager(
                 StateTestConstants.CURSOR_FIELD1,
                 StateTestConstants.CURSOR,
-                StateTestConstants.NAME_NAMESPACE_PAIR1
+                StateTestConstants.NAME_NAMESPACE_PAIR1,
             )
         val actualCursorInfo =
             CursorInfo(StateTestConstants.CURSOR_FIELD1, StateTestConstants.CURSOR, null, null)
 
         Assertions.assertEquals(
             Optional.of(actualCursorInfo),
-            cursorManager.getCursorInfo(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            cursorManager.getCursorInfo(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            cursorManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            cursorManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            cursorManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            cursorManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
 
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            cursorManager.getCursorInfo(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            cursorManager.getCursorInfo(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            cursorManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            cursorManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            cursorManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            cursorManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
     }
 
@@ -253,7 +253,7 @@ class CursorManagerTest {
             { obj: DbStreamState? -> obj!!.cursorField },
             CURSOR_RECORD_COUNT_FUNCTION,
             { s: DbStreamState? -> nameNamespacePair },
-            false
+            false,
         )
     }
 

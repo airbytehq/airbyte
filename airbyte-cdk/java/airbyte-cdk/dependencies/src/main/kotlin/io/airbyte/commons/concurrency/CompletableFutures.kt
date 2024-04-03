@@ -43,7 +43,7 @@ object CompletableFutures {
                             // this should never happen
                             throw RuntimeException(
                                 "Unexpected exception in a future completion.",
-                                exception
+                                exception,
                             )
                         }
                     }

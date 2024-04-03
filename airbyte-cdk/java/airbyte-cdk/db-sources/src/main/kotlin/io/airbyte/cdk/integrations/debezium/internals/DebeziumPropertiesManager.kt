@@ -11,7 +11,7 @@ import java.util.*
 abstract class DebeziumPropertiesManager(
     private val properties: Properties,
     private val config: JsonNode,
-    private val catalog: ConfiguredAirbyteCatalog
+    private val catalog: ConfiguredAirbyteCatalog,
 ) {
     fun getDebeziumProperties(offsetManager: AirbyteFileOffsetBackingStore): Properties {
         return getDebeziumProperties(offsetManager, Optional.empty())
@@ -103,7 +103,7 @@ abstract class DebeziumPropertiesManager(
                     sanitizedNameBuilder.append(c)
                 } else {
                     sanitizedNameBuilder.append(
-                        ReplacementFunction.UNDERSCORE_REPLACEMENT.replace(c)
+                        ReplacementFunction.UNDERSCORE_REPLACEMENT.replace(c),
                     )
                     changed = true
                 }

@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory
 class TestEnvConfigs private constructor(envMap: Map<String, String>) {
     enum class DeploymentMode {
         OSS,
-        CLOUD
+        CLOUD,
     }
 
     enum class WorkerEnvironment {
         DOCKER,
-        KUBERNETES
+        KUBERNETES,
     }
 
     private val getEnv = Function { key: String -> envMap.getValue(key) }
@@ -74,8 +74,8 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                     .collect(
                         Collectors.toMap(
                             Function { key: String -> key.replace(JOB_DEFAULT_ENV_PREFIX, "") },
-                            getEnv
-                        )
+                            getEnv,
+                        ),
                     )
             // This method assumes that these shared env variables are not critical to the execution
             // of the jobs, and only serve as metadata. So any exception is swallowed and default to
@@ -91,10 +91,10 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                             Function { entry: Map.Entry<String, Function<TestEnvConfigs, String>> ->
                                 Exceptions.swallowWithDefault(
                                     { Objects.requireNonNullElse(entry.value.apply(this), "") },
-                                    ""
+                                    "",
                                 )
-                            }
-                        )
+                            },
+                        ),
                     )
             return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap)
         }
@@ -116,7 +116,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
             LOGGER.info(
                 "Using default value for environment variable {}: '{}'",
                 key,
-                if (isSecret) "*****" else defaultValue
+                if (isSecret) "*****" else defaultValue,
             )
             return defaultValue
         }
@@ -152,7 +152,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                 DEPLOYMENT_MODE,
                 Function { instance: TestEnvConfigs -> instance.deploymentMode.name },
                 WORKER_ENVIRONMENT,
-                Function { instance: TestEnvConfigs -> instance.workerEnvironment.name }
+                Function { instance: TestEnvConfigs -> instance.workerEnvironment.name },
             )
     }
 }

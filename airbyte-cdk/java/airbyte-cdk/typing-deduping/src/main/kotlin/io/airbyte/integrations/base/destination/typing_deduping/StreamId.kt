@@ -28,7 +28,7 @@ data class StreamId(
     val rawNamespace: String?,
     val rawName: String?,
     val originalNamespace: String?,
-    val originalName: String?
+    val originalName: String?,
 ) {
     /**
      * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a

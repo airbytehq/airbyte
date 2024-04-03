@@ -60,7 +60,7 @@ internal class IntegrationRunnerTest {
             IOs.writeFile(
                 configDir,
                 CONFIGURED_CATALOG_FILE_NAME,
-                Jsons.serialize(CONFIGURED_CATALOG)
+                Jsons.serialize(CONFIGURED_CATALOG),
             )
         statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE))
 
@@ -126,7 +126,7 @@ internal class IntegrationRunnerTest {
             .accept(
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                    .withConnectionStatus(output)
+                    .withConnectionStatus(output),
             )
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
@@ -157,7 +157,7 @@ internal class IntegrationRunnerTest {
             .accept(
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                    .withConnectionStatus(output)
+                    .withConnectionStatus(output),
             )
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
@@ -194,14 +194,14 @@ internal class IntegrationRunnerTest {
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
                     AirbyteRecordMessage()
-                        .withData(Jsons.jsonNode(ImmutableMap.of("names", "byron")))
+                        .withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))),
                 )
         val message2 =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
                     AirbyteRecordMessage()
-                        .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald")))
+                        .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))),
                 )
 
         Mockito.`when`(cliParser!!.parse(ARGS)).thenReturn(intConfig)
@@ -273,7 +273,7 @@ internal class IntegrationRunnerTest {
             .accept(
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                    .withConnectionStatus(output)
+                    .withConnectionStatus(output),
             )
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
@@ -288,8 +288,8 @@ internal class IntegrationRunnerTest {
                 .withMessage(
                     String.format(
                         ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-                        "Runtime Error"
-                    )
+                        "Runtime Error",
+                    ),
                 )
         val runtimeException = RuntimeException("Runtime Error")
 
@@ -307,7 +307,7 @@ internal class IntegrationRunnerTest {
             .accept(
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                    .withConnectionStatus(output)
+                    .withConnectionStatus(output),
             )
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
@@ -322,8 +322,8 @@ internal class IntegrationRunnerTest {
                 destination!!.getSerializedMessageConsumer(
                     CONFIG,
                     CONFIGURED_CATALOG,
-                    stdoutConsumer
-                )
+                    stdoutConsumer,
+                ),
             )
             .thenReturn(consumerMock)
 
@@ -335,7 +335,13 @@ internal class IntegrationRunnerTest {
 
         val runner =
             Mockito.spy(
-                IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator)
+                IntegrationRunner(
+                    cliParser,
+                    stdoutConsumer,
+                    destination,
+                    null,
+                    jsonSchemaValidator,
+                ),
             )
         runner.run(ARGS)
 
@@ -354,7 +360,7 @@ internal class IntegrationRunnerTest {
                     AirbyteRecordMessage()
                         .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
                         .withStream(STREAM_NAME)
-                        .withEmittedAt(EMITTED_AT)
+                        .withEmittedAt(EMITTED_AT),
                 )
         val message2 =
             AirbyteMessage()
@@ -363,22 +369,22 @@ internal class IntegrationRunnerTest {
                     AirbyteRecordMessage()
                         .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
                         .withStream(STREAM_NAME)
-                        .withEmittedAt(EMITTED_AT)
+                        .withEmittedAt(EMITTED_AT),
                 )
         val stateMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
-                    AirbyteStateMessage().withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }"))
+                    AirbyteStateMessage().withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")),
                 )
         System.setIn(
             ByteArrayInputStream(
                 """${Jsons.serialize(message1)}
 ${Jsons.serialize(message2)}
 ${Jsons.serialize(stateMessage)}""".toByteArray(
-                    StandardCharsets.UTF_8
-                )
-            )
+                    StandardCharsets.UTF_8,
+                ),
+            ),
         )
 
         Mockito.mock<SerializedAirbyteMessageConsumer>(SerializedAirbyteMessageConsumer::class.java)
@@ -389,19 +395,19 @@ ${Jsons.serialize(stateMessage)}""".toByteArray(
                     .verify(airbyteMessageConsumerMock)
                     .accept(
                         Jsons.serialize(message1),
-                        Jsons.serialize(message1).toByteArray(StandardCharsets.UTF_8).size
+                        Jsons.serialize(message1).toByteArray(StandardCharsets.UTF_8).size,
                     )
                 inOrder
                     .verify(airbyteMessageConsumerMock)
                     .accept(
                         Jsons.serialize(message2),
-                        Jsons.serialize(message2).toByteArray(StandardCharsets.UTF_8).size
+                        Jsons.serialize(message2).toByteArray(StandardCharsets.UTF_8).size,
                     )
                 inOrder
                     .verify(airbyteMessageConsumerMock)
                     .accept(
                         Jsons.serialize(stateMessage),
-                        Jsons.serialize(stateMessage).toByteArray(StandardCharsets.UTF_8).size
+                        Jsons.serialize(stateMessage).toByteArray(StandardCharsets.UTF_8).size,
                     )
             }
     }
@@ -416,7 +422,7 @@ ${Jsons.serialize(stateMessage)}""".toByteArray(
                     AirbyteRecordMessage()
                         .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
                         .withStream(STREAM_NAME)
-                        .withEmittedAt(EMITTED_AT)
+                        .withEmittedAt(EMITTED_AT),
                 )
         val message2 =
             AirbyteMessage()
@@ -425,15 +431,15 @@ ${Jsons.serialize(stateMessage)}""".toByteArray(
                     AirbyteRecordMessage()
                         .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
                         .withStream(STREAM_NAME)
-                        .withEmittedAt(EMITTED_AT)
+                        .withEmittedAt(EMITTED_AT),
                 )
         System.setIn(
             ByteArrayInputStream(
                 """${Jsons.serialize(message1)}
 ${Jsons.serialize(message2)}""".toByteArray(
-                    StandardCharsets.UTF_8
-                )
-            )
+                    StandardCharsets.UTF_8,
+                ),
+            ),
         )
 
         Mockito.mock<SerializedAirbyteMessageConsumer>(SerializedAirbyteMessageConsumer::class.java)
@@ -442,7 +448,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
                     .`when`(airbyteMessageConsumerMock)
                     .accept(
                         Jsons.serialize(message1),
-                        Jsons.serialize(message1).toByteArray(StandardCharsets.UTF_8).size
+                        Jsons.serialize(message1).toByteArray(StandardCharsets.UTF_8).size,
                     )
                 Assertions.assertThrows(IOException::class.java) {
                     IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock)
@@ -452,7 +458,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
                     .verify(airbyteMessageConsumerMock)
                     .accept(
                         Jsons.serialize(message1),
-                        Jsons.serialize(message1).toByteArray(StandardCharsets.UTF_8).size
+                        Jsons.serialize(message1).toByteArray(StandardCharsets.UTF_8).size,
                     )
                 inOrder.verifyNoMoreInteractions()
             }
@@ -467,7 +473,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
             3,
             TimeUnit.SECONDS,
             10,
-            TimeUnit.SECONDS
+            TimeUnit.SECONDS,
         )
         try {
             TimeUnit.SECONDS.sleep(15)
@@ -494,7 +500,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
             3,
             TimeUnit.SECONDS,
             10,
-            TimeUnit.SECONDS
+            TimeUnit.SECONDS,
         )
         try {
             TimeUnit.SECONDS.sleep(15)
@@ -548,19 +554,19 @@ ${Jsons.serialize(message2)}""".toByteArray(
         Assertions.assertEquals("unknown", IntegrationRunner.parseConnectorVersion(""))
         Assertions.assertEquals(
             "1.0.1-alpha",
-            IntegrationRunner.parseConnectorVersion("airbyte/destination-test:1.0.1-alpha")
+            IntegrationRunner.parseConnectorVersion("airbyte/destination-test:1.0.1-alpha"),
         )
         Assertions.assertEquals(
             "dev",
-            IntegrationRunner.parseConnectorVersion("airbyte/destination-test:dev")
+            IntegrationRunner.parseConnectorVersion("airbyte/destination-test:dev"),
         )
         Assertions.assertEquals(
             "1.0.1-alpha",
-            IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha")
+            IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha"),
         )
         Assertions.assertEquals(
             "1.0.1-alpha",
-            IntegrationRunner.parseConnectorVersion(":1.0.1-alpha")
+            IntegrationRunner.parseConnectorVersion(":1.0.1-alpha"),
         )
     }
 
@@ -580,13 +586,13 @@ ${Jsons.serialize(message2)}""".toByteArray(
                                          }
                                        }
                                        
-                                       """.trimIndent()
+            """.trimIndent()
 
         Assertions.assertThrows(IllegalStateException::class.java) {
             Mockito.mock(AirbyteMessageConsumer::class.java).use { consumer ->
                 Destination.ShimToSerializedAirbyteMessageConsumer.consumeMessage(
                     consumer,
-                    invalidStateMessage
+                    invalidStateMessage,
                 )
             }
         }
@@ -605,14 +611,14 @@ ${Jsons.serialize(message2)}""".toByteArray(
                                             }
                                           }
                                           
-                                          """.trimIndent()
+            """.trimIndent()
 
         Assertions.assertDoesNotThrow {
-            Mockito.mock<AirbyteMessageConsumer>(AirbyteMessageConsumer::class.java).use { consumer
+            Mockito.mock<AirbyteMessageConsumer>(AirbyteMessageConsumer::class.java).use { consumer,
                 ->
                 Destination.ShimToSerializedAirbyteMessageConsumer.consumeMessage(
                     consumer,
-                    invalidNonStateMessage
+                    invalidNonStateMessage,
                 )
                 Mockito.verify(consumer, Mockito.times(0)).accept(any<AirbyteMessage>())
             }

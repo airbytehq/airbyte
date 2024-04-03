@@ -48,7 +48,7 @@ private constructor(
     // Optional fields
     private val bufferMemoryLimit: Optional<Long>,
     private val optimalBatchSizeBytes: Long,
-    private val dataTransformer: StreamAwareDataTransformer
+    private val dataTransformer: StreamAwareDataTransformer,
 ) : SerialStagingConsumerFactory() {
     class Builder {
         // Required (?) fields
@@ -105,7 +105,7 @@ private constructor(
                 useDestinationsV2Columns,
                 bufferMemoryLimit,
                 optimalBatchSizeBytes,
-                (if (dataTransformer != null) dataTransformer else IdentityDataTransformer())!!
+                (if (dataTransformer != null) dataTransformer else IdentityDataTransformer())!!,
             )
         }
     }
@@ -121,7 +121,7 @@ private constructor(
                 config,
                 catalog,
                 parsedCatalog,
-                useDestinationsV2Columns
+                useDestinationsV2Columns,
             )
         val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> =
             streamDescToWriteConfig(writeConfigs)
@@ -134,7 +134,7 @@ private constructor(
                 typerDeduperValve,
                 typerDeduper,
                 optimalBatchSizeBytes,
-                useDestinationsV2Columns
+                useDestinationsV2Columns,
             )
         return AsyncStreamConsumer(
             outputRecordCollector!!,
@@ -142,7 +142,7 @@ private constructor(
                 database!!,
                 stagingOperations,
                 writeConfigs,
-                typerDeduper
+                typerDeduper,
             ), // todo (cgardens) - wrapping the old close function to avoid more code churn.
             OnCloseFunction { _, streamSyncSummaries ->
                 try {
@@ -151,7 +151,7 @@ private constructor(
                             stagingOperations,
                             writeConfigs,
                             purgeStagingData,
-                            typerDeduper
+                            typerDeduper,
                         )
                         .accept(false, streamSyncSummaries)
                 } catch (e: Exception) {
@@ -162,7 +162,7 @@ private constructor(
             catalog!!,
             BufferManager(getMemoryLimit(bufferMemoryLimit)),
             Optional.ofNullable(defaultNamespace),
-            dataTransformer
+            dataTransformer,
         )
     }
 
@@ -204,7 +204,7 @@ private constructor(
 
         private fun getMemoryLimit(bufferMemoryLimit: Optional<Long>): Long {
             return bufferMemoryLimit.orElse(
-                (Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong()
+                (Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong(),
             )
         }
 
@@ -236,9 +236,9 @@ private constructor(
                             .map<String>(
                                 Function<WriteConfig, String> { config: WriteConfig ->
                                     config.namespace + "." + config.streamName
-                                }
+                                },
                             )
-                            .collect(Collectors.joining(", "))
+                            .collect(Collectors.joining(", ")),
                     )
                 throw ConfigErrorException(message)
             }
@@ -281,11 +281,11 @@ private constructor(
             parsedCatalog: ParsedCatalog?,
             useDestinationsV2Columns: Boolean
         ): Function<ConfiguredAirbyteStream, WriteConfig> {
-            return Function<ConfiguredAirbyteStream, WriteConfig> { stream: ConfiguredAirbyteStream
+            return Function<ConfiguredAirbyteStream, WriteConfig> { stream: ConfiguredAirbyteStream,
                 ->
                 Preconditions.checkNotNull(
                     stream.destinationSyncMode,
-                    "Undefined destination sync mode"
+                    "Undefined destination sync mode",
                 )
                 val abStream = stream.stream
                 val streamName = abStream.name
@@ -312,7 +312,7 @@ private constructor(
                         tmpTableName,
                         tableName,
                         syncMode,
-                        SYNC_DATETIME
+                        SYNC_DATETIME,
                     )
                 LOGGER.info("Write config: {}", writeConfig)
                 writeConfig
@@ -324,8 +324,11 @@ private constructor(
             defaultDestSchema: String,
             namingResolver: NamingConventionTransformer?
         ): String {
-            return if (stream.namespace != null) namingResolver!!.getNamespace(stream.namespace)
-            else namingResolver!!.getNamespace(defaultDestSchema)
+            return if (stream.namespace != null) {
+                namingResolver!!.getNamespace(stream.namespace)
+            } else {
+                namingResolver!!.getNamespace(defaultDestSchema)
+            }
         }
     }
 }

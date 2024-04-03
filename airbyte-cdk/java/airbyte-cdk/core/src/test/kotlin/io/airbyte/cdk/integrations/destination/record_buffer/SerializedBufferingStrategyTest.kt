@@ -199,7 +199,8 @@ class SerializedBufferingStrategyTest {
     private fun onCreateBufferFunction(): BufferCreateFunction {
         return BufferCreateFunction {
             stream: AirbyteStreamNameNamespacePair,
-            catalog: ConfiguredAirbyteCatalog? ->
+            catalog: ConfiguredAirbyteCatalog?,
+            ->
             when (stream.name) {
                 STREAM_1 -> recordWriter1
                 STREAM_2 -> recordWriter2
@@ -229,7 +230,7 @@ class SerializedBufferingStrategyTest {
                     AirbyteRecordMessage()
                         .withStream(stream.name)
                         .withNamespace(stream.namespace)
-                        .withData(MESSAGE_DATA)
+                        .withData(MESSAGE_DATA),
                 )
         }
     }

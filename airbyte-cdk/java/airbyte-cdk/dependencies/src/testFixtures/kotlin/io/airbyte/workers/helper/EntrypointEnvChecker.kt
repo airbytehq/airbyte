@@ -46,7 +46,7 @@ object EntrypointEnvChecker {
                 emptyMap(),
                 emptyMap(),
                 emptyMap(),
-                emptyMap()
+                emptyMap(),
             )
 
         val stdout =
@@ -68,7 +68,7 @@ object EntrypointEnvChecker {
             val splits = outputLine.split("=".toRegex(), limit = 2).toTypedArray()
             if (splits.size != 2) {
                 throw RuntimeException(
-                    "String could not be split into multiple segments: $outputLine"
+                    "String could not be split into multiple segments: $outputLine",
                 )
             } else {
                 splits[1].trim()

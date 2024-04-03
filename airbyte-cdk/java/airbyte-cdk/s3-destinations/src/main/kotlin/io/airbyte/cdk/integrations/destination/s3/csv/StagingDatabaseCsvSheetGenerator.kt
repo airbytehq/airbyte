@@ -27,8 +27,11 @@ class StagingDatabaseCsvSheetGenerator
 constructor(private val useDestinationsV2Columns: Boolean = false) : CsvSheetGenerator {
     // TODO is this even used anywhere?
     private var header: List<String> =
-        if (this.useDestinationsV2Columns) JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
-        else JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
+        if (this.useDestinationsV2Columns) {
+            JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
+        } else {
+            JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
+        }
 
     override fun getHeaderRow(): List<String> {
         return header
@@ -39,7 +42,7 @@ constructor(private val useDestinationsV2Columns: Boolean = false) : CsvSheetGen
             id,
             Jsons.serialize(recordMessage.data),
             recordMessage.emittedAt,
-            Jsons.serialize(recordMessage.meta)
+            Jsons.serialize(recordMessage.meta),
         )
     }
 
@@ -59,7 +62,7 @@ constructor(private val useDestinationsV2Columns: Boolean = false) : CsvSheetGen
                 Instant.ofEpochMilli(emittedAt),
                 "",
                 formattedString,
-                formattedAirbyteMetaString
+                formattedAirbyteMetaString,
             )
         } else {
             java.util.List.of<Any>(id, formattedString, Instant.ofEpochMilli(emittedAt))

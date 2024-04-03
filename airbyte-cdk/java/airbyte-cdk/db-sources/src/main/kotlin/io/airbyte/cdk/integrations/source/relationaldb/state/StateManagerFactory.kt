@@ -38,41 +38,41 @@ object StateManagerFactory {
                 AirbyteStateMessage.AirbyteStateType.LEGACY -> {
                     LOGGER.info(
                         "Legacy state manager selected to manage state object with type {}.",
-                        airbyteStateMessage!!.type
+                        airbyteStateMessage!!.type,
                     )
                     @Suppress("deprecation")
                     val retVal: StateManager =
                         LegacyStateManager(
                             Jsons.`object`(airbyteStateMessage.data, DbState::class.java),
-                            catalog
+                            catalog,
                         )
                     return retVal
                 }
                 AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
                     LOGGER.info(
                         "Global state manager selected to manage state object with type {}.",
-                        airbyteStateMessage!!.type
+                        airbyteStateMessage!!.type,
                     )
                     return GlobalStateManager(generateGlobalState(airbyteStateMessage), catalog)
                 }
                 AirbyteStateMessage.AirbyteStateType.STREAM -> {
                     LOGGER.info(
                         "Stream state manager selected to manage state object with type {}.",
-                        airbyteStateMessage!!.type
+                        airbyteStateMessage!!.type,
                     )
                     return StreamStateManager(generateStreamState(initialState), catalog)
                 }
                 else -> {
                     LOGGER.info(
                         "Stream state manager selected to manage state object with type {}.",
-                        airbyteStateMessage!!.type
+                        airbyteStateMessage!!.type,
                     )
                     return StreamStateManager(generateStreamState(initialState), catalog)
                 }
             }
         } else {
             throw IllegalArgumentException(
-                "Failed to create state manager due to empty state list."
+                "Failed to create state manager due to empty state list.",
             )
         }
     }
@@ -96,7 +96,7 @@ object StateManagerFactory {
         when (airbyteStateMessage!!.type) {
             AirbyteStateMessage.AirbyteStateType.STREAM ->
                 throw IllegalArgumentException(
-                    "Unable to convert connector state from stream to global.  Please reset the connection to continue."
+                    "Unable to convert connector state from stream to global.  Please reset the connection to continue.",
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY -> {
                 globalStateMessage =
@@ -128,11 +128,11 @@ object StateManagerFactory {
         when (airbyteStateMessage!!.type) {
             AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                 throw IllegalArgumentException(
-                    "Unable to convert connector state from global to stream.  Please reset the connection to continue."
+                    "Unable to convert connector state from global to stream.  Please reset the connection to continue.",
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY ->
                 streamStates.addAll(
-                    StateGeneratorUtils.convertLegacyStateToStreamState(airbyteStateMessage)
+                    StateGeneratorUtils.convertLegacyStateToStreamState(airbyteStateMessage),
                 )
             AirbyteStateMessage.AirbyteStateType.STREAM -> streamStates.addAll(states)
             else -> streamStates.addAll(states)

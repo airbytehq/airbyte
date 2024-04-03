@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 
 class PostgresRawTableAirbyteMetaMigration(
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
 ) : Migration<PostgresState> {
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -34,11 +34,11 @@ class PostgresRawTableAirbyteMetaMigration(
         if (!state.initialRawTableStatus.rawTableExists) {
             // The raw table doesn't exist. No migration necessary. Update the state.
             logger.info(
-                "Skipping RawTableAirbyteMetaMigration for ${stream.id.originalNamespace}.${stream.id.originalName} because the raw table doesn't exist"
+                "Skipping RawTableAirbyteMetaMigration for ${stream.id.originalNamespace}.${stream.id.originalName} because the raw table doesn't exist",
             )
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-                false
+                false,
             )
         }
 
@@ -48,7 +48,7 @@ class PostgresRawTableAirbyteMetaMigration(
                     database,
                     databaseName,
                     stream.id.rawNamespace,
-                    stream.id.rawName
+                    stream.id.rawName,
                 )
                 .get()
 
@@ -57,20 +57,20 @@ class PostgresRawTableAirbyteMetaMigration(
             // the state.
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-                false
+                false,
             )
         }
 
         logger.info(
-            "Executing RawTableAirbyteMetaMigration for ${stream.id.rawNamespace}.${stream.id.rawName} for real"
+            "Executing RawTableAirbyteMetaMigration for ${stream.id.rawNamespace}.${stream.id.rawName} for real",
         )
 
         destinationHandler.execute(
             Sql.of(
                 DSL.alterTable(DSL.name(stream.id.rawNamespace, stream.id.rawName))
                     .addColumn(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_META), JSONB_TYPE)
-                    .getSQL(ParamType.INLINED)
-            )
+                    .getSQL(ParamType.INLINED),
+            ),
         )
 
         // Update the state. We didn't modify the table in a relevant way, so don't invalidate the
@@ -79,7 +79,7 @@ class PostgresRawTableAirbyteMetaMigration(
         // data i.e. `errors` instead of `changes` as is since this column is controlled by us.
         return Migration.MigrationResult(
             state.destinationState.copy(needsSoftReset = false, isAirbyteMetaPresentInRaw = true),
-            false
+            false,
         )
     }
 }

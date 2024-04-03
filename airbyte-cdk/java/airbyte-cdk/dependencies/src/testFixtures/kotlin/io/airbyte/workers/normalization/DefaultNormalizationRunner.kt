@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory
 class DefaultNormalizationRunner(
     private val processFactory: ProcessFactory,
     private val normalizationImageName: String?,
-    private val normalizationIntegrationType: String?
+    private val normalizationIntegrationType: String?,
 ) : NormalizationRunner {
     private val streamFactory = NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER)
     private var airbyteMessagesByType: MutableMap<AirbyteMessage.Type, List<AirbyteMessage>> =
@@ -55,7 +55,7 @@ class DefaultNormalizationRunner(
         val files: Map<String?, String?> =
             ImmutableMap.of(
                 WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-                Jsons.serialize(config)
+                Jsons.serialize(config),
             )
         val gitRepoUrl = dbtConfig.gitRepoUrl
         if (Strings.isNullOrEmpty(gitRepoUrl)) {
@@ -75,7 +75,7 @@ class DefaultNormalizationRunner(
                 "--config",
                 WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
                 "--git-repo",
-                gitRepoUrl
+                gitRepoUrl,
             )
         } else {
             runProcess(
@@ -92,7 +92,7 @@ class DefaultNormalizationRunner(
                 "--git-repo",
                 gitRepoUrl,
                 "--git-branch",
-                gitRepoBranch
+                gitRepoBranch,
             )
         }
     }
@@ -111,7 +111,7 @@ class DefaultNormalizationRunner(
                 WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
                 Jsons.serialize(config),
                 WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-                Jsons.serialize(catalog)
+                Jsons.serialize(catalog),
             )
 
         return runProcess(
@@ -126,7 +126,7 @@ class DefaultNormalizationRunner(
             "--config",
             WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
             "--catalog",
-            WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME
+            WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
         )
     }
 
@@ -158,12 +158,12 @@ class DefaultNormalizationRunner(
                         Metadata.JOB_TYPE_KEY,
                         Metadata.SYNC_JOB,
                         Metadata.SYNC_STEP_KEY,
-                        Metadata.NORMALIZE_STEP
+                        Metadata.NORMALIZE_STEP,
                     ),
                     emptyMap(),
                     emptyMap(),
                     emptyMap(),
-                    *args
+                    *args,
                 )
 
             process!!.inputStream.use { stdout ->
@@ -173,7 +173,7 @@ class DefaultNormalizationRunner(
                     streamFactory
                         .create(IOs.newBufferedReader(stdout))
                         .collect(
-                            Collectors.groupingBy(Function { obj: AirbyteMessage? -> obj!!.type })
+                            Collectors.groupingBy(Function { obj: AirbyteMessage? -> obj!!.type }),
                         )
 
                 // picks up error logs from dbt
@@ -189,30 +189,30 @@ class DefaultNormalizationRunner(
                                     .withError(
                                         AirbyteErrorTraceMessage()
                                             .withFailureType(
-                                                AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR
+                                                AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
                                             ) // TODO: decide on best FailureType for this
                                             .withMessage(
-                                                "Normalization failed during the dbt run. This may indicate a problem with the data itself."
+                                                "Normalization failed during the dbt run. This may indicate a problem with the data itself.",
                                             ) // due to the lack of consistent defining features in
                                             // dbt errors we're injecting a breadcrumb to the
                                             // stacktrace so we can confidently identify all dbt
                                             // errors when parsing and sending to Sentry
                                             // see dbt error examples:
                                             // https://docs.getdbt.com/guides/legacy/debugging-errors for more context
-                                            .withStackTrace("AirbyteDbtError: \n$dbtErrorStack")
-                                    )
+                                            .withStackTrace("AirbyteDbtError: \n$dbtErrorStack"),
+                                    ),
                             )
 
                     airbyteMessagesByType.putIfAbsent(
                         AirbyteMessage.Type.TRACE,
-                        java.util.List.of(dbtTraceMessage)
+                        java.util.List.of(dbtTraceMessage),
                     )
                 }
             }
             LineGobbler.gobble(
                 process!!.errorStream,
                 { msg: String? -> LOGGER.error(msg) },
-                CONTAINER_LOG_MDC_BUILDER
+                CONTAINER_LOG_MDC_BUILDER,
             )
 
             TestHarnessUtils.wait(process)
@@ -247,7 +247,7 @@ class DefaultNormalizationRunner(
             throw TestHarnessException(
                 "Normalization process did not terminate normally (exit code: " +
                     process!!.exitValue() +
-                    ")"
+                    ")",
             )
         } else {
             LOGGER.info("Normalization process successfully terminated.")

@@ -26,7 +26,7 @@ internal class JsonsTest {
 
         Assertions.assertEquals(
             "{\"test\":\"abc\",\"test2\":\"def\"}",
-            Jsons.serialize(ImmutableMap.of(TEST, ABC, TEST2, DEF))
+            Jsons.serialize(ImmutableMap.of(TEST, ABC, TEST2, DEF)),
         )
     }
 
@@ -34,12 +34,12 @@ internal class JsonsTest {
     fun testSerializeJsonNode() {
         Assertions.assertEquals(
             SERIALIZED_JSON,
-            Jsons.serialize(Jsons.jsonNode(ToClass(ABC, 999, 888L)))
+            Jsons.serialize(Jsons.jsonNode(ToClass(ABC, 999, 888L))),
         )
 
         Assertions.assertEquals(
             "{\"test\":\"abc\",\"test2\":\"def\"}",
-            Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(TEST, ABC, TEST2, DEF)))
+            Jsons.serialize(Jsons.jsonNode(ImmutableMap.of(TEST, ABC, TEST2, DEF))),
         )
         // issue: 5878 add test for binary node serialization, binary data are
         // serialized into base64
@@ -47,9 +47,9 @@ internal class JsonsTest {
             "{\"test\":\"dGVzdA==\"}",
             Jsons.serialize(
                 Jsons.jsonNode(
-                    ImmutableMap.of(TEST, BinaryNode("test".toByteArray(StandardCharsets.UTF_8)))
-                )
-            )
+                    ImmutableMap.of(TEST, BinaryNode("test".toByteArray(StandardCharsets.UTF_8))),
+                ),
+            ),
         )
     }
 
@@ -59,8 +59,8 @@ internal class JsonsTest {
             ToClass(ABC, 999, 888L),
             Jsons.deserialize(
                 "{\"str\":\"abc\", \"num\": 999, \"numLong\": 888}",
-                ToClass::class.java
-            )
+                ToClass::class.java,
+            ),
         )
     }
 
@@ -70,13 +70,13 @@ internal class JsonsTest {
 
         Assertions.assertEquals(
             "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
-            Jsons.deserialize("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString()
+            Jsons.deserialize("[{\"str\":\"abc\"},{\"str\":\"abc\"}]").toString(),
         )
         // issue: 5878 add test for binary node deserialization, for now should be
         // base64 string
         Assertions.assertEquals(
             "{\"test\":\"dGVzdA==\"}",
-            Jsons.deserialize("{\"test\":\"dGVzdA==\"}").toString()
+            Jsons.deserialize("{\"test\":\"dGVzdA==\"}").toString(),
         )
     }
 
@@ -86,16 +86,16 @@ internal class JsonsTest {
             Optional.of(ToClass(ABC, 999, 888L)),
             Jsons.tryDeserialize(
                 "{\"str\":\"abc\", \"num\": 999, \"numLong\": 888}",
-                ToClass::class.java
-            )
+                ToClass::class.java,
+            ),
         )
 
         Assertions.assertEquals(
             Optional.of(ToClass(ABC, 999, 0L)),
             Jsons.tryDeserialize(
                 "{\"str\":\"abc\", \"num\": 999, \"test\": 888}",
-                ToClass::class.java
-            )
+                ToClass::class.java,
+            ),
         )
     }
 
@@ -103,12 +103,12 @@ internal class JsonsTest {
     fun testTryDeserializeToJsonNode() {
         Assertions.assertEquals(
             Optional.of(Jsons.deserialize(SERIALIZED_JSON2)),
-            Jsons.tryDeserialize(SERIALIZED_JSON2)
+            Jsons.tryDeserialize(SERIALIZED_JSON2),
         )
 
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test}")
+            Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test}"),
         )
     }
 
@@ -118,18 +118,18 @@ internal class JsonsTest {
 
         Assertions.assertEquals(
             "{\"test\":\"abc\",\"test2\":\"def\"}",
-            Jsons.jsonNode(ImmutableMap.of(TEST, ABC, TEST2, DEF)).toString()
+            Jsons.jsonNode(ImmutableMap.of(TEST, ABC, TEST2, DEF)).toString(),
         )
 
         Assertions.assertEquals(
             "{\"test\":\"abc\",\"test2\":{\"inner\":1}}",
             Jsons.jsonNode(ImmutableMap.of(TEST, ABC, TEST2, ImmutableMap.of("inner", 1)))
-                .toString()
+                .toString(),
         )
 
         Assertions.assertEquals(
             Jsons.jsonNode(ToClass(ABC, 999, 888L)),
-            Jsons.jsonNode(Jsons.jsonNode(ToClass(ABC, 999, 888L)))
+            Jsons.jsonNode(Jsons.jsonNode(ToClass(ABC, 999, 888L))),
         )
     }
 
@@ -148,20 +148,20 @@ internal class JsonsTest {
         val expected = ToClass(ABC, 999, 888L)
         Assertions.assertEquals(
             expected,
-            Jsons.`object`(Jsons.jsonNode(expected), ToClass::class.java)
+            Jsons.`object`(Jsons.jsonNode(expected), ToClass::class.java),
         )
 
         Assertions.assertEquals(
             Lists.newArrayList(expected),
             Jsons.`object`<List<ToClass>>(
                 Jsons.jsonNode(Lists.newArrayList(expected)),
-                object : TypeReference<List<ToClass>>() {}
-            )
+                object : TypeReference<List<ToClass>>() {},
+            ),
         )
 
         Assertions.assertEquals(
             ToClass(),
-            Jsons.`object`(Jsons.deserialize("{\"a\":1}"), ToClass::class.java)
+            Jsons.`object`(Jsons.deserialize("{\"a\":1}"), ToClass::class.java),
         )
     }
 
@@ -170,29 +170,29 @@ internal class JsonsTest {
         val expected = ToClass(ABC, 999, 888L)
         Assertions.assertEquals(
             Optional.of(expected),
-            Jsons.tryObject(Jsons.deserialize(SERIALIZED_JSON), ToClass::class.java)
+            Jsons.tryObject(Jsons.deserialize(SERIALIZED_JSON), ToClass::class.java),
         )
 
         Assertions.assertEquals(
             Optional.of(expected),
             Jsons.tryObject(
                 Jsons.deserialize(SERIALIZED_JSON),
-                object : TypeReference<ToClass>() {}
-            )
+                object : TypeReference<ToClass>() {},
+            ),
         )
 
         val emptyExpected = ToClass()
         Assertions.assertEquals(
             Optional.of(emptyExpected),
-            Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), ToClass::class.java)
+            Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), ToClass::class.java),
         )
 
         Assertions.assertEquals(
             Optional.of(emptyExpected),
             Jsons.tryObject(
                 Jsons.deserialize("{\"str1\":\"abc\"}"),
-                object : TypeReference<ToClass>() {}
-            )
+                object : TypeReference<ToClass>() {},
+            ),
         )
     }
 
@@ -209,7 +209,7 @@ internal class JsonsTest {
         val jsonString = "{\"test\":\"abc\",\"type\":[\"object\"]}"
         Assertions.assertArrayEquals(
             jsonString.toByteArray(Charsets.UTF_8),
-            Jsons.toBytes(Jsons.deserialize(jsonString))
+            Jsons.toBytes(Jsons.deserialize(jsonString)),
         )
     }
 
@@ -246,7 +246,7 @@ internal class JsonsTest {
     fun testGetOptional() {
         val json =
             Jsons.deserialize(
-                "{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": {}, \"mno\": \"pqr\", \"stu\": null }"
+                "{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": {}, \"mno\": \"pqr\", \"stu\": null }",
             )
 
         Assertions.assertEquals(Optional.of(Jsons.jsonNode(GHI)), Jsons.getOptional(json, ABC, DEF))
@@ -254,7 +254,7 @@ internal class JsonsTest {
         Assertions.assertEquals(Optional.of(Jsons.jsonNode(PQR)), Jsons.getOptional(json, MNO))
         Assertions.assertEquals(
             Optional.of(Jsons.jsonNode<Any?>(null)),
-            Jsons.getOptional(json, STU)
+            Jsons.getOptional(json, STU),
         )
         Assertions.assertEquals(Optional.empty<Any>(), Jsons.getOptional(json, XYZ))
         Assertions.assertEquals(Optional.empty<Any>(), Jsons.getOptional(json, ABC, XYZ))
@@ -291,13 +291,13 @@ internal class JsonsTest {
                         arrayOf<Any>("abc.def", GHI),
                         arrayOf<Any>(JKL, true),
                         arrayOf<Any>(PQR, 1),
-                    )
+                    ),
                 )
                 .collect(
                     Collectors.toMap(
                         Function { data: Array<Any> -> data[0] as String },
-                        Function { data: Array<Any> -> data[1] }
-                    )
+                        Function { data: Array<Any> -> data[1] },
+                    ),
                 )
         Assertions.assertEquals(expected, Jsons.flatten(json, false))
     }
@@ -306,7 +306,7 @@ internal class JsonsTest {
     fun testFlatten__withArraysNoApplyFlatten() {
         val json =
             Jsons.deserialize(
-                "{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }"
+                "{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }",
             )
         val expected =
             Stream.of(
@@ -314,13 +314,13 @@ internal class JsonsTest {
                         arrayOf<Any>(ABC, "[{\"def\":\"ghi\"},{\"fed\":\"ihg\"}]"),
                         arrayOf<Any>(JKL, true),
                         arrayOf<Any>(PQR, 1),
-                    )
+                    ),
                 )
                 .collect(
                     Collectors.toMap(
                         Function { data: Array<Any> -> data[0] as String },
-                        Function { data: Array<Any> -> data[1] }
-                    )
+                        Function { data: Array<Any> -> data[1] },
+                    ),
                 )
         Assertions.assertEquals(expected, Jsons.flatten(json, false))
     }
@@ -329,7 +329,7 @@ internal class JsonsTest {
     fun testFlatten__checkBackwardCompatiblity() {
         val json =
             Jsons.deserialize(
-                "{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }"
+                "{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }",
             )
         val expected =
             Stream.of(
@@ -337,13 +337,13 @@ internal class JsonsTest {
                         arrayOf<Any>(ABC, "[{\"def\":\"ghi\"},{\"fed\":\"ihg\"}]"),
                         arrayOf<Any>(JKL, true),
                         arrayOf<Any>(PQR, 1),
-                    )
+                    ),
                 )
                 .collect(
                     Collectors.toMap(
                         Function { data: Array<Any> -> data[0] as String },
-                        Function { data: Array<Any> -> data[1] }
-                    )
+                        Function { data: Array<Any> -> data[1] },
+                    ),
                 )
         Assertions.assertEquals(expected, Jsons.flatten(json))
     }
@@ -352,7 +352,7 @@ internal class JsonsTest {
     fun testFlatten__withArraysApplyFlatten() {
         val json =
             Jsons.deserialize(
-                "{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }"
+                "{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }",
             )
         val expected =
             Stream.of(
@@ -361,13 +361,13 @@ internal class JsonsTest {
                         arrayOf<Any>("abc.[1].fed", "ihg"),
                         arrayOf<Any>(JKL, true),
                         arrayOf<Any>(PQR, 1),
-                    )
+                    ),
                 )
                 .collect(
                     Collectors.toMap(
                         Function { data: Array<Any> -> data[0] as String },
-                        Function { data: Array<Any> -> data[1] }
-                    )
+                        Function { data: Array<Any> -> data[1] },
+                    ),
                 )
         Assertions.assertEquals(expected, Jsons.flatten(json, true))
     }
@@ -376,7 +376,7 @@ internal class JsonsTest {
     fun testFlatten__withArraysApplyFlattenNested() {
         val json =
             Jsons.deserialize(
-                "{ \"abc\": [{ \"def\": {\"ghi\": [\"xyz\"] }}, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }"
+                "{ \"abc\": [{ \"def\": {\"ghi\": [\"xyz\"] }}, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }",
             )
         val expected =
             Stream.of(
@@ -385,13 +385,13 @@ internal class JsonsTest {
                         arrayOf<Any>("abc.[1].fed", "ihg"),
                         arrayOf<Any>(JKL, true),
                         arrayOf<Any>(PQR, 1),
-                    )
+                    ),
                 )
                 .collect(
                     Collectors.toMap(
                         Function { data: Array<Any> -> data[0] as String },
-                        Function { data: Array<Any> -> data[1] }
-                    )
+                        Function { data: Array<Any> -> data[1] },
+                    ),
                 )
         Assertions.assertEquals(expected, Jsons.flatten(json, true))
     }

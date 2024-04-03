@@ -98,7 +98,7 @@ class MongoDatabase(connectionString: String?, databaseName: String?) :
                     cursor,
                     CheckedFunction { document: Document ->
                         MongoUtils.toJsonNode(document, columnNames)
-                    }
+                    },
                 )
                 .onClose {
                     try {
@@ -111,7 +111,7 @@ class MongoDatabase(connectionString: String?, databaseName: String?) :
             LOGGER.error(
                 "Exception attempting to read data from collection: {}, {}",
                 collectionName,
-                e.message
+                e.message,
             )
             throw RuntimeException(e)
         }
@@ -133,7 +133,7 @@ class MongoDatabase(connectionString: String?, databaseName: String?) :
                     }
                 }
             },
-            false
+            false,
         )
     }
 

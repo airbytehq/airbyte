@@ -75,7 +75,7 @@ object JsonSchemas {
                 IOs.writeFile(
                     configRoot,
                     filename,
-                    MoreResources.readResource(String.format("%s/%s", resourceDir, filename))
+                    MoreResources.readResource(String.format("%s/%s", resourceDir, filename)),
                 )
             }
 
@@ -124,7 +124,8 @@ object JsonSchemas {
         // returns true.
         return traverseJsonSchemaWithFilteredCollector(jsonSchema) {
             node: JsonNode?,
-            path: List<FieldNameOrList>? ->
+            path: List<FieldNameOrList>?,
+            ->
             Optional.ofNullable(mapper.apply(node, path))
         }
     }
@@ -172,14 +173,16 @@ object JsonSchemas {
     ): List<List<FieldNameOrList>> {
         return traverseJsonSchemaWithFilteredCollector(obj) {
             node: JsonNode?,
-            path: List<FieldNameOrList>? ->
+            path: List<FieldNameOrList>?,
+            ->
             if (predicate.test(node)) {
                 return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>?>(
-                    path!!
+                    path!!,
                 )
             } else {
                 return@traverseJsonSchemaWithFilteredCollector Optional.empty<
-                    List<FieldNameOrList>>()
+                    List<FieldNameOrList>,
+                >()
             }
         }
     }
@@ -204,7 +207,7 @@ object JsonSchemas {
             String.format(
                 "json schema nodes should always be object nodes. path: %s actual: %s",
                 path,
-                jsonSchemaNode
+                jsonSchemaNode,
             )
         }
         consumer.accept(jsonSchemaNode, path)
@@ -223,11 +226,11 @@ object JsonSchemas {
                         traverseJsonSchemaInternal(
                             jsonSchemaNode[JSON_SCHEMA_ITEMS_KEY],
                             newPath,
-                            consumer
+                            consumer,
                         )
                     } else {
                         log.warn(
-                            "The array is missing an items field. The traversal is silently stopped. Current schema: $jsonSchemaNode"
+                            "The array is missing an items field. The traversal is silently stopped. Current schema: $jsonSchemaNode",
                         )
                     }
                 }
@@ -248,7 +251,7 @@ object JsonSchemas {
                         }
                     } else {
                         log.warn(
-                            "The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: $jsonSchemaNode"
+                            "The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: $jsonSchemaNode",
                         )
                     }
                 }

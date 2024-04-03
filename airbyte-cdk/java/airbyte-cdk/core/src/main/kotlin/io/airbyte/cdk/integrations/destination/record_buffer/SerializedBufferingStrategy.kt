@@ -30,7 +30,7 @@ class SerializedBufferingStrategy
 (
     private val onCreateBuffer: BufferCreateFunction,
     private val catalog: ConfiguredAirbyteCatalog,
-    private val onStreamFlush: FlushBufferFunction
+    private val onStreamFlush: FlushBufferFunction,
 ) : BufferingStrategy {
     private var allBuffers: MutableMap<AirbyteStreamNameNamespacePair, SerializableBuffer> =
         HashMap()
@@ -56,8 +56,8 @@ class SerializedBufferingStrategy
                     String.format(
                         "Failed to create/get buffer for stream %s.%s",
                         stream.namespace,
-                        stream.name
-                    )
+                        stream.name,
+                    ),
                 )
 
         val actualMessageSizeInBytes = buffer.accept(message.record)
@@ -102,7 +102,7 @@ class SerializedBufferingStrategy
                 "Starting a new buffer for stream {} (current state: {} in {} buffers)",
                 stream.name,
                 FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes),
-                allBuffers.size
+                allBuffers.size,
             )
             try {
                 return@computeIfAbsent onCreateBuffer.apply(stream, catalog)!!
@@ -121,7 +121,7 @@ class SerializedBufferingStrategy
         LOGGER.info(
             "Flushing buffer of stream {} ({})",
             stream.name,
-            FileUtils.byteCountToDisplaySize(buffer.byteCount)
+            FileUtils.byteCountToDisplaySize(buffer.byteCount),
         )
         onStreamFlush.accept(stream, buffer)
         totalBufferSizeInBytes -= buffer.byteCount
@@ -134,13 +134,13 @@ class SerializedBufferingStrategy
         LOGGER.info(
             "Flushing all {} current buffers ({} in total)",
             allBuffers.size,
-            FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes)
+            FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes),
         )
         for ((stream, buffer) in allBuffers) {
             LOGGER.info(
                 "Flushing buffer of stream {} ({})",
                 stream.name,
-                FileUtils.byteCountToDisplaySize(buffer.byteCount)
+                FileUtils.byteCountToDisplaySize(buffer.byteCount),
             )
             onStreamFlush.accept(stream, buffer)
             LOGGER.info("Flushing completed for {}", stream.name)
@@ -171,7 +171,7 @@ class SerializedBufferingStrategy
 
         ConnectorExceptionUtil.logAllAndThrowFirst(
             "Exceptions thrown while closing buffers: ",
-            exceptionsThrown
+            exceptionsThrown,
         )
     }
 

@@ -27,7 +27,7 @@ class CursorManager<S : Any>(
     cursorFieldFunction: Function<S, List<String>>?,
     cursorRecordCountFunction: Function<S, Long>?,
     namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
-    onlyIncludeIncrementalStreams: Boolean
+    onlyIncludeIncrementalStreams: Boolean,
 ) {
     /**
      * Map of streams (name/namespace tuple) to the current cursor information stored in the state.
@@ -59,7 +59,7 @@ class CursorManager<S : Any>(
                 cursorFieldFunction,
                 cursorRecordCountFunction,
                 namespacePairFunction,
-                onlyIncludeIncrementalStreams
+                onlyIncludeIncrementalStreams,
             )
     }
 
@@ -110,7 +110,7 @@ class CursorManager<S : Any>(
                 .stream()
                 .map(namespacePairFunction)
                 .filter { obj: AirbyteStreamNameNamespacePair? -> Objects.nonNull(obj) }
-                .collect(Collectors.toSet())
+                .collect(Collectors.toSet()),
         )
 
         val localMap: MutableMap<AirbyteStreamNameNamespacePair, CursorInfo> = ConcurrentHashMap()
@@ -127,8 +127,8 @@ class CursorManager<S : Any>(
                         Function { stream: ConfiguredAirbyteStream? ->
                             AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)
                         },
-                        Function.identity()
-                    )
+                        Function.identity(),
+                    ),
                 )
 
         for (pair in allStreamNames) {
@@ -141,7 +141,7 @@ class CursorManager<S : Any>(
                     streamOptional,
                     cursorFunction,
                     cursorFieldFunction,
-                    cursorRecordCountFunction
+                    cursorRecordCountFunction,
                 )
         }
 
@@ -221,7 +221,7 @@ class CursorManager<S : Any>(
                             pair,
                             cursorField,
                             cursor,
-                            cursorRecordCount
+                            cursorRecordCount,
                         )
                     }
                     // if cursor field in catalog and state are different.
@@ -233,7 +233,7 @@ class CursorManager<S : Any>(
                         pair,
                         originalCursorField,
                         originalCursorRecordCount,
-                        cursorField
+                        cursorField,
                     )
                 }
                 // if cursor field is not set in state but is set in catalog.
@@ -241,7 +241,7 @@ class CursorManager<S : Any>(
                 LOGGER.info(
                     "No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value",
                     pair,
-                    cursorField
+                    cursorField,
                 )
                 cursor = null
                 cursorRecordCount = 0L
@@ -252,7 +252,7 @@ class CursorManager<S : Any>(
                 "Cursor field set in state but not present in catalog. Stream: {}. Original Cursor Field: {}. Original value: {}. Resetting cursor.",
                 pair,
                 originalCursorField,
-                originalCursor
+                originalCursor,
             )
             cursorField = null
             cursor = null
@@ -265,7 +265,7 @@ class CursorManager<S : Any>(
             originalCursorRecordCount,
             cursorField,
             cursor,
-            cursorRecordCount
+            cursorRecordCount,
         )
     }
 

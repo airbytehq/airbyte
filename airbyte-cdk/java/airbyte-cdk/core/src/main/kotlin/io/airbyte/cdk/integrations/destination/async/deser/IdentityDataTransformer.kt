@@ -13,7 +13,7 @@ class IdentityDataTransformer : StreamAwareDataTransformer {
     override fun transform(
         streamDescriptor: StreamDescriptor?,
         data: JsonNode?,
-        meta: AirbyteRecordMessageMeta?,
+        meta: AirbyteRecordMessageMeta?
     ): Pair<JsonNode?, AirbyteRecordMessageMeta?> {
         return Pair(data, meta)
     }

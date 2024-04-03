@@ -59,7 +59,7 @@ object TestHarnessUtils {
             process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS)
             if (process.isAlive) {
                 LOGGER.warn(
-                    "Process is still alive after calling destroy. Attempting to destroy forcibly..."
+                    "Process is still alive after calling destroy. Attempting to destroy forcibly...",
                 )
                 process.destroyForcibly()
             }
@@ -128,7 +128,8 @@ object TestHarnessUtils {
             .map { obj: AirbyteControlMessage -> obj.connectorConfig }
             .reduce {
                 first: AirbyteControlConnectorConfigMessage?,
-                second: AirbyteControlConnectorConfigMessage ->
+                second: AirbyteControlConnectorConfigMessage,
+                ->
                 second
             }
     }
@@ -182,8 +183,8 @@ object TestHarnessUtils {
                     traceMessage.get(),
                     null,
                     null,
-                    connectorCommand
-                )
+                    connectorCommand,
+                ),
             )
         } else {
             return Optional.empty()
@@ -200,8 +201,8 @@ object TestHarnessUtils {
                     Function { k: ConfiguredAirbyteStream ->
                         AirbyteStreamNameNamespacePair.fromAirbyteStream(k.stream)
                     },
-                    Function { v: ConfiguredAirbyteStream -> v.stream.jsonSchema }
-                )
+                    Function { v: ConfiguredAirbyteStream -> v.stream.jsonSchema },
+                ),
             )
     }
 

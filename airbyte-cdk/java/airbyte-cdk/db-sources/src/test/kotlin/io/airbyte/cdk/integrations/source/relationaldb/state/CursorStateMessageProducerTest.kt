@@ -28,7 +28,7 @@ internal class CursorStateMessageProducerTest {
                     RECORD_MESSAGE_1,
                     RECORD_MESSAGE_2,
                     RECORD_MESSAGE_2,
-                    RECORD_MESSAGE_3
+                    RECORD_MESSAGE_3,
                 )
 
             override fun hasNext(): Boolean {
@@ -46,8 +46,8 @@ internal class CursorStateMessageProducerTest {
                     throw RuntimeException(
                         SQLException(
                             "Connection marked broken because of SQLSTATE(080006)",
-                            "08006"
-                        )
+                            "08006",
+                        ),
                     )
                 }
             }
@@ -67,7 +67,7 @@ internal class CursorStateMessageProducerTest {
         stateManager =
             StreamStateManager(
                 emptyList(),
-                ConfiguredAirbyteCatalog().withStreams(listOf(configuredAirbyteStream))
+                ConfiguredAirbyteCatalog().withStreams(listOf(configuredAirbyteStream)),
             )
     }
 
@@ -82,7 +82,7 @@ internal class CursorStateMessageProducerTest {
                 messageIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(0, Duration.ZERO)
+                StateEmitFrequency(0, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
@@ -106,7 +106,7 @@ internal class CursorStateMessageProducerTest {
                 messageIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(0, Duration.ZERO)
+                StateEmitFrequency(0, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
@@ -128,7 +128,7 @@ internal class CursorStateMessageProducerTest {
                 messageStream,
                 STREAM,
                 producer,
-                StateEmitFrequency(0, Duration.ZERO)
+                StateEmitFrequency(0, Duration.ZERO),
             )
 
         Assertions.assertEquals(recordMessage, iterator.next())
@@ -148,7 +148,7 @@ internal class CursorStateMessageProducerTest {
                 exceptionIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(1, Duration.ZERO)
+                StateEmitFrequency(1, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
@@ -178,7 +178,7 @@ internal class CursorStateMessageProducerTest {
                 exceptionIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(0, Duration.ZERO)
+                StateEmitFrequency(0, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
@@ -198,7 +198,7 @@ internal class CursorStateMessageProducerTest {
                 Collections.emptyIterator(),
                 STREAM,
                 producer,
-                StateEmitFrequency(1, Duration.ZERO)
+                StateEmitFrequency(1, Duration.ZERO),
             )
 
         Assertions.assertEquals(EMPTY_STATE_MESSAGE, iterator.next())
@@ -220,7 +220,7 @@ internal class CursorStateMessageProducerTest {
                 messageIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(0, Duration.ZERO)
+                StateEmitFrequency(0, Duration.ZERO),
             )
 
         Assertions.assertEquals(recordMessageWithNull, iterator.next())
@@ -236,7 +236,7 @@ internal class CursorStateMessageProducerTest {
                 RECORD_MESSAGE_2,
                 RECORD_MESSAGE_3,
                 RECORD_MESSAGE_4,
-                RECORD_MESSAGE_5
+                RECORD_MESSAGE_5,
             )
 
         val producer = CursorStateMessageProducer(stateManager, Optional.empty())
@@ -246,7 +246,7 @@ internal class CursorStateMessageProducerTest {
                 messageIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(1, Duration.ZERO)
+                StateEmitFrequency(1, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
@@ -275,7 +275,7 @@ internal class CursorStateMessageProducerTest {
                 RECORD_MESSAGE_2,
                 RECORD_MESSAGE_3,
                 RECORD_MESSAGE_4,
-                RECORD_MESSAGE_5
+                RECORD_MESSAGE_5,
             )
 
         val producer = CursorStateMessageProducer(stateManager, Optional.empty())
@@ -285,7 +285,7 @@ internal class CursorStateMessageProducerTest {
                 messageIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(2, Duration.ZERO)
+                StateEmitFrequency(2, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_1, iterator.next())
@@ -313,7 +313,7 @@ internal class CursorStateMessageProducerTest {
                 messageIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(1, Duration.ZERO)
+                StateEmitFrequency(1, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -360,7 +360,7 @@ internal class CursorStateMessageProducerTest {
                 RECORD_MESSAGE_3,
                 RECORD_MESSAGE_4,
                 RECORD_MESSAGE_5,
-                RECORD_MESSAGE_5
+                RECORD_MESSAGE_5,
             )
 
         val producer = CursorStateMessageProducer(stateManager, Optional.of(RECORD_VALUE_1))
@@ -370,7 +370,7 @@ internal class CursorStateMessageProducerTest {
                 messageIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(1, Duration.ZERO)
+                StateEmitFrequency(1, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -404,7 +404,7 @@ internal class CursorStateMessageProducerTest {
                 RECORD_MESSAGE_3,
                 RECORD_MESSAGE_3,
                 RECORD_MESSAGE_3,
-                RECORD_MESSAGE_3
+                RECORD_MESSAGE_3,
             )
 
         val producer = CursorStateMessageProducer(stateManager, Optional.of(RECORD_VALUE_1))
@@ -414,7 +414,7 @@ internal class CursorStateMessageProducerTest {
                 messageIterator,
                 STREAM,
                 producer,
-                StateEmitFrequency(10, Duration.ZERO)
+                StateEmitFrequency(10, Duration.ZERO),
             )
 
         Assertions.assertEquals(RECORD_MESSAGE_2, iterator.next())
@@ -444,7 +444,7 @@ internal class CursorStateMessageProducerTest {
             CatalogHelpers.createConfiguredAirbyteStream(
                     STREAM_NAME,
                     NAMESPACE,
-                    Field.of(UUID_FIELD_NAME, JsonSchemaType.STRING)
+                    Field.of(UUID_FIELD_NAME, JsonSchemaType.STRING),
                 )
                 .withCursorField(List.of(UUID_FIELD_NAME))
 
@@ -470,7 +470,7 @@ internal class CursorStateMessageProducerTest {
                 .withType(AirbyteMessage.Type.RECORD)
                 .withRecord(
                     AirbyteRecordMessage()
-                        .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, recordValue)))
+                        .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, recordValue))),
                 )
         }
 
@@ -499,12 +499,12 @@ internal class CursorStateMessageProducerTest {
                                 .withStreamDescriptor(
                                     StreamDescriptor()
                                         .withName(STREAM_NAME)
-                                        .withNamespace(NAMESPACE)
+                                        .withNamespace(NAMESPACE),
                                 )
-                                .withStreamState(Jsons.jsonNode(dbStreamState))
+                                .withStreamState(Jsons.jsonNode(dbStreamState)),
                         )
                         .withData(Jsons.jsonNode(dbState))
-                        .withSourceStats(AirbyteStateStats().withRecordCount(statsRecordCount))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(statsRecordCount)),
                 )
         }
 
@@ -526,12 +526,12 @@ internal class CursorStateMessageProducerTest {
                                 .withStreamDescriptor(
                                     StreamDescriptor()
                                         .withName(STREAM_NAME)
-                                        .withNamespace(NAMESPACE)
+                                        .withNamespace(NAMESPACE),
                                 )
-                                .withStreamState(Jsons.jsonNode(dbStreamState))
+                                .withStreamState(Jsons.jsonNode(dbStreamState)),
                         )
                         .withData(Jsons.jsonNode(dbState))
-                        .withSourceStats(AirbyteStateStats().withRecordCount(statsRecordCount))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(statsRecordCount)),
                 )
         }
 

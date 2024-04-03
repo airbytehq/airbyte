@@ -46,7 +46,7 @@ object DSLContextFactory {
     ): DSLContext {
         return DSL.using(
             DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString),
-            dialect
+            dialect,
         )
     }
 
@@ -77,9 +77,9 @@ object DSLContextFactory {
                 driverClassName,
                 jdbcConnectionString,
                 connectionProperties,
-                connectionTimeout
+                connectionTimeout,
             ),
-            dialect
+            dialect,
         )
     }
 }

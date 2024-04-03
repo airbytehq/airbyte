@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest() {
     override var config: JsonNode? = null
+
     /**
      * The column name will be used for a PK column in the test tables. Override it if default name
      * is not valid for your source.
@@ -89,8 +90,8 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
                 .collect(
                     Collectors.toMap(
                         Function { obj: Map.Entry<String?, Int?> -> obj.key },
-                        Function { obj: Map.Entry<String?, Int?> -> obj.value }
-                    )
+                        Function { obj: Map.Entry<String?, Int?> -> obj.value },
+                    ),
                 )
 
         if (!failedStreamsMap.isEmpty()) {
@@ -138,16 +139,16 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
                 CatalogHelpers.createAirbyteStream(
                         String.format(testStreamNameTemplate, currentStream),
                         nameSpace,
-                        fields
+                        fields,
                     )
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(
                         java.util.List.of<List<String>>(
-                            java.util.List.of<String>(this.idColumnName)
-                        )
+                            java.util.List.of<String>(this.idColumnName),
+                        ),
                     )
                     .withSupportedSyncModes(
-                        Lists.newArrayList<SyncMode>(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                        Lists.newArrayList<SyncMode>(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                     )
 
             val configuredAirbyteStream =

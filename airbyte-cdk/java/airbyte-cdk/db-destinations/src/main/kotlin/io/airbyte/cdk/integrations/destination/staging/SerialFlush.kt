@@ -72,22 +72,23 @@ object SerialFlush {
                     conflictingStreams
                         .stream()
                         .map { config: WriteConfig -> config.namespace + "." + config.streamName }
-                        .collect(Collectors.joining(", "))
+                        .collect(Collectors.joining(", ")),
                 )
             throw ConfigErrorException(message)
         }
         return FlushBufferFunction {
             pair: AirbyteStreamNameNamespacePair,
-            writer: SerializableBuffer ->
+            writer: SerializableBuffer,
+            ->
             log.info(
                 "Flushing buffer for stream {} ({}) to staging",
                 pair.name,
-                FileUtils.byteCountToDisplaySize(writer.byteCount)
+                FileUtils.byteCountToDisplaySize(writer.byteCount),
             )
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
-                    Jsons.serialize(catalog)
+                    Jsons.serialize(catalog),
                 )
             }
 
@@ -100,7 +101,7 @@ object SerialFlush {
                     schemaName,
                     writeConfig.streamName,
                     writeConfig.outputTableName,
-                    writeConfig.writeDatetime
+                    writeConfig.writeDatetime,
                 )
             try {
                 writer.use {
@@ -111,7 +112,7 @@ object SerialFlush {
                             writer,
                             schemaName,
                             stageName,
-                            stagingPath
+                            stagingPath,
                         )
                     GeneralStagingFunctions.copyIntoTableFromStage(
                         database,
@@ -124,14 +125,14 @@ object SerialFlush {
                         writeConfig.namespace,
                         writeConfig.streamName,
                         typerDeduperValve,
-                        typerDeduper
+                        typerDeduper,
                     )
                 }
             } catch (e: Exception) {
                 log.error("Failed to flush and commit buffer data into destination's raw table", e)
                 throw RuntimeException(
                     "Failed to upload buffer to stage and commit to destination",
-                    e
+                    e,
                 )
             }
         }

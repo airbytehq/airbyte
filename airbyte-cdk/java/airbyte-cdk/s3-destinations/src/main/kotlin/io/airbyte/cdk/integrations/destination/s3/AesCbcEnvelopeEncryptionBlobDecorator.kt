@@ -52,10 +52,10 @@ internal constructor( // The real "secret key". Should be handled with great car
     private val contentEncryptingKey:
         SecretKey, // Arbitrary bytes required by the CBC algorithm. Not a sensitive value.
     // The only requirement is that we never reuse an (IV, CEK) pair.
-    private val initializationVector: ByteArray
+    private val initializationVector: ByteArray,
 ) : BlobDecorator {
     constructor(
-        keyEncryptingKey: SecretKey?
+        keyEncryptingKey: SecretKey?,
     ) : this(
         keyEncryptingKey,
         randomContentEncryptingKey(),
@@ -63,7 +63,7 @@ internal constructor( // The real "secret key". Should be handled with great car
     )
 
     constructor(
-        keyEncryptingKey: ByteArray?
+        keyEncryptingKey: ByteArray?,
     ) : this(
         SecretKeySpec(
             keyEncryptingKey,

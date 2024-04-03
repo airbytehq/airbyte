@@ -156,7 +156,7 @@ internal constructor(
     @VisibleForTesting
     fun isSizeTriggered(
         stream: StreamDescriptor,
-        queueSizeThresholdBytes: Long,
+        queueSizeThresholdBytes: Long
     ): Pair<Boolean, String> {
         val currentQueueSize = bufferDequeue.getQueueSizeBytes(stream).orElseThrow()
         val sizeOfRunningWorkersEstimate = estimateSizeOfRunningWorkers(stream, currentQueueSize)
@@ -184,10 +184,7 @@ internal constructor(
      * @return estimate of records remaining to be process
      */
     @VisibleForTesting
-    fun estimateSizeOfRunningWorkers(
-        stream: StreamDescriptor,
-        currentQueueSize: Long,
-    ): Long {
+    fun estimateSizeOfRunningWorkers(stream: StreamDescriptor, currentQueueSize: Long): Long {
         val runningWorkerBatchesSizes =
             runningFlushWorkers.getSizesOfRunningWorkerBatches(
                 stream,

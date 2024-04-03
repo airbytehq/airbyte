@@ -32,7 +32,7 @@ abstract class BaseS3Writer
 protected constructor(
     protected val config: S3DestinationConfig,
     protected val s3Client: AmazonS3,
-    configuredStream: ConfiguredAirbyteStream
+    configuredStream: ConfiguredAirbyteStream,
 ) : DestinationFileWriter {
     protected val stream: AirbyteStream = configuredStream.stream
     protected val syncMode: DestinationSyncMode = configuredStream.destinationSyncMode
@@ -64,14 +64,14 @@ protected constructor(
                 if (keysToDelete.size > 0) {
                     LOGGER.info(
                         "Purging non-empty output path for stream '{}' under OVERWRITE mode...",
-                        stream.name
+                        stream.name,
                     )
                     val result =
                         s3Client.deleteObjects(DeleteObjectsRequest(bucket).withKeys(keysToDelete))
                     LOGGER.info(
                         "Deleted {} file(s) for stream '{}'.",
                         result.deletedObjects.size,
-                        stream.name
+                        stream.name,
                     )
                 }
             }
@@ -117,9 +117,11 @@ protected constructor(
         @JvmStatic
         @Throws(IOException::class)
         fun determineOutputFilename(parameterObject: S3FilenameTemplateParameterObject): String {
-            return if (StringUtils.isNotBlank(parameterObject.fileNamePattern))
+            return if (StringUtils.isNotBlank(parameterObject.fileNamePattern)) {
                 getOutputFilename(parameterObject)
-            else getDefaultOutputFilename(parameterObject)
+            } else {
+                getDefaultOutputFilename(parameterObject)
+            }
         }
 
         /**
@@ -140,7 +142,7 @@ protected constructor(
                 formatter.format(parameterObject.timestamp),
                 parameterObject.timestamp!!.time,
                 parameterObject.customSuffix ?: DEFAULT_SUFFIX,
-                parameterObject.s3Format!!.fileExtension
+                parameterObject.s3Format!!.fileExtension,
             )
         }
 

@@ -259,7 +259,7 @@ class ParquetSerializedBufferTest {
     ) {
         val tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet").toFile()
         try {
-            ParquetSerializedBuffer.createFunction(config).apply(streamPair, catalog).use { writer
+            ParquetSerializedBuffer.createFunction(config).apply(streamPair, catalog).use { writer,
                 ->
                 writer!!.accept(message)
                 writer.accept(message)

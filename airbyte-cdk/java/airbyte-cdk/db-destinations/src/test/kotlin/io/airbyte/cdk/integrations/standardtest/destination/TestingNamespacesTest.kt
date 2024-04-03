@@ -21,7 +21,7 @@ internal class TestingNamespacesTest {
         Assertions.assertEquals("test", namespace[0])
         Assertions.assertEquals(
             FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC")).toLocalDate()),
-            namespace[1]
+            namespace[1],
         )
         Assertions.assertFalse(namespace[2].isBlank())
     }
@@ -37,7 +37,7 @@ internal class TestingNamespacesTest {
         Assertions.assertEquals("test", namespace[1])
         Assertions.assertEquals(
             FORMATTER.format(Instant.now().atZone(ZoneId.of("UTC")).toLocalDate()),
-            namespace[2]
+            namespace[2],
         )
         Assertions.assertFalse(namespace[3].isBlank())
     }
@@ -45,10 +45,10 @@ internal class TestingNamespacesTest {
     @Test
     fun testIsOlderThan2Days() {
         Assertions.assertFalse(
-            TestingNamespaces.isOlderThan2Days("myprefix_test_" + getDate(0) + "_12345")
+            TestingNamespaces.isOlderThan2Days("myprefix_test_" + getDate(0) + "_12345"),
         )
         Assertions.assertTrue(
-            TestingNamespaces.isOlderThan2Days("myprefix_test_" + getDate(2) + "_12345")
+            TestingNamespaces.isOlderThan2Days("myprefix_test_" + getDate(2) + "_12345"),
         )
     }
 
@@ -58,7 +58,7 @@ internal class TestingNamespacesTest {
         Assertions.assertFalse(TestingNamespaces.isOlderThan2Days("test_12345"))
         Assertions.assertFalse(TestingNamespaces.isOlderThan2Days("hello_test_12345"))
         Assertions.assertFalse(
-            TestingNamespaces.isOlderThan2Days("myprefix_test1_" + getDate(2) + "_12345")
+            TestingNamespaces.isOlderThan2Days("myprefix_test1_" + getDate(2) + "_12345"),
         )
     }
 
@@ -70,7 +70,7 @@ internal class TestingNamespacesTest {
                 Instant.now()
                     .minus(daysAgo.toLong(), ChronoUnit.DAYS)
                     .atZone(ZoneId.of("UTC"))
-                    .toLocalDate()
+                    .toLocalDate(),
             )
         }
     }

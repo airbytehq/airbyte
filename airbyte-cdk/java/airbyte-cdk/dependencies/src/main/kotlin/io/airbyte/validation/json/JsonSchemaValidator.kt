@@ -38,7 +38,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
         val schema = schemaToValidators[schemaName]
         Preconditions.checkNotNull(
             schema,
-            "$schemaName needs to be initialised before calling this method"
+            "$schemaName needs to be initialised before calling this method",
         )
 
         val validate = schema!!.validate(objectJson)
@@ -51,7 +51,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
         val schema = schemaToValidators[schemaName]
         Preconditions.checkNotNull(
             schema,
-            "$schemaName needs to be initialised before calling this method"
+            "$schemaName needs to be initialised before calling this method",
         )
 
         val validationMessages = schema!!.validate(objectNode)
@@ -62,8 +62,8 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
             String.format(
                 "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
                 validationMessages.joinToString(", "),
-                schemaName
-            )
+                schemaName,
+            ),
         )
     }
 
@@ -80,7 +80,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
         if (!validationMessages.isEmpty()) {
             LOGGER.info(
                 "JSON schema validation failed. \nerrors: {}",
-                validationMessages.joinToString(", ")
+                validationMessages.joinToString(", "),
             )
         }
 
@@ -119,8 +119,8 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
             String.format(
                 "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
                 validationMessages.joinToString(", "),
-                schemaJson.toPrettyString()
-            )
+                schemaJson.toPrettyString(),
+            ),
         )
     }
 
@@ -175,7 +175,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
                 null,
                 metaschema,
                 jsonSchemaFactory,
-                null
+                null,
             )
         val schema = JsonSchema(context, baseUri, schemaJson)
         return schema
@@ -232,7 +232,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
                 val jsonContext = JsonContext(schemaFile)
                 return processor.process(
                     jsonContext,
-                    jsonContext.document["definitions"][definitionStructName]
+                    jsonContext.document["definitions"][definitionStructName],
                 )
             } catch (e: IOException) {
                 throw RuntimeException(e)

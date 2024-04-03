@@ -35,7 +35,7 @@ class AirbyteDebeziumHandler<T>(
     private val firstRecordWaitTime: Duration,
     private val subsequentRecordWaitTime: Duration,
     private val queueSize: Int,
-    private val addDbNameToOffsetState: Boolean
+    private val addDbNameToOffsetState: Boolean,
 ) {
     internal inner class CapacityReportingBlockingQueue<E>(capacity: Int) :
         LinkedBlockingQueue<E>(capacity) {
@@ -50,7 +50,7 @@ class AirbyteDebeziumHandler<T>(
                 LOGGER.info(
                     "CDC events queue size: {}. remaining {}",
                     this.size,
-                    this.remainingCapacity()
+                    this.remainingCapacity(),
                 )
                 synchronized(this) { lastReport = Instant.now() }
             }
@@ -77,24 +77,28 @@ class AirbyteDebeziumHandler<T>(
         LOGGER.info("Using CDC: {}", true)
         LOGGER.info(
             "Using DBZ version: {}",
-            DebeziumEngine::class.java.getPackage().implementationVersion
+            DebeziumEngine::class.java.getPackage().implementationVersion,
         )
         val offsetManager: AirbyteFileOffsetBackingStore =
             AirbyteFileOffsetBackingStore.Companion.initializeState(
                 cdcSavedInfoFetcher.savedOffset,
-                if (addDbNameToOffsetState)
+                if (addDbNameToOffsetState) {
                     Optional.ofNullable<String>(config[JdbcUtils.DATABASE_KEY].asText())
-                else Optional.empty<String>()
+                } else {
+                    Optional.empty<String>()
+                },
             )
         val schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage> =
-            if (trackSchemaHistory)
+            if (trackSchemaHistory) {
                 Optional.of<AirbyteSchemaHistoryStorage?>(
                     AirbyteSchemaHistoryStorage.Companion.initializeDBHistory(
                         cdcSavedInfoFetcher.savedSchemaHistory,
-                        cdcStateHandler.compressSchemaHistoryForState()
-                    )
+                        cdcStateHandler.compressSchemaHistoryForState(),
+                    ),
                 )
-            else Optional.empty<AirbyteSchemaHistoryStorage>()
+            } else {
+                Optional.empty<AirbyteSchemaHistoryStorage>()
+            }
         val publisher = DebeziumRecordPublisher(debeziumPropertiesManager)
         val queue: CapacityReportingBlockingQueue<ChangeEvent<String?, String?>> =
             CapacityReportingBlockingQueue(queueSize)
@@ -107,19 +111,23 @@ class AirbyteDebeziumHandler<T>(
                 { publisher.hasClosed() },
                 DebeziumShutdownProcedure(queue, { publisher.close() }, { publisher.hasClosed() }),
                 firstRecordWaitTime,
-                subsequentRecordWaitTime
+                subsequentRecordWaitTime,
             )
 
         val syncCheckpointDuration =
-            if (config.has(DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY))
+            if (config.has(DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY)) {
                 Duration.ofSeconds(
-                    config[DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY].asLong()
+                    config[DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY].asLong(),
                 )
-            else DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION
+            } else {
+                DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION
+            }
         val syncCheckpointRecords =
-            if (config.has(DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY))
+            if (config.has(DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY)) {
                 config[DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY].asLong()
-            else DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS.toLong()
+            } else {
+                DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS.toLong()
+            }
 
         val messageProducer: DebeziumMessageProducer<T> =
             DebeziumMessageProducer<T>(
@@ -127,7 +135,7 @@ class AirbyteDebeziumHandler<T>(
                 targetPosition,
                 eventConverter,
                 offsetManager,
-                schemaHistoryManager
+                schemaHistoryManager,
             )
 
         // Usually sourceStateIterator requires airbyteStream as input. For DBZ iterator, stream is
@@ -138,7 +146,7 @@ class AirbyteDebeziumHandler<T>(
                 eventIterator,
                 null,
                 messageProducer!!,
-                StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)
+                StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration),
             )
         return AutoCloseableIterators.fromIterator<AirbyteMessage>(iterator)
     }

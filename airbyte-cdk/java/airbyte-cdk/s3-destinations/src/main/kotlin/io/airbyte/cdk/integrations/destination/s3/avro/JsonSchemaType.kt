@@ -17,16 +17,16 @@ enum class JsonSchemaType {
     DATE_V1("WellKnownTypes.json#/definitions/Date", Schema.Type.INT),
     TIMESTAMP_WITH_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimestampWithTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     TIMESTAMP_WITHOUT_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimestampWithoutTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     TIME_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithTimezone", Schema.Type.STRING),
     TIME_WITHOUT_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimeWithoutTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     OBJECT("object", Schema.Type.RECORD),
     ARRAY("array", Schema.Type.ARRAY),
@@ -38,7 +38,8 @@ enum class JsonSchemaType {
     @Deprecated("") NUMBER_V0("number", null, Schema.Type.DOUBLE),
     @Deprecated("") INTEGER_V0("integer", null, Schema.Type.LONG),
     @Deprecated("") BOOLEAN_V0("boolean", null, Schema.Type.BOOLEAN),
-    @Deprecated("") NULL("null", null, Schema.Type.NULL);
+    @Deprecated("") NULL("null", null, Schema.Type.NULL),
+    ;
 
     @JvmField val jsonSchemaType: String
     val avroType: Schema.Type
@@ -94,7 +95,7 @@ enum class JsonSchemaType {
                 String.format(
                     "Unexpected jsonSchemaType - %s and jsonSchemaAirbyteType - %s",
                     jsonSchemaType,
-                    jsonSchemaAirbyteType
+                    jsonSchemaAirbyteType,
                 )
             }
             if (matchSchemaType.size > 1) {
@@ -103,8 +104,8 @@ enum class JsonSchemaType {
                         "Match with more than one json type! Matched types : %s, Inputs jsonSchemaType : %s, jsonSchemaAirbyteType : %s",
                         matchSchemaType,
                         jsonSchemaType,
-                        jsonSchemaAirbyteType
-                    )
+                        jsonSchemaAirbyteType,
+                    ),
                 )
             } else {
                 return matchSchemaType[0]

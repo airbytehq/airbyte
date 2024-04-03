@@ -46,7 +46,7 @@ object SentryExceptionHelper {
                             String.format(
                                 "%s %s",
                                 stacktraceLines[i + 1].trim { it <= ' ' },
-                                stacktraceLines[i + 2].trim { it <= ' ' }
+                                stacktraceLines[i + 2].trim { it <= ' ' },
                             )
                         errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                             "DbtDatabaseSQLCompilationError"
@@ -57,14 +57,14 @@ object SentryExceptionHelper {
                             Arrays.copyOfRange<String>(
                                 stacktraceLines,
                                 i + 1,
-                                stacktraceLines.size
+                                stacktraceLines.size,
                             )) {
                             if (followingLine.trim { it <= ' ' }.startsWith("context:")) {
                                 errorMessageAndType[ErrorMapKeys.ERROR_MAP_MESSAGE_KEY] =
                                     String.format(
                                         "%s\n%s",
                                         stacktraceLines[i + 1].trim { it <= ' ' },
-                                        followingLine.trim { it <= ' ' }
+                                        followingLine.trim { it <= ' ' },
                                     )
                                 errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                                     "DbtDatabaseInvalidInputError"
@@ -77,7 +77,7 @@ object SentryExceptionHelper {
                             String.format(
                                 "%s\n%s",
                                 stacktraceLines[i + 1].trim { it <= ' ' },
-                                stacktraceLines[i + 2].trim { it <= ' ' }
+                                stacktraceLines[i + 2].trim { it <= ' ' },
                             )
                         errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                             "DbtDatabaseSyntaxError"
@@ -96,14 +96,14 @@ object SentryExceptionHelper {
                     // Compilation Error: Ambiguous Relation
                     if (
                         stacktraceLines[i + 1].contains(
-                            "When searching for a relation, dbt found an approximate match."
+                            "When searching for a relation, dbt found an approximate match.",
                         )
                     ) {
                         errorMessageAndType[ErrorMapKeys.ERROR_MAP_MESSAGE_KEY] =
                             String.format(
                                 "%s %s",
                                 stacktraceLines[i + 1].trim { it <= ' ' },
-                                stacktraceLines[i + 2].trim { it <= ' ' }
+                                stacktraceLines[i + 2].trim { it <= ' ' },
                             )
                         errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                             "DbtCompilationAmbiguousRelationError"
@@ -125,9 +125,9 @@ object SentryExceptionHelper {
                                     stacktraceLines[
                                             Arrays.stream(stacktraceLines)
                                                 .toList()
-                                                .indexOf(followingLine) + 1
+                                                .indexOf(followingLine) + 1,
                                         ]
-                                        .trim { it <= ' ' }
+                                        .trim { it <= ' ' },
                                 )
                             errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
                                 "DbtRuntimeDatabaseError"
@@ -154,7 +154,7 @@ object SentryExceptionHelper {
                 // this means our logic is slightly off, our assumption of where error lines are is
                 // incorrect
                 LOGGER.warn(
-                    "Failed trying to parse useful error message out of dbt error, defaulting to full stacktrace"
+                    "Failed trying to parse useful error message out of dbt error, defaulting to full stacktrace",
                 )
             }
         }
@@ -169,6 +169,6 @@ object SentryExceptionHelper {
     /** Keys to known error types. */
     enum class ErrorMapKeys {
         ERROR_MAP_MESSAGE_KEY,
-        ERROR_MAP_TYPE_KEY
+        ERROR_MAP_TYPE_KEY,
     }
 }

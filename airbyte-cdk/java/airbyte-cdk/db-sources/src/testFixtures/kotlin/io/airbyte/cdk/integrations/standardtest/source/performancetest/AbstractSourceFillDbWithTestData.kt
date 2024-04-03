@@ -57,7 +57,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
                             schemaName,
                             i,
                             numberOfColumns,
-                            numberOfDummyRecords
+                            numberOfDummyRecords,
                         )
                     ctx.fetch(String.format(insertQueryTemplate, currentTableName))
                 }
@@ -97,7 +97,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
             CREATE_DB_TABLE_TEMPLATE,
             dbSchemaName,
             currentTableName,
-            sj.toString()
+            sj.toString(),
         )
     }
 
@@ -128,7 +128,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
                     baseInsertQuery
                         .toString()
                         .replace("id_placeholder".toRegex(), currentRecordNumber.toString()) +
-                    ")"
+                    ")",
             )
         }
 
@@ -137,7 +137,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
             dbSchemaName,
             "%s",
             fieldsNames.toString(),
-            insertGroupValuesJoiner.toString()
+            insertGroupValuesJoiner.toString(),
         )
     }
 

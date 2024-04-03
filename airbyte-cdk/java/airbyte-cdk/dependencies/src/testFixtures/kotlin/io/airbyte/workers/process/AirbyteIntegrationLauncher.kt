@@ -27,7 +27,7 @@ class AirbyteIntegrationLauncher(
      * At this moment, we put custom connector jobs into an isolated pool.
      */
     private val useIsolatedPool: Boolean,
-    private val featureFlags: FeatureFlags
+    private val featureFlags: FeatureFlags,
 ) : IntegrationLauncher {
     @Throws(TestHarnessException::class)
     override fun spec(jobRoot: Path): Process? {
@@ -47,7 +47,7 @@ class AirbyteIntegrationLauncher(
             workerMetadata,
             emptyMap(),
             emptyMap(),
-            "spec"
+            "spec",
         )
     }
 
@@ -71,7 +71,7 @@ class AirbyteIntegrationLauncher(
             emptyMap(),
             "check",
             CONFIG,
-            configFilename
+            configFilename,
         )
     }
 
@@ -99,7 +99,7 @@ class AirbyteIntegrationLauncher(
             emptyMap(),
             "discover",
             CONFIG,
-            configFilename
+            configFilename,
         )
     }
 
@@ -144,12 +144,12 @@ class AirbyteIntegrationLauncher(
                 Metadata.JOB_TYPE_KEY,
                 Metadata.SYNC_JOB,
                 Metadata.SYNC_STEP_KEY,
-                Metadata.READ_STEP
+                Metadata.READ_STEP,
             ),
             workerMetadata,
             emptyMap(),
             emptyMap(),
-            *arguments.toTypedArray<String?>()
+            *arguments.toTypedArray<String?>(),
         )
     }
 
@@ -181,7 +181,7 @@ class AirbyteIntegrationLauncher(
                 Metadata.JOB_TYPE_KEY,
                 Metadata.SYNC_JOB,
                 Metadata.SYNC_STEP_KEY,
-                Metadata.WRITE_STEP
+                Metadata.WRITE_STEP,
             ),
             workerMetadata,
             emptyMap(),
@@ -190,7 +190,7 @@ class AirbyteIntegrationLauncher(
             CONFIG,
             configFilename,
             "--catalog",
-            catalogFilename
+            catalogFilename,
         )
     }
 
@@ -205,17 +205,17 @@ class AirbyteIntegrationLauncher(
                     .put("WORKER_JOB_ATTEMPT", attempt.toString())
                     .put(
                         EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA,
-                        featureFlags.autoDetectSchema().toString()
+                        featureFlags.autoDetectSchema().toString(),
                     )
                     .put(
                         EnvVariableFeatureFlags.APPLY_FIELD_SELECTION,
-                        featureFlags.applyFieldSelection().toString()
+                        featureFlags.applyFieldSelection().toString(),
                     )
                     .put(
                         EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES,
-                        featureFlags.fieldSelectionWorkspaces()
+                        featureFlags.fieldSelectionWorkspaces(),
                     )
-                    .build()
+                    .build(),
             )
 
     companion object {

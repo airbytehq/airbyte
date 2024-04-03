@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 class NormalizationAirbyteStreamFactory
 internal constructor(
     private val logger: Logger,
-    private val containerLogMdcBuilder: MdcScope.Builder
+    private val containerLogMdcBuilder: MdcScope.Builder,
 ) : AirbyteStreamFactory {
     val dbtErrors: MutableList<String> = ArrayList()
 
@@ -76,8 +76,11 @@ internal constructor(
             // valid JSON but not an AirbyteMessage, so we assume this is a dbt json log
             try {
                 val logLevel =
-                    if ((jsonLine.nodeType == JsonNodeType.NULL || jsonLine["level"].isNull)) ""
-                    else jsonLine["level"].asText()
+                    if ((jsonLine.nodeType == JsonNodeType.NULL || jsonLine["level"].isNull)) {
+                        ""
+                    } else {
+                        jsonLine["level"].asText()
+                    }
                 val logMsg = if (jsonLine["msg"].isNull) "" else jsonLine["msg"].asText()
                 containerLogMdcBuilder.build().use { mdcScope ->
                     when (logLevel) {
@@ -103,7 +106,7 @@ internal constructor(
     private fun internalLog(logMessage: AirbyteLogMessage) {
         when (logMessage.level) {
             AirbyteLogMessage.Level.FATAL,
-            AirbyteLogMessage.Level.ERROR -> logger.error(logMessage.message)
+            AirbyteLogMessage.Level.ERROR, -> logger.error(logMessage.message)
             AirbyteLogMessage.Level.WARN -> logger.warn(logMessage.message)
             AirbyteLogMessage.Level.DEBUG -> logger.debug(logMessage.message)
             AirbyteLogMessage.Level.TRACE -> logger.trace(logMessage.message)

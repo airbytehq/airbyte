@@ -45,11 +45,7 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
         return memoryAwareQueue.size()
     }
 
-    fun offer(
-        message: PartialAirbyteMessage,
-        messageSizeInBytes: Long,
-        stateId: Long,
-    ): Boolean {
+    fun offer(message: PartialAirbyteMessage, messageSizeInBytes: Long, stateId: Long): Boolean {
         if (memoryAwareQueue.offer(MessageWithMeta(message, stateId), messageSizeInBytes)) {
             timeOfLastMessage.set(Instant.now())
             return true
@@ -70,7 +66,7 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
     @Throws(InterruptedException::class)
     fun poll(
         timeout: Long,
-        unit: TimeUnit,
+        unit: TimeUnit
     ): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?>? {
         return memoryAwareQueue.poll(timeout, unit)
     }

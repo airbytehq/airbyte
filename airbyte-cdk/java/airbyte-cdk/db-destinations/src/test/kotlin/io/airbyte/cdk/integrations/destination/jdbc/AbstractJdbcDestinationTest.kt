@@ -31,8 +31,8 @@ class AbstractJdbcDestinationTest {
                 JdbcUtils.USERNAME_KEY,
                 "user",
                 JdbcUtils.DATABASE_KEY,
-                "db"
-            )
+                "db",
+            ),
         )
     }
 
@@ -48,8 +48,8 @@ class AbstractJdbcDestinationTest {
                 JdbcUtils.DATABASE_KEY,
                 "db",
                 JdbcUtils.JDBC_URL_PARAMS_KEY,
-                extraParam
-            )
+                extraParam,
+            ),
         )
     }
 
@@ -100,7 +100,7 @@ class AbstractJdbcDestinationTest {
                 "key2",
                 "value2",
                 "key3",
-                "value3"
+                "value3",
             )
         Assertions.assertEquals(expectedProperties, connectionProperties)
     }
@@ -143,7 +143,7 @@ class AbstractJdbcDestinationTest {
         AbstractJdbcDestination<MinimumDestinationState.Impl>(
             "",
             StandardNameTransformer(),
-            TestJdbcSqlOperations()
+            TestJdbcSqlOperations(),
         ) {
         override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
             return defaultProperties

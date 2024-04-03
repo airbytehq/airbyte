@@ -18,7 +18,7 @@ internal class DSLContextFactoryTest : CommonFactoryTest() {
                 CommonFactoryTest.Companion.container!!.getUsername(),
                 CommonFactoryTest.Companion.container!!.getPassword(),
                 CommonFactoryTest.Companion.container!!.getDriverClassName(),
-                CommonFactoryTest.Companion.container!!.getJdbcUrl()
+                CommonFactoryTest.Companion.container!!.getJdbcUrl(),
             )
         val dialect = SQLDialect.POSTGRES
         val dslContext = DSLContextFactory.create(dataSource, dialect)
@@ -35,7 +35,7 @@ internal class DSLContextFactoryTest : CommonFactoryTest() {
                 CommonFactoryTest.Companion.container!!.getPassword(),
                 CommonFactoryTest.Companion.container!!.getDriverClassName(),
                 CommonFactoryTest.Companion.container!!.getJdbcUrl(),
-                dialect
+                dialect,
             )
         Assertions.assertNotNull(dslContext)
         Assertions.assertEquals(dialect, dslContext.configuration().dialect())
@@ -53,7 +53,7 @@ internal class DSLContextFactoryTest : CommonFactoryTest() {
                 CommonFactoryTest.Companion.container!!.getJdbcUrl(),
                 dialect,
                 connectionProperties,
-                JdbcConnector.CONNECT_TIMEOUT_DEFAULT
+                JdbcConnector.CONNECT_TIMEOUT_DEFAULT,
             )
         Assertions.assertNotNull(dslContext)
         Assertions.assertEquals(dialect, dslContext.configuration().dialect())

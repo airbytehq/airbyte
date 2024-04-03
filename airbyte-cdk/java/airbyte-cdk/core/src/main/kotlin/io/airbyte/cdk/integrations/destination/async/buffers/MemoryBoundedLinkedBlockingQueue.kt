@@ -41,10 +41,7 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
         return hiddenQueue.size
     }
 
-    fun offer(
-        e: E,
-        itemSizeInBytes: Long,
-    ): Boolean {
+    fun offer(e: E, itemSizeInBytes: Long): Boolean {
         return hiddenQueue.offer(e, itemSizeInBytes)
     }
 
@@ -62,10 +59,7 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
     }
 
     @Throws(InterruptedException::class)
-    fun poll(
-        timeout: Long,
-        unit: TimeUnit,
-    ): MemoryItem<E?>? {
+    fun poll(timeout: Long, unit: TimeUnit): MemoryItem<E?>? {
         return hiddenQueue.poll(timeout, unit)
     }
 
@@ -86,10 +80,7 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
             return maxMemoryUsage.get()
         }
 
-        fun offer(
-            e: E,
-            itemSizeInBytes: Long,
-        ): Boolean {
+        fun offer(e: E, itemSizeInBytes: Long): Boolean {
             val newMemoryUsage = currentMemoryUsage.addAndGet(itemSizeInBytes)
             if (newMemoryUsage <= maxMemoryUsage.get()) {
                 val success = super.offer(MemoryItem(e, itemSizeInBytes))
@@ -123,10 +114,7 @@ class MemoryBoundedLinkedBlockingQueue<E>(maxMemoryUsage: Long) {
         }
 
         @Throws(InterruptedException::class)
-        override fun poll(
-            timeout: Long,
-            unit: TimeUnit,
-        ): MemoryItem<E>? {
+        override fun poll(timeout: Long, unit: TimeUnit): MemoryItem<E>? {
             val memoryItem = super.poll(timeout, unit)
             if (memoryItem != null) {
                 currentMemoryUsage.addAndGet(-memoryItem.size)

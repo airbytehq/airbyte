@@ -26,7 +26,7 @@ object DatabaseConnectionHelper {
             container!!.username,
             container.password,
             container.driverClassName,
-            container.jdbcUrl
+            container.jdbcUrl,
         )
     }
 
@@ -44,7 +44,7 @@ object DatabaseConnectionHelper {
             container.password,
             container.driverClassName,
             container.jdbcUrl,
-            dialect
+            dialect,
         )
     }
 }

@@ -20,7 +20,7 @@
                 <plugin>
                     <groupId>com.diffplug.spotless</groupId>
                     <artifactId>spotless-maven-plugin</artifactId>
-                    <version>2.41.0</version>
+                    <version>2.43.0</version>
                     <configuration>
                         <java>
                             <includes>
@@ -48,6 +48,25 @@
                             <includes>
                                 <include>**/*.kt</include>
                             </includes>
+                            <ktlint>
+                                <version>1.2.1</version>
+                                <editorConfigOverride>
+                                    <!-- the configuration below can't be automatically fixed when running ktlint from maven. As such, we disable those errors-->
+                                    <ktlint_standard_package-name>disabled</ktlint_standard_package-name>
+                                    <ktlint_standard_no-wildcard-imports>disabled</ktlint_standard_no-wildcard-imports>
+                                    <ktlint_standard_property-naming>disabled</ktlint_standard_property-naming>
+                                    <ktlint_standard_function-naming>disabled</ktlint_standard_function-naming>
+                                    <ktlint_standard_backing-property-naming>disabled</ktlint_standard_backing-property-naming>
+                                    <ktlint_standard_filename>disabled</ktlint_standard_filename>
+                                    <ktlint_standard_no-consecutive-comments>disabled</ktlint_standard_no-consecutive-comments>
+                                    <ktlint_standard_parameter-list-wrapping>disabled</ktlint_standard_parameter-list-wrapping>
+                                    <ktlint_standard_enum-entry-name-case>disabled</ktlint_standard_enum-entry-name-case>
+                                    <ij_kotlin_allow_trailing_comma>true</ij_kotlin_allow_trailing_comma>
+                                    <ij_kotlin_allow_trailing_comma_on_call_site>true</ij_kotlin_allow_trailing_comma_on_call_site>
+                                    <!-- This is a weird one. We set it too 100 in the .editorconfig, and ktfmt below will also limit line size-->
+                                    <max_line_length>9999</max_line_length>
+                                </editorConfigOverride>
+                            </ktlint>
                             <ktfmt>
                                 <version>0.39</version>
                                 <style>KOTLINLANG</style>

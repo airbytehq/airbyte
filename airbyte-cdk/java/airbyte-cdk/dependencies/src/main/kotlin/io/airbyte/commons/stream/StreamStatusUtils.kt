@@ -95,7 +95,7 @@ object StreamStatusUtils {
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING,
-                statusEmitter
+                statusEmitter,
             )
         }
     }
@@ -143,7 +143,7 @@ object StreamStatusUtils {
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED,
-                statusEmitter
+                statusEmitter,
             )
         }
     }
@@ -191,7 +191,7 @@ object StreamStatusUtils {
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
-                statusEmitter
+                statusEmitter,
             )
         }
     }
@@ -239,7 +239,7 @@ object StreamStatusUtils {
             emitStreamStatus(
                 s,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE,
-                statusEmitter
+                statusEmitter,
             )
         }
     }
@@ -258,7 +258,7 @@ object StreamStatusUtils {
     ) {
         statusEmitter.ifPresent {
             it.accept(
-                AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus)
+                AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus),
             )
         }
     }

@@ -53,7 +53,7 @@ class SshWrappedDestination : Destination {
         val propNode = originalSpec!!.connectionSpecification["properties"] as ObjectNode
         propNode.set<JsonNode>(
             "tunnel_method",
-            Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json"))
+            Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")),
         )
         return originalSpec
     }
@@ -61,16 +61,16 @@ class SshWrappedDestination : Destination {
     @Throws(Exception::class)
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
-            return if ((endPointKey != null))
+            return if ((endPointKey != null)) {
                 SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
                     config,
                     endPointKey,
                     CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> {
                         config: JsonNode ->
                         delegate.check(config)
-                    }
+                    },
                 )
-            else
+            } else {
                 SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
                     config,
                     hostKey!!,
@@ -78,8 +78,9 @@ class SshWrappedDestination : Destination {
                     CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> {
                         config: JsonNode ->
                         delegate.check(config)
-                    }
+                    },
                 )
+            }
         } catch (e: RuntimeException) {
             val sshErrorMessage =
                 "Could not connect with provided SSH configuration. Error: " + e.message
@@ -105,14 +106,14 @@ class SshWrappedDestination : Destination {
         } catch (e: Exception) {
             LOGGER.error(
                 "Exception occurred while getting the delegate consumer, closing SSH tunnel",
-                e
+                e,
             )
             tunnel.close()
             throw e
         }
         return AirbyteMessageConsumer.Companion.appendOnClose(
             delegateConsumer,
-            VoidCallable { tunnel.close() }
+            VoidCallable { tunnel.close() },
         )
     }
 
@@ -131,11 +132,11 @@ class SshWrappedDestination : Destination {
                 val connectionOptions = clone.putObject(SshTunnel.Companion.CONNECTION_OPTIONS_KEY)
                 connectionOptions.put(
                     SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_KEY,
-                    SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS
+                    SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS,
                 )
                 connectionOptions.put(
                     SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_KEY,
-                    SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS
+                    SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS,
                 )
             }
         }
@@ -146,26 +147,29 @@ class SshWrappedDestination : Destination {
                 delegate.getSerializedMessageConsumer(
                     tunnel.configInTunnel,
                     catalog,
-                    outputRecordCollector
+                    outputRecordCollector,
                 )
         } catch (e: Exception) {
             LOGGER.error(
                 "Exception occurred while getting the delegate consumer, closing SSH tunnel",
-                e
+                e,
             )
             tunnel.close()
             throw e
         }
         return SerializedAirbyteMessageConsumer.Companion.appendOnClose(
             delegateConsumer,
-            VoidCallable { tunnel.close() }
+            VoidCallable { tunnel.close() },
         )
     }
 
     @Throws(Exception::class)
     protected fun getTunnelInstance(config: JsonNode): SshTunnel {
-        return if ((endPointKey != null)) SshTunnel.Companion.getInstance(config, endPointKey)
-        else SshTunnel.Companion.getInstance(config, hostKey!!, portKey!!)
+        return if ((endPointKey != null)) {
+            SshTunnel.Companion.getInstance(config, endPointKey)
+        } else {
+            SshTunnel.Companion.getInstance(config, hostKey!!, portKey!!)
+        }
     }
 
     override val isV2Destination: Boolean

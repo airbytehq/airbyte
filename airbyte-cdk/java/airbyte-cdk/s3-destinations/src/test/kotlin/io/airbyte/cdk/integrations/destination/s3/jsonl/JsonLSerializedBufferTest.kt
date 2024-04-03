@@ -94,7 +94,7 @@ class JsonLSerializedBufferTest {
                 // deterministic
                 assertTrue(
                     writer.byteCount in minExpectedByte..maxExpectedByte,
-                    "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}"
+                    "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}",
                 )
                 val inputStream: InputStream =
                     if (withCompression) {

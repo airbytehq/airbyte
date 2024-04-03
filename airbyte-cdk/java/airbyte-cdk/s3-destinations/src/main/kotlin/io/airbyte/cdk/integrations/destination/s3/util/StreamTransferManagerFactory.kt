@@ -34,7 +34,7 @@ object StreamTransferManagerFactory {
     internal constructor(
         private val bucketName: String?,
         private val objectKey: String,
-        private val s3Client: AmazonS3?
+        private val s3Client: AmazonS3?,
     ) {
         private var userMetadata: Map<String, String>? = null
         private var partSize = DEFAULT_PART_SIZE_MB.toLong()

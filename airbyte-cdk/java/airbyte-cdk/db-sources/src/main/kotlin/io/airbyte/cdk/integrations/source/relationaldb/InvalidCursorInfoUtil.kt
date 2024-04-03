@@ -18,7 +18,7 @@ object InvalidCursorInfoUtil {
         tableName: String?,
         cursorColumnName: String,
         cursorSqlType: String,
-        cause: String
+        cause: String,
     ) {
         override fun toString(): String {
             return "{" +

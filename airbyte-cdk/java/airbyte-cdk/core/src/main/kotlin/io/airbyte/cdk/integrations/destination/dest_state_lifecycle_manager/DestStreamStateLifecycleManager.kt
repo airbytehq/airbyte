@@ -31,7 +31,7 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
 
     override fun addState(message: AirbyteMessage) {
         Preconditions.checkArgument(
-            message.state.type == AirbyteStateMessage.AirbyteStateType.STREAM
+            message.state.type == AirbyteStateMessage.AirbyteStateType.STREAM,
         )
         val originalStreamId = message.state.stream.streamDescriptor
         val actualStreamId: StreamDescriptor
@@ -133,20 +133,20 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
                             { entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
                                 entry.key.namespace
                             },
-                            Comparator.nullsFirst<String>(Comparator.naturalOrder<String>())
+                            Comparator.nullsFirst<String>(Comparator.naturalOrder<String>()),
                         ) // namespace is allowed to be null
-                        .thenComparing<String> { entry: Map.Entry<StreamDescriptor, AirbyteMessage>
+                        .thenComparing<String> { entry: Map.Entry<StreamDescriptor, AirbyteMessage>,
                             ->
                             entry.key.name
-                        }
+                        },
                 )
                 .map<AirbyteMessage> { obj: Map.Entry<StreamDescriptor, AirbyteMessage> ->
                     obj.value
                 }
                 .collect(
                     Collectors.toCollection<AirbyteMessage, LinkedList<AirbyteMessage>>(
-                        Supplier<LinkedList<AirbyteMessage>> { LinkedList() }
-                    )
+                        Supplier<LinkedList<AirbyteMessage>> { LinkedList() },
+                    ),
                 )
         }
 

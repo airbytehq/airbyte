@@ -18,7 +18,7 @@ import org.codehaus.plexus.util.StringUtils
 class RelationalDbDebeziumPropertiesManager(
     properties: Properties,
     config: JsonNode,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
 ) : DebeziumPropertiesManager(properties, config, catalog) {
     override fun getConnectionConfiguration(config: JsonNode): Properties {
         val properties = Properties()

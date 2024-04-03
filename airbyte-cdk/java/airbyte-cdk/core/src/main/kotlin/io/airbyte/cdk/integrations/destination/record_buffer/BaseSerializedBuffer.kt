@@ -155,7 +155,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
             LOGGER.info(
                 "Finished writing data to {} ({})",
                 filename,
-                FileUtils.byteCountToDisplaySize(byteCounter.count)
+                FileUtils.byteCountToDisplaySize(byteCounter.count),
             )
         }
     }

@@ -11,13 +11,13 @@ class SourceStateIteratorForTest<T>(
     messageIterator: Iterator<T>,
     stream: ConfiguredAirbyteStream,
     sourceStateMessageProducer: SourceStateMessageProducer<T>,
-    stateEmitFrequency: StateEmitFrequency
+    stateEmitFrequency: StateEmitFrequency,
 ) :
     SourceStateIterator<T>(
         messageIterator,
         stream,
         sourceStateMessageProducer,
-        stateEmitFrequency
+        stateEmitFrequency,
     ) {
     public override fun computeNext(): AirbyteMessage? = super.computeNext()
 }

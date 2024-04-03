@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils
 class AvroSerializedBuffer(
     bufferStorage: BufferStorage,
     codecFactory: CodecFactory,
-    schema: Schema
+    schema: Schema,
 ) : BaseSerializedBuffer(bufferStorage) {
     private val codecFactory: CodecFactory
     private val schema: Schema
@@ -89,7 +89,8 @@ class AvroSerializedBuffer(
             val codecFactory = config.codecFactory
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,
-                catalog: ConfiguredAirbyteCatalog ->
+                catalog: ConfiguredAirbyteCatalog,
+                ->
                 val schemaConverter = JsonToAvroSchemaConverter()
                 val schema =
                     schemaConverter.getAvroSchema(
@@ -105,7 +106,7 @@ class AvroSerializedBuffer(
                             .findFirst()
                             .orElseThrow {
                                 RuntimeException(
-                                    "No such stream ${stream.namespace}.${stream.name}"
+                                    "No such stream ${stream.namespace}.${stream.name}",
                                 )
                             }
                             .stream

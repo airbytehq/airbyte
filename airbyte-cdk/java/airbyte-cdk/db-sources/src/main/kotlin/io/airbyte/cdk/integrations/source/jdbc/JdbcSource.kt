@@ -18,7 +18,7 @@ class JdbcSource :
     AbstractJdbcSource<JDBCType>(
         DatabaseDriver.POSTGRESQL.driverClassName,
         Supplier { AdaptiveStreamingQueryConfig() },
-        JdbcUtils.defaultSourceOperations
+        JdbcUtils.defaultSourceOperations,
     ),
     Source {
     // no-op for JdbcSource since the config it receives is designed to be use for JDBC.

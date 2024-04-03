@@ -27,9 +27,9 @@ object AirbyteTraceMessageUtility {
                         AirbyteErrorTraceMessage()
                             .withFailureType(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
                             .withMessage(displayMessage)
-                            .withInternalMessage(internalMessage)
-                    )
-            )
+                            .withInternalMessage(internalMessage),
+                    ),
+            ),
         )
     }
 
@@ -50,9 +50,9 @@ object AirbyteTraceMessageUtility {
                             .withType(type)
                             .withRowEstimate(rowEstimate)
                             .withName(streamName)
-                            .withNamespace(streamNamespace)
-                    )
-            )
+                            .withNamespace(streamNamespace),
+                    ),
+            ),
         )
     }
 
@@ -103,8 +103,8 @@ object AirbyteTraceMessageUtility {
                         .withFailureType(failureType)
                         .withMessage(displayMessage)
                         .withInternalMessage(e.toString())
-                        .withStackTrace(ExceptionUtils.getStackTrace(e))
-                )
+                        .withStackTrace(ExceptionUtils.getStackTrace(e)),
+                ),
         )
     }
 
@@ -117,7 +117,7 @@ object AirbyteTraceMessageUtility {
                 AirbyteTraceMessage()
                     .withAnalytics(airbyteAnalyticsTraceMessage)
                     .withType(AirbyteTraceMessage.Type.ANALYTICS)
-                    .withEmittedAt(Instant.now().toEpochMilli().toDouble())
+                    .withEmittedAt(Instant.now().toEpochMilli().toDouble()),
             )
     }
 

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 class InMemoryRecordBufferingStrategy(
     private val recordWriter: RecordWriter<AirbyteRecordMessage>,
     private val checkAndRemoveRecordWriter: CheckAndRemoveRecordWriter?,
-    private val maxQueueSizeInBytes: Long
+    private val maxQueueSizeInBytes: Long,
 ) : BufferingStrategy {
     private var streamBuffer:
         MutableMap<AirbyteStreamNameNamespacePair, MutableList<AirbyteRecordMessage>> =
@@ -35,7 +35,7 @@ class InMemoryRecordBufferingStrategy(
 
     constructor(
         recordWriter: RecordWriter<AirbyteRecordMessage>,
-        maxQueueSizeInBytes: Long
+        maxQueueSizeInBytes: Long,
     ) : this(recordWriter, null, maxQueueSizeInBytes)
 
     @Throws(Exception::class)
@@ -69,7 +69,7 @@ class InMemoryRecordBufferingStrategy(
         LOGGER.info(
             "Flushing single stream {}: {} records",
             stream.name,
-            streamBuffer[stream]!!.size
+            streamBuffer[stream]!!.size,
         )
         recordWriter.accept(stream, streamBuffer[stream]!!.toList())
         LOGGER.info("Flushing completed for {}", stream.name)
@@ -82,7 +82,7 @@ class InMemoryRecordBufferingStrategy(
                 "Flushing {}: {} records ({})",
                 key.name,
                 value.size,
-                FileUtils.byteCountToDisplaySize(bufferSizeInBytes)
+                FileUtils.byteCountToDisplaySize(bufferSizeInBytes),
             )
             recordWriter.accept(key, value)
             if (checkAndRemoveRecordWriter != null) {

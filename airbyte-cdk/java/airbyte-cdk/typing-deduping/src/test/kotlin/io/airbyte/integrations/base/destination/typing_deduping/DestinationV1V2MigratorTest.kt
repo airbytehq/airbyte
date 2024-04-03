@@ -32,40 +32,40 @@ class DestinationV1V2MigratorTest {
                 Arguments.of(
                     DestinationSyncMode.OVERWRITE,
                     makeMockMigrator(true, false, v2SchemaMatches, true, true),
-                    false
+                    false,
                 ), // Doesn't migrate because v2 table already exists
                 Arguments.of(
                     DestinationSyncMode.APPEND,
                     makeMockMigrator(true, true, v2SchemaMatches, true, true),
-                    false
+                    false,
                 ),
                 Arguments.of(
                     DestinationSyncMode.APPEND_DEDUP,
                     makeMockMigrator(true, true, v2SchemaMatches, true, true),
-                    false
+                    false,
                 ), // Doesn't migrate because no valid v1 raw table exists
                 Arguments.of(
                     DestinationSyncMode.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, false, true),
-                    false
+                    false,
                 ),
                 Arguments.of(
                     DestinationSyncMode.APPEND_DEDUP,
                     makeMockMigrator(true, false, v2SchemaMatches, false, true),
-                    false
+                    false,
                 ),
                 Arguments.of(
                     DestinationSyncMode.APPEND,
                     makeMockMigrator(true, false, v2SchemaMatches, true, false),
-                    false
+                    false,
                 ),
                 Arguments.of(
                     DestinationSyncMode.APPEND_DEDUP,
                     makeMockMigrator(true, false, v2SchemaMatches, true, false),
-                    false
+                    false,
                 ), // Migrates
                 Arguments.of(DestinationSyncMode.APPEND, noIssuesMigrator(), true),
-                Arguments.of(DestinationSyncMode.APPEND_DEDUP, noIssuesMigrator(), true)
+                Arguments.of(DestinationSyncMode.APPEND_DEDUP, noIssuesMigrator(), true),
             )
         }
     }
@@ -95,7 +95,7 @@ class DestinationV1V2MigratorTest {
             }
         Assertions.assertEquals(
             "Destination V2 Raw Table does not match expected Schema",
-            exception.message
+            exception.message,
         )
     }
 
@@ -120,7 +120,7 @@ class DestinationV1V2MigratorTest {
             }
         Assertions.assertEquals(
             "Attempted and failed to migrate stream final_table",
-            exception.message
+            exception.message,
         )
     }
 
@@ -144,15 +144,15 @@ class DestinationV1V2MigratorTest {
             Mockito.`when`<Boolean>(
                     migrator.schemaMatchesExpectation(
                         "v2_raw",
-                        JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
-                    )
+                        JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
+                    ),
                 )
                 .thenReturn(false)
             Mockito.`when`<Boolean>(
                     migrator.schemaMatchesExpectation(
                         "v2_raw",
-                        JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META
-                    )
+                        JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META,
+                    ),
                 )
                 .thenReturn(v2RawSchemaMatches)
 
@@ -165,8 +165,8 @@ class DestinationV1V2MigratorTest {
             Mockito.`when`<Boolean>(
                     migrator.schemaMatchesExpectation(
                         "v1_raw",
-                        JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
-                    )
+                        JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS,
+                    ),
                 )
                 .thenReturn(v1RawTableSchemaMatches)
             return migrator
@@ -179,7 +179,7 @@ class DestinationV1V2MigratorTest {
                 v2TableExists = false,
                 v2RawSchemaMatches = true,
                 v1RawTableExists = true,
-                v1RawTableSchemaMatches = true
+                v1RawTableSchemaMatches = true,
             )
         }
     }

@@ -37,7 +37,7 @@ constructor(
     configuredStream: ConfiguredAirbyteStream,
     uploadTimestamp: Timestamp,
     converter: JsonAvroConverter?,
-    jsonSchema: JsonNode? = null
+    jsonSchema: JsonNode? = null,
 ) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val avroRecordFactory: AvroRecordFactory
     private val uploadManager: StreamTransferManager
@@ -48,9 +48,9 @@ constructor(
 
     init {
         val schema =
-            if (jsonSchema == null)
+            if (jsonSchema == null) {
                 GcsUtils.getDefaultAvroSchema(stream.name, stream.namespace, true, false)
-            else
+            } else {
                 JsonToAvroSchemaConverter()
                     .getAvroSchema(
                         jsonSchema,
@@ -59,8 +59,9 @@ constructor(
                         true,
                         false,
                         false,
-                        true
+                        true,
                     )
+            }
         LOGGER.info("Avro schema for stream {}: {}", stream.name, schema!!.toString(false))
 
         val outputFilename: String =
@@ -72,7 +73,7 @@ constructor(
             "Full GCS path for stream '{}': {}/{}",
             stream.name,
             config.bucketName,
-            outputPath
+            outputPath,
         )
 
         this.avroRecordFactory = AvroRecordFactory(schema, converter)

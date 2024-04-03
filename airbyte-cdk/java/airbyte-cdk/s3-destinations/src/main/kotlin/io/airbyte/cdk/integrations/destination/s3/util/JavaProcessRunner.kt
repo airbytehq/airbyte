@@ -18,8 +18,11 @@ object JavaProcessRunner {
     fun runProcess(path: String, run: Runtime, vararg commands: String?) {
         LOGGER.info("Running process: " + Arrays.asList(*commands))
         val pr =
-            if (path == System.getProperty("user.dir")) run.exec(commands)
-            else run.exec(commands, null, File(path))
+            if (path == System.getProperty("user.dir")) {
+                run.exec(commands)
+            } else {
+                run.exec(commands, null, File(path))
+            }
         LineGobbler.gobble(`is` = pr.errorStream, { LOGGER.warn(it) })
         LineGobbler.gobble(`is` = pr.inputStream, { LOGGER.info(it) })
         if (!pr.waitFor(10, TimeUnit.MINUTES)) {

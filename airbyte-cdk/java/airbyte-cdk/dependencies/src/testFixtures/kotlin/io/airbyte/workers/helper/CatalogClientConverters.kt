@@ -51,13 +51,13 @@ object CatalogClientConverters {
             // Validate the selected field paths.
             if (config.selectedFields == null) {
                 throw JsonValidationException(
-                    "Requested field selection but no selected fields provided"
+                    "Requested field selection but no selected fields provided",
                 )
             }
             val properties = stream!!.jsonSchema!!.findValue("properties")
             if (properties == null || !properties.isObject) {
                 throw JsonValidationException(
-                    "Requested field selection but no properties node found"
+                    "Requested field selection but no properties node found",
                 )
             }
             for (selectedFieldInfo in config.selectedFields!!) {
@@ -84,19 +84,18 @@ object CatalogClientConverters {
             // don't support filtering nested fields yet.
             if (
                 config.syncMode == io.airbyte.api.client.model.generated.SyncMode.INCREMENTAL &&
-                    !config.cursorField!!.isEmpty() // There is a cursor configured, AND
-                    &&
+                    !config.cursorField!!.isEmpty() && // There is a cursor configured, AND
                     !selectedFieldNames.contains(config.cursorField!![0])
             ) { // The cursor isn't in the selected fields.
                 throw JsonValidationException(
-                    "Cursor field cannot be de-selected in INCREMENTAL syncs"
+                    "Cursor field cannot be de-selected in INCREMENTAL syncs",
                 )
             }
             if (config.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
                 for (primaryKeyComponent in config.primaryKey!!) {
                     if (!selectedFieldNames.contains(primaryKeyComponent[0])) {
                         throw JsonValidationException(
-                            "Primary key field cannot be de-selected in DEDUP mode"
+                            "Primary key field cannot be de-selected in DEDUP mode",
                         )
                     }
                 }
@@ -106,8 +105,8 @@ object CatalogClientConverters {
                     throw JsonValidationException(
                         String.format(
                             "Requested selected field %s not found in JSON schema",
-                            selectedFieldName
-                        )
+                            selectedFieldName,
+                        ),
                     )
                 }
             }
@@ -118,12 +117,12 @@ object CatalogClientConverters {
             .withName(stream!!.name)
             .withJsonSchema(stream.jsonSchema)
             .withSupportedSyncModes(
-                Enums.convertListTo(stream.supportedSyncModes!!, SyncMode::class.java)
+                Enums.convertListTo(stream.supportedSyncModes!!, SyncMode::class.java),
             )
             .withSourceDefinedCursor(stream.sourceDefinedCursor)
             .withDefaultCursorField(stream.defaultCursorField)
             .withSourceDefinedPrimaryKey(
-                Optional.ofNullable(stream.sourceDefinedPrimaryKey).orElse(emptyList())
+                Optional.ofNullable(stream.sourceDefinedPrimaryKey).orElse(emptyList()),
             )
             .withNamespace(stream.namespace)
     }
@@ -144,7 +143,7 @@ object CatalogClientConverters {
                             .stream(s)
                             .config(generateDefaultConfiguration(s))
                     }
-                    .collect(Collectors.toList())
+                    .collect(Collectors.toList()),
             )
     }
 
@@ -160,8 +159,8 @@ object CatalogClientConverters {
             result.setSyncMode(
                 Enums.convertTo(
                     stream.supportedSyncModes!![0],
-                    io.airbyte.api.client.model.generated.SyncMode::class.java
-                )
+                    io.airbyte.api.client.model.generated.SyncMode::class.java,
+                ),
             )
         } else {
             result.syncMode = io.airbyte.api.client.model.generated.SyncMode.INCREMENTAL
@@ -178,8 +177,8 @@ object CatalogClientConverters {
             .supportedSyncModes(
                 Enums.convertListTo(
                     stream.supportedSyncModes,
-                    io.airbyte.api.client.model.generated.SyncMode::class.java
-                )
+                    io.airbyte.api.client.model.generated.SyncMode::class.java,
+                ),
             )
             .sourceDefinedCursor(stream.sourceDefinedCursor)
             .defaultCursorField(stream.defaultCursorField)

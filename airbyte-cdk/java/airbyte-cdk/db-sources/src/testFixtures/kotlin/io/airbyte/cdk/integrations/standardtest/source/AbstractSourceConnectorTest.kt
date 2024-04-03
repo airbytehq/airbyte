@@ -98,7 +98,7 @@ abstract class AbstractSourceConnectorTest {
         get() =
             convertProtocolObject(
                 CatalogClientConverters.toAirbyteProtocol(discoverWriteRequest.value.catalog),
-                AirbyteCatalog::class.java
+                AirbyteCatalog::class.java,
             )
 
     private val discoverWriteRequest: ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> =
@@ -128,7 +128,7 @@ abstract class AbstractSourceConnectorTest {
                 workspaceRoot.toString(),
                 localRoot.toString(),
                 "host",
-                envMap
+                envMap,
             )
 
         postSetup()
@@ -162,8 +162,8 @@ abstract class AbstractSourceConnectorTest {
                         null,
                         null,
                         false,
-                        featureFlags()
-                    )
+                        featureFlags(),
+                    ),
                 )
                 .run(JobGetSpecConfig().withDockerImage(imageName), jobRoot)
                 .spec
@@ -181,9 +181,9 @@ abstract class AbstractSourceConnectorTest {
                     null,
                     null,
                     false,
-                    featureFlags()
+                    featureFlags(),
                 ),
-                mConnectorConfigUpdater
+                mConnectorConfigUpdater,
             )
             .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .checkConnection
@@ -200,9 +200,9 @@ abstract class AbstractSourceConnectorTest {
                     null,
                     null,
                     false,
-                    featureFlags()
+                    featureFlags(),
                 ),
-                mConnectorConfigUpdater
+                mConnectorConfigUpdater,
             )
             .run(StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .checkConnection
@@ -223,15 +223,15 @@ abstract class AbstractSourceConnectorTest {
                         null,
                         null,
                         false,
-                        featureFlags()
+                        featureFlags(),
                     ),
-                    mConnectorConfigUpdater
+                    mConnectorConfigUpdater,
                 )
                 .run(
                     StandardDiscoverCatalogInput()
                         .withSourceId(SOURCE_ID.toString())
                         .withConnectionConfiguration(config),
-                    jobRoot
+                    jobRoot,
                 )
                 .discoverCatalogId
         Mockito.verify(mSourceApi).writeDiscoverCatalogResult(discoverWriteRequest.capture())
@@ -246,7 +246,7 @@ abstract class AbstractSourceConnectorTest {
                 JOB_ID,
                 JOB_ATTEMPT,
                 jobRoot,
-                imageName
+                imageName,
             )
         assertNotNull(entrypoint)
         Assertions.assertFalse(entrypoint.isBlank())
@@ -270,8 +270,8 @@ abstract class AbstractSourceConnectorTest {
                 .withCatalog(
                     convertProtocolObject(
                         catalog,
-                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
-                    )
+                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java,
+                    ),
                 )
 
         val source: AirbyteSource =
@@ -284,9 +284,9 @@ abstract class AbstractSourceConnectorTest {
                     null,
                     null,
                     false,
-                    featureFlags()
+                    featureFlags(),
                 ),
-                featureFlags()
+                featureFlags(),
             )
         val messages: MutableList<AirbyteMessage> = ArrayList()
         source.start(sourceConfig, jobRoot)
@@ -313,8 +313,8 @@ abstract class AbstractSourceConnectorTest {
                 .withCatalog(
                     convertProtocolObject(
                         catalog,
-                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
-                    )
+                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java,
+                    ),
                 )
 
         val source = prepareAirbyteSource()
@@ -350,7 +350,7 @@ abstract class AbstractSourceConnectorTest {
                 null,
                 null,
                 false,
-                featureFlags()
+                featureFlags(),
             )
         return DefaultAirbyteSource(integrationLauncher, featureFlags())
     }

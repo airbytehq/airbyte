@@ -38,7 +38,7 @@ interface CsvSheetGenerator {
                 RootLevelFlatteningSheetGenerator(jsonSchema!!)
             } else {
                 throw IllegalArgumentException(
-                    "Unexpected flattening config: " + formatConfig.flattening
+                    "Unexpected flattening config: " + formatConfig.flattening,
                 )
             }
         }

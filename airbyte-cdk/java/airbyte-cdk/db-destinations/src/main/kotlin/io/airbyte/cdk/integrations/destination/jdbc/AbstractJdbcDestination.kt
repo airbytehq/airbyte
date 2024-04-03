@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory
 abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationState>(
     driverClass: String,
     protected open val namingResolver: NamingConventionTransformer,
-    protected val sqlOperations: SqlOperations
+    protected val sqlOperations: SqlOperations,
 ) : JdbcConnector(driverClass), Destination {
     protected val configSchemaKey: String
         get() = "schema"
@@ -67,7 +67,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 val v2RawSchema =
                     namingResolver.getIdentifier(
                         getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
-                            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
+                            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
                     )
                 attemptTableOperations(v2RawSchema, database, namingResolver, sqlOperations, false)
                 destinationSpecificTableOperations(database)
@@ -87,7 +87,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     """
     Could not connect with provided configuration. 
     ${e.message}
-    """.trimIndent()
+                    """.trimIndent(),
                 )
         } finally {
             try {
@@ -119,11 +119,13 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val builder =
             DataSourceFactory.DataSourceBuilder(
                     jdbcConfig[JdbcUtils.USERNAME_KEY].asText(),
-                    if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
+                    if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY)) {
                         jdbcConfig[JdbcUtils.PASSWORD_KEY].asText()
-                    else null,
+                    } else {
+                        null
+                    },
                     driverClassName,
-                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText()
+                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 )
                 .withConnectionProperties(connectionProperties)
                 .withConnectionTimeout(getConnectionTimeout(connectionProperties))
@@ -155,8 +157,10 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         for (key in defaultParameters.keys) {
             require(
                 !(customParameters.containsKey(key) &&
-                    customParameters[key] != defaultParameters[key])
-            ) { "Cannot overwrite default JDBC parameter $key" }
+                    customParameters[key] != defaultParameters[key]),
+            ) {
+                "Cannot overwrite default JDBC parameter $key"
+            }
         }
     }
 
@@ -227,7 +231,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 config,
                 catalog,
                 null,
-                NoopTyperDeduper()
+                NoopTyperDeduper(),
             )
         }
 
@@ -238,7 +242,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             catalog,
             outputRecordCollector,
             database,
-            defaultNamespace
+            defaultNamespace,
         )
     }
 
@@ -263,7 +267,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             getDestinationHandler(
                 databaseName,
                 database,
-                rawNamespaceOverride.orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
+                rawNamespaceOverride.orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
             )
         val disableTypeDedupe =
             config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
@@ -277,7 +281,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     parsedCatalog,
                     migrator,
                     v2TableMigrator,
-                    migrations
+                    migrations,
                 )
             } else {
                 DefaultTyperDeduper(
@@ -286,7 +290,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     parsedCatalog,
                     migrator,
                     v2TableMigrator,
-                    migrations
+                    migrations,
                 )
             }
 
@@ -299,7 +303,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             catalog,
             defaultNamespace,
             typerDeduper,
-            getDataTransformer(parsedCatalog, defaultNamespace)
+            getDataTransformer(parsedCatalog, defaultNamespace),
         )
     }
 
@@ -361,7 +365,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     { conn: Connection -> conn.metaData.catalogs },
                     { queryContext: ResultSet? ->
                         JdbcUtils.defaultSourceOperations.rowToJson(queryContext!!)
-                    }
+                    },
                 )
 
                 // verify we have write permissions on the target schema by creating a table with a
@@ -370,7 +374,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 val outputTableName =
                     namingResolver.getIdentifier(
                         "_airbyte_connection_test_" +
-                            UUID.randomUUID().toString().replace("-".toRegex(), "")
+                            UUID.randomUUID().toString().replace("-".toRegex(), ""),
                     )
                 sqlOps.createSchemaIfNotExists(database, outputSchema)
                 sqlOps.createTableIfNotExists(database, outputSchema, outputTableName)
@@ -381,7 +385,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                             database,
                             java.util.List.of(dummyRecord),
                             outputSchema,
-                            outputTableName
+                            outputTableName,
                         )
                     }
                 } finally {
@@ -412,7 +416,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     .withRecord(
                         PartialAirbyteRecordMessage()
                             .withStream("stream1")
-                            .withEmittedAt(1602637589000L)
+                            .withEmittedAt(1602637589000L),
                     )
                     .withSerialized(dummyDataToInsert.toString())
             }

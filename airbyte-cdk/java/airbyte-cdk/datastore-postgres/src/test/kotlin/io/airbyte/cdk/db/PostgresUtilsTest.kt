@@ -49,8 +49,8 @@ internal class PostgresUtilsTest {
                     DatabaseDriver.POSTGRESQL.urlFormatString,
                     config[JdbcUtils.HOST_KEY].asText(),
                     config[JdbcUtils.PORT_KEY].asInt(),
-                    config[JdbcUtils.DATABASE_KEY].asText()
-                )
+                    config[JdbcUtils.DATABASE_KEY].asText(),
+                ),
             )
 
         val defaultJdbcDatabase: JdbcDatabase = DefaultJdbcDatabase(dataSource!!)
@@ -63,9 +63,9 @@ internal class PostgresUtilsTest {
                 connection
                     .createStatement()
                     .execute(
-                        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
                     )
-            }
+            },
         )
     }
 
@@ -77,7 +77,7 @@ internal class PostgresUtilsTest {
                 .put(JdbcUtils.DATABASE_KEY, dbName)
                 .put(JdbcUtils.USERNAME_KEY, psqlDb.username)
                 .put(JdbcUtils.PASSWORD_KEY, psqlDb.password)
-                .build()
+                .build(),
         )
     }
 
@@ -95,9 +95,9 @@ internal class PostgresUtilsTest {
                 connection
                     .createStatement()
                     .execute(
-                        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
                     )
-            }
+            },
         )
 
         val lsn2 = getLsn(database)
@@ -112,7 +112,7 @@ internal class PostgresUtilsTest {
 
         @JvmStatic
         @BeforeAll
-        fun init(): Unit {
+        fun init() {
             PSQL_DB = PostgreSQLContainer<Nothing>("postgres:13-alpine")
             PSQL_DB.start()
         }

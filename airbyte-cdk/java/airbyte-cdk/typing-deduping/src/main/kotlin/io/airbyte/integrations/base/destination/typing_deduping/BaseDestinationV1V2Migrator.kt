@@ -18,14 +18,14 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     ) {
         LOGGER.info(
             "Assessing whether migration is necessary for stream {}",
-            streamConfig.id!!.finalName
+            streamConfig.id!!.finalName,
         )
         if (shouldMigrate(streamConfig)) {
             LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id!!.finalName)
             migrate(sqlGenerator, destinationHandler, streamConfig)
             LOGGER.info(
                 "V2 Migration completed successfully for stream {}",
-                streamConfig.id!!.finalName
+                streamConfig.id!!.finalName,
             )
         } else {
             LOGGER.info("No Migration Required for stream: {}", streamConfig.id!!.finalName)
@@ -44,7 +44,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
         LOGGER.info(
             "Checking whether v1 raw table {} in dataset {} exists",
             v1RawTable.tableName,
-            v1RawTable.namespace
+            v1RawTable.namespace,
         )
         val syncModeNeedsMigration =
             isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode)
@@ -55,7 +55,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
             "Migration Info: Required for Sync mode: {}, No existing v2 raw tables: {}, A v1 raw table exists: {}",
             syncModeNeedsMigration,
             noValidV2RawTableExists,
-            aValidV1RawTableExists
+            aValidV1RawTableExists,
         )
         return syncModeNeedsMigration && noValidV2RawTableExists && aValidV1RawTableExists
     }
@@ -80,8 +80,8 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
                 sqlGenerator.migrateFromV1toV2(
                     streamConfig.id,
                     namespacedTableName.namespace,
-                    namespacedTableName.tableName
-                )
+                    namespacedTableName.tableName,
+                ),
             )
         } catch (e: Exception) {
             val message =
@@ -101,7 +101,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     ): Boolean {
         return schemaMatchesExpectation(
             existingV2AirbyteRawTable,
-            JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
+            JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS,
         )
     }
 
@@ -119,15 +119,15 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
         if (
             !(schemaMatchesExpectation(
                 existingV2AirbyteRawTable,
-                JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META
+                JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META,
             ) ||
                 schemaMatchesExpectation(
                     existingV2AirbyteRawTable,
-                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
+                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
                 ))
         ) {
             throw UnexpectedSchemaException(
-                "Destination V2 Raw Table does not match expected Schema"
+                "Destination V2 Raw Table does not match expected Schema",
             )
         }
     }
@@ -156,7 +156,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
                 getTableIfExists(streamConfig.id!!.rawNamespace, streamConfig.id!!.rawName)
             existingV2Table.ifPresent { existingV2AirbyteRawTable: DialectTableDefinition ->
                 this.validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(
-                    existingV2AirbyteRawTable
+                    existingV2AirbyteRawTable,
                 )
             }
             return existingV2Table.isPresent

@@ -404,7 +404,7 @@ object Jsons {
                 } else {
                     return@toMap prefix
                 }
-            }
+            },
         )
     }
 

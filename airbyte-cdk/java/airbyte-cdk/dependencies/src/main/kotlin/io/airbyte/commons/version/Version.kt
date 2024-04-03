@@ -165,7 +165,7 @@ open class Version {
          * `"11".compare("3") < 0`, while `Integer.compare(11, 3) > 0`.
          */
         @SuppressFBWarnings(
-            "NP_NULL_PARAM_DEREF"
+            "NP_NULL_PARAM_DEREF",
         ) // We really should have 2 different subtypes of version, one for dev, and for standard
         // versions
         private fun compareVersion(v1: String?, v2: String?): Int {

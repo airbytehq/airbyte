@@ -41,7 +41,7 @@ data class Sql(val transactions: List<List<String>>) {
                         builder.append(statement)
                         // No semicolon - statements already end with a semicolon
                         builder.append("\n")
-                    }
+                    },
                 )
                 builder.append(commit)
                 builder.append(";\n")
@@ -57,7 +57,7 @@ data class Sql(val transactions: List<List<String>>) {
                 require(!transaction.stream().anyMatch { s: String? -> s == null || s.isEmpty() }) {
                     "Transaction must not contain empty statements"
                 }
-            }
+            },
         )
     }
 
@@ -80,7 +80,7 @@ data class Sql(val transactions: List<List<String>>) {
                 statements
                     .stream()
                     .map(Function<String, List<String>> { o: String -> listOf(o) })
-                    .toList()
+                    .toList(),
             )
         }
 
@@ -101,7 +101,7 @@ data class Sql(val transactions: List<List<String>>) {
         @JvmStatic
         fun concat(vararg sqls: Sql): Sql {
             return create(
-                Stream.of(*sqls).flatMap { sql: Sql -> sql.transactions.stream() }.toList()
+                Stream.of(*sqls).flatMap { sql: Sql -> sql.transactions.stream() }.toList(),
             )
         }
 
@@ -134,7 +134,7 @@ data class Sql(val transactions: List<List<String>>) {
                             .toList()
                     }
                     .filter { transaction: List<String> -> !transaction.isEmpty() }
-                    .toList()
+                    .toList(),
             )
         }
     }

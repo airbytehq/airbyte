@@ -36,10 +36,7 @@ interface DestinationFlushFunction {
      * @throws Exception
      */
     @Throws(Exception::class)
-    fun flush(
-        decs: StreamDescriptor,
-        stream: Stream<PartialAirbyteMessage>,
-    )
+    fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage>)
 
     /**
      * When invoking [.flush], best effort attempt to invoke flush with a batch of this size. Useful

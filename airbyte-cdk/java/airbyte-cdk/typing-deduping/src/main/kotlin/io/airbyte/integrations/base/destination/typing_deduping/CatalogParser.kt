@@ -18,7 +18,7 @@ class CatalogParser
 @JvmOverloads
 constructor(
     private val sqlGenerator: SqlGenerator,
-    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
 ) {
     fun parseCatalog(catalog: ConfiguredAirbyteCatalog): ParsedCatalog {
         // this code is bad and I feel bad
@@ -43,14 +43,14 @@ constructor(
                 LOGGER.info(
                     "Detected table name collision for {}.{}",
                     originalNamespace,
-                    originalName
+                    originalName,
                 )
 
                 // ... this logic is ported from legacy normalization, and maybe should change?
                 // We're taking a hash of the quoted namespace and the unquoted stream name
                 val hash =
                     DigestUtils.sha1Hex(
-                            originalStreamConfig.id!!.finalNamespace + "&airbyte&" + originalName
+                            originalStreamConfig.id!!.finalNamespace + "&airbyte&" + originalName,
                         )
                         .substring(0, 3)
                 val newName = originalName + "_" + hash
@@ -61,7 +61,7 @@ constructor(
                         originalStreamConfig.destinationSyncMode,
                         originalStreamConfig.primaryKey,
                         originalStreamConfig.cursor,
-                        originalStreamConfig.columns
+                        originalStreamConfig.columns,
                     )
             } else {
                 actualStreamConfig = originalStreamConfig
@@ -81,7 +81,7 @@ constructor(
                     Consumer { columnId: ColumnId? ->
                         addStringForDeinterpolation(columnId!!.name)
                         addStringForDeinterpolation(columnId.originalName)
-                    }
+                    },
                 )
             // It's (unfortunately) possible for a cursor/PK to be declared that don't actually
             // exist in the
@@ -95,7 +95,7 @@ constructor(
                 Consumer { pk: ColumnId ->
                     addStringForDeinterpolation(pk.name)
                     addStringForDeinterpolation(pk.originalName)
-                }
+                },
             )
         }
         return ParsedCatalog(streamConfigs)
@@ -154,7 +154,7 @@ constructor(
                     "Detected column name collision for {}.{}.{}",
                     stream.stream.namespace,
                     stream.stream.name,
-                    key
+                    key,
                 )
                 // One of the existing columns has the same name. We need to handle this collision.
                 // Append _1, _2, _3, ... to the column name until we find one that doesn't collide.
@@ -178,7 +178,7 @@ constructor(
                     ColumnId(
                         columnId!!.name,
                         originalColumnId!!.originalName,
-                        columnId.canonicalName
+                        columnId.canonicalName,
                     )
             }
 
@@ -191,7 +191,7 @@ constructor(
             stream.destinationSyncMode,
             primaryKey,
             cursor,
-            columns
+            columns,
         )
     }
 

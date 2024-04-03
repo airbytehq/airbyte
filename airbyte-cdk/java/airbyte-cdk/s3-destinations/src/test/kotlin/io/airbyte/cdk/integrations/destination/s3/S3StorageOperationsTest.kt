@@ -121,7 +121,7 @@ class S3StorageOperationsTest {
             "\${NAMESPACE}_\${STREAM_NAME}_\${YEAR}-\${MONTH}-\${DAY}-\${HOUR}-\${MINUTE}-\${SECOND}-\${MILLISECOND}-\${EPOCH}-\${UUID}"
         assertTrue(
             Pattern.compile(
-                    s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, customFormat)
+                    s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, customFormat),
                 )
                 .matcher(
                     s3StorageOperations.getBucketObjectPath(

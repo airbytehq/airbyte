@@ -65,7 +65,7 @@ interface DebeziumStateUtil {
             fileOffsetBackingStore,
             properties.getProperty(CONNECTOR_NAME_PROPERTY),
             keyConverter,
-            valueConverter
+            valueConverter,
         )
     }
 

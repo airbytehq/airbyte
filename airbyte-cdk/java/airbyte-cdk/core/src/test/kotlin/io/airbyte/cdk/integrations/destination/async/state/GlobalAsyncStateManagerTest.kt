@@ -150,7 +150,7 @@ class GlobalAsyncStateManagerTest {
         private fun serializedState(
             streamDescriptor: StreamDescriptor?,
             type: AirbyteStateMessage.AirbyteStateType?,
-            state: JsonNode?,
+            state: JsonNode?
         ): String {
             return when (type) {
                 AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
@@ -256,7 +256,7 @@ class GlobalAsyncStateManagerTest {
 
     private fun attachDestinationStateStats(
         stateMessage: AirbyteMessage,
-        airbyteStateStats: AirbyteStateStats?,
+        airbyteStateStats: AirbyteStateStats?
     ): AirbyteMessage {
         stateMessage.state.withDestinationStats(airbyteStateStats)
         return stateMessage
@@ -949,7 +949,7 @@ class GlobalAsyncStateManagerTest {
     private fun simulateIncomingRecords(
         desc: StreamDescriptor,
         count: Long,
-        manager: GlobalAsyncStateManager,
+        manager: GlobalAsyncStateManager
     ): Long {
         var stateId = 0L
         for (i in 0 until count) {

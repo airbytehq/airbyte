@@ -17,7 +17,7 @@ class JdbcInsertFlushFunction(private val recordWriter: RecordWriter<PartialAirb
     override fun flush(desc: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         recordWriter.accept(
             AirbyteStreamNameNamespacePair(desc.name, desc.namespace),
-            stream.toList()
+            stream.toList(),
         )
     }
 

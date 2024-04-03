@@ -19,29 +19,29 @@ internal class JsonPathsTest {
             JsonPaths.getValues(JSON_NODE, LIST_ALL_QUERY)
                 .stream()
                 .map { obj: JsonNode -> obj.asInt() }
-                .collect(Collectors.toList())
+                .collect(Collectors.toList()),
         )
         Assertions.assertEquals(
             listOf(1),
             JsonPaths.getValues(JSON_NODE, LIST_ONE_QUERY)
                 .stream()
                 .map { obj: JsonNode -> obj.asInt() }
-                .collect(Collectors.toList())
+                .collect(Collectors.toList()),
         )
         Assertions.assertEquals(
             listOf(10),
             JsonPaths.getValues(JSON_NODE, NESTED_FIELD_QUERY)
                 .stream()
                 .map { obj: JsonNode -> obj.asInt() }
-                .collect(Collectors.toList())
+                .collect(Collectors.toList()),
         )
         Assertions.assertEquals(
             JSON_NODE["two"],
-            JsonPaths.getValues(JSON_NODE, JSON_OBJECT_QUERY).stream().findFirst().orElse(null)
+            JsonPaths.getValues(JSON_NODE, JSON_OBJECT_QUERY).stream().findFirst().orElse(null),
         )
         Assertions.assertEquals(
             emptyList<Any>(),
-            JsonPaths.getValues(JSON_NODE, EMPTY_RETURN_QUERY)
+            JsonPaths.getValues(JSON_NODE, EMPTY_RETURN_QUERY),
         )
     }
 
@@ -54,17 +54,17 @@ internal class JsonPathsTest {
             1,
             JsonPaths.getSingleValue(JSON_NODE, LIST_ONE_QUERY)
                 .map { obj: JsonNode -> obj.asInt() }
-                .orElse(null)
+                .orElse(null),
         )
         Assertions.assertEquals(
             10,
             JsonPaths.getSingleValue(JSON_NODE, NESTED_FIELD_QUERY)
                 .map { obj: JsonNode -> obj.asInt() }
-                .orElse(null)
+                .orElse(null),
         )
         Assertions.assertEquals(
             JSON_NODE["two"],
-            JsonPaths.getSingleValue(JSON_NODE, JSON_OBJECT_QUERY).orElse(null)
+            JsonPaths.getSingleValue(JSON_NODE, JSON_OBJECT_QUERY).orElse(null),
         )
         Assertions.assertNull(JsonPaths.getSingleValue(JSON_NODE, EMPTY_RETURN_QUERY).orElse(null))
     }
@@ -73,19 +73,19 @@ internal class JsonPathsTest {
     fun testGetPaths() {
         Assertions.assertEquals(
             listOf("$['one'][0]", "$['one'][1]", "$['one'][2]"),
-            JsonPaths.getPaths(JSON_NODE, LIST_ALL_QUERY)
+            JsonPaths.getPaths(JSON_NODE, LIST_ALL_QUERY),
         )
         Assertions.assertEquals(
             listOf("$['one'][1]"),
-            JsonPaths.getPaths(JSON_NODE, LIST_ONE_QUERY)
+            JsonPaths.getPaths(JSON_NODE, LIST_ONE_QUERY),
         )
         Assertions.assertEquals(
             listOf("$['two']['nested']"),
-            JsonPaths.getPaths(JSON_NODE, NESTED_FIELD_QUERY)
+            JsonPaths.getPaths(JSON_NODE, NESTED_FIELD_QUERY),
         )
         Assertions.assertEquals(
             listOf("$['two']"),
-            JsonPaths.getPaths(JSON_NODE, JSON_OBJECT_QUERY)
+            JsonPaths.getPaths(JSON_NODE, JSON_OBJECT_QUERY),
         )
         Assertions.assertEquals(emptyList<Any>(), JsonPaths.getPaths(JSON_NODE, EMPTY_RETURN_QUERY))
     }
@@ -120,7 +120,7 @@ internal class JsonPathsTest {
                 PathNotFoundException::class.java,
                 Executable {
                     JsonPaths.replaceAtStringLoud(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_STRING)
-                }
+                },
             )
         }
     }
@@ -165,7 +165,7 @@ internal class JsonPathsTest {
                 PathNotFoundException::class.java,
                 Executable {
                     JsonPaths.replaceAtJsonNodeLoud(JSON_NODE, EMPTY_RETURN_QUERY, REPLACEMENT_JSON)
-                }
+                },
             )
         }
     }
@@ -200,7 +200,7 @@ internal class JsonPathsTest {
                 PathNotFoundException::class.java,
                 Executable {
                     JsonPaths.replaceAtJsonNodeLoud(expected, "$.one[*]", REPLACEMENT_JSON)
-                }
+                },
             )
         }
     }
@@ -275,7 +275,7 @@ internal class JsonPathsTest {
                                        "one": [0,1,2],
                                        "two": { "nested": 10}
                                      }
-                                     """.trimIndent()
+            """.trimIndent()
         private val JSON_NODE: JsonNode = Jsons.deserialize(JSON)
         private const val LIST_ALL_QUERY = "$.one[*]"
         private const val LIST_ONE_QUERY = "$.one[1]"

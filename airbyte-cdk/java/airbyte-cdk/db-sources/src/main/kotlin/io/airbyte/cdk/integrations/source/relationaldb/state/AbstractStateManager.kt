@@ -28,7 +28,7 @@ constructor(
     cursorFieldFunction: Function<S, List<String>>?,
     cursorRecordCountFunction: Function<S, Long>?,
     namespacePairFunction: Function<S, AirbyteStreamNameNamespacePair?>?,
-    onlyIncludeIncrementalStreams: Boolean = false
+    onlyIncludeIncrementalStreams: Boolean = false,
 ) : StateManager {
     /**
      * The [CursorManager] responsible for keeping track of the current cursor value for each stream
@@ -42,7 +42,7 @@ constructor(
             cursorFieldFunction,
             cursorRecordCountFunction,
             namespacePairFunction,
-            onlyIncludeIncrementalStreams
+            onlyIncludeIncrementalStreams,
         )
 
     override val pairToCursorInfoMap: Map<AirbyteStreamNameNamespacePair, CursorInfo>

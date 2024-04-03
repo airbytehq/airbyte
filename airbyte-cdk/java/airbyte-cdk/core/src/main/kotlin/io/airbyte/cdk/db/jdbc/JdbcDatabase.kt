@@ -144,7 +144,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     fun queryInt(sql: String, vararg params: String): Int {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { rs: ResultSet -> rs.getInt(1) }
+                { rs: ResultSet -> rs.getInt(1) },
             )
             .use { stream ->
                 return stream.findFirst().get()
@@ -155,7 +155,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     fun queryBoolean(sql: String, vararg params: String): Boolean {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { rs: ResultSet -> rs.getBoolean(1) }
+                { rs: ResultSet -> rs.getBoolean(1) },
             )
             .use { stream ->
                 return stream.findFirst().get()
@@ -179,7 +179,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
                 }
                 statement
             },
-            { queryResult: ResultSet -> sourceOperations!!.rowToJson(queryResult) }
+            { queryResult: ResultSet -> sourceOperations!!.rowToJson(queryResult) },
         )
     }
 
@@ -198,7 +198,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     fun queryMetadata(sql: String, vararg params: String): ResultSetMetaData {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { obj: ResultSet -> obj.metaData }
+                { obj: ResultSet -> obj.metaData },
             )
             .use { q ->
                 return q.findFirst().orElse(null)
@@ -241,7 +241,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
                         }
                     }
                 },
-                false
+                false,
             )
         }
 

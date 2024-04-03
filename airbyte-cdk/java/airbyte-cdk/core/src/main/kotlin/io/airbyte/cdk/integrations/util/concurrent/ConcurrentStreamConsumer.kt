@@ -33,10 +33,11 @@ import org.slf4j.LoggerFactory
  */
 class ConcurrentStreamConsumer(
     streamConsumer: Consumer<AutoCloseableIterator<AirbyteMessage>>,
-    requestedParallelism: Int
+    requestedParallelism: Int,
 ) : Consumer<Collection<AutoCloseableIterator<AirbyteMessage>>>, AutoCloseable {
     private val executorService: ExecutorService
     private val exceptions: MutableList<Exception>
+
     /**
      * the parallelism value that will be used by this consumer to execute the consumption of data
      * from the provided streams in parallel.
@@ -49,7 +50,7 @@ class ConcurrentStreamConsumer(
         Optional.of(
             Consumer { obj: AirbyteStreamStatusHolder ->
                 AirbyteTraceMessageUtility.emitStreamStatusTrace(obj)
-            }
+            },
         )
 
     /**
@@ -142,12 +143,12 @@ class ConcurrentStreamConsumer(
         LOGGER.debug(
             "Default parallelism: {}, Requested parallelism: {}",
             defaultPoolSize,
-            requestedParallelism
+            requestedParallelism,
         )
         val parallelism =
             min(
                     defaultPoolSize.toDouble(),
-                    (if (requestedParallelism > 0) requestedParallelism else 1).toDouble()
+                    (if (requestedParallelism > 0) requestedParallelism else 1).toDouble(),
                 )
                 .toInt()
         LOGGER.debug("Computed concurrent stream consumer parallelism: {}", parallelism)
@@ -169,7 +170,7 @@ class ConcurrentStreamConsumer(
             TimeUnit.MILLISECONDS,
             LinkedBlockingQueue(),
             ConcurrentStreamThreadFactory(),
-            AbortPolicy()
+            AbortPolicy(),
         )
     }
 
@@ -220,7 +221,7 @@ class ConcurrentStreamConsumer(
                             "%s-%s-%s",
                             CONCURRENT_STREAM_THREAD_NAME,
                             airbyteStream.namespace,
-                            airbyteStream.name
+                            airbyteStream.name,
                         )
                 } else {
                     thread.name = CONCURRENT_STREAM_THREAD_NAME
@@ -240,7 +241,7 @@ class ConcurrentStreamConsumer(
      */
     private class ConcurrentStreamRunnable(
         val stream: AutoCloseableIterator<AirbyteMessage>,
-        val consumer: ConcurrentStreamConsumer
+        val consumer: ConcurrentStreamConsumer,
     ) : Runnable {
         override fun run() {
             consumer.executeStream(stream)

@@ -34,12 +34,12 @@ abstract class JdbcDestinationAcceptanceTest : DestinationAcceptanceTest() {
                     "nvarchar",
                     "jsonb",
                     "json",
-                    "other" -> {
+                    "other", -> {
                         val stringValue = (value?.toString())
                         DestinationAcceptanceTestUtils.putStringIntoJson(
                             stringValue,
                             field.name,
-                            node
+                            node,
                         )
                     }
                     else -> node.put(field.name, (value?.toString()))

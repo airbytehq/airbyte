@@ -32,7 +32,7 @@ constructor(
     private val airbyteApiClient: AirbyteApiClient,
     private val integrationLauncher: IntegrationLauncher,
     private val connectorConfigUpdater: ConnectorConfigUpdater,
-    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
+    private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory(),
 ) : DiscoverCatalogTestHarness {
     @Volatile private var process: Process? = null
 
@@ -47,7 +47,7 @@ constructor(
                 integrationLauncher.discover(
                     jobRoot,
                     WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-                    Jsons.serialize(inputConfig)
+                    Jsons.serialize(inputConfig),
                 )
 
             val jobOutput =
@@ -71,12 +71,12 @@ constructor(
                 optionalConfigMsg!!.isPresent &&
                     TestHarnessUtils.getDidControlMessageChangeConfig(
                         inputConfig,
-                        optionalConfigMsg.get()
+                        optionalConfigMsg.get(),
                     )
             ) {
                 connectorConfigUpdater.updateSource(
                     UUID.fromString(discoverSchemaInput.sourceId),
-                    optionalConfigMsg.get().config
+                    optionalConfigMsg.get().config,
                 )
                 jobOutput.connectorConfigurationUpdated = true
             }
@@ -84,7 +84,7 @@ constructor(
             val failureReason =
                 TestHarnessUtils.getJobFailureReasonFromMessages(
                     ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID,
-                    messagesByType
+                    messagesByType,
                 )
             failureReason!!.ifPresent { failureReason: FailureReason? ->
                 jobOutput.failureReason = failureReason
@@ -102,17 +102,17 @@ constructor(
                             airbyteApiClient.sourceApi.writeDiscoverCatalogResult(
                                 buildSourceDiscoverSchemaWriteRequestBody(
                                     discoverSchemaInput,
-                                    catalog.get()
-                                )
+                                    catalog.get(),
+                                ),
                             )
                         },
-                        WRITE_DISCOVER_CATALOG_LOGS_TAG
+                        WRITE_DISCOVER_CATALOG_LOGS_TAG,
                     )!!
                 jobOutput.discoverCatalogId = result.catalogId
             } else if (failureReason.isEmpty) {
                 TestHarnessUtils.throwWorkerException(
                     "Integration failed to output a catalog struct and did not output a failure reason",
-                    process
+                    process,
                 )
             }
             return jobOutput
@@ -132,8 +132,11 @@ constructor(
             .sourceId( // NOTE: sourceId is marked required in the OpenAPI config but the code
                 // generator doesn't enforce
                 // it, so we check again here.
-                if (discoverSchemaInput.sourceId == null) null
-                else UUID.fromString(discoverSchemaInput.sourceId)
+                if (discoverSchemaInput.sourceId == null) {
+                    null
+                } else {
+                    UUID.fromString(discoverSchemaInput.sourceId)
+                },
             )
             .connectorVersion(discoverSchemaInput.connectorVersion)
             .configurationHash(discoverSchemaInput.configHash)

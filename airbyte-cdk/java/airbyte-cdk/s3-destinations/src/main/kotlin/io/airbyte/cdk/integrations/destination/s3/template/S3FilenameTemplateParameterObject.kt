@@ -23,7 +23,7 @@ internal constructor(
     val partId: String?,
     val s3Format: S3Format?,
     val timestamp: Timestamp?,
-    val customSuffix: String?
+    val customSuffix: String?,
 ) {
     class S3FilenameTemplateParameterObjectBuilder internal constructor() {
         private var objectPath: String? = null

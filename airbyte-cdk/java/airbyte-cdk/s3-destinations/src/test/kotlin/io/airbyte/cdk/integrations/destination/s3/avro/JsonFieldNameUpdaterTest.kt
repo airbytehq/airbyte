@@ -27,9 +27,9 @@ internal class JsonFieldNameUpdaterTest {
                         .collect(
                             Collectors.toMap(
                                 Function { obj: Map.Entry<String, JsonNode> -> obj.key },
-                                Function { e: Map.Entry<String, JsonNode> -> e.value.asText() }
-                            )
-                        )
+                                Function { e: Map.Entry<String, JsonNode> -> e.value.asText() },
+                            ),
+                        ),
                 )
 
             val original = testCase["original"]

@@ -47,29 +47,30 @@ object IncrementalUtils {
             String.format(
                 "Could not find cursor field: %s in schema for stream: %s.",
                 cursorField,
-                stream.stream.name
+                stream.stream.name,
             )
         }
 
         check(
             !(stream.stream.jsonSchema[PROPERTIES][cursorField]["type"] == null &&
-                stream.stream.jsonSchema[PROPERTIES][cursorField]["\$ref"] == null)
+                stream.stream.jsonSchema[PROPERTIES][cursorField]["\$ref"] == null),
         ) {
             String.format(
                 "Could not find cursor type for field: %s in schema for stream: %s.",
                 cursorField,
-                stream.stream.name
+                stream.stream.name,
             )
         }
 
         return if (stream.stream.jsonSchema[PROPERTIES][cursorField]["type"] == null) {
             JsonSchemaPrimitiveUtil.PRIMITIVE_TO_REFERENCE_BIMAP.inverse()[
-                    stream.stream.jsonSchema[PROPERTIES][cursorField]["\$ref"].asText()]
+                    stream.stream.jsonSchema[PROPERTIES][cursorField]["\$ref"].asText(),
+                ]
         } else {
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.valueOf(
                 stream.stream.jsonSchema[PROPERTIES][cursorField]["type"]
                     .asText()
-                    .uppercase(Locale.getDefault())
+                    .uppercase(Locale.getDefault()),
             )
         }
     }
@@ -108,22 +109,22 @@ object IncrementalUtils {
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.TIME_WITH_TIMEZONE_V1,
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.TIME_WITHOUT_TIMEZONE_V1,
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.TIMESTAMP_WITH_TIMEZONE_V1,
-            JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
+            JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.TIMESTAMP_WITHOUT_TIMEZONE_V1, -> {
                 original.compareTo(candidate)
             }
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER,
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER_V1,
-            JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.INTEGER_V1 -> {
+            JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.INTEGER_V1, -> {
                 // todo (cgardens) - handle big decimal. this is currently an overflow risk.
                 java.lang.Double.compare(original.toDouble(), candidate.toDouble())
             }
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN,
-            JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN_V1 -> {
+            JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN_V1, -> {
                 Boolean.compare(original.toBoolean(), candidate.toBoolean())
             }
             else ->
                 throw IllegalStateException(
-                    String.format("Cannot use field of type %s as a comparable", type)
+                    String.format("Cannot use field of type %s as a comparable", type),
                 )
         }
     }

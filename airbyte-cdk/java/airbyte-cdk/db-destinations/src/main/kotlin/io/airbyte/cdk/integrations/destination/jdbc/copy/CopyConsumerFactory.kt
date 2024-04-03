@@ -42,7 +42,7 @@ object CopyConsumerFactory {
                 streamCopierFactory,
                 defaultSchema,
                 database,
-                sqlOperations
+                sqlOperations,
             )
 
         val pairToIgnoredRecordCount: MutableMap<AirbyteStreamNameNamespacePair, Long> = HashMap()
@@ -52,17 +52,19 @@ object CopyConsumerFactory {
             InMemoryRecordBufferingStrategy(
                 recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
                 removeStagingFilePrinter(pairToCopier),
-                GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
+                GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong(),
             ),
             onCloseFunction(
                 pairToCopier,
                 database,
                 sqlOperations,
                 pairToIgnoredRecordCount,
-                dataSource
+                dataSource,
             ),
-            catalog
-        ) { data: JsonNode? -> sqlOperations.isValidData(data) }
+            catalog,
+        ) { data: JsonNode? ->
+            sqlOperations.isValidData(data)
+        }
     }
 
     private fun <T> createWriteConfigs(
@@ -87,7 +89,7 @@ object CopyConsumerFactory {
                     configuredStream,
                     namingResolver,
                     database,
-                    sqlOperations
+                    sqlOperations,
                 )
 
             pairToCopier[pair] = copier
@@ -109,7 +111,8 @@ object CopyConsumerFactory {
     ): RecordWriter<AirbyteRecordMessage> {
         return RecordWriter<AirbyteRecordMessage> {
             pair: AirbyteStreamNameNamespacePair,
-            records: List<AirbyteRecordMessage> ->
+            records: List<AirbyteRecordMessage>,
+            ->
             val fileName = pairToCopier[pair]!!.prepareStagingFile()
             for (recordMessage in records) {
                 val id = UUID.randomUUID()
@@ -130,7 +133,8 @@ object CopyConsumerFactory {
     ): CheckAndRemoveRecordWriter {
         return CheckAndRemoveRecordWriter {
             pair: AirbyteStreamNameNamespacePair?,
-            stagingFileName: String? ->
+            stagingFileName: String?,
+            ->
             val currentFileName = pairToCopier[pair]!!.currentFile
             if (
                 stagingFileName != null &&
@@ -151,12 +155,13 @@ object CopyConsumerFactory {
         dataSource: DataSource
     ): OnCloseFunction {
         return OnCloseFunction { hasFailed: Boolean, _: Map<StreamDescriptor, StreamSyncSummary>? ->
-            pairToIgnoredRecordCount.forEach { (pair: AirbyteStreamNameNamespacePair?, count: Long?)
+            pairToIgnoredRecordCount.forEach {
+                (pair: AirbyteStreamNameNamespacePair?, count: Long?),
                 ->
                 LOGGER.warn(
                     "A total of {} record(s) of data from stream {} were invalid and were ignored.",
                     count,
-                    pair
+                    pair,
                 )
             }
             closeAsOneTransaction(pairToCopier, hasFailed, database, sqlOperations, dataSource)

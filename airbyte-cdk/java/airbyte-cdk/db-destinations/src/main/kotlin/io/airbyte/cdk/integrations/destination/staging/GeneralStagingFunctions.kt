@@ -17,6 +17,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 
 private val log = KotlinLogging.logger {}
+
 /** Functions and logic common to all flushing strategies. */
 object GeneralStagingFunctions {
     // using a random string here as a placeholder for the moment.
@@ -40,7 +41,7 @@ object GeneralStagingFunctions {
         return OnStartFunction {
             log.info(
                 "Preparing raw tables in destination started for {} streams",
-                writeConfigs.size
+                writeConfigs.size,
             )
             typerDeduper.prepareSchemasAndRunMigrations()
 
@@ -57,7 +58,7 @@ object GeneralStagingFunctions {
                         schema,
                         stream,
                         writeConfig.outputTableName,
-                        writeConfig.writeDatetime
+                        writeConfig.writeDatetime,
                     )
 
                 log.info(
@@ -65,7 +66,7 @@ object GeneralStagingFunctions {
                     schema,
                     stream,
                     dstTableName,
-                    stagingPath
+                    stagingPath,
                 )
 
                 stagingOperations.createSchemaIfNotExists(database, schema)
@@ -75,19 +76,19 @@ object GeneralStagingFunctions {
                 when (writeConfig.syncMode) {
                     DestinationSyncMode.OVERWRITE ->
                         queryList.add(
-                            stagingOperations.truncateTableQuery(database, schema, dstTableName)
+                            stagingOperations.truncateTableQuery(database, schema, dstTableName),
                         )
                     DestinationSyncMode.APPEND,
-                    DestinationSyncMode.APPEND_DEDUP -> {}
+                    DestinationSyncMode.APPEND_DEDUP, -> {}
                     else ->
                         throw IllegalStateException(
-                            "Unrecognized sync mode: " + writeConfig.syncMode
+                            "Unrecognized sync mode: " + writeConfig.syncMode,
                         )
                 }
                 log.info(
                     "Preparing staging area in destination completed for schema {} stream {}",
                     schema,
-                    stream
+                    stream,
                 )
             }
 
@@ -127,7 +128,7 @@ object GeneralStagingFunctions {
                     stagingPath,
                     stagedFiles,
                     tableName,
-                    schemaName
+                    schemaName,
                 )
             } finally {
                 rawTableInsertLock.unlock()
@@ -163,7 +164,8 @@ object GeneralStagingFunctions {
     ): OnCloseFunction {
         return OnCloseFunction {
             hasFailed: Boolean,
-            streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
+            streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>,
+            ->
             // After moving data from staging area to the target table (airybte_raw) clean up the
             // staging
             // area (if user configured)
@@ -180,13 +182,13 @@ object GeneralStagingFunctions {
                             schemaName,
                             writeConfig.streamName,
                             writeConfig.outputTableName,
-                            writeConfig.writeDatetime
+                            writeConfig.writeDatetime,
                         )
                     log.info(
                         "Cleaning stage in destination started for stream {}. schema {}, stage: {}",
                         writeConfig.streamName,
                         schemaName,
-                        stagePath
+                        stagePath,
                     )
                     // TODO: This is another weird manifestation of Redshift vs Snowflake using
                     // either or variables from

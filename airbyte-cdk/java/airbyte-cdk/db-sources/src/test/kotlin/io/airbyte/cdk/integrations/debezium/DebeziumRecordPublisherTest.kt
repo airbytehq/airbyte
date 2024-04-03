@@ -26,8 +26,8 @@ internal class DebeziumRecordPublisherTest {
                         CatalogHelpers.createConfiguredAirbyteStream("id_,something", "public")
                             .withSyncMode(SyncMode.INCREMENTAL),
                         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public")
-                            .withSyncMode(SyncMode.INCREMENTAL)
-                    )
+                            .withSyncMode(SyncMode.INCREMENTAL),
+                    ),
                 )
 
         val expectedWhitelist =
@@ -46,8 +46,8 @@ internal class DebeziumRecordPublisherTest {
                         CatalogHelpers.createConfiguredAirbyteStream("id_and_name", "public")
                             .withSyncMode(SyncMode.INCREMENTAL),
                         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public")
-                            .withSyncMode(SyncMode.FULL_REFRESH)
-                    )
+                            .withSyncMode(SyncMode.FULL_REFRESH),
+                    ),
                 )
 
         val expectedWhitelist = "\\Qpublic.id_and_name\\E"
@@ -66,7 +66,7 @@ internal class DebeziumRecordPublisherTest {
                                 "id_and_name",
                                 "public",
                                 Field.of("fld1", JsonSchemaType.NUMBER),
-                                Field.of("fld2", JsonSchemaType.STRING)
+                                Field.of("fld2", JsonSchemaType.STRING),
                             )
                             .withSyncMode(SyncMode.INCREMENTAL),
                         CatalogHelpers.createConfiguredAirbyteStream("id_,something", "public")
@@ -74,8 +74,8 @@ internal class DebeziumRecordPublisherTest {
                         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public")
                             .withSyncMode(SyncMode.FULL_REFRESH),
                         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public")
-                            .withSyncMode(SyncMode.INCREMENTAL)
-                    )
+                            .withSyncMode(SyncMode.INCREMENTAL),
+                    ),
                 )
 
         val expectedWhitelist =
@@ -101,10 +101,10 @@ internal class DebeziumRecordPublisherTest {
                                 "id_and_name",
                                 "public",
                                 Field.of("fld1", JsonSchemaType.NUMBER),
-                                Field.of("fld2", JsonSchemaType.STRING)
+                                Field.of("fld2", JsonSchemaType.STRING),
                             )
-                            .withSyncMode(SyncMode.INCREMENTAL)
-                    )
+                            .withSyncMode(SyncMode.INCREMENTAL),
+                    ),
                 )
 
         val anchored =

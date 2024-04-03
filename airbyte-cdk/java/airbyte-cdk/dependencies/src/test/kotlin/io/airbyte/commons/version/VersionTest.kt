@@ -14,7 +14,7 @@ internal class VersionTest {
             """
                               {"version": "1.2.3"}
                               
-                              """.trimIndent()
+            """.trimIndent()
         val expectedVersion = Version("1.2.3")
 
         val deserializedVersion = Jsons.deserialize(jsonString, Version::class.java)

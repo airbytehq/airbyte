@@ -127,13 +127,13 @@ internal class DefaultDestStateLifecycleManagerTest {
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
-                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
+                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY),
                 )
         private val GLOBAL_MESSAGE: AirbyteMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
-                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
                 )
         private val STREAM_MESSAGE: AirbyteMessage =
             AirbyteMessage()
@@ -143,8 +143,8 @@ internal class DefaultDestStateLifecycleManagerTest {
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
                             AirbyteStreamState()
-                                .withStreamDescriptor(StreamDescriptor().withName("users"))
-                        )
+                                .withStreamDescriptor(StreamDescriptor().withName("users")),
+                        ),
                 )
     }
 }

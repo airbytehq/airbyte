@@ -23,7 +23,7 @@ open class DefaultJdbcDatabase
 @JvmOverloads
 constructor(
     protected val dataSource: DataSource,
-    sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations
+    sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations,
 ) : JdbcDatabase(sourceOperations) {
     @Throws(SQLException::class)
     override fun execute(query: CheckedConsumer<Connection, SQLException?>) {
@@ -58,7 +58,7 @@ constructor(
                     } catch (e: SQLException) {
                         throw RuntimeException(e)
                     }
-                }
+                },
             )
     }
 
@@ -121,7 +121,7 @@ constructor(
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(
                 statementCreator.apply(connection).executeQuery(),
-                recordTransform
+                recordTransform,
             )
             .onClose(
                 Runnable {
@@ -131,7 +131,7 @@ constructor(
                     } catch (e: SQLException) {
                         throw RuntimeException(e)
                     }
-                }
+                },
             )
     }
 

@@ -22,7 +22,7 @@ class StateDecoratingIterator(
     private val cursorField: String,
     private val initialCursor: String,
     private val cursorType: JsonSchemaPrimitiveUtil.JsonSchemaPrimitive,
-    stateEmissionFrequency: Int
+    stateEmissionFrequency: Int,
 ) : AbstractIterator<AirbyteMessage?>(), MutableIterator<AirbyteMessage?> {
     private var currentMaxCursor: String?
     private var currentMaxCursorRecordCount = 0L
@@ -143,7 +143,7 @@ class StateDecoratingIterator(
                     } else if (cursorComparison > 0 && stateEmissionFrequency > 0) {
                         LOGGER.warn(
                             "Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, " +
-                                "data loss can occur."
+                                "data loss can occur.",
                         )
                     }
                 }
@@ -217,7 +217,7 @@ class StateDecoratingIterator(
                 cursorInfo.map { obj: CursorInfo -> obj.originalCursorRecordCount }.orElse(null),
                 cursorInfo.map { obj: CursorInfo -> obj.cursorField }.orElse(null),
                 cursorInfo.map { obj: CursorInfo -> obj.cursor }.orElse(null),
-                cursorInfo.map { obj: CursorInfo -> obj.cursorRecordCount }.orElse(null)
+                cursorInfo.map { obj: CursorInfo -> obj.cursorRecordCount }.orElse(null),
             )
         }
 
@@ -227,7 +227,7 @@ class StateDecoratingIterator(
             if (stateManager.getCursor(pair).isEmpty) {
                 LOGGER.warn(
                     "Cursor for stream {} was null. This stream will replicate all records on the next run",
-                    pair
+                    pair,
                 )
             }
         }

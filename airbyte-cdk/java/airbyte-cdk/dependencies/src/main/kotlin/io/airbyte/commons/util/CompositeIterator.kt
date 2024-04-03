@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory
 class CompositeIterator<T>
 internal constructor(
     iterators: List<AutoCloseableIterator<T>>,
-    airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?
+    airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?,
 ) : AbstractIterator<T>(), AutoCloseableIterator<T> {
     private val airbyteStreamStatusConsumer: Optional<Consumer<AirbyteStreamStatusHolder>>
     private val iterators: List<AutoCloseableIterator<T>>
@@ -68,12 +68,12 @@ internal constructor(
                 emitStartStreamStatus(currentIterator().airbyteStream)
                 StreamStatusUtils.emitCompleteStreamStatus(
                     airbyteStream,
-                    airbyteStreamStatusConsumer
+                    airbyteStreamStatusConsumer,
                 )
             } catch (e: Exception) {
                 StreamStatusUtils.emitIncompleteStreamStatus(
                     airbyteStream,
-                    airbyteStreamStatusConsumer
+                    airbyteStreamStatusConsumer,
                 )
                 throw RuntimeException(e)
             }
@@ -91,7 +91,7 @@ internal constructor(
             if (isFirstRun) {
                 StreamStatusUtils.emitRunningStreamStatus(
                     airbyteStream,
-                    airbyteStreamStatusConsumer
+                    airbyteStreamStatusConsumer,
                 )
             }
             return next

@@ -35,7 +35,7 @@ class JsonToAvroConverterTest {
                 """
                                               {"${'$'}ref": "WellKnownTypes.json#/definitions/Number"}"
                                               
-                                              """.trimIndent(),
+                """.trimIndent(),
             )
 
         assertEquals(
@@ -51,7 +51,7 @@ class JsonToAvroConverterTest {
                 """
                                               {"${'$'}ref": "WellKnownTypes.json#/definitions/String"}"
                                               
-                                              """.trimIndent(),
+                """.trimIndent(),
             )
         assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input1).isEmpty)
     }
@@ -60,7 +60,7 @@ class JsonToAvroConverterTest {
     internal fun testWithCombinedRestriction() {
         val input2 =
             Jsons.deserialize(
-                "{ \"anyOf\": [{ \"type\": \"string\" }, { \"type\": \"integer\" }] }"
+                "{ \"anyOf\": [{ \"type\": \"string\" }, { \"type\": \"integer\" }] }",
             )
         assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input2).isPresent)
     }
@@ -72,8 +72,8 @@ class JsonToAvroConverterTest {
             val testCases =
                 Jsons.deserialize(
                     MoreResources.readResource(
-                        "parquet/json_schema_converter/type_conversion_test_cases_v0.json"
-                    )
+                        "parquet/json_schema_converter/type_conversion_test_cases_v0.json",
+                    ),
                 )
             return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
                 Arguments.of(
@@ -91,8 +91,8 @@ class JsonToAvroConverterTest {
             val testCases =
                 Jsons.deserialize(
                     MoreResources.readResource(
-                        "parquet/json_schema_converter/type_conversion_test_cases_v1.json"
-                    )
+                        "parquet/json_schema_converter/type_conversion_test_cases_v1.json",
+                    ),
                 )
             return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
                 Arguments.of(
@@ -162,8 +162,8 @@ class JsonToAvroConverterTest {
             val testCases =
                 Jsons.deserialize(
                     MoreResources.readResource(
-                        "parquet/json_schema_converter/json_conversion_test_cases_v0.json"
-                    )
+                        "parquet/json_schema_converter/json_conversion_test_cases_v0.json",
+                    ),
                 )
             return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
                 Arguments.of(
@@ -185,8 +185,8 @@ class JsonToAvroConverterTest {
             val testCases =
                 Jsons.deserialize(
                     MoreResources.readResource(
-                        "parquet/json_schema_converter/json_conversion_test_cases_v1.json"
-                    )
+                        "parquet/json_schema_converter/json_conversion_test_cases_v1.json",
+                    ),
                 )
             return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
                 Arguments.of(

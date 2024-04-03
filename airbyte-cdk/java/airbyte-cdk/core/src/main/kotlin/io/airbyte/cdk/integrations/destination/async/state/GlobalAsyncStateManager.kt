@@ -101,11 +101,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * Because state messages are a watermark, all preceding records need to be flushed before the
      * state message can be processed.
      */
-    fun trackState(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Long,
-        defaultNamespace: String,
-    ) {
+    fun trackState(message: PartialAirbyteMessage, sizeInBytes: Long, defaultNamespace: String) {
         if (preState) {
             convertToGlobalIfNeeded(message)
             preState = false
@@ -135,10 +131,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * @param stateId reference to a state.
      * @param count to decrement.
      */
-    fun decrement(
-        stateId: Long,
-        count: Long,
-    ) {
+    fun decrement(stateId: Long, count: Long) {
         synchronized(lock) {
             logger.trace { "decrementing state id: $stateId, count: $count" }
             stateIdToCounter[getStateAfterAlias(stateId)]!!.addAndGet(-count)
@@ -210,13 +203,13 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         freeBytes(bytesFlushed)
     }
 
-    private fun getStateIdAndIncrement(
-        streamDescriptor: StreamDescriptor,
-        increment: Long,
-    ): Long {
+    private fun getStateIdAndIncrement(streamDescriptor: StreamDescriptor, increment: Long): Long {
         val resolvedDescriptor: StreamDescriptor =
-            if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) streamDescriptor
-            else SENTINEL_GLOBAL_DESC
+            if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) {
+                streamDescriptor
+            } else {
+                SENTINEL_GLOBAL_DESC
+            }
         // As concurrent collections do not guarantee data consistency when iterating, use `get`
         // instead of
         // `containsKey`.
@@ -315,7 +308,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     }
 
     private fun extractStateType(
-        message: PartialAirbyteMessage,
+        message: PartialAirbyteMessage
     ): AirbyteStateMessage.AirbyteStateType {
         return if (message.state?.type == null) {
             // Treated the same as GLOBAL.
@@ -333,7 +326,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private fun closeState(
         message: PartialAirbyteMessage,
         sizeInBytes: Long,
-        defaultNamespace: String,
+        defaultNamespace: String
     ) {
         val resolvedDescriptor: StreamDescriptor =
             extractStream(message, defaultNamespace)
@@ -450,7 +443,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
          */
         private fun extractStream(
             message: PartialAirbyteMessage,
-            defaultNamespace: String,
+            defaultNamespace: String
         ): Optional<StreamDescriptor> {
             if (
                 message.state?.type != null &&

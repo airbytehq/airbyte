@@ -24,7 +24,7 @@ object RelationalDbReadUtil {
             .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 newlyAddedStreams.contains(
-                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
+                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream),
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
@@ -47,7 +47,7 @@ object RelationalDbReadUtil {
             .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 !initialLoadStreamsNamespacePairs.contains(
-                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
+                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream),
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
@@ -59,7 +59,7 @@ object RelationalDbReadUtil {
     ): AirbyteStreamNameNamespacePair {
         return AirbyteStreamNameNamespacePair(
             v1NameNamespacePair.name,
-            v1NameNamespacePair.namespace
+            v1NameNamespacePair.namespace,
         )
     }
 }

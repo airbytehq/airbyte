@@ -31,7 +31,7 @@ object StateMessageHelper {
                 stateMessages =
                     `object`<List<AirbyteStateMessage>>(
                         state,
-                        AirbyteStateMessageListTypeReference()
+                        AirbyteStateMessageListTypeReference(),
                     )
             } catch (e: IllegalArgumentException) {
                 return Optional.of(getLegacyStateWrapper(state))
@@ -77,7 +77,7 @@ object StateMessageHelper {
                 }
 
                 throw IllegalStateException(
-                    "Unexpected state blob, the state contains either multiple global or conflicting state type."
+                    "Unexpected state blob, the state contains either multiple global or conflicting state type.",
                 )
             }
         }

@@ -50,14 +50,15 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
                         .withField(columnName)
                         .withChange(AirbyteRecordMessageMetaChange.Change.NULLED)
                         .withReason(
-                            AirbyteRecordMessageMetaChange.Reason.SOURCE_SERIALIZATION_ERROR
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.SOURCE_SERIALIZATION_ERROR,
+                        ),
                 )
             }
         }
 
         return AirbyteRecordData(jsonNode, AirbyteRecordMessageMeta().withChanges(metaChanges))
     }
+
     @Throws(SQLException::class)
     override fun rowToJson(queryContext: ResultSet): JsonNode {
         // the first call communicates with the database. after that the result is cached.
@@ -166,8 +167,8 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getDouble(index) },
-                { d: Double? -> java.lang.Double.isFinite(d!!) }
-            )
+                { d: Double? -> java.lang.Double.isFinite(d!!) },
+            ),
         )
     }
 
@@ -182,8 +183,8 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getFloat(index) },
-                { f: Float? -> java.lang.Float.isFinite(f!!) }
-            )
+                { f: Float? -> java.lang.Float.isFinite(f!!) },
+            ),
         )
     }
 
@@ -226,7 +227,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     ) {
         node.put(
             columnName,
-            DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime::class.java))
+            DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime::class.java)),
         )
     }
 
@@ -241,8 +242,8 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             node.put(
                 columnName,
                 DateTimeConverter.convertToTimestamp(
-                    getObject(resultSet, index, LocalDateTime::class.java)
-                )
+                    getObject(resultSet, index, LocalDateTime::class.java),
+                ),
             )
         } catch (e: Exception) {
             // for backward compatibility
@@ -450,7 +451,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         val localDate = timestamptz.toLocalDate()
         node.put(
             columnName,
-            resolveEra(localDate, timestamptz.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER))
+            resolveEra(localDate, timestamptz.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER)),
         )
     }
 

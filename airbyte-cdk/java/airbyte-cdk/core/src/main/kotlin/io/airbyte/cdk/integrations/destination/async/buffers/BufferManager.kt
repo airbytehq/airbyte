@@ -78,7 +78,7 @@ constructor(
 
         for ((key, queue) in buffers) {
             messages.add(
-                "Queue `${key.name}`, num records: ${queue.size()}, num bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.currentMemoryUsage)}, allocated bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.maxMemoryUsage)}"
+                "Queue `${key.name}`, num records: ${queue.size()}, num bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.currentMemoryUsage)}, allocated bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.maxMemoryUsage)}",
             )
         }
 

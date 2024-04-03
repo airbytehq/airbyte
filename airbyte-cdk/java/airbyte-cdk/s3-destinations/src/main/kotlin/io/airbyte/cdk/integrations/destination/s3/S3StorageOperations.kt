@@ -39,7 +39,7 @@ private val logger = KotlinLogging.logger {}
 open class S3StorageOperations(
     private val nameTransformer: NamingConventionTransformer,
     var s3Client: AmazonS3,
-    private val s3Config: S3DestinationConfig
+    private val s3Config: S3DestinationConfig,
 ) : BlobStorageOperations() {
     private val s3FilenameTemplateManager: S3FilenameTemplateManager = S3FilenameTemplateManager()
 
@@ -354,8 +354,8 @@ open class S3StorageOperations(
                 .replace(Pattern.quote(FORMAT_VARIABLE_MILLISECOND).toRegex(), "[0-9]{4}")
                 .replace(Pattern.quote(FORMAT_VARIABLE_EPOCH).toRegex(), "[0-9]+")
                 .replace(Pattern.quote(FORMAT_VARIABLE_UUID).toRegex(), ".*")
-                .replace("/+".toRegex(), "/") // match part_id and extension at the end
-            + ".*"),
+                .replace("/+".toRegex(), "/") + // match part_id and extension at the end
+            ".*"),
         )
     }
 
@@ -397,7 +397,7 @@ open class S3StorageOperations(
         if (keysToDelete.isNotEmpty()) {
             logger.info {
                 "Deleting objects ${keysToDelete.stream().map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
-                .toList().joinToString(separator = ", ")}"
+                    .toList().joinToString(separator = ", ")}"
             }
             s3Client.deleteObjects(DeleteObjectsRequest(bucket).withKeys(keysToDelete))
         }
@@ -439,6 +439,7 @@ open class S3StorageOperations(
         private const val FORMAT_VARIABLE_EPOCH: String = "\${EPOCH}"
         private const val FORMAT_VARIABLE_UUID: String = "\${UUID}"
         private const val GZ_FILE_EXTENSION: String = "gz"
+
         @VisibleForTesting
         @JvmStatic
         fun getFilename(fullPath: String): String {

@@ -32,9 +32,11 @@ class LocalAirbyteDestination(private val dest: Destination) : AirbyteDestinatio
                 destinationConfig.destinationConnectionConfiguration,
                 Jsons.`object`(
                     Jsons.jsonNode(destinationConfig.catalog),
-                    ConfiguredAirbyteCatalog::class.java
-                )
-            ) { Destination::defaultOutputRecordCollector }
+                    ConfiguredAirbyteCatalog::class.java,
+                ),
+            ) {
+                Destination::defaultOutputRecordCollector
+            }
         consumer!!.start()
     }
 

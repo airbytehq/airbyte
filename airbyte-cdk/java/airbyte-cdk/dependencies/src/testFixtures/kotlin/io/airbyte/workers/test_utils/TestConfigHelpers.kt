@@ -56,7 +56,7 @@ object TestConfigHelpers {
                 .withName("Normalization")
                 .withOperatorType(StandardSyncOperation.OperatorType.NORMALIZATION)
                 .withOperatorNormalization(
-                    OperatorNormalization().withOption(OperatorNormalization.Option.BASIC)
+                    OperatorNormalization().withOption(OperatorNormalization.Option.BASIC),
                 )
                 .withTombstone(false)
 
@@ -70,7 +70,7 @@ object TestConfigHelpers {
                         .withDockerImage("docker")
                         .withDbtArguments("--help")
                         .withGitRepoUrl("git url")
-                        .withGitRepoBranch("git url")
+                        .withGitRepoBranch("git url"),
                 )
                 .withTombstone(false)
 
@@ -82,8 +82,8 @@ object TestConfigHelpers {
                         CatalogHelpers.createAirbyteStream(
                             STREAM_NAME,
                             "namespace",
-                            Field.of(FIELD_NAME, JsonSchemaType.STRING)
-                        )
+                            Field.of(FIELD_NAME, JsonSchemaType.STRING),
+                        ),
                     )
             val streamTwo =
                 ConfiguredAirbyteStream()
@@ -91,8 +91,8 @@ object TestConfigHelpers {
                         CatalogHelpers.createAirbyteStream(
                             STREAM_NAME,
                             "namespace2",
-                            Field.of(FIELD_NAME, JsonSchemaType.STRING)
-                        )
+                            Field.of(FIELD_NAME, JsonSchemaType.STRING),
+                        ),
                     )
 
             val streams = List.of(streamOne, streamTwo)
@@ -103,8 +103,8 @@ object TestConfigHelpers {
                     .withStream(
                         CatalogHelpers.createAirbyteStream(
                             STREAM_NAME,
-                            Field.of(FIELD_NAME, JsonSchemaType.STRING)
-                        )
+                            Field.of(FIELD_NAME, JsonSchemaType.STRING),
+                        ),
                     )
             catalog.withStreams(listOf(stream))
         }

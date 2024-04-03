@@ -109,7 +109,7 @@ object Yamls {
             return AutoCloseableIterators.fromIterator<JsonNode>(
                 iterator,
                 VoidCallable { parser.close() },
-                null
+                null,
             )!!
         } catch (e: IOException) {
             throw RuntimeException(e)

@@ -98,12 +98,12 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         
-        """.trimIndent(),
+            """.trimIndent(),
             schemaName,
             tableName,
             JavaBaseConstants.COLUMN_NAME_AB_ID,
             JavaBaseConstants.COLUMN_NAME_DATA,
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
         )
     }
 
@@ -121,14 +121,14 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s JSONB
         );
         
-        """.trimIndent(),
+            """.trimIndent(),
             schemaName,
             tableName,
             JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
+            JavaBaseConstants.COLUMN_NAME_AB_META,
         )
     }
 
@@ -178,7 +178,7 @@ abstract class JdbcSqlOperations : SqlOperations {
             schemaName,
             dstTableName,
             schemaName,
-            srcTableName
+            srcTableName,
         )
     }
 

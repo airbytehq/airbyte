@@ -59,8 +59,8 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
                 .collect(
                     Collectors.toMap(
                         Function.identity(),
-                        Function { name: String -> getJsonNode(stream, name) }
-                    )
+                        Function { name: String -> getJsonNode(stream, name) },
+                    ),
                 )
 
         return nameToNode.entries
@@ -70,8 +70,8 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
                     Function { obj: Map.Entry<String, JsonNode> -> obj.key },
                     Function { entry: Map.Entry<String, JsonNode> ->
                         getExpectedSchemaType(entry.value)
-                    }
-                )
+                    },
+                ),
             )
     }
 
@@ -86,8 +86,11 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
     private fun getExpectedSchemaType(fieldDefinition: JsonNode): Set<Schema.Type> {
         // The $ref is a migration to V1 data type protocol see well_known_types.yaml
         val typeProperty =
-            if (fieldDefinition["type"] == null) fieldDefinition["\$ref"]
-            else fieldDefinition["type"]
+            if (fieldDefinition["type"] == null) {
+                fieldDefinition["\$ref"]
+            } else {
+                fieldDefinition["type"]
+            }
         val airbyteTypeProperty = fieldDefinition["airbyte_type"]
         val airbyteTypePropertyText = airbyteTypeProperty?.asText()
         return Arrays.stream(JsonSchemaType.entries.toTypedArray())
@@ -113,7 +116,7 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
     private fun readCatalogFromFile(catalogFilename: String): AirbyteCatalog {
         return Jsons.deserialize(
             MoreResources.readResource(catalogFilename),
-            AirbyteCatalog::class.java
+            AirbyteCatalog::class.java,
         )
     }
 
@@ -151,8 +154,8 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
                                 .map { obj: Schema -> obj.type }
                                 .filter { type: Schema.Type -> type != Schema.Type.NULL }
                                 .collect(Collectors.toSet())
-                        }
-                    )
+                        },
+                    ),
                 )
         } else {
             fieldList
@@ -170,8 +173,8 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
                                 .map { obj: Schema -> obj.type }
                                 .filter { type: Schema.Type -> type != Schema.Type.NULL }
                                 .collect(Collectors.toSet())
-                        }
-                    )
+                        },
+                    ),
                 )
         }
     }

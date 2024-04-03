@@ -38,7 +38,7 @@ internal class ConnectorExceptionUtilTest {
             val unknownColumnSQLSyntaxErrorException =
                 SQLSyntaxErrorException(UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE)
             Assertions.assertTrue(
-                ConnectorExceptionUtil.isConfigError(unknownColumnSQLSyntaxErrorException)
+                ConnectorExceptionUtil.isConfigError(unknownColumnSQLSyntaxErrorException),
             )
         }
 
@@ -78,9 +78,9 @@ internal class ConnectorExceptionUtilTest {
                     CONNECTION_ERROR_MESSAGE_TEMPLATE,
                     testCode,
                     errorCode,
-                    CONFIG_EXCEPTION_MESSAGE
+                    CONFIG_EXCEPTION_MESSAGE,
                 ),
-                actualDisplayMessage
+                actualDisplayMessage,
             )
         }
 
@@ -91,7 +91,7 @@ internal class ConnectorExceptionUtilTest {
             val actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(recoveryException)
             Assertions.assertEquals(
                 ConnectorExceptionUtil.RECOVERY_CONNECTION_ERROR_MESSAGE,
-                actualDisplayMessage
+                actualDisplayMessage,
             )
         }
 
@@ -113,9 +113,9 @@ internal class ConnectorExceptionUtilTest {
             Assertions.assertEquals(
                 String.format(
                     ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-                    COMMON_EXCEPTION_MESSAGE
+                    COMMON_EXCEPTION_MESSAGE,
                 ),
-                actualDisplayMessage
+                actualDisplayMessage,
             )
         }
 

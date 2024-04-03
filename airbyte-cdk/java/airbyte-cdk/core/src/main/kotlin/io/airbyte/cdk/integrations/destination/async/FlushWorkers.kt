@@ -128,21 +128,18 @@ constructor(
         logger.info { workerInfo.toString() }
     }
 
-    private fun flush(
-        desc: StreamDescriptor,
-        flushWorkerId: UUID,
-    ) {
+    private fun flush(desc: StreamDescriptor, flushWorkerId: UUID) {
         workerPool.submit {
             logger.info {
                 "Flush Worker (${humanReadableFlushWorkerId(
-                        flushWorkerId,
-                    )}) -- Worker picked up work."
+                    flushWorkerId,
+                )}) -- Worker picked up work."
             }
             try {
                 logger.info {
                     "Flush Worker (${humanReadableFlushWorkerId(
-                            flushWorkerId,
-                        )}) -- Attempting to read from queue namespace: ${desc.namespace}, stream: ${desc.name}."
+                        flushWorkerId,
+                    )}) -- Attempting to read from queue namespace: ${desc.namespace}, stream: ${desc.name}."
                 }
 
                 bufferDequeue.take(desc, flusher.optimalBatchSizeBytes).use { batch ->
@@ -163,10 +160,10 @@ constructor(
                             )
                     logger.info {
                         "Flush Worker (${humanReadableFlushWorkerId(
-                                flushWorkerId,
-                            )}) -- Batch contains: ${batch.data.size} records, ${AirbyteFileUtils.byteCountToDisplaySize(
-                                batch.sizeInBytes,
-                            )} bytes."
+                            flushWorkerId,
+                        )}) -- Batch contains: ${batch.data.size} records, ${AirbyteFileUtils.byteCountToDisplaySize(
+                            batch.sizeInBytes,
+                        )} bytes."
                     }
 
                     flusher.flush(
@@ -181,16 +178,16 @@ constructor(
                 }
                 logger.info {
                     "Flush Worker (${humanReadableFlushWorkerId(
-                            flushWorkerId,
-                        )}) -- Worker finished flushing. Current queue size: ${bufferDequeue.getQueueSizeInRecords(
-                            desc,
-                        ).orElseThrow()}"
+                        flushWorkerId,
+                    )}) -- Worker finished flushing. Current queue size: ${bufferDequeue.getQueueSizeInRecords(
+                        desc,
+                    ).orElseThrow()}"
                 }
             } catch (e: Exception) {
                 logger.error(e) {
                     "Flush Worker (${humanReadableFlushWorkerId(
-                            flushWorkerId,
-                        )}) -- flush worker error: "
+                        flushWorkerId,
+                    )}) -- flush worker error: "
                 }
                 flushFailure.propagateException(e)
                 throw RuntimeException(e)

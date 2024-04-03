@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 class DebeziumShutdownProcedure<T>(
     private val sourceQueue: LinkedBlockingQueue<T>,
     private val debeziumThreadRequestClose: VoidCallable,
-    private val publisherStatusSupplier: Supplier<Boolean>
+    private val publisherStatusSupplier: Supplier<Boolean>,
 ) {
     private val targetQueue = LinkedBlockingQueue<T>()
     private val executorService: ExecutorService
@@ -63,7 +63,7 @@ class DebeziumShutdownProcedure<T>(
         get() {
             if (!hasTransferThreadShutdown) {
                 LOGGER.warn(
-                    "Queue transfer thread has not shut down, some records might be missing."
+                    "Queue transfer thread has not shut down, some records might be missing.",
                 )
             }
             return targetQueue

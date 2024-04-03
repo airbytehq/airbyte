@@ -75,7 +75,7 @@ object DbSourceDiscoverUtil {
                     fullyQualifiedTableName,
                     java.lang.String.join(", ", mismatchedFields.toString()),
                     currentJsonSchema,
-                    catalogSchema
+                    catalogSchema,
                 )
             }
         }
@@ -109,14 +109,14 @@ object DbSourceDiscoverUtil {
                     val primaryKeys =
                         fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
                             fullyQualifiedTableName,
-                            emptyList()
+                            emptyList(),
                         )
                     TableInfo(
                         nameSpace = t.nameSpace,
                         name = t.name,
                         fields = fields,
                         primaryKeys = primaryKeys,
-                        cursorFields = t.cursorFields
+                        cursorFields = t.cursorFields,
                     )
                 }
                 .collect(Collectors.toList())
@@ -134,12 +134,16 @@ object DbSourceDiscoverUtil {
                     CatalogHelpers.createAirbyteStream(
                             tableInfo.name,
                             tableInfo.nameSpace,
-                            tableInfo.fields
+                            tableInfo.fields,
                         )
                         .withSupportedSyncModes(
-                            if (tableInfo.cursorFields != null && tableInfo.cursorFields.isEmpty())
+                            if (
+                                tableInfo.cursorFields != null && tableInfo.cursorFields.isEmpty()
+                            ) {
                                 Lists.newArrayList(SyncMode.FULL_REFRESH)
-                            else Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                            } else {
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                            },
                         )
                         .withSourceDefinedPrimaryKey(primaryKeys)
                 }
@@ -171,7 +175,7 @@ object DbSourceDiscoverUtil {
             return Field.of(
                 commonField.name,
                 airbyteTypeConverter.apply(commonField.type),
-                properties
+                properties,
             )
         } else {
             return Field.of(commonField.name, airbyteTypeConverter.apply(commonField.type))
@@ -199,13 +203,13 @@ object DbSourceDiscoverUtil {
                                         comparisonColumn.name,
                                         nameSpace,
                                         tableName,
-                                        columns
-                                    )
+                                        columns,
+                                    ),
                                 )
                             }
-                        }
+                        },
                     )
-                }
+                },
             )
     }
 }

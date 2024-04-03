@@ -45,6 +45,6 @@ interface Migration<DestinationState : MinimumDestinationState> {
      */
     data class MigrationResult<DestinationState>(
         val updatedDestinationState: DestinationState,
-        val invalidateInitialState: Boolean
+        val invalidateInitialState: Boolean,
     )
 }

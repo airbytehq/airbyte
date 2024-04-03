@@ -46,20 +46,20 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
                     DatabaseDriver.POSTGRESQL ->
                         maybeParseDuration(
                                 connectionProperties[POSTGRES_CONNECT_TIMEOUT_KEY],
-                                ChronoUnit.SECONDS
+                                ChronoUnit.SECONDS,
                             )
                             .or { Optional.of<Duration>(POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION) }
                     DatabaseDriver.MYSQL ->
                         maybeParseDuration(
                             connectionProperties["connectTimeout"],
-                            ChronoUnit.MILLIS
+                            ChronoUnit.MILLIS,
                         )
                     DatabaseDriver.MSSQLSERVER ->
                         maybeParseDuration(connectionProperties["loginTimeout"], ChronoUnit.SECONDS)
                     else ->
                         maybeParseDuration(
                                 connectionProperties[CONNECT_TIMEOUT_KEY],
-                                ChronoUnit.SECONDS
+                                ChronoUnit.SECONDS,
                             ) // Enforce minimum timeout duration for unspecified data sources.
                             .filter { d: Duration -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0 }
                 }

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
  */
 @Deprecated(
     """This manager may be removed in the future if/once all connectors support per-stream
-              state management."""
+              state management.""",
 )
 class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
     AbstractStateManager<DbState?, DbStreamState>(
@@ -33,7 +33,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
         CURSOR_RECORD_COUNT_FUNCTION,
-        NAME_NAMESPACE_PAIR_FUNCTION
+        NAME_NAMESPACE_PAIR_FUNCTION,
     ) {
     /** Tracks whether the connector associated with this state manager supports CDC. */
     private var isCdc: Boolean
@@ -43,7 +43,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
         CdcStateManager(
             dbState.cdcState,
             AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog),
-            null
+            null,
         )
 
     /**
@@ -60,7 +60,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
     override val rawStateMessages: List<AirbyteStateMessage?>?
         get() {
             throw UnsupportedOperationException(
-                "Raw state retrieval not supported by global state manager."
+                "Raw state retrieval not supported by global state manager.",
             )
         }
 

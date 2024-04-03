@@ -33,19 +33,19 @@ open class JdbcSourceOperations :
 
         when (columnType) {
             JDBCType.BIT,
-            JDBCType.BOOLEAN -> putBoolean(json!!, columnName, resultSet, colIndex)
+            JDBCType.BOOLEAN, -> putBoolean(json!!, columnName, resultSet, colIndex)
             JDBCType.TINYINT,
-            JDBCType.SMALLINT -> putShortInt(json!!, columnName, resultSet, colIndex)
+            JDBCType.SMALLINT, -> putShortInt(json!!, columnName, resultSet, colIndex)
             JDBCType.INTEGER -> putInteger(json!!, columnName, resultSet, colIndex)
             JDBCType.BIGINT -> putBigInt(json!!, columnName, resultSet, colIndex)
             JDBCType.FLOAT,
-            JDBCType.DOUBLE -> putDouble(json!!, columnName, resultSet, colIndex)
+            JDBCType.DOUBLE, -> putDouble(json!!, columnName, resultSet, colIndex)
             JDBCType.REAL -> putFloat(json!!, columnName, resultSet, colIndex)
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> putBigDecimal(json!!, columnName, resultSet, colIndex)
+            JDBCType.DECIMAL, -> putBigDecimal(json!!, columnName, resultSet, colIndex)
             JDBCType.CHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR -> putString(json!!, columnName, resultSet, colIndex)
+            JDBCType.LONGVARCHAR, -> putString(json!!, columnName, resultSet, colIndex)
             JDBCType.DATE -> putDate(json!!, columnName, resultSet, colIndex)
             JDBCType.TIME -> putTime(json!!, columnName, resultSet, colIndex)
             JDBCType.TIMESTAMP -> putTimestamp(json!!, columnName, resultSet, colIndex)
@@ -54,7 +54,7 @@ open class JdbcSourceOperations :
             JDBCType.BLOB,
             JDBCType.BINARY,
             JDBCType.VARBINARY,
-            JDBCType.LONGVARBINARY -> putBinary(json!!, columnName, resultSet, colIndex)
+            JDBCType.LONGVARBINARY, -> putBinary(json!!, columnName, resultSet, colIndex)
             JDBCType.ARRAY -> putArray(json!!, columnName, resultSet, colIndex)
             else -> putDefault(json!!, columnName, resultSet, colIndex)
         }
@@ -78,24 +78,24 @@ open class JdbcSourceOperations :
             JDBCType.BIT -> setBit(preparedStatement, parameterIndex, value)
             JDBCType.BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value!!)
             JDBCType.TINYINT,
-            JDBCType.SMALLINT -> setShortInt(preparedStatement, parameterIndex, value!!)
+            JDBCType.SMALLINT, -> setShortInt(preparedStatement, parameterIndex, value!!)
             JDBCType.INTEGER -> setInteger(preparedStatement, parameterIndex, value!!)
             JDBCType.BIGINT -> setBigInteger(preparedStatement, parameterIndex, value!!)
             JDBCType.FLOAT,
-            JDBCType.DOUBLE -> setDouble(preparedStatement, parameterIndex, value!!)
+            JDBCType.DOUBLE, -> setDouble(preparedStatement, parameterIndex, value!!)
             JDBCType.REAL -> setReal(preparedStatement, parameterIndex, value!!)
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> setDecimal(preparedStatement, parameterIndex, value!!)
+            JDBCType.DECIMAL, -> setDecimal(preparedStatement, parameterIndex, value!!)
             JDBCType.CHAR,
             JDBCType.NCHAR,
             JDBCType.NVARCHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR -> setString(preparedStatement, parameterIndex, value)
+            JDBCType.LONGVARCHAR, -> setString(preparedStatement, parameterIndex, value)
             JDBCType.BINARY,
-            JDBCType.BLOB -> setBinary(preparedStatement, parameterIndex, value)
+            JDBCType.BLOB, -> setBinary(preparedStatement, parameterIndex, value)
             else ->
                 throw IllegalArgumentException(
-                    String.format("%s cannot be used as a cursor.", cursorFieldType)
+                    String.format("%s cannot be used as a cursor.", cursorFieldType),
                 )
         }
     }
@@ -136,8 +136,8 @@ open class JdbcSourceOperations :
                     field[JdbcConstants.INTERNAL_COLUMN_NAME],
                     field[JdbcConstants.INTERNAL_SCHEMA_NAME],
                     field[JdbcConstants.INTERNAL_TABLE_NAME],
-                    field[JdbcConstants.INTERNAL_COLUMN_TYPE]
-                )
+                    field[JdbcConstants.INTERNAL_COLUMN_TYPE],
+                ),
             )
             return JDBCType.VARCHAR
         }
@@ -150,28 +150,28 @@ open class JdbcSourceOperations :
     override fun getAirbyteType(jdbcType: JDBCType): JsonSchemaType {
         return when (jdbcType) {
             JDBCType.BIT,
-            JDBCType.BOOLEAN -> JsonSchemaType.BOOLEAN
+            JDBCType.BOOLEAN, -> JsonSchemaType.BOOLEAN
             JDBCType.TINYINT,
-            JDBCType.SMALLINT -> JsonSchemaType.INTEGER
+            JDBCType.SMALLINT, -> JsonSchemaType.INTEGER
             JDBCType.INTEGER -> JsonSchemaType.INTEGER
             JDBCType.BIGINT -> JsonSchemaType.INTEGER
             JDBCType.FLOAT,
-            JDBCType.DOUBLE -> JsonSchemaType.NUMBER
+            JDBCType.DOUBLE, -> JsonSchemaType.NUMBER
             JDBCType.REAL -> JsonSchemaType.NUMBER
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> JsonSchemaType.NUMBER
+            JDBCType.DECIMAL, -> JsonSchemaType.NUMBER
             JDBCType.CHAR,
             JDBCType.NCHAR,
             JDBCType.NVARCHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR -> JsonSchemaType.STRING
+            JDBCType.LONGVARCHAR, -> JsonSchemaType.STRING
             JDBCType.DATE -> JsonSchemaType.STRING
             JDBCType.TIME -> JsonSchemaType.STRING
             JDBCType.TIMESTAMP -> JsonSchemaType.STRING
             JDBCType.BLOB,
             JDBCType.BINARY,
             JDBCType.VARBINARY,
-            JDBCType.LONGVARBINARY -> JsonSchemaType.STRING_BASE_64
+            JDBCType.LONGVARBINARY, -> JsonSchemaType.STRING_BASE_64
             JDBCType.ARRAY -> JsonSchemaType.ARRAY
             else -> JsonSchemaType.STRING
         }

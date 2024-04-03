@@ -49,7 +49,7 @@ interface IntegrationLauncher {
             catalogFilename,
             catalogContents,
             null,
-            null
+            null,
         )
     }
 

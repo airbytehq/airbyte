@@ -48,7 +48,7 @@ private val logger = KotlinLogging.logger {}
 class ParquetSerializedBuffer(
     config: S3DestinationConfig,
     stream: AirbyteStreamNameNamespacePair,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
 ) : SerializableBuffer {
     private val avroRecordFactory: AvroRecordFactory
     private val parquetWriter: ParquetWriter<GenericData.Record>
@@ -89,11 +89,11 @@ class ParquetSerializedBuffer(
             AvroParquetWriter.builder<GenericData.Record>(
                     HadoopOutputFile.fromPath(
                         org.apache.hadoop.fs.Path(bufferFile.toUri()),
-                        avroConfig
+                        avroConfig,
                     ),
                 )
                 .withConf(
-                    avroConfig
+                    avroConfig,
                 ) // yes, this should be here despite the fact we pass this config above in path
                 .withSchema(schema)
                 .withCompressionCodec(formatConfig.compressionCodec)
@@ -122,7 +122,7 @@ class ParquetSerializedBuffer(
     @Throws(Exception::class)
     override fun accept(recordString: String, airbyteMetaString: String, emittedAt: Long): Long {
         throw UnsupportedOperationException(
-            "This method is not supported for ParquetSerializedBuffer"
+            "This method is not supported for ParquetSerializedBuffer",
         )
     }
 
@@ -133,7 +133,7 @@ class ParquetSerializedBuffer(
             parquetWriter.close()
             inputStream = FileInputStream(bufferFile.toFile())
             logger.info {
-                "Finished writing data to ${filename} (${FileUtils.byteCountToDisplaySize(byteCount)})"
+                "Finished writing data to $filename (${FileUtils.byteCountToDisplaySize(byteCount)})"
             }
         }
     }
@@ -183,7 +183,8 @@ class ParquetSerializedBuffer(
         fun createFunction(s3DestinationConfig: S3DestinationConfig): BufferCreateFunction {
             return BufferCreateFunction {
                 stream: AirbyteStreamNameNamespacePair,
-                catalog: ConfiguredAirbyteCatalog ->
+                catalog: ConfiguredAirbyteCatalog,
+                ->
                 ParquetSerializedBuffer(
                     s3DestinationConfig,
                     stream,

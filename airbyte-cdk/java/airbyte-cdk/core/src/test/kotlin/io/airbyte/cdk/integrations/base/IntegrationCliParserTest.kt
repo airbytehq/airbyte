@@ -35,7 +35,7 @@ internal class IntegrationCliParserTest {
         val actual = IntegrationCliParser().parse(args)
         Assertions.assertEquals(
             IntegrationConfig.write(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME)),
-            actual
+            actual,
         )
     }
 
@@ -45,7 +45,7 @@ internal class IntegrationCliParserTest {
         val actual = IntegrationCliParser().parse(args)
         Assertions.assertEquals(
             IntegrationConfig.read(Path.of(CONFIG_FILENAME), Path.of(CATALOG_FILENAME), null),
-            actual
+            actual,
         )
     }
 
@@ -59,16 +59,16 @@ internal class IntegrationCliParserTest {
                 "--catalog",
                 CATALOG_FILENAME,
                 "--state",
-                STATE_FILENAME
+                STATE_FILENAME,
             )
         val actual = IntegrationCliParser().parse(args)
         Assertions.assertEquals(
             IntegrationConfig.read(
                 Path.of(CONFIG_FILENAME),
                 Path.of(CATALOG_FILENAME),
-                Path.of(STATE_FILENAME)
+                Path.of(STATE_FILENAME),
             ),
-            actual
+            actual,
         )
     }
 

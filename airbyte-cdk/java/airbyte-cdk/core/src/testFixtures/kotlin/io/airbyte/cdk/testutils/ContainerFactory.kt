@@ -32,11 +32,11 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     private data class ContainerKey<C : GenericContainer<*>>(
         val clazz: Class<out ContainerFactory<*>>,
         val imageName: DockerImageName,
-        val methods: kotlin.collections.List<String>
+        val methods: kotlin.collections.List<String>,
     )
 
     private class ContainerOrException(
-        private val containerSupplier: Supplier<GenericContainer<*>>
+        private val containerSupplier: Supplier<GenericContainer<*>>,
     ) {
         @Volatile private lateinit var _exception: RuntimeException
 
@@ -73,8 +73,8 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 "testcontainer %s (%s[%s]):".formatted(
                     containerId!!.incrementAndGet(),
                     imageName,
-                    StringUtils.join(containerModifiers, ",")
-                )
+                    StringUtils.join(containerModifiers, ","),
+                ),
             )
             .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND)
     }
@@ -95,7 +95,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
             imageName,
             Stream.of(*methods)
                 .map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
-                .toList()
+                .toList(),
         )
     }
 
@@ -112,7 +112,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
             ContainerKey<C>(
                 javaClass,
                 DockerImageName.parse(imageName),
-                namedContainerModifiers.map { it.name() }.toList()
+                namedContainerModifiers.map { it.name() }.toList(),
             )
         // We deliberately avoid creating the container itself eagerly during the evaluation of the
         // map
@@ -139,7 +139,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
             imageName,
             Stream.of(*methods)
                 .map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
-                .toList()
+                .toList(),
         )
     }
 
@@ -205,7 +205,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         LOGGER!!.info(
             "Creating new container based on {} with {}.",
             imageName,
-            Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c!!.name() }
+            Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c!!.name() },
         )
         val container = createNewContainer(imageName)
         val logConsumer: Slf4jLogConsumer =
@@ -218,7 +218,8 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
             }
         getTestContainerLogMdcBuilder(imageName, namedContainerModifiers)!!.produceMappings {
             key: String?,
-            value: String? ->
+            value: String?,
+            ->
             logConsumer.withMdc(key, value)
         }
         container!!.withLogConsumer(logConsumer)
@@ -227,7 +228,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 "Calling {} in {} on new container based on {}.",
                 resolvedNamedContainerModifier!!.name(),
                 javaClass.name,
-                imageName
+                imageName,
             )
             resolvedNamedContainerModifier.modifier()!!.accept(container)
         }

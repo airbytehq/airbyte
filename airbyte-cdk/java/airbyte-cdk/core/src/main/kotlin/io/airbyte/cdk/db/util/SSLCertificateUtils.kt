@@ -41,7 +41,7 @@ object SSLCertificateUtils {
         IOException::class,
         CertificateException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     private fun saveKeyStoreToFile(
         keyStore: KeyStore,
@@ -82,7 +82,7 @@ object SSLCertificateUtils {
         KeyStoreException::class,
         CertificateException::class,
         IOException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromCertificate(
         cert: Certificate?,
@@ -101,7 +101,7 @@ object SSLCertificateUtils {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromCertificate(
         certString: String,
@@ -113,7 +113,7 @@ object SSLCertificateUtils {
             fromPEMString(certString),
             keyStorePassword,
             filesystem,
-            directory
+            directory,
         )
     }
 
@@ -121,7 +121,7 @@ object SSLCertificateUtils {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromCertificate(certString: String, keyStorePassword: String): URI {
         return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword, null, null)
@@ -131,7 +131,7 @@ object SSLCertificateUtils {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromCertificate(
         certString: String,
@@ -142,7 +142,7 @@ object SSLCertificateUtils {
             certString,
             keyStorePassword,
             FileSystems.getDefault(),
-            directory
+            directory,
         )
     }
 
@@ -150,7 +150,7 @@ object SSLCertificateUtils {
         KeyStoreException::class,
         CertificateException::class,
         IOException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromClientCertificate(
         cert: Certificate,
@@ -165,7 +165,7 @@ object SSLCertificateUtils {
             KEYSTORE_ENTRY_PREFIX,
             key,
             keyStorePassword.toCharArray(),
-            arrayOf(cert)
+            arrayOf(cert),
         )
         return saveKeyStoreToFile(keyStore, keyStorePassword, filesystem, directory)
     }
@@ -176,7 +176,7 @@ object SSLCertificateUtils {
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
         CertificateException::class,
-        KeyStoreException::class
+        KeyStoreException::class,
     )
     fun keyStoreFromClientCertificate(
         certString: String,
@@ -206,7 +206,7 @@ object SSLCertificateUtils {
                 pkcs8Key.toAbsolutePath() +
                 " -nocrypt -passout pass:" +
                 keyStorePassword,
-            Runtime.getRuntime()
+            Runtime.getRuntime(),
         )
 
         val spec = PKCS8EncodedKeySpec(Files.readAllBytes(pkcs8Key))
@@ -226,7 +226,7 @@ object SSLCertificateUtils {
             privateKey,
             keyStorePassword,
             filesystem,
-            directory
+            directory,
         )
     }
 
@@ -237,7 +237,7 @@ object SSLCertificateUtils {
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
         KeyStoreException::class,
-        InterruptedException::class
+        InterruptedException::class,
     )
     fun keyStoreFromClientCertificate(
         certString: String,
@@ -250,7 +250,7 @@ object SSLCertificateUtils {
             keyString,
             keyStorePassword,
             FileSystems.getDefault(),
-            directory
+            directory,
         )
     }
 
@@ -259,7 +259,7 @@ object SSLCertificateUtils {
             val factory = CertificateFactory.getInstance(X509)
             val trustedCa =
                 factory.generateCertificate(
-                    ByteArrayInputStream(caCertificate.toByteArray(StandardCharsets.UTF_8))
+                    ByteArrayInputStream(caCertificate.toByteArray(StandardCharsets.UTF_8)),
                 )
             val trustStore = KeyStore.getInstance(PKCS_12)
             trustStore.load(null, null)

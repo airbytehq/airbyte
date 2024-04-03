@@ -31,12 +31,12 @@ object YamlListToStandardDefinitions {
         java.util.Map.ofEntries(
             AbstractMap.SimpleImmutableEntry(
                 StandardDestinationDefinition::class.java.canonicalName,
-                "destinationDefinitionId"
+                "destinationDefinitionId",
             ),
             AbstractMap.SimpleImmutableEntry(
                 StandardSourceDefinition::class.java.canonicalName,
-                "sourceDefinitionId"
-            )
+                "sourceDefinitionId",
+            ),
         )
 
     fun toStandardSourceDefinitions(yamlStr: String?): List<StandardSourceDefinition> {

@@ -31,7 +31,7 @@ open class StreamStateManager
  */
 (
     private val rawAirbyteStateMessages: List<AirbyteStateMessage>,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
@@ -41,12 +41,12 @@ open class StreamStateManager
         StateGeneratorUtils.CURSOR_FUNCTION,
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,
-        StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION
+        StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION,
     ) {
     override val cdcStateManager: CdcStateManager
         get() {
             throw UnsupportedOperationException(
-                "CDC state management not supported by stream state manager."
+                "CDC state management not supported by stream state manager.",
             )
         }
 
@@ -62,19 +62,19 @@ open class StreamStateManager
                 LOGGER.debug("Generating state message for {}...", pair)
                 return AirbyteStateMessage()
                     .withType(
-                        AirbyteStateMessage.AirbyteStateType.STREAM
+                        AirbyteStateMessage.AirbyteStateType.STREAM,
                     ) // Temporarily include legacy state for backwards compatibility with the
                     // platform
                     .withData(
-                        Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap))
+                        Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap)),
                     )
                     .withStream(
-                        StateGeneratorUtils.generateStreamState(pair.get(), cursorInfo.get())
+                        StateGeneratorUtils.generateStreamState(pair.get(), cursorInfo.get()),
                     )
             } else {
                 LOGGER.warn(
                     "Cursor information could not be located in state for stream {}.  Returning a new, empty state message...",
-                    pair
+                    pair,
                 )
                 return AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)

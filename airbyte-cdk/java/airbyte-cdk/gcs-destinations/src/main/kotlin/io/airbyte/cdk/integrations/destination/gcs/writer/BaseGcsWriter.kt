@@ -32,7 +32,7 @@ abstract class BaseGcsWriter
 protected constructor(
     protected val config: GcsDestinationConfig,
     protected val s3Client: AmazonS3,
-    configuredStream: ConfiguredAirbyteStream
+    configuredStream: ConfiguredAirbyteStream,
 ) : DestinationFileWriter {
     protected val stream: AirbyteStream = configuredStream.stream
     protected val syncMode: DestinationSyncMode? = configuredStream.destinationSyncMode
@@ -64,7 +64,7 @@ protected constructor(
                 if (keysToDelete.size > 0) {
                     LOGGER.info(
                         "Purging non-empty output path for stream '{}' under OVERWRITE mode...",
-                        stream.name
+                        stream.name,
                     )
                     // Google Cloud Storage doesn't accept request to delete multiple objects
                     for (keyToDelete in keysToDelete) {
@@ -73,7 +73,7 @@ protected constructor(
                     LOGGER.info(
                         "Deleted {} file(s) for stream '{}'.",
                         keysToDelete.size,
-                        stream.name
+                        stream.name,
                     )
                 }
                 LOGGER.info("Overwrite is finished")
@@ -136,7 +136,7 @@ protected constructor(
                 "%s_%d_0.%s",
                 formatter.format(timestamp),
                 timestamp.time,
-                format.fileExtension
+                format.fileExtension,
             )
         }
     }

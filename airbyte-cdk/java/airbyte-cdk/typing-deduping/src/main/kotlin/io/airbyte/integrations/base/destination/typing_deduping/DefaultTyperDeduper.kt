@@ -47,7 +47,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     parsedCatalog: ParsedCatalog,
     v1V2Migrator: DestinationV1V2Migrator,
     v2TableMigrator: V2TableMigrator,
-    migrations: List<Migration<DestinationState>>
+    migrations: List<Migration<DestinationState>>,
 ) : TyperDeduper {
     private val destinationHandler: DestinationHandler<DestinationState>
 
@@ -90,7 +90,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 FutureUtils.countOfTypeAndDedupeThreads,
                 BasicThreadFactory.Builder()
                     .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
-                    .build()
+                    .build(),
             )
     }
 
@@ -99,14 +99,14 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         destinationHandler: DestinationHandler<DestinationState>,
         parsedCatalog: ParsedCatalog,
         v1V2Migrator: DestinationV1V2Migrator,
-        migrations: List<Migration<DestinationState>>
+        migrations: List<Migration<DestinationState>>,
     ) : this(
         sqlGenerator,
         destinationHandler,
         parsedCatalog,
         v1V2Migrator,
         NoopV2TableMigrator(),
-        migrations
+        migrations,
     )
 
     @Throws(Exception::class)
@@ -123,7 +123,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             destinationHandler,
             v1V2Migrator,
             v2TableMigrator,
-            parsedCatalog
+            parsedCatalog,
         )
 
         destinationInitialStatuses =
@@ -131,7 +131,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 executorService,
                 destinationHandler,
                 migrations,
-                destinationHandler.gatherInitialState(parsedCatalog.streams)
+                destinationHandler.gatherInitialState(parsedCatalog.streams),
             )
 
         // Commit our destination states immediately.
@@ -143,7 +143,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         // reset flag
         // and finish it for us.
         destinationHandler.commitDestinationStates(
-            destinationInitialStatuses.associate { it.streamConfig.id to it.destinationState }
+            destinationInitialStatuses.associate { it.streamConfig.id to it.destinationState },
         )
     }
 
@@ -155,20 +155,20 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
         val prepareTablesFutureResult =
             CompletableFutures.allOf(
-                    destinationInitialStatuses.map { this.prepareTablesFuture(it) }.toList()
+                    destinationInitialStatuses.map { this.prepareTablesFuture(it) }.toList(),
                 )
                 .toCompletableFuture()
                 .join()
         getResultsOrLogAndThrowFirst(
             "The following exceptions were thrown attempting to prepare tables:\n",
-            prepareTablesFutureResult
+            prepareTablesFutureResult,
         )
 
         // If we get here, then we've executed all soft resets. Force the soft reset flag to false.
         destinationHandler.commitDestinationStates(
             destinationInitialStatuses.associate {
                 it.streamConfig.id to it.destinationState.withSoftReset(false)
-            }
+            },
         )
     }
 
@@ -198,17 +198,17 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                                     sqlGenerator.createTable(
                                         stream,
                                         TMP_OVERWRITE_TABLE_SUFFIX,
-                                        true
-                                    )
+                                        true,
+                                    ),
                                 )
                                 LOGGER.info(
                                     "Using temp final table for stream {}, will overwrite existing table at end of sync",
-                                    stream.id!!.finalName
+                                    stream.id!!.finalName,
                                 )
                             } else {
                                 LOGGER.info(
                                     "Final Table for stream {} is empty and matches the expected v2 format, writing to table directly",
-                                    stream.id!!.finalName
+                                    stream.id!!.finalName,
                                 )
                             }
                         } else if (
@@ -222,24 +222,24 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                             TypeAndDedupeTransaction.executeSoftReset(
                                 sqlGenerator,
                                 destinationHandler,
-                                stream
+                                stream,
                             )
                         }
                     } else {
                         LOGGER.info(
                             "Final Table does not exist for stream {}, creating.",
-                            stream.id!!.finalName
+                            stream.id!!.finalName,
                         )
                         // The table doesn't exist. Create it. Don't force.
                         destinationHandler.execute(
-                            sqlGenerator.createTable(stream, NO_SUFFIX, false)
+                            sqlGenerator.createTable(stream, NO_SUFFIX, false),
                         )
                     }
 
                     initialRawTableStateByStream[stream.id] = initialState.initialRawTableStatus
 
                     streamsWithSuccessfulSetup.add(
-                        Pair.of(stream.id!!.originalNamespace, stream.id!!.originalName)
+                        Pair.of(stream.id!!.originalNamespace, stream.id!!.originalName),
                     )
 
                     // Use fair locking. This slows down lock operations, but that performance hit
@@ -259,12 +259,12 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     LOGGER.error(
                         "Exception occurred while preparing tables for stream " +
                             stream.id!!.originalName,
-                        e
+                        e,
                     )
                     throw RuntimeException(e)
                 }
             },
-            this.executorService
+            this.executorService,
         )
     }
 
@@ -277,8 +277,8 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             String.format(
                 "The Following Exceptions were thrown while typing and deduping %s.%s:\n",
                 originalNamespace,
-                originalName
-            )
+                originalName,
+            ),
         )
     }
 
@@ -297,7 +297,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             LOGGER.warn(
                 "Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.",
                 originalNamespace,
-                originalName
+                originalName,
             )
             return false
         }
@@ -333,7 +333,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info(
                             "Waiting for raw table writes to pause for {}.{}",
                             originalNamespace,
-                            originalName
+                            originalName,
                         )
                         val externalLock = tdLocks[streamConfig.id]!!.writeLock()
                         externalLock.lock()
@@ -345,13 +345,13 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                                 destinationHandler,
                                 streamConfig,
                                 initialRawTableStatus.maxProcessedTimestamp,
-                                getFinalTableSuffix(streamConfig.id)
+                                getFinalTableSuffix(streamConfig.id),
                             )
                         } finally {
                             LOGGER.info(
                                 "Allowing other threads to proceed for {}.{}",
                                 originalNamespace,
-                                originalName
+                                originalName,
                             )
                             externalLock.unlock()
                             internalLock.unlock()
@@ -360,19 +360,19 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info(
                             "Another thread is already trying to run typing and deduping for {}.{}. Skipping it here.",
                             originalNamespace,
-                            originalName
+                            originalName,
                         )
                     }
                     return@supplyAsync Optional.empty<Exception>()
                 } catch (e: Exception) {
                     LOGGER.error(
                         "Exception occurred while typing and deduping stream $originalName",
-                        e
+                        e,
                     )
                     return@supplyAsync Optional.of<Exception>(e)
                 }
             },
-            this.executorService
+            this.executorService,
         )
     }
 
@@ -391,7 +391,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 val streamSyncSummary =
                     streamSyncSummaries.getOrDefault(
                         streamConfig!!.id!!.asStreamDescriptor(),
-                        StreamSyncSummary.DEFAULT
+                        StreamSyncSummary.DEFAULT,
                     )
                 val nonzeroRecords =
                     streamSyncSummary.recordsWritten
@@ -411,7 +411,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     LOGGER.info(
                         "Skipping typing and deduping for stream {}.{} because it had no records during this sync and no unprocessed records from a previous sync.",
                         streamConfig.id!!.originalNamespace,
-                        streamConfig.id!!.originalName
+                        streamConfig.id!!.originalName,
                     )
                 }
                 shouldRunTypingDeduping
@@ -422,7 +422,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         CompletableFuture.allOf(*typeAndDedupeTasks.toTypedArray()).join()
         FutureUtils.reduceExceptions(
             typeAndDedupeTasks,
-            "The Following Exceptions were thrown while typing and deduping tables:\n"
+            "The Following Exceptions were thrown while typing and deduping tables:\n",
         )
     }
 
@@ -439,13 +439,13 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         for (streamConfig in parsedCatalog.streams) {
             if (
                 !streamsWithSuccessfulSetup.contains(
-                    Pair.of(streamConfig!!.id!!.originalNamespace, streamConfig.id!!.originalName)
+                    Pair.of(streamConfig!!.id!!.originalNamespace, streamConfig.id!!.originalName),
                 )
             ) {
                 LOGGER.warn(
                     "Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
                     streamConfig.id!!.originalNamespace,
-                    streamConfig.id!!.originalName
+                    streamConfig.id!!.originalName,
                 )
                 continue
             }
@@ -456,7 +456,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         CompletableFuture.allOf(*tableCommitTasks.toTypedArray()).join()
         FutureUtils.reduceExceptions(
             tableCommitTasks,
-            "The Following Exceptions were thrown while committing final tables:\n"
+            "The Following Exceptions were thrown while committing final tables:\n",
         )
     }
 
@@ -473,7 +473,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     LOGGER.info(
                         "Overwriting final table with tmp table for stream {}.{}",
                         streamId!!.originalNamespace,
-                        streamId.originalName
+                        streamId.originalName,
                     )
                     try {
                         destinationHandler.execute(overwriteFinalTable)
@@ -481,20 +481,23 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.error(
                             "Exception Occurred while committing final table for stream " +
                                 streamId.originalName,
-                            e
+                            e,
                         )
                         return@supplyAsync Optional.of(e)
                     }
                 }
                 return@supplyAsync Optional.empty<Exception?>()
             },
-            this.executorService
+            this.executorService,
         )
     }
 
     private fun getFinalTableSuffix(streamId: StreamId?): String {
-        return if (overwriteStreamsWithTmpTable!!.contains(streamId)) TMP_OVERWRITE_TABLE_SUFFIX
-        else NO_SUFFIX
+        return if (overwriteStreamsWithTmpTable!!.contains(streamId)) {
+            TMP_OVERWRITE_TABLE_SUFFIX
+        } else {
+            NO_SUFFIX
+        }
     }
 
     override fun cleanup() {

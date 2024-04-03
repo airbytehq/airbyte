@@ -67,7 +67,7 @@ internal constructor(
     private val catalog: ConfiguredAirbyteCatalog?,
     private val isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>,
     private val bufferFlushFrequency: Duration,
-    private val defaultNamespace: String?
+    private val defaultNamespace: String?,
 ) : FailureTrackingAirbyteMessageConsumer(), AirbyteMessageConsumer {
     private val streamNames: Set<AirbyteStreamNameNamespacePair> =
         AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog)
@@ -92,7 +92,7 @@ internal constructor(
         bufferingStrategy: BufferingStrategy,
         onClose: OnCloseFunction,
         catalog: ConfiguredAirbyteCatalog?,
-        isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>
+        isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>,
     ) : this(
         outputRecordCollector,
         onStart,
@@ -101,11 +101,11 @@ internal constructor(
         catalog,
         isValidRecord,
         Duration.ofMinutes(
-            15
+            15,
         ), // This is purely for backwards compatibility. Many older destinations handle this
         // internally.
         // Starting with Destinations V2, we recommend passing in an explicit namespace.
-        null
+        null,
     )
 
     constructor(
@@ -115,7 +115,7 @@ internal constructor(
         onClose: OnCloseFunction,
         catalog: ConfiguredAirbyteCatalog?,
         isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>,
-        defaultNamespace: String?
+        defaultNamespace: String?,
     ) : this(
         outputRecordCollector,
         onStart,
@@ -124,7 +124,7 @@ internal constructor(
         catalog,
         isValidRecord,
         Duration.ofMinutes(15),
-        defaultNamespace
+        defaultNamespace,
     )
 
     @Throws(Exception::class)
@@ -248,12 +248,12 @@ internal constructor(
         Preconditions.checkState(!hasClosed, "Has already closed.")
         hasClosed = true
 
-        streamToIgnoredRecordCount.forEach { (pair: AirbyteStreamNameNamespacePair?, count: Long?)
+        streamToIgnoredRecordCount.forEach { (pair: AirbyteStreamNameNamespacePair?, count: Long?),
             ->
             LOGGER.warn(
                 "A total of {} record(s) of data from stream {} were invalid and were ignored.",
                 count,
-                pair
+                pair,
             )
         }
         if (hasFailed) {
@@ -309,8 +309,8 @@ internal constructor(
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                     Jsons.serialize(catalog),
-                    Jsons.serialize(message)
-                )
+                    Jsons.serialize(message),
+                ),
             )
         }
     }

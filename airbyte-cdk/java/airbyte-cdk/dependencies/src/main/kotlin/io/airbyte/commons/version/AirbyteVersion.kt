@@ -43,9 +43,9 @@ class AirbyteVersion : Version {
                 """
                         Version mismatch between %s and %s.
                         Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte
-                        """.trimIndent(),
+                """.trimIndent(),
                 version1.serialize(),
-                version2.serialize()
+                version2.serialize(),
             )
         }
 

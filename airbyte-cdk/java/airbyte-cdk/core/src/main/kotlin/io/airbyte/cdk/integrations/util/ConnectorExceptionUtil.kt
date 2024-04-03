@@ -46,7 +46,7 @@ object ConnectorExceptionUtil {
         } else {
             String.format(
                 COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-                if (e!!.message != null) e.message else ""
+                if (e!!.message != null) e.message else "",
             )
         }
     }

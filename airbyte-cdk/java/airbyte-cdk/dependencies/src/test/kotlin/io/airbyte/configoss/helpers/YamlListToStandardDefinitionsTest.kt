@@ -63,7 +63,7 @@ internal class YamlListToStandardDefinitionsTest {
             val defs =
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    GOOD_DES_DEF_YAML
+                    GOOD_DES_DEF_YAML,
                 )
             Assertions.assertEquals(1, defs.size)
             Assertions.assertEquals("Local JSON", defs[0].name)
@@ -74,7 +74,7 @@ internal class YamlListToStandardDefinitionsTest {
             Assertions.assertThrows(RuntimeException::class.java) {
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    DUPLICATE_ID
+                    DUPLICATE_ID,
                 )
             }
         }
@@ -84,7 +84,7 @@ internal class YamlListToStandardDefinitionsTest {
             Assertions.assertThrows(RuntimeException::class.java) {
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    DUPLICATE_NAME
+                    DUPLICATE_NAME,
                 )
             }
         }
@@ -94,7 +94,7 @@ internal class YamlListToStandardDefinitionsTest {
             Assertions.assertThrows(RuntimeException::class.java) {
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    ""
+                    "",
                 )
             }
         }
@@ -104,7 +104,7 @@ internal class YamlListToStandardDefinitionsTest {
             Assertions.assertThrows(RuntimeException::class.java) {
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    BAD_DATA
+                    BAD_DATA,
                 )
             }
         }

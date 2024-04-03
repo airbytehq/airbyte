@@ -29,7 +29,7 @@ data class Union(val options: List<AirbyteType>) : AirbyteType {
         val numObjectOptions = options.filterIsInstance<Struct>().count()
         if (numObjectOptions > 1) {
             AirbyteType.LOGGER.error(
-                "Can't extract columns from a schema with multiple object options"
+                "Can't extract columns from a schema with multiple object options",
             )
             return LinkedHashMap()
         }

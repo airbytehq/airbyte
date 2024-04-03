@@ -33,8 +33,8 @@ abstract class GcsBaseCsvDestinationAcceptanceTest : GcsDestinationAcceptanceTes
                     "flattening",
                     Flattening.ROOT_LEVEL.value,
                     "compression",
-                    Jsons.jsonNode(java.util.Map.of("compression_type", "No Compression"))
-                )
+                    Jsons.jsonNode(java.util.Map.of("compression_type", "No Compression")),
+                ),
             )
 
     @Throws(IOException::class)

@@ -80,9 +80,9 @@ internal class AutoCloseableIteratorsTest {
             CompositeIterator(
                 java.util.List.of(
                     AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1, null),
-                    AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2, null)
+                    AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2, null),
                 ),
-                null
+                null,
             )
 
         assertOnCloseInvocations(listOf(), java.util.List.of(onClose1, onClose2))

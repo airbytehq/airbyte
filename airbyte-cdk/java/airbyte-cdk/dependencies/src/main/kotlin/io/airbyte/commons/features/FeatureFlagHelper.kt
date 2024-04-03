@@ -19,7 +19,7 @@ object FeatureFlagHelper {
             featureFlags,
             { obj: FeatureFlags -> obj.fieldSelectionWorkspaces() },
             workspaceId,
-            "field selection"
+            "field selection",
         ) || featureFlags.applyFieldSelection())
     }
 

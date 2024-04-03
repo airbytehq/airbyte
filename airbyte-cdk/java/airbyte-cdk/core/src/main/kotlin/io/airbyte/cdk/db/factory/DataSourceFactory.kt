@@ -150,7 +150,7 @@ object DataSourceFactory {
     private constructor(
         private var username: String?,
         private var password: String?,
-        private var driverClassName: String
+        private var driverClassName: String,
     ) {
         private var connectionProperties: Map<String, String> = java.util.Map.of()
         private var database: String? = null
@@ -166,7 +166,7 @@ object DataSourceFactory {
             username: String?,
             password: String?,
             driverClassName: String,
-            jdbcUrl: String?
+            jdbcUrl: String?,
         ) : this(username, password, driverClassName) {
             this.jdbcUrl = jdbcUrl
         }
@@ -177,7 +177,7 @@ object DataSourceFactory {
             driverClassName: String,
             host: String?,
             port: Int,
-            database: String?
+            database: String?,
         ) : this(username, password, driverClassName) {
             this.host = host
             this.port = port
@@ -262,15 +262,18 @@ object DataSourceFactory {
 
             Preconditions.checkNotNull(
                 databaseDriver,
-                "Unknown or blank driver class name: '$driverClassName'."
+                "Unknown or blank driver class name: '$driverClassName'.",
             )
 
             val config = HikariConfig()
 
             config.driverClassName = databaseDriver.driverClassName
             config.jdbcUrl =
-                if (jdbcUrl != null) jdbcUrl
-                else String.format(databaseDriver.urlFormatString, host, port, database)
+                if (jdbcUrl != null) {
+                    jdbcUrl
+                } else {
+                    String.format(databaseDriver.urlFormatString, host, port, database)
+                }
             config.maximumPoolSize = maximumPoolSize
             config.minimumIdle = minimumPoolSize
             // HikariCP uses milliseconds for all time values:

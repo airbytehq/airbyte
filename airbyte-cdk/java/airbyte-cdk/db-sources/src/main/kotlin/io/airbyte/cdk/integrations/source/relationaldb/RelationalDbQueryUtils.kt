@@ -44,12 +44,13 @@ object RelationalDbQueryUtils {
         tableName: String,
         quoteString: String
     ): String {
-        return (if (nameSpace == null || nameSpace.isEmpty())
+        return (if (nameSpace == null || nameSpace.isEmpty()) {
             getIdentifierWithQuoting(tableName, quoteString)
-        else
+        } else {
             getIdentifierWithQuoting(nameSpace, quoteString) +
                 "." +
-                getIdentifierWithQuoting(tableName, quoteString))
+                getIdentifierWithQuoting(tableName, quoteString)
+        })
     }
 
     /** @return fully qualified table name with the schema (if a schema exists) without quotes. */
@@ -77,13 +78,13 @@ object RelationalDbQueryUtils {
                     val stream = database!!.unsafeQuery(sqlQuery)
                     return@lazyIterator AutoCloseableIterators.fromStream<JsonNode>(
                         stream,
-                        airbyteStreamNameNamespacePair
+                        airbyteStreamNameNamespacePair,
                     )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
                 }
             },
-            airbyteStreamNameNamespacePair
+            airbyteStreamNameNamespacePair,
         )
     }
 

@@ -38,7 +38,7 @@ object TypeAndDedupeTransaction {
                 "Attempting typing and deduping for {}.{} with suffix {}",
                 streamConfig!!.id!!.originalNamespace,
                 streamConfig.id!!.originalName,
-                suffix
+                suffix,
             )
             val unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false)
             destinationHandler.execute(unsafeSql)
@@ -50,7 +50,7 @@ object TypeAndDedupeTransaction {
                     streamConfig!!.id!!.originalNamespace,
                     streamConfig.id!!.originalName,
                     suffix,
-                    e
+                    e,
                 )
                 val saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true)
                 destinationHandler.execute(saferSql)
@@ -60,7 +60,7 @@ object TypeAndDedupeTransaction {
                     streamConfig!!.id!!.originalNamespace,
                     streamConfig.id!!.originalName,
                     suffix,
-                    e
+                    e,
                 )
                 throw e
             }
@@ -86,7 +86,7 @@ object TypeAndDedupeTransaction {
         LOGGER.info(
             "Attempting soft reset for stream {} {}",
             streamConfig.id!!.originalNamespace,
-            streamConfig.id!!.originalName
+            streamConfig.id!!.originalName,
         )
         destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(streamConfig))
         executeTypeAndDedupe(
@@ -94,10 +94,10 @@ object TypeAndDedupeTransaction {
             destinationHandler,
             streamConfig,
             Optional.empty(),
-            SOFT_RESET_SUFFIX
+            SOFT_RESET_SUFFIX,
         )
         destinationHandler.execute(
-            sqlGenerator.overwriteFinalTable(streamConfig.id, SOFT_RESET_SUFFIX)
+            sqlGenerator.overwriteFinalTable(streamConfig.id, SOFT_RESET_SUFFIX),
         )
     }
 }

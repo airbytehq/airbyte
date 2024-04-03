@@ -14,7 +14,7 @@ internal constructor(
     val expectedValues: MutableList<String?>,
     private val createTablePatternSql: String,
     private val insertPatternSql: String,
-    private val fullSourceDataType: String?
+    private val fullSourceDataType: String?,
 ) {
     var nameSpace: String? = null
     private var testNumber: Long = 0
@@ -149,7 +149,7 @@ internal constructor(
                 expectedValues,
                 createTablePatternSql,
                 insertPatternSql,
-                fullSourceDataType
+                fullSourceDataType,
             )
         }
     }
@@ -177,7 +177,7 @@ internal constructor(
                 (if (nameSpace != null) "$nameSpace." else "") + this.nameWithTestPrefix,
                 idColumnName,
                 testColumnName,
-                fullSourceDataType
+                fullSourceDataType,
             )
 
     fun setDeclarationLocation(declarationLocation: Array<StackTraceElement>) {
@@ -194,8 +194,8 @@ internal constructor(
                         insertPatternSql,
                         (if (nameSpace != null) "$nameSpace." else "") + this.nameWithTestPrefix,
                         rowId++,
-                        value
-                    )
+                        value,
+                    ),
                 )
             }
             return insertSqls

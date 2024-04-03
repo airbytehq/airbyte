@@ -25,7 +25,7 @@ internal constructor(
     private val executor: ExecutorService,
     private val mdc: Map<String?, String?>?,
     private val caller: String = GENERIC,
-    private val containerLogMdcBuilder: MdcScope.Builder = MdcScope.Companion.DEFAULT_BUILDER
+    private val containerLogMdcBuilder: MdcScope.Builder = MdcScope.Companion.DEFAULT_BUILDER,
 ) : VoidCallable {
     private val `is`: BufferedReader? = IOs.newBufferedReader(`is`)
 
@@ -34,7 +34,7 @@ internal constructor(
         consumer: Consumer<String>,
         executor: ExecutorService,
         mdc: Map<String?, String?>?,
-        mdcScopeBuilder: MdcScope.Builder
+        mdcScopeBuilder: MdcScope.Builder,
     ) : this(`is`, consumer, executor, mdc, GENERIC, mdcScopeBuilder)
 
     override fun voidCall() {
@@ -49,7 +49,7 @@ internal constructor(
             LOGGER.warn(
                 "{} gobbler IOException: {}. Typically happens when cancelling a job.",
                 caller,
-                i.message
+                i.message,
             )
         } catch (e: Exception) {
             LOGGER.error("{} gobbler error when reading stream", caller, e)

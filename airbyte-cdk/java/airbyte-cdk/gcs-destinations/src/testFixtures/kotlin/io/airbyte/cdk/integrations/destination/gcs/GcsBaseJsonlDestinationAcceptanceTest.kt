@@ -29,8 +29,8 @@ abstract class GcsBaseJsonlDestinationAcceptanceTest :
                     "format_type",
                     outputFormat,
                     "compression",
-                    Jsons.jsonNode(Map.of("compression_type", "No Compression"))
-                )
+                    Jsons.jsonNode(Map.of("compression_type", "No Compression")),
+                ),
             )
 
     @Throws(IOException::class)

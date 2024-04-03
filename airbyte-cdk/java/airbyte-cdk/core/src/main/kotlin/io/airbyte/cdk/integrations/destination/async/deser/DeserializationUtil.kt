@@ -21,7 +21,7 @@ class DeserializationUtil {
      */
     fun deserializeAirbyteMessage(
         messageString: String?,
-        dataTransformer: StreamAwareDataTransformer,
+        dataTransformer: StreamAwareDataTransformer
     ): PartialAirbyteMessage {
         // TODO: This is doing some sketchy assumptions by deserializing either the whole or the
         // partial based on type.

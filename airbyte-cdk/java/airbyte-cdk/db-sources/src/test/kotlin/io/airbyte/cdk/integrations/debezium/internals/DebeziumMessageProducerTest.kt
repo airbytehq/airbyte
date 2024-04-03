@@ -41,7 +41,7 @@ class DebeziumMessageProducerTest {
                 targetPosition,
                 eventConverter!!,
                 offsetManager,
-                Optional.of(schemaHistoryManager)
+                Optional.of(schemaHistoryManager),
             )
     }
 

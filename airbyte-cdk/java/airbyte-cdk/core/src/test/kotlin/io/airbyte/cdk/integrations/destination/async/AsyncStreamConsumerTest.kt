@@ -486,7 +486,7 @@ class AsyncStreamConsumerTest {
 
     private fun consumeRecords(
         consumer: AsyncStreamConsumer?,
-        records: Collection<AirbyteMessage>,
+        records: Collection<AirbyteMessage>
     ) {
         records.forEach(
             Consumer { m: AirbyteMessage ->
@@ -546,13 +546,13 @@ class AsyncStreamConsumerTest {
     private fun verifyRecords(
         streamName: String,
         namespace: String,
-        allRecords: List<AirbyteMessage>,
+        allRecords: List<AirbyteMessage>
     ) {
         val argumentCaptor = org.mockito.kotlin.argumentCaptor<Stream<PartialAirbyteMessage>>()
         Mockito.verify(flushFunction, Mockito.atLeast(1))
             .flush(
                 org.mockito.kotlin.eq(
-                    StreamDescriptor().withNamespace(namespace).withName(streamName)
+                    StreamDescriptor().withNamespace(namespace).withName(streamName),
                 ),
                 argumentCaptor.capture(),
             )

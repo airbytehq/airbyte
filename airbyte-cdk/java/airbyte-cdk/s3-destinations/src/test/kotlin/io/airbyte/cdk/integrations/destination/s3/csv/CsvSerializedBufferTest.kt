@@ -211,7 +211,7 @@ class CsvSerializedBufferTest {
                         tmpData.append(
                             line // remove uuid
                                 .substring(
-                                    UUID.randomUUID().toString().length + 1
+                                    UUID.randomUUID().toString().length + 1,
                                 ) // remove timestamp
                                 .replace("\\A[0-9]+,".toRegex(), ""),
                         )

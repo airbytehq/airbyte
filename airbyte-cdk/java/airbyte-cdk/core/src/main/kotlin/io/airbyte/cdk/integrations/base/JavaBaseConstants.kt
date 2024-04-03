@@ -15,6 +15,7 @@ object JavaBaseConstants {
     const val COLUMN_NAME_AB_ID: String = "_airbyte_ab_id"
     const val COLUMN_NAME_EMITTED_AT: String = "_airbyte_emitted_at"
     const val COLUMN_NAME_DATA: String = "_airbyte_data"
+
     @JvmField
     val LEGACY_RAW_TABLE_COLUMNS: List<String> =
         java.util.List.of(COLUMN_NAME_AB_ID, COLUMN_NAME_DATA, COLUMN_NAME_EMITTED_AT)
@@ -33,8 +34,9 @@ object JavaBaseConstants {
             COLUMN_NAME_AB_RAW_ID,
             COLUMN_NAME_AB_EXTRACTED_AT,
             COLUMN_NAME_AB_LOADED_AT,
-            COLUMN_NAME_DATA
+            COLUMN_NAME_DATA,
         )
+
     @JvmField
     val V2_RAW_TABLE_COLUMN_NAMES: List<String> =
         java.util.List.of(
@@ -42,8 +44,9 @@ object JavaBaseConstants {
             COLUMN_NAME_AB_EXTRACTED_AT,
             COLUMN_NAME_AB_LOADED_AT,
             COLUMN_NAME_DATA,
-            COLUMN_NAME_AB_META
+            COLUMN_NAME_AB_META,
         )
+
     @JvmField
     val V2_FINAL_TABLE_METADATA_COLUMNS: List<String> =
         java.util.List.of(COLUMN_NAME_AB_RAW_ID, COLUMN_NAME_AB_EXTRACTED_AT, COLUMN_NAME_AB_META)

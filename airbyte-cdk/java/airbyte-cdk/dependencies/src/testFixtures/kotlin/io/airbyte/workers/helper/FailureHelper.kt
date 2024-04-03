@@ -112,8 +112,8 @@ object FailureHelper {
             .withExternalMessage(
                 String.format(
                     "Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing",
-                    origin
-                )
+                    origin,
+                ),
             )
     }
 
@@ -147,11 +147,13 @@ object FailureHelper {
                 if (metadata != null) {
                     return@comparing if (
                         failureReason.metadata.additionalProperties.containsKey(
-                            TRACE_MESSAGE_METADATA_KEY
+                            TRACE_MESSAGE_METADATA_KEY,
                         )
-                    )
+                    ) {
                         0
-                    else 1
+                    } else {
+                        1
+                    }
                 } else {
                     return@comparing 1
                 }
@@ -166,7 +168,8 @@ object FailureHelper {
         CHECK("check"),
         DISCOVER("discover"),
         WRITE("write"),
-        READ("read");
+        READ("read"),
+        ;
 
         @JsonValue
         override fun toString(): String {

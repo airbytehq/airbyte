@@ -43,7 +43,7 @@ class RawOnlySqlGenerator(namingTransformer: NamingConventionTransformer) :
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean,
+        useExpensiveSaferCasting: Boolean
     ): MutableList<Field<*>> {
         throw NotImplementedError("This Destination does not support final tables")
     }
@@ -58,7 +58,7 @@ class RawOnlySqlGenerator(namingTransformer: NamingConventionTransformer) :
 
     override fun getRowNumber(
         primaryKey: List<ColumnId?>?,
-        cursorField: Optional<ColumnId>,
+        cursorField: Optional<ColumnId>
     ): Field<Int> {
         throw NotImplementedError("This Destination does not support final tables")
     }

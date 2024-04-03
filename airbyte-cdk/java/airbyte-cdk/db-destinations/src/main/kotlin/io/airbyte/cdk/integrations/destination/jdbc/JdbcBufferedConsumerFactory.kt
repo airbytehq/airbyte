@@ -71,7 +71,7 @@ object JdbcBufferedConsumerFactory {
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
             onCloseFunction(typerDeduper),
             JdbcInsertFlushFunction(
-                recordWriterFunction(database, sqlOperations, writeConfigs, catalog)
+                recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
             ),
             catalog,
             BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
@@ -79,7 +79,7 @@ object JdbcBufferedConsumerFactory {
             Optional.ofNullable(defaultNamespace),
             Executors.newFixedThreadPool(2),
             dataTransformer,
-            DeserializationUtil()
+            DeserializationUtil(),
         )
     }
 
@@ -92,7 +92,7 @@ object JdbcBufferedConsumerFactory {
         if (schemaRequired) {
             Preconditions.checkState(
                 config.has("schema"),
-                "jdbc destinations must specify a schema."
+                "jdbc destinations must specify a schema.",
             )
         }
         return catalog!!
@@ -110,13 +110,16 @@ object JdbcBufferedConsumerFactory {
         return Function { stream: ConfiguredAirbyteStream ->
             Preconditions.checkNotNull(
                 stream.destinationSyncMode,
-                "Undefined destination sync mode"
+                "Undefined destination sync mode",
             )
             val abStream = stream.stream
 
             val defaultSchemaName =
-                if (schemaRequired) namingResolver.getIdentifier(config["schema"].asText())
-                else namingResolver.getIdentifier(config[JdbcUtils.DATABASE_KEY].asText())
+                if (schemaRequired) {
+                    namingResolver.getIdentifier(config["schema"].asText())
+                } else {
+                    namingResolver.getIdentifier(config[JdbcUtils.DATABASE_KEY].asText())
+                }
             // Method checks for v2
             val outputSchema = getOutputSchema(abStream, defaultSchemaName, namingResolver)
             val streamName = abStream.name
@@ -141,7 +144,7 @@ object JdbcBufferedConsumerFactory {
                     outputSchema,
                     tmpTableName,
                     tableName,
-                    syncMode
+                    syncMode,
                 )
             LOGGER.info("Write config: {}", writeConfig)
             writeConfig
@@ -163,11 +166,11 @@ object JdbcBufferedConsumerFactory {
         return if (isDestinationV2) {
             namingResolver.getNamespace(
                 getRawNamespaceOverride(AbstractJdbcDestination.Companion.RAW_SCHEMA_OVERRIDE)
-                    .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
+                    .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
             )
         } else {
             namingResolver.getNamespace(
-                Optional.ofNullable<String>(stream.namespace).orElse(defaultDestSchema)
+                Optional.ofNullable<String>(stream.namespace).orElse(defaultDestSchema),
             )
         }
     }
@@ -195,7 +198,7 @@ object JdbcBufferedConsumerFactory {
             typerDeduper.prepareSchemasAndRunMigrations()
             LOGGER.info(
                 "Preparing raw tables in destination started for {} streams",
-                writeConfigs.size
+                writeConfigs.size,
             )
             val queryList: MutableList<String> = ArrayList()
             for (writeConfig in writeConfigs) {
@@ -205,20 +208,20 @@ object JdbcBufferedConsumerFactory {
                     "Preparing raw table in destination started for stream {}. schema: {}, table name: {}",
                     writeConfig.streamName,
                     schemaName,
-                    dstTableName
+                    dstTableName,
                 )
                 sqlOperations.createSchemaIfNotExists(database, schemaName)
                 sqlOperations.createTableIfNotExists(database, schemaName, dstTableName)
                 when (writeConfig.syncMode) {
                     DestinationSyncMode.OVERWRITE ->
                         queryList.add(
-                            sqlOperations.truncateTableQuery(database, schemaName, dstTableName)
+                            sqlOperations.truncateTableQuery(database, schemaName, dstTableName),
                         )
                     DestinationSyncMode.APPEND,
-                    DestinationSyncMode.APPEND_DEDUP -> {}
+                    DestinationSyncMode.APPEND_DEDUP, -> {}
                     else ->
                         throw IllegalStateException(
-                            "Unrecognized sync mode: " + writeConfig.syncMode
+                            "Unrecognized sync mode: " + writeConfig.syncMode,
                         )
                 }
             }
@@ -247,11 +250,12 @@ object JdbcBufferedConsumerFactory {
 
         return RecordWriter {
             pair: AirbyteStreamNameNamespacePair,
-            records: List<PartialAirbyteMessage> ->
+            records: List<PartialAirbyteMessage>,
+            ->
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
-                    Jsons.serialize(catalog)
+                    Jsons.serialize(catalog),
                 )
             }
             val writeConfig = pairToWriteConfig.getValue(pair)
@@ -259,7 +263,7 @@ object JdbcBufferedConsumerFactory {
                 database,
                 ArrayList(records),
                 writeConfig.outputSchemaName,
-                writeConfig.outputTableName
+                writeConfig.outputTableName,
             )
         }
     }
@@ -268,7 +272,8 @@ object JdbcBufferedConsumerFactory {
     private fun onCloseFunction(typerDeduper: TyperDeduper): OnCloseFunction {
         return OnCloseFunction {
             hasFailed: Boolean,
-            streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
+            streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>,
+            ->
             try {
                 typerDeduper.typeAndDedupe(streamSyncSummaries)
                 typerDeduper.commitFinalTables()

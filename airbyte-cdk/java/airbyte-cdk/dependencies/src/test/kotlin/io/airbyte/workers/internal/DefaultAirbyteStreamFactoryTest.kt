@@ -44,7 +44,7 @@ internal class DefaultAirbyteStreamFactoryTest {
 
         Assertions.assertEquals(
             expectedStream.collect(Collectors.toList()),
-            messageStream.collect(Collectors.toList())
+            messageStream.collect(Collectors.toList()),
         )
         Mockito.verifyNoInteractions(logger)
     }
@@ -112,7 +112,7 @@ internal class DefaultAirbyteStreamFactoryTest {
                     logger,
                     MdcScope.Builder(),
                     Optional.of(RuntimeException::class.java),
-                    1L
+                    1L,
                 )
                 .create(bufferedReader)
 
@@ -142,7 +142,7 @@ internal class DefaultAirbyteStreamFactoryTest {
                 protocolPredicate,
                 logger,
                 MdcScope.Builder(),
-                Optional.empty()
+                Optional.empty(),
             )
             .create(bufferedReader)
     }

@@ -87,7 +87,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
         val tableName =
             concatenateRawTableName(
                 streamNamespace,
-                Names.toAlphanumericAndUnderscore(streamName!!)
+                Names.toAlphanumericAndUnderscore(streamName!!),
             )
         val schema = rawSchema
         return database!!.queryJsons(DSL.selectFrom(DSL.name(schema, tableName)).sql)
@@ -104,7 +104,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
         }
         return database!!.queryJsons(
             DSL.selectFrom(DSL.name(streamNamespace, Names.toAlphanumericAndUnderscore(streamName)))
-                .sql
+                .sql,
         )
     }
 
@@ -116,9 +116,9 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
         }
         database!!.execute(
             DSL.dropTableIfExists(
-                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName!!))
+                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName!!)),
                 )
-                .sql
+                .sql,
         )
         database!!.execute(DSL.dropSchemaIfExists(DSL.name(streamNamespace)).cascade().sql)
     }

@@ -30,20 +30,20 @@ internal class MoreResourcesTest {
     fun testResourceReadWithClass() {
         Assertions.assertEquals(
             CONTENT_1,
-            MoreResources.readResource(MoreResourcesTest::class.java, RESOURCE_TEST)
+            MoreResources.readResource(MoreResourcesTest::class.java, RESOURCE_TEST),
         )
         Assertions.assertEquals(
             CONTENT_2,
-            MoreResources.readResource(MoreResourcesTest::class.java, "subdir/resource_test_sub")
+            MoreResources.readResource(MoreResourcesTest::class.java, "subdir/resource_test_sub"),
         )
 
         Assertions.assertEquals(
             CONTENT_1,
-            MoreResources.readResource(MoreResourcesTest::class.java, "/resource_test")
+            MoreResources.readResource(MoreResourcesTest::class.java, "/resource_test"),
         )
         Assertions.assertEquals(
             CONTENT_2,
-            MoreResources.readResource(MoreResourcesTest::class.java, "/subdir/resource_test_sub")
+            MoreResources.readResource(MoreResourcesTest::class.java, "/subdir/resource_test_sub"),
         )
 
         Assertions.assertThrows(IllegalArgumentException::class.java) {
@@ -63,11 +63,11 @@ internal class MoreResourcesTest {
     fun testReadBytes() {
         Assertions.assertEquals(
             CONTENT_1,
-            String(MoreResources.readBytes(RESOURCE_TEST), StandardCharsets.UTF_8)
+            String(MoreResources.readBytes(RESOURCE_TEST), StandardCharsets.UTF_8),
         )
         Assertions.assertEquals(
             CONTENT_2,
-            String(MoreResources.readBytes("subdir/resource_test_sub"), StandardCharsets.UTF_8)
+            String(MoreResources.readBytes("subdir/resource_test_sub"), StandardCharsets.UTF_8),
         )
 
         Assertions.assertThrows(IllegalArgumentException::class.java) {
@@ -90,12 +90,12 @@ internal class MoreResourcesTest {
                 "subdir",
                 "resource_test_sub",
                 "resource_test_sub_2",
-                "resource_test_a"
+                "resource_test_a",
             ),
             MoreResources.listResources(MoreResourcesTest::class.java, "subdir")
                 .map { obj: Path -> obj.fileName }
                 .map { obj: Path -> obj.toString() }
-                .collect(Collectors.toSet())
+                .collect(Collectors.toSet()),
         )
     }
 

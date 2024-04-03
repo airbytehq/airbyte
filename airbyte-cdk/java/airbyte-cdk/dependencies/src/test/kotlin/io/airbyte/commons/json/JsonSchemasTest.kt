@@ -48,7 +48,7 @@ internal class JsonSchemasTest {
             .verify(mock)
             .accept(
                 jsonWithAllTypes[PROPERTIES][NAME],
-                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(NAME))
+                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(NAME)),
             )
         inOrder
             .verify(mock)
@@ -56,8 +56,8 @@ internal class JsonSchemasTest {
                 jsonWithAllTypes[PROPERTIES][NAME][PROPERTIES]["first"],
                 java.util.List.of(
                     JsonSchemas.FieldNameOrList.fieldName(NAME),
-                    JsonSchemas.FieldNameOrList.fieldName("first")
-                )
+                    JsonSchemas.FieldNameOrList.fieldName("first"),
+                ),
             )
         inOrder
             .verify(mock)
@@ -65,20 +65,20 @@ internal class JsonSchemasTest {
                 jsonWithAllTypes[PROPERTIES][NAME][PROPERTIES]["last"],
                 java.util.List.of(
                     JsonSchemas.FieldNameOrList.fieldName(NAME),
-                    JsonSchemas.FieldNameOrList.fieldName("last")
-                )
+                    JsonSchemas.FieldNameOrList.fieldName("last"),
+                ),
             )
         inOrder
             .verify(mock)
             .accept(
                 jsonWithAllTypes[PROPERTIES][COMPANY],
-                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(COMPANY))
+                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(COMPANY)),
             )
         inOrder
             .verify(mock)
             .accept(
                 jsonWithAllTypes[PROPERTIES][PETS],
-                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(PETS))
+                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(PETS)),
             )
         inOrder
             .verify(mock)
@@ -86,8 +86,8 @@ internal class JsonSchemasTest {
                 jsonWithAllTypes[PROPERTIES][PETS][ITEMS],
                 java.util.List.of(
                     JsonSchemas.FieldNameOrList.fieldName(PETS),
-                    JsonSchemas.FieldNameOrList.list()
-                )
+                    JsonSchemas.FieldNameOrList.list(),
+                ),
             )
         inOrder
             .verify(mock)
@@ -96,8 +96,8 @@ internal class JsonSchemasTest {
                 java.util.List.of(
                     JsonSchemas.FieldNameOrList.fieldName(PETS),
                     JsonSchemas.FieldNameOrList.list(),
-                    JsonSchemas.FieldNameOrList.fieldName("type")
-                )
+                    JsonSchemas.FieldNameOrList.fieldName("type"),
+                ),
             )
         inOrder
             .verify(mock)
@@ -106,8 +106,8 @@ internal class JsonSchemasTest {
                 java.util.List.of(
                     JsonSchemas.FieldNameOrList.fieldName(PETS),
                     JsonSchemas.FieldNameOrList.list(),
-                    JsonSchemas.FieldNameOrList.fieldName("number")
-                )
+                    JsonSchemas.FieldNameOrList.fieldName("number"),
+                ),
             )
         inOrder.verifyNoMoreInteractions()
     }
@@ -132,14 +132,14 @@ internal class JsonSchemasTest {
             .verify(mock)
             .accept(
                 jsonWithAllTypes[compositeKeyword][1][PROPERTIES]["prop1"],
-                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName("prop1"))
+                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName("prop1")),
             )
         inOrder.verify(mock).accept(jsonWithAllTypes[compositeKeyword][2], emptyList())
         inOrder
             .verify(mock)
             .accept(
                 jsonWithAllTypes[compositeKeyword][2][ITEMS],
-                java.util.List.of(JsonSchemas.FieldNameOrList.list())
+                java.util.List.of(JsonSchemas.FieldNameOrList.list()),
             )
         inOrder
             .verify(mock)
@@ -151,7 +151,7 @@ internal class JsonSchemasTest {
             .verify(mock)
             .accept(
                 jsonWithAllTypes[compositeKeyword][3][compositeKeyword][1][ITEMS],
-                java.util.List.of(JsonSchemas.FieldNameOrList.list())
+                java.util.List.of(JsonSchemas.FieldNameOrList.list()),
             )
         inOrder.verifyNoMoreInteractions()
     }
@@ -161,7 +161,7 @@ internal class JsonSchemasTest {
     fun testTraverseMultiType() {
         val jsonWithAllTypes =
             Jsons.deserialize(
-                MoreResources.readResource("json_schemas/json_with_array_type_fields.json")
+                MoreResources.readResource("json_schemas/json_with_array_type_fields.json"),
             )
         val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 
@@ -172,7 +172,7 @@ internal class JsonSchemasTest {
             .verify(mock)
             .accept(
                 jsonWithAllTypes[PROPERTIES][COMPANY],
-                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(COMPANY))
+                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(COMPANY)),
             )
         inOrder
             .verify(mock)
@@ -183,8 +183,8 @@ internal class JsonSchemasTest {
                 jsonWithAllTypes[ITEMS][PROPERTIES][USER],
                 java.util.List.of(
                     JsonSchemas.FieldNameOrList.list(),
-                    JsonSchemas.FieldNameOrList.fieldName(USER)
-                )
+                    JsonSchemas.FieldNameOrList.fieldName(USER),
+                ),
             )
         inOrder.verifyNoMoreInteractions()
     }
@@ -196,8 +196,8 @@ internal class JsonSchemasTest {
         val jsonWithAllTypes =
             Jsons.deserialize(
                 MoreResources.readResource(
-                    "json_schemas/json_with_array_type_fields_with_composites.json"
-                )
+                    "json_schemas/json_with_array_type_fields_with_composites.json",
+                ),
             )
         val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 
@@ -209,13 +209,13 @@ internal class JsonSchemasTest {
             .verify(mock)
             .accept(
                 jsonWithAllTypes[compositeKeyword][0][PROPERTIES][COMPANY],
-                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(COMPANY))
+                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName(COMPANY)),
             )
         inOrder
             .verify(mock)
             .accept(
                 jsonWithAllTypes[compositeKeyword][1][PROPERTIES]["organization"],
-                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName("organization"))
+                java.util.List.of(JsonSchemas.FieldNameOrList.fieldName("organization")),
             )
         inOrder
             .verify(mock)
@@ -226,8 +226,8 @@ internal class JsonSchemasTest {
                 jsonWithAllTypes[ITEMS][PROPERTIES][USER],
                 java.util.List.of(
                     JsonSchemas.FieldNameOrList.list(),
-                    JsonSchemas.FieldNameOrList.fieldName("user")
-                )
+                    JsonSchemas.FieldNameOrList.fieldName("user"),
+                ),
             )
         inOrder.verifyNoMoreInteractions()
     }
@@ -237,7 +237,9 @@ internal class JsonSchemasTest {
     fun testTraverseArrayTypeWithNoItemsDoNotThrowsException() {
         val jsonWithAllTypes =
             Jsons.deserialize(
-                MoreResources.readResource("json_schemas/json_with_array_type_fields_no_items.json")
+                MoreResources.readResource(
+                    "json_schemas/json_with_array_type_fields_no_items.json",
+                ),
             )
         val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 

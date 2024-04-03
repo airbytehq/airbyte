@@ -36,7 +36,7 @@ object S3BaseChecks {
     @JvmStatic
     fun testSingleUpload(s3Client: AmazonS3, bucketName: String?, bucketPath: String) {
         LOGGER.info(
-            "Started testing if all required credentials assigned to user for single file uploading"
+            "Started testing if all required credentials assigned to user for single file uploading",
         )
         val prefix = if (bucketPath.endsWith("/")) bucketPath else "$bucketPath/"
         val testFile = prefix + "test_" + System.currentTimeMillis()
@@ -52,7 +52,7 @@ object S3BaseChecks {
     @Throws(IOException::class)
     fun testMultipartUpload(s3Client: AmazonS3, bucketName: String?, bucketPath: String) {
         LOGGER.info(
-            "Started testing if all required credentials assigned to user for multipart upload"
+            "Started testing if all required credentials assigned to user for multipart upload",
         )
         val prefix = if (bucketPath.endsWith("/")) bucketPath else "$bucketPath/"
         val testFile = prefix + "test_" + System.currentTimeMillis()
@@ -62,7 +62,7 @@ object S3BaseChecks {
             manager.multiPartOutputStreams[0].use { outputStream ->
                 CSVPrinter(
                         PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-                        CSVFormat.DEFAULT
+                        CSVFormat.DEFAULT,
                     )
                     .use { csvPrinter ->
                         val oneMegaByteString = "a".repeat(500000)

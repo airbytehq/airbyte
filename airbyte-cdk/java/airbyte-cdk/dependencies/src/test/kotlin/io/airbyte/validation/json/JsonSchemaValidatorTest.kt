@@ -78,10 +78,10 @@ internal class JsonSchemaValidatorTest {
         Assertions.assertFalse(JsonSchemaValidator.getSchema(schemaFile)[PROPERTIES].has("field2"))
         // inner object
         Assertions.assertTrue(
-            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field2")
+            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field2"),
         )
         Assertions.assertFalse(
-            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field1")
+            JsonSchemaValidator.getSchema(schemaFile, "InnerObject")[PROPERTIES].has("field1"),
         )
         // non-existent object
         Assertions.assertThrows(NullPointerException::class.java) {
@@ -101,12 +101,12 @@ internal class JsonSchemaValidatorTest {
                                    }
                                  }
                                  
-                                 """.trimIndent()
+            """.trimIndent()
         val schemaFile =
             IOs.writeFile(
                     Files.createTempDirectory("test"),
                     "WellKnownTypes.json",
-                    referencableSchemas
+                    referencableSchemas,
                 )
                 .toFile()
         val jsonSchemaValidator =
@@ -124,7 +124,7 @@ internal class JsonSchemaValidatorTest {
                             }
                           }
                           
-                          """.trimIndent()
+                    """.trimIndent(),
                 ),
                 Jsons.deserialize(
                     """
@@ -133,8 +133,8 @@ internal class JsonSchemaValidatorTest {
                             "prop2": "false"
                           }
                           
-                          """.trimIndent()
-                )
+                    """.trimIndent(),
+                ),
             )
 
         Assertions.assertEquals(setOf("$.prop2: string found, boolean expected"), validationResult)
@@ -190,7 +190,7 @@ internal class JsonSchemaValidatorTest {
         "minimum": 0,
         "maximum": 65536
       }    }
-  }"""
+  }""",
             )
     }
 }

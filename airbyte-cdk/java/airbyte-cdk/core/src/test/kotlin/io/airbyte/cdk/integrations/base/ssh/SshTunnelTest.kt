@@ -46,7 +46,7 @@ internal class SshTunnelTest {
                     SSH_RSA_PRIVATE_KEY,
                     "tunnelUserPassword",
                     if (endPointURL == null) "fakeHost.com" else null,
-                    if (endPointURL == null) 5432 else 0
+                    if (endPointURL == null) 5432 else 0,
                 ) {
                 public override fun openTunnel(client: SshClient): ClientSession? {
                     tunnelLocalPort = 8080
@@ -67,7 +67,7 @@ internal class SshTunnelTest {
             Assertions.assertTrue(configInTunnel.has("endpoint"))
             Assertions.assertEquals(
                 "http://127.0.0.1:8080/service",
-                configInTunnel["endpoint"].asText()
+                configInTunnel["endpoint"].asText(),
             )
         }
     }
@@ -99,7 +99,7 @@ internal class SshTunnelTest {
                     privateKey,
                     "tunnelUserPassword",
                     "fakeHost.com",
-                    5432
+                    5432,
                 ) {
                 public override fun openTunnel(client: SshClient): ClientSession? {
                     return null // Prevent tunnel from attempting to connect
@@ -108,7 +108,7 @@ internal class SshTunnelTest {
 
         val authKeyPair = sshTunnel.privateKeyPair
         Assertions.assertNotNull(
-            authKeyPair
+            authKeyPair,
         ) // actually, all is good if there is no exception on previous line
     }
 

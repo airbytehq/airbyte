@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory
  */
 class AirbyteSchemaHistoryStorage(
     private val path: Path,
-    private val compressSchemaHistoryForState: Boolean
+    private val compressSchemaHistoryForState: Boolean,
 ) {
     private val reader: DocumentReader = DocumentReader.defaultReader()
     private val writer: DocumentWriter = DocumentWriter.defaultWriter()
@@ -51,7 +51,7 @@ class AirbyteSchemaHistoryStorage(
             LOGGER.info(
                 "File Size {} MB is greater than the size limit of {} MB, compressing the content of the file.",
                 fileSizeMB,
-                SIZE_LIMIT_TO_COMPRESS_MB
+                SIZE_LIMIT_TO_COMPRESS_MB,
             )
             val schemaHistory = readCompressed()
             val compressedSizeMB = calculateSizeOfStringInMB(schemaHistory)
@@ -62,7 +62,7 @@ class AirbyteSchemaHistoryStorage(
                     "Compressing increased the size of the content. Size before compression " +
                         fileSizeMB +
                         ", after compression " +
-                        compressedSizeMB
+                        compressedSizeMB,
                 )
             }
             return SchemaHistory(schemaHistory, true)
@@ -71,7 +71,7 @@ class AirbyteSchemaHistoryStorage(
             LOGGER.info(
                 "File Size {} MB is less than the size limit of {} MB, reading the content of the file without compression.",
                 fileSizeMB,
-                SIZE_LIMIT_TO_COMPRESS_MB
+                SIZE_LIMIT_TO_COMPRESS_MB,
             )
         } else {
             LOGGER.info("File Size {} MB.", fileSizeMB)
@@ -111,10 +111,10 @@ class AirbyteSchemaHistoryStorage(
                             val record = reader.read(line)
                             val recordAsString = writer.write(record)
                             gzipOutputStream.write(
-                                recordAsString.toByteArray(StandardCharsets.UTF_8)
+                                recordAsString.toByteArray(StandardCharsets.UTF_8),
                             )
                             gzipOutputStream.write(
-                                lineSeparator.toByteArray(StandardCharsets.UTF_8)
+                                lineSeparator.toByteArray(StandardCharsets.UTF_8),
                             )
                         }
                     }
@@ -143,7 +143,7 @@ class AirbyteSchemaHistoryStorage(
         } catch (e: IOException) {
             throw IllegalStateException(
                 "Unable to check or create history file at " + path + ": " + e.message,
-                e
+                e,
             )
         }
     }
@@ -222,7 +222,7 @@ class AirbyteSchemaHistoryStorage(
         // changes. If we don't do this, we can't fetch records for the table.
         props.setProperty(
             "schema.history.internal",
-            "io.debezium.storage.file.history.FileSchemaHistory"
+            "io.debezium.storage.file.history.FileSchemaHistory",
         )
         props.setProperty("schema.history.internal.file.filename", path.toString())
         props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true")

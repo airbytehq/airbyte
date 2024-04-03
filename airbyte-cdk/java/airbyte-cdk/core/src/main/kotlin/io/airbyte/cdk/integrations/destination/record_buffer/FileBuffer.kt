@@ -20,6 +20,7 @@ class FileBuffer : BufferStorage {
     // "To optimize the number of parallel operations for a load,
     // we recommend aiming to produce data files roughly 100-250 MB (or larger) in size compressed."
     override val maxPerStreamBufferSizeInBytes: Long = MAX_PER_STREAM_BUFFER_SIZE_BYTES
+
     /*
      * Other than the per-file size limit, we also limit the total size (which would limit how many
      * concurrent streams we can buffer simultaneously too) Since this class is storing data on disk,
@@ -113,6 +114,7 @@ class FileBuffer : BufferStorage {
             (200 * 1024 * 1024 // 200 MB
                 )
                 .toLong()
+
         /*
          * Other than the per-file size limit, we also limit the total size (which would limit how many
          * concurrent streams we can buffer simultaneously too) Since this class is storing data on disk,

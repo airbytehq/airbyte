@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 
 class CursorStateMessageProducer(
     private val stateManager: StateManager?,
-    private val initialCursor: Optional<String>
+    private val initialCursor: Optional<String>,
 ) : SourceStateMessageProducer<AirbyteMessage> {
     private var currentMaxCursor: Optional<String>
 
@@ -42,7 +42,7 @@ class CursorStateMessageProducer(
         if (cursorOutOfOrderDetected) {
             LOGGER.warn(
                 "Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, " +
-                    "data loss can occur."
+                    "data loss can occur.",
             )
         }
         return message
@@ -109,13 +109,13 @@ class CursorStateMessageProducer(
                 " " +
                 currentMaxCursor.orElse(null) +
                 " " +
-                currentCursorRecordCount
+                currentCursorRecordCount,
         )
         val stateMessage =
             stateManager!!.updateAndEmit(
                 pair,
                 currentMaxCursor.orElse(null),
-                currentCursorRecordCount.toLong()
+                currentCursorRecordCount.toLong(),
             )
         val cursorInfo = stateManager.getCursorInfo(pair)
 

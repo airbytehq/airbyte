@@ -41,7 +41,7 @@ class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = Syste
             LOGGER.info(
                 "Using default value for environment variable {}: '{}'",
                 key,
-                if (isSecret) "*****" else defaultValue
+                if (isSecret) "*****" else defaultValue,
             )
             return defaultValue
         }

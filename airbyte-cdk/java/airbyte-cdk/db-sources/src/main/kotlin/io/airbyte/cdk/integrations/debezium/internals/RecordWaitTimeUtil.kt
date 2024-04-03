@@ -30,12 +30,12 @@ object RecordWaitTimeUtil {
             val seconds = firstRecordWaitSeconds.get()
             require(
                 !(seconds < MIN_FIRST_RECORD_WAIT_TIME.seconds ||
-                    seconds > MAX_FIRST_RECORD_WAIT_TIME.seconds)
+                    seconds > MAX_FIRST_RECORD_WAIT_TIME.seconds),
             ) {
                 String.format(
                     "initial_waiting_seconds must be between %d and %d seconds",
                     MIN_FIRST_RECORD_WAIT_TIME.seconds,
-                    MAX_FIRST_RECORD_WAIT_TIME.seconds
+                    MAX_FIRST_RECORD_WAIT_TIME.seconds,
                 )
             }
         }
@@ -51,13 +51,13 @@ object RecordWaitTimeUtil {
             if (!isTest && firstRecordWaitTime.compareTo(MIN_FIRST_RECORD_WAIT_TIME) < 0) {
                 LOGGER.warn(
                     "First record waiting time is overridden to {} minutes, which is the min time allowed for safety.",
-                    MIN_FIRST_RECORD_WAIT_TIME.toMinutes()
+                    MIN_FIRST_RECORD_WAIT_TIME.toMinutes(),
                 )
                 firstRecordWaitTime = MIN_FIRST_RECORD_WAIT_TIME
             } else if (!isTest && firstRecordWaitTime.compareTo(MAX_FIRST_RECORD_WAIT_TIME) > 0) {
                 LOGGER.warn(
                     "First record waiting time is overridden to {} minutes, which is the max time allowed for safety.",
-                    MAX_FIRST_RECORD_WAIT_TIME.toMinutes()
+                    MAX_FIRST_RECORD_WAIT_TIME.toMinutes(),
                 )
                 firstRecordWaitTime = MAX_FIRST_RECORD_WAIT_TIME
             }

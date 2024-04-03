@@ -53,7 +53,7 @@ open class SerialStagingConsumerFactory {
                 config,
                 catalog,
                 parsedCatalog,
-                useDestinationsV2Columns
+                useDestinationsV2Columns,
             )
         return BufferedStreamConsumer(
             outputRecordCollector,
@@ -61,7 +61,7 @@ open class SerialStagingConsumerFactory {
                 database,
                 stagingOperations,
                 writeConfigs,
-                typerDeduper
+                typerDeduper,
             ),
             SerializedBufferingStrategy(
                 onCreateBuffer,
@@ -72,19 +72,19 @@ open class SerialStagingConsumerFactory {
                     writeConfigs,
                     catalog,
                     typerDeduperValve,
-                    typerDeduper
-                )
+                    typerDeduper,
+                ),
             ),
             GeneralStagingFunctions.onCloseFunction(
                 database,
                 stagingOperations,
                 writeConfigs,
                 purgeStagingData,
-                typerDeduper
+                typerDeduper,
             ),
             catalog,
             { data: JsonNode? -> stagingOperations.isValidData(data) },
-            defaultNamespace
+            defaultNamespace,
         )
     }
 
@@ -141,7 +141,7 @@ open class SerialStagingConsumerFactory {
             return Function { stream: ConfiguredAirbyteStream ->
                 Preconditions.checkNotNull(
                     stream.destinationSyncMode,
-                    "Undefined destination sync mode"
+                    "Undefined destination sync mode",
                 )
                 val abStream = stream.stream
                 val streamName = abStream.name
@@ -168,7 +168,7 @@ open class SerialStagingConsumerFactory {
                         tmpTableName,
                         tableName,
                         syncMode,
-                        SYNC_DATETIME
+                        SYNC_DATETIME,
                     )
                 LOGGER.info("Write config: {}", writeConfig)
                 writeConfig
@@ -180,8 +180,11 @@ open class SerialStagingConsumerFactory {
             defaultDestSchema: String,
             namingResolver: NamingConventionTransformer
         ): String {
-            return if (stream.namespace != null) namingResolver.getNamespace(stream.namespace)
-            else namingResolver.getNamespace(defaultDestSchema)
+            return if (stream.namespace != null) {
+                namingResolver.getNamespace(stream.namespace)
+            } else {
+                namingResolver.getNamespace(defaultDestSchema)
+            }
         }
     }
 }

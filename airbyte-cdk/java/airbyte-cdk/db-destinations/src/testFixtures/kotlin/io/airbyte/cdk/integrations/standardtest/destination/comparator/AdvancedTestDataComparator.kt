@@ -65,7 +65,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
 
         Assertions.assertTrue(
             compareJsonNodes(expectedValue, actualValue),
-            "Expected value $expectedValue vs Actual value $actualValue"
+            "Expected value $expectedValue vs Actual value $actualValue",
         )
     }
 
@@ -162,14 +162,14 @@ open class AdvancedTestDataComparator : TestDataComparator {
     protected fun isDateTimeWithTzValue(value: String): Boolean {
         return !TEST_DATASET_IGNORE_LIST.contains(value) &&
             value.matches(
-                "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})( BC)?$".toRegex()
+                "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})( BC)?$".toRegex(),
             )
     }
 
     protected open fun parseDestinationDateWithTz(destinationValue: String): ZonedDateTime {
         return ZonedDateTime.parse(
                 destinationValue,
-                DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_WITH_TZ_FORMAT)
+                DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_WITH_TZ_FORMAT),
             )
             .withZoneSameInstant(ZoneOffset.UTC)
     }
@@ -189,7 +189,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
                 "Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
                 airbyteMessageValue,
                 destinationValue,
-                e
+                e,
             )
             return compareTextValues(airbyteMessageValue, destinationValue)
         }
@@ -197,7 +197,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
 
     protected fun isDateTimeValue(value: String): Boolean {
         return value.matches(
-            "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?( BC)?$".toRegex()
+            "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?( BC)?$".toRegex(),
         )
     }
 
@@ -266,7 +266,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
                 "2020-08-31T00:00:00Z",
                 "2020-09-01T00:00:00Z",
                 "2020-09-15T16:58:52.000000Z",
-                "2020-03-31T00:00:00Z"
+                "2020-03-31T00:00:00Z",
             )
     }
 }

@@ -16,7 +16,7 @@ internal open class CommonFactoryTest {
 
         @JvmStatic
         @BeforeAll
-        fun dbSetup(): Unit {
+        fun dbSetup() {
             container = PostgreSQLContainer<Nothing>("postgres:13-alpine")
             container.withDatabaseName(DATABASE_NAME).withUsername("docker").withPassword("docker")
             container!!.start()
@@ -24,7 +24,7 @@ internal open class CommonFactoryTest {
 
         @JvmStatic
         @AfterAll
-        fun dbDown(): Unit {
+        fun dbDown() {
             container!!.close()
         }
     }

@@ -11,7 +11,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 /** Represents the current status of a stream provided by a source. */
 class AirbyteStreamStatusHolder(
     private val airbyteStream: AirbyteStreamNameNamespacePair?,
-    private val airbyteStreamStatus: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+    private val airbyteStreamStatus: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus,
 ) {
     fun toTraceMessage(): AirbyteTraceMessage {
         val traceMessage = AirbyteTraceMessage()
@@ -20,7 +20,7 @@ class AirbyteStreamStatusHolder(
                 .withStreamDescriptor(
                     StreamDescriptor()
                         .withName(airbyteStream!!.name)
-                        .withNamespace(airbyteStream.namespace)
+                        .withNamespace(airbyteStream.namespace),
                 )
                 .withStatus(airbyteStreamStatus)
         return traceMessage

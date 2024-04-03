@@ -46,7 +46,7 @@ internal class TestHarnessUtilsTest {
                 SHUTDOWN_TIME_DURATION,
                 CHECK_HEARTBEAT_DURATION,
                 SHUTDOWN_TIME_DURATION,
-                forceShutdown
+                forceShutdown,
             )
         }
 
@@ -109,7 +109,7 @@ internal class TestHarnessUtilsTest {
         val syncInput = syncPair.value
         val mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput)
         Assertions.assertNotNull(
-            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", null)]
+            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", null)],
         )
     }
 
@@ -119,10 +119,10 @@ internal class TestHarnessUtilsTest {
         val syncInput = syncPair.value
         val mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput)
         Assertions.assertNotNull(
-            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", "namespace")]
+            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", "namespace")],
         )
         Assertions.assertNotNull(
-            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", "namespace2")]
+            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", "namespace2")],
         )
     }
 
@@ -169,7 +169,7 @@ internal class TestHarnessUtilsTest {
                     process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS)
                 } catch (e: InterruptedException) {
                     LOGGER.error(
-                        "Exception during grace period for process to finish. This can happen when cancelling jobs."
+                        "Exception during grace period for process to finish. This can happen when cancelling jobs.",
                     )
                 }
             }

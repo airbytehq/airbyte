@@ -40,22 +40,22 @@ class BufferDequeueTest {
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
 
             // total size of records is 80, so we expect 50 to get us 2 records (prefer to
@@ -84,17 +84,17 @@ class BufferDequeueTest {
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
 
             try {
@@ -115,12 +115,12 @@ class BufferDequeueTest {
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
             enqueue.addRecord(
                 RECORD_MSG_20_BYTES,
                 RECORD_SIZE_20_BYTES,
-                Optional.of(DEFAULT_NAMESPACE)
+                Optional.of(DEFAULT_NAMESPACE),
             )
 
             try {
@@ -148,7 +148,7 @@ class BufferDequeueTest {
         enqueue.addRecord(
             recordFromSecondStream,
             RECORD_SIZE_20_BYTES,
-            Optional.of(DEFAULT_NAMESPACE)
+            Optional.of(DEFAULT_NAMESPACE),
         )
 
         Assertions.assertEquals(60, dequeue.totalGlobalQueueSizeBytes)

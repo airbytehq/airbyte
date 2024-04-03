@@ -21,7 +21,8 @@ enum class AirbyteProtocolType : AirbyteType {
     NUMBER,
     INTEGER,
     BOOLEAN,
-    UNKNOWN;
+    UNKNOWN,
+    ;
 
     override val typeName: String
         get() = this.name
@@ -35,8 +36,8 @@ enum class AirbyteProtocolType : AirbyteType {
                     String.format(
                         "Could not find matching AirbyteProtocolType for \"%s\": %s",
                         type,
-                        e
-                    )
+                        e,
+                    ),
                 )
                 return UNKNOWN
             }
@@ -59,8 +60,11 @@ enum class AirbyteProtocolType : AirbyteType {
             } else if (AirbyteType.Companion.nodeMatches(propertyType, "integer")) {
                 return INTEGER
             } else if (AirbyteType.Companion.nodeMatches(propertyType, "number")) {
-                return if (AirbyteType.Companion.nodeMatches(airbyteType, "integer")) INTEGER
-                else NUMBER
+                return if (AirbyteType.Companion.nodeMatches(airbyteType, "integer")) {
+                    INTEGER
+                } else {
+                    NUMBER
+                }
             } else if (AirbyteType.Companion.nodeMatches(propertyType, "string")) {
                 if (AirbyteType.Companion.nodeMatches(format, "date")) {
                     return DATE
@@ -81,7 +85,7 @@ enum class AirbyteProtocolType : AirbyteType {
                         airbyteType == null ||
                             AirbyteType.Companion.nodeMatches(
                                 airbyteType,
-                                "timestamp_with_timezone"
+                                "timestamp_with_timezone",
                             )
                     ) {
                         return TIMESTAMP_WITH_TIMEZONE

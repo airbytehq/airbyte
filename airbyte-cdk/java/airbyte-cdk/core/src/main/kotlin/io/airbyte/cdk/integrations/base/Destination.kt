@@ -56,7 +56,7 @@ interface Destination : Integration {
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         return ShimToSerializedAirbyteMessageConsumer(
-            getConsumer(config, catalog, outputRecordCollector)
+            getConsumer(config, catalog, outputRecordCollector),
         )
     }
 
@@ -108,6 +108,7 @@ interface Destination : Integration {
         companion object {
             private val LOGGER: Logger =
                 LoggerFactory.getLogger(ShimToSerializedAirbyteMessageConsumer::class.java)
+
             /**
              * Consumes an [AirbyteMessage] for processing.
              *

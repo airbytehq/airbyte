@@ -31,9 +31,9 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
                         "compression_level",
                         5,
                         "include_checksum",
-                        true
-                    )
-                )
+                        true,
+                    ),
+                ),
             )
 
     @Throws(Exception::class)
@@ -53,7 +53,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
             val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader<GenericData.Record>(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
-                    GenericDatumReader<GenericData.Record>()
+                    GenericDatumReader<GenericData.Record>(),
                 )
                 .use { dataFileReader ->
                     val jsonReader: ObjectReader =
@@ -85,7 +85,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
             val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
-                    GenericDatumReader<GenericData.Record>()
+                    GenericDatumReader<GenericData.Record>(),
                 )
                 .use { dataFileReader ->
                     while (dataFileReader.hasNext()) {

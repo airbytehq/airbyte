@@ -52,12 +52,14 @@ object StateGeneratorUtils {
     val NAME_NAMESPACE_PAIR_FUNCTION:
         Function<AirbyteStreamState, AirbyteStreamNameNamespacePair?> =
         Function { s: AirbyteStreamState ->
-            if (isValidStreamDescriptor(s.streamDescriptor))
+            if (isValidStreamDescriptor(s.streamDescriptor)) {
                 AirbyteStreamNameNamespacePair(
                     s.streamDescriptor.name,
-                    s.streamDescriptor.namespace
+                    s.streamDescriptor.namespace,
                 )
-            else null
+            } else {
+                null
+            }
         }
 
     /**
@@ -75,10 +77,10 @@ object StateGeneratorUtils {
             .withStreamDescriptor(
                 StreamDescriptor()
                     .withName(airbyteStreamNameNamespacePair.name)
-                    .withNamespace(airbyteStreamNameNamespacePair.namespace)
+                    .withNamespace(airbyteStreamNameNamespacePair.namespace),
             )
             .withStreamState(
-                Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo))
+                Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)),
             )
     }
 
@@ -121,12 +123,12 @@ object StateGeneratorUtils {
                 pairToCursorInfoMap.entries
                     .stream()
                     .sorted(
-                        java.util.Map.Entry.comparingByKey()
+                        java.util.Map.Entry.comparingByKey(),
                     ) // sort by stream name then namespace for sanity.
                     .map { e: Map.Entry<AirbyteStreamNameNamespacePair, CursorInfo> ->
                         generateDbStreamState(e.key, e.value)
                     }
-                    .collect(Collectors.toList())
+                    .collect(Collectors.toList()),
             )
     }
 
@@ -146,8 +148,11 @@ object StateGeneratorUtils {
                 .withStreamName(airbyteStreamNameNamespacePair.name)
                 .withStreamNamespace(airbyteStreamNameNamespacePair.namespace)
                 .withCursorField(
-                    if (cursorInfo.cursorField == null) emptyList()
-                    else Lists.newArrayList(cursorInfo.cursorField)
+                    if (cursorInfo.cursorField == null) {
+                        emptyList()
+                    } else {
+                        Lists.newArrayList(cursorInfo.cursorField)
+                    },
                 )
                 .withCursor(cursorInfo.cursor)
         if (cursorInfo.cursorRecordCount > 0L) {
@@ -212,11 +217,11 @@ object StateGeneratorUtils {
                                 .withStreamDescriptor(
                                     StreamDescriptor()
                                         .withName(s.streamName)
-                                        .withNamespace(s.streamNamespace)
+                                        .withNamespace(s.streamNamespace),
                                 )
                                 .withStreamState(Jsons.jsonNode(s))
                         }
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toList()),
                 )
         return AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
@@ -244,9 +249,9 @@ object StateGeneratorUtils {
                             .withStreamDescriptor(
                                 StreamDescriptor()
                                     .withNamespace(s.streamNamespace)
-                                    .withName(s.streamName)
+                                    .withName(s.streamName),
                             )
-                            .withStreamState(Jsons.jsonNode(s))
+                            .withStreamState(Jsons.jsonNode(s)),
                     )
             }
             .collect(Collectors.toList())
@@ -279,7 +284,7 @@ object StateGeneratorUtils {
                         java.util.List.of(
                             AirbyteStateMessage()
                                 .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
-                                .withData(state.legacyState)
+                                .withData(state.legacyState),
                         )
                 }
             }
@@ -300,7 +305,7 @@ object StateGeneratorUtils {
             return java.util.List.of(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
-                    .withData(Jsons.jsonNode(DbState()))
+                    .withData(Jsons.jsonNode(DbState())),
             )
         } else if (supportedStateType == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
             val globalState =
@@ -310,13 +315,13 @@ object StateGeneratorUtils {
             return java.util.List.of(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                    .withGlobal(globalState)
+                    .withGlobal(globalState),
             )
         } else {
             return java.util.List.of(
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(AirbyteStreamState())
+                    .withStream(AirbyteStreamState()),
             )
         }
     }

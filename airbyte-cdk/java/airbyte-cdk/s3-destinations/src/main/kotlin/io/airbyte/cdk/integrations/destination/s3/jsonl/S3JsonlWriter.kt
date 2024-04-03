@@ -31,7 +31,7 @@ class S3JsonlWriter(
     config: S3DestinationConfig,
     s3Client: AmazonS3,
     configuredStream: ConfiguredAirbyteStream,
-    uploadTimestamp: Timestamp?
+    uploadTimestamp: Timestamp?,
 ) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val uploadManager: StreamTransferManager
     private val outputStream: MultiPartOutputStream
@@ -47,7 +47,7 @@ class S3JsonlWriter(
                     .s3Format(S3Format.JSONL)
                     .fileExtension(S3Format.JSONL.fileExtension)
                     .fileNamePattern(config.fileNamePattern)
-                    .build()
+                    .build(),
             )
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
@@ -55,7 +55,7 @@ class S3JsonlWriter(
             "Full S3 path for stream '{}': s3://{}/{}",
             stream.name,
             config.bucketName,
-            outputPath
+            outputPath,
         )
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 

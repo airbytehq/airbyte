@@ -22,7 +22,7 @@ import lombok.SneakyThrows
 class JdbcV1V2Migrator(
     private val namingConventionTransformer: NamingConventionTransformer,
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
     @SneakyThrows
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
@@ -64,7 +64,7 @@ class JdbcV1V2Migrator(
             database,
             databaseName,
             namespace,
-            tableName
+            tableName,
         )
     }
 
@@ -73,7 +73,7 @@ class JdbcV1V2Migrator(
         val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName!!)
         return NamespacedTableName(
             namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace!!),
-            tableName
+            tableName,
         )
     }
 }

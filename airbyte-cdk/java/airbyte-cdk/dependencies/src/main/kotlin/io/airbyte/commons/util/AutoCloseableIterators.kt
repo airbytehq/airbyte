@@ -119,7 +119,7 @@ object AutoCloseableIterators {
                 autoCloseableIterator.close()
                 voidCallable.call()
             },
-            null
+            null,
         )
     }
 
@@ -142,7 +142,7 @@ object AutoCloseableIterators {
                 autoCloseableIterator.close()
                 voidCallable.call()
             },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -182,7 +182,7 @@ object AutoCloseableIterators {
         return DefaultAutoCloseableIterator(
             Iterators.transform(fromIterator) { t: F -> function.apply(t) },
             { fromIterator.close() },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -206,7 +206,7 @@ object AutoCloseableIterators {
         return DefaultAutoCloseableIterator(
             iteratorCreator.apply(autoCloseableIterator),
             { autoCloseableIterator.close() },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -219,7 +219,7 @@ object AutoCloseableIterators {
         return DefaultAutoCloseableIterator(
             iteratorCreator.apply(autoCloseableIterator),
             { autoCloseableIterator.close() },
-            airbyteStream
+            airbyteStream,
         )
     }
 

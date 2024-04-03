@@ -22,7 +22,7 @@ object SshHelpers {
         val originalSpec =
             Jsons.deserialize(
                 MoreResources.readResource("spec.json"),
-                ConnectorSpecification::class.java
+                ConnectorSpecification::class.java,
             )
         return injectSshIntoSpec(originalSpec, group)
     }

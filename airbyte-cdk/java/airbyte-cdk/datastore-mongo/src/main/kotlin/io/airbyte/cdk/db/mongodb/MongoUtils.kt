@@ -63,7 +63,7 @@ object MongoUtils {
             BsonType.INT32,
             BsonType.TIMESTAMP,
             BsonType.INT64,
-            BsonType.DECIMAL128
+            BsonType.DECIMAL128,
         )
 
     private const val MISSING_TYPE = "missing"
@@ -78,7 +78,7 @@ object MongoUtils {
             BsonType.INT32,
             BsonType.INT64,
             BsonType.DOUBLE,
-            BsonType.DECIMAL128 -> JsonSchemaType.NUMBER
+            BsonType.DECIMAL128, -> JsonSchemaType.NUMBER
             BsonType.STRING,
             BsonType.SYMBOL,
             BsonType.BINARY,
@@ -86,10 +86,10 @@ object MongoUtils {
             BsonType.TIMESTAMP,
             BsonType.OBJECT_ID,
             BsonType.REGULAR_EXPRESSION,
-            BsonType.JAVASCRIPT -> JsonSchemaType.STRING
+            BsonType.JAVASCRIPT, -> JsonSchemaType.STRING
             BsonType.ARRAY -> JsonSchemaType.ARRAY
             BsonType.DOCUMENT,
-            BsonType.JAVASCRIPT_WITH_SCOPE -> JsonSchemaType.OBJECT
+            BsonType.JAVASCRIPT_WITH_SCOPE, -> JsonSchemaType.OBJECT
             else -> JsonSchemaType.STRING
         }
     }
@@ -117,7 +117,7 @@ object MongoUtils {
         } catch (e: Exception) {
             LOGGER.error(
                 String.format("Failed to get BsonValue for field type %s", type),
-                e.message
+                e.message,
             )
             return value
         }
@@ -169,8 +169,8 @@ object MongoUtils {
                     readDocument(
                         reader,
                         Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode,
-                        columnNames
-                    )
+                        columnNames,
+                    ),
                 )
             } else if (BsonType.ARRAY == fieldType) {
                 jsonNodes.set<JsonNode>(fieldName, readArray(reader, columnNames, fieldName))
@@ -186,11 +186,15 @@ object MongoUtils {
 
     /** Determines whether TLS/SSL should be enabled for a standalone instance of MongoDB. */
     fun tlsEnabledForStandaloneInstance(config: JsonNode, instanceConfig: JsonNode): Boolean {
-        return if (config.has(JdbcUtils.TLS_KEY)) config[JdbcUtils.TLS_KEY].asBoolean()
-        else
-            (if (instanceConfig.has(JdbcUtils.TLS_KEY))
+        return if (config.has(JdbcUtils.TLS_KEY)) {
+            config[JdbcUtils.TLS_KEY].asBoolean()
+        } else {
+            (if (instanceConfig.has(JdbcUtils.TLS_KEY)) {
                 instanceConfig[JdbcUtils.TLS_KEY].asBoolean()
-            else true)
+            } else {
+                true
+            })
+        }
     }
 
     fun transformToStringIfMarked(
@@ -204,12 +208,12 @@ object MongoUtils {
                 jsonNodes.remove(fieldName)
                 jsonNodes.put(
                     fieldName + AIRBYTE_SUFFIX,
-                    if (data.isTextual) data.asText() else data.toString()
+                    if (data.isTextual) data.asText() else data.toString(),
                 )
             } else {
                 LOGGER.debug(
                     "WARNING Field list out of sync, Document doesn't contain field: {}",
-                    fieldName
+                    fieldName,
                 )
             }
         }
@@ -231,8 +235,8 @@ object MongoUtils {
                     readDocument(
                         reader,
                         Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode,
-                        columnNames
-                    )
+                        columnNames,
+                    ),
                 )
             } else if (BsonType.ARRAY == arrayFieldType) {
                 // recursion is used to read inner array
@@ -244,7 +248,7 @@ object MongoUtils {
                         Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode,
                         columnNames,
                         fieldName,
-                        arrayFieldType
+                        arrayFieldType,
                     )
                 elements.add(element[fieldName])
             }
@@ -336,7 +340,7 @@ object MongoUtils {
                 if (nestedType == BsonType.DOCUMENT) {
                     setSubFields(collection, childNode, "$pathToField.$key")
                 }
-            }
+            },
         )
     }
 
@@ -354,15 +358,15 @@ object MongoUtils {
                     Document("\$limit", DISCOVER_LIMIT),
                     Document(
                         "\$project",
-                        Document("arrayofkeyvalue", Document("\$objectToArray", "$$fieldName"))
+                        Document("arrayofkeyvalue", Document("\$objectToArray", "$$fieldName")),
                     ),
                     Document("\$unwind", "\$arrayofkeyvalue"),
                     Document(
                         "\$group",
                         Document(ID, null)
-                            .append("allkeys", Document("\$addToSet", "\$arrayofkeyvalue.k"))
-                    )
-                )
+                            .append("allkeys", Document("\$addToSet", "\$arrayofkeyvalue.k")),
+                    ),
+                ),
             )
         return if (output.cursor().hasNext()) {
             output.cursor().next()["allkeys"] as List<String>?
@@ -379,14 +383,14 @@ object MongoUtils {
                     Document("\$limit", DISCOVER_LIMIT),
                     Document(
                         "\$project",
-                        Document(ID, 0).append("fieldType", Document("\$type", fieldName))
+                        Document(ID, 0).append("fieldType", Document("\$type", fieldName)),
                     ),
                     Document(
                         "\$group",
                         Document(ID, Document("fieldType", "\$fieldType"))
-                            .append("count", Document("\$sum", 1))
-                    )
-                )
+                            .append("count", Document("\$sum", 1)),
+                    ),
+                ),
             )
         val listOfTypes = ArrayList<String>()
         val cursor = output.cursor()
@@ -448,8 +452,8 @@ object MongoUtils {
                         Jsr310CodecProvider(),
                         JsonObjectCodecProvider(),
                         BsonCodecProvider(),
-                        DBRefCodecProvider()
-                    )
+                        DBRefCodecProvider(),
+                    ),
                 )
 
             // Override the default codec registry
@@ -487,7 +491,8 @@ object MongoUtils {
     enum class MongoInstanceType(val type: String) {
         STANDALONE("standalone"),
         REPLICA("replica"),
-        ATLAS("atlas");
+        ATLAS("atlas"),
+        ;
 
         companion object {
             fun fromValue(value: String): MongoInstanceType {

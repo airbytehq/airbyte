@@ -16,7 +16,7 @@ import org.mockito.kotlin.any
 internal class SwitchingDestinationTest {
     internal enum class SwitchingEnum {
         INSERT,
-        COPY
+        COPY,
     }
 
     private lateinit var insertDestination: Destination
@@ -32,7 +32,7 @@ internal class SwitchingDestinationTest {
                 SwitchingEnum.INSERT,
                 insertDestination,
                 SwitchingEnum.COPY,
-                copyDestination
+                copyDestination,
             )
     }
 
@@ -43,13 +43,13 @@ internal class SwitchingDestinationTest {
             SwitchingDestination(
                 SwitchingEnum::class.java,
                 { c: JsonNode? -> SwitchingEnum.INSERT },
-                destinationMap
+                destinationMap,
             )
 
         switchingDestination.getConsumer(
             Mockito.mock(JsonNode::class.java),
             Mockito.mock(ConfiguredAirbyteCatalog::class.java),
-            mock()
+            mock(),
         )
 
         Mockito.verify(insertDestination, Mockito.times(1)).getConsumer(any(), any(), any())
@@ -68,13 +68,13 @@ internal class SwitchingDestinationTest {
             SwitchingDestination(
                 SwitchingEnum::class.java,
                 { c: JsonNode? -> SwitchingEnum.COPY },
-                destinationMap
+                destinationMap,
             )
 
         switchingDestination.getConsumer(
             Mockito.mock(JsonNode::class.java),
             Mockito.mock(ConfiguredAirbyteCatalog::class.java),
-            Mockito.mock()
+            Mockito.mock(),
         )
 
         Mockito.verify(insertDestination, Mockito.times(0)).getConsumer(any(), any(), any())

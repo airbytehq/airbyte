@@ -30,7 +30,7 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
     parsedCatalog: ParsedCatalog,
     v1V2Migrator: DestinationV1V2Migrator,
     v2TableMigrator: V2TableMigrator,
-    migrations: List<Migration<DestinationState>>
+    migrations: List<Migration<DestinationState>>,
 ) : TyperDeduper {
     private val v1V2Migrator: DestinationV1V2Migrator
     private val v2TableMigrator: V2TableMigrator
@@ -50,7 +50,7 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
                 FutureUtils.countOfTypeAndDedupeThreads,
                 BasicThreadFactory.Builder()
                     .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
-                    .build()
+                    .build(),
             )
     }
 
@@ -64,7 +64,7 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
             destinationHandler,
             v1V2Migrator,
             v2TableMigrator,
-            parsedCatalog
+            parsedCatalog,
         )
 
         val destinationInitialStatuses =
@@ -72,13 +72,13 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
                 executorService,
                 destinationHandler,
                 migrations,
-                destinationHandler.gatherInitialState(parsedCatalog.streams)
+                destinationHandler.gatherInitialState(parsedCatalog.streams),
             )
 
         // Commit the updated destination states.
         // We don't need to trigger any soft resets, because we don't have any final tables.
         destinationHandler.commitDestinationStates(
-            destinationInitialStatuses.associate { it.streamConfig.id to it.destinationState }
+            destinationInitialStatuses.associate { it.streamConfig.id to it.destinationState },
         )
     }
 

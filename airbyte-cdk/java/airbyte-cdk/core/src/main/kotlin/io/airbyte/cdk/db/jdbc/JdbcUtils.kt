@@ -15,6 +15,7 @@ object JdbcUtils {
     const val DATABASE_KEY: String = "database"
     const val ENCRYPTION_KEY: String = "encryption"
     const val HOST_KEY: String = "host"
+
     @JvmField val HOST_LIST_KEY: List<String> = listOf("host")
     const val JDBC_URL_KEY: String = "jdbc_url"
     const val JDBC_URL_PARAMS_KEY: String = "jdbc_url_params"
@@ -60,8 +61,9 @@ object JdbcUtils {
             JDBCType.DECIMAL,
             JDBCType.NVARCHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR
+            JDBCType.LONGVARCHAR,
         )
+
     @JvmStatic val defaultSourceOperations: JdbcSourceOperations = JdbcSourceOperations()
 
     val defaultJSONFormat: JSONFormat = JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT)
@@ -104,7 +106,7 @@ object JdbcUtils {
                 } else {
                     throw ConfigErrorException(
                         "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got " +
-                            jdbcPropertiesString
+                            jdbcPropertiesString,
                     )
                 }
             }
@@ -125,7 +127,11 @@ object JdbcUtils {
         return if (!config.has(SSL_KEY)) {
             if (config.has(SSL_MODE_KEY) && config[SSL_MODE_KEY].has(MODE_KEY)) {
                 !SSL_MODE_DISABLE.contains(config[SSL_MODE_KEY][MODE_KEY].asText())
-            } else true
-        } else config[SSL_KEY].asBoolean()
+            } else {
+                true
+            }
+        } else {
+            config[SSL_KEY].asBoolean()
+        }
     }
 }

@@ -69,7 +69,7 @@ object JsonPaths {
                      */
                     return EnumSet.of(Option.ALWAYS_RETURN_LIST)
                 }
-            }
+            },
         )
     }
 
@@ -96,8 +96,11 @@ object JsonPaths {
         var jsonPath = empty()
         for (fieldNameOrList in jsonSchemaPath) {
             jsonPath =
-                if (fieldNameOrList.isList) appendAppendListSplat(jsonPath)
-                else appendField(jsonPath, fieldNameOrList.fieldName)
+                if (fieldNameOrList.isList) {
+                    appendAppendListSplat(jsonPath)
+                } else {
+                    appendField(jsonPath, fieldNameOrList.fieldName)
+                }
         }
         return jsonPath
     }
@@ -130,7 +133,7 @@ object JsonPaths {
     fun assertIsSingleReturnQuery(jsonPath: String?) {
         Preconditions.checkArgument(
             JsonPath.isPathDefinite(jsonPath),
-            "Cannot accept paths with wildcards because they may return more than one item."
+            "Cannot accept paths with wildcards because they may return more than one item.",
         )
     }
 
@@ -197,8 +200,8 @@ object JsonPaths {
             String.format(
                 "Path returned more than one item. path: %s items: %s",
                 jsonPath,
-                jsonNodes
-            )
+                jsonNodes,
+            ),
         )
         return if (jsonNodes.isEmpty()) Optional.empty() else Optional.of(jsonNodes[0])
     }
@@ -226,8 +229,8 @@ object JsonPaths {
             String.format(
                 "Path returned more than one item. path: %s items: %s",
                 jsonPath,
-                foundPaths
-            )
+                foundPaths,
+            ),
         )
         return !foundPaths.isEmpty()
     }
@@ -349,7 +352,7 @@ object JsonPaths {
         assertIsJsonPath(jsonPath)
         return try {
             MoreIterators.toList(
-                JsonPath.using(conf).parse(json).read(jsonPath, ArrayNode::class.java).iterator()
+                JsonPath.using(conf).parse(json).read(jsonPath, ArrayNode::class.java).iterator(),
             )
         } catch (e: PathNotFoundException) {
             emptyList()

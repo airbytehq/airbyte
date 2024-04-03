@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory
 class StreamingJdbcDatabase(
     dataSource: DataSource,
     sourceOperations: JdbcCompatibleSourceOperations<*>?,
-    private val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>
+    private val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
 ) : DefaultJdbcDatabase(dataSource, sourceOperations) {
     /**
      * Assuming that the [JdbcStreamingQueryConfig] is configured correctly for the JDBC driver
@@ -102,7 +102,7 @@ class StreamingJdbcDatabase(
                     }
                 }
             },
-            false
+            false,
         )
     }
 

@@ -32,7 +32,7 @@ object StateTestConstants {
             DbStreamState()
                 .withStreamName(STREAM_NAME1)
                 .withCursorField(Lists.newArrayList(cursorField))
-                .withCursor(cursor)
+                .withCursor(cursor),
         )
     }
 
@@ -46,13 +46,13 @@ object StateTestConstants {
                 .withStreamName(STREAM_NAME1)
                 .withCursorField(Lists.newArrayList(cursorField))
                 .withCursor(cursor)
-                .withCursorRecordCount(cursorRecordCount)
+                .withCursorRecordCount(cursorRecordCount),
         )
     }
 
     fun getCatalog(cursorField: String?): Optional<ConfiguredAirbyteCatalog> {
         return Optional.of(
-            ConfiguredAirbyteCatalog().withStreams(List.of(getStream(cursorField).orElse(null)))
+            ConfiguredAirbyteCatalog().withStreams(List.of(getStream(cursorField).orElse(null))),
         )
     }
 
@@ -61,8 +61,8 @@ object StateTestConstants {
             ConfiguredAirbyteStream()
                 .withStream(AirbyteStream().withName(STREAM_NAME1))
                 .withCursorField(
-                    if (cursorField == null) emptyList() else Lists.newArrayList(cursorField)
-                )
+                    if (cursorField == null) emptyList() else Lists.newArrayList(cursorField),
+                ),
         )
     }
 }

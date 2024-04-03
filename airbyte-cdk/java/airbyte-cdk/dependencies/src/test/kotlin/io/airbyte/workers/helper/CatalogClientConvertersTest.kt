@@ -19,7 +19,7 @@ internal class CatalogClientConvertersTest {
     fun testConvertToClientAPI() {
         Assertions.assertEquals(
             EXPECTED_CLIENT_CATALOG,
-            CatalogClientConverters.toAirbyteCatalogClientApi(BASIC_MODEL_CATALOG)
+            CatalogClientConverters.toAirbyteCatalogClientApi(BASIC_MODEL_CATALOG),
         )
     }
 
@@ -27,7 +27,7 @@ internal class CatalogClientConvertersTest {
     fun testConvertToProtocol() {
         Assertions.assertEquals(
             BASIC_MODEL_CATALOG,
-            CatalogClientConverters.toAirbyteProtocol(EXPECTED_CLIENT_CATALOG)
+            CatalogClientConverters.toAirbyteProtocol(EXPECTED_CLIENT_CATALOG),
         )
     }
 
@@ -39,8 +39,8 @@ internal class CatalogClientConvertersTest {
                 .withName(STREAM_NAME)
                 .withJsonSchema(
                     CatalogHelpers.fieldsToJsonSchema(
-                        Field.of(ID_FIELD_NAME, JsonSchemaType.STRING)
-                    )
+                        Field.of(ID_FIELD_NAME, JsonSchemaType.STRING),
+                    ),
                 )
                 .withDefaultCursorField(Lists.newArrayList(ID_FIELD_NAME))
                 .withSourceDefinedCursor(false)
@@ -48,8 +48,8 @@ internal class CatalogClientConvertersTest {
                 .withSupportedSyncModes(
                     List.of(
                         io.airbyte.protocol.models.SyncMode.FULL_REFRESH,
-                        io.airbyte.protocol.models.SyncMode.INCREMENTAL
-                    )
+                        io.airbyte.protocol.models.SyncMode.INCREMENTAL,
+                    ),
                 )
 
         private val CLIENT_STREAM: io.airbyte.api.client.model.generated.AirbyteStream =
@@ -58,8 +58,8 @@ internal class CatalogClientConvertersTest {
                 .name(STREAM_NAME)
                 .jsonSchema(
                     CatalogHelpers.fieldsToJsonSchema(
-                        Field.of(ID_FIELD_NAME, JsonSchemaType.STRING)
-                    )
+                        Field.of(ID_FIELD_NAME, JsonSchemaType.STRING),
+                    ),
                 )
                 .defaultCursorField(Lists.newArrayList(ID_FIELD_NAME))
                 .sourceDefinedCursor(false)
@@ -84,8 +84,8 @@ internal class CatalogClientConvertersTest {
                     Lists.newArrayList(
                         AirbyteStreamAndConfiguration()
                             .stream(CLIENT_STREAM)
-                            .config(CLIENT_DEFAULT_STREAM_CONFIGURATION)
-                    )
+                            .config(CLIENT_DEFAULT_STREAM_CONFIGURATION),
+                    ),
                 )
     }
 }

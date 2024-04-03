@@ -55,14 +55,15 @@ internal class S3CsvWriterTest {
         streamTransferManagerMockedConstruction =
             Mockito.mockConstruction(StreamTransferManagerWithMetadata::class.java) {
                 mock: StreamTransferManagerWithMetadata,
-                context: MockedConstruction.Context ->
+                context: MockedConstruction.Context,
+                ->
                 // Mockito doesn't seem to provide an easy way to actually retrieve these arguments
                 // later on, so
                 // manually store them on construction.
                 // _PowerMockito_ does, but I didn't want to set up that additional dependency.
                 val arguments = context.arguments()
                 streamTransferManagerConstructorArguments.add(
-                    StreamTransferManagerArguments(arguments[0] as String, arguments[1] as String)
+                    StreamTransferManagerArguments(arguments[0] as String, arguments[1] as String),
                 )
 
                 Mockito.doReturn(mock).`when`(mock).numUploadThreads(ArgumentMatchers.anyInt())
@@ -94,7 +95,7 @@ internal class S3CsvWriterTest {
                         capturer.write(
                             invocation.getArgument(0),
                             invocation.getArgument(1),
-                            invocation.getArgument(2)
+                            invocation.getArgument(2),
                         )
                         null
                     }
@@ -102,7 +103,7 @@ internal class S3CsvWriterTest {
                     .write(
                         ArgumentMatchers.any<ByteArray>(ByteArray::class.java),
                         ArgumentMatchers.anyInt(),
-                        ArgumentMatchers.anyInt()
+                        ArgumentMatchers.anyInt(),
                     )
             }
 
@@ -179,13 +180,13 @@ internal class S3CsvWriterTest {
             UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-                .withEmittedAt(1234L)
+                .withEmittedAt(1234L),
         )
         writer.write(
             UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-                .withEmittedAt(2345L)
+                .withEmittedAt(2345L),
         )
         writer.close(false)
 
@@ -199,7 +200,7 @@ internal class S3CsvWriterTest {
         """
                 .trimIndent()
                 .replace("\n", "\r\n"),
-            outputStreams!![0].toString(StandardCharsets.UTF_8)
+            outputStreams!![0].toString(StandardCharsets.UTF_8),
         )
     }
 
@@ -212,13 +213,13 @@ internal class S3CsvWriterTest {
             UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-                .withEmittedAt(1234L)
+                .withEmittedAt(1234L),
         )
         writer.write(
             UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-                .withEmittedAt(2345L)
+                .withEmittedAt(2345L),
         )
         writer.close(false)
 
@@ -231,7 +232,7 @@ internal class S3CsvWriterTest {
         """
                 .trimIndent()
                 .replace("\n", "\r\n"),
-            outputStreams!![0].toString(StandardCharsets.UTF_8)
+            outputStreams!![0].toString(StandardCharsets.UTF_8),
         )
     }
 
@@ -263,13 +264,13 @@ internal class S3CsvWriterTest {
             UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
-                .withEmittedAt(1234L)
+                .withEmittedAt(1234L),
         )
         writer.write(
             UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
             AirbyteRecordMessage()
                 .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
-                .withEmittedAt(2345L)
+                .withEmittedAt(2345L),
         )
         writer.close(false)
 
@@ -283,7 +284,7 @@ internal class S3CsvWriterTest {
         """
                 .trimIndent()
                 .replace("\n", "\r\n"),
-            outputStreams!![0].toString(StandardCharsets.UTF_8)
+            outputStreams!![0].toString(StandardCharsets.UTF_8),
         )
     }
 
@@ -343,7 +344,7 @@ internal class S3CsvWriterTest {
                 objectName // "^" == start of string
                     .replaceFirst(
                         ("^" + EXPECTED_OBJECT_BEGINNING).toRegex(),
-                        ""
+                        "",
                     ) // "$" == end of string
                     .replaceFirst((EXPECTED_OBJECT_ENDING + "$").toRegex(), "")
             Assertions.assertDoesNotThrow<UUID>({ UUID.fromString(uuidMaybe) }, errorMessage)

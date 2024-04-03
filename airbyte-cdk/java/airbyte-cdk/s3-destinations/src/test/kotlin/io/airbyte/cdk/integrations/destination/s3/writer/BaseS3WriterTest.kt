@@ -18,7 +18,7 @@ internal class BaseS3WriterTest {
         val timestamp = Timestamp(1471461319000L)
         Assertions.assertEquals(
             "2016_08_17_1471461319000_0.csv",
-            determineOutputFilename(builder().s3Format(S3Format.CSV).timestamp(timestamp).build())
+            determineOutputFilename(builder().s3Format(S3Format.CSV).timestamp(timestamp).build()),
         )
     }
 }

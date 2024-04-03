@@ -35,7 +35,7 @@ object AdaptiveDestinationRunner {
 
     class CloudDestinationBuilder<OT : Destination>(
         private val deploymentMode: String,
-        private val ossDestinationSupplier: Supplier<OT>
+        private val ossDestinationSupplier: Supplier<OT>,
     ) {
         fun <CT : Destination> withCloudDestination(
             cloudDestinationSupplier: Supplier<CT>
@@ -47,7 +47,7 @@ object AdaptiveDestinationRunner {
     class Runner<OT : Destination, CT : Destination>(
         private val deploymentMode: String?,
         private val ossDestinationSupplier: Supplier<OT>,
-        private val cloudDestinationSupplier: Supplier<CT>
+        private val cloudDestinationSupplier: Supplier<CT>,
     ) {
         private val destination: Destination
             get() {

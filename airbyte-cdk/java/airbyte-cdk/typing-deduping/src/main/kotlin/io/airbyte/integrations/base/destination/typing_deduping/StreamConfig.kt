@@ -14,5 +14,5 @@ data class StreamConfig(
     val destinationSyncMode: DestinationSyncMode?,
     val primaryKey: List<ColumnId>?,
     val cursor: Optional<ColumnId>?,
-    val columns: LinkedHashMap<ColumnId, AirbyteType>?
-) {}
+    val columns: LinkedHashMap<ColumnId, AirbyteType>?,
+)

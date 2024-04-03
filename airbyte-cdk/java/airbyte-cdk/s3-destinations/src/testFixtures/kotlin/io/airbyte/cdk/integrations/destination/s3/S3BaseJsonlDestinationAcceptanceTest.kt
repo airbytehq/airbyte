@@ -28,8 +28,8 @@ abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
                     "flattening",
                     Flattening.NO.value,
                     "compression",
-                    Jsons.jsonNode(Map.of("compression_type", "No Compression"))
-                )
+                    Jsons.jsonNode(Map.of("compression_type", "No Compression")),
+                ),
             )
 
     @Throws(IOException::class)

@@ -34,7 +34,7 @@ class DebeziumRecordIteratorTest {
                 { false },
                 mock(),
                 Duration.ZERO,
-                Duration.ZERO
+                Duration.ZERO,
             )
         val lsn =
             debeziumRecordIterator.getHeartbeatPosition(
@@ -45,7 +45,7 @@ class DebeziumRecordIteratorTest {
                             Collections.singletonMap("lsn", 358824993496L),
                             null,
                             null,
-                            null
+                            null,
                         )
 
                     override fun key(): String? {
@@ -63,7 +63,7 @@ class DebeziumRecordIteratorTest {
                     fun sourceRecord(): SourceRecord {
                         return sourceRecord
                     }
-                }
+                },
             )
 
         Assertions.assertEquals(lsn, 358824993496L)

@@ -14,7 +14,7 @@ class InitialSizeEstimator(
     private val sampleSize: Int,
     minFetchSize: Int,
     defaultFetchSize: Int,
-    maxFetchSize: Int
+    maxFetchSize: Int,
 ) :
     BaseSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize),
     FetchSizeEstimator {

@@ -38,22 +38,23 @@ internal constructor(
     private val streamFactory: AirbyteStreamFactory,
     private val heartbeatMonitor: HeartbeatMonitor,
     private val protocolSerializer: ProtocolSerializer,
-    featureFlags: FeatureFlags
+    featureFlags: FeatureFlags,
 ) : AirbyteSource {
     private var sourceProcess: Process? = null
     private var messageIterator: Iterator<AirbyteMessage?>? = null
 
     private var exitValueIsSet = false
+
     @get:Throws(IllegalStateException::class)
     override var exitValue: Int = 0
         get() {
             Preconditions.checkState(
                 sourceProcess != null,
-                "Source process is null, cannot retrieve exit value."
+                "Source process is null, cannot retrieve exit value.",
             )
             Preconditions.checkState(
                 !sourceProcess!!.isAlive,
-                "Source process is still alive, cannot retrieve exit value."
+                "Source process is still alive, cannot retrieve exit value.",
             )
 
             if (!exitValueIsSet) {
@@ -68,25 +69,25 @@ internal constructor(
 
     constructor(
         integrationLauncher: IntegrationLauncher,
-        featureFlags: FeatureFlags
+        featureFlags: FeatureFlags,
     ) : this(
         integrationLauncher,
         DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
         DefaultProtocolSerializer(),
-        featureFlags
+        featureFlags,
     )
 
     constructor(
         integrationLauncher: IntegrationLauncher,
         streamFactory: AirbyteStreamFactory,
         protocolSerializer: ProtocolSerializer,
-        featureFlags: FeatureFlags
+        featureFlags: FeatureFlags,
     ) : this(
         integrationLauncher,
         streamFactory,
         HeartbeatMonitor(HEARTBEAT_FRESH_DURATION),
         protocolSerializer,
-        featureFlags
+        featureFlags,
     )
 
     @Throws(Exception::class)
@@ -100,19 +101,20 @@ internal constructor(
                 Jsons.serialize(sourceConfig.sourceConnectionConfiguration),
                 WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
                 protocolSerializer.serialize(sourceConfig.catalog),
-                if (sourceConfig.state == null) null
-                else
-                    WorkerConstants
-                        .INPUT_STATE_JSON_FILENAME, // TODO We should be passing a typed state here
+                if (sourceConfig.state == null) {
+                    null
+                } else {
+                    WorkerConstants.INPUT_STATE_JSON_FILENAME
+                }, // TODO We should be passing a typed state here
                 // and use the protocolSerializer
-                if (sourceConfig.state == null) null else Jsons.serialize(sourceConfig.state.state)
+                if (sourceConfig.state == null) null else Jsons.serialize(sourceConfig.state.state),
             )
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             sourceProcess!!.errorStream,
             { msg: String? -> LOGGER.error(msg) },
             "airbyte-source",
-            CONTAINER_LOG_MDC_BUILDER
+            CONTAINER_LOG_MDC_BUILDER,
         )
 
         logInitialStateAsJSON(sourceConfig)
@@ -122,7 +124,7 @@ internal constructor(
                 AirbyteMessage.Type.RECORD,
                 AirbyteMessage.Type.STATE,
                 AirbyteMessage.Type.TRACE,
-                AirbyteMessage.Type.CONTROL
+                AirbyteMessage.Type.CONTROL,
             )
         messageIterator =
             streamFactory
@@ -149,7 +151,7 @@ internal constructor(
         Preconditions.checkState(sourceProcess != null)
 
         return Optional.ofNullable(
-            if (messageIterator!!.hasNext()) messageIterator!!.next() else null
+            if (messageIterator!!.hasNext()) messageIterator!!.next() else null,
         )
     }
 
@@ -164,13 +166,16 @@ internal constructor(
         TestHarnessUtils.gentleClose(
             sourceProcess,
             GRACEFUL_SHUTDOWN_DURATION.toMillis(),
-            TimeUnit.MILLISECONDS
+            TimeUnit.MILLISECONDS,
         )
 
         if (sourceProcess!!.isAlive || !IGNORED_EXIT_CODES.contains(exitValue)) {
             val message =
-                if (sourceProcess!!.isAlive) "Source has not terminated "
-                else "Source process exit with code " + exitValue
+                if (sourceProcess!!.isAlive) {
+                    "Source has not terminated "
+                } else {
+                    "Source process exit with code " + exitValue
+                }
             LOGGER.warn("$message. This warning is normal if the job was cancelled.")
         }
     }
@@ -209,7 +214,7 @@ internal constructor(
         val IGNORED_EXIT_CODES: Set<Int> =
             setOf(
                 0, // Normal exit
-                143 // SIGTERM
+                143, // SIGTERM
             )
 
         val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder =

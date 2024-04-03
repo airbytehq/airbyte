@@ -28,7 +28,7 @@ class RecordDiffer
 constructor(
     private val rawRecordColumnNames: Map<String, String>,
     private val finalRecordColumnNames: Map<String, String>,
-    vararg identifyingColumns: Pair<ColumnId, AirbyteType>
+    vararg identifyingColumns: Pair<ColumnId, AirbyteType>,
 ) {
     private val rawRecordIdentityComparator: Comparator<JsonNode>
     private val rawRecordSortComparator: Comparator<JsonNode>
@@ -82,7 +82,7 @@ constructor(
     ) {
         Assertions.assertAll(
             Executable { diffRawTableRecords(expectedRawRecords, actualRawRecords) },
-            Executable { diffFinalTableRecords(expectedFinalRecords, actualFinalRecords) }
+            Executable { diffFinalTableRecords(expectedFinalRecords, actualFinalRecords) },
         )
     }
 
@@ -100,7 +100,7 @@ constructor(
                 rawRecordIdentityComparator,
                 rawRecordSortComparator,
                 rawRecordIdentityExtractor,
-                rawRecordColumnNames
+                rawRecordColumnNames,
             )
 
         if (!diff.isEmpty()) {
@@ -116,7 +116,7 @@ constructor(
                 finalRecordIdentityComparator,
                 finalRecordSortComparator,
                 finalRecordIdentityExtractor,
-                finalRecordColumnNames
+                finalRecordColumnNames,
             )
 
         if (!diff.isEmpty()) {
@@ -145,7 +145,7 @@ constructor(
                 // _airbyte_raw_id)
                 // We don't support that in production, so we don't support it here either.
                 throw RuntimeException(
-                    "Cannot lift field " + field.key + " because it already exists in the record."
+                    "Cannot lift field " + field.key + " because it already exists in the record.",
                 )
             }
         }
@@ -168,7 +168,7 @@ constructor(
         comp =
             comp.thenComparing { record ->
                 asTimestampWithTimezone(
-                    record!![getMetadataColumnName(columnNames, "_airbyte_extracted_at")]
+                    record!![getMetadataColumnName(columnNames, "_airbyte_extracted_at")],
                 )
             }
         return comp
@@ -187,7 +187,7 @@ constructor(
                 .collect(Collectors.joining(", ")) +
                 getPrintableFieldIfPresent(
                     record,
-                    getMetadataColumnName(columnNames, "_airbyte_extracted_at")
+                    getMetadataColumnName(columnNames, "_airbyte_extracted_at"),
                 ))
         }
     }
@@ -523,7 +523,7 @@ constructor(
                     }
                 } else {
                     node.toString()
-                }
+                },
             )
         }
     }

@@ -45,7 +45,7 @@ internal class CompositeIteratorTest {
         val iterator: AutoCloseableIterator<String?> =
             CompositeIterator(
                 emptyList<AutoCloseableIterator<String?>>(),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
             )
         Assertions.assertFalse(iterator.hasNext())
         Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(0)).accept(any())
@@ -60,20 +60,20 @@ internal class CompositeIteratorTest {
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("a", "b", "c"),
                         onClose1,
-                        airbyteStream1
+                        airbyteStream1,
                     ),
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("d", "e", "f"),
                         onClose2,
-                        airbyteStream2
+                        airbyteStream2,
                     ),
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("g", "h", "i"),
                         onClose3,
-                        airbyteStream3
-                    )
+                        airbyteStream3,
+                    ),
                 ),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
             )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2, onClose3))
@@ -109,20 +109,20 @@ internal class CompositeIteratorTest {
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("a", "b", "c"),
                         onClose1,
-                        airbyteStream1
+                        airbyteStream1,
                     ),
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of(),
                         onClose2,
-                        airbyteStream2
+                        airbyteStream2,
                     ),
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("g", "h", "i"),
                         onClose3,
-                        airbyteStream3
-                    )
+                        airbyteStream3,
+                    ),
                 ),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
             )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2, onClose3))
@@ -147,10 +147,10 @@ internal class CompositeIteratorTest {
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("a", "b", "c"),
                         onClose1,
-                        airbyteStream1
-                    )
+                        airbyteStream1,
+                    ),
                 ),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
             )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1))
@@ -171,10 +171,10 @@ internal class CompositeIteratorTest {
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("a", "b", "c"),
                         onClose1,
-                        airbyteStream1
-                    )
+                        airbyteStream1,
+                    ),
                 ),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
             )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1))

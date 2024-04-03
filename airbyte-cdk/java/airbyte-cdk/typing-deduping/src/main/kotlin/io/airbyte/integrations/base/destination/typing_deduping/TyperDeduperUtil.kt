@@ -55,16 +55,16 @@ class TyperDeduperUtil {
                                         executorService,
                                         destinationHandler,
                                         migration,
-                                        initialState
+                                        initialState,
                                     )
-                                }
-                            )
+                                },
+                            ),
                         )
                 val migrationResultFutures =
                     CompletableFutures.allOf(futures.values.toList()).toCompletableFuture().join()
                 getResultsOrLogAndThrowFirst(
                     "The following exceptions were thrown attempting to run migrations:\n",
-                    migrationResultFutures
+                    migrationResultFutures,
                 )
                 val migrationResults: Map<StreamId, Migration.MigrationResult<DestinationState>> =
                     futures.mapValues { it.value.toCompletableFuture().join() }
@@ -79,7 +79,7 @@ class TyperDeduperUtil {
                         destinationHandler.gatherInitialState(
                             currentStates
                                 .filter { invalidatedStreams.contains(it.streamConfig.id) }
-                                .map { it.streamConfig }
+                                .map { it.streamConfig },
                         )
                     LOGGER.info("Updated states: $updatedStates")
                 } else {
@@ -101,7 +101,7 @@ class TyperDeduperUtil {
                             return@map updatedStates
                                 .filter { updatedState ->
                                     updatedState.streamConfig.id.equals(
-                                        initialState.streamConfig.id
+                                        initialState.streamConfig.id,
                                     )
                                 }
                                 .first()
@@ -141,12 +141,12 @@ class TyperDeduperUtil {
                             v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, it)
                             v2TableMigrator.migrateIfNecessary(it)
                         },
-                        executorService
+                        executorService,
                     )
                 }
             getResultsOrLogAndThrowFirst(
                 "The following exceptions were thrown attempting to run migrations:\n",
-                CompletableFutures.allOf(futures.toList()).toCompletableFuture().join()
+                CompletableFutures.allOf(futures.toList()).toCompletableFuture().join(),
             )
         }
 
@@ -176,7 +176,7 @@ class TyperDeduperUtil {
             return CompletableFuture.supplyAsync(
                 {
                     LOGGER.info(
-                        "Maybe executing ${migration.javaClass.simpleName} migration for stream ${initialStatus.streamConfig.id.originalNamespace}.${initialStatus.streamConfig.id.originalName}."
+                        "Maybe executing ${migration.javaClass.simpleName} migration for stream ${initialStatus.streamConfig.id.originalNamespace}.${initialStatus.streamConfig.id.originalName}.",
                     )
 
                     // We technically don't need to track this, but might as well hedge against
@@ -187,18 +187,18 @@ class TyperDeduperUtil {
                         migration.migrateIfNecessary(
                             destinationHandler,
                             initialStatus.streamConfig,
-                            initialStatus
+                            initialStatus,
                         )
                     val updatedNeedsSoftReset =
                         softReset || migrationResult.updatedDestinationState.needsSoftReset()
                     return@supplyAsync migrationResult.copy(
                         updatedDestinationState =
                             migrationResult.updatedDestinationState.withSoftReset(
-                                updatedNeedsSoftReset
-                            )
+                                updatedNeedsSoftReset,
+                            ),
                     )
                 },
-                executorService
+                executorService,
             )
         }
     }

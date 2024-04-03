@@ -19,7 +19,7 @@ class DebeziumMessageProducer<T>(
     targetPosition: CdcTargetPosition<T>,
     eventConverter: DebeziumEventConverter,
     offsetManager: AirbyteFileOffsetBackingStore?,
-    schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
+    schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>,
 ) : SourceStateMessageProducer<ChangeEventWithMetadata> {
     /**
      * `checkpointOffsetToSend` is used as temporal storage for the offset that we want to send as
@@ -88,7 +88,7 @@ class DebeziumMessageProducer<T>(
                 }
             } catch (e: ConnectException) {
                 LOGGER.warn(
-                    "Offset file is being written by Debezium. Skipping CDC checkpoint in this loop."
+                    "Offset file is being written by Debezium. Skipping CDC checkpoint in this loop.",
                 )
             }
         }
@@ -136,7 +136,7 @@ class DebeziumMessageProducer<T>(
                     offset,
                     schemaHistoryManager
                         .map { obj: AirbyteSchemaHistoryStorage -> obj.read() }
-                        .orElse(null)
+                        .orElse(null),
                 )!!
                 .state
         return message

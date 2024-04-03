@@ -21,7 +21,7 @@ internal class DatabaseConnectionHelperTest {
         Assertions.assertEquals(HikariDataSource::class.java, dataSource!!.javaClass)
         Assertions.assertEquals(
             10,
-            (dataSource as HikariDataSource?)!!.hikariConfigMXBean.maximumPoolSize
+            (dataSource as HikariDataSource?)!!.hikariConfigMXBean.maximumPoolSize,
         )
     }
 

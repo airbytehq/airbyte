@@ -26,8 +26,10 @@ object JdbcDataSourceUtils {
         for (key in defaultParameters.keys) {
             require(
                 !(customParameters.containsKey(key) &&
-                    customParameters[key] != defaultParameters[key])
-            ) { "Cannot overwrite default JDBC parameter $key" }
+                    customParameters[key] != defaultParameters[key]),
+            ) {
+                "Cannot overwrite default JDBC parameter $key"
+            }
         }
     }
 
@@ -64,7 +66,7 @@ object JdbcDataSourceUtils {
         return parseJdbcParameters(
             config,
             "connection_properties",
-            DEFAULT_JDBC_PARAMETERS_DELIMITER
+            DEFAULT_JDBC_PARAMETERS_DELIMITER,
         )
     }
 }

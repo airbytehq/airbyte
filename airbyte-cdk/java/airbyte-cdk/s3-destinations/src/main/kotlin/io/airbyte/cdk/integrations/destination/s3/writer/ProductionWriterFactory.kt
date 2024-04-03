@@ -44,7 +44,7 @@ class ProductionWriterFactory : S3WriterFactory {
                     configuredStream,
                     uploadTimestamp,
                     avroSchema,
-                    AvroConstants.JSON_CONVERTER
+                    AvroConstants.JSON_CONVERTER,
                 )
             } else {
                 S3ParquetWriter(
@@ -53,7 +53,7 @@ class ProductionWriterFactory : S3WriterFactory {
                     configuredStream,
                     uploadTimestamp,
                     avroSchema,
-                    AvroConstants.JSON_CONVERTER
+                    AvroConstants.JSON_CONVERTER,
                 )
             }
         }

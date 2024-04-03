@@ -20,7 +20,7 @@ internal class CloseableShutdownHookTest {
                 closeable,
                 autoCloseable,
                 notCloseable,
-                null
+                null,
             )
         thread.run()
 

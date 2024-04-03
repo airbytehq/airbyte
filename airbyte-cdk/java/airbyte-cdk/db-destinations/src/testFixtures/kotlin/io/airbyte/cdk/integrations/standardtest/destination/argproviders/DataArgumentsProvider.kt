@@ -22,12 +22,12 @@ class DataArgumentsProvider : ArgumentsProvider {
         return Stream.of(
             Arguments.of(
                 EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion),
-                EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion)
+                EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
             ),
             Arguments.of(
                 EDGE_CASE_CONFIG.getMessageFileVersion(protocolVersion),
-                EDGE_CASE_CONFIG.getCatalogFileVersion(protocolVersion)
-            ) // todo - need to use the new protocol to capture this.
+                EDGE_CASE_CONFIG.getCatalogFileVersion(protocolVersion),
+            ), // todo - need to use the new protocol to capture this.
             // Arguments.of("stripe_messages.txt", "stripe_schema.json")
             )
     }

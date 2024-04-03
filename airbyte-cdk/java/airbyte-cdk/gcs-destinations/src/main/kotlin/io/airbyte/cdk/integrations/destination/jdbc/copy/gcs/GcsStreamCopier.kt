@@ -43,14 +43,14 @@ abstract class GcsStreamCopier(
     protected val db: JdbcDatabase,
     protected val gcsConfig: GcsConfig,
     private val nameTransformer: StandardNameTransformer,
-    private val sqlOperations: SqlOperations
+    private val sqlOperations: SqlOperations,
 ) : StreamCopier {
     @get:VisibleForTesting val tmpTableName: String = nameTransformer.getTmpTableName(streamName)
     protected val gcsStagingFiles: MutableSet<String> = HashSet()
     protected var filenameGenerator: StagingFilenameGenerator =
         StagingFilenameGenerator(
             streamName,
-            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
+            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong(),
         )
     private val channels = HashMap<String, WriteChannel>()
     private val csvPrinters = HashMap<String?, CSVPrinter>()
@@ -60,7 +60,7 @@ abstract class GcsStreamCopier(
             "/",
             stagingFolder,
             schemaName,
-            filenameGenerator.stagingFilename
+            filenameGenerator.stagingFilename,
         )
     }
 
@@ -91,7 +91,7 @@ abstract class GcsStreamCopier(
             csvPrinters[gcsFileName]!!.printRecord(
                 id,
                 Jsons.serialize(recordMessage!!.data),
-                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt))
+                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt)),
             )
         }
     }
@@ -119,7 +119,7 @@ abstract class GcsStreamCopier(
             "Starting copy to tmp table: {} in destination for stream: {}, schema: {}.",
             tmpTableName,
             streamName,
-            schemaName
+            schemaName,
         )
         for (gcsStagingFile in gcsStagingFiles) {
             copyGcsCsvFileIntoTable(
@@ -127,13 +127,13 @@ abstract class GcsStreamCopier(
                 getFullGcsPath(gcsConfig.bucketName, gcsStagingFile),
                 schemaName,
                 tmpTableName,
-                gcsConfig
+                gcsConfig,
             )
         }
         LOGGER.info(
             "Copy to tmp table {} in destination for stream {} complete.",
             tmpTableName,
-            streamName
+            streamName,
         )
     }
 
@@ -165,7 +165,7 @@ abstract class GcsStreamCopier(
             "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
             streamName,
             schemaName,
-            tmpTableName
+            tmpTableName,
         )
         sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName)
     }
@@ -186,7 +186,7 @@ abstract class GcsStreamCopier(
             "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
             tmpTableName,
             destTableName,
-            schemaName
+            schemaName,
         )
         val queries = StringBuilder()
         if (destSyncMode == DestinationSyncMode.OVERWRITE) {
@@ -194,7 +194,7 @@ abstract class GcsStreamCopier(
             LOGGER.info(
                 "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.",
                 destTableName,
-                schemaName
+                schemaName,
             )
         }
         queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName))

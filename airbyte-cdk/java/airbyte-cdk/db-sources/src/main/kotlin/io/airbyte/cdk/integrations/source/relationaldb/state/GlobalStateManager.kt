@@ -21,7 +21,7 @@ import java.util.stream.Collectors
  */
 class GlobalStateManager(
     airbyteStateMessage: AirbyteStateMessage,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
@@ -30,7 +30,7 @@ class GlobalStateManager(
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,
         StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION,
-        true
+        true,
     ) {
     /**
      * Legacy [CdcStateManager] used to manage state for connectors that support Change Data Capture
@@ -50,14 +50,14 @@ class GlobalStateManager(
             CdcStateManager(
                 extractCdcState(airbyteStateMessage),
                 extractStreams(airbyteStateMessage),
-                airbyteStateMessage
+                airbyteStateMessage,
             )
     }
 
     override val rawStateMessages: List<AirbyteStateMessage?>?
         get() {
             throw UnsupportedOperationException(
-                "Raw state retrieval not supported by global state manager."
+                "Raw state retrieval not supported by global state manager.",
             )
         }
 
@@ -75,7 +75,7 @@ class GlobalStateManager(
 
         return AirbyteStateMessage()
             .withType(
-                AirbyteStateMessage.AirbyteStateType.GLOBAL
+                AirbyteStateMessage.AirbyteStateType.GLOBAL,
             ) // Temporarily include legacy state for backwards compatibility with the platform
             .withData(Jsons.jsonNode(dbState))
             .withGlobal(globalState)
@@ -109,15 +109,17 @@ class GlobalStateManager(
                     val cloned = Jsons.clone(streamState)
                     AirbyteStreamNameNamespacePair(
                         cloned.streamDescriptor.name,
-                        cloned.streamDescriptor.namespace
+                        cloned.streamDescriptor.namespace,
                     )
                 }
                 .collect(Collectors.toSet())
         } else {
             val legacyState = Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
-            return if (legacyState != null)
+            return if (legacyState != null) {
                 extractNamespacePairsFromDbStreamState(legacyState.streams)
-            else emptySet<AirbyteStreamNameNamespacePair>()
+            } else {
+                emptySet<AirbyteStreamNameNamespacePair>()
+            }
         }
     }
 
@@ -156,7 +158,7 @@ class GlobalStateManager(
                 } else if (airbyteStateMessage.data != null) {
                     return@Supplier Jsons.`object`<DbState>(
                             airbyteStateMessage.data,
-                            DbState::class.java
+                            DbState::class.java,
                         )
                         .streams
                         .stream()
@@ -166,7 +168,7 @@ class GlobalStateManager(
                                 .withStreamDescriptor(
                                     StreamDescriptor()
                                         .withNamespace(s.streamNamespace)
-                                        .withName(s.streamName)
+                                        .withName(s.streamName),
                                 )
                         }
                         .collect(Collectors.toList<AirbyteStreamState?>())

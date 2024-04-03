@@ -62,7 +62,7 @@ object TestSourceMain {
                 Path.of(specFile),
                 Path.of(configFile),
                 Path.of(catalogFile),
-                if (stateFile != null) Path.of(stateFile) else null
+                if (stateFile != null) Path.of(stateFile) else null,
             )
 
         TestRunner.runTestClass(ExecutableTestSource::class.java)

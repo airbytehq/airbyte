@@ -46,10 +46,10 @@ class SshWrappedSource : Source {
                 config,
                 hostKey,
                 portKey,
-                CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> { config: JsonNode
+                CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> { config: JsonNode,
                     ->
                     delegate.check(config)
-                }
+                },
             )
         } catch (e: RuntimeException) {
             val sshErrorMessage =
@@ -69,7 +69,7 @@ class SshWrappedSource : Source {
             portKey,
             CheckedFunction<JsonNode, AirbyteCatalog, Exception?> { config: JsonNode ->
                 delegate.discover(config)
-            }
+            },
         )
     }
 
@@ -86,7 +86,7 @@ class SshWrappedSource : Source {
         } catch (e: Exception) {
             LOGGER.error(
                 "Exception occurred while getting the delegate read iterator, closing SSH tunnel",
-                e
+                e,
             )
             tunnel.close()
             throw e
@@ -106,7 +106,7 @@ class SshWrappedSource : Source {
         } catch (e: Exception) {
             LOGGER.error(
                 "Exception occurred while getting the delegate read stream iterators, closing SSH tunnel",
-                e
+                e,
             )
             tunnel.close()
             throw e

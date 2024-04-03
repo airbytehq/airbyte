@@ -100,7 +100,7 @@ interface AirbyteType {
                     getArray(schema)
                 } else {
                     AirbyteProtocolType.Companion.fromJson(
-                        getTrimmedJsonSchema(schema, typeOptions[0])
+                        getTrimmedJsonSchema(schema, typeOptions[0]),
                     )
                 }
             }

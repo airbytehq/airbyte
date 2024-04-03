@@ -53,7 +53,7 @@ abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
                 db,
                 gcsConfig,
                 nameTransformer,
-                sqlOperations
+                sqlOperations,
             )
         } catch (e: Exception) {
             throw RuntimeException(e)

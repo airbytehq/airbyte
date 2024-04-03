@@ -35,31 +35,31 @@ class IntegrationCliParser {
                 Option.builder()
                     .longOpt(Command.SPEC.toString().lowercase(Locale.getDefault()))
                     .desc("outputs the json configuration specification")
-                    .build()
+                    .build(),
             )
             optionGroup.addOption(
                 Option.builder()
                     .longOpt(Command.CHECK.toString().lowercase(Locale.getDefault()))
                     .desc("checks the config can be used to connect")
-                    .build()
+                    .build(),
             )
             optionGroup.addOption(
                 Option.builder()
                     .longOpt(Command.DISCOVER.toString().lowercase(Locale.getDefault()))
                     .desc("outputs a catalog describing the source's catalog")
-                    .build()
+                    .build(),
             )
             optionGroup.addOption(
                 Option.builder()
                     .longOpt(Command.READ.toString().lowercase(Locale.getDefault()))
                     .desc("reads the source and outputs messages to STDOUT")
-                    .build()
+                    .build(),
             )
             optionGroup.addOption(
                 Option.builder()
                     .longOpt(Command.WRITE.toString().lowercase(Locale.getDefault()))
                     .desc("writes messages from STDIN to the integration")
-                    .build()
+                    .build(),
             )
 
             COMMAND_GROUP = optionGroup
@@ -76,7 +76,7 @@ class IntegrationCliParser {
         private fun parseOptions(args: Array<String>, command: Command): IntegrationConfig {
             val options = Options()
             options.addOptionGroup(
-                COMMAND_GROUP
+                COMMAND_GROUP,
             ) // so that the parser does not throw an exception when encounter command args.
 
             when (command) {
@@ -84,14 +84,14 @@ class IntegrationCliParser {
                     // no args.
                 }
                 Command.CHECK,
-                Command.DISCOVER ->
+                Command.DISCOVER, ->
                     options.addOption(
                         Option.builder()
                             .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
                             .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
                             .hasArg(true)
                             .required(true)
-                            .build()
+                            .build(),
                     )
                 Command.READ -> {
                     options.addOption(
@@ -100,21 +100,21 @@ class IntegrationCliParser {
                             .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
                             .hasArg(true)
                             .required(true)
-                            .build()
+                            .build(),
                     )
                     options.addOption(
                         Option.builder()
                             .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
                             .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
                             .hasArg(true)
-                            .build()
+                            .build(),
                     )
                     options.addOption(
                         Option.builder()
                             .longOpt(JavaBaseConstants.ARGS_STATE_KEY)
                             .desc(JavaBaseConstants.ARGS_PATH_DESC)
                             .hasArg(true)
-                            .build()
+                            .build(),
                     )
                 }
                 Command.WRITE -> {
@@ -124,14 +124,14 @@ class IntegrationCliParser {
                             .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
                             .hasArg(true)
                             .required(true)
-                            .build()
+                            .build(),
                     )
                     options.addOption(
                         Option.builder()
                             .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
                             .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
                             .hasArg(true)
-                            .build()
+                            .build(),
                     )
                 }
                 else -> throw IllegalStateException("Unexpected value: $command")
@@ -151,27 +151,29 @@ class IntegrationCliParser {
                 }
                 Command.CHECK -> {
                     IntegrationConfig.Companion.check(
-                        Path.of(argsMap[JavaBaseConstants.ARGS_CONFIG_KEY])
+                        Path.of(argsMap[JavaBaseConstants.ARGS_CONFIG_KEY]),
                     )
                 }
                 Command.DISCOVER -> {
                     IntegrationConfig.Companion.discover(
-                        Path.of(argsMap[JavaBaseConstants.ARGS_CONFIG_KEY])
+                        Path.of(argsMap[JavaBaseConstants.ARGS_CONFIG_KEY]),
                     )
                 }
                 Command.READ -> {
                     IntegrationConfig.Companion.read(
                         Path.of(argsMap[JavaBaseConstants.ARGS_CONFIG_KEY]),
                         Path.of(argsMap[JavaBaseConstants.ARGS_CATALOG_KEY]),
-                        if (argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY))
+                        if (argsMap.containsKey(JavaBaseConstants.ARGS_STATE_KEY)) {
                             Path.of(argsMap[JavaBaseConstants.ARGS_STATE_KEY])
-                        else null
+                        } else {
+                            null
+                        },
                     )
                 }
                 Command.WRITE -> {
                     IntegrationConfig.Companion.write(
                         Path.of(argsMap[JavaBaseConstants.ARGS_CONFIG_KEY]),
-                        Path.of(argsMap[JavaBaseConstants.ARGS_CATALOG_KEY])
+                        Path.of(argsMap[JavaBaseConstants.ARGS_CATALOG_KEY]),
                     )
                 }
                 else -> throw IllegalStateException("Unexpected value: $command")
