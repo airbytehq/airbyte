@@ -57,7 +57,7 @@ Again, we'll start by writing a failing test for fetching multiple pages of reco
 These tests now have a lot of duplications because we keep pasting the same response templates. You can look at the [source-stripe connector for an example of how this can be DRY'd](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_cards.py)
 
 The test should fail because the request wasn't matched
-```
+```bash
 poetry run pytest unit_tests
 ```
 
@@ -89,12 +89,12 @@ Then we'll extract the next_page_token from the response
 ```
 
 The test should now pass. We won't write more integration tests in this tutorial, but they are strongly recommended for any connector used in production.
-```
+```bash
 poetry run pytest unit_tests
 ```
 
 We'll try reading
-```
+```bash
 poetry run source-survey-monkey-demo read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
@@ -106,7 +106,7 @@ It might be easier to test pagination by forcing the connector to only fetch one
 ```
 
 and reading again
-```
+```bash
 poetry run source-survey-monkey-demo read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 

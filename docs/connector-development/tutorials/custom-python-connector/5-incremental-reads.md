@@ -58,7 +58,7 @@ We'll now update the query params. In addition the passing the page size and the
                     }
 ```
 And add the following constants to the source.py file
-```
+```python
 _START_DATE = datetime.datetime(2020,1,1, 0,0,0).timestamp()
 _SLICE_RANGE = 365
 _OUTGOING_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -102,7 +102,9 @@ Finally, modify the configured catalog to run the stream in incremental mode:
 Run another read
 
 The state messages should include the cursor
-> {"type": "STATE", "state": {"type": "STREAM", "stream": {"stream_descriptor": {"name": "surveys", "namespace": null}, "stream_state": {"date_modified": 1623348420.0}}, "sourceStats": {"recordCount": 0.0}}}
+```json
+{"type": "STATE", "state": {"type": "STREAM", "stream": {"stream_descriptor": {"name": "surveys", "namespace": null}, "stream_state": {"date_modified": 1623348420.0}}, "sourceStats": {"recordCount": 0.0}}}
+```
 
 
 And update the sample state to a timestamp earlier than the first record. There should be fewer records
@@ -124,7 +126,7 @@ And update the sample state to a timestamp earlier than the first record. There 
 ```
 
 Run another read command, passing the --state flag
-```
+```bash
 poetry run source-survey-monkey-demo read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
 ```
 
