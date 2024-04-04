@@ -593,9 +593,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     parent_stream_class: Optional[Union[ShopifyStream, IncrementalShopifyStream]] = None
 
     # 0.1 ~= P2H, default value, lower boundary for slice size
-    slice_interval_in_days_min: float = 0.1  
+    slice_interval_in_days_min: float = 0.1
     # P365D, upper boundary for slice size
-    slice_interval_in_days_max: float = 365.0 
+    slice_interval_in_days_max: float = 365.0
 
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
@@ -730,8 +730,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.slice_interval_in_days = 1 + (self.slice_interval_in_days * self.job_manager.slice_size_increase_factor)
 
     def slice_size_decrease(self) -> None:
-        self.slice_interval_in_days = self.slice_interval_in_days - (self.slice_interval_in_days * self.job_manager.slice_size_decrease_factor)
-        
+        self.slice_interval_in_days = self.slice_interval_in_days - (
+            self.slice_interval_in_days * self.job_manager.slice_size_decrease_factor
+        )
+
     def slice_size_boundaries_check(self) -> None:
         # min check
         if self.slice_interval_in_days < self.slice_interval_in_days_min:
@@ -745,7 +747,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             self.slice_size_increase()
         elif self.job_manager.should_decrease_slice_size():
             self.slice_size_decrease()
-        
+
         # preserve non-negative values only
         self.slice_size_boundaries_check()
 

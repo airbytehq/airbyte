@@ -254,7 +254,6 @@ class ShopifyBulkManager:
             # sometimes we face with `HTTP-500` Error, that could be retried
             # we should retry the BadResponse at least once
             return self.job_retry_request(request)
-        
 
     def should_increase_slice_size(self) -> bool:
         return self.job_should_increase_slice_size and not self.job_should_decrease_slice_size
@@ -265,12 +264,12 @@ class ShopifyBulkManager:
     def _increase_slice_size(self) -> None:
         self.job_should_increase_slice_size = True
         self.job_should_decrease_slice_size = False
-        self.slice_size_increase_factor = 1 + (self.job_last_elapsed_time_sec * self.current_job_elapsed_time)/100
+        self.slice_size_increase_factor = 1 + (self.job_last_elapsed_time_sec * self.current_job_elapsed_time) / 100
 
     def _decrease_slice_size(self) -> None:
         self.job_should_increase_slice_size = False
         self.job_should_decrease_slice_size = True
-        self.slice_size_decrease_factor = (self.current_job_elapsed_time / self.job_last_elapsed_time_sec)/100
+        self.slice_size_decrease_factor = (self.current_job_elapsed_time / self.job_last_elapsed_time_sec) / 100
 
     def adjust_slice_size(self) -> None:
         if self.current_job_elapsed_time > self.job_elapsed_time_threshold_sec:
