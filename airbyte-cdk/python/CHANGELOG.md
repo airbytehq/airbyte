@@ -1,8 +1,5 @@
 # Changelog
 
-## 0.78.7
-Update error messaging when streams in catalog do not exist in source
-
 ## 0.78.6
 low-code: add backward compatibility for old close slice behavior 
 
