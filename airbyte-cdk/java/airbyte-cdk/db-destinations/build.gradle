@@ -13,6 +13,9 @@ compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
     api 'org.apache.commons:commons-csv:1.10.0'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')

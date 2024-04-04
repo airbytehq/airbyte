@@ -8,6 +8,9 @@ application {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'

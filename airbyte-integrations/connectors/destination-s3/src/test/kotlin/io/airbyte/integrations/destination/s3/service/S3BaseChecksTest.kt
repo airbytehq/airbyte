@@ -1,128 +1,166 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.cdk.integrations.destination.s3
 
+package io.airbyte.integrations.destination.s3.service
+
+import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ListObjectsRequest
-import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.attemptS3WriteAndDelete
-import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
-import org.junit.jupiter.api.BeforeEach
+import com.amazonaws.services.s3.model.*
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
+import io.micronaut.context.annotation.Property
+import io.micronaut.context.env.Environment
+import io.micronaut.test.annotation.MockBean
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
+import jakarta.inject.Inject
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
 
+@MicronautTest(environments = [Environment.TEST, "destination"])
+@Property(name = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION, value = "check")
 class S3BaseChecksTest {
-    private lateinit var s3Client: AmazonS3
+    companion object {
+        @JvmStatic
+        fun getCustomEndpointArguments(): Stream<Arguments> {
+            return Stream.of(
+                Arguments.arguments("http://not-secure", false),
+                Arguments.arguments("https://secured", true),
+                Arguments.arguments("", true),
+                Arguments.arguments(null, true),
+            )
+        }
+    }
 
-    @BeforeEach
-    fun setup() {
-        s3Client = Mockito.mock(AmazonS3::class.java)
-        Mockito.`when`(
-                s3Client.doesObjectExist(ArgumentMatchers.anyString(), ArgumentMatchers.eq(""))
-            )
-            .thenThrow(IllegalArgumentException("Object path must not be empty"))
-        Mockito.`when`(
-                s3Client.putObject(
-                    ArgumentMatchers.anyString(),
-                    ArgumentMatchers.eq(""),
-                    ArgumentMatchers.anyString()
-                )
-            )
-            .thenThrow(IllegalArgumentException("Object path must not be empty"))
+    @Inject
+    lateinit var s3BaseChecks: S3BaseChecks
+
+    private val amazonS3Client: AmazonS3 = mockk()
+
+    @MockBean
+    fun amazonS3Client(): AmazonS3 {
+        return amazonS3Client
+    }
+
+    @ParameterizedTest
+    @MethodSource("getCustomEndpointArguments")
+    internal fun `test that when a custom endpoint is tested, the appropriate response is returned`(
+        endpoint: String?,
+        expected: Boolean,
+    ) {
+        assertEquals(expected, s3BaseChecks.testCustomEndpointSecured(endpoint))
     }
 
     @Test
-    fun attemptWriteAndDeleteS3Object_should_createSpecificFiles() {
-        val config =
-            S3DestinationConfig(
-                null,
-                "test_bucket",
-                "test/bucket/path",
-                null,
-                null,
-                null,
-                null,
-                s3Client!!
-            )
-        val operations = S3StorageOperations(S3NameTransformer(), s3Client!!, config)
-        Mockito.`when`(s3Client!!.doesObjectExist("test_bucket", "test/bucket/path/"))
-            .thenReturn(false)
+    internal fun `test that when the IAM user is checked for object permission, the list object method is used`() {
+        val bucketName = "bucket-name"
+        val listObjectRequest = slot<ListObjectsRequest>()
 
-        attemptS3WriteAndDelete(operations, config, "test/bucket/path")
+        every { amazonS3Client.listObjects(any(ListObjectsRequest::class)) } returns mockk<ObjectListing>()
 
-        Mockito.verify(s3Client)
-            .putObject(
-                ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("test/bucket/path/_airbyte_connection_test_"),
-                ArgumentMatchers.anyString()
-            )
-        Mockito.verify(s3Client)
-            .listObjects(
-                ArgumentMatchers.argThat { request: ListObjectsRequest ->
-                    "test_bucket" == request.bucketName
-                }
-            )
-        Mockito.verify(s3Client)
-            .deleteObject(
-                ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("test/bucket/path/_airbyte_connection_test_")
-            )
+        assertDoesNotThrow {
+            s3BaseChecks.testIAMUserHasListObjectPermission(bucketName)
+        }
+
+        verify(exactly = 1) { amazonS3Client.listObjects(capture(listObjectRequest)) }
+        assertEquals(bucketName, listObjectRequest.captured.bucketName)
     }
 
     @Test
-    fun attemptWriteAndDeleteS3Object_should_skipDirectoryCreateIfRootPath() {
-        val config =
-            S3DestinationConfig(null, "test_bucket", "", null, null, null, null, s3Client!!)
-        val operations = S3StorageOperations(S3NameTransformer(), s3Client!!, config)
+    internal fun `test that when the IAM user is checked for object permission and is not authorized, an exception is thrown`() {
+        val bucketName = "bucket-name"
+        val listObjectRequest = slot<ListObjectsRequest>()
 
-        attemptS3WriteAndDelete(operations, config, "")
+        every { amazonS3Client.listObjects(any(ListObjectsRequest::class)) } throws AmazonServiceException("test")
 
-        Mockito.verify(s3Client, Mockito.never()).putObject("test_bucket", "", "")
-        Mockito.verify(s3Client)
-            .putObject(
-                ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("_airbyte_connection_test_"),
-                ArgumentMatchers.anyString()
-            )
-        Mockito.verify(s3Client)
-            .listObjects(
-                ArgumentMatchers.argThat { request: ListObjectsRequest ->
-                    "test_bucket" == request.bucketName
-                }
-            )
-        Mockito.verify(s3Client)
-            .deleteObject(
-                ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("_airbyte_connection_test_")
-            )
+        assertThrows<AmazonServiceException> {
+            s3BaseChecks.testIAMUserHasListObjectPermission(bucketName)
+        }
+
+        verify(exactly = 1) { amazonS3Client.listObjects(capture(listObjectRequest)) }
+        assertEquals(bucketName, listObjectRequest.captured.bucketName)
     }
 
     @Test
-    fun attemptWriteAndDeleteS3Object_should_skipDirectoryCreateIfNullPath() {
-        val config =
-            S3DestinationConfig(null, "test_bucket", null, null, null, null, null, s3Client!!)
-        val operations = S3StorageOperations(S3NameTransformer(), s3Client!!, config)
+    internal fun `test that when a multipart upload is attempted and is successful, no exception is thrown`() {
+        val bucketName = "bucket-name"
+        val uploadResult: InitiateMultipartUploadResult = mockk()
+        val uploadPartResult: UploadPartResult = mockk()
+        val initialMultipartUploadRequest = slot<InitiateMultipartUploadRequest>()
 
-        attemptS3WriteAndDelete(operations, config, null)
+        every { uploadResult.uploadId } returns "upload-id"
+        every { uploadPartResult.partETag } returns mockk<PartETag>()
+        every { amazonS3Client.abortMultipartUpload(any()) } returns Unit
+        every { amazonS3Client.completeMultipartUpload(any()) } returns mockk<CompleteMultipartUploadResult>()
+        every { amazonS3Client.deleteObject(bucketName, any()) } returns Unit
+        every { amazonS3Client.initiateMultipartUpload(any()) } returns uploadResult
+        every { amazonS3Client.uploadPart(any()) } returns uploadPartResult
 
-        Mockito.verify(s3Client, Mockito.never()).putObject("test_bucket", "", "")
-        Mockito.verify(s3Client)
-            .putObject(
-                ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("_airbyte_connection_test_"),
-                ArgumentMatchers.anyString()
-            )
-        Mockito.verify(s3Client)
-            .listObjects(
-                ArgumentMatchers.argThat { request: ListObjectsRequest ->
-                    "test_bucket" == request.bucketName
-                }
-            )
-        Mockito.verify(s3Client)
-            .deleteObject(
-                ArgumentMatchers.eq("test_bucket"),
-                ArgumentMatchers.startsWith("_airbyte_connection_test_")
-            )
+        assertDoesNotThrow {
+            s3BaseChecks.testMultipartUpload(bucketName, "/test/path")
+        }
+
+        verify(exactly = 1) { amazonS3Client.initiateMultipartUpload(capture(initialMultipartUploadRequest)) }
+        verify(exactly = 1) { amazonS3Client.deleteObject(bucketName, any()) }
+        assertEquals(bucketName, initialMultipartUploadRequest.captured.bucketName)
+    }
+
+    @Test
+    internal fun `test that when a multipart upload is attempted and is unsuccessful, an exception is thrown`() {
+        val bucketName = "bucket-name"
+        val uploadPartResult: UploadPartResult = mockk()
+        val initialMultipartUploadRequest = slot<InitiateMultipartUploadRequest>()
+
+        every { uploadPartResult.partETag } returns mockk<PartETag>()
+        every { amazonS3Client.abortMultipartUpload(any()) } returns Unit
+        every { amazonS3Client.deleteObject(bucketName, any()) } returns Unit
+        every { amazonS3Client.initiateMultipartUpload(any()) } throws AmazonServiceException("test")
+
+        assertThrows<AmazonServiceException> {
+            s3BaseChecks.testMultipartUpload(bucketName, "/test/path")
+        }
+
+        verify(exactly = 1) { amazonS3Client.initiateMultipartUpload(capture(initialMultipartUploadRequest)) }
+        verify(exactly = 1) { amazonS3Client.deleteObject(bucketName, any()) }
+        assertEquals(bucketName, initialMultipartUploadRequest.captured.bucketName)
+    }
+
+    @Test
+    internal fun `test that when a single upload is tested, the put object method on the Amazon client is called`() {
+        val bucketName = "bucke-=name"
+
+        every { amazonS3Client.deleteObject(bucketName, any()) } returns Unit
+        every { amazonS3Client.putObject(bucketName, any(String::class), any(String::class)) } returns mockk<PutObjectResult>()
+
+        assertDoesNotThrow {
+            s3BaseChecks.testSingleUpload(bucketName, "/test/path")
+        }
+
+        verify(exactly = 1) { amazonS3Client.putObject(bucketName, any(String::class), any(String::class)) }
+        verify(exactly = 1) { amazonS3Client.deleteObject(bucketName, any()) }
+    }
+
+    @Test
+    internal fun `test that when a single upload is tested and fails, the exception is thrown`() {
+        val bucketName = "bucke-=name"
+
+        every { amazonS3Client.deleteObject(bucketName, any()) } returns Unit
+        every { amazonS3Client.putObject(bucketName, any(String::class), any(String::class)) } throws AmazonServiceException("test")
+
+        assertThrows<AmazonServiceException> {
+            s3BaseChecks.testSingleUpload(bucketName, "/test/path")
+        }
+
+        verify(exactly = 1) { amazonS3Client.putObject(bucketName, any(String::class), any(String::class)) }
+        verify(exactly = 1) { amazonS3Client.deleteObject(bucketName, any()) }
     }
 }

@@ -33,6 +33,9 @@ compileKotlin {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')

@@ -9,10 +9,14 @@ glassfish_version = "2.31"
 hikaricp = "5.0.1"
 jmh = "1.36"
 jooq = "3.13.4"
+junit-jupiter = "5.9.1"
 junit-bom = "5.10.1"
 kotlin = "1.9.23"
 log4j = "2.21.1"
 lombok = "1.18.30"
+micronaut = "4.3.2"
+micronaut-test = "4.2.1"
+picocli = "4.7.5"
 postgresql = "42.6.0"
 reactor = "3.5.2"
 segment = "2.1.1"
@@ -20,6 +24,7 @@ slf4j = "2.0.9"
 temporal = "1.17.0"
 debezium = "2.4.0.Final"
 mockito-version = "5.11.0"
+
 
 [libraries]
 airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
@@ -84,12 +89,22 @@ log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j
 log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
-mockk = { module = "io.mockk:mockk", version = "1.13.3" }
+micronaut-jackson-databind = { module = "io.micronaut:micronaut-jackson-databind", version.ref = "micronaut" }
+micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java", version = "4.2.4" }
+micronaut-inject-kotlin = { module = "io.micronaut:micronaut-inject-kotlin", version = "4.2.4" }
+micronaut-runtime = { module = "io.micronaut:micronaut-runtime", version.ref = "micronaut" }
+micronaut-picocli = { module = "io.micronaut.picocli:micronaut-picocli", version = "5.2.0" }
+micronaut-test-core = { module = "io.micronaut.test:micronaut-test-core", version.ref = "micronaut-test" }
+micronaut-test-junit5 = { module = "io.micronaut.test:micronaut-test-junit5", version.ref = "micronaut-test" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "5.10.0" }
+mockk = { module = "io.mockk:mockk", version = "1.13.9" }
 mongo-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version = "4.10.2" }
 otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
 otel-sdk = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0" }
 otel-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha" }
 otel-semconv = { module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha" }
+picocli = { module = "info.picocli:picocli", version = "picocli" }
+picocli-codegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
@@ -109,13 +124,18 @@ debezium-mongodb = { module = "io.debezium:debezium-connector-mongodb", version.
 debezium-mysql = { module = "io.debezium:debezium-connector-mysql", version.ref = "debezium"}
 debezium-postgres = { module = "io.debezium:debezium-connector-postgres", version.ref = "debezium"}
 
+
 [bundles]
 apache = ["apache-commons", "apache-commons-lang"]
 datadog = ["datadog-trace-api", "datadog-trace-ot"]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 log4j = ["log4j-api", "log4j-core", "log4j-slf4j-impl", "log4j-slf4j2-impl", "log4j-web"]
+micronaut-annotation-processor = ["picocli-codegen", "micronaut-inject-java", "micronaut-inject-kotlin"]
+micronaut-cli = ["picocli", "micronaut-runtime", "micronaut-picocli", "micronaut-inject-java"]
+micronaut-test = ["micronaut-test-core", "micronaut-test-junit5"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]
 
 [plugins]
+ksp = { id = "com.google.devtools.ksp", version = "1.9.22-1.0.17" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

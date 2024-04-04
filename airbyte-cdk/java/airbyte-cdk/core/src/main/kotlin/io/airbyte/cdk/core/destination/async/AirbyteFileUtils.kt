@@ -1,21 +1,28 @@
-/*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
- */
+package io.airbyte.cdk.core.destination.async
 
-package io.airbyte.cdk.integrations.destination.async
-
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.text.DecimalFormat
 
 /**
- * Replicate the behavior of [org.apache.commons.io.FileUtils] to match the proclivities of Davin
- * and Charles. Courteously written by ChatGPT.
+ * Replicate the behavior of {@link org.apache.commons.io.FileUtils} to match the proclivities of
+ * Davin and Charles. Courteously written by ChatGPT.
  */
-object AirbyteFileUtils {
-    private const val ONE_KB = 1024.0
-    private const val ONE_MB = ONE_KB * 1024
-    private const val ONE_GB = ONE_MB * 1024
-    private const val ONE_TB = ONE_GB * 1024
-    private val df = DecimalFormat("#.##")
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
+class AirbyteFileUtils {
+    companion object {
+        private const val ONE_KB = 1024.0
+        private const val ONE_MB = ONE_KB * 1024
+        private const val ONE_GB = ONE_MB * 1024
+        private const val ONE_TB = ONE_GB * 1024
+        private val df = DecimalFormat("#.##")
+    }
 
     /**
      * Replicate the behavior of [org.apache.commons.io.FileUtils] but instead of rounding down to

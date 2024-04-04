@@ -52,15 +52,22 @@ compileKotlin {
 
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    ksp libs.bundles.micronaut.annotation.processor
 
     api 'com.datadoghq:dd-trace-api:1.28.0'
     api 'com.datadoghq:dd-trace-ot:1.28.0'
     api 'com.zaxxer:HikariCP:5.1.0'
     api 'org.jooq:jooq:3.16.23'
     api 'org.apache.commons:commons-csv:1.10.0'
+    api 'com.github.victools:jsonschema-generator:4.33.1'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
 
+    implementation libs.bundles.micronaut.cli
+    implementation libs.kotlin.logging
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'io.aesy:datasize:1.0.0'
     implementation 'net.i2p.crypto:eddsa:0.3.0'
@@ -76,6 +83,11 @@ dependencies {
     testFixturesApi 'org.testcontainers:testcontainers:1.19.0'
     testFixturesApi 'org.testcontainers:jdbc:1.19.0'
 
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
+    kspTest libs.bundles.micronaut.annotation.processor
+
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-sources'))
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres'))
@@ -85,5 +97,7 @@ dependencies {
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:postgresql:1.19.0'
     testImplementation 'org.xbib.elasticsearch:joptsimple:6.3.2.1'
+    testImplementation libs.bundles.micronaut.test
+    testImplementation libs.mockk
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 }

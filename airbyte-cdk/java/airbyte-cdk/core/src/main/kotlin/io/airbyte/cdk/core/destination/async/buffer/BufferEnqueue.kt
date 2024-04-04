@@ -1,25 +1,28 @@
-/*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
- */
+package io.airbyte.cdk.core.destination.async.buffer
 
-package io.airbyte.cdk.integrations.destination.async.buffers
-
-import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
-import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
+import io.airbyte.cdk.core.context.env.ConnectorConfigurationPropertySource
+import io.airbyte.cdk.core.destination.async.GlobalMemoryManager
+import io.airbyte.cdk.core.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.core.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import java.util.Optional
-import java.util.concurrent.ConcurrentMap
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 
 /**
  * Represents the minimal interface over the underlying buffer queues required for enqueue
  * operations with the aim of minimizing lower-level queue access.
  */
+@Singleton
+@Requires(
+    property = ConnectorConfigurationPropertySource.CONNECTOR_OPERATION,
+    value = "write",
+)
+@Requires(env = ["destination"])
 class BufferEnqueue(
-    private val memoryManager: GlobalMemoryManager,
-    private val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>,
-    private val stateManager: GlobalAsyncStateManager,
+    private val globalMemoryManager: GlobalMemoryManager,
+    private val globalAsyncStateManager: GlobalAsyncStateManager,
+    private val asyncBuffers: AsyncBuffers,
 ) {
     /**
      * Buffer a record. Contains memory management logic to dynamically adjust queue size based via
@@ -31,12 +34,12 @@ class BufferEnqueue(
     fun addRecord(
         message: PartialAirbyteMessage,
         sizeInBytes: Int,
-        defaultNamespace: Optional<String>,
+        defaultNamespace: String,
     ) {
         if (message.type == AirbyteMessage.Type.RECORD) {
             handleRecord(message, sizeInBytes)
         } else if (message.type == AirbyteMessage.Type.STATE) {
-            stateManager.trackState(message, sizeInBytes.toLong(), defaultNamespace.orElse(""))
+            globalAsyncStateManager.trackState(message, sizeInBytes.toLong(), defaultNamespace)
         }
     }
 
@@ -45,19 +48,17 @@ class BufferEnqueue(
         sizeInBytes: Int,
     ) {
         val streamDescriptor = extractStateFromRecord(message)
-        val queue =
-            buffers.computeIfAbsent(
+        val queue: StreamAwareQueue =
+            asyncBuffers.buffers.computeIfAbsent(
                 streamDescriptor,
-            ) {
-                StreamAwareQueue(memoryManager.requestMemory())
-            }
-        val stateId = stateManager.getStateIdAndIncrementCounter(streamDescriptor)
+            ) { StreamAwareQueue(globalMemoryManager.requestMemory()) }
+        val stateId: Long = globalAsyncStateManager.getStateIdAndIncrementCounter(streamDescriptor)
 
         var addedToQueue = queue.offer(message, sizeInBytes.toLong(), stateId)
 
         var i = 0
         while (!addedToQueue) {
-            val newlyAllocatedMemory = memoryManager.requestMemory()
+            val newlyAllocatedMemory: Long = globalMemoryManager.requestMemory()
             if (newlyAllocatedMemory > 0) {
                 queue.addMaxMemory(newlyAllocatedMemory)
             }
@@ -73,11 +74,9 @@ class BufferEnqueue(
         }
     }
 
-    companion object {
-        private fun extractStateFromRecord(message: PartialAirbyteMessage): StreamDescriptor {
-            return StreamDescriptor()
-                .withNamespace(message.record?.namespace)
-                .withName(message.record?.stream)
-        }
+    private fun extractStateFromRecord(message: PartialAirbyteMessage): StreamDescriptor {
+        return StreamDescriptor()
+            .withNamespace(message.record?.namespace)
+            .withName(message.record?.stream)
     }
 }
