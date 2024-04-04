@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.78.8
+Update error messaging/type for missing streams
+
 ## 0.78.6
 low-code: add backward compatibility for old close slice behavior 
 
