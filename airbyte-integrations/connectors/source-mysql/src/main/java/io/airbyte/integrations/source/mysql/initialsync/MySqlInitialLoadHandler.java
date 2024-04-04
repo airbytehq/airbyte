@@ -12,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
+import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialSnapshotUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,11 +76,6 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
     this.tableSizeInfoMap = tableSizeInfoMap;
   }
 
-  @Override
-  public boolean supportResumableFullRefresh() {
-    return true;
-  }
-
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
@@ -90,7 +87,9 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
       final String namespace = stream.getNamespace();
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
       if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
-        iteratorList.add(getIteratorForStream(airbyteStream, tableNameToTable, emittedAt));
+        final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
+        final TableInfo<CommonField<MysqlType>> table = tableNameToTable.get(fullyQualifiedTableName);
+        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
       }
     }
     return iteratorList;
@@ -98,16 +97,16 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(
-      ConfiguredAirbyteStream airbyteStream,
-      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-      final Instant emittedAt) {
+                                                                    @NotNull ConfiguredAirbyteStream airbyteStream,
+                                                                    @NotNull TableInfo<CommonField<MysqlType>> table,
+                                                                    @NotNull Instant emittedAt) {
     InitialSnapshotUtil<MysqlType> snapshot = new InitialSnapshotUtil<>();
     final AirbyteStream stream = airbyteStream.getStream();
     final String streamName = stream.getName();
     final String namespace = stream.getNamespace();
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
     final List<String> selectedDatabaseFields = new ArrayList<>();
-    selectedDatabaseFields.addAll(snapshot.getSelectedDbFields(airbyteStream, tableNameToTable, emittedAt));
+    selectedDatabaseFields.addAll(snapshot.getSelectedDbFields(airbyteStream, table, emittedAt));
     final AutoCloseableIterator<JsonNode> queryStream =
         new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
             calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));

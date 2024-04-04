@@ -47,7 +47,7 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
   @Override
   protected void postSetup() throws Exception {
     final var database = testdb.getDatabase();
-    for (final TestDataHolder test : testDataHolders) {
+    for (final TestDataHolder test : getTestDataHolders()) {
       database.query(ctx -> {
         ctx.execute("TRUNCATE TABLE " + test.getNameWithTestPrefix() + ";");
         return null;
@@ -64,7 +64,7 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync should not be null");
     }
-    for (final TestDataHolder test : testDataHolders) {
+    for (final TestDataHolder test : getTestDataHolders()) {
       database.query(ctx -> {
         test.getInsertSqlQueries().forEach(ctx::fetch);
         return null;

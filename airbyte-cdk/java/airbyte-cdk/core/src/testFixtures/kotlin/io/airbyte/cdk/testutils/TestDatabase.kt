@@ -117,7 +117,7 @@ protected constructor(val container: C) : AutoCloseable {
     }
 
     val isInitialized: Boolean
-        get() = dslContext != null
+        get() = this::dslContext.isInitialized
 
     protected abstract fun inContainerBootstrapCmd(): Stream<Stream<String>>
 
@@ -131,7 +131,7 @@ protected constructor(val container: C) : AutoCloseable {
         return name + suffix
     }
 
-    val databaseName: String
+    open val databaseName: String
         get() = withNamespace("db")
 
     val userName: String

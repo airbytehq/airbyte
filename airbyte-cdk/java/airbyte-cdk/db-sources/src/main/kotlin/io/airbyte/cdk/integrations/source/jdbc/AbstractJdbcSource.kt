@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Sets
 import datadog.trace.api.Trace
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.db.Database
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
 import io.airbyte.cdk.db.SqlDatabase
 import io.airbyte.cdk.db.factory.DataSourceFactory.close
@@ -89,26 +88,35 @@ abstract class AbstractJdbcSource<Datatype>(
     driverClass: String,
     @JvmField val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
     sourceOperations: JdbcCompatibleSourceOperations<Datatype>,
-    initialLoadHandler: InitialLoadHandler<Datatype>? = null
 ) : AbstractDbSource<Datatype, JdbcDatabase>(driverClass), Source {
     @JvmField val sourceOperations: JdbcCompatibleSourceOperations<Datatype>
-    @JvmField val initialLoadHandler: InitialLoadHandler<Datatype>?
 
     override var quoteString: String? = null
     @JvmField val dataSources: MutableCollection<DataSource> = ArrayList()
 
     init {
         this.sourceOperations = sourceOperations
-        this.initialLoadHandler = initialLoadHandler
     }
 
-    fun supportResumableFullRefresh(): Boolean {
+    open fun supportResumableFullRefresh(): Boolean {
         return false
+    }
+
+    open fun getInitialLoadHandler(
+        database: JdbcDatabase,
+        airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        table: TableInfo<CommonField<Datatype>>,
+        stateManager: StateManager?
+    ): InitialLoadHandler<Datatype>? {
+        return null
     }
 
     override fun getFullRefreshStream(
         database: JdbcDatabase,
         airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        stateManager: StateManager?,
         namespace: String,
         selectedDatabaseFields: List<String>,
         table: TableInfo<CommonField<Datatype>>,
@@ -116,7 +124,12 @@ abstract class AbstractJdbcSource<Datatype>(
         syncMode: SyncMode,
         cursorField: Optional<String>
     ): AutoCloseableIterator<AirbyteMessage> {
-        if (supportResumableFullRefresh() && initialLoadHandler != null) {
+        if (supportResumableFullRefresh()) {
+            val initialLoadHandler =
+                getInitialLoadHandler(database, airbyteStream, catalog, table, stateManager)
+                    ?: throw IllegalStateException(
+                        "Must provide initialLoadHandler for resumable full refresh."
+                    )
             return initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
         }
 
@@ -130,7 +143,12 @@ abstract class AbstractJdbcSource<Datatype>(
                 syncMode,
                 cursorField
             )
-        return getMessageIterator(queryStream, airbyteStream.stream.name, namespace, emittedAt.toEpochMilli())
+        return getMessageIterator(
+            queryStream,
+            airbyteStream.stream.name,
+            namespace,
+            emittedAt.toEpochMilli()
+        )
     }
 
     override fun queryTableFullRefresh(
@@ -763,6 +781,7 @@ abstract class AbstractJdbcSource<Datatype>(
          * @return a map by StreamName to associated list of primary keys
          */
         @VisibleForTesting
+        @JvmStatic
         fun aggregatePrimateKeys(
             entries: List<PrimaryKeyAttributesFromDb>
         ): Map<String, MutableList<String>> {

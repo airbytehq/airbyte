@@ -30,7 +30,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -83,9 +82,9 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(
-      ConfiguredAirbyteStream airbyteStream,
-      final TableInfo<CommonField<PostgresType>> table,
-      final Instant emittedAt) {
+                                                                    ConfiguredAirbyteStream airbyteStream,
+                                                                    final TableInfo<CommonField<PostgresType>> table,
+                                                                    final Instant emittedAt) {
     InitialSnapshotUtil<PostgresType> snapshot = new InitialSnapshotUtil<>();
     final AirbyteStream stream = airbyteStream.getStream();
     final String streamName = stream.getName();

@@ -380,7 +380,14 @@ protected constructor(driverClassName: String) :
 
                 val table = tableNameToTable[fullyQualifiedTableName]!!
                 val tableReadIterator =
-                    createReadIterator(database, airbyteStream, table, stateManager, emittedAt)
+                    createReadIterator(
+                        database,
+                        airbyteStream,
+                        catalog,
+                        table,
+                        stateManager,
+                        emittedAt
+                    )
                 iteratorList.add(tableReadIterator)
             }
         }
@@ -401,6 +408,7 @@ protected constructor(driverClassName: String) :
     private fun createReadIterator(
         database: Database,
         airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
         table: TableInfo<CommonField<DataType>>,
         stateManager: StateManager?,
         emittedAt: Instant
@@ -443,6 +451,8 @@ protected constructor(driverClassName: String) :
                     getFullRefreshStream(
                         database,
                         airbyteStream,
+                        catalog,
+                        stateManager,
                         namespace,
                         selectedDatabaseFields,
                         table,
@@ -476,6 +486,8 @@ protected constructor(driverClassName: String) :
                 getFullRefreshStream(
                     database,
                     airbyteStream,
+                    catalog,
+                    stateManager,
                     namespace,
                     selectedDatabaseFields,
                     table,
@@ -562,6 +574,7 @@ protected constructor(driverClassName: String) :
      * @param database Source Database
      * @param airbyteStream name of an individual stream in which a stream represents a source (e.g.
      * API endpoint or database table)
+     * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync
      * @param namespace Namespace of the database (e.g. public)
      * @param selectedDatabaseFields List of all interested database column names
      * @param table information in tabular format
@@ -572,6 +585,8 @@ protected constructor(driverClassName: String) :
     protected open fun getFullRefreshStream(
         database: Database,
         airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        stateManager: StateManager?,
         namespace: String,
         selectedDatabaseFields: List<String>,
         table: TableInfo<CommonField<DataType>>,
@@ -588,7 +603,12 @@ protected constructor(driverClassName: String) :
                 syncMode,
                 cursorField
             )
-        return getMessageIterator(queryStream, airbyteStream.stream.name, namespace, emittedAt.toEpochMilli())
+        return getMessageIterator(
+            queryStream,
+            airbyteStream.stream.name,
+            namespace,
+            emittedAt.toEpochMilli()
+        )
     }
 
     /**

@@ -67,6 +67,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -91,14 +92,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected JsonNode config() {
-    return testdb.testConfigBuilder()
+    return getTestdb().testConfigBuilder()
         .withCdcReplication()
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
   }
 
   protected void purgeAllBinaryLogs() {
-    testdb.with("RESET MASTER;");
+    getTestdb().with("RESET MASTER;");
   }
 
   @Override
@@ -113,17 +114,21 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected String modelsSchema() {
-    return testdb.getDatabaseName();
+    return getDatabaseName();
   }
 
   @Override
   protected String randomSchema() {
-    return testdb.getDatabaseName();
+    return getDatabaseName();
+  }
+
+  protected String getDatabaseName() {
+    return getTestdb().getDatabaseName();
   }
 
   @Override
   protected MySqlCdcTargetPosition cdcLatestTargetPosition() {
-    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(testdb.getDataSource()));
+    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(getTestdb().getDataSource()));
   }
 
   @Override
@@ -192,7 +197,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
                               final String idCol,
                               final String makeIdCol,
                               final String modelCol) {
-    testdb.with("INSERT INTO `%s` .`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
+    getTestdb().with("INSERT INTO `%s` .`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
         idCol, makeIdCol, modelCol,
         recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
         recordJson.get(modelCol).asText());
@@ -200,23 +205,23 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected void deleteMessageOnIdCol(final String streamName, final String idCol, final int idValue) {
-    testdb.with("DELETE FROM `%s`.`%s` WHERE %s = %s", modelsSchema(), streamName, idCol, idValue);
+    getTestdb().with("DELETE FROM `%s`.`%s` WHERE %s = %s", modelsSchema(), streamName, idCol, idValue);
   }
 
   @Override
   protected void deleteCommand(final String streamName) {
-    testdb.with("DELETE FROM `%s`.`%s`", modelsSchema(), streamName);
+    getTestdb().with("DELETE FROM `%s`.`%s`", modelsSchema(), streamName);
   }
 
   @Override
   protected void updateCommand(final String streamName, final String modelCol, final String modelVal, final String idCol, final int idValue) {
-    testdb.with("UPDATE `%s`.`%s` SET %s = '%s' WHERE %s = %s", modelsSchema(), streamName,
+    getTestdb().with("UPDATE `%s`.`%s` SET %s = '%s' WHERE %s = %s", modelsSchema(), streamName,
         modelCol, modelVal, COL_ID, 11);
   }
 
   @Test
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
-    testdb.with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", testdb.getUserName());
+    getTestdb().with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", getTestdb().getUserName());
     final AirbyteConnectionStatus status = source().check(config());
     final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
         + " for CDC mode.";
@@ -281,7 +286,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount, recordsFromSecondBatch.size(),
         "Expected 46 records to be replicated in the second sync.");
 
-    JsonNode failSyncConfig = testdb.testConfigBuilder()
+    JsonNode failSyncConfig = getTestdb().testConfigBuilder()
         .withCdcReplication(FAIL_SYNC_OPTION)
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
@@ -296,6 +301,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
    * @throws Exception Exception happening in the test.
    */
   @Test
+  @Timeout(value = 5,
+           unit = TimeUnit.MINUTES)
   protected void verifyCheckpointStatesByRecords() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20_000;
@@ -328,7 +335,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   @Override
-  protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessages(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
     assertStateTypes(stateMessages, 4);
   }
@@ -342,7 +349,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   @Override
-  protected void assertExpectedStateMessagesFromIncrementalSync(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesFromIncrementalSync(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
     assertNotNull(stateMessages.get(0).getData());
     for (final AirbyteStateMessage stateMessage : stateMessages) {
@@ -367,17 +374,17 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   @Override
-  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<AirbyteStateMessage> stateAfterFirstBatch) {
+  protected void assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(final List<? extends AirbyteStateMessage> stateAfterFirstBatch) {
     assertEquals(27, stateAfterFirstBatch.size());
     assertStateTypes(stateAfterFirstBatch, 24);
   }
 
   @Override
-  protected void assertExpectedStateMessagesForNoData(final List<AirbyteStateMessage> stateMessages) {
+  protected void assertExpectedStateMessagesForNoData(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(2, stateMessages.size());
   }
 
-  private void assertStateTypes(final List<AirbyteStateMessage> stateMessages, final int indexTillWhichExpectPkState) {
+  private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectPkState) {
     JsonNode sharedState = null;
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -401,7 +408,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   @Override
-  protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
+  protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size());
     for (int i = 0; i <= 4; i++) {
@@ -416,13 +423,13 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       assertEquals(2, streamsInSnapshotState.size());
       assertTrue(
           streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
-      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName())));
+      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
 
       stateMessage.getGlobal().getStreamStates().forEach(s -> {
         final JsonNode streamState = s.getStreamState();
         if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema()))) {
           assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.get(STATE_TYPE_KEY).asText());
-        } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName()))) {
+        } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName()))) {
           assertFalse(streamState.has(STATE_TYPE_KEY));
         } else {
           throw new RuntimeException("Unknown stream");
@@ -441,7 +448,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertEquals(2, streamsInSnapshotState.size());
     assertTrue(
         streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
-    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName())));
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
     secondLastSateMessage.getGlobal().getStreamStates().forEach(s -> {
       final JsonNode streamState = s.getStreamState();
       assertFalse(streamState.has(STATE_TYPE_KEY));
@@ -459,7 +466,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertTrue(
         streamsInSyncCompletionState.contains(
             new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
-    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName())));
+    assertTrue(
+        streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
@@ -538,18 +546,18 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
-    testdb.with(createTableSqlFmt(), testdb.getDatabaseName(), MODELS_STREAM_NAME + "_2",
+    getTestdb().with(createTableSqlFmt(), getDatabaseName(), MODELS_STREAM_NAME + "_2",
         columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
 
     for (final JsonNode recordJson : MODEL_RECORDS_2) {
-      writeRecords(recordJson, testdb.getDatabaseName(), MODELS_STREAM_NAME + "_2", COL_ID,
+      writeRecords(recordJson, getDatabaseName(), MODELS_STREAM_NAME + "_2", COL_ID,
           COL_MAKE_ID, COL_MODEL);
     }
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(
             MODELS_STREAM_NAME + "_2",
-            testdb.getDatabaseName(),
+            getDatabaseName(),
             Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
             Field.of(COL_MODEL, JsonSchemaType.STRING))
@@ -627,9 +635,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         recordMessages1,
         names,
         names,
-        testdb.getDatabaseName());
+        getDatabaseName());
 
-    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName()), firstStreamInState);
+    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName()), firstStreamInState);
 
     // Triggering a sync with a primary_key state for 1 stream and complete state for other stream
     final AutoCloseableIterator<AirbyteMessage> read2 = source()
@@ -672,7 +680,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         recordMessages2,
         names,
         names,
-        testdb.getDatabaseName());
+        getDatabaseName());
   }
 
   /**
@@ -740,7 +748,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         createTableQuery.append(columnName).append(" INTEGER, ");
       }
       createTableQuery.append("PRIMARY KEY (").append(firstCol).append("));");
-      testdb.with(createTableQuery.toString());
+      getTestdb().with(createTableQuery.toString());
     }
   }
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.source.relationaldb
 
 import io.airbyte.commons.util.AutoCloseableIterator
@@ -24,26 +28,34 @@ class InitialSnapshotUtil<T> {
         val stream = airbyteStream.stream
         val streamName = stream.name
         val namespace = stream.namespace
-        val primaryKeys = stream.sourceDefinedPrimaryKey.stream().flatMap { pk: List<String?> ->
-            Stream.of(
-                pk[0],
-            )
-        }.toList()
+        val primaryKeys =
+            stream.sourceDefinedPrimaryKey
+                .stream()
+                .flatMap { pk: List<String?> ->
+                    Stream.of(
+                        pk[0],
+                    )
+                }
+                .toList()
         val fullyQualifiedTableName =
             DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName)
 
         // Grab the selected fields to sync
-        val selectedDatabaseFields: MutableList<String?> = table.fields
-            .stream()
-            .map<String>(Function<CommonField<T>, String> { obj: CommonField<T> -> obj.getName() })
-            .filter(
-                Predicate<String> { o: String? ->
-                    CatalogHelpers.getTopLevelFieldNames(
-                        airbyteStream,
-                    ).contains(o)
-                },
-            )
-            .collect(Collectors.toList())
+        val selectedDatabaseFields: MutableList<String?> =
+            table.fields
+                .stream()
+                .map<String>(
+                    Function<CommonField<T>, String> { obj: CommonField<T> -> obj.getName() }
+                )
+                .filter(
+                    Predicate<String> { o: String? ->
+                        CatalogHelpers.getTopLevelFieldNames(
+                                airbyteStream,
+                            )
+                            .contains(o)
+                    },
+                )
+                .collect(Collectors.toList())
 
         // This is to handle the case if the user de-selects the PK column
         // Necessary to query the data via pk but won't be added to the final record
@@ -57,6 +69,4 @@ class InitialSnapshotUtil<T> {
 
         return selectedDatabaseFields.toList()
     }
-
-
 }
