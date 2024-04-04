@@ -66,7 +66,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
   @Override
   protected JsonNode config() {
-    return testdb.testConfigBuilder().build();
+    return getTestdb().testConfigBuilder().build();
   }
 
   @Override
@@ -97,7 +97,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     ((ObjectNode) config).put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1);
     final String streamOneName = TABLE_NAME + "one";
     // Create a fresh first table
-    testdb.with("CREATE TABLE %s (\n"
+    getTestdb().with("CREATE TABLE %s (\n"
         + "    id int PRIMARY KEY,\n"
         + "    name VARCHAR(200) NOT NULL,\n"
         + "    updated_at VARCHAR(200) NOT NULL\n"
@@ -113,7 +113,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     final String streamTwoName = TABLE_NAME + "two";
     final String streamTwoFullyQualifiedName = getFullyQualifiedTableName(streamTwoName);
     // Insert records into second table
-    testdb.with("CREATE TABLE %s (\n"
+    getTestdb().with("CREATE TABLE %s (\n"
         + "    id int PRIMARY KEY,\n"
         + "    name VARCHAR(200) NOT NULL,\n"
         + "    updated_at DATE NOT NULL\n"
@@ -250,7 +250,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
     // Add some data to each table and perform a third read.
     // Expect to see all records be synced via cursorBased method and not primaryKey
-    testdb.with("INSERT INTO %s(id, name, updated_at) VALUES (4,'Hooper','2006-10-19')",
+    getTestdb().with("INSERT INTO %s(id, name, updated_at) VALUES (4,'Hooper','2006-10-19')",
         getFullyQualifiedTableName(streamOneName))
         .with("INSERT INTO %s(id, name, updated_at) VALUES (43, 'Iron Man', '2006-10-19')",
             streamTwoFullyQualifiedName);
@@ -359,8 +359,8 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   public void testUserHasNoPermissionToDataBase() throws Exception {
     final var config = config();
     maybeSetShorterConnectionTimeout(config);
-    final String usernameWithoutPermission = testdb.withNamespace(USERNAME_WITHOUT_PERMISSION);
-    testdb.with("CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", usernameWithoutPermission, PASSWORD_WITHOUT_PERMISSION);
+    final String usernameWithoutPermission = getTestdb().withNamespace(USERNAME_WITHOUT_PERMISSION);
+    getTestdb().with("CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", usernameWithoutPermission, PASSWORD_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, usernameWithoutPermission);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
     final AirbyteConnectionStatus status = source().check(config);

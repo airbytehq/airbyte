@@ -68,6 +68,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME),
+                testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
@@ -79,6 +80,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME2),
+                testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)

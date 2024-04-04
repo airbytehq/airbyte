@@ -13,7 +13,7 @@ class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
 
   @Override
   protected JsonNode config() {
-    return testdb.testConfigBuilder()
+    return getTestdb().testConfigBuilder()
         .with(JdbcUtils.SSL_KEY, true)
         .build();
   }

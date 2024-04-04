@@ -20,8 +20,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
 public class CloudDeploymentMySqlSslTest {
 
