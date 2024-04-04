@@ -145,7 +145,7 @@ class ConcurrentCursor(Cursor):
     def state(self) -> MutableMapping[str, Any]:
         return self._concurrent_state
 
-    def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[datetime, MutableMapping[str, Any]]:
+    def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[Comparable, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
             return self._start or self._connector_state_converter.zero_value, self._connector_state_converter.deserialize(state)
         return self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, self._start)
@@ -239,20 +239,11 @@ class ConcurrentCursor(Cursor):
         self._merge_partitions()
 
         if len(self.state["slices"]) == 1:
-            yield from self._split_per_slice_range(
-                self.state["slices"][0][self._connector_state_converter.END_KEY] - self._lookback_window,
-                self._connector_state_converter.max_end,
-            )
+            yield from self._split_per_slice_range(self.state["slices"][0][self._connector_state_converter.END_KEY] - self._lookback_window, self._connector_state_converter.max_end)
         elif len(self.state["slices"]) > 1:
             for i in range(len(self.state["slices"]) - 1):
-                yield from self._split_per_slice_range(
-                    self.state["slices"][i][self._connector_state_converter.END_KEY],
-                    self.state["slices"][i + 1][self._connector_state_converter.START_KEY],
-                )
-            yield from self._split_per_slice_range(
-                self.state["slices"][-1][self._connector_state_converter.END_KEY] - self._lookback_window,
-                self._connector_state_converter.max_end,
-            )
+                yield from self._split_per_slice_range(self.state["slices"][i][self._connector_state_converter.END_KEY], self.state["slices"][i + 1][self._connector_state_converter.START_KEY])
+            yield from self._split_per_slice_range(self.state["slices"][-1][self._connector_state_converter.END_KEY] - self._lookback_window, self._connector_state_converter.max_end)
         else:
             raise ValueError("Expected at least one slice")
 
