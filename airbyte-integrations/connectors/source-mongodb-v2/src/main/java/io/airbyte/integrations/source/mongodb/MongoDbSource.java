@@ -124,7 +124,6 @@ public class MongoDbSource extends BaseConnector implements Source {
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state) {
-    LOGGER.info("DEBUGGING: " + config.toString());
     final var emittedAt = Instant.now();
     final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);

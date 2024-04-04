@@ -9,9 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.runners.model.MultipleFailureException.assertEmpty;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,10 +37,12 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -513,8 +513,19 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // Re-run the sync to prove that a config error is thrown due to invalid resume token
     List<AirbyteMessage> messages1 = runRead(configuredCatalog, state);
-    assertEquals(messages1.size(), 0);
-    //assertThrows(Exception.class, () -> runRead(configuredCatalog, state));
+    List<AirbyteMessage> records = messages1.stream().filter(r -> r.getType() == Type.RECORD).toList();
+    // In this sync, there should be no records expected - only error trace messages indicating that the offset is not valid.
+    assertEquals(0, records.size());
+    List<AirbyteMessage> traceMessages = messages1.stream().filter(r -> r.getType() == Type.TRACE).toList();
+    assertOplogErrorTracePresent(traceMessages);
+  }
+
+  private void assertOplogErrorTracePresent(List<AirbyteMessage> traceMessages) {
+    final boolean oplogTracePresent = traceMessages
+        .stream()
+        .anyMatch(trace -> trace.getTrace().getType().equals(AirbyteTraceMessage.Type.ERROR)
+            && trace.getTrace().getError().getMessage().contains("Saved offset is not valid"));
+    assertTrue(oplogTracePresent);
   }
 
   @Test
