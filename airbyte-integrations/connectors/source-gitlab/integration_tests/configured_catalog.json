@@ -27,11 +27,11 @@
         "name": "branches",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["name"]]
+        "source_defined_primary_key": [["project_id"], ["name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["name"]]
+      "primary_key": [["project_id"], ["name"]]
     },
     {
       "stream": {
@@ -110,44 +110,44 @@
         "name": "project_members",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["project_id"], ["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "primary_key": [["project_id"], ["id"]]
     },
     {
       "stream": {
         "name": "group_members",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["group_id"], ["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "primary_key": [["group_id"], ["id"]]
     },
     {
       "stream": {
         "name": "project_labels",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["project_id"], ["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "primary_key": [["project_id"], ["id"]]
     },
     {
       "stream": {
         "name": "group_labels",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["group_id"], ["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "primary_key": [["group_id"], ["id"]]
     },
     {
       "stream": {
@@ -189,7 +189,7 @@
       "stream": {
         "name": "deployments",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
@@ -203,11 +203,11 @@
         "name": "tags",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["name"]]
+        "source_defined_primary_key": [["project_id"], ["name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["name"]]
+      "primary_key": [["project_id"], ["name"]]
     },
     {
       "stream": {

@@ -261,7 +261,7 @@ internal constructor(
         }
         messageIterator.forEachRemaining(recordCollector)
         messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
-            LOGGER.debug("Finished producing messages for stream {}...")
+            LOGGER.debug("Finished producing messages for stream {}...", s)
         }
     }
 
@@ -373,67 +373,34 @@ internal constructor(
 
         private lateinit var validator: JsonSchemaValidator
 
-        @VisibleForTesting
         @Throws(Exception::class)
-        fun consumeWriteStream(consumer: SerializedAirbyteMessageConsumer) {
-            BufferedInputStream(System.`in`).use { bis ->
-                ByteArrayOutputStream().use { baos -> consumeWriteStream(consumer, bis, baos) }
-            }
-        }
-
-        @VisibleForTesting
-        @Throws(Exception::class)
-        fun consumeWriteStream(
+        internal fun consumeWriteStream(
             consumer: SerializedAirbyteMessageConsumer,
-            bis: BufferedInputStream,
-            baos: ByteArrayOutputStream
+            inputStream: InputStream = System.`in`
         ) {
+            LOGGER.info("Starting buffered read of input stream")
             consumer.start()
-
-            val buffer = ByteArray(8192) // 8K buffer
-            var bytesRead: Int
-            var lastWasNewLine = false
-
-            while ((bis.read(buffer).also { bytesRead = it }) != -1) {
-                for (i in 0 until bytesRead) {
-                    val b = buffer[i]
-                    if (b == '\n'.code.toByte() || b == '\r'.code.toByte()) {
-                        if (!lastWasNewLine && baos.size() > 0) {
-                            consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size())
-                            baos.reset()
-                        }
-                        lastWasNewLine = true
+            inputStream.bufferedReader(StandardCharsets.UTF_8).use {
+                var emptyLines = 0
+                it.lines().forEach { line: String ->
+                    if (line.isNotEmpty()) {
+                        consumer.accept(line, line.toByteArray(StandardCharsets.UTF_8).size)
                     } else {
-                        baos.write(b.toInt())
-                        lastWasNewLine = false
+                        emptyLines++
+                        // We've occasionally seen this loop not exit
+                        // maybe it's because we keep getting streams of empty lines?
+                        // TODO: Monitor the logs for occurrences of this log line and if this isn't
+                        // an issue, remove it.
+                        if (emptyLines % 1_000 == 0 && emptyLines < 10_000) {
+                            LOGGER.warn("Encountered $emptyLines empty lines during execution")
+                        }
                     }
                 }
+                if (emptyLines > 0) {
+                    LOGGER.warn("Encountered $emptyLines empty lines in the input stream.")
+                }
             }
-
-            // Handle last line if there's one
-            if (baos.size() > 0) {
-                consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size())
-            }
-        }
-
-        /**
-         * Stops any non-daemon threads that could block the JVM from exiting when the main thread
-         * is done.
-         *
-         * If any active non-daemon threads would be left as orphans, this method will schedule some
-         * interrupt/exit hooks after giving it some time delay to close up properly. It is
-         * generally preferred to have a proper closing sequence from children threads instead of
-         * interrupting or force exiting the process, so this mechanism serve as a fallback while
-         * surfacing warnings in logs for maintainers to fix the code behavior instead.
-         */
-        fun stopOrphanedThreads() {
-            stopOrphanedThreads(
-                EXIT_HOOK,
-                INTERRUPT_THREAD_DELAY_MINUTES,
-                TimeUnit.MINUTES,
-                EXIT_THREAD_DELAY_MINUTES,
-                TimeUnit.MINUTES
-            )
+            LOGGER.info("Finished buffered read of input stream")
         }
 
         /**
@@ -455,11 +422,11 @@ internal constructor(
          */
         @VisibleForTesting
         fun stopOrphanedThreads(
-            exitHook: Runnable,
-            interruptTimeDelay: Int,
-            interruptTimeUnit: TimeUnit?,
-            exitTimeDelay: Int,
-            exitTimeUnit: TimeUnit?
+            exitHook: Runnable = EXIT_HOOK,
+            interruptTimeDelay: Int = INTERRUPT_THREAD_DELAY_MINUTES,
+            interruptTimeUnit: TimeUnit = TimeUnit.MINUTES,
+            exitTimeDelay: Int = EXIT_THREAD_DELAY_MINUTES,
+            exitTimeUnit: TimeUnit = TimeUnit.MINUTES
         ) {
             val currentThread = Thread.currentThread()
 
@@ -468,7 +435,7 @@ internal constructor(
                     .stream()
                     .filter(ORPHANED_THREAD_FILTER)
                     .collect(Collectors.toList())
-            if (!runningThreads.isEmpty()) {
+            if (runningThreads.isNotEmpty()) {
                 LOGGER.warn(
                     """
                   The main thread is exiting while children non-daemon threads from a connector are still active.
@@ -535,7 +502,7 @@ internal constructor(
             operationType: String
         ) {
             val validationResult = validator.validate(schemaJson, objectJson)
-            if (!validationResult.isEmpty()) {
+            if (validationResult.isNotEmpty()) {
                 throw Exception(
                     String.format(
                         "Verification error(s) occurred for %s. Errors: %s ",

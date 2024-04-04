@@ -83,7 +83,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
      * Test the 'discover' command. TODO (liren): Some existing databases may fail testDataTypes(),
      * so it is turned off by default. It should be enabled for all databases eventually.
      */
-    protected fun testCatalog(): Boolean {
+    protected open fun testCatalog(): Boolean {
         return false
     }
 
@@ -148,7 +148,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         val recordMessages =
             allMessages!!
                 .stream()
-                .filter { m: AirbyteMessage? -> m!!.type == AirbyteMessage.Type.RECORD }
+                .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
                 .toList()
         val expectedValues: MutableMap<String?, MutableList<String?>?> = HashMap()
         val missedValuesByStream: MutableMap<String?, ArrayList<MissedRecords>> = HashMap()
