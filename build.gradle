@@ -188,15 +188,6 @@ allprojects {
     }
 
     dependencies {
-        // Lombok dependencies.
-        def lombok = "org.projectlombok:lombok:1.18.30"
-        compileOnly lombok
-        annotationProcessor lombok
-        testCompileOnly lombok
-        testAnnotationProcessor lombok
-        testFixturesCompileOnly lombok
-        testFixturesAnnotationProcessor lombok
-
         // JUnit dependencies.
         def vAssertJ = "3.25.3"
         def vJUnit = "5.10.2"

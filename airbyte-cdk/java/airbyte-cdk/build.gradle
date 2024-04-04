@@ -1,3 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+plugins {
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.jvm)
+}
+
 final var cdkVersion = {
     var props = new Properties()
     file("core/src/main/resources/version.properties").withInputStream(props::load)
@@ -7,6 +14,9 @@ final var cdkVersion = {
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'java-test-fixtures'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'com.google.devtools.ksp'
 
     group 'io.airbyte.cdk'
 
@@ -33,6 +43,24 @@ allprojects {
         }
     }
 
+    project.configurations {
+        testImplementation.extendsFrom implementation
+        testFixturesImplementation.extendsFrom implementation
+        testFixturesRuntimeOnly.extendsFrom runtimeOnly
+    }
+
+    // The DuplicatesStrategy will be required while this module is mixture of kotlin and java _with_ lombok dependencies.)
+    // Kapt, by default, runs all annotation(processors and disables annotation(processing by javac, however)
+    // this default behavior(breaks the lombok java annotation(processor.  To avoid(lombok breaking, kapt(has)
+    // keepJavacAnnotationProcessors enabled, which causes duplicate META-INF files to be generated.)
+    // Once lombok has been removed, this can also be removed.)
+    kapt {
+        keepJavacAnnotationProcessors = true
+    }
+
+    tasks.withType(Jar) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
     // This is necessary because the mockit.kotlin any() generates a bunch of bad casts
     spotbugsTest.omitVisitors = ['FindBadCast2']
 }

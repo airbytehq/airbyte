@@ -1,21 +1,14 @@
-/*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
- */
-
-package io.airbyte.cdk.integrations.destination.async.model
+package io.airbyte.cdk.core.destination.async.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import java.util.Objects
 
 class PartialAirbyteStateMessage {
-    @get:JsonProperty("type")
-    @set:JsonProperty("type")
+
     @JsonProperty("type")
     var type: AirbyteStateMessage.AirbyteStateType? = null
 
-    @get:JsonProperty("stream")
-    @set:JsonProperty("stream")
     @JsonProperty("stream")
     var stream: PartialAirbyteStreamState? = null
 
@@ -45,6 +38,9 @@ class PartialAirbyteStateMessage {
     }
 
     override fun toString(): String {
-        return "PartialAirbyteStateMessage{" + "type=" + type + ", stream=" + stream + '}'
+        return "PartialAirbyteStateMessage{" +
+                "type=" + type +
+                ", stream=" + stream +
+                '}'
     }
 }

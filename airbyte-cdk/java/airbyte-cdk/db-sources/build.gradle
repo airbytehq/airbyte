@@ -36,6 +36,8 @@ tasks.register('generate').configure {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')

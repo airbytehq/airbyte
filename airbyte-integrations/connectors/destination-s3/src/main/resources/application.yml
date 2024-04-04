@@ -1,0 +1,15 @@
+micronaut:
+  application:
+    name: destination-s3
+  executors:
+    destination-async-worker-pool-executor:
+      type: fixed
+      core-pool-size: 5
+      n-threads: 5
+
+airbyte:
+  connector:
+    async:
+      optimal-batch-size-bytes: 52428800 #52 MB
+    configuration:
+      class: "io.airbyte.integrations.destination.s3.config.properties.S3ConnectorConfiguration"
