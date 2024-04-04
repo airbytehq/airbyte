@@ -12,6 +12,25 @@ Cloud storage may incur egress costs. Egress refers to data that is transferred 
 
 * Create a storage account with the permissions [details](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) 
 
+
+:::warning
+To use Oauth 2.0 Authentication method, Access Control (IAM) should be setup.
+It is recommended
+to use role [Storage Blob Data Reader](https://learn.microsoft.com/en-gb/azure/storage/blobs/assign-azure-role-data-access?tabs=portal)
+
+<details>
+<summary>
+Follow this steps to setup IAM role:
+</summary>
+
+1. Go to Azure portal, select the Storage (or Container) you'd like to sync from and get to Access Control(IAM) -> Role Assignment ![Access Control (IAM)](./azure-blob-storage/access_control_iam.png)
+2. Click on `Add` and select `Add role assignment` from the dropdown list ![Add role assignment](./azure-blob-storage/add_role.png)
+3. Search by role name `Storage Blob Data Reader` in search box, Select role from the list and click next ![Search Role](./azure-blob-storage/search_role.png)
+4.
+
+</details>
+:::
+
 ### Step 2: Set up the Azure Blob Storage connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
@@ -194,7 +213,7 @@ To perform the text extraction from PDF and Docx files, the connector uses the [
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
 | 0.4.0   | 2024-04-05 | [36825](https://github.com/airbytehq/airbyte/pull/36825) | Add oauth 2.0 support                                                                        |
-| 0.3.6   | 2024-03-26 | [36542](https://github.com/airbytehq/airbyte/pull/36542) | Use Latest CDK; add integration tests                                                        |
+| 0.3.6   | 2024-04-03 | [36542](https://github.com/airbytehq/airbyte/pull/36542) | Use Latest CDK; add integration tests                                                        |
 | 0.3.5   | 2024-03-26 | [36487](https://github.com/airbytehq/airbyte/pull/36487) | Manage dependencies with Poetry.                                                             |
 | 0.3.4   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |
 | 0.3.3   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                 |
