@@ -1,7 +1,7 @@
 # Concurrent
 In this section, we'll improve the connector performance by reading multiple stream slices in parallel.
 
-Let's update the source. The bulk of the change is changing it's parent class to `ConcurrentSourceAdapter`, and updating its `__init__` method so it's properly initialized. This requires a little bit of boilerplate:
+Let's update the source. The bulk of the change is changing its parent class to `ConcurrentSourceAdapter`, and updating its `__init__` method so it's properly initialized. This requires a little bit of boilerplate:
 ```python
 class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[_logger.level]))
@@ -68,7 +68,7 @@ The most interesting piece from this block is the use of `ConcurrentCursor` to s
 
 The survey responses stream does not support incremental reads, so it's using a `FinalStateCursor` instead. The rest of the code change is mostly boilerplate.
 
-We'll also add a state converter to the `SurveyMonkeyBaseStream` to describe how the state is cursor is formatted. We'll use the `EpochValueConcurrentStreamStateConverter` since the `get_updated_state` method returns the cursor as a timestamp
+We'll also add a state converter to the `SurveyMonkeyBaseStream` to describe how the state cursor is formatted. We'll use the `EpochValueConcurrentStreamStateConverter` since the `get_updated_state` method returns the cursor as a timestamp
 ```
 state_converter = EpochValueConcurrentStreamStateConverter()
 ```

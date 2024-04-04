@@ -6,20 +6,6 @@ git@github.com:airbytehq/airbyte.git
 cd airbyte
 ```
 
-Next, we'll revert to using an older version of the platform because the latest one fails to add custom connectors.
-```bash
-git revert 558ead668dca749c39b2e6d68a288b2f8618ccdf -X theirs
-```
-
-Start the airbyte platform
-```bash
-./run-ab-platform.sh
-```
-
-Then from another terminal window:
-```bash
-cd workspace/airbyte/
-```
 Use the Airbyte provided code generator which bootstraps the scaffolding for our connector:
 ```bash
 cd airbyte-integrations/connector-templates/generator

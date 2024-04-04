@@ -1,29 +1,30 @@
 # Getting started
 This tutorial will walk you through the creation of a custom Airbyte connector implemented with the Python CDK. This tutorial assumes you're already familiar with Airbyte concept and you've already built a connector. This isn't meant as a guide to building your first connector, but to surface best practices, and a few features that are difficult to discover today.
 
-The Python CDK should be used to implement connectors that require features that are not yet available in the Connector Builder or in the low-code framework.
+The Python CDK should be used to implement connectors that require features that are not yet available in the Connector Builder or in the low-code framework. You can use the [Connector Builder compatibility guide](../../connector-builder-ui/connector-builder-compatibility.md) to know whether it is suitable for your needs.
 
-We'll build an connector for the Survey Monkey API, focusing on the `surveys` and `servey responses` endpoints.
+We'll build an connector for the Survey Monkey API, focusing on the `surveys` and `survey responses` endpoints.
 
 You can find the documentation for the API [here](https://api.surveymonkey.com/v3/docs?shell#getting-started).
 
 As a first step, follow the getting started instructions from the docs to register a draft app to your account.
 
 Next, we'll inspect the API docs to understand how the endpoints work.
+
 ## Surveys endpoint
-The [surveys endpoint doc](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys) shows that the URL is https://api.surveymonkey.com/v3/surveys and that the data is nested in the response's "data" field.
+The [surveys endpoint doc](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys) shows that the endpoint URL is https://api.surveymonkey.com/v3/surveys and that the data is nested in the response's "data" field.
 
 It also shows there are two ways to iterate through the record pages. We could either keep a page counter and increment it on every request, or use the link sent as part of the response in "links" -> "next".
 
 The two approaches are equivalent for the Survey Monkey API, but as a rule of thumb, it is preferable to use the links provided by the API if it is available instead of reverse engineering the mechanism. This way, we don't need to modify the connector if the API changes their pagination mechanism, for instance, if they decide to implement server-side pagination.
 
 ---
-**NOTE**
+**NOTE:**
 When available, server-side pagination should be preferred over client-side pagination because it has lower risks of missing records if the collection is modified while the connector iterates.
 
 ---
 
-The "Optional Query Strings for GET" shows that the perPage parameter is important because it’ll define how many records we can fetch with a single request. The maximum page size isn't explicit from the docs. We'll use 1000 as a limit. When unsure, we recommend finding the limit experimentally by trying multiple values.
+The "Optional Query Strings for GET" section shows that the `perPage` parameter is important because it’ll define how many records we can fetch with a single request. The maximum page size isn't explicit from the docs. We'll use 1000 as a limit. When unsure, we recommend finding the limit experimentally by trying multiple values.
 
 Also note that we'll need to add the `include` query parameter to fetch all the properties, such as `date_modified`, which we'll use as our cursor value.
 

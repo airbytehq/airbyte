@@ -20,7 +20,7 @@ Note that we're converting the datetimes to unix epoch. We could've also chosen 
 
 Then we'll implement the `stream_slices` method, which will be used to partition the stream into time windows. While this isn't mandatory since we could omit the `end_modified_at` parameter from our requests and try to read all new records at once, it is preferable to partition the stream because it enables checkpointing.
 
-This might mean the connector will make more requests than necessary during the initial sync, and this is most visible when working with a sandbox or an account that does not have many records, the upside are worth the tradeoff because the additional cost is negligible for accounts that have many records, and the time cost will be entirely mitigated in a follow up section when we fetch partitions concurrently.
+This might mean the connector will make more requests than necessary during the initial sync, and this is most visible when working with a sandbox or an account that does not have many records. The upside are worth the tradeoff because the additional cost is negligible for accounts that have many records, and the time cost will be entirely mitigated in a follow up section when we fetch partitions concurrently.
 ```python
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
@@ -99,13 +99,10 @@ Finally, modify the configured catalog to run the stream in incremental mode:
 }
 ```
 
-Run another read
-
-The state messages should include the cursor
+Run another read operation. The state messages should include the cursor:
 ```json
 {"type": "STATE", "state": {"type": "STREAM", "stream": {"stream_descriptor": {"name": "surveys", "namespace": null}, "stream_state": {"date_modified": 1623348420.0}}, "sourceStats": {"recordCount": 0.0}}}
 ```
-
 
 And update the sample state to a timestamp earlier than the first record. There should be fewer records
 
@@ -125,11 +122,11 @@ And update the sample state to a timestamp earlier than the first record. There 
 ]
 ```
 
-Run another read command, passing the --state flag
+Run another read command, passing the `--state` flag:
 ```bash
 poetry run source-survey-monkey-demo read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
 ```
 
 Only more recent records should be read.
 
-In the [next section](6-reading-from-a-subresource.md), we'll implement the survey responses stream, which depends on the surveys stream.
+In the [next section](7-reading-from-a-subresource.md), we'll implement the survey responses stream, which depends on the surveys stream.

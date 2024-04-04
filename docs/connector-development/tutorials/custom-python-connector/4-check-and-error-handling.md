@@ -1,7 +1,7 @@
 # Check and error handling
-In this section, we'll implement the check operation, and add some better error handling to surface the proper error messages when failing due to authentication errors.
+In this section, we'll implement the check operation, and implement error handling to surface the user-friendly messages when failing due to authentication errors.
 
-Let's first improve the check operation
+Let's first implement the check operation. Use the following command to run the check operation:
 ```
 poetry run source-survey-monkey-demo check --config secrets/config.json
 ```
@@ -55,5 +55,7 @@ Instead of using an availability strategy, we'll instead raise a config error if
         else:
             yield from response_json
 ```
+
+The `external_message` will be displayed to the end-user, while the `internal_message` will be logged for troubleshooting purposes.
             
-In the [next section](./4-discover.md), we'll implement the discover operation.
+In the [next section](./5-discover.md), we'll implement the discover operation.
