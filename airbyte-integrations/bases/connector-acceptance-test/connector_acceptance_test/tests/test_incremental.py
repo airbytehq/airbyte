@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, MutableMapping, Tuple, Union
 import pytest
 from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
 from connector_acceptance_test import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.config import CheckpointingStrategies, Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
 from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 from deepdiff import DeepDiff
@@ -170,12 +170,9 @@ class TestIncremental(BaseTest):
             pytest.skip("Skipping new incremental test based on acceptance-test-config.yml")
             return
 
-        state_progression_stream_names = {
-            state_progression_stream.name: state_progression_stream for state_progression_stream in inputs.test_with_state_progression
-        }
+        checkpoint_testing_strategies = {stream.name: stream for stream in inputs.checkpointing_strategy.streams}
         for stream in configured_catalog_for_incremental.streams:
-            is_testing_state_progression = stream.stream.name in state_progression_stream_names
-
+            checkpoint_testing_strategy = checkpoint_testing_strategies.get(stream.stream.name, inputs.checkpointing_strategy).strategy
             configured_catalog_for_incremental_per_stream = ConfiguredAirbyteCatalog(streams=[stream])
 
             output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental_per_stream)
@@ -189,7 +186,7 @@ class TestIncremental(BaseTest):
             states_1 = filter_output(output_1, type_=Type.STATE)
             # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
             unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
-            if not is_testing_state_progression:
+            if checkpoint_testing_strategy == CheckpointingStrategies.use_latest_state:
                 unique_state_messages = unique_state_messages[-1:]
 
             # Important!
@@ -200,21 +197,19 @@ class TestIncremental(BaseTest):
 
             # To learn more: https://github.com/airbytehq/airbyte/issues/29926
             if len(unique_state_messages) == 0:
-                pytest.skip("Skipping test because there are not enough state messages to test with")
-                return
-
-            if len(unique_state_messages) < 3 and is_testing_state_progression:
                 continue
+
+            if checkpoint_testing_strategy == CheckpointingStrategies.use_progression:
+                if len(unique_state_messages) < 3:
+                    continue
 
             # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
             # the complete final state of streams must be assembled by going through all prior state messages received
             is_per_stream = is_per_stream_state(states_1[-1])
 
-            # To avoid spamming APIs we only test a fraction of batches (2 or 3 states by default)
-            min_batches_to_test = (
-                3 if not is_testing_state_progression else state_progression_stream_names[stream.stream.name].fraction_of_batches
-            )
-            sample_rate = len(unique_state_messages) // min_batches_to_test
+            # To avoid spamming APIs we only test a fraction of batches (4 or 5 states by default)
+            min_batches_to_test = 5
+            sample_rate = (len(unique_state_messages) // min_batches_to_test) or 1
 
             mutating_stream_name_to_per_stream_state = dict()
             for idx, state_message in enumerate(unique_state_messages):
@@ -223,7 +218,7 @@ class TestIncremental(BaseTest):
                 is_first_state_message = idx == 0
                 is_last_state_message = idx == len(unique_state_messages) - 1
 
-                if is_testing_state_progression:
+                if checkpoint_testing_strategy == CheckpointingStrategies.use_progression:
                     # if first state message, skip
                     # this is because we cannot assert if the first state message will result in new records
                     # as in this case it is possible for a connector to return an empty state message when it first starts.
@@ -231,15 +226,15 @@ class TestIncremental(BaseTest):
                     if is_first_state_message:
                         continue
 
+                    # if batching required, and not a sample, skip
+                    if idx % sample_rate != 0:
+                        continue
+
                     # if last state message, skip
                     # this is because we cannot assert if the last state message will result in new records
                     # as in this case it is possible for a connector to return a previous state message.
                     # e.g. if the connector is using pagination and the last page is only partially full
                     if is_last_state_message:
-                        continue
-
-                    # if batching required, and not a sample, skip
-                    if len(unique_state_messages) >= min_batches_to_test and idx % sample_rate != 0:
                         continue
 
                 state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(

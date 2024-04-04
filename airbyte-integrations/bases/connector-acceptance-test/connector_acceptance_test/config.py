@@ -132,18 +132,6 @@ class SuggestedStreamsConfiguration(BaseConfig):
     )
 
 
-class TestWithStateProgressionConfiguration(BaseConfig):
-    name: str
-    fraction_of_batches: Optional[int] = Field(
-        default=3,
-        description=(
-            "To avoid spamming APIs, we only test a fraction of batches, skipping the first and last states to avoid corner cases. "
-            "The formula we use is: `state_num % (total_states // fraction_of_batches)`. "
-            "For instance, if there are 10 state messages, we would execute tests solely on the third and sixth states."
-        ),
-    )
-
-
 class UnsupportedFileTypeConfig(BaseConfig):
     extension: str
     bypass_reason: Optional[str] = Field(description="Reason why this type is considered unsupported.")
@@ -215,6 +203,27 @@ class FutureStateConfig(BaseConfig):
     bypass_reason: Optional[str]
 
 
+class CheckpointingStrategies(str, Enum):
+    use_progression = "use_progression"
+    use_latest_state = "use_latest_state"
+
+
+class CheckpointingStrategyPerStreamConfiguration(BaseConfig):
+    name: str
+    strategy: CheckpointingStrategies = Field(
+        description="Depending on the stream configuration and the amount of data, we can select a strategy for testing state progression."
+    )
+
+
+class CheckpointingStrategyConfiguration(BaseConfig):
+    strategy: CheckpointingStrategies = Field(
+        default=CheckpointingStrategies.use_progression, description="Define what state to use during test checkpointing."
+    )
+    streams: List[CheckpointingStrategyPerStreamConfiguration] = Field(
+        default_factory=list, description="Define what state to use during test checkpointing per stream."
+    )
+
+
 class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
@@ -224,8 +233,14 @@ class IncrementalConfig(BaseConfig):
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
     )
-    test_with_state_progression: List[TestWithStateProgressionConfiguration] = Field(
-        default_factory=list, description="Test with states progression"
+    checkpointing_strategy: CheckpointingStrategyConfiguration = Field(
+        default_factory=CheckpointingStrategyConfiguration,
+        description=(
+            "Select a strategy for testing connector checkpointing. "
+            "There are two available options: we can decide whether to use only the last state message or more. "
+            "When selecting `use_progression`, it's important to note that in order to prevent spamming APIs, "
+            "we test only a subset of batches, excluding the first and last states to mitigate potential corner cases."
+        ),
     )
 
     class Config:
