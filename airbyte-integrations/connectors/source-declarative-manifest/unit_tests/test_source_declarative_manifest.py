@@ -59,7 +59,7 @@ def config_file_without_injection(tmp_path):
     return config_file
 
 
-def test_on_spec_command_then_raise_value_error():
+def test_spec_does_not_raise_value_error():
     handle_command(["spec"])
 
 
