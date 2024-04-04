@@ -19,8 +19,6 @@ compileKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
-spotbugsTest.enabled = false
-spotbugsTestFixtures.enabled = false
 
 def generate = tasks.register('generate')
 

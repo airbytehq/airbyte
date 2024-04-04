@@ -131,7 +131,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Test
     @Throws(Exception::class)
     fun testDiscover() {
-        val discoverOutput = runDiscover()
+        runDiscover()
         val discoveredCatalog = lastPersistedCatalog
         Assertions.assertNotNull(discoveredCatalog, "Expected discover to produce a catalog")
         verifyCatalog(discoveredCatalog)
@@ -139,7 +139,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
     /** Override this method to check the actual catalog. */
     @Throws(Exception::class)
-    protected fun verifyCatalog(catalog: AirbyteCatalog?) {
+    protected open fun verifyCatalog(catalog: AirbyteCatalog?) {
         // do nothing by default
     }
 
@@ -167,7 +167,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
     /** Override this method to perform more specific assertion on the messages. */
     @Throws(Exception::class)
-    protected open fun assertFullRefreshMessages(allMessages: List<AirbyteMessage?>?) {
+    protected open fun assertFullRefreshMessages(allMessages: List<AirbyteMessage>) {
         // do nothing by default
     }
 
@@ -248,8 +248,8 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         val stateMessages =
             airbyteMessages
                 .stream()
-                .filter { m: AirbyteMessage? -> m!!.type == AirbyteMessage.Type.STATE }
-                .map { obj: AirbyteMessage? -> obj!!.state }
+                .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.STATE }
+                .map { obj: AirbyteMessage -> obj.state }
                 .collect(Collectors.toList())
         Assertions.assertFalse(
             recordMessages.isEmpty(),
@@ -446,12 +446,12 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
         @JvmStatic
         protected fun filterRecords(
-            messages: Collection<AirbyteMessage?>?
+            messages: Collection<AirbyteMessage>
         ): List<AirbyteRecordMessage> {
-            return messages!!
+            return messages
                 .stream()
-                .filter { m: AirbyteMessage? -> m!!.type == AirbyteMessage.Type.RECORD }
-                .map { obj: AirbyteMessage? -> obj!!.record }
+                .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
+                .map { obj: AirbyteMessage -> obj.record }
                 .collect(Collectors.toList())
         }
     }

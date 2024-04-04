@@ -210,8 +210,8 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         val container = createNewContainer(imageName)
         val logConsumer: Slf4jLogConsumer =
             object : Slf4jLogConsumer(LOGGER) {
-                override fun accept(frame: OutputFrame?) {
-                    if (frame!!.utf8StringWithoutLineEnding.trim { it <= ' ' }.length > 0) {
+                override fun accept(frame: OutputFrame) {
+                    if (frame.utf8StringWithoutLineEnding.trim { it <= ' ' }.length > 0) {
                         super.accept(frame)
                     }
                 }
