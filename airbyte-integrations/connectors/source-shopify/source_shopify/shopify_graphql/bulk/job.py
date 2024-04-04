@@ -21,6 +21,7 @@ from .tools import END_OF_FILE, BulkTools
 
 class ShopifyBulkStatus(Enum):
     CREATED = "CREATED"
+    CANCELED = "CANCELED"
     COMPLETED = "COMPLETED"
     RUNNING = "RUNNING"
     FAILED = "FAILED"
@@ -81,6 +82,7 @@ class ShopifyBulkManager:
     def job_state_to_fn_map(self) -> Mapping[str, Any]:
         return {
             ShopifyBulkStatus.CREATED.value: self.on_created_job,
+            ShopifyBulkStatus.CANCELED.value: self.on_canceled_job,
             ShopifyBulkStatus.COMPLETED.value: self.on_completed_job,
             ShopifyBulkStatus.RUNNING.value: self.on_running_job,
             ShopifyBulkStatus.TIMEOUT.value: self.on_timeout_job,
@@ -142,6 +144,11 @@ class ShopifyBulkManager:
 
     def on_created_job(self, **kwargs) -> None:
         pass
+
+    def on_canceled_job(self, response: requests.Response) -> AirbyteTracedException:
+        raise ShopifyBulkExceptions.BulkJobCanceled(
+            f"The BULK Job: `{self.job_id}` exited with {self.job_state}, details: {response.text}",
+        )
 
     def on_running_job(self, **kwargs) -> None:
         sleep(self.job_check_interval_sec)
@@ -212,7 +219,7 @@ class ShopifyBulkManager:
         # the errors are handled in `job_job_check_for_errors`
         if errors:
             for error in errors:
-                message = error.get("message", "")
+                message = error.get("message", "") if isinstance(error, dict) else ""
                 if concurent_job_pattern in message:
                     return True
         # reset the `concurrent_attempt` counter, once there is no concurrent job error
@@ -316,6 +323,7 @@ class ShopifyBulkManager:
         try:
             return self.job_check_state()
         except (
+            ShopifyBulkExceptions.BulkJobCanceled,
             ShopifyBulkExceptions.BulkJobFailed,
             ShopifyBulkExceptions.BulkJobTimout,
             ShopifyBulkExceptions.BulkJobAccessDenied,

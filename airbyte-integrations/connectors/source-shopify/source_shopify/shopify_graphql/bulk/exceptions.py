@@ -30,6 +30,9 @@ class ShopifyBulkExceptions:
     class BulkJobFailed(BaseBulkException):
         """Raised when BULK Job has FAILED status"""
 
+    class BulkJobCanceled(BaseBulkException):
+        """Raised when BULK Job has CALCELED status"""
+
     class BulkJobTimout(BaseBulkException):
         """Raised when BULK Job has TIMEOUT status"""
 
