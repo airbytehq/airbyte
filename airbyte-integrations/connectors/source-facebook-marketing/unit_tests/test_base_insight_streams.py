@@ -97,7 +97,9 @@ class TestBaseInsightsStream:
             if read slice 2, 3, 1 state changed to 3
         """
         job = mocker.Mock(spec=InsightAsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        result_mock = mocker.Mock()
+        result_mock.export_all_data.return_value = {}
+        job.get_result.return_value = [result_mock, result_mock, result_mock]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
@@ -125,7 +127,9 @@ class TestBaseInsightsStream:
             if read slice 2, 3, 1 state changed to 3
         """
         job = mocker.Mock(spec=AsyncJob)
-        job.get_result.return_value = [mocker.Mock(), mocker.Mock(), mocker.Mock()]
+        result_mock = mocker.Mock()
+        result_mock.export_all_data.return_value = {}
+        job.get_result.return_value = [result_mock, result_mock, result_mock]
         job.interval = pendulum.Period(pendulum.date(2010, 1, 1), pendulum.date(2010, 1, 1))
         stream = AdsInsights(
             api=api,
