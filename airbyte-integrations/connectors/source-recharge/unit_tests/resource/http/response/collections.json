@@ -1,0 +1,26 @@
+{
+  "next_cursor": null,
+  "previous_cursor": null,
+  "collections": [
+    {
+      "id": 134129,
+      "created_at": "2022-03-28T12:27:03+00:00",
+      "name": "test_collection_134129",
+      "description": "kitten accessories soft.",
+      "sort_order": "id-asc",
+      "title": "Soft Kitty",
+      "type": "manual",
+      "updated_at": "2022-03-28T12:27:03+00:00"
+    },
+    {
+      "id": 134136,
+      "created_at": "2022-03-28T15:38:27+00:00",
+      "name": "test_collection_134136",
+      "description": "cat products august 2022",
+      "sort_order": "title-asc",
+      "title": "Cats",
+      "type": "manual",
+      "updated_at": "2022-03-28T15:38:27+00:00"
+    }
+  ]
+}

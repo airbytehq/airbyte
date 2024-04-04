@@ -22,7 +22,7 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges:
-      1.0.0:
+      1.1.0:
         message:
           Zoom has deprecated JWT authentication in favor of OAuth. To successfully
           migrate, users will need to create a new server-to-server OAuth app and

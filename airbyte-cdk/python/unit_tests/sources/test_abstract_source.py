@@ -187,6 +187,10 @@ class MockStream(Stream):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return "pk"
 
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return ["updated_at"]
+
 
 class MockStreamWithState(MockStream):
     cursor_field = "cursor"

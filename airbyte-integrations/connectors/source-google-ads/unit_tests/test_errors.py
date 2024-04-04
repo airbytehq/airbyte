@@ -35,6 +35,7 @@ params = [
         "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account.",
     ),
     (["QUERY_ERROR"], "Incorrect custom query. Error in query: unexpected end of query."),
+    (["UNRECOGNIZED_FIELD"], "The Custom Query: `None` has unrecognized field in the query. Please make sure the field exists or name entered is valid."),
     (
         ["RESOURCE_EXHAUSTED"],
         (

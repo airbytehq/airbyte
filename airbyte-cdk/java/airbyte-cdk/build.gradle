@@ -1,43 +1,21 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
-}
-
 final var cdkVersion = {
     var props = new Properties()
     file("core/src/main/resources/version.properties").withInputStream(props::load)
     return props.getProperty('version', 'undefined')
 }()
 
-
-
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'java-test-fixtures'
-    apply plugin: 'org.jetbrains.kotlin.jvm'
 
     group 'io.airbyte.cdk'
-
-    def artifactBaseName = 'airbyte-cdk-' + project.name
-    // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
     project.version = cdkVersion
 
     publishing {
         publications {
-            main(MavenPublication) {
-                groupId = 'io.airbyte.cdk'
-                artifactId = artifactBaseName
-                version = project.version
+            cdk(MavenPublication) {
                 from components.java
-            }
-            testFixtures(MavenPublication) {
-                groupId = 'io.airbyte.cdk'
-                artifactId = artifactBaseName + '-test-fixtures'
-                version = project.version
-                artifact project.tasks.testFixturesJar
             }
         }
         // This repository is only defined and used in the context of an artifact publishing
@@ -53,26 +31,10 @@ allprojects {
                 }
             }
         }
-
-        compileKotlin {
-            compilerOptions {
-                jvmTarget = JvmTarget.JVM_21
-                languageVersion = KotlinVersion.KOTLIN_1_9
-            }
-        }
-        compileTestKotlin {
-            compilerOptions {
-                jvmTarget = JvmTarget.JVM_21
-                languageVersion = KotlinVersion.KOTLIN_1_9
-            }
-        }
     }
 
-    project.configurations {
-        testImplementation.extendsFrom implementation
-        testFixturesImplementation.extendsFrom implementation
-        testFixturesRuntimeOnly.extendsFrom runtimeOnly
-    }
+    // This is necessary because the mockit.kotlin any() generates a bunch of bad casts
+    spotbugsTest.omitVisitors = ['FindBadCast2']
 }
 
 description = "Airbyte Connector Development Kit (CDK) for Java."

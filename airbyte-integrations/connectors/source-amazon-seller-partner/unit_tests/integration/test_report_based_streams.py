@@ -509,9 +509,10 @@ class TestIncremental:
         assert len(output.state_messages) == 1
 
         cursor_field = get_stream_by_name(stream_name, _config.build()).cursor_field
-        cursor_value_from_state_message = output.most_recent_state.get(stream_name, {}).get(cursor_field)
         cursor_value_from_latest_record = output.records[-1].record.data.get(cursor_field)
-        assert cursor_value_from_state_message == cursor_value_from_latest_record
+
+        most_recent_state = output.most_recent_state.stream_state
+        assert most_recent_state == {cursor_field: cursor_value_from_latest_record}
 
 
 @freezegun.freeze_time(NOW.isoformat())
@@ -570,9 +571,7 @@ class TestVendorSalesReportsFullRefresh:
 
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
-    def test_given_compressed_report_when_read_then_return_records(
-        self, selling_program: str, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_compressed_report_when_read_then_return_records(self, selling_program: str, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -771,9 +770,7 @@ class TestVendorSalesReportsFullRefresh:
 
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
-    def test_given_report_status_fatal_when_read_then_exception_raised(
-        self, selling_program: str, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_report_status_fatal_when_read_then_exception_raised(self, selling_program: str, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)

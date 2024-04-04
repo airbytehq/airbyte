@@ -4,6 +4,11 @@
 
 Streams Ads-Insights-* streams now have updated schemas.
 
+:::danger
+Please note that data older than 37 months will become unavailable due to Facebook limitations.
+It is recommended to create a backup at the destination before proceeding with migration.
+:::
+
 ### Update Custom Insights Reports (this step can be skipped if you did not define any)
 
 1. Select **Sources** in the main navbar.
@@ -20,18 +25,18 @@ Streams Ads-Insights-* streams now have updated schemas.
     1. Select **Refresh source schema**.
     2. Select **OK**.
 
-```note
+:::note
 Any detected schema changes will be listed for your review.
-```
+:::
 
 3. Select **Save changes** at the bottom of the page.
     1. Ensure the **Reset affected streams** option is checked.
-```note
+:::note
 Depending on destination type you may not be prompted to reset your data.
-```
+:::
 4. Select **Save connection**. 
-```note
+:::note
 This will reset the data in your destination and initiate a fresh sync.
-```
+:::
 
 For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
