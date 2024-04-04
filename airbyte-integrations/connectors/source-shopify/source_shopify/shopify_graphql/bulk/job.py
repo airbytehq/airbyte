@@ -33,6 +33,9 @@ class ShopifyBulkManager:
     session: requests.Session
     base_url: str
 
+    # default logger
+    logger: AirbyteLogger = field(init=False, default=logging.getLogger("airbyte"))
+
     # 10Mb chunk size to save the file
     retrieve_chunk_size: int = 1024 * 1024 * 10
     # time between job status checks
@@ -52,22 +55,23 @@ class ShopifyBulkManager:
     # attempt counter
     concurrent_attempt: int = field(init=False, default=0)
 
-    # default logger
-    logger: AirbyteLogger = field(init=False, default=logging.getLogger("airbyte"))
-
     # currents: job_id, job_state
     job_id: Optional[str] = field(init=False, default=None)
     job_state: ShopifyBulkStatus = field(init=False, default=None)
-    # each job should be executed within the set value (in sec) to 7 mins,
-    # to maximize the performance for multi-connection syncs
+    # Each job ideally should be executed within the specified time (in sec),
+    # to maximize the performance for multi-connection syncs and control the bulk job size within +- 7 mins (420 sec),
+    # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
     job_elapsed_time_threshold_sec: float = field(init=False, default=420.0)
     # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
     job_last_elapsed_time_sec: float = field(init=False, default=2.0)
     current_job_elapsed_time: float = field(init=False, default=0.0)
-    job_should_increase_slice_size: bool = field(init=False, default=False)
-    slice_size_increase_factor: int = field(init=False, default=2)
-    job_should_decrease_slice_size: bool = field(init=False, default=False)
-    slice_size_decrease_factor: int = field(init=False, default=2)
+    job_should_expand_slice_size: bool = field(init=False, default=False)
+    slice_size_expand_factor: int = field(init=False, default=2)
+    job_should_reduce_slice_size: bool = field(init=False, default=False)
+    slice_size_reduce_factor: int = field(init=False, default=2)
+    # running job log counter
+    log_running_job_msg_count: int = field(init=False, default=0)
+    log_running_job_msg_frequency: int = field(init=False, default=3)
 
     @property
     def tools(self) -> BulkTools:
@@ -87,9 +91,21 @@ class ShopifyBulkManager:
     def __reset_state(self) -> None:
         # set current job state to default value
         self.job_state, self.job_id = None, None
+        # set the running job message counter to default
+        self.log_running_job_msg_count = 0
 
     def job_completed(self) -> bool:
         return self.job_state == ShopifyBulkStatus.COMPLETED.value
+
+    def log_running_job_state(self) -> None:
+        """
+        Print the `RUNNING` Job info message every 3 request, to minimize the noise in the logs.
+        """
+        if self.log_running_job_msg_count < self.log_running_job_msg_frequency:
+            self.log_running_job_msg_count += 1
+        else:
+            self.log_state()
+            self.log_running_job_msg_count = 0
 
     def log_state(self) -> None:
         self.logger.info(f"The BULK Job: `{self.job_id}` is {self.job_state}.")
@@ -119,7 +135,10 @@ class ShopifyBulkManager:
     def job_update_state(self, response: Optional[requests.Response] = None) -> None:
         if response:
             self.job_state = response.json().get("data", {}).get("node", {}).get("status")
-            self.log_state()
+            if self.job_state == ShopifyBulkStatus.RUNNING.value:
+                self.log_running_job_state()
+            else:
+                self.log_state()
 
     def on_created_job(self, **kwargs) -> None:
         pass
@@ -148,7 +167,6 @@ class ShopifyBulkManager:
     def on_job_with_errors(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobUnknownError(f"Could not validate the status of the BULK Job `{self.job_id}`. Errors: {errors}.")
 
-    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def job_check_for_errors(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         try:
             return response.json().get("errors") or response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
@@ -250,32 +268,35 @@ class ShopifyBulkManager:
                 return response if not errors else None
             else:
                 return self.job_retry_on_concurrency(request)
-        except ShopifyBulkExceptions.BulkJobBadResponse as err:
-            # sometimes we face with `HTTP-500` Error, that could be retried
-            # we should retry the BadResponse at least once
+        except (ShopifyBulkExceptions.BulkJobBadResponse, ShopifyBulkExceptions.BulkJobUnknownError) as err:
+            # sometimes we face with `HTTP-500 Internal Server Error`
+            # we should retry such at least once
             return self.job_retry_request(request)
 
-    def should_increase_slice_size(self) -> bool:
-        return self.job_should_increase_slice_size and not self.job_should_decrease_slice_size
+    def should_expand_slice_size(self) -> bool:
+        return self.job_should_expand_slice_size and not self.job_should_reduce_slice_size
 
-    def should_decrease_slice_size(self) -> bool:
-        return not self.job_should_increase_slice_size and self.job_should_decrease_slice_size
+    def should_reduce_slice_size(self) -> bool:
+        return not self.job_should_expand_slice_size and self.job_should_reduce_slice_size
 
-    def _increase_slice_size(self) -> None:
-        self.job_should_increase_slice_size = True
-        self.job_should_decrease_slice_size = False
-        self.slice_size_increase_factor = 1 + (self.job_last_elapsed_time_sec * self.current_job_elapsed_time) / 100
+    def _expand_slice_size(self) -> None:
+        self.job_should_expand_slice_size = True
+        self.job_should_reduce_slice_size = False
+        # adjust the expand factor
+        # `0.5` is the coef. to guarantee the positive increse, which should be noticible
+        self.slice_size_expand_factor = (
+            0.5 + (self.job_elapsed_time_threshold_sec - self.current_job_elapsed_time) / self.job_elapsed_time_threshold_sec
+        )
 
-    def _decrease_slice_size(self) -> None:
-        self.job_should_increase_slice_size = False
-        self.job_should_decrease_slice_size = True
-        self.slice_size_decrease_factor = (self.current_job_elapsed_time / self.job_last_elapsed_time_sec) / 100
+    def _reduce_slice_size(self) -> None:
+        self.job_should_expand_slice_size = False
+        self.job_should_reduce_slice_size = True
 
     def adjust_slice_size(self) -> None:
         if self.current_job_elapsed_time > self.job_elapsed_time_threshold_sec:
-            self._decrease_slice_size()
+            self._reduce_slice_size()
         elif self.current_job_elapsed_time < 1 or self.current_job_elapsed_time < self.job_last_elapsed_time_sec:
-            self._increase_slice_size()
+            self._expand_slice_size()
         elif self.current_job_elapsed_time > self.job_last_elapsed_time_sec < self.job_elapsed_time_threshold_sec:
             # continue with adjusted slice size
             pass
@@ -304,7 +325,7 @@ class ShopifyBulkManager:
         finally:
             self.current_job_elapsed_time = round((time() - job_started), 3)
             self.logger.info(f"The BULK Job: `{self.job_id}` time elapsed: {self.current_job_elapsed_time} sec.")
-            # check whether or not we should increase or decrease the size of the slice
+            # check whether or not we should expand or reduce the size of the slice
             self.adjust_slice_size()
             # reset the state for COMPLETED job
             self.__reset_state()

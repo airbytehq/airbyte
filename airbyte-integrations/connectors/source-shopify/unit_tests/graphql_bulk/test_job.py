@@ -304,11 +304,11 @@ def test_stream_slices(
     "stream, init_slice_size, job_elapsed_time_threshold_sec, current_job_elapsed_time, job_last_elapsed_time, expected_slice_size",
     [
         # this case we have slice size of P1D,
-        # we expect it's adjusted to P2.15D (multiplied by 2)
-        (CustomerAddress, 1, 10, 3, 5, 2.15),
+        # expand is expected
+        (CustomerAddress, 1, 10, 3, 5, 2.2),
         # in this case we have slice size of P10D (assuming it was increased already), 
-        # we expect it's adjusted to P7.0D
-        (CustomerAddress, 10, 10, 150, 5, 7.0),
+        # reduction is expected
+        (CustomerAddress, 10, 10, 150, 5, 5.0),
         # in this case we have the slice size of P10D, and the current job took less than the threshold, 
         # we expect the slice size will remain the same size of P10D
         (CustomerAddress, 10, 10, 9, 5, 10),

@@ -726,13 +726,20 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for the streams that don't support filtering
             yield {"query": self.query.get()}
 
-    def slice_size_increase(self) -> None:
-        self.slice_interval_in_days = 1 + (self.slice_interval_in_days * self.job_manager.slice_size_increase_factor)
+    def slice_size_expand(self) -> None:
+        """
+        To expand the Slice Size, the value is calculated based on the `coef.` to control the spikes.
+        The slice size will go up, once the job time is generally less than `job_manager.job_elapsed_time_threshold_sec` value.
+        Once the time of the current job is bigger than the threshold - the slice would be reduced, otherwise - incresed.
+        """
+        self.slice_interval_in_days = self.slice_interval_in_days + self.job_manager.slice_size_expand_factor
 
-    def slice_size_decrease(self) -> None:
-        self.slice_interval_in_days = self.slice_interval_in_days - (
-            self.slice_interval_in_days * self.job_manager.slice_size_decrease_factor
-        )
+    def slice_size_reduce(self) -> None:
+        """
+        For the Slice Reduction, it's recommended to cut the half of the slice, once the reduction is needed,
+        because there is no guarantee we will have a visible boost when any additional `coef.` is applied.
+        """
+        self.slice_interval_in_days = self.slice_interval_in_days / self.job_manager.slice_size_reduce_factor
 
     def slice_size_boundaries_check(self) -> None:
         # min check
@@ -743,10 +750,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             self.slice_interval_in_days = self.slice_interval_in_days_max
 
     def adjust_slice_size(self) -> None:
-        if self.job_manager.should_increase_slice_size():
-            self.slice_size_increase()
-        elif self.job_manager.should_decrease_slice_size():
-            self.slice_size_decrease()
+        if self.job_manager.should_expand_slice_size():
+            self.slice_size_expand()
+        elif self.job_manager.should_reduce_slice_size():
+            self.slice_size_reduce()
 
         # preserve non-negative values only
         self.slice_size_boundaries_check()

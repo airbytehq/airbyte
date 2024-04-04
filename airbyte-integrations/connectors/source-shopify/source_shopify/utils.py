@@ -4,6 +4,7 @@
 
 
 import enum
+import logging
 from functools import wraps
 from time import sleep
 from typing import Any, Callable, Dict, List, Mapping, Optional
@@ -89,6 +90,24 @@ class ShopifyRateLimiter:
     on_mid_load: float = 1.5
     on_high_load: float = 5.0
 
+    logger = logging.getLogger("airbyte")
+
+    log_message_count = 0
+    log_message_frequency = 3
+
+    def log_message_counter(message: str) -> None:
+        """
+        @ min - minimum, default count
+        @ max - maximum, reset threshold
+
+        Print the rate-limit info message every `$max` value request, to minimize the noise in the logs.
+        """
+        if ShopifyRateLimiter.log_message_count < ShopifyRateLimiter.log_message_frequency:
+            ShopifyRateLimiter.log_message_count += 1
+        else:
+            ShopifyRateLimiter.logger.info(message)
+            ShopifyRateLimiter.log_message_count = 0
+
     @staticmethod
     def _convert_load_to_time(load: Optional[float], threshold: float) -> float:
         """
@@ -105,12 +124,16 @@ class ShopifyRateLimiter:
         if not load:
             # when there is no rate_limits from header, use the `sleep_on_unknown_load`
             wait_time = ShopifyRateLimiter.on_unknown_load
+            ShopifyRateLimiter.log_message_counter("API Load: `REGULAR`")
         elif load >= threshold:
             wait_time = ShopifyRateLimiter.on_high_load
+            ShopifyRateLimiter.log_message_counter("API Load: `HIGH`")
         elif load >= mid_load:
             wait_time = ShopifyRateLimiter.on_mid_load
+            ShopifyRateLimiter.log_message_counter("API Load: `MID`")
         elif load < mid_load:
             wait_time = ShopifyRateLimiter.on_low_load
+            ShopifyRateLimiter.log_message_counter("API Load: `LOW`")
         return wait_time
 
     @staticmethod
