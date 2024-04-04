@@ -151,7 +151,7 @@ class CheckConnectorCDKTag(MetadataCheck):
 
 class CheckConnectorMaxSecondsBetweenMessagesValue(MetadataCheck):
     name = "Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata"
-    description = f"Certified source connectors must have a value filled out for maxSecondsBetweenMessages in metadata. It must be set in the 'data' field in {consts.METADATA_FILE_NAME}"
+    description = f"Certified source connectors must have a value filled out for maxSecondsBetweenMessages in metadata. This value represents the maximum number of seconds we could expect between messages for API connectors. And it's used by platform to tune connectors heartbeat timeout. The value must be set in the 'data' field in {consts.METADATA_FILE_NAME}"
     applies_to_connector_types = ["source"]
 
     @staticmethod
