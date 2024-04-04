@@ -141,19 +141,23 @@ class DestinationDuckdb(Destination):
             DestinationDuckdb._safe_write(con, buffer, schema_name, stream_name)
 
     @staticmethod
-    def _safe_write(con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name:str, stream_name: str):
+    def _safe_write(con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
         table_name = f"_airbyte_raw_{stream_name}"
         try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
         except:
-            logger.exception(f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation.")
+            logger.exception(
+                f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
+            )
             query = f"""
             INSERT INTO {schema_name}.{table_name}
                 (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
             VALUES (?,?,?)
             """
             entries_to_write = buffer[stream_name]
-            con.executemany(query, zip(entries_to_write["_airbyte_ab_id"], entries_to_write["_airbyte_emitted_at"], entries_to_write["_airbyte_data"] ))
+            con.executemany(
+                query, zip(entries_to_write["_airbyte_ab_id"], entries_to_write["_airbyte_emitted_at"], entries_to_write["_airbyte_data"])
+            )
         else:
             con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
 
