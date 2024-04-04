@@ -38,16 +38,17 @@ Follow this steps to setup IAM role:
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Azure Blob Storage** from the list of available sources.
 4. Enter the name of your Azure **Account**.
-5. Enter the *Azure Blob Storage account key* which grants access to your account.
-6. Enter the name of the **Container** containing your files to replicate.
-7. Add a stream
+5. Click **Authenticate your Azure Blob Storage account**.
+6. Log in and authorize the Azure Blob Storage account.
+7. Enter the name of the **Container** containing your files to replicate.
+8. Add a stream
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-8. Optionally, enter the endpoint to use for the data replication.
-9. Optionally, enter the desired start date from which to begin replicating data.
+9. (Optional) Enter the endpoint to use for the data replication.
+10. (Optional) Enter the desired start date from which to begin replicating data.
 
 ## Supported sync modes
 
