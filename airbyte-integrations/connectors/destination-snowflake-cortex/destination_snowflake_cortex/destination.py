@@ -7,8 +7,9 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
-
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from destination_snowflake_cortex.config import ConfigModel
 
 class DestinationSnowflakeCortex(Destination):
     def write(
@@ -51,3 +52,11 @@ class DestinationSnowflakeCortex(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+        
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        return ConnectorSpecification(
+            documentationUrl="https://docs.airbyte.com/integrations/destinations/snowflake-cortex",
+            supportsIncremental=True,
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            connectionSpecification=ConfigModel.schema(),  # type: ignore[attr-defined]
+        )
