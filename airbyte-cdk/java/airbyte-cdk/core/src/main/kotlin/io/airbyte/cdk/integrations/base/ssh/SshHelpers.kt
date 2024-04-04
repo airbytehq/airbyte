@@ -12,14 +12,13 @@ import java.io.*
 import java.util.*
 
 object SshHelpers {
+    @get:Throws(IOException::class)
     @JvmStatic
-    @Throws(IOException::class)
-    fun getSpecAndInjectSsh(): ConnectorSpecification? {
-        return getSpecAndInjectSsh(Optional.empty())
-    }
+    val specAndInjectSsh: ConnectorSpecification?
+        get() = getSpecAndInjectSsh(Optional.empty())
 
-    @JvmStatic
     @Throws(IOException::class)
+    @JvmStatic
     fun getSpecAndInjectSsh(group: Optional<String>): ConnectorSpecification? {
         val originalSpec =
             Jsons.deserialize(

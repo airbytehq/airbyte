@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.78.9
+Fix CDK version mismatch introduced in 0.78.8
+
 ## 0.78.8
 Update error messaging/type for missing streams. Note: version mismatch, please use 0.78.9 instead
 
