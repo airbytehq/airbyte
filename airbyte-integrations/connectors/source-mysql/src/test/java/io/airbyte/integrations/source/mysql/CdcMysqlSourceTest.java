@@ -113,11 +113,15 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected String modelsSchema() {
-    return getTestdb().getDatabaseName();
+    return getDatabaseName();
   }
 
   @Override
   protected String randomSchema() {
+    return getDatabaseName();
+  }
+
+  protected String getDatabaseName() {
     return getTestdb().getDatabaseName();
   }
 
@@ -416,13 +420,13 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       assertEquals(2, streamsInSnapshotState.size());
       assertTrue(
           streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
-      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getTestdb().getDatabaseName())));
+      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
 
       stateMessage.getGlobal().getStreamStates().forEach(s -> {
         final JsonNode streamState = s.getStreamState();
         if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema()))) {
           assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.get(STATE_TYPE_KEY).asText());
-        } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getTestdb().getDatabaseName()))) {
+        } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName()))) {
           assertFalse(streamState.has(STATE_TYPE_KEY));
         } else {
           throw new RuntimeException("Unknown stream");
@@ -441,7 +445,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertEquals(2, streamsInSnapshotState.size());
     assertTrue(
         streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
-    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getTestdb().getDatabaseName())));
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
     secondLastSateMessage.getGlobal().getStreamStates().forEach(s -> {
       final JsonNode streamState = s.getStreamState();
       assertFalse(streamState.has(STATE_TYPE_KEY));
@@ -460,7 +464,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         streamsInSyncCompletionState.contains(
             new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
     assertTrue(
-        streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getTestdb().getDatabaseName())));
+        streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName())));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
@@ -539,18 +543,18 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
-    getTestdb().with(createTableSqlFmt(), getTestdb().getDatabaseName(), MODELS_STREAM_NAME + "_2",
+    getTestdb().with(createTableSqlFmt(), getDatabaseName(), MODELS_STREAM_NAME + "_2",
         columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
 
     for (final JsonNode recordJson : MODEL_RECORDS_2) {
-      writeRecords(recordJson, getTestdb().getDatabaseName(), MODELS_STREAM_NAME + "_2", COL_ID,
+      writeRecords(recordJson, getDatabaseName(), MODELS_STREAM_NAME + "_2", COL_ID,
           COL_MAKE_ID, COL_MODEL);
     }
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(
             MODELS_STREAM_NAME + "_2",
-            getTestdb().getDatabaseName(),
+            getDatabaseName(),
             Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
             Field.of(COL_MODEL, JsonSchemaType.STRING))
@@ -628,9 +632,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         recordMessages1,
         names,
         names,
-        getTestdb().getDatabaseName());
+        getDatabaseName());
 
-    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getTestdb().getDatabaseName()), firstStreamInState);
+    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(getDatabaseName()), firstStreamInState);
 
     // Triggering a sync with a primary_key state for 1 stream and complete state for other stream
     final AutoCloseableIterator<AirbyteMessage> read2 = source()
@@ -673,7 +677,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         recordMessages2,
         names,
         names,
-        getTestdb().getDatabaseName());
+        getDatabaseName());
   }
 
   /**
