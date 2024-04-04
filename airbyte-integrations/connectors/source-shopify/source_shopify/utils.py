@@ -97,10 +97,7 @@ class ShopifyRateLimiter:
 
     def log_message_counter(message: str) -> None:
         """
-        @ min - minimum, default count
-        @ max - maximum, reset threshold
-
-        Print the rate-limit info message every `$max` value request, to minimize the noise in the logs.
+        Print the rate-limit info message every `log_message_frequency` request, to minimize the noise in the logs.
         """
         if ShopifyRateLimiter.log_message_count < ShopifyRateLimiter.log_message_frequency:
             ShopifyRateLimiter.log_message_count += 1
