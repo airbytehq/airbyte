@@ -23,6 +23,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ("test_token_not_found", "{{ response.invalid_key }}", None, None, None),
         ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean("{{False}}", parameters={}), "token", None),
         ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean("{{True}}", parameters={}), None, None),
+        ("test_static_token_with_string_stop_condition", "token", "{{True}}", None, None),
         (
             "test_token_from_header",
             "{{ headers.next }}",
