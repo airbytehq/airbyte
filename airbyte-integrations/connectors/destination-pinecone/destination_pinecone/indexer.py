@@ -29,7 +29,7 @@ class PineconeIndexer(Indexer):
 
     def __init__(self, config: PineconeIndexingModel, embedding_dimensions: int):
         super().__init__(config)
-        pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment, threaded=True)
+        pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment)
 
         self.pinecone_index = pinecone.GRPCIndex(config.index)
         self.embedding_dimensions = embedding_dimensions
