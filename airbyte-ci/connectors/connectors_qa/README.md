@@ -107,6 +107,9 @@ poe lint
 
 ## Changelog
 
+### 1.1.0
+Introduced the `Check.run_on_released_connectors` flag.
+
 ### 1.0.4
 
 Adds `htmlcov` to list of ignored directories for `CheckConnectorUsesHTTPSOnly` check.

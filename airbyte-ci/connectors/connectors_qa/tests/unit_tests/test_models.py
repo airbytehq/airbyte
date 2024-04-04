@@ -27,7 +27,7 @@ class TestCheck:
 
     def test_fail_when_language_is_missing(self, mocker):
         # Arrange
-        connector = mocker.MagicMock(language=None)
+        connector = mocker.MagicMock(language=None, is_released=False)
 
         # Act
         results = []
@@ -63,3 +63,17 @@ class TestCheck:
 
         # Assert
         assert all(result.status == CheckStatus.SKIPPED for result in results)
+
+    def test_skip_when_check_does_not_apply_to_released_connectors(self, mocker):
+        # Arrange
+        connector = mocker.MagicMock(is_released=True)
+
+        # Act
+        results = []
+        for check in ENABLED_CHECKS:
+            if not check.runs_on_released_connectors:
+                results.append(check.run(connector))
+
+        # Assert
+        assert all(result.status == CheckStatus.SKIPPED for result in results)
+        assert all(result.message == "Check does not apply to released connectors" for result in results)
