@@ -640,6 +640,10 @@ class TestBaseInsightsStream:
                         ["video_asset", "skan_conversion_id", "place_page_id"],
                         ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"]
                 ),
+                (
+                        None,
+                        ["date_start", "account_id", "ad_id"]
+                ),
         )
     )
     def test_primary_keys(self, api, some_config, breakdowns, expect_pks):
