@@ -25,6 +25,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
+    @JvmField
     protected var testdb: T = createTestDatabase()
 
     protected fun createTableSqlFmt(): String {
