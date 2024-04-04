@@ -64,6 +64,7 @@ object RelationalDbQueryUtils {
         return quoteString + identifier + quoteString
     }
 
+    @JvmStatic
     fun <Database : SqlDatabase?> queryTable(
         database: Database,
         sqlQuery: String?,

@@ -138,7 +138,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return super.check(config);
   }
 
-/*  @Override
+  @Override
   public AutoCloseableIterator<AirbyteRecordData> queryTableFullRefresh(final JdbcDatabase database,
                                                                         final List<String> columnNames,
                                                                         final String schemaName,
@@ -155,7 +155,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
               getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery, tableName, schemaName);
+      return AutoCloseableIterators.transform(queryTable(database, preparedSqlQuery, tableName, schemaName),
+              jsonNode -> new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta()));
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
       // of the records.
@@ -164,9 +165,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
 
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery, tableName, schemaName);
+      return AutoCloseableIterators.transform(queryTable(database, preparedSqlQuery, tableName, schemaName),
+              jsonNode -> new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta()));
     }
-  }*/
+  }
 
   /**
    * See {@link MssqlQueryUtils#getWrappedColumnNames}
