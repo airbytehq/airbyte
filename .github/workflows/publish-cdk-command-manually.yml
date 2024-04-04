@@ -226,13 +226,13 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          # The pull request number doesn't matter in this bump_version as the documentation file doesn't exist
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '00000' 'Bump CDK version to ${{ steps.bumpversion.outputs.NEW_VERSION }}'"
+          # There is no pull request number as we do this manually, so will just reference when we started doing it manually for now
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '36501' 'Bump CDK version to ${{ steps.bumpversion.outputs.NEW_VERSION }}'"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          file_pattern: airbyte-integrations/connectors/source-declarative-manifest/*
+          file_pattern: docs/integrations/sources/low-code.md airbyte-integrations/connectors/source-declarative-manifest/*
           commit_message: 🤖 Cut version ${{needs.bump-version.outputs.new_cdk_version}} of source-declarative-manifest
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
