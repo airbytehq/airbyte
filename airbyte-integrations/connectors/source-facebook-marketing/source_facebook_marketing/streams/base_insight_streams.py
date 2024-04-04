@@ -42,6 +42,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
+    object_breakdowns = {
+        "body_asset": "body_asset_id",
+        "call_to_action_asset": "call_to_action_asset_id",
+        "description_asset": "description_asset_id",
+        "image_asset": "image_asset_id",
+        "link_url_asset": "link_url_asset_id",
+        "title_asset": "title_asset_id",
+        "video_asset": "video_asset_id",
+    }
+
     # Facebook store metrics maximum of 37 months old. Any time range that
     # older than 37 months from current date would result in 400 Bad request HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
@@ -97,7 +107,16 @@ class AdsInsights(FBMarketingIncrementalStream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """Build complex PK based on slices and breakdowns"""
-        return ["date_start", "account_id", "ad_id"] + self.breakdowns
+
+        breakdowns_pks = []
+
+        for breakdown in self.breakdowns:
+            if breakdown in self.object_breakdowns.keys():
+                breakdowns_pks.append(self.object_breakdowns[breakdown])
+            else:
+                breakdowns_pks.append(breakdown)
+
+        return ["date_start", "account_id", "ad_id"] + breakdowns_pks
 
     @property
     def insights_lookback_period(self):
@@ -112,6 +131,12 @@ class AdsInsights(FBMarketingIncrementalStream):
     @property
     def insights_job_timeout(self):
         return pendulum.duration(minutes=self._insights_job_timeout)
+
+    def _transform_breakdown(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        for breakdown in self.object_breakdowns:
+            if breakdown in record:
+                record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
+        return record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
@@ -131,7 +156,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             for obj in job.get_result():
                 data = obj.export_all_data()
                 if self._response_data_is_valid(data):
-                    yield data
+                    yield self._transform_breakdown(data)
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
