@@ -191,8 +191,8 @@ jobs:
   bump-manifest-source:
     name: Bump CDK dependency of source-declarative-manifest
     needs:
-    - bump-version
-    - publish-cdk
+      - bump-version
+      - publish-cdk
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
@@ -236,6 +236,41 @@ jobs:
           commit_message: 🤖 Cut version ${{needs.bump-version.outputs.new_cdk_version}} of source-declarative-manifest
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
+      - name: Post failure to Slack channel dev-connectors-extensibility
+        if: ${{ failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C04J1M66D8B
+          payload: |
+            {
+                "text": ":warning: A new version of Python CDK has been released but Connector Builder hasn't been automatically updated",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": ":warning: Could not automatically create a PR for Connector Builder>\n"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   update-connector-builder:
     needs:
