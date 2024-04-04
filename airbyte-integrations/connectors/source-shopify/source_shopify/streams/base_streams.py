@@ -592,7 +592,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     parent_stream_class: Optional[Union[ShopifyStream, IncrementalShopifyStream]] = None
 
-    slice_interval_in_days_min: int = 1  # P1D, default value
+    # 0.1 ~= P2H, default value, lower boundary for slice size
+    slice_interval_in_days_min: float = 0.1  
+    # P365D, upper boundary for slice size
+    slice_interval_in_days_max: float = 365.0 
 
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
@@ -715,7 +718,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 # making pre-defined sliced query to pass it directly
                 prepared_query = self.query.get(self.filter_field, start.to_rfc3339_string(), slice_end.to_rfc3339_string())
                 self.logger.info(
-                    f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}. Slice size: P{self.slice_interval_in_days}D"
+                    f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}. Slice size: `P{round(self.slice_interval_in_days, 1)}D`."
                 )
                 yield {"query": prepared_query}
                 start = slice_end
@@ -724,22 +727,27 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             yield {"query": self.query.get()}
 
     def slice_size_increase(self) -> None:
-        self.slice_interval_in_days = int(self.slice_interval_in_days * 2)
+        self.slice_interval_in_days = 1 + (self.slice_interval_in_days * self.job_manager.slice_size_increase_factor)
 
     def slice_size_decrease(self) -> None:
-        self.slice_interval_in_days = int(self.slice_interval_in_days / 2)
-
-    def slice_size_min_check(self) -> None:
+        self.slice_interval_in_days = self.slice_interval_in_days - (self.slice_interval_in_days * self.job_manager.slice_size_decrease_factor)
+        
+    def slice_size_boundaries_check(self) -> None:
+        # min check
         if self.slice_interval_in_days < self.slice_interval_in_days_min:
             self.slice_interval_in_days = self.slice_interval_in_days_min
+        # max check
+        if self.slice_interval_in_days > self.slice_interval_in_days_max:
+            self.slice_interval_in_days = self.slice_interval_in_days_max
 
     def adjust_slice_size(self) -> None:
         if self.job_manager.should_increase_slice_size():
             self.slice_size_increase()
         elif self.job_manager.should_decrease_slice_size():
             self.slice_size_decrease()
+        
         # preserve non-negative values only
-        self.slice_size_min_check()
+        self.slice_size_boundaries_check()
 
     def process_bulk_results(
         self,

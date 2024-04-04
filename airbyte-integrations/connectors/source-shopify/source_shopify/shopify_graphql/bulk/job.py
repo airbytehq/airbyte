@@ -58,14 +58,16 @@ class ShopifyBulkManager:
     # currents: job_id, job_state
     job_id: Optional[str] = field(init=False, default=None)
     job_state: ShopifyBulkStatus = field(init=False, default=None)
-    # each job should be executed within the set value (in sec),
+    # each job should be executed within the set value (in sec) to 7 mins,
     # to maximize the performance for multi-connection syncs
-    job_elapsed_time_threshold_sec: float = field(init=False, default=420.0)  # 7 mins
+    job_elapsed_time_threshold_sec: float = field(init=False, default=420.0)
     # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
-    job_last_elapsed_time_sec: float = field(init=False, default=2.0)  # 2 sec
+    job_last_elapsed_time_sec: float = field(init=False, default=2.0)
     current_job_elapsed_time: float = field(init=False, default=0.0)
     job_should_increase_slice_size: bool = field(init=False, default=False)
+    slice_size_increase_factor: int = field(init=False, default=2)
     job_should_decrease_slice_size: bool = field(init=False, default=False)
+    slice_size_decrease_factor: int = field(init=False, default=2)
 
     @property
     def tools(self) -> BulkTools:
@@ -152,7 +154,7 @@ class ShopifyBulkManager:
             return response.json().get("errors") or response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
         except (Exception, JSONDecodeError) as e:
             raise ShopifyBulkExceptions.BulkJobBadResponse(
-                f"Couldn't check the `response` for `errors`, response: `{response.text}`. Trace: {repr(e)}."
+                f"Couldn't check the `response` for `errors`, status: {response.status_code}, response: `{response.text}`. Trace: {repr(e)}."
             )
 
     def job_track_running(self) -> Union[AirbyteTracedException, requests.Response]:
@@ -202,6 +204,10 @@ class ShopifyBulkManager:
     def has_reached_max_concurrency_attempt(self) -> bool:
         return self.concurrent_attempt == self.concurrent_max_retry
 
+    def job_retry_request(self, request: requests.PreparedRequest) -> Optional[requests.Response]:
+        # retry current `request`
+        return self.session.send(request)
+
     def job_retry_concurrent(self, request: requests.PreparedRequest) -> Optional[requests.Response]:
         # increment attempt
         self.concurrent_attempt += 1
@@ -211,7 +217,7 @@ class ShopifyBulkManager:
         )
         sleep(self.concurrent_interval_sec)
         # retry current `request`
-        return self.job_healthcheck(self.session.send(request))
+        return self.job_healthcheck(self.job_retry_request(request))
 
     def job_get_id(self, response: requests.Response) -> Optional[str]:
         response_data = response.json()
@@ -235,15 +241,20 @@ class ShopifyBulkManager:
             return self.job_retry_concurrent(request)
 
     def job_healthcheck(self, response: requests.Response) -> Optional[requests.Response]:
-        # errors check
-        errors = self.job_check_for_errors(response)
-        # when the concurrent job takes place, we typically need to wait and retry, but no longer than 10 min.
-        if not self.has_running_concurrent_job(errors):
-            return response if not errors else None
-        else:
-            # get the latest request to retry
-            request: requests.PreparedRequest = response.request
-            return self.job_retry_on_concurrency(request)
+        # get the latest request to retry
+        request: requests.PreparedRequest = response.request
+        try:
+            errors = self.job_check_for_errors(response)
+            # when the concurrent job takes place, we typically need to wait and retry, but no longer than 10 min.
+            if not self.has_running_concurrent_job(errors):
+                return response if not errors else None
+            else:
+                return self.job_retry_on_concurrency(request)
+        except ShopifyBulkExceptions.BulkJobBadResponse as err:
+            # sometimes we face with `HTTP-500` Error, that could be retried
+            # we should retry the BadResponse at least once
+            return self.job_retry_request(request)
+        
 
     def should_increase_slice_size(self) -> bool:
         return self.job_should_increase_slice_size and not self.job_should_decrease_slice_size
@@ -254,10 +265,12 @@ class ShopifyBulkManager:
     def _increase_slice_size(self) -> None:
         self.job_should_increase_slice_size = True
         self.job_should_decrease_slice_size = False
+        self.slice_size_increase_factor = 1 + (self.job_last_elapsed_time_sec * self.current_job_elapsed_time)/100
 
     def _decrease_slice_size(self) -> None:
         self.job_should_increase_slice_size = False
         self.job_should_decrease_slice_size = True
+        self.slice_size_decrease_factor = (self.current_job_elapsed_time / self.job_last_elapsed_time_sec)/100
 
     def adjust_slice_size(self) -> None:
         if self.current_job_elapsed_time > self.job_elapsed_time_threshold_sec:
