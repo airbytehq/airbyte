@@ -39,8 +39,7 @@ import org.mockito.Mockito
         "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField
-    protected var testdb: T = createTestDatabase()
+    @JvmField protected var testdb: T = createTestDatabase()
 
     protected fun streamName(): String {
         return TABLE_NAME

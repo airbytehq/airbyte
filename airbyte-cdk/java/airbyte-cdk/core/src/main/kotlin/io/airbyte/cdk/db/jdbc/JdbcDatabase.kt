@@ -197,9 +197,9 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     fun queryMetadata(sql: String, vararg params: String): ResultSetMetaData? {
         unsafeQuery(
-            { c: Connection -> getPreparedStatement(sql, params, c) },
-            { obj: ResultSet -> obj.metaData },
-        )
+                { c: Connection -> getPreparedStatement(sql, params, c) },
+                { obj: ResultSet -> obj.metaData },
+            )
             .use { q ->
                 return q.findFirst().orElse(null)
             }

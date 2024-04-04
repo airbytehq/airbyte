@@ -4,6 +4,18 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.*;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.convertNameNamespacePairFromV0;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
+import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
+import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.initPairToOrderedColumnInfoMap;
+import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.streamsForInitialOrderedColumnLoad;
+import static java.util.stream.Collectors.toList;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
@@ -44,10 +56,6 @@ import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.debezium.connector.sqlserver.Lsn;
 import io.debezium.engine.ChangeEvent;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyStoreException;
@@ -58,21 +66,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.*;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.convertNameNamespacePairFromV0;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
-import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
-import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
-import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.initPairToOrderedColumnInfoMap;
-import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.streamsForInitialOrderedColumnLoad;
-import static java.util.stream.Collectors.toList;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
@@ -156,7 +154,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
       return AutoCloseableIterators.transform(queryTable(database, preparedSqlQuery, tableName, schemaName),
-              jsonNode -> new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta()));
+          jsonNode -> new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta()));
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
       // of the records.
@@ -166,7 +164,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
       return AutoCloseableIterators.transform(queryTable(database, preparedSqlQuery, tableName, schemaName),
-              jsonNode -> new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta()));
+          jsonNode -> new AirbyteRecordData(jsonNode, new AirbyteRecordMessageMeta()));
     }
   }
 

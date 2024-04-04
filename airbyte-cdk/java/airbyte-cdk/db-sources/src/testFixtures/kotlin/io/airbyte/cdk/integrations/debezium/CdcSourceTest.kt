@@ -25,8 +25,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField
-    protected var testdb: T = createTestDatabase()
+    @JvmField protected var testdb: T = createTestDatabase()
 
     protected fun createTableSqlFmt(): String {
         return "CREATE TABLE %s.%s(%s);"
@@ -1040,7 +1039,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     @Throws(Exception::class)
-    protected open fun waitForCdcRecords(schemaName: String?, tableName: String?, recordCount: Int) {}
+    protected open fun waitForCdcRecords(
+        schemaName: String?,
+        tableName: String?,
+        recordCount: Int
+    ) {}
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(CdcSourceTest::class.java)

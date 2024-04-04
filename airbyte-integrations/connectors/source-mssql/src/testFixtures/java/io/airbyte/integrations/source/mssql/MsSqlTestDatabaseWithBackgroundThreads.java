@@ -36,7 +36,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
     protected volatile boolean stop = false;
 
     protected String formatLogLine(String logLine) {
-      String retVal = this.getClass().getSimpleName() + " databaseId=" + databaseId + ", containerId=" +  containerId + " - " + logLine;
+      String retVal = this.getClass().getSimpleName() + " databaseId=" + databaseId + ", containerId=" + containerId + " - " + logLine;
       return retVal;
     }
 

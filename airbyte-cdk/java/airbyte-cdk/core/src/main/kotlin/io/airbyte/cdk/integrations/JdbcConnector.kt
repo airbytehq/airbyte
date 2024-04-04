@@ -20,8 +20,7 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
         val POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION: Duration = Duration.ofSeconds(10)
 
         const val CONNECT_TIMEOUT_KEY: String = "connectTimeout"
-        @JvmField
-        val CONNECT_TIMEOUT_DEFAULT: Duration = Duration.ofSeconds(60)
+        @JvmField val CONNECT_TIMEOUT_DEFAULT: Duration = Duration.ofSeconds(60)
 
         /**
          * Retrieves connectionTimeout value from connection properties in millis, default minimum

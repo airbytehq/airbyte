@@ -53,7 +53,8 @@ protected constructor(val container: C) : AutoCloseable {
     @Volatile private lateinit var dslContext: DSLContext
 
     @JvmField protected val databaseId: Int = nextDatabaseId.getAndIncrement()
-    @JvmField protected val containerId: Int =
+    @JvmField
+    protected val containerId: Int =
         containerUidToId!!.computeIfAbsent(container.containerId) { k: String? ->
             nextContainerId!!.getAndIncrement()
         }!!
