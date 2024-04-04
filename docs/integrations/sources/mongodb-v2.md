@@ -221,6 +221,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 1.3.1   | 2024-04-04 | [36837](https://github.com/airbytehq/airbyte/pull/36837) | Full refresh read of collections.                                                                         |
 | 1.3.0   | 2024-03-15 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | Full refresh read of collections.                                                                         |
 | 1.2.16  | 2024-03-06 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | State message will now include record count.                                                              |
 | 1.2.15  | 2024-02-27 | [35673](https://github.com/airbytehq/airbyte/pull/35673) | Consume user provided connection string.                                                                  |
