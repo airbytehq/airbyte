@@ -91,17 +91,27 @@ definitions:
               - stream_end_time
             value: "{{stream_interval.end_time}}"
     incremental_sync:
+      step: P1D
       type: DatetimeBasedCursor
       cursor_field: stream_end_time
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%s"
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
       start_time_option:
         type: RequestOption
         field_name: from
         inject_into: request_parameter
+      cursor_granularity: PT1H
       cursor_datetime_formats:
         - "%s"
 streams:
