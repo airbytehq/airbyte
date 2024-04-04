@@ -514,7 +514,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     // Re-run the sync to prove that a config error is thrown due to invalid resume token
     List<AirbyteMessage> messages1 = runRead(configuredCatalog, state);
     List<AirbyteMessage> records = messages1.stream().filter(r -> r.getType() == Type.RECORD).toList();
-    // In this sync, there should be no records expected - only error trace messages indicating that the offset is not valid.
+    // In this sync, there should be no records expected - only error trace messages indicating that the
+    // offset is not valid.
     assertEquals(0, records.size());
     List<AirbyteMessage> traceMessages = messages1.stream().filter(r -> r.getType() == Type.TRACE).toList();
     assertOplogErrorTracePresent(traceMessages);

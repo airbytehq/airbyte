@@ -193,6 +193,7 @@ object MongoUtils {
             else true)
     }
 
+    @JvmStatic
     fun transformToStringIfMarked(
         jsonNodes: ObjectNode,
         columnNames: List<String>,
