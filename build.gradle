@@ -223,9 +223,6 @@ allprojects {
     }
 
     tasks.withType(SpotBugsTask).configureEach {
-        if (name != "spotbugsMain" && System.getProperty('skipSlowTests', 'false') != 'false') {
-            enabled = false
-        }
         // Reports can be found under each subproject in build/spotbugs/
         reports {
             xml.required = false
