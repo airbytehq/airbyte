@@ -338,7 +338,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
     ],
 )
 def test_convert_to_sequential_state(converter, concurrent_state, expected_output_state):
-    assert converter.convert_to_sequential_state(CursorField("created"), concurrent_state) == expected_output_state
+    assert converter.convert_to_state_message(CursorField("created"), concurrent_state) == expected_output_state
 
 
 @pytest.mark.parametrize(
@@ -366,4 +366,4 @@ def test_convert_to_sequential_state(converter, concurrent_state, expected_outpu
 )
 def test_convert_to_sequential_state_no_slices_returns_legacy_state(converter, concurrent_state, expected_output_state):
     with pytest.raises(RuntimeError):
-        converter.convert_to_sequential_state(CursorField("created"), concurrent_state)
+        converter.convert_to_state_message(CursorField("created"), concurrent_state)

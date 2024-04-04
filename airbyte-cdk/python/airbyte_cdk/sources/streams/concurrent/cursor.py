@@ -4,7 +4,7 @@
 import functools
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, List, Mapping, MutableMapping, Optional, Protocol, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Protocol, Tuple
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -23,6 +23,10 @@ class Comparable(Protocol):
 
     @abstractmethod
     def __lt__(self: "Comparable", other: "Comparable") -> bool:
+        pass
+
+    @abstractmethod
+    def __add__(self: "Comparable", other: Any) -> "Comparable":
         pass
 
 
@@ -118,7 +122,9 @@ class ConcurrentCursor(Cursor):
         connector_state_converter: AbstractStreamStateConverter,
         cursor_field: CursorField,
         slice_boundary_fields: Optional[Tuple[str, str]],
-        start: Optional[Any],
+        start: Optional[Comparable],
+        lookback_window: Any,
+        slice_range: Optional[Any] = None,
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
@@ -132,6 +138,8 @@ class ConcurrentCursor(Cursor):
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
+        self._lookback_window = lookback_window
+        self._slice_range = slice_range
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -203,11 +211,8 @@ class ConcurrentCursor(Cursor):
         self._connector_state_manager.update_state_for_stream(
             self._stream_name,
             self._stream_namespace,
-            self._connector_state_converter.convert_to_sequential_state(self._cursor_field, self.state),
+            self._connector_state_converter.convert_to_state_message(self._cursor_field, self.state),
         )
-        # TODO: if we migrate stored state to the concurrent state format
-        #  (aka stop calling self._connector_state_converter.convert_to_sequential_state`), we'll need to cast datetimes to string or
-        #  int before emitting state
         state_message = self._connector_state_manager.create_state_message(self._stream_name, self._stream_namespace)
         self._message_repository.emit_message(state_message)
 
@@ -229,3 +234,32 @@ class ConcurrentCursor(Cursor):
         called.
         """
         self._emit_state_message()
+
+    def generate_slices(self) -> Iterable[Tuple[Comparable, Comparable]]:
+        self._merge_partitions()
+
+        if len(self.state["slices"]) == 1:
+            yield from self._split_per_slice_range(self.state["slices"][0][self._connector_state_converter.END_KEY] - self._lookback_window, self._connector_state_converter.max_end)
+        elif len(self.state["slices"]) > 1:
+            for i in range(len(self.state["slices"]) - 1):
+                yield from self._split_per_slice_range(self.state["slices"][i][self._connector_state_converter.END_KEY], self.state["slices"][i + 1][self._connector_state_converter.START_KEY])
+            yield from self._split_per_slice_range(self.state["slices"][-1][self._connector_state_converter.END_KEY] - self._lookback_window, self._connector_state_converter.max_end)
+        else:
+            raise ValueError("Expected at least one slice")
+
+    def _split_per_slice_range(self, lower: Comparable, upper: Comparable) -> Iterable[Tuple[Comparable, Comparable]]:
+        if self._start and upper < self._start:
+            return
+
+        lower = max(lower, self._start) if self._start else lower
+        if not self._slice_range or lower + self._slice_range >= upper:
+            yield lower, upper
+        else:
+            stop_processing = False
+            current_lower_boundary = lower
+            while not stop_processing:
+                current_upper_boundary = min(current_lower_boundary + self._slice_range, upper)
+                yield current_lower_boundary, current_upper_boundary
+                current_lower_boundary = current_upper_boundary
+                if current_upper_boundary == upper:
+                    stop_processing = True
