@@ -15,13 +15,13 @@ import java.nio.file.Path
  * as temporary file system storage.
  */
 interface IntegrationLauncher {
-    @Throws(TestHarnessException::class) fun spec(jobRoot: Path): Process?
+    @Throws(TestHarnessException::class) fun spec(jobRoot: Path): Process
 
     @Throws(TestHarnessException::class)
-    fun check(jobRoot: Path, configFilename: String?, configContents: String?): Process?
+    fun check(jobRoot: Path, configFilename: String, configContents: String): Process
 
     @Throws(TestHarnessException::class)
-    fun discover(jobRoot: Path, configFilename: String?, configContents: String?): Process?
+    fun discover(jobRoot: Path, configFilename: String, configContents: String): Process
 
     @Throws(TestHarnessException::class)
     fun read(
@@ -56,10 +56,10 @@ interface IntegrationLauncher {
     @Throws(TestHarnessException::class)
     fun write(
         jobRoot: Path,
-        configFilename: String?,
-        configContents: String?,
-        catalogFilename: String?,
-        catalogContents: String?,
+        configFilename: String,
+        configContents: String,
+        catalogFilename: String,
+        catalogContents: String,
         additionalEnvironmentVariables: Map<String, String>
     ): Process?
 }

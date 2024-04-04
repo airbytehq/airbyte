@@ -30,7 +30,7 @@ class AirbyteIntegrationLauncher(
     private val featureFlags: FeatureFlags
 ) : IntegrationLauncher {
     @Throws(TestHarnessException::class)
-    override fun spec(jobRoot: Path): Process? {
+    override fun spec(jobRoot: Path): Process {
         return processFactory.create(
             Metadata.SPEC_JOB,
             jobId,
@@ -52,7 +52,7 @@ class AirbyteIntegrationLauncher(
     }
 
     @Throws(TestHarnessException::class)
-    override fun check(jobRoot: Path, configFilename: String?, configContents: String?): Process? {
+    override fun check(jobRoot: Path, configFilename: String, configContents: String): Process {
         return processFactory.create(
             Metadata.CHECK_JOB,
             jobId,
@@ -76,11 +76,7 @@ class AirbyteIntegrationLauncher(
     }
 
     @Throws(TestHarnessException::class)
-    override fun discover(
-        jobRoot: Path,
-        configFilename: String?,
-        configContents: String?
-    ): Process? {
+    override fun discover(jobRoot: Path, configFilename: String, configContents: String): Process {
         return processFactory.create(
             Metadata.DISCOVER_JOB,
             jobId,
@@ -156,10 +152,10 @@ class AirbyteIntegrationLauncher(
     @Throws(TestHarnessException::class)
     override fun write(
         jobRoot: Path,
-        configFilename: String?,
-        configContents: String?,
-        catalogFilename: String?,
-        catalogContents: String?,
+        configFilename: String,
+        configContents: String,
+        catalogFilename: String,
+        catalogContents: String,
         additionalEnvironmentVariables: Map<String, String>
     ): Process? {
         val files: Map<String?, String?> =
