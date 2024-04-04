@@ -21,6 +21,10 @@ data:
       enabled: false
   releaseDate: 2023-03-01
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-declarative-manifest
   supportLevel: community
   tags:
     - language:python
