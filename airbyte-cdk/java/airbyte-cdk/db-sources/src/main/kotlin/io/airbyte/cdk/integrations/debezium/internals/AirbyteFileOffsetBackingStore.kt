@@ -211,6 +211,7 @@ class AirbyteFileOffsetBackingStore(
             return offsetManager
         }
 
+        @JvmStatic
         fun initializeDummyStateForSnapshotPurpose(): AirbyteFileOffsetBackingStore {
             val cdcWorkingDir: Path
             try {

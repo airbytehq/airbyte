@@ -39,7 +39,7 @@ import org.mockito.Mockito
         "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
-    protected var testdb: T = createTestDatabase()
+    @JvmField protected var testdb: T = createTestDatabase()
 
     protected fun streamName(): String {
         return TABLE_NAME
@@ -1312,7 +1312,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     )
             )
 
-    protected fun createExpectedTestMessages(
+    protected open fun createExpectedTestMessages(
         states: List<DbStreamState>,
         numRecords: Long
     ): List<AirbyteMessage> {
