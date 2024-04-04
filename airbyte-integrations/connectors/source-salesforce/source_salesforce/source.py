@@ -30,13 +30,14 @@ from requests import codes, exceptions  # type: ignore[import]
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import (
+    LOOKBACK_SECONDS,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
     BulkSalesforceSubStream,
     Describe,
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
-    RestSalesforceSubStream, LOOKBACK_SECONDS,
+    RestSalesforceSubStream,
 )
 
 _DEFAULT_CONCURRENCY = 10
@@ -234,7 +235,9 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         streams = self.generate_streams(config, stream_objects, sf)
         return streams
 
-    def _create_stream_slicer_cursor(self, config: Mapping[str, Any], state_manager: ConnectorStateManager, stream: Stream) -> ConcurrentCursor:
+    def _create_stream_slicer_cursor(
+        self, config: Mapping[str, Any], state_manager: ConnectorStateManager, stream: Stream
+    ) -> ConcurrentCursor:
         """
         We have moved the generation of stream slices to the concurrent CDK cursor
         """

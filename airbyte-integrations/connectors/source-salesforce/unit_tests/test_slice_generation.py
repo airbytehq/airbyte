@@ -1,13 +1,12 @@
-from datetime import datetime, timezone, timedelta
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
 from airbyte_protocol.models import SyncMode
-
-from conftest import generate_stream, mock_stream_api
 from config_builder import ConfigBuilder
-
+from conftest import generate_stream, mock_stream_api
 
 _NOW = datetime.fromisoformat("2020-01-01T00:00:00+00:00")
 

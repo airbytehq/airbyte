@@ -16,7 +16,6 @@ from pendulum.datetime import DateTime
 
 
 class DateTimeStreamStateConverter(AbstractStreamStateConverter):
-
     def _from_state_message(self, value: Any) -> Any:
         return self.parse_timestamp(value)
 

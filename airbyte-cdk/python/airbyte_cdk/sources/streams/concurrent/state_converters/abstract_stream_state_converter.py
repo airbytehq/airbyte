@@ -71,10 +71,12 @@ class AbstractStreamStateConverter(ABC):
         """
         serialized_slices = []
         for stream_slice in state.get("slices", []):
-            serialized_slices.append({
-                self.START_KEY: self._to_state_message(stream_slice[self.START_KEY]),
-                self.END_KEY: self._to_state_message(stream_slice[self.END_KEY]),
-            })
+            serialized_slices.append(
+                {
+                    self.START_KEY: self._to_state_message(stream_slice[self.START_KEY]),
+                    self.END_KEY: self._to_state_message(stream_slice[self.END_KEY]),
+                }
+            )
         return {"slices": serialized_slices, "state_type": state_type.value}
 
     @staticmethod
@@ -124,7 +126,7 @@ class AbstractStreamStateConverter(ABC):
         for interval in sorted_intervals[1:]:
             last_end_time = merged_intervals[-1][self.END_KEY]
             current_start_time = interval[self.START_KEY]
-            if bool(self.increment(last_end_time) >= current_start_time) :
+            if bool(self.increment(last_end_time) >= current_start_time):
                 merged_end_time = max(last_end_time, interval[self.END_KEY])
                 merged_intervals[-1][self.END_KEY] = merged_end_time
             else:

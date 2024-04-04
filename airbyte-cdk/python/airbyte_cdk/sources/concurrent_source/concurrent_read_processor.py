@@ -4,8 +4,6 @@
 import logging
 from typing import Dict, Iterable, List, Optional, Set
 
-from airbyte_protocol.models import StreamDescriptor
-
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
@@ -22,6 +20,7 @@ from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_messa
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
+from airbyte_protocol.models import StreamDescriptor
 
 
 class ConcurrentReadProcessor:
@@ -138,7 +137,9 @@ class ConcurrentReadProcessor:
         2. Raise the exception
         """
         self._exceptions_per_stream_name.setdefault(exception.stream_name, []).append(exception.exception)
-        yield AirbyteTracedException.from_exception(exception).as_airbyte_message(stream_descriptor=StreamDescriptor(name=exception.stream_name))
+        yield AirbyteTracedException.from_exception(exception).as_airbyte_message(
+            stream_descriptor=StreamDescriptor(name=exception.stream_name)
+        )
 
     def start_next_partition_generator(self) -> Optional[AirbyteMessage]:
         """
@@ -182,5 +183,7 @@ class ConcurrentReadProcessor:
         yield from self._message_repository.consume_queue()
         self._logger.info(f"Finished syncing {stream.name}")
         self._streams_done.add(stream_name)
-        stream_status = AirbyteStreamStatus.INCOMPLETE if self._exceptions_per_stream_name.get(stream_name, []) else AirbyteStreamStatus.COMPLETE
+        stream_status = (
+            AirbyteStreamStatus.INCOMPLETE if self._exceptions_per_stream_name.get(stream_name, []) else AirbyteStreamStatus.COMPLETE
+        )
         yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), stream_status)
