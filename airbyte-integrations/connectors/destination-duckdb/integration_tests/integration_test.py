@@ -12,7 +12,7 @@ import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Generator
+from typing import Any, Callable, Dict, Generator, Iterable
 from unittest.mock import MagicMock
 
 import duckdb
@@ -244,22 +244,63 @@ def _airbyte_messages(n: int, batch_size: int, table_name: str) -> Generator[Air
             )
             yield message
 
-TOTAL_RECORDS = 5000
+
+def _airbyte_messages_with_inconsistent_json_fields(n: int, batch_size: int, table_name: str) -> Generator[AirbyteMessage, None, None]:
+    fake = Faker()
+    Faker.seed(0)
+    random.seed(0)
+
+    for i in range(n):
+        if i != 0 and i % batch_size == 0:
+            yield AirbyteMessage(
+                type=Type.STATE, state=AirbyteStateMessage(data={"state": str(i // batch_size)})
+            )
+        else:
+            message = AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    stream=table_name,
+                    # Throw in empty nested objects and see how pyarrow deals with them.
+                    data={"key1": fake.first_name() , 
+                          "key2": fake.ssn() if random.random()< 0.5 else random.randrange(1000,9999999999999), 
+                          "nested1": {} if random.random()< 0.1 else { 
+                              "key3": fake.first_name() , 
+                              "key4": fake.ssn() if random.random()< 0.5 else random.randrange(1000,9999999999999), 
+                              "dictionary1":{} if random.random()< 0.1 else { 
+                                  "key3": fake.first_name() , 
+                                  "key4": "True" if random.random() < 0.5 else True
+                                  }
+                              }
+                          } 
+                          if random.random() < 0.9 else {},
+
+                    emitted_at=int(datetime.now().timestamp()) * 1000,
+                ),
+            )
+            yield message
+
+
+TOTAL_RECORDS = 5_000
 BATCH_WRITE_SIZE = 1000
 
 @pytest.mark.slow
+@pytest.mark.parametrize("airbyte_message_generator,explanation", 
+                         [(_airbyte_messages, "Test writing a large number of simple json objects."), 
+                          (_airbyte_messages_with_inconsistent_json_fields, "Test writing a large number of json messages with inconsistent schema.")] )
 def test_large_number_of_writes(
     config: Dict[str, str],
     request,
     configured_catalogue: ConfiguredAirbyteCatalog,
     test_large_table_name: str,
     test_schema_name: str,
+    airbyte_message_generator: Callable[[int, int, str], Iterable[AirbyteMessage]],
+    explanation: str,
 ):
     destination = DestinationDuckdb()
     generator = destination.write(
         config,
         configured_catalogue,
-        _airbyte_messages(TOTAL_RECORDS, BATCH_WRITE_SIZE, test_large_table_name),
+        airbyte_message_generator(TOTAL_RECORDS, BATCH_WRITE_SIZE, test_large_table_name),
     )
 
     result = list(generator)

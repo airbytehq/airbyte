@@ -9,7 +9,7 @@ import re
 import uuid
 from collections import defaultdict
 from logging import getLogger
-from typing import Any, Iterable, Mapping
+from typing import Any, Dict, Iterable, List, Mapping
 
 import duckdb
 import pyarrow as pa
@@ -117,11 +117,8 @@ class DestinationDuckdb(Destination):
                 # flush the buffer
                 for stream_name in buffer.keys():
                     logger.info(f"flushing buffer for state: {message}")
-                    table_name = f"_airbyte_raw_{stream_name}"
-                    pa_table = pa.Table.from_pydict(buffer[stream_name])
-                    con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
+                    DestinationDuckdb._safe_write(con, buffer, schema_name, stream_name)
 
-                con.commit()
                 buffer = defaultdict(lambda: defaultdict(list))
 
                 yield message
@@ -141,10 +138,24 @@ class DestinationDuckdb(Destination):
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-            table_name = f"_airbyte_raw_{stream_name}"
+            DestinationDuckdb._safe_write(con, buffer, schema_name, stream_name)
+
+    @staticmethod
+    def _safe_write(con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name:str, stream_name: str):
+        table_name = f"_airbyte_raw_{stream_name}"
+        try:
             pa_table = pa.Table.from_pydict(buffer[stream_name])
+        except:
+            logger.exception(f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation.")
+            query = f"""
+            INSERT INTO {schema_name}.{table_name}
+                (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
+            VALUES (?,?,?)
+            """
+            entries_to_write = buffer[stream_name]
+            con.executemany(query, zip(entries_to_write["_airbyte_ab_id"], entries_to_write["_airbyte_emitted_at"], entries_to_write["_airbyte_data"] ))
+        else:
             con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
-            con.commit()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
