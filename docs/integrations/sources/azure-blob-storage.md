@@ -25,9 +25,10 @@ Follow this steps to setup IAM role:
 
 1. Go to Azure portal, select the Storage (or Container) you'd like to sync from and get to Access Control(IAM) -> Role Assignment ![Access Control (IAM)](./azure-blob-storage/access_control_iam.png)
 2. Click on `Add` and select `Add role assignment` from the dropdown list ![Add role assignment](./azure-blob-storage/add_role.png)
-3. Search by role name `Storage Blob Data Reader` in search box, Select role from the list and click next ![Search Role](./azure-blob-storage/search_role.png)
-4.
-
+3. Search by role name `Storage Blob Data Reader` in search box, Select role from the list and click `Next` ![Search Role](./azure-blob-storage/search_role.png)
+4. Select `User, Group, or service principal`, click on `members` and select member(s) so they appear in table and click `Next` ![Add Members](./azure-blob-storage/add_members.png)
+5. (Optional) Add Conditions to restrict the role assignments a user can create.
+6. Click `Review + Assign`
 </details>
 :::
 
