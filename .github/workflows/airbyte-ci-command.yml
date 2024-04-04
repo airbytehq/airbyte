@@ -1,0 +1,141 @@
+name: Internal Poetry packages CI
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      comment-id:
+        description: 'Comment ID (Optional)'
+        type: string
+        required: false
+      connector:
+        description: "The name of the connector to test. E.g. 'source-faker'"
+        type: string
+        required: true
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo."
+        type: choice
+        required: true
+        default: airbytehq/airbyte
+        options:
+          - airbytehq/airbyte
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: true
+
+jobs:
+  log-starting-comment:
+    name: Append 'Starting' Comment
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create URL to the run output
+      id: vars
+      run: echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+    - name: Append comment with job run link
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        comment-id: ${{ github.event.inputs.comment-id }}
+        body: |
+
+          > PR test job started... [Check job output.][1]
+
+          [1]: ${{ steps.vars.outputs.run-url }}
+
+  airbyte-ci-test:
+    name: On-Demand Test (`airbyte-ci`)
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout PR
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        ref: ${{ github.event.inputs.gitref }}
+
+    - name: Install `airbyte-ci`
+      run: |
+        pipx install airbyte-ci
+
+    - name: Run `airbyte-ci` test
+      run: |
+        airbyte-ci connector --name=${{ github.event.inputs.connector }} test
+
+  airbyte-ci-fix:
+    name: On-Demand Auto-Fix (`airbyte-ci`)
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout PR
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        ref: ${{ github.event.inputs.gitref }}
+
+    - name: Install `airbyte-ci`
+      run: |
+        pipx install airbyte-ci
+
+    - name: Run `airbyte-ci` fix
+      run: |
+        airbyte-ci connector --name=${{ github.event.inputs.connector }} fix all
+
+    # Check for changes in git
+
+    - name: Check for changes
+      id: git-diff
+      run: |
+        git diff --quiet && echo "No changes to commit" || echo "::set-output name=changes::true"
+      shell: bash
+
+    # Commit changes (if any)
+
+    - name: Commit changes
+      if: steps.git-diff.outputs.changes == 'true' && github.ref != 'refs/heads/master'
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Chore: `airbyte-ci` auto-fix"
+        commit_user_name: Octavia Squidington III
+        commit_user_email: octavia-squidington-iii@users.noreply.github.com
+
+    - name: Append 'fixed' comment
+      if: steps.git-diff.outputs.changes == 'true' && github.ref != 'refs/heads/master'
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        comment-id: ${{ github.event.inputs.comment-id }}
+        reactions: hooray
+        body: |
+          > 🟦 `airbyte-ci` fixed one or more problems.
+
+  log-test-success-comment:
+    name: Append 'Test Success' Comment
+    needs: [airbyte-ci-test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Append success comment
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        comment-id: ${{ github.event.inputs.comment-id }}
+        reactions: hooray
+        body: |
+          > ✅ `airbyte-ci` tests passed.
+
+  log-fixes-applied-comment:
+    name: Append 'Fixed' Comment
+    needs: [airbyte-ci-fix]
+    runs-on: ubuntu-latest
+    steps:
+
+  log-failure-comment:
+    name: Append 'Failure' Comment
+    # This job will only run if the workflow fails
+    needs: [airbyte-ci-test]
+    if: always() && needs.airbyte-ci-test.result == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Append failure comment
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        comment-id: ${{ github.event.inputs.comment-id }}
+        reactions: confused
+        body: |
+          > ❌ `airbyte-ci` tests failed.
