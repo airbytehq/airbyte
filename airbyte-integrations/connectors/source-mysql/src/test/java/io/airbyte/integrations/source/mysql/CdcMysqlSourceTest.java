@@ -301,7 +301,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
    * @throws Exception Exception happening in the test.
    */
   @Test
-  @Timeout(value = 5, unit = TimeUnit.MINUTES)
+  @Timeout(value = 5,
+           unit = TimeUnit.MINUTES)
   protected void verifyCheckpointStatesByRecords() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20_000;

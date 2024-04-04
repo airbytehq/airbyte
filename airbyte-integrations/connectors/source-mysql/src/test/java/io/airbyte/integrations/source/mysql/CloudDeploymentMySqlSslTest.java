@@ -19,7 +19,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class CloudDeploymentMySqlSslTest {
 
@@ -128,6 +130,8 @@ public class CloudDeploymentMySqlSslTest {
   }
 
   @Test
+  @Timeout(value = 5,
+           unit = TimeUnit.MINUTES)
   void testCheckWithSslModeDisabled() throws Exception {
     try (final var testdb = createTestDatabase("withNetwork")) {
       try (final SshBastionContainer bastion = new SshBastionContainer()) {
