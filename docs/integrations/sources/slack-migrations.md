@@ -12,7 +12,7 @@ However, due to differences between the Python and low-code CDKs, this migration
 We’ve evolved and standardized how state is managed for incremental streams that are nested within a parent stream. 
 This change impacts how individual states are tracked and stored for each partition, using a more structured approach
 to ensure the most granular and flexible state management.
-This change will affect the `Threads` and `Channel Messages` streams.
+This change will affect the `Channel Messages` stream.
 
 ## Migration Steps
-* The `reset` for`Threads` and `Channel Messages` streams is required after upgrading to this version.
+* The `reset` for `Channel Messages` stream is required after upgrading to this version.

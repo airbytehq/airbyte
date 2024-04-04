@@ -33,7 +33,7 @@ data:
         message:
           The source slack connector is being migrated from the Python CDK to our declarative low-code CDK.
           Due to changes in the handling of state format for incremental substreams, this migration constitutes a breaking change.
-          After updating, please reset your source before resuming syncs. For more information, see our migration documentation for source <source-name>.
+          After updating, please reset your source before resuming syncs. For more information, see our migration documentation for Source Slack.
         upgradeDeadline: "2024-04-19" # TODO: update this date before merge
   suggestedStreams:
     streams:
