@@ -20,7 +20,7 @@ common_utils = { path = "../common_utils", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.10.0"
-pytest = "^7.3.1"
+pytest = "^8"
 
 [build-system]
 requires = ["poetry-core"]

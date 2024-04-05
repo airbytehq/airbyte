@@ -37,17 +37,17 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
     @Throws(IOException::class, URISyntaxException::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        val nameUpdater = getFieldNameUpdater(streamName!!, namespace, streamSchema)
+        val nameUpdater = getFieldNameUpdater(streamName, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             val uri = URI(String.format("s3a://%s/%s", `object`.bucketName, `object`.key))
             val path = Path(uri)
             val hadoopConfig = GcsParquetWriter.getHadoopConfig(config)
@@ -73,14 +73,14 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
 
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
+        streamName: String,
+        namespace: String
     ): Map<String?, Set<Schema.Type?>?> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             val uri = URI(String.format("s3a://%s/%s", `object`.bucketName, `object`.key))
             val path = Path(uri)
             val hadoopConfig = getHadoopConfig(config)
