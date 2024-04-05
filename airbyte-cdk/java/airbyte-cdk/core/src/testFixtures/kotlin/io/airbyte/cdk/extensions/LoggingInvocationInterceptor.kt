@@ -106,7 +106,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 if (timeoutTask.wasTriggered) {
                     t1 =
                         TimeoutException(
-                            ("Execution was cancelled after %s. If you think your test should be given more time to complete, you can use the @Timeout annotation. If all the test of a connector are slow, " +
+                            ("Execution was cancelled after %s. If you think your test should be given more time to complete, "+
+                                    "you can use the @Timeout annotation. If all the test of a connector are slow, " +
                                     " you can override the property 'JunitMethodExecutionTimeout' in your gradle.properties.")
                                 .formatted(
                                     DurationFormatUtils.formatDurationWords(elapsedMs, true, true)

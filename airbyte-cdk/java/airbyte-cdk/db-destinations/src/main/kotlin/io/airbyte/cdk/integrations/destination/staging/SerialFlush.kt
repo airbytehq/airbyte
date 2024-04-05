@@ -68,7 +68,9 @@ object SerialFlush {
         if (!conflictingStreams.isEmpty()) {
             val message =
                 String.format(
-                    "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
+                    "You are trying to write multiple streams to the same table. "+
+                            "Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, "+
+                            "or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
                     conflictingStreams
                         .stream()
                         .map { config: WriteConfig -> config.namespace + "." + config.streamName }

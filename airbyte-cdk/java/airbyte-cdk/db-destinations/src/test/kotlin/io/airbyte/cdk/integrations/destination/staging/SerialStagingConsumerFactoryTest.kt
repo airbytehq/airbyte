@@ -43,7 +43,10 @@ internal class SerialStagingConsumerFactoryTest {
             }
 
         Assertions.assertEquals(
-            "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: source_schema.example_stream, source_schema.example_stream",
+            "You are trying to write multiple streams to the same table. "+
+                    "Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, "+
+                    "or moving one of them into a separate connection with a different stream prefix. "+
+                    "Affected streams: source_schema.example_stream, source_schema.example_stream",
             configErrorException.message
         )
     }

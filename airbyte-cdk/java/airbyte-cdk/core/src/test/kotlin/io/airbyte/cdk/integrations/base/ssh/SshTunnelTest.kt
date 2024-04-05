@@ -201,17 +201,20 @@ internal class SshTunnelTest {
                 "0fkKD4uN4DRO8hAAAAFm10dWhhaUBrYnAxLWxocC1hMTQ1MzMBAgME\\n" +
                 "-----END OPENSSH PRIVATE KEY-----")
         private const val HOST_PORT_CONFIG =
-            ("{\"ssl\":true,\"host\":\"fakehost.com\",\"port\":5432,\"schema\":\"public\",\"database\":\"postgres\",\"password\":\"<dummyPassword>\",\"username\":\"postgres\",\"tunnel_method\":{\"ssh_key\":\"" +
+            ("{\"ssl\":true,\"host\":\"fakehost.com\",\"port\":5432,\"schema\":\"public\",\"database\":\"postgres\","+
+                    "\"password\":\"<dummyPassword>\",\"username\":\"postgres\",\"tunnel_method\":{\"ssh_key\":\"" +
                 "%s" +
                 "\",\"tunnel_host\":\"faketunnel.com\",\"tunnel_port\":22,\"tunnel_user\":\"ec2-user\",\"tunnel_method\":\"SSH_KEY_AUTH\"}}")
 
         private const val URL_CONFIG_WITH_PORT =
-            ("{\"ssl\":true,\"endpoint\":\"http://fakehost.com:9090/service\",\"password\":\"<dummyPassword>\",\"username\":\"restuser\",\"tunnel_method\":{\"ssh_key\":\"" +
+            ("{\"ssl\":true,\"endpoint\":\"http://fakehost.com:9090/service\",\"password\":\"<dummyPassword>\","+
+                    "\"username\":\"restuser\",\"tunnel_method\":{\"ssh_key\":\"" +
                 "%s" +
                 "\",\"tunnel_host\":\"faketunnel.com\",\"tunnel_port\":22,\"tunnel_user\":\"ec2-user\",\"tunnel_method\":\"SSH_KEY_AUTH\"}}")
 
         private const val URL_CONFIG_NO_PORT =
-            ("{\"ssl\":true,\"endpoint\":\"http://fakehost.com/service\",\"password\":\"<dummyPassword>\",\"username\":\"restuser\",\"tunnel_method\":{\"ssh_key\":\"" +
+            ("{\"ssl\":true,\"endpoint\":\"http://fakehost.com/service\",\"password\":\"<dummyPassword>\","+
+                    "\"username\":\"restuser\",\"tunnel_method\":{\"ssh_key\":\"" +
                 "%s" +
                 "\",\"tunnel_host\":\"faketunnel.com\",\"tunnel_port\":22,\"tunnel_user\":\"ec2-user\",\"tunnel_method\":\"SSH_KEY_AUTH\"}}")
     }

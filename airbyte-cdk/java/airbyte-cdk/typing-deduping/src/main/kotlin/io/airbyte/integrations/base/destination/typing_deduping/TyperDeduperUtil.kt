@@ -176,7 +176,8 @@ class TyperDeduperUtil {
             return CompletableFuture.supplyAsync(
                 {
                     LOGGER.info(
-                        "Maybe executing ${migration.javaClass.simpleName} migration for stream ${initialStatus.streamConfig.id.originalNamespace}.${initialStatus.streamConfig.id.originalName}."
+                        "Maybe executing ${migration.javaClass.simpleName} migration for "+
+                                "stream ${initialStatus.streamConfig.id.originalNamespace}.${initialStatus.streamConfig.id.originalName}."
                     )
 
                     // We technically don't need to track this, but might as well hedge against

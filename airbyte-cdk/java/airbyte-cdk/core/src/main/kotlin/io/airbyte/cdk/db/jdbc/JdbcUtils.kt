@@ -103,7 +103,8 @@ object JdbcUtils {
                     parameters[split[0]] = split[1]
                 } else {
                     throw ConfigErrorException(
-                        "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got " +
+                        "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. "+
+                                "(example: key1=value1&key2=value2&key3=value3). Got " +
                             jdbcPropertiesString
                     )
                 }

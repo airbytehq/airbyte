@@ -229,7 +229,8 @@ class CursorManager<S : Any>(
                     cursor = null
                     cursorRecordCount = 0L
                     LOGGER.info(
-                        "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {} (count {}). New Cursor Field: {}. Resetting cursor value.",
+                        "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {} (count {}). "+
+                                "New Cursor Field: {}. Resetting cursor value.",
                         pair,
                         originalCursorField,
                         originalCursorRecordCount,

@@ -409,7 +409,8 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 val shouldRunTypingDeduping = nonzeroRecords || unprocessedRecordsPreexist
                 if (!shouldRunTypingDeduping) {
                     LOGGER.info(
-                        "Skipping typing and deduping for stream {}.{} because it had no records during this sync and no unprocessed records from a previous sync.",
+                        "Skipping typing and deduping for stream {}.{} because it had no records during this sync "+
+                                "and no unprocessed records from a previous sync.",
                         streamConfig.id!!.originalNamespace,
                         streamConfig.id!!.originalName
                     )

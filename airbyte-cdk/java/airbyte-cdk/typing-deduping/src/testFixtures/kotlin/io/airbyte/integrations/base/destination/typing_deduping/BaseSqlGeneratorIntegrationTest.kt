@@ -540,7 +540,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
         Assertions.assertTrue(
             tableState.maxProcessedTimestamp.get().isBefore(Instant.parse("2023-01-01T00:00:00Z")),
-            "When all raw records have null loaded_at, the min timestamp should be earlier than all of their extracted_at values (2023-01-01). Was actually " +
+            "When all raw records have null loaded_at, the min timestamp should be earlier than all of their extracted_at "+
+                    "values (2023-01-01). Was actually " +
                 tableState.maxProcessedTimestamp.get()
         )
 
@@ -557,7 +558,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         Assertions.assertEquals(
             getInitialRawTableState(incrementalAppendStream),
             InitialRawTableStatus(true, false, Optional.of(Instant.parse("2023-01-02T00:00:00Z"))),
-            "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, and the min timestamp should be equal to the latest extracted_at"
+            "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, "+
+                    "and the min timestamp should be equal to the latest extracted_at"
         )
 
         // If we insert another raw record with older extracted_at than the typed records, we should
@@ -601,12 +603,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
         Assertions.assertTrue(
             tableState.maxProcessedTimestamp.get().isBefore(Instant.parse("2023-01-01T12:00:00Z")),
-            "When some raw records have null loaded_at, the min timestamp should be earlier than the oldest unloaded record (2023-01-01 12:00Z). Was actually " +
+            "When some raw records have null loaded_at, the min timestamp should be earlier than the oldest unloaded record "+
+                    "(2023-01-01 12:00Z). Was actually " +
                 tableState
         )
         Assertions.assertFalse(
             tableState.maxProcessedTimestamp.get().isBefore(Instant.parse("2023-01-01T00:00:00Z")),
-            "When some raw records have null loaded_at, the min timestamp should be later than the newest loaded record older than the oldest unloaded record (2023-01-01 00:00Z). Was actually " +
+            "When some raw records have null loaded_at, the min timestamp should be later than the newest loaded "+
+                    "record older than the oldest unloaded record (2023-01-01 00:00Z). Was actually " +
                 tableState
         )
     }

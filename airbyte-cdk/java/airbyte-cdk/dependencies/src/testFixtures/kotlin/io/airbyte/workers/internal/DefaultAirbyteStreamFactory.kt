@@ -92,7 +92,8 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
                         try {
                             val errorMessage =
                                 String.format(
-                                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
+                                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). "+
+                                            "The sync has been failed to prevent running out of memory.",
                                     Instant.now(),
                                     humanReadableByteCountSI(maxMemory),
                                     humanReadableByteCountSI(messageSize)
