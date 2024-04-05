@@ -36,8 +36,8 @@ abstract class GcsBaseJsonlDestinationAcceptanceTest :
     @Throws(IOException::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)

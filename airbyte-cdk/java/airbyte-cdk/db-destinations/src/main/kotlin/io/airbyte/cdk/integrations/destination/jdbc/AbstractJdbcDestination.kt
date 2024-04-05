@@ -23,8 +23,8 @@ import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMes
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteRecordMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator
@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory
 
 abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationState>(
     driverClass: String,
-    protected val namingResolver: NamingConventionTransformer,
+    protected open val namingResolver: NamingConventionTransformer,
     protected val sqlOperations: SqlOperations
 ) : JdbcConnector(driverClass), Destination {
     protected val configSchemaKey: String
@@ -106,14 +106,14 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
      * @throws Exception
      */
     @Throws(Exception::class)
-    protected fun destinationSpecificTableOperations(database: JdbcDatabase?) {}
+    protected open fun destinationSpecificTableOperations(database: JdbcDatabase?) {}
 
     /**
      * Subclasses which need to modify the DataSource should override [.modifyDataSourceBuilder]
      * rather than this method.
      */
     @VisibleForTesting
-    fun getDataSource(config: JsonNode): DataSource {
+    open fun getDataSource(config: JsonNode): DataSource {
         val jdbcConfig = toJdbcConfig(config)
         val connectionProperties = getConnectionProperties(config)
         val builder =
@@ -130,14 +130,14 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         return modifyDataSourceBuilder(builder).build()
     }
 
-    protected fun modifyDataSourceBuilder(
+    protected open fun modifyDataSourceBuilder(
         builder: DataSourceFactory.DataSourceBuilder
     ): DataSourceFactory.DataSourceBuilder {
         return builder
     }
 
     @VisibleForTesting
-    fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    open fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
 
@@ -195,7 +195,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         return config[JdbcUtils.DATABASE_KEY].asText()
     }
 
-    protected fun getDataTransformer(
+    protected open fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
         defaultNamespace: String?
     ): StreamAwareDataTransformer {
@@ -232,7 +232,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         }
 
         val defaultNamespace = config[configSchemaKey].asText()
-        addDefaultNamespaceToStreams(catalog!!, defaultNamespace)
+        addDefaultNamespaceToStreams(catalog, defaultNamespace)
         return getV2MessageConsumer(
             config,
             catalog,
@@ -248,7 +248,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
         defaultNamespace: String
-    ): SerializedAirbyteMessageConsumer? {
+    ): SerializedAirbyteMessageConsumer {
         val sqlGenerator = sqlGenerator
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
         val parsedCatalog =
@@ -343,6 +343,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
          * - set true if need to make attempt to insert dummy records to newly created table. Set
          * false to skip insert step.
          */
+        @JvmStatic
         @Throws(Exception::class)
         fun attemptTableOperations(
             outputSchema: String?,

@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-slack
   icon: slack.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Slack
   remoteRegistries:
     pypi:

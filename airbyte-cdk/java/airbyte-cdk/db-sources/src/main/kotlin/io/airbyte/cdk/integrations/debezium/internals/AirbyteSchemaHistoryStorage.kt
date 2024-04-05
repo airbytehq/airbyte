@@ -35,15 +35,7 @@ class AirbyteSchemaHistoryStorage(
     private val reader: DocumentReader = DocumentReader.defaultReader()
     private val writer: DocumentWriter = DocumentWriter.defaultWriter()
 
-    class SchemaHistory<T>(schema: T, isCompressed: Boolean) {
-        val schema: T
-        val isCompressed: Boolean
-
-        init {
-            this.schema = schema
-            this.isCompressed = isCompressed
-        }
-    }
+    data class SchemaHistory<T>(val schema: T, val isCompressed: Boolean)
 
     fun read(): SchemaHistory<String> {
         val fileSizeMB = path.toFile().length().toDouble() / (ONE_MB)
@@ -240,6 +232,7 @@ class AirbyteSchemaHistoryStorage(
             return string.toByteArray(StandardCharsets.UTF_8).size.toDouble() / (ONE_MB)
         }
 
+        @JvmStatic
         fun initializeDBHistory(
             schemaHistory: SchemaHistory<Optional<JsonNode>>?,
             compressSchemaHistoryForState: Boolean
