@@ -44,7 +44,10 @@ class TestTeamsStreamFullRefresh(TestCase):
         """
         A full refresh sync without pagination completes successfully after one retry
         """
-        test_cases = [("200_ComplexityException", "ComplexityException"),("200_complexityBudgetExhausted", "complexityBudgetExhausted"),]
+        test_cases = [
+            ("200_ComplexityException", "ComplexityException"),
+            ("200_complexityBudgetExhausted", "complexityBudgetExhausted"),
+        ]
         for test_values in test_cases:
             response, error_code = test_values[0], test_values[1]
             api_token_authenticator = self.get_authenticator(self._config)
