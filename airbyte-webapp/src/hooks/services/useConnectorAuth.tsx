@@ -9,9 +9,9 @@ import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { SourceAuthService } from "core/domain/connector/SourceAuthService";
 import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/request/AirbyteClient";
 
+import { useCurrentWorkspace } from "./useWorkspace";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import useRouter from "../useRouter";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 let windowObjectReference: Window | null = null; // global variable
 
@@ -174,7 +174,10 @@ export function useResolveNavigate(): void {
   const { query } = useRouter();
 
   useEffectOnce(() => {
-    window.opener.postMessage(query);
+    if (window?.opener) {
+      window?.opener?.postMessage(query);
+    }
+    // window?.opener?.postMessage(query);
     window.close();
   });
 }
