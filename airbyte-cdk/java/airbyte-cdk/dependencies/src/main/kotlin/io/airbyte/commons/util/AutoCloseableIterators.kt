@@ -109,6 +109,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return new autocloseable iterator with the close function appended </T>
      */
+    @JvmStatic
     fun <T> appendOnClose(
         autoCloseableIterator: AutoCloseableIterator<T>,
         voidCallable: VoidCallable

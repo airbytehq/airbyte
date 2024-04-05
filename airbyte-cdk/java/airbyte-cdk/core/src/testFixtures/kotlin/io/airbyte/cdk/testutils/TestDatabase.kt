@@ -305,7 +305,7 @@ protected constructor(val container: C) : AutoCloseable {
         }
 
         companion object {
-            @JvmField val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration? = Duration.ofSeconds(5)
+            @JvmField val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration = Duration.ofSeconds(5)
         }
     }
 
