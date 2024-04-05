@@ -162,6 +162,41 @@ class RevenueDpathExtractor(DpathExtractor):
         return new_records
 
 
+class FunnelsDpathExtractor(DpathExtractor):
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+        """
+        response.json() example:
+        {
+            'computed_at': '2021-07-03T12:43:48.889421+00:00',
+            'results': {
+                '$overall': {       <-- should be skipped
+                    'amount': 0.0,
+                    'count': 124,
+                    'paid_count': 0
+                },
+                '2021-06-01': {
+                    'amount': 0.0,
+                    'count': 124,
+                    'paid_count': 0
+                },
+                '2021-06-02': {
+                    'amount': 0.0,
+                    'count': 124,
+                    'paid_count': 0
+                },
+                ...
+            },
+            'session_id': '162...',
+            'status': 'ok'
+        }
+        """
+        new_records = []
+        for record in super().extract_records(response):
+            for date_entry in record:
+                list.append(new_records, {"date": date_entry, **record[date_entry]})
+        return new_records
+
+
 class EngageDefaultPaginator(DefaultPaginator):
     ...
 
