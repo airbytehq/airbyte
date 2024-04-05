@@ -28,7 +28,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: yuanrui2014/source-amazon-ads
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.4
   documentationUrl: https://docs.daspire.com/setup-guide/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -37,7 +37,7 @@
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: yuanrui2014/source-amazon-seller-partner
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.5
   sourceType: api
   documentationUrl: https://docs.daspire.com/setup-guide/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -116,9 +116,9 @@
   public: false
 - name: BigCommerce
   sourceDefinitionId: 59c5501b-9f95-411e-9269-7143c939adbd
-  dockerRepository: airbyte/source-bigcommerce
+  dockerRepository: yuanrui2014/source-bigcommerce
   dockerImageTag: 0.1.6
-  documentationUrl: https://docs.airbyte.io/integrations/sources/bigcommerce
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/bigcommerce
   icon: bigcommerce.svg
   sourceType: api
   releaseStage: alpha
@@ -296,9 +296,9 @@
   public: false
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.63
-  documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
+  dockerRepository: yuanrui2014/source-facebook-marketing
+  dockerImageTag: 0.2.64
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
   releaseStage: generally_available
@@ -322,9 +322,9 @@
   public: false
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
-  dockerRepository: airbyte/source-file
+  dockerRepository: yuanrui2014/source-file
   dockerImageTag: 0.2.20
-  documentationUrl: https://docs.airbyte.io/integrations/sources/file
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/files
   icon: file.svg
   sourceType: file
   releaseStage: beta
@@ -372,9 +372,9 @@
   public: false
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerRepository: airbyte/source-github
+  dockerRepository: yuanrui2014/source-github
   dockerImageTag: 0.2.46
-  documentationUrl: https://docs.airbyte.io/integrations/sources/github
+  documentationUrl: hhttps://docs.daspire.com/setup-guide/sources/github
   icon: github.svg
   sourceType: api
   releaseStage: generally_available
@@ -417,9 +417,9 @@
   public: false
 - name: Google Analytics 4 (GA4)
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
-  dockerRepository: airbyte/source-google-analytics-data-api
+  dockerRepository: yuanrui2014/source-google-analytics-data-api
   dockerImageTag: 0.0.3
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/google-analytics
   icon: google-analytics.svg
   sourceType: api
   releaseStage: alpha
@@ -444,9 +444,9 @@
   public: false
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
-  dockerRepository: airbyte/source-google-sheets
+  dockerRepository: yuanrui2014/source-google-sheets
   dockerImageTag: 0.2.17
-  documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
   releaseStage: generally_available
@@ -505,9 +505,9 @@
   public: false
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerRepository: airbyte/source-hubspot
+  dockerRepository: yuanrui2014/source-hubspot
   dockerImageTag: 0.2.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/hubspot
   icon: hubspot.svg
   sourceType: api
   releaseStage: generally_available
@@ -692,9 +692,9 @@
   public: false
 - name: Microsoft teams
   sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
-  dockerRepository: airbyte/source-microsoft-teams
+  dockerRepository: yuanrui2014/source-microsoft-teams
   dockerImageTag: 0.2.5
-  documentationUrl: https://docs.airbyte.io/integrations/sources/microsoft-teams
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/microsoft-teams
   icon: microsoft-teams.svg
   sourceType: api
   releaseStage: alpha
@@ -746,9 +746,9 @@
   public: true
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
-  dockerRepository: airbyte/source-notion
+  dockerRepository: yuanrui2014/source-notion
   dockerImageTag: 0.1.8
-  documentationUrl: https://docs.airbyte.io/integrations/sources/notion
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/notion
   icon: notion.svg
   sourceType: api
   releaseStage: beta
@@ -826,9 +826,9 @@
   public: false
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
-  dockerRepository: airbyte/source-paypal-transaction
+  dockerRepository: yuanrui2014/source-paypal-transaction
   dockerImageTag: 0.1.9
-  documentationUrl: https://docs.airbyte.io/integrations/sources/paypal-transaction
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/paypal
   icon: paypal.svg
   sourceType: api
   releaseStage: beta
@@ -935,7 +935,7 @@
   sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
   dockerRepository: airbyte/source-quickbooks-singer
   dockerImageTag: 0.1.5
-  documentationUrl: https://docs.airbyte.io/integrations/sources/quickbooks
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/quickbooks
   icon: qb.svg
   sourceType: api
   releaseStage: alpha
@@ -1032,7 +1032,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: yuanrui2014/source-shopify
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.daspire.com/setup-guide/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -1049,9 +1049,9 @@
   public: false
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerRepository: airbyte/source-slack
+  dockerRepository: yuanrui2014/source-slack
   dockerImageTag: 0.1.17
-  documentationUrl: https://docs.airbyte.io/integrations/sources/slack
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/slack
   icon: slack.svg
   sourceType: api
   releaseStage: beta
@@ -1103,9 +1103,9 @@
   public: false
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerRepository: airbyte/source-stripe
+  dockerRepository: yuanrui2014/source-stripe
   dockerImageTag: 0.1.37
-  documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/stripe
   icon: stripe.svg
   sourceType: api
   releaseStage: generally_available
@@ -1221,7 +1221,7 @@
 - name: Walmart Marketplace
   sourceDefinitionId: fba86c65-389d-4194-abe2-0732d87d0d75
   dockerRepository: yuanrui2014/source-walmart
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.daspire.com/setup-guide/sources/walmart-marketplace
   icon: walmart.svg
   sourceType: api
@@ -1239,7 +1239,7 @@
 - name: Netsuite
   sourceDefinitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
   dockerRepository: yuanrui2014/source-netsuite
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.daspire.com/setup-guide/sources/netsuite
   icon: netsuite.svg
   sourceType: api
@@ -1264,9 +1264,9 @@
   public: false
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
-  dockerRepository: airbyte/source-zendesk-chat
+  dockerRepository: yuanrui2014/source-zendesk-chat
   dockerImageTag: 0.1.9
-  documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-chat
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/zendesk-chat
   icon: zendesk.svg
   sourceType: api
   releaseStage: beta
@@ -1282,18 +1282,18 @@
   public: false
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerRepository: airbyte/source-zendesk-support
+  dockerRepository: yuanrui2014/source-zendesk-support
   dockerImageTag: 0.2.15
-  documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api
   releaseStage: generally_available
   public: true
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
-  dockerRepository: airbyte/source-zendesk-talk
+  dockerRepository: yuanrui2014/source-zendesk-talk
   dockerImageTag: 0.1.4
-  documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-talk
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/zendesk-talk
   icon: zendesk.svg
   sourceType: api
   releaseStage: beta
@@ -1394,7 +1394,7 @@
 - name: Feishu
   sourceDefinitionId: 62dc537e-93ca-46f8-9c35-4e417ec336d8
   dockerRepository: yuanrui2014/source-feishu
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.3
   documentationUrl: https://docsurl.com
   sourceType: api
   releaseStage: alpha
