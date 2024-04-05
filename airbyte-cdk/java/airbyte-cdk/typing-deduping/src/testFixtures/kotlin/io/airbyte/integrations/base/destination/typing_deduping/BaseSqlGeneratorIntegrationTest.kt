@@ -59,8 +59,10 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     protected var cdcIncrementalAppendStream: StreamConfig = mock()
 
     protected var generator: SqlGenerator = mock()
-    protected abstract var destinationHandler: DestinationHandler<DestinationState>
-    protected var namespace: String = mock()
+    protected abstract val destinationHandler: DestinationHandler<DestinationState>
+    // Need a placeholder otherwise Spotbugs will complain with
+    // a possibility of returning null value in getNamespace.
+    protected var namespace: String = "dummy_holder"
 
     protected var streamId: StreamId = mock()
     private lateinit var primaryKey: List<ColumnId>
