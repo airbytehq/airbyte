@@ -14,13 +14,8 @@ application {
 }
 
 dependencies {
-
-<<<<<<< HEAD
-    implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
-    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.15.2'
-=======
     implementation 'co.elastic.clients:elasticsearch-java:7.15.1'
->>>>>>> 1f80ff5e4a (Update Elasticsearch client)
+    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.15.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
 
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
