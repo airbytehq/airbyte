@@ -22,9 +22,7 @@ import org.apache.commons.csv.CSVRecord
 import org.apache.commons.csv.QuoteMode
 
 abstract class GcsBaseCsvDestinationAcceptanceTest : GcsDestinationAcceptanceTest(S3Format.CSV) {
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
+    override fun getProtocolVersion() = ProtocolVersion.V1
 
     override val formatConfig: JsonNode?
         get() =
@@ -41,7 +39,7 @@ abstract class GcsBaseCsvDestinationAcceptanceTest : GcsDestinationAcceptanceTes
 
     @Throws(IOException::class)
     override fun retrieveRecords(
-        testEnv: TestDestinationEnv,
+        testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
         streamSchema: JsonNode

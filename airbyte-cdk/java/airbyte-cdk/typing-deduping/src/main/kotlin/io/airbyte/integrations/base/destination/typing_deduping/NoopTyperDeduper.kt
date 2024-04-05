@@ -48,7 +48,7 @@ class NoopTyperDeduper : TyperDeduper {
 
     override fun commitFinalTables() {}
 
-    override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor?, StreamSyncSummary>) {}
+    override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {}
 
     override fun cleanup() {}
 }

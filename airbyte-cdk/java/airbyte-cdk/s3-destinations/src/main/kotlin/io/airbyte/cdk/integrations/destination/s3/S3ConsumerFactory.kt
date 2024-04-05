@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory
 
 class S3ConsumerFactory {
     fun create(
-        outputRecordCollector: Consumer<AirbyteMessage?>?,
+        outputRecordCollector: Consumer<AirbyteMessage>,
         storageOperations: BlobStorageOperations,
         namingResolver: NamingConventionTransformer,
         onCreateBuffer: BufferCreateFunction,

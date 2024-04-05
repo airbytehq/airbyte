@@ -30,24 +30,22 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
 }"""
             )
 
-    override fun getTestDataComparator(): TestDataComparator {
-        return GcsAvroTestDataComparator()
-    }
+    override fun getTestDataComparator(): TestDataComparator = GcsAvroTestDataComparator()
 
     @Throws(Exception::class)
     override fun retrieveRecords(
-        testEnv: TestDestinationEnv,
+        testEnv: TestDestinationEnv?,
         streamName: String,
         namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
         val nameUpdater = getFieldNameUpdater(streamName, namespace, streamSchema)
 
-        val objectSummaries = getAllSyncedObjects(streamName, namespace)
+        val objectSummaries = getAllSyncedObjects(streamName, namespace!!)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader<GenericData.Record>(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
                     GenericDatumReader<GenericData.Record>()
@@ -69,8 +67,8 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
 
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
+        streamName: String,
+        namespace: String
     ): Map<String?, Set<Schema.Type?>?> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
@@ -92,7 +90,5 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
         return resultDataTypes
     }
 
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
+    override fun getProtocolVersion() = ProtocolVersion.V1
 }

@@ -23,6 +23,7 @@ object ConnectionFactory {
      * @param jdbcConnectionString The JDBC connection string.
      * @return The configured [Connection]
      */
+    @JvmStatic
     fun create(
         username: String?,
         password: String?,

@@ -17,6 +17,7 @@ data:
   githubIssueLabel: source-paypal-transaction
   icon: paypal.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Paypal Transaction
   remoteRegistries:
     pypi:

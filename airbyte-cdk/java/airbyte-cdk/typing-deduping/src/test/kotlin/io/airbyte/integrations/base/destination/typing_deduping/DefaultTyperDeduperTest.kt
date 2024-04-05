@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 
 class DefaultTyperDeduperTest {
     private var parsedCatalog: ParsedCatalog? = null
@@ -51,7 +52,7 @@ class DefaultTyperDeduperTest {
     private lateinit var destinationHandler: DestinationHandler<MockState>
 
     private lateinit var initialStates: List<DestinationInitialStatus<MockState>>
-    private lateinit var updatedStates: MutableMap<StreamId?, MockState>
+    private lateinit var updatedStates: MutableMap<StreamId, MockState>
 
     private lateinit var migrator: DestinationV1V2Migrator
     private lateinit var typerDeduper: TyperDeduper
@@ -136,10 +137,11 @@ class DefaultTyperDeduperTest {
             }
         )
 
-        updatedStates = HashMap()
+        val updatedStates: MutableMap<StreamId, MockState> = HashMap()
         updatedStates[OVERWRITE_STREAM_CONFIG.id] = MockState(false, false, true)
         updatedStates[APPEND_STREAM_CONFIG.id] = MockState(false, false, true)
         updatedStates[DEDUPE_STREAM_CONFIG.id] = MockState(false, false, true)
+        this.updatedStates = updatedStates
 
         migrator = NoOpDestinationV1V2Migrator()
 
@@ -206,7 +208,7 @@ class DefaultTyperDeduperTest {
         Mockito.clearInvocations(destinationHandler)
 
         typerDeduper!!.commitFinalTables()
-        Mockito.verify(destinationHandler, Mockito.never()).execute(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler, Mockito.never()).execute(any())
     }
 
     /**
@@ -314,7 +316,7 @@ class DefaultTyperDeduperTest {
         Mockito.clearInvocations(destinationHandler)
 
         typerDeduper!!.prepareFinalTables()
-        Mockito.verify(destinationHandler, Mockito.never()).execute(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler, Mockito.never()).execute(any())
     }
 
     /**
@@ -466,9 +468,7 @@ class DefaultTyperDeduperTest {
     @Test
     @Throws(Exception::class)
     fun failedSetup() {
-        Mockito.doThrow(RuntimeException("foo"))
-            .`when`(destinationHandler)
-            .execute(ArgumentMatchers.any())
+        Mockito.doThrow(RuntimeException("foo")).`when`(destinationHandler).execute(any())
 
         Assertions.assertThrows(Exception::class.java) { typerDeduper!!.prepareFinalTables() }
         Mockito.clearInvocations(destinationHandler)
@@ -580,7 +580,7 @@ class DefaultTyperDeduperTest {
     @Test
     @Throws(Exception::class)
     fun multipleSoftResets() {
-        typerDeduper =
+        val typerDeduper =
             DefaultTyperDeduper(
                 sqlGenerator!!,
                 destinationHandler,
@@ -589,6 +589,7 @@ class DefaultTyperDeduperTest {
                 java.util.List.of(MIGRATION_REQUIRING_SOFT_RESET)
             )
 
+        this.typerDeduper = typerDeduper
         // Notably: isSchemaMismatch = true,
         // and the MockStates have needsSoftReset = false and isMigrated = false.
         Mockito.`when`(destinationHandler!!.gatherInitialState(ArgumentMatchers.anyList()))
@@ -636,7 +637,7 @@ class DefaultTyperDeduperTest {
                     MockState(true, true, true)
                 )
             )
-        Mockito.verify(destinationHandler).gatherInitialState(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
             .execute(
                 separately(
@@ -699,7 +700,7 @@ class DefaultTyperDeduperTest {
     @Test
     @Throws(Exception::class)
     fun migrationsMixedResults() {
-        typerDeduper =
+        val typerDeduper =
             DefaultTyperDeduper(
                 sqlGenerator!!,
                 destinationHandler,
@@ -710,6 +711,7 @@ class DefaultTyperDeduperTest {
                     MIGRATION_NOT_REQUIRING_SOFT_RESET
                 )
             )
+        this.typerDeduper = typerDeduper
 
         Mockito.`when`(destinationHandler!!.gatherInitialState(ArgumentMatchers.anyList()))
             .thenReturn(
@@ -756,7 +758,7 @@ class DefaultTyperDeduperTest {
                     MockState(true, true, true)
                 )
             )
-        Mockito.verify(destinationHandler).gatherInitialState(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
             .execute(
                 separately(
@@ -865,7 +867,7 @@ class DefaultTyperDeduperTest {
                     MockState(true, false, false)
                 )
             )
-        Mockito.verify(destinationHandler).gatherInitialState(ArgumentMatchers.any())
+        Mockito.verify(destinationHandler).gatherInitialState(any())
         Mockito.verify(destinationHandler)
             .execute(
                 separately(

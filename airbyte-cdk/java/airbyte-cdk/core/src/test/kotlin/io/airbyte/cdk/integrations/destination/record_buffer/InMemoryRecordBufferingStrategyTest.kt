@@ -16,7 +16,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.mock
 
 class InMemoryRecordBufferingStrategyTest {
-    private val recordWriter: RecordWriter<AirbyteRecordMessage?> = mock()
+    private val recordWriter: RecordWriter<AirbyteRecordMessage> = mock()
 
     @Test
     @Throws(Exception::class)

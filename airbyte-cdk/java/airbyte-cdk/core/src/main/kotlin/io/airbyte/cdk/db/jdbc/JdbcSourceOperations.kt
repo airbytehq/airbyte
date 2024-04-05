@@ -15,8 +15,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /** Implementation of source operations with standard JDBC types. */
-class JdbcSourceOperations :
-    AbstractJdbcCompatibleSourceOperations<JDBCType?>(), SourceOperations<ResultSet, JDBCType?> {
+open class JdbcSourceOperations :
+    AbstractJdbcCompatibleSourceOperations<JDBCType>(), SourceOperations<ResultSet, JDBCType> {
     protected fun safeGetJdbcType(columnTypeInt: Int): JDBCType {
         return try {
             JDBCType.valueOf(columnTypeInt)
@@ -65,7 +65,7 @@ class JdbcSourceOperations :
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         cursorFieldType: JDBCType?,
-        value: String
+        value: String?
     ) {
         when (cursorFieldType) {
             JDBCType.TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value)
@@ -80,12 +80,12 @@ class JdbcSourceOperations :
             JDBCType.TINYINT,
             JDBCType.SMALLINT -> setShortInt(preparedStatement, parameterIndex, value!!)
             JDBCType.INTEGER -> setInteger(preparedStatement, parameterIndex, value!!)
-            JDBCType.BIGINT -> setBigInteger(preparedStatement, parameterIndex, value)
+            JDBCType.BIGINT -> setBigInteger(preparedStatement, parameterIndex, value!!)
             JDBCType.FLOAT,
             JDBCType.DOUBLE -> setDouble(preparedStatement, parameterIndex, value!!)
             JDBCType.REAL -> setReal(preparedStatement, parameterIndex, value!!)
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> setDecimal(preparedStatement, parameterIndex, value)
+            JDBCType.DECIMAL -> setDecimal(preparedStatement, parameterIndex, value!!)
             JDBCType.CHAR,
             JDBCType.NCHAR,
             JDBCType.NVARCHAR,
@@ -101,7 +101,7 @@ class JdbcSourceOperations :
     }
 
     @Throws(SQLException::class)
-    protected fun setTimestampWithTimezone(
+    protected open fun setTimestampWithTimezone(
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         value: String?
@@ -147,7 +147,7 @@ class JdbcSourceOperations :
         return JdbcUtils.ALLOWED_CURSOR_TYPES.contains(type)
     }
 
-    override fun getAirbyteType(jdbcType: JDBCType?): JsonSchemaType {
+    override fun getAirbyteType(jdbcType: JDBCType): JsonSchemaType {
         return when (jdbcType) {
             JDBCType.BIT,
             JDBCType.BOOLEAN -> JsonSchemaType.BOOLEAN

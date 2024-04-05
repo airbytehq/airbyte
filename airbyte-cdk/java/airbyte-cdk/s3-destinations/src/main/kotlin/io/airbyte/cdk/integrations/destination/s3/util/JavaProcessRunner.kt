@@ -20,8 +20,8 @@ object JavaProcessRunner {
         val pr =
             if (path == System.getProperty("user.dir")) run.exec(commands)
             else run.exec(commands, null, File(path))
-        LineGobbler.gobble(pr.errorStream) { s: String? -> LOGGER.error(s) }
-        LineGobbler.gobble(pr.inputStream) { s: String? -> LOGGER.info(s) }
+        LineGobbler.gobble(`is` = pr.errorStream, { LOGGER.warn(it) })
+        LineGobbler.gobble(`is` = pr.inputStream, { LOGGER.info(it) })
         if (!pr.waitFor(10, TimeUnit.MINUTES)) {
             pr.destroy()
             throw RuntimeException("Timeout while executing: " + commands.contentToString())

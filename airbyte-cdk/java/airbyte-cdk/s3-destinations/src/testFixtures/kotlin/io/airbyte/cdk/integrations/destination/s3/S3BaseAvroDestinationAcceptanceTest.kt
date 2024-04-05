@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.json.Jsons
 import java.util.*
 import org.apache.avro.Schema
@@ -39,7 +40,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
         streamName: String,
-        namespace: String?,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
         val nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema)
@@ -47,8 +48,8 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader<GenericData.Record>(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
                     GenericDatumReader<GenericData.Record>()
@@ -69,18 +70,18 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
         return jsonRecords
     }
 
-    override fun getTestDataComparator() = S3AvroParquetTestDataComparator()
+    override fun getTestDataComparator(): TestDataComparator = S3AvroParquetTestDataComparator()
 
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
-    ): Map<String?, Set<Schema.Type?>?> {
+        streamName: String,
+        namespace: String
+    ): Map<String, Set<Schema.Type>> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
-        val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
+        val resultDataTypes: MutableMap<String, Set<Schema.Type>> = HashMap()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
                     GenericDatumReader<GenericData.Record>()
@@ -89,7 +90,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
                     while (dataFileReader.hasNext()) {
                         val record = dataFileReader.next()
                         val actualDataTypes = getTypes(record)
-                        resultDataTypes.putAll(actualDataTypes!!)
+                        resultDataTypes.putAll(actualDataTypes)
                     }
                 }
         }

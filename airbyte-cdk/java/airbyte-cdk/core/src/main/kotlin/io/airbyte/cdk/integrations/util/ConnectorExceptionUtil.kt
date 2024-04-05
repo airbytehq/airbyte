@@ -95,17 +95,12 @@ object ConnectorExceptionUtil {
         initialMessage: String,
         eithers: List<Either<out T, Result>>
     ): List<Result> {
-        val throwables: List<T> =
-            eithers
-                .stream()
-                .filter { obj: Either<out T, Result> -> obj.isLeft }
-                .map { it.left }
-                .toList()
-        if (!throwables.isEmpty()) {
+        val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }.toList()
+        if (throwables.isNotEmpty()) {
             logAllAndThrowFirst(initialMessage, throwables)
         }
         // No need to filter on isRight since isLeft will throw before reaching this line.
-        return eithers.stream().map { obj: Either<out T, Result> -> obj.right }.toList()
+        return eithers.stream().map { obj: Either<out T, Result> -> obj.right!! }.toList()
     }
 
     private fun isConfigErrorException(e: Throwable?): Boolean {

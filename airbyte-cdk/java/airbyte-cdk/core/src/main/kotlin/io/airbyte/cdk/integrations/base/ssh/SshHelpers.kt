@@ -13,10 +13,12 @@ import java.util.*
 
 object SshHelpers {
     @get:Throws(IOException::class)
+    @JvmStatic
     val specAndInjectSsh: ConnectorSpecification?
         get() = getSpecAndInjectSsh(Optional.empty())
 
     @Throws(IOException::class)
+    @JvmStatic
     fun getSpecAndInjectSsh(group: Optional<String>): ConnectorSpecification? {
         val originalSpec =
             Jsons.deserialize(
@@ -28,10 +30,11 @@ object SshHelpers {
 
     @JvmOverloads
     @Throws(IOException::class)
+    @JvmStatic
     fun injectSshIntoSpec(
-        connectorSpecification: ConnectorSpecification?,
+        connectorSpecification: ConnectorSpecification,
         group: Optional<String> = Optional.empty()
-    ): ConnectorSpecification? {
+    ): ConnectorSpecification {
         val originalSpec = Jsons.clone(connectorSpecification)
         val propNode = originalSpec!!.connectionSpecification["properties"] as ObjectNode
         val tunnelMethod =

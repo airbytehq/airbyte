@@ -8,10 +8,7 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 
 class S3AvroParquetTestDataComparator : AdvancedTestDataComparator() {
-    override fun compareDateValues(
-        airbyteMessageValue: String?,
-        destinationValue: String
-    ): Boolean {
+    override fun compareDateValues(airbyteMessageValue: String, destinationValue: String): Boolean {
         val destinationDate = LocalDate.ofEpochDay(destinationValue.toLong())
         val expectedDate =
             LocalDate.parse(
@@ -30,7 +27,7 @@ class S3AvroParquetTestDataComparator : AdvancedTestDataComparator() {
     }
 
     override fun compareDateTimeValues(
-        airbyteMessageValue: String?,
+        airbyteMessageValue: String,
         destinationValue: String
     ): Boolean {
         val format = DateTimeFormatter.ofPattern(AdvancedTestDataComparator.AIRBYTE_DATETIME_FORMAT)

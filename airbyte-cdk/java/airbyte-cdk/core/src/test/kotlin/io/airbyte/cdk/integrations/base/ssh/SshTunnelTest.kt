@@ -28,8 +28,8 @@ internal class SshTunnelTest {
     @ParameterizedTest
     @ValueSource(strings = [HOST_PORT_CONFIG, URL_CONFIG_WITH_PORT, URL_CONFIG_NO_PORT])
     @Throws(Exception::class)
-    fun testConfigInTunnel(configString: String?) {
-        val config = ObjectMapper().readTree(String.format(configString!!, SSH_RSA_PRIVATE_KEY))
+    fun testConfigInTunnel(configString: String) {
+        val config = ObjectMapper().readTree(String.format(configString, SSH_RSA_PRIVATE_KEY))
         val endPointURL = Jsons.getStringOrNull(config, "endpoint")
         val sshTunnel: SshTunnel =
             object :

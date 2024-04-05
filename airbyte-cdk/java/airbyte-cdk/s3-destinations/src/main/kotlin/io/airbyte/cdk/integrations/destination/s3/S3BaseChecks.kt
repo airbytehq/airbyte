@@ -28,7 +28,7 @@ object S3BaseChecks {
     fun attemptS3WriteAndDelete(
         storageOperations: S3StorageOperations,
         s3Config: S3DestinationConfig,
-        bucketPath: String
+        bucketPath: String?
     ) {
         attemptS3WriteAndDelete(storageOperations, s3Config, bucketPath, s3Config.getS3Client())
     }
@@ -104,11 +104,11 @@ object S3BaseChecks {
     fun attemptS3WriteAndDelete(
         storageOperations: S3StorageOperations,
         s3Config: S3DestinationConfig,
-        bucketPath: String,
+        bucketPath: String?,
         s3: AmazonS3
     ) {
         val prefix =
-            if (Strings.isNullOrEmpty(bucketPath)) {
+            if (bucketPath.isNullOrEmpty()) {
                 ""
             } else if (bucketPath.endsWith("/")) {
                 bucketPath

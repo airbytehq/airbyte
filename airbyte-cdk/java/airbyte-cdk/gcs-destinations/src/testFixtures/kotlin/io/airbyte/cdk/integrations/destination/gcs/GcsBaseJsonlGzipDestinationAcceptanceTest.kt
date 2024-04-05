@@ -15,9 +15,7 @@ import java.util.Map
 import java.util.zip.GZIPInputStream
 
 abstract class GcsBaseJsonlGzipDestinationAcceptanceTest : GcsBaseJsonlDestinationAcceptanceTest() {
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
+    override fun getProtocolVersion() = ProtocolVersion.V1
 
     override val formatConfig: JsonNode?
         get() = // config without compression defaults to GZIP

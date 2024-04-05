@@ -122,7 +122,7 @@ constructor(
         val primaryKey =
             stream.primaryKey
                 .stream()
-                .map { key: List<String?> -> sqlGenerator.buildColumnId(key[0]) }
+                .map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
                 .toList()
 
         require(stream.cursorField.size <= 1) { "Only top-level cursors are supported" }

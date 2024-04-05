@@ -58,10 +58,10 @@ abstract class BaseTypingDedupingTest {
     protected var config: JsonNode? = null
         private set
     protected var streamNamespace: String? = null
-    protected var streamName: String? = null
+    protected var streamName: String = "dummy"
     private var streamsToTearDown: MutableList<AirbyteStreamNameNamespacePair>? = null
 
-    protected abstract val imageName: String?
+    protected abstract val imageName: String
         /** @return the docker image to run, e.g. `"airbyte/destination-bigquery:dev"`. */
         get
 
@@ -90,7 +90,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected abstract fun dumpRawTableRecords(
         streamNamespace: String?,
-        streamName: String?
+        streamName: String
     ): List<JsonNode>
 
     /**
@@ -124,10 +124,7 @@ abstract class BaseTypingDedupingTest {
      * streamNamespace may be null, in which case you should query from the default namespace.
      */
     @Throws(Exception::class)
-    abstract fun dumpFinalTableRecords(
-        streamNamespace: String?,
-        streamName: String?
-    ): List<JsonNode>
+    abstract fun dumpFinalTableRecords(streamNamespace: String?, streamName: String): List<JsonNode>
 
     /**
      * Delete any resources in the destination associated with this stream AND its namespace. We
@@ -139,7 +136,7 @@ abstract class BaseTypingDedupingTest {
      * airbyte.<streamNamespace>_<streamName>; DROP SCHEMA IF EXISTS <streamNamespace>`.
      */
     @Throws(Exception::class)
-    protected abstract fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String?)
+    protected abstract fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String)
 
     protected abstract val sqlGenerator: SqlGenerator
         get
@@ -186,7 +183,7 @@ abstract class BaseTypingDedupingTest {
      *
      * @return
      */
-    protected fun disableFinalTableComparison(): Boolean {
+    protected open fun disableFinalTableComparison(): Boolean {
         return false
     }
 
@@ -563,7 +560,7 @@ abstract class BaseTypingDedupingTest {
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
-        val trimmedSchema = SCHEMA!!.deepCopy<JsonNode>()
+        val trimmedSchema = SCHEMA.deepCopy<JsonNode>()
         (trimmedSchema["properties"] as ObjectNode).remove("name")
         stream.jsonSchema = trimmedSchema
 
@@ -576,7 +573,7 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
                 .stream()
                 .peek { record: JsonNode ->
-                    (record as ObjectNode).remove(sqlGenerator.buildColumnId("name")!!.name)
+                    (record as ObjectNode).remove(sqlGenerator.buildColumnId("name").name)
                 }
                 .toList()
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
@@ -714,7 +711,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    fun identicalNameSimultaneousSync() {
+    open fun identicalNameSimultaneousSync() {
         val namespace1 = streamNamespace + "_1"
         val catalog1 =
             io.airbyte.protocol.models.v0
@@ -819,7 +816,7 @@ abstract class BaseTypingDedupingTest {
     @Test
     @Throws(Exception::class)
     fun incrementalDedupChangeCursor() {
-        val mangledSchema = SCHEMA!!.deepCopy<JsonNode>()
+        val mangledSchema = SCHEMA.deepCopy<JsonNode>()
         (mangledSchema["properties"] as ObjectNode).remove("updated_at")
         (mangledSchema["properties"] as ObjectNode).set<JsonNode>(
             "old_cursor",
@@ -927,7 +924,7 @@ abstract class BaseTypingDedupingTest {
         expectedRawRecords: List<JsonNode>,
         expectedFinalRecords: List<JsonNode>,
         streamNamespace: String?,
-        streamName: String?,
+        streamName: String,
         disableFinalTableComparison: Boolean
     ) {
         val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
@@ -948,11 +945,12 @@ abstract class BaseTypingDedupingTest {
      * !!!!!! WARNING !!!!!! The code below was mostly copypasted from DestinationAcceptanceTest. If you
      * make edits here, you probably want to also edit there.
      */
+    @JvmOverloads
     @Throws(Exception::class)
     protected fun runSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         messages: List<AirbyteMessage>,
-        imageName: String? = this.imageName,
+        imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
     ) {
         val destination = startSync(catalog, imageName, configTransformer)
@@ -973,7 +971,7 @@ abstract class BaseTypingDedupingTest {
                     val destinationMessages:
                         MutableList<io.airbyte.protocol.models.AirbyteMessage> =
                         ArrayList()
-                    while (!destination.isFinished) {
+                    while (!destination.isFinished()) {
                         // attemptRead isn't threadsafe, we read stdout fully here.
                         // i.e. we shouldn't call attemptRead anywhere else.
                         destination.attemptRead().ifPresent {
@@ -1000,7 +998,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected fun startSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
-        imageName: String? = this.imageName,
+        imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
     ): AirbyteDestination {
         synchronized(this) {
@@ -1065,13 +1063,19 @@ abstract class BaseTypingDedupingTest {
         destination.close()
     }
 
-    protected fun readMessages(filename: String?): List<AirbyteMessage> {
+    protected fun readMessages(filename: String): List<AirbyteMessage> {
         return Companion.readMessages(filename, streamNamespace, streamName)
     }
 
+    protected fun readRecords(filename: String): List<JsonNode> {
+        return Companion.readRecords(filename)
+    }
+
+    protected val schema: JsonNode = SCHEMA
+
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(BaseTypingDedupingTest::class.java)
-        protected var SCHEMA: JsonNode? = null
+        protected val SCHEMA: JsonNode
 
         init {
             try {
@@ -1082,7 +1086,7 @@ abstract class BaseTypingDedupingTest {
         }
 
         @Throws(IOException::class)
-        fun readRecords(filename: String?): List<JsonNode> {
+        fun readRecords(filename: String): List<JsonNode> {
             return MoreResources.readResource(filename)
                 .lines()
                 .map { obj: String -> obj.trim { it <= ' ' } }
@@ -1094,7 +1098,7 @@ abstract class BaseTypingDedupingTest {
 
         @Throws(IOException::class)
         protected fun readMessages(
-            filename: String?,
+            filename: String,
             streamNamespace: String?,
             streamName: String?
         ): List<AirbyteMessage> {

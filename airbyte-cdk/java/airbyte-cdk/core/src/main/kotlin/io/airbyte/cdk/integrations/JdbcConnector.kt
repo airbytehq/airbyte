@@ -11,7 +11,7 @@ import java.util.*
 
 abstract class JdbcConnector
 protected constructor(@JvmField protected val driverClassName: String) : BaseConnector() {
-    protected fun getConnectionTimeout(connectionProperties: Map<String?, String?>): Duration {
+    protected fun getConnectionTimeout(connectionProperties: Map<String, String>): Duration {
         return getConnectionTimeout(connectionProperties, driverClassName)
     }
 
@@ -20,7 +20,7 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
         val POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION: Duration = Duration.ofSeconds(10)
 
         const val CONNECT_TIMEOUT_KEY: String = "connectTimeout"
-        val CONNECT_TIMEOUT_DEFAULT: Duration = Duration.ofSeconds(60)
+        @JvmField val CONNECT_TIMEOUT_DEFAULT: Duration = Duration.ofSeconds(60)
 
         /**
          * Retrieves connectionTimeout value from connection properties in millis, default minimum
@@ -36,8 +36,9 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
          * @param driverClassName name of the JDBC driver
          * @return DataSourceBuilder class used to create dynamic fields for DataSource
          */
+        @JvmStatic
         fun getConnectionTimeout(
-            connectionProperties: Map<String?, String?>,
+            connectionProperties: Map<String, String>,
             driverClassName: String?
         ): Duration {
             val parsedConnectionTimeout =

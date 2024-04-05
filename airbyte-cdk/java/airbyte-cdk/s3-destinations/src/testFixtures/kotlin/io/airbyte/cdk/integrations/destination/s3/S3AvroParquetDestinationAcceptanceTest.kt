@@ -31,8 +31,8 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
         val catalog = readCatalogFromFile(catalogFileName)
         val messages = readMessagesFromFile(messagesFileName)
 
-        val config = getConfig()
-        val defaultSchema = getDefaultSchema(config!!)
+        val config = this.getConfig()
+        val defaultSchema = getDefaultSchema(config)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
 
@@ -115,9 +115,9 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
 
     @Throws(Exception::class)
     protected abstract fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
-    ): Map<String?, Set<Schema.Type?>?>
+        streamName: String,
+        namespace: String
+    ): Map<String, Set<Schema.Type>>
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {
         val fieldList =
