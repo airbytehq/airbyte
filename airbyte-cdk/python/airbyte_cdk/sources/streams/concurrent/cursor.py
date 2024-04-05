@@ -123,7 +123,7 @@ class ConcurrentCursor(Cursor):
         cursor_field: CursorField,
         slice_boundary_fields: Optional[Tuple[str, str]],
         start: Optional[Comparable],
-        lookback_window: Any,
+        lookback_window: Optional[Any] = None,
         slice_range: Optional[Any] = None,
     ) -> None:
         self._stream_name = stream_name
@@ -239,13 +239,18 @@ class ConcurrentCursor(Cursor):
         self._merge_partitions()
 
         if len(self.state["slices"]) == 1:
-            yield from self._split_per_slice_range(self.state["slices"][0][self._connector_state_converter.END_KEY] - self._lookback_window, self._connector_state_converter.max_end)
+            yield from self._split_per_slice_range(self._calculate_lower_boundary_of_last_slice(self.state["slices"][0][self._connector_state_converter.END_KEY]), self._connector_state_converter.max_end)
         elif len(self.state["slices"]) > 1:
             for i in range(len(self.state["slices"]) - 1):
                 yield from self._split_per_slice_range(self.state["slices"][i][self._connector_state_converter.END_KEY], self.state["slices"][i + 1][self._connector_state_converter.START_KEY])
-            yield from self._split_per_slice_range(self.state["slices"][-1][self._connector_state_converter.END_KEY] - self._lookback_window, self._connector_state_converter.max_end)
+            yield from self._split_per_slice_range(self._calculate_lower_boundary_of_last_slice(self.state["slices"][-1][self._connector_state_converter.END_KEY]), self._connector_state_converter.max_end)
         else:
             raise ValueError("Expected at least one slice")
+
+    def _calculate_lower_boundary_of_last_slice(self, lower_boundary: Comparable) -> Comparable:
+        if self._lookback_window:
+            return lower_boundary - self._lookback_window
+        return lower_boundary
 
     def _split_per_slice_range(self, lower: Comparable, upper: Comparable) -> Iterable[Tuple[Comparable, Comparable]]:
         if self._start and upper < self._start:
