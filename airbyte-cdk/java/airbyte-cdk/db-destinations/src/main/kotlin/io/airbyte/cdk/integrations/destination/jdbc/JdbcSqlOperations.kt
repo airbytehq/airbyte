@@ -82,11 +82,14 @@ abstract class JdbcSqlOperations : SqlOperations {
      * For example, Postgres does not support index definitions within a CREATE TABLE statement, so
      * we need to run CREATE INDEX statements after creating the table.
      */
-    protected fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
+    protected open fun postCreateTableQueries(
+        schemaName: String?,
+        tableName: String?
+    ): List<String> {
         return listOf()
     }
 
-    protected fun createTableQueryV1(schemaName: String?, tableName: String?): String {
+    protected open fun createTableQueryV1(schemaName: String?, tableName: String?): String {
         return String.format(
             """
         CREATE TABLE IF NOT EXISTS %s.%s (
@@ -104,7 +107,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         )
     }
 
-    protected fun createTableQueryV2(schemaName: String?, tableName: String?): String {
+    protected open fun createTableQueryV2(schemaName: String?, tableName: String?): String {
         // Note that Meta is the last column in order, there was a time when tables didn't have
         // meta,
         // we issued Alter to add that column so it should be the last column.

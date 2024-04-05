@@ -47,7 +47,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         get() = runExecutable(Command.GET_STATE)
 
     @Throws(IOException::class)
-    override fun assertFullRefreshMessages(allMessages: List<AirbyteMessage?>?) {
+    override fun assertFullRefreshMessages(allMessages: List<AirbyteMessage>) {
         val regexTests =
             Streams.stream(
                     runExecutable(Command.GET_REGEX_TESTS).withArray<JsonNode>("tests").elements()
@@ -57,7 +57,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         val stringMessages =
             allMessages!!
                 .stream()
-                .map { `object`: AirbyteMessage? -> Jsons.serialize(`object`) }
+                .map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
                 .toList()
         LOGGER.info("Running " + regexTests.size + " regex tests...")
         regexTests.forEach(
@@ -155,7 +155,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         private val LOGGER: Logger = LoggerFactory.getLogger(PythonSourceAcceptanceTest::class.java)
         private const val OUTPUT_FILENAME = "output.json"
 
-        lateinit var IMAGE_NAME: String
+        var IMAGE_NAME: String = "dummy_image_name"
         var PYTHON_CONTAINER_NAME: String? = null
     }
 }

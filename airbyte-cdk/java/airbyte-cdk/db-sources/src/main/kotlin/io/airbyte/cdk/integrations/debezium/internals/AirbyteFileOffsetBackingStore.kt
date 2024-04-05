@@ -193,6 +193,7 @@ class AirbyteFileOffsetBackingStore(
             return ByteBuffer.wrap(s!!.toByteArray(StandardCharsets.UTF_8))
         }
 
+        @JvmStatic
         fun initializeState(
             cdcState: JsonNode?,
             dbName: Optional<String>
@@ -210,6 +211,7 @@ class AirbyteFileOffsetBackingStore(
             return offsetManager
         }
 
+        @JvmStatic
         fun initializeDummyStateForSnapshotPurpose(): AirbyteFileOffsetBackingStore {
             val cdcWorkingDir: Path
             try {

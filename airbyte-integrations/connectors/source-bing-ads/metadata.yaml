@@ -22,6 +22,7 @@ data:
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Bing Ads
   remoteRegistries:
     pypi:

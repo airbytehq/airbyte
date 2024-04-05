@@ -4,10 +4,7 @@
 package io.airbyte.cdk.db.factory
 
 /** Collection of JDBC driver class names and the associated JDBC URL format string. */
-enum class DatabaseDriver(
-    @JvmField val driverClassName: String,
-    @JvmField val urlFormatString: String
-) {
+enum class DatabaseDriver(val driverClassName: String, val urlFormatString: String) {
     CLICKHOUSE("com.clickhouse.jdbc.ClickHouseDriver", "jdbc:clickhouse:%s://%s:%d/%s"),
     DATABRICKS(
         "com.databricks.client.jdbc.Driver",
@@ -37,6 +34,7 @@ enum class DatabaseDriver(
          * @param driverClassName The driver class name.
          * @return The matching [DatabaseDriver] enumerated value or `null` if no match is found.
          */
+        @JvmStatic
         fun findByDriverClassName(driverClassName: String?): DatabaseDriver {
             lateinit var selected: DatabaseDriver
 
