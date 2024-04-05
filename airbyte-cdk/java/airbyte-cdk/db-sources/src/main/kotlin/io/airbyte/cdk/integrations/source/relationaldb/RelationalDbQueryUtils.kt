@@ -65,6 +65,7 @@ object RelationalDbQueryUtils {
         return quoteString + identifier + quoteString
     }
 
+    @JvmStatic
     fun <Database : SqlDatabase?> queryTable(
         database: Database,
         sqlQuery: String?,
@@ -90,6 +91,7 @@ object RelationalDbQueryUtils {
         )
     }
 
+    @JvmStatic
     fun logStreamSyncStatus(streams: List<ConfiguredAirbyteStream>, syncType: String?) {
         if (streams.isEmpty()) {
             LOGGER.info("No Streams will be synced via {}.", syncType)

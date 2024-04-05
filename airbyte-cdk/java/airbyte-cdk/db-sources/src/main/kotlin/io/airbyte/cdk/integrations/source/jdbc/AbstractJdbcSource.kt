@@ -628,7 +628,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
     /** Some databases need special column names in the query. */
     @Throws(SQLException::class)
-    protected fun getWrappedColumnNames(
+    protected open fun getWrappedColumnNames(
         database: JdbcDatabase?,
         connection: Connection?,
         columnNames: List<String>,

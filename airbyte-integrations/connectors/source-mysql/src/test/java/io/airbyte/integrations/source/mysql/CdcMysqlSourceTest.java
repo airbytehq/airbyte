@@ -92,14 +92,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected JsonNode config() {
-    return getTestdb().testConfigBuilder()
+    return testdb.testConfigBuilder()
         .withCdcReplication()
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
   }
 
   protected void purgeAllBinaryLogs() {
-    getTestdb().with("RESET MASTER;");
+    testdb.with("RESET MASTER;");
   }
 
   @Override
@@ -123,12 +123,12 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   protected String getDatabaseName() {
-    return getTestdb().getDatabaseName();
+    return testdb.getDatabaseName();
   }
 
   @Override
   protected MySqlCdcTargetPosition cdcLatestTargetPosition() {
-    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(getTestdb().getDataSource()));
+    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(testdb.getDataSource()));
   }
 
   @Override
@@ -197,7 +197,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
                               final String idCol,
                               final String makeIdCol,
                               final String modelCol) {
-    getTestdb().with("INSERT INTO `%s` .`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
+    testdb.with("INSERT INTO `%s` .`%s` (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
         idCol, makeIdCol, modelCol,
         recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
         recordJson.get(modelCol).asText());
@@ -205,23 +205,23 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected void deleteMessageOnIdCol(final String streamName, final String idCol, final int idValue) {
-    getTestdb().with("DELETE FROM `%s`.`%s` WHERE %s = %s", modelsSchema(), streamName, idCol, idValue);
+    testdb.with("DELETE FROM `%s`.`%s` WHERE %s = %s", modelsSchema(), streamName, idCol, idValue);
   }
 
   @Override
   protected void deleteCommand(final String streamName) {
-    getTestdb().with("DELETE FROM `%s`.`%s`", modelsSchema(), streamName);
+    testdb.with("DELETE FROM `%s`.`%s`", modelsSchema(), streamName);
   }
 
   @Override
   protected void updateCommand(final String streamName, final String modelCol, final String modelVal, final String idCol, final int idValue) {
-    getTestdb().with("UPDATE `%s`.`%s` SET %s = '%s' WHERE %s = %s", modelsSchema(), streamName,
+    testdb.with("UPDATE `%s`.`%s` SET %s = '%s' WHERE %s = %s", modelsSchema(), streamName,
         modelCol, modelVal, COL_ID, 11);
   }
 
   @Test
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
-    getTestdb().with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", getTestdb().getUserName());
+    testdb.with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", testdb.getUserName());
     final AirbyteConnectionStatus status = source().check(config());
     final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
         + " for CDC mode.";
@@ -286,7 +286,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount, recordsFromSecondBatch.size(),
         "Expected 46 records to be replicated in the second sync.");
 
-    JsonNode failSyncConfig = getTestdb().testConfigBuilder()
+    JsonNode failSyncConfig = testdb.testConfigBuilder()
         .withCdcReplication(FAIL_SYNC_OPTION)
         .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build();
@@ -546,7 +546,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
-    getTestdb().with(createTableSqlFmt(), getDatabaseName(), MODELS_STREAM_NAME + "_2",
+    testdb.with(createTableSqlFmt(), getDatabaseName(), MODELS_STREAM_NAME + "_2",
         columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
 
     for (final JsonNode recordJson : MODEL_RECORDS_2) {
@@ -748,7 +748,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
         createTableQuery.append(columnName).append(" INTEGER, ");
       }
       createTableQuery.append("PRIMARY KEY (").append(firstCol).append("));");
-      getTestdb().with(createTableQuery.toString());
+      testdb.with(createTableQuery.toString());
     }
   }
 
