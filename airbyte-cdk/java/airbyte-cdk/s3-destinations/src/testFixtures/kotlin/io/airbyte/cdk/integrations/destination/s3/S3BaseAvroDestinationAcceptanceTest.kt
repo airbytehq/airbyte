@@ -43,8 +43,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
         namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        val nameUpdater =
-            AvroRecordHelper.getFieldNameUpdater(streamName!!, namespace, streamSchema)
+        val nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
@@ -75,11 +74,11 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
 
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
-    ): Map<String?, Set<Schema.Type?>?> {
+        streamName: String,
+        namespace: String
+    ): Map<String, Set<Schema.Type>> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
-        val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
+        val resultDataTypes: MutableMap<String, Set<Schema.Type>> = HashMap()
 
         for (objectSummary in objectSummaries) {
             val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)

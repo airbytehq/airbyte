@@ -41,6 +41,7 @@ object RecordWaitTimeUtil {
         }
     }
 
+    @JvmStatic
     fun getFirstRecordWaitTime(config: JsonNode): Duration {
         val isTest = config.has("is_test") && config["is_test"].asBoolean()
         var firstRecordWaitTime = DEFAULT_FIRST_RECORD_WAIT_TIME
@@ -67,6 +68,7 @@ object RecordWaitTimeUtil {
         return firstRecordWaitTime
     }
 
+    @JvmStatic
     fun getSubsequentRecordWaitTime(config: JsonNode): Duration {
         var subsequentRecordWaitTime = DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME
         val isTest = config.has("is_test") && config["is_test"].asBoolean()

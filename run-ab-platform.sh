@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.57.1
+VERSION=0.57.2
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
