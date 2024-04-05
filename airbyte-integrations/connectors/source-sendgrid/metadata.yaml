@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-sendgrid
   icon: sendgrid.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Sendgrid
   remoteRegistries:
     pypi:

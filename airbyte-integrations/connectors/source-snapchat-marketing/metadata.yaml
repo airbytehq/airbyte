@@ -13,6 +13,7 @@ data:
   githubIssueLabel: source-snapchat-marketing
   icon: snapchat.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Snapchat Marketing
   remoteRegistries:
     pypi:
