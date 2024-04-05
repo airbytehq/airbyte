@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0bf3d71-c51a-4710-83af-c709f76d47c8
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.5.0
   dockerRepository: 705212330674.dkr.ecr.us-east-2.amazonaws.com/corral-airbyte/source-zenoti
   githubIssueLabel: source-zenoti
   icon: zenoti.svg

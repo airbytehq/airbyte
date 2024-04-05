@@ -51,7 +51,7 @@ definitions:
         type: NoPagination
       requester:
         $ref: "#/definitions/requester"
-        path: appointments
+        path: appointments?include_no_show_cancel=true
       record_selector:
         type: RecordSelector
         extractor:
