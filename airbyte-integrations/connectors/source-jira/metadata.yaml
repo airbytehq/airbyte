@@ -16,7 +16,7 @@ data:
   githubIssueLabel: source-jira
   icon: jira.svg
   license: MIT
-  maxSecondsBetweenMessages: 21600
+  maxSecondsBetweenMessages: 5400
   name: Jira
   remoteRegistries:
     pypi:

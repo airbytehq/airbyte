@@ -90,13 +90,14 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
             else fieldDefinition["type"]
         val airbyteTypeProperty = fieldDefinition["airbyte_type"]
         val airbyteTypePropertyText = airbyteTypeProperty?.asText()
-        return Arrays.stream(JsonSchemaType.entries.toTypedArray())
+        return JsonSchemaType.entries
+            .toTypedArray()
             .filter { value: JsonSchemaType ->
                 value.jsonSchemaType == typeProperty.asText() &&
                     compareAirbyteTypes(airbyteTypePropertyText, value)
             }
-            .map(JsonSchemaType::avroType)
-            .collect(Collectors.toSet())
+            .map { it.avroType }
+            .toSet()
     }
 
     private fun compareAirbyteTypes(
@@ -126,8 +127,8 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(s3Format: S3Format) :
 
     @Throws(Exception::class)
     protected abstract fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
+        streamName: String,
+        namespace: String
     ): Map<String?, Set<Schema.Type?>?>
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {

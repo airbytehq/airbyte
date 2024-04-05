@@ -27,12 +27,12 @@ compileKotlin {
 }
 
 dependencies {
-    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
-    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
 
     api 'org.mongodb:mongodb-driver-sync:4.10.2'
 
-    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:core'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 
     testFixturesApi 'org.testcontainers:mongodb:1.19.0'
 }

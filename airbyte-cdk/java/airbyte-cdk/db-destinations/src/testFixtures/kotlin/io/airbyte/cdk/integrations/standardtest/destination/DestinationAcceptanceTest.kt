@@ -79,7 +79,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class DestinationAcceptanceTest {
-    protected lateinit var TEST_SCHEMAS: HashSet<String>
+    protected var TEST_SCHEMAS: HashSet<String> = HashSet()
 
     private lateinit var testEnv: TestDestinationEnv
 
@@ -178,8 +178,8 @@ abstract class DestinationAcceptanceTest {
     @Throws(Exception::class)
     protected abstract fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode>
 
@@ -230,14 +230,14 @@ abstract class DestinationAcceptanceTest {
         }
     }
 
-    protected fun normalizationFromDefinition(): Boolean {
+    protected open fun normalizationFromDefinition(): Boolean {
         val metadata = readMetadata()["data"] ?: return false
         val normalizationConfig = metadata["normalizationConfig"] ?: return false
         return normalizationConfig.has("normalizationRepository") &&
             normalizationConfig.has("normalizationTag")
     }
 
-    protected fun dbtFromDefinition(): Boolean {
+    protected open fun dbtFromDefinition(): Boolean {
         val metadata = readMetadata()["data"] ?: return false
         val supportsDbt = metadata["supportsDbt"]
         return supportsDbt != null && supportsDbt.asBoolean(false)
@@ -246,7 +246,7 @@ abstract class DestinationAcceptanceTest {
     protected val destinationDefinitionKey: String
         get() = imageNameWithoutTag
 
-    protected fun getNormalizationIntegrationType(): String? {
+    protected open fun getNormalizationIntegrationType(): String? {
         val metadata = readMetadata()["data"] ?: return null
         val normalizationConfig = metadata["normalizationConfig"] ?: return null
         val normalizationIntegrationType =
@@ -1454,7 +1454,7 @@ abstract class DestinationAcceptanceTest {
             false
         )
         val destinationOutput =
-            retrieveRecords(testEnv, stream.name, getDefaultSchema(config), stream.jsonSchema)
+            retrieveRecords(testEnv, stream.name, getDefaultSchema(config)!!, stream.jsonSchema)
         // Remove state message
         secondSyncMessagesWithNewFields.removeIf {
             airbyteMessage: io.airbyte.protocol.models.v0.AirbyteMessage ->
@@ -1606,13 +1606,11 @@ abstract class DestinationAcceptanceTest {
         val actualStateMessage =
             destinationOutput
                 .stream()
-                .filter { m: io.airbyte.protocol.models.v0.AirbyteMessage? ->
-                    m!!.type == io.airbyte.protocol.models.v0.AirbyteMessage.Type.STATE
-                }
+                .filter { it.type == Type.STATE }
                 .findFirst()
-                .map { msg: io.airbyte.protocol.models.v0.AirbyteMessage? ->
+                .map { msg: AirbyteMessage ->
                     // Modify state message to remove destination stats.
-                    val clone = msg!!.state
+                    val clone = msg.state
                     clone.destinationStats = null
                     msg.state = clone
                     msg
@@ -1628,10 +1626,10 @@ abstract class DestinationAcceptanceTest {
     @Throws(Exception::class)
     private fun runSync(
         config: JsonNode,
-        messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
-        catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        messages: List<AirbyteMessage>,
+        catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean
-    ): List<io.airbyte.protocol.models.v0.AirbyteMessage?> {
+    ): List<AirbyteMessage> {
         val destinationConfig =
             WorkerDestinationConfig()
                 .withConnectionId(UUID.randomUUID())
@@ -1664,11 +1662,10 @@ abstract class DestinationAcceptanceTest {
         )
         destination.notifyEndOfInput()
 
-        val destinationOutput: MutableList<io.airbyte.protocol.models.v0.AirbyteMessage?> =
-            ArrayList()
+        val destinationOutput: MutableList<AirbyteMessage> = ArrayList()
         while (!destination.isFinished()) {
-            destination.attemptRead().ifPresent { m: io.airbyte.protocol.models.AirbyteMessage ->
-                destinationOutput.add(convertProtocolObject(m, AirbyteMessage::class.java))
+            destination.attemptRead().ifPresent {
+                destinationOutput.add(convertProtocolObject(it, AirbyteMessage::class.java))
             }
         }
 
