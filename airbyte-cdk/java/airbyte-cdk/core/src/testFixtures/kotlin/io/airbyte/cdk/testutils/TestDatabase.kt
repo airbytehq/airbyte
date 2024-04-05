@@ -52,9 +52,10 @@ protected constructor(val container: C) : AutoCloseable {
 
     @Volatile private lateinit var dslContext: DSLContext
 
-    protected val databaseId: Int = nextDatabaseId.getAndIncrement()
+    @JvmField protected val databaseId: Int = nextDatabaseId.getAndIncrement()
+    @JvmField
     protected val containerId: Int =
-        containerUidToId!!.computeIfAbsent(container.containerId) { k: String? ->
+        containerUidToId!!.computeIfAbsent(container.containerId) { _: String? ->
             nextContainerId!!.getAndIncrement()
         }!!
     private val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
@@ -68,6 +69,7 @@ protected constructor(val container: C) : AutoCloseable {
         return retVal
     }
 
+    @Suppress("UNCHECKED_CAST")
     protected fun self(): T {
         return this as T
     }
@@ -77,19 +79,19 @@ protected constructor(val container: C) : AutoCloseable {
         if (this.isInitialized) {
             throw RuntimeException("TestDatabase instance is already initialized")
         }
-        connectionProperties!![key] = value
+        connectionProperties[key] = value
         return self()
     }
 
     /** Enqueues a SQL statement to be executed when this object is closed. */
     fun onClose(fmtSql: String, vararg fmtArgs: Any?): T {
-        cleanupSQL!!.add(String.format(fmtSql!!, *fmtArgs))
+        cleanupSQL.add(String.format(fmtSql, *fmtArgs))
         return self()
     }
 
     /** Executes a SQL statement after calling String.format on the arguments. */
     fun with(fmtSql: String, vararg fmtArgs: Any?): T {
-        execSQL(Stream.of(String.format(fmtSql!!, *fmtArgs)))
+        execSQL(Stream.of(String.format(fmtSql, *fmtArgs)))
         return self()
     }
 
@@ -98,8 +100,8 @@ protected constructor(val container: C) : AutoCloseable {
      * object. This typically entails at least a CREATE DATABASE and a CREATE USER. Also Initializes
      * the [DataSource] and [DSLContext] owned by this object.
      */
-    fun initialized(): T? {
-        inContainerBootstrapCmd()!!.forEach { cmds: Stream<String> -> this.execInContainer(cmds) }
+    open fun initialized(): T? {
+        inContainerBootstrapCmd().forEach { cmds: Stream<String> -> this.execInContainer(cmds) }
         this.dataSource =
             DataSourceFactory.create(
                 userName,
@@ -117,7 +119,7 @@ protected constructor(val container: C) : AutoCloseable {
     }
 
     val isInitialized: Boolean
-        get() = dslContext != null
+        get() = ::dslContext.isInitialized
 
     protected abstract fun inContainerBootstrapCmd(): Stream<Stream<String>>
 
@@ -137,7 +139,7 @@ protected constructor(val container: C) : AutoCloseable {
     val userName: String
         get() = withNamespace("user")
 
-    val password: String
+    open val password: String?
         get() = "password"
 
     fun getDataSource(): DataSource? {
@@ -154,11 +156,11 @@ protected constructor(val container: C) : AutoCloseable {
         return dslContext
     }
 
-    val jdbcUrl: String?
+    open val jdbcUrl: String?
         get() =
             String.format(
                 databaseDriver!!.urlFormatString,
-                container!!.host,
+                container.host,
                 container.firstMappedPort,
                 databaseName
             )
@@ -169,7 +171,7 @@ protected constructor(val container: C) : AutoCloseable {
     protected fun execSQL(sql: Stream<String>) {
         try {
             database!!.query<Any?> { ctx: DSLContext? ->
-                sql!!.forEach { statement: String? ->
+                sql.forEach { statement: String? ->
                     LOGGER!!.info("executing SQL statement {}", statement)
                     ctx!!.execute(statement)
                 }
@@ -194,7 +196,7 @@ protected constructor(val container: C) : AutoCloseable {
                     )
                 )
             )
-            val exec = container!!.execInContainer(*cmd.toTypedArray<String?>())
+            val exec = container.execInContainer(*cmd.toTypedArray<String?>())
             if (exec!!.exitCode == 0) {
                 LOGGER.info(
                     formatLogLine(
@@ -248,7 +250,7 @@ protected constructor(val container: C) : AutoCloseable {
     }
 
     override fun close() {
-        execSQL(cleanupSQL!!.stream())
+        execSQL(cleanupSQL.stream())
         execInContainer(inContainerUndoBootstrapCmd())
         LOGGER!!.info("closing database databaseId=$databaseId")
     }
@@ -259,46 +261,47 @@ protected constructor(val container: C) : AutoCloseable {
         protected val builder: ImmutableMap.Builder<Any, Any> = ImmutableMap.builder()
 
         fun build(): JsonNode {
-            return Jsons.jsonNode(builder!!.build())
+            return Jsons.jsonNode(builder.build())
         }
 
+        @Suppress("UNCHECKED_CAST")
         fun self(): B {
             return this as B
         }
 
         fun with(key: Any, value: Any): B {
-            builder!!.put(key, value)
+            builder.put(key, value)
             return self()
         }
 
         fun withDatabase(): B {
-            return this.with(JdbcUtils.DATABASE_KEY, testDatabase!!.databaseName)
+            return this.with(JdbcUtils.DATABASE_KEY, testDatabase.databaseName)
         }
 
         fun withCredentials(): B {
-            return this.with(JdbcUtils.USERNAME_KEY, testDatabase!!.userName)
-                .with(JdbcUtils.PASSWORD_KEY, testDatabase.password)
+            return this.with(JdbcUtils.USERNAME_KEY, testDatabase.userName)
+                .with(JdbcUtils.PASSWORD_KEY, testDatabase.password!!)
         }
 
         fun withResolvedHostAndPort(): B {
             return this.with(
                     JdbcUtils.HOST_KEY,
-                    HostPortResolver.resolveHost(testDatabase!!.container)
+                    HostPortResolver.resolveHost(testDatabase.container)
                 )
                 .with(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(testDatabase.container))
         }
 
         fun withHostAndPort(): B {
-            return this.with(JdbcUtils.HOST_KEY, testDatabase!!.container!!.host)
-                .with(JdbcUtils.PORT_KEY, testDatabase.container!!.firstMappedPort)
+            return this.with(JdbcUtils.HOST_KEY, testDatabase.container.host)
+                .with(JdbcUtils.PORT_KEY, testDatabase.container.firstMappedPort)
         }
 
-        fun withoutSsl(): B {
+        open fun withoutSsl(): B {
             return with(JdbcUtils.SSL_KEY, false)
         }
 
-        fun withSsl(sslMode: MutableMap<Any, Any>): B {
-            return with(JdbcUtils.SSL_KEY, true)!!.with(JdbcUtils.SSL_MODE_KEY, sslMode)
+        open fun withSsl(sslMode: MutableMap<Any?, Any?>): B {
+            return with(JdbcUtils.SSL_KEY, true).with(JdbcUtils.SSL_MODE_KEY, sslMode)
         }
 
         companion object {

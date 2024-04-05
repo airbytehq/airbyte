@@ -92,7 +92,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
         // If no event such as an empty table, generating schema history may take a few cycles
         // depending on the size of history.
         schemaHistory = schemaHistoryStorage.read();
-        schemaHistoryRead = Objects.nonNull(schemaHistory) && StringUtils.isNotBlank(schemaHistory.schema());
+        schemaHistoryRead = Objects.nonNull(schemaHistory) && StringUtils.isNotBlank(schemaHistory.getSchema());
 
         if (event != null || schemaHistoryRead) {
           publisher.close();
@@ -122,7 +122,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
 
     assert !offset.isEmpty();
     assert Objects.nonNull(schemaHistory);
-    assert Objects.nonNull(schemaHistory.schema());
+    assert Objects.nonNull(schemaHistory.getSchema());
 
     final JsonNode asJson = serialize(offset, schemaHistory);
     LOGGER.info("Initial Debezium state constructed. offset={}", Jsons.jsonNode(offset));
@@ -137,7 +137,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
   private static JsonNode serialize(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MssqlCdcStateConstants.MSSQL_CDC_OFFSET, offset);
-    state.put(MssqlCdcStateConstants.MSSQL_DB_HISTORY, dbHistory.schema());
+    state.put(MssqlCdcStateConstants.MSSQL_DB_HISTORY, dbHistory.getSchema());
     state.put(MssqlCdcStateConstants.IS_COMPRESSED, dbHistory.isCompressed());
 
     return Jsons.jsonNode(state);

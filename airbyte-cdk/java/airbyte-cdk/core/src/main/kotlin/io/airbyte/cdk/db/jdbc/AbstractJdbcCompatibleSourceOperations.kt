@@ -252,7 +252,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putBinary(
+    protected open fun putBinary(
         node: ObjectNode,
         columnName: String?,
         resultSet: ResultSet,
