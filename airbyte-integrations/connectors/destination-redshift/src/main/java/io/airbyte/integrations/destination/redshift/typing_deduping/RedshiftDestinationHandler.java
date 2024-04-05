@@ -46,7 +46,7 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler<RedshiftS
         // see https://github.com/airbytehq/airbyte/issues/33900
         modifiedStatements.add("SET enable_case_sensitive_identifier to TRUE;\n");
         modifiedStatements.addAll(transaction);
-        jdbcDatabase.executeWithinTransaction(modifiedStatements);
+        getJdbcDatabase().executeWithinTransaction(modifiedStatements);
       } catch (final SQLException e) {
         log.error("Sql {}-{} failed", queryId, transactionId, e);
         throw e;
