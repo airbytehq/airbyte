@@ -286,7 +286,9 @@ public class MySqlInitialReadUtil {
     // key load in progress.
     final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToInitialLoadStatus = new HashMap<>();
     if (airbyteStateMessage != null && airbyteStateMessage.getGlobal() != null && airbyteStateMessage.getGlobal().getStreamStates() != null) {
+      LOGGER.info("Trying to extract streams need initial pk sync. State message: {}", airbyteStateMessage);
       airbyteStateMessage.getGlobal().getStreamStates().forEach(stateMessage -> {
+        LOGGER.info("State message in this stream: {}", stateMessage);
         final JsonNode streamState = stateMessage.getStreamState();
         final StreamDescriptor streamDescriptor = stateMessage.getStreamDescriptor();
         if (streamState == null || streamDescriptor == null) {
