@@ -12,7 +12,6 @@ import static io.airbyte.integrations.destination.redshift.constants.RedshiftDes
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -30,7 +29,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator;
-import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
 import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig;
