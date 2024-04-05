@@ -34,6 +34,7 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.field
 import org.jooq.impl.DSL.quotedName
+import org.jooq.impl.DSL.table
 import org.jooq.impl.SQLDataType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -188,7 +189,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
         val destinationStatesFuture =
             CompletableFuture.supplyAsync {
                 try {
-                    return@supplyAsync allDestinationStates
+                    return@supplyAsync getAllDestinationStates()
                 } catch (e: SQLException) {
                     throw RuntimeException(e)
                 }
@@ -205,33 +206,32 @@ abstract class JdbcDestinationHandler<DestinationState>(
         return getResultsOrLogAndThrowFirst("Failed to retrieve initial state", states)
     }
 
-    @get:Throws(SQLException::class)
-    protected val allDestinationStates: Map<AirbyteStreamNameNamespacePair, DestinationState>
-        get() {
-
+    @Throws(SQLException::class)
+    protected fun getAllDestinationStates(): Map<AirbyteStreamNameNamespacePair, DestinationState> {
+        try {
             // Guarantee the table exists.
             jdbcDatabase.execute(
                 dslContext
                     .createTableIfNotExists(
-                        quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME)
+                        quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME),
                     )
                     .column(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME), SQLDataType.VARCHAR)
                     .column(
                         quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
-                        SQLDataType.VARCHAR
+                        SQLDataType.VARCHAR,
                     ) // Just use a string type, even if the destination has a json type.
                     // We're never going to query this column in a fancy way - all our processing
                     // can happen
                     // client-side.
                     .column(
                         quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                        SQLDataType.VARCHAR
+                        SQLDataType.VARCHAR,
                     ) // Add an updated_at field. We don't actually need it yet, but it can't hurt!
                     .column(
                         quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
-                        SQLDataType.TIMESTAMPWITHTIMEZONE
+                        SQLDataType.TIMESTAMPWITHTIMEZONE,
                     )
-                    .getSQL(ParamType.INLINED)
+                    .getSQL(ParamType.INLINED),
             )
 
             // Fetch all records from it. We _could_ filter down to just our streams... but meh.
@@ -288,7 +288,11 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
                     airbyteStreamNameNamespacePair to toDestinationState(stateNode)
                 }
+        } catch (e: Exception) {
+            LOGGER.warn("Failed to retrieve destination states", e)
+            return emptyMap()
         }
+    }
 
     private fun retrieveState(
         destinationStatesFuture:
@@ -346,11 +350,11 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
     private fun isAirbyteMetaColumnMatch(existingTable: TableDefinition): Boolean {
         return existingTable.columns.containsKey(JavaBaseConstants.COLUMN_NAME_AB_META) &&
-            toJdbcTypeName(Struct(java.util.LinkedHashMap<String, AirbyteType>())) ==
+            toJdbcTypeName(Struct(LinkedHashMap<String, AirbyteType>())) ==
                 existingTable.columns[JavaBaseConstants.COLUMN_NAME_AB_META]!!.type
     }
 
-    protected fun existingSchemaMatchesStreamConfig(
+    private fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
         existingTable: TableDefinition
     ): Boolean {
@@ -375,22 +379,20 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 .stream()
                 .filter { column: Map.Entry<String?, ColumnDefinition> ->
                     JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
-                        .noneMatch(
-                            Predicate<String> { airbyteColumnName: String ->
-                                airbyteColumnName == column.key
-                            }
-                        )
+                        .noneMatch { airbyteColumnName: String ->
+                            airbyteColumnName == column.key
+                        }
                 }
                 .collect(
                     { LinkedHashMap() },
                     {
-                        map: java.util.LinkedHashMap<String?, String>,
+                        map: LinkedHashMap<String?, String>,
                         column: Map.Entry<String?, ColumnDefinition> ->
                         map[column.key] = column.value.type
                     },
                     {
-                        obj: java.util.LinkedHashMap<String?, String>,
-                        m: java.util.LinkedHashMap<String?, String>? ->
+                        obj: LinkedHashMap<String?, String>,
+                        m: LinkedHashMap<String?, String>? ->
                         obj.putAll(m!!)
                     }
                 )
@@ -400,74 +402,78 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
     @Throws(Exception::class)
     override fun commitDestinationStates(destinationStates: Map<StreamId, DestinationState>) {
-        if (destinationStates.isEmpty()) {
-            return
-        }
+        try {
+            if (destinationStates.isEmpty()) {
+                return
+            }
 
-        // Delete all state records where the stream name+namespace match one of our states
-        val deleteStates =
-            dslContext
-                .deleteFrom(
-                    DSL.table(DSL.quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
-                )
-                .where(
-                    destinationStates.keys
-                        .stream()
-                        .map { streamId: StreamId ->
-                            DSL.field(DSL.quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME))
-                                .eq(streamId.originalName)
-                                .and(
-                                    DSL.field(
-                                            DSL.quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)
-                                        )
-                                        .eq(streamId.originalNamespace)
-                                )
-                        }
-                        .reduce(DSL.falseCondition()) { obj: Condition, arg2: Condition? ->
-                            obj.or(arg2)
-                        }
-                )
-                .getSQL(ParamType.INLINED)
-
-        // Reinsert all of our states
-        var insertStatesStep =
-            dslContext
-                .insertInto(
-                    DSL.table(DSL.quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
-                )
-                .columns(
-                    DSL.field(
-                        DSL.quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
-                        String::class.java
-                    ),
-                    DSL.field(
-                        DSL.quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
-                        String::class.java
-                    ),
-                    DSL.field(
-                        DSL.quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
-                        String::class.java
-                    ), // This field is a timestamptz, but it's easier to just insert a string
-                    // and assume the destination can cast it appropriately.
-                    // Destination-specific timestamp syntax is weird and annoying.
-                    DSL.field(
-                        DSL.quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
-                        String::class.java
+            // Delete all state records where the stream name+namespace match one of our states
+            val deleteStates =
+                dslContext
+                    .deleteFrom(
+                        table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
                     )
-                )
-        for ((streamId, value) in destinationStates) {
-            val stateJson = Jsons.serialize(value)
-            insertStatesStep =
-                insertStatesStep.values(
-                    streamId!!.originalName,
-                    streamId.originalNamespace,
-                    stateJson,
-                    OffsetDateTime.now().toString()
-                )
-        }
-        val insertStates = insertStatesStep.getSQL(ParamType.INLINED)
+                    .where(
+                        destinationStates.keys
+                            .stream()
+                            .map { streamId: StreamId ->
+                                field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME))
+                                    .eq(streamId.originalName)
+                                    .and(
+                                        field(
+                                            quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)
+                                        )
+                                            .eq(streamId.originalNamespace)
+                                    )
+                            }
+                            .reduce(DSL.falseCondition()) { obj: Condition, arg2: Condition? ->
+                                obj.or(arg2)
+                            }
+                    )
+                    .getSQL(ParamType.INLINED)
 
-        jdbcDatabase.executeWithinTransaction(java.util.List.of(deleteStates, insertStates))
+            // Reinsert all of our states
+            var insertStatesStep =
+                dslContext
+                    .insertInto(
+                        table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
+                    )
+                    .columns(
+                        field(
+                            quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
+                            String::class.java
+                        ),
+                        field(
+                            quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
+                            String::class.java
+                        ),
+                        field(
+                            quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE),
+                            String::class.java
+                        ), // This field is a timestamptz, but it's easier to just insert a string
+                        // and assume the destination can cast it appropriately.
+                        // Destination-specific timestamp syntax is weird and annoying.
+                        field(
+                            quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT),
+                            String::class.java
+                        )
+                    )
+            for ((streamId, value) in destinationStates) {
+                val stateJson = Jsons.serialize(value)
+                insertStatesStep =
+                    insertStatesStep.values(
+                        streamId.originalName,
+                        streamId.originalNamespace,
+                        stateJson,
+                        OffsetDateTime.now().toString()
+                    )
+            }
+            val insertStates = insertStatesStep.getSQL(ParamType.INLINED)
+
+            jdbcDatabase.executeWithinTransaction(listOf(deleteStates, insertStates))
+        } catch (e: Exception) {
+            LOGGER.warn("Failed to commit destination states", e)
+        }
     }
 
     /**
@@ -501,7 +507,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     // TODO: normalize namespace and finalName strings to quoted-lowercase (as
                     // needed. Snowflake
                     // requires uppercase)
-                    val columnDefinitions = java.util.LinkedHashMap<String?, ColumnDefinition>()
+                    val columnDefinitions = LinkedHashMap<String?, ColumnDefinition>()
                     LOGGER.info(
                         "Retrieving existing columns for {}.{}.{}",
                         databaseName,
