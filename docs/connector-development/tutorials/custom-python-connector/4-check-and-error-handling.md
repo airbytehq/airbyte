@@ -1,7 +1,11 @@
 # Check and error handling
 In this section, we'll implement the check operation, and implement error handling to surface the user-friendly messages when failing due to authentication errors.
 
-Let's first implement the check operation. Use the following command to run the check operation:
+Let's first implement the check operation.
+
+This operation verifies that the input configuration supplied by the user can be used to connect to the underlying data source.
+
+Use the following command to run the check operation:
 ```
 poetry run source-survey-monkey-demo check --config secrets/config.json
 ```
@@ -31,7 +35,9 @@ We'll do this by trying to read a single record from the stream, and fail the co
             return False, f"Unable to connect to the API with the provided credentials - {str(e)}"
 ```
 
-Then we'll disable the availability strategy. Availability strategies are a legacy concept used to filter out streams that might not be available given a user's permissions.
+Next, we'll improve the error handling.
+
+First, we'll disable the availability strategy. Availability strategies are a legacy concept used to filter out streams that might not be available given a user's permissions.
 ```
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
@@ -39,7 +45,7 @@ Then we'll disable the availability strategy. Availability strategies are a lega
 
 ```
 
-Instead of using an availability strategy, we'll instead raise a config error if we're unable to authenticate
+Instead of using an availability strategy, we'll raise a config error if we're unable to authenticate:
 ```python
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()

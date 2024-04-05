@@ -82,7 +82,8 @@ _logger = logging.getLogger("airbyte")
 ```
 
 ---
-**NOTE**
+:::info
+
 The substream isn't entirely concurrent because its stream_slices definition reads records from the parent stream concurrently:
 ```python
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
@@ -93,7 +94,7 @@ The substream isn't entirely concurrent because its stream_slices definition rea
 
 This can be solved by implementing the connector using constructs from the concurrent CDK directly instead of wrapping synchronous streams in an adapter. This is left outside of the scope of this tutorial because no production connectors currently implement this.
 
----
+:::
 
 We'll now enable throttling to avoid going over the API rate limit. You can do this by configuring a moving window rate limit policy for the `SurveyMonkeyBaseStream` class:
 ```

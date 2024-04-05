@@ -1,5 +1,8 @@
 # Discover
 
+The discover method of the Airbyte Protocol returns an AirbyteCatalog: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream (full refresh or incremental). 
+See the [beginner's guide to the catalog](../../../understanding-airbyte/beginners-guide-to-catalog.md) for more information.
+
 Run a discover command:
 ```bash
 poetry run source-survey-monkey-demo discover --config secrets/config.json
@@ -80,9 +83,12 @@ The easiest way to extract the schema from a HTTP response is to use the Connect
 }
 ```
 
-**NOTE**
+:::info
+
 If the connector you're building has a dynamic schema, you'll need to overwrite the `AbstractSource::streams`.
+
+:::
 
 ---
 
-The three connector operations work as expected. In the [next section](6-incremental-reads.md), we'll add the connector to our local Airbyte instance.
+The three connector operations work as expected. You can now [upload your connector to your Airbyte instance](https://docs.airbyte.com/operator-guides/using-custom-connectors).In the [next section](6-incremental-reads.md), we'll add the connector to our local Airbyte instance.

@@ -214,11 +214,11 @@ class SourceSurveyMonkeyDemo(AbstractSource):
         return [SurveyMonkeyBaseStream(name=<TODO>, path=<TODO>, primary_key=<TODO>, data_field=<TODO>, authenticator=auth)]
 ```
 
----
-**NOTE**
+
+:::info
 This template restructures the code so its easier to extend. Specifically, it provides a base class that can be extended with composition instead of inheritance, which is generally less error prone.
 
----
+:::
 
 Then set the URL base
 ```python
@@ -242,7 +242,7 @@ and configure the authenticator, the name, the path, and the primary key
 ```
 
 
-We'll now update the connection specification. We'll add the access_token as a required property, making sure to flag it as an `airbyte_secret` to ensure the value isn't accidentally leaked, and we'll specify its `order` should be 0 so it shows up first in the Source setup page.
+We'll now update the [connector specification](../../../understanding-airbyte/airbyte-protocol.md#actor-specification). We'll add the access_token as a required property, making sure to flag it as an `airbyte_secret` to ensure the value isn't accidentally leaked, and we'll specify its `order` should be 0 so it shows up first in the Source setup page.
 ```yaml
 documentationUrl: https://docsurl.com
 connectionSpecification:
@@ -302,7 +302,9 @@ poetry run source-survey-monkey-demo read --config secrets/config.json --catalog
 ```
 
 The connector should've successfully read records.
-> {"type": "LOG", "log": {"level": "INFO", "message": "Read 14 records from surveys stream"}}
+```json
+{"type": "LOG", "log": {"level": "INFO", "message": "Read 14 records from surveys stream"}}
+```
 
 You can also pass in the `--debug` flag to see the real requests and responses sent and received. It's also recommended to use these real requests as templates for the integration tests as they can be more accurate the examples from API documentation.
 
