@@ -10,7 +10,7 @@ import freezegun
 import pytest
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, CursorValueType
+from airbyte_cdk.sources.streams.concurrent.cursor import CursorValueType, ConcurrentCursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
@@ -36,7 +36,7 @@ def _partition(_slice: Optional[Mapping[str, Any]]) -> Partition:
     return partition
 
 
-def _record(cursor_value: Comparable) -> Record:
+def _record(cursor_value: CursorValueType) -> Record:
     return Record(data={_A_CURSOR_FIELD_KEY: cursor_value}, stream_name=_A_STREAM_NAME)
 
 

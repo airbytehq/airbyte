@@ -126,7 +126,8 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
 
     config = {}
     catalog = _create_configured_catalog(source._streams)
-    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, None)  # FIXME this is currently unused in this test
+    # FIXME this is currently unused in this test
+    # messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, None)
     messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, None)
 
     expected_messages = [
@@ -280,7 +281,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
     source, concurrent_source = _init_sources([stream_slice_to_partition], state, logger)
     config = {}
     catalog = _create_configured_catalog(source._streams)
-    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, AirbyteTracedException)  # FIXME this is currently unused in this test
+    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, AirbyteTracedException)
     messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, AirbyteTracedException)
 
     _assert_status_messages(messages_from_abstract_source, messages_from_concurrent_source)

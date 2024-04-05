@@ -3,7 +3,7 @@
 #
 import functools
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generic, Iterable, List, Mapping, MutableMapping, Optional, Protocol, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Protocol, Tuple
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
