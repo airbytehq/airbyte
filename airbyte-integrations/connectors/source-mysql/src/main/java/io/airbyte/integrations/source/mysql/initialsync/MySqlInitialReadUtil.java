@@ -102,6 +102,7 @@ public class MySqlInitialReadUtil {
 
     final boolean savedOffsetStillPresentOnServer =
         savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
+    LOGGER.info("Saved offset still present on server: {}", savedOffsetStillPresentOnServer);
 
     if (!savedOffsetStillPresentOnServer) {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
@@ -185,6 +186,7 @@ public class MySqlInitialReadUtil {
     final boolean savedOffsetStillPresentOnServer =
         savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
 
+
     if (!savedOffsetStillPresentOnServer) {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
       if (!sourceConfig.get("replication_method").has(INVALID_CDC_CURSOR_POSITION_PROPERTY) || sourceConfig.get("replication_method").get(
@@ -267,6 +269,7 @@ public class MySqlInitialReadUtil {
                                                                       final ConfiguredAirbyteCatalog fullCatalog,
                                                                       final SyncMode allowedSyncMode,
                                                                       final boolean savedOffsetStillPresentOnServer) {
+
     if (!savedOffsetStillPresentOnServer) {
       return new InitialLoadStreams(
           fullCatalog.getStreams()
@@ -307,7 +310,7 @@ public class MySqlInitialReadUtil {
         .filter(stream -> streamsStillinPkSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .forEach(streamsForPkSync::add);
-    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced());
+    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced(), allowedSyncMode);
     streamsForPkSync.addAll(newlyAddedStreams);
 
     return new InitialLoadStreams(streamsForPkSync, pairToInitialLoadStatus);
@@ -360,7 +363,7 @@ public class MySqlInitialReadUtil {
         .forEach(streamsForPkSync::add);
 
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog,
-        Collections.unmodifiableSet(alreadySeenStreamPairs));
+        Collections.unmodifiableSet(alreadySeenStreamPairs), SyncMode.INCREMENTAL);
     streamsForPkSync.addAll(newlyAddedStreams);
     return new InitialLoadStreams(streamsForPkSync.stream().filter(MySqlInitialReadUtil::streamHasPrimaryKey).collect(Collectors.toList()),
         pairToInitialLoadStatus);
@@ -371,11 +374,12 @@ public class MySqlInitialReadUtil {
   }
 
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
-                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
+                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams,
+      final SyncMode syncMode) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
     return catalog.getStreams().stream()
-        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(c -> c.getSyncMode() == syncMode)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
