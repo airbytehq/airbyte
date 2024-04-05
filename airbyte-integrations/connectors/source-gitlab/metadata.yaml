@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-gitlab
   icon: gitlab.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Gitlab
   remoteRegistries:
     pypi:

@@ -17,7 +17,8 @@ function getFilenamesInDir(prefix, dir, excludes) {
         !(
           fileName.endsWith(".inapp.md") ||
           fileName.endsWith("-migrations.md") ||
-          fileName.endsWith(".js")
+          fileName.endsWith(".js") ||
+          fileName === "low-code.md"
         )
     )
     .map((fileName) => fileName.replace(".md", ""))
