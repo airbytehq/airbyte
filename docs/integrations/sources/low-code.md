@@ -9,4 +9,4 @@ The changelog below is automatically updated by the `bump_version` command as pa
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------|
-| 0.78.6  | 2024-04-02 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Update CDK dependency to version 0.78.6 (before new publishing flow) |
+| 0.78.9  | 2024-04-04 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Update CDK dependency to version 0.78.9 (before new publishing flow) |
