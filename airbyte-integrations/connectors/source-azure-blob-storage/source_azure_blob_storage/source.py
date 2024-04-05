@@ -52,7 +52,7 @@ class SourceAzureBlobStorage(FileBasedSource):
                     complete_oauth_server_input_specification={
                         "type": "object",
                         "additionalProperties": False,
-                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}, "tenant_id": {"type": "string"}},
                     },
                     complete_oauth_server_output_specification={
                         "type": "object",
@@ -60,12 +60,8 @@ class SourceAzureBlobStorage(FileBasedSource):
                         "properties": {
                             "client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]},
                             "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
+                            "tenant_id": {"type": "string", "path_in_connector_config": ["credentials", "tenant_id"]},
                         },
-                    },
-                    oauth_user_input_from_connector_config_specification={
-                        "type": "object",
-                        "additionalProperties": False,
-                        "properties": {"tenant_id": {"type": "string", "path_in_connector_config": ["credentials", "tenant_id"]}},
                     },
                 ),
             ),
