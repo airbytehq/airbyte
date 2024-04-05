@@ -8,8 +8,6 @@ import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.util.function.Consumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * POJO abstraction representing one discrete buffer read. This allows ergonomics dequeues by
@@ -39,7 +37,7 @@ class MemoryAwareMessageBatch(
      */
     fun flushStates(
         stateIdToCount: Map<Long?, Long?>,
-        outputRecordCollector: Consumer<AirbyteMessage?>,
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ) {
         stateIdToCount.forEach { (stateId: Long?, count: Long?) ->
             stateManager.decrement(
@@ -48,9 +46,5 @@ class MemoryAwareMessageBatch(
             )
         }
         stateManager.flushStates(outputRecordCollector)
-    }
-
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(MemoryAwareMessageBatch::class.java)
     }
 }

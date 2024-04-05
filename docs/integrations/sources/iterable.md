@@ -80,6 +80,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
 | 0.3.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                                                                   |
 | 0.2.2   | 2024-02-12 | [35150](https://github.com/airbytehq/airbyte/pull/35150) | Manage dependencies with Poetry.                                                                                                                                           |
 | 0.2.1   | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234)   | prepare for airbyte-lib                                                                                                                                                    |

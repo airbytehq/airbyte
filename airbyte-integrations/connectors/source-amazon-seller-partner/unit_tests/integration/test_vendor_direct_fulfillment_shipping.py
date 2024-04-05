@@ -198,9 +198,10 @@ class TestIncremental:
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
         assert len(output.state_messages) == 1
 
-        cursor_value_from_state_message = output.most_recent_state.get(_STREAM_NAME, {}).get(_CURSOR_FIELD)
         cursor_value_from_latest_record = output.records[-1].record.data.get(_CURSOR_FIELD)
-        assert cursor_value_from_state_message == cursor_value_from_latest_record
+
+        most_recent_state = output.most_recent_state.stream_state
+        assert most_recent_state == {_CURSOR_FIELD: cursor_value_from_latest_record}
 
     @HttpMocker()
     def test_given_state_when_read_then_state_value_is_created_after_query_param(self, http_mocker: HttpMocker) -> None:
@@ -232,4 +233,4 @@ class TestIncremental:
             config_=config().with_start_date(_START_DATE).with_end_date(_END_DATE),
             state=StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_value}).build(),
         )
-        assert output.most_recent_state == {_STREAM_NAME: {_CURSOR_FIELD: _END_DATE.strftime(TIME_FORMAT)}}
+        assert output.most_recent_state.stream_state == {_CURSOR_FIELD: _END_DATE.strftime(TIME_FORMAT)}

@@ -10,13 +10,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 1.6.5
+  dockerImageTag: 1.7.1
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   githubIssueLabel: source-github
   icon: github.svg
   license: MIT
-  maxSecondsBetweenMessages: 5400
+  maxSecondsBetweenMessages: 3600
   name: GitHub
   remoteRegistries:
     pypi:
