@@ -26,8 +26,8 @@ internal class CatalogParserTest {
     fun setup() {
         sqlGenerator = Mockito.mock(SqlGenerator::class.java)
         // noop quoting logic
-        Mockito.`when`(sqlGenerator.buildColumnId(any(), any())).thenAnswer { invocation: InvocationOnMock
-            ->
+        Mockito.`when`(sqlGenerator.buildColumnId(any(), any())).thenAnswer {
+            invocation: InvocationOnMock ->
             val fieldName = invocation.getArgument<String>(0)
             val suffix = invocation.getArgument<String>(1)
             ColumnId(fieldName + suffix, fieldName + suffix, fieldName + suffix)
@@ -79,7 +79,12 @@ internal class CatalogParserTest {
         assertAll(
             { Assertions.assertEquals("a_abab_foofoo", parsedCatalog.streams.get(0).id.rawName) },
             { Assertions.assertEquals("foofoo", parsedCatalog.streams.get(0).id.finalName) },
-            { Assertions.assertEquals("a_abab_foofoo_3fd", parsedCatalog.streams.get(1).id.rawName) },
+            {
+                Assertions.assertEquals(
+                    "a_abab_foofoo_3fd",
+                    parsedCatalog.streams.get(1).id.rawName
+                )
+            },
             { Assertions.assertEquals("foofoo_3fd", parsedCatalog.streams.get(1).id.finalName) }
         )
     }
@@ -128,8 +133,8 @@ internal class CatalogParserTest {
      */
     @Test
     fun truncatingColumnNameCollision() {
-        whenever(sqlGenerator.buildColumnId(any(), any())).thenAnswer {
-            invocation: InvocationOnMock ->
+        whenever(sqlGenerator.buildColumnId(any(), any())).thenAnswer { invocation: InvocationOnMock
+            ->
             val originalName = invocation.getArgument<String>(0) + invocation.getArgument<String>(1)
             // truncate to 10 characters
             val truncatedName = originalName.substring(0, 10.coerceAtMost(originalName.length))

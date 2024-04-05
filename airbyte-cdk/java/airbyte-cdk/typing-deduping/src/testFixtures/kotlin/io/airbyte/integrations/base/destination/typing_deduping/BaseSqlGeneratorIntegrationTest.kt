@@ -1653,7 +1653,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Test
     fun testLongIdentifierHandling() {
-        val randomSuffix = Strings.addRandomSuffix("", "_", 5);
+        val randomSuffix = Strings.addRandomSuffix("", "_", 5)
         val rawNamespace = "a".repeat(512) + randomSuffix
         val finalNamespace = "b".repeat(512) + randomSuffix
         val streamName = "c".repeat(512) + randomSuffix
@@ -1662,35 +1662,44 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val columnName2 = baseColumnName + "2"
 
         val catalogParser = CatalogParser(generator!!, rawNamespace)
-        val stream = catalogParser.parseCatalog(
-            ConfiguredAirbyteCatalog().withStreams(
-                listOf(
-                    ConfiguredAirbyteStream()
-                        .withStream(
-                            AirbyteStream()
-                                .withName(streamName)
-                                .withNamespace(finalNamespace)
-                                .withJsonSchema(
-                                    Jsons.jsonNode(
-                                        mapOf(
-                                            "type" to "object",
-                                            "properties" to mapOf(
-                                                columnName1 to mapOf("type" to "string"),
-                                                columnName2 to mapOf("type" to "string")
+        val stream =
+            catalogParser
+                .parseCatalog(
+                    ConfiguredAirbyteCatalog()
+                        .withStreams(
+                            listOf(
+                                ConfiguredAirbyteStream()
+                                    .withStream(
+                                        AirbyteStream()
+                                            .withName(streamName)
+                                            .withNamespace(finalNamespace)
+                                            .withJsonSchema(
+                                                Jsons.jsonNode(
+                                                    mapOf(
+                                                        "type" to "object",
+                                                        "properties" to
+                                                            mapOf(
+                                                                columnName1 to
+                                                                    mapOf("type" to "string"),
+                                                                columnName2 to
+                                                                    mapOf("type" to "string")
+                                                            )
+                                                    )
+                                                )
                                             )
-                                        )
                                     )
-                                )
+                                    .withSyncMode(SyncMode.INCREMENTAL)
+                                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            )
                         )
-                        .withSyncMode(SyncMode.INCREMENTAL)
-                        .withDestinationSyncMode(DestinationSyncMode.APPEND)
                 )
-            )
-        ).streams[0]
+                .streams[0]
 
         val streamId = stream.id
-        val columnId1: ColumnId = stream.columns?.filter { columnName1 == it.key.originalName }?.keys?.first()!!
-        val columnId2: ColumnId = stream.columns?.filter { columnName2 == it.key.originalName }?.keys?.first()!!
+        val columnId1: ColumnId =
+            stream.columns?.filter { columnName1 == it.key.originalName }?.keys?.first()!!
+        val columnId2: ColumnId =
+            stream.columns?.filter { columnName2 == it.key.originalName }?.keys?.first()!!
         LOGGER.info("Trying to use column names {} and {}", columnId1.name, columnId2.name)
 
         try {
@@ -1704,10 +1713,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                         mapOf(
                             "_airbyte_raw_id" to "ad3e8c84-e02e-4df4-b146-3d5a007b21b4",
                             "_airbyte_extracted_at" to "2023-01-01T00:00:00Z",
-                            "_airbyte_data" to mapOf(
-                                columnName1 to "foo",
-                                columnName2 to "bar"
-                            )
+                            "_airbyte_data" to mapOf(columnName1 to "foo", columnName2 to "bar")
                         )
                     )
                 )
@@ -1724,7 +1730,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             assertAll(
                 { Assertions.assertEquals(1, rawRecords.size) },
                 { Assertions.assertEquals(1, finalRecords.size) },
-                // Assume that if we can find the values in the final table, that everything looks right :shrug:
+                // Assume that if we can find the values in the final table, that everything looks
+                // right :shrug:
                 { Assertions.assertEquals("foo", finalRecords[0].get(columnId1.name).asText()) },
                 { Assertions.assertEquals("bar", finalRecords[0].get(columnId2.name).asText()) }
             )

@@ -49,17 +49,20 @@ constructor(
                 // ... this logic is ported from legacy normalization, and maybe should change?
                 // We're taking a hash of the quoted namespace and the unquoted stream name
                 val hash =
-                    DigestUtils.sha1Hex("${originalStreamConfig.id.finalNamespace}&airbyte&$originalName")
+                    DigestUtils.sha1Hex(
+                            "${originalStreamConfig.id.finalNamespace}&airbyte&$originalName"
+                        )
                         .substring(0, 3)
                 val newName = "${originalName}_$hash"
-                actualStreamConfig = StreamConfig(
-                    sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
-                    originalStreamConfig.syncMode,
-                    originalStreamConfig.destinationSyncMode,
-                    originalStreamConfig.primaryKey,
-                    originalStreamConfig.cursor,
-                    originalStreamConfig.columns,
-                )
+                actualStreamConfig =
+                    StreamConfig(
+                        sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
+                        originalStreamConfig.syncMode,
+                        originalStreamConfig.destinationSyncMode,
+                        originalStreamConfig.primaryKey,
+                        originalStreamConfig.cursor,
+                        originalStreamConfig.columns,
+                    )
             } else {
                 actualStreamConfig = originalStreamConfig
             }
@@ -101,11 +104,12 @@ constructor(
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
         val schema: AirbyteType = AirbyteType.Companion.fromJsonSchema(stream.stream.jsonSchema)
-        val airbyteColumns = when (schema) {
-            is Struct -> schema.properties
-            is Union -> schema.asColumns()
-            else -> throw IllegalArgumentException("Top-level schema must be an object")
-        }
+        val airbyteColumns =
+            when (schema) {
+                is Struct -> schema.properties
+                is Union -> schema.asColumns()
+                else -> throw IllegalArgumentException("Top-level schema must be an object")
+            }
 
         require(!stream.primaryKey.stream().anyMatch { key: List<String?> -> key.size > 1 }) {
             "Only top-level primary keys are supported"
@@ -117,11 +121,12 @@ constructor(
                 .toList()
 
         require(stream.cursorField.size <= 1) { "Only top-level cursors are supported" }
-        val cursor: Optional<ColumnId> = if (stream.cursorField.isNotEmpty()) {
-            Optional.of(sqlGenerator.buildColumnId(stream.cursorField[0]))
-        } else {
-            Optional.empty()
-        }
+        val cursor: Optional<ColumnId> =
+            if (stream.cursorField.isNotEmpty()) {
+                Optional.of(sqlGenerator.buildColumnId(stream.cursorField[0]))
+            } else {
+                Optional.empty()
+            }
 
         val columns = resolveColumnCollisions(airbyteColumns, stream)
 
@@ -136,9 +141,9 @@ constructor(
     }
 
     /**
-     * This code is really bad and I'm not convinced we need to preserve this behavior.
-     * As with the tablename collisions thing above - we're trying to preserve legacy
-     * normalization's naming conventions here.
+     * This code is really bad and I'm not convinced we need to preserve this behavior. As with the
+     * tablename collisions thing above - we're trying to preserve legacy normalization's naming
+     * conventions here.
      */
     private fun resolveColumnCollisions(
         airbyteColumns: LinkedHashMap<String, AirbyteType>,
@@ -148,8 +153,11 @@ constructor(
         for ((key, value) in airbyteColumns) {
             val originalColumnId = sqlGenerator.buildColumnId(key)
             var columnId: ColumnId
-            if (columns.keys.stream()
-                    .noneMatch { c: ColumnId -> c.canonicalName == originalColumnId.canonicalName }) {
+            if (
+                columns.keys.stream().noneMatch { c: ColumnId ->
+                    c.canonicalName == originalColumnId.canonicalName
+                }
+            ) {
                 // None of the existing columns have the same name. We can add this new column
                 // as-is.
                 columnId = originalColumnId
@@ -173,13 +181,21 @@ constructor(
                         // appending numbers.
                         // Assume that we're being truncated, and that the column ID's name is the
                         // maximum length.
-                        columnId = superResolveColumnCollisions(originalColumnId, columns, originalColumnId.name.length)
+                        columnId =
+                            superResolveColumnCollisions(
+                                originalColumnId,
+                                columns,
+                                originalColumnId.name.length
+                            )
                         break
                     }
 
                     val canonicalName = columnId.canonicalName
-                    if (columns.keys.stream()
-                            .noneMatch { c: ColumnId -> c.canonicalName == canonicalName }) {
+                    if (
+                        columns.keys.stream().noneMatch { c: ColumnId ->
+                            c.canonicalName == canonicalName
+                        }
+                    ) {
                         break
                     } else {
                         i++
@@ -187,11 +203,12 @@ constructor(
                 }
                 // But we need to keep the original name so that we can still fetch it out of the
                 // JSON records.
-                columnId = ColumnId(
-                    columnId.name,
-                    originalColumnId.originalName,
-                    columnId.canonicalName,
-                )
+                columnId =
+                    ColumnId(
+                        columnId.name,
+                        originalColumnId.originalName,
+                        columnId.canonicalName,
+                    )
             }
 
             columns[columnId] = value
@@ -200,9 +217,8 @@ constructor(
     }
 
     /**
-     * Generate a name of the format `<prefix><length><suffix>`.
-     * E.g. for affixLength=3: "veryLongName" -> "ver6ame"
-     * This is based on the "i18n"-ish naming convention.
+     * Generate a name of the format `<prefix><length><suffix>`. E.g. for affixLength=3:
+     * "veryLongName" -> "ver6ame" This is based on the "i18n"-ish naming convention.
      *
      * @param columnId The column that we're trying to add
      * @param columns The columns that we've already added
@@ -223,17 +239,28 @@ constructor(
         // just give up. That means the destination is trying to restrict us to a
         // 6-character column name, which is just silly.
         if (affixLength <= 0) {
-            throw IllegalArgumentException("Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing.")
+            throw IllegalArgumentException(
+                "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing."
+            )
         }
         val prefix = originalColumnName.substring(0, affixLength)
-        val suffix = originalColumnName.substring(originalColumnName.length - affixLength, originalColumnName.length)
+        val suffix =
+            originalColumnName.substring(
+                originalColumnName.length - affixLength,
+                originalColumnName.length
+            )
         val length = originalColumnName.length - 2 * affixLength
         newColumnId = sqlGenerator.buildColumnId("$prefix$length$suffix")
         // if there's _still_ a collision after this, just give up.
         // we could try to be more clever, but this is already a pretty rare case.
-        if (columns.keys.stream()
-                .anyMatch { c: ColumnId -> c.canonicalName == newColumnId.canonicalName }) {
-            throw IllegalArgumentException("Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing.")
+        if (
+            columns.keys.stream().anyMatch { c: ColumnId ->
+                c.canonicalName == newColumnId.canonicalName
+            }
+        ) {
+            throw IllegalArgumentException(
+                "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing."
+            )
         }
         return newColumnId
     }
