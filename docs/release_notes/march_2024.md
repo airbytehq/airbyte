@@ -9,6 +9,8 @@ Airbyte now supports **OpenID Connect (OIDC) SSO** for Airbyte Enterprise and Ai
 
 Airbyte certified our [Microsoft SQL Server source](/integrations/sources/mssql) to support terabyte-sized tables, expanded datetime data types, and reliability improvements.
 
+Airbyte migrated our [Redshift destination](https://github.com/airbytehq/airbyte/pull/36255) to the [Destinations V2](./upgrading_to_destinations_v2) framework. This enables you to map tables one-to-one with your source, experience better error handling (particularly with large records), and deliver data incrementally. 
+
 
 ## Platform Releases
 
