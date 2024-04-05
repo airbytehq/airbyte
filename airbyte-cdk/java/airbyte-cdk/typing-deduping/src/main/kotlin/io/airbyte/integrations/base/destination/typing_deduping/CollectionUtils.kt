@@ -30,10 +30,7 @@ object CollectionUtils {
      * @param searchTerms the keys you're looking for
      * @return whether all searchTerms are in the searchCollection
      */
-    fun containsAllIgnoreCase(
-        searchCollection: Collection<String>,
-        searchTerms: Collection<String>
-    ): Boolean {
+    fun containsAllIgnoreCase(searchCollection: Collection<String>, searchTerms: Collection<String>): Boolean {
         require(!searchTerms.isEmpty()) {
             // There isn't a good behavior for an empty collection. Without this check, an empty
             // collection

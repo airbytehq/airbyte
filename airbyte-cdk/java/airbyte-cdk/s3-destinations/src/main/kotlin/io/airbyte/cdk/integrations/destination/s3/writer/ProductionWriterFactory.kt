@@ -23,7 +23,7 @@ class ProductionWriterFactory : S3WriterFactory {
         config: S3DestinationConfig,
         s3Client: AmazonS3,
         configuredStream: ConfiguredAirbyteStream,
-        uploadTimestamp: Timestamp
+        uploadTimestamp: Timestamp,
     ): DestinationFileWriter? {
         val format = config.formatConfig!!.format
 
@@ -44,7 +44,7 @@ class ProductionWriterFactory : S3WriterFactory {
                     configuredStream,
                     uploadTimestamp,
                     avroSchema,
-                    AvroConstants.JSON_CONVERTER
+                    AvroConstants.JSON_CONVERTER,
                 )
             } else {
                 S3ParquetWriter(
@@ -53,7 +53,7 @@ class ProductionWriterFactory : S3WriterFactory {
                     configuredStream,
                     uploadTimestamp,
                     avroSchema,
-                    AvroConstants.JSON_CONVERTER
+                    AvroConstants.JSON_CONVERTER,
                 )
             }
         }

@@ -35,7 +35,7 @@ class JsonToAvroConverterTest {
                 """
                                               {"${'$'}ref": "WellKnownTypes.json#/definitions/Number"}"
                                               
-                                              """.trimIndent(),
+                """.trimIndent(),
             )
 
         assertEquals(
@@ -51,7 +51,7 @@ class JsonToAvroConverterTest {
                 """
                                               {"${'$'}ref": "WellKnownTypes.json#/definitions/String"}"
                                               
-                                              """.trimIndent(),
+                """.trimIndent(),
             )
         assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input1).isEmpty)
     }
@@ -60,7 +60,7 @@ class JsonToAvroConverterTest {
     internal fun testWithCombinedRestriction() {
         val input2 =
             Jsons.deserialize(
-                "{ \"anyOf\": [{ \"type\": \"string\" }, { \"type\": \"integer\" }] }"
+                "{ \"anyOf\": [{ \"type\": \"string\" }, { \"type\": \"integer\" }] }",
             )
         assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input2).isPresent)
     }
@@ -72,8 +72,8 @@ class JsonToAvroConverterTest {
             val testCases =
                 Jsons.deserialize(
                     MoreResources.readResource(
-                        "parquet/json_schema_converter/type_conversion_test_cases_v0.json"
-                    )
+                        "parquet/json_schema_converter/type_conversion_test_cases_v0.json",
+                    ),
                 )
             return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
                 Arguments.of(
@@ -91,8 +91,8 @@ class JsonToAvroConverterTest {
             val testCases =
                 Jsons.deserialize(
                     MoreResources.readResource(
-                        "parquet/json_schema_converter/type_conversion_test_cases_v1.json"
-                    )
+                        "parquet/json_schema_converter/type_conversion_test_cases_v1.json",
+                    ),
                 )
             return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
                 Arguments.of(
@@ -109,21 +109,17 @@ class JsonToAvroConverterTest {
     @ArgumentsSource(
         GetFieldTypeTestCaseProviderV0::class,
     )
-    internal fun testFieldTypeConversionV0(
-        fieldName: String,
-        jsonFieldSchema: JsonNode,
-        avroFieldType: JsonNode
-    ) {
+    internal fun testFieldTypeConversionV0(fieldName: String, jsonFieldSchema: JsonNode, avroFieldType: JsonNode) {
         assertEquals(
             avroFieldType,
             Jsons.deserialize(
                 SCHEMA_CONVERTER.parseJsonField(
-                        fieldName,
-                        fieldNamespace = null,
-                        jsonFieldSchema,
-                        appendExtraProps = true,
-                        addStringToLogicalTypes = true,
-                    )
+                    fieldName,
+                    fieldNamespace = null,
+                    jsonFieldSchema,
+                    appendExtraProps = true,
+                    addStringToLogicalTypes = true,
+                )
                     .toString(),
             ),
             "Test for $fieldName failed",
@@ -134,21 +130,17 @@ class JsonToAvroConverterTest {
     @ArgumentsSource(
         GetFieldTypeTestCaseProviderV1::class,
     )
-    internal fun testFieldTypeConversionV1(
-        fieldName: String,
-        jsonFieldSchema: JsonNode,
-        avroFieldType: JsonNode?
-    ) {
+    internal fun testFieldTypeConversionV1(fieldName: String, jsonFieldSchema: JsonNode, avroFieldType: JsonNode?) {
         assertEquals(
             avroFieldType,
             Jsons.deserialize(
                 SCHEMA_CONVERTER.parseJsonField(
-                        fieldName = fieldName,
-                        fieldNamespace = null,
-                        fieldDefinition = jsonFieldSchema,
-                        appendExtraProps = true,
-                        addStringToLogicalTypes = true,
-                    )
+                    fieldName = fieldName,
+                    fieldNamespace = null,
+                    fieldDefinition = jsonFieldSchema,
+                    appendExtraProps = true,
+                    addStringToLogicalTypes = true,
+                )
                     .toString(),
             ),
             "Test for $fieldName failed",
@@ -162,8 +154,8 @@ class JsonToAvroConverterTest {
             val testCases =
                 Jsons.deserialize(
                     MoreResources.readResource(
-                        "parquet/json_schema_converter/json_conversion_test_cases_v0.json"
-                    )
+                        "parquet/json_schema_converter/json_conversion_test_cases_v0.json",
+                    ),
                 )
             return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
                 Arguments.of(
@@ -185,8 +177,8 @@ class JsonToAvroConverterTest {
             val testCases =
                 Jsons.deserialize(
                     MoreResources.readResource(
-                        "parquet/json_schema_converter/json_conversion_test_cases_v1.json"
-                    )
+                        "parquet/json_schema_converter/json_conversion_test_cases_v1.json",
+                    ),
                 )
             return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
                 Arguments.of(
@@ -216,7 +208,7 @@ class JsonToAvroConverterTest {
         jsonSchema: JsonNode,
         jsonObject: JsonNode?,
         avroSchema: JsonNode,
-        avroObject: JsonNode?
+        avroObject: JsonNode?,
     ) {
         val actualAvroSchema =
             SCHEMA_CONVERTER.getAvroSchema(
@@ -259,7 +251,7 @@ class JsonToAvroConverterTest {
         jsonSchema: JsonNode,
         jsonObject: JsonNode?,
         avroSchema: JsonNode,
-        avroObject: JsonNode?
+        avroObject: JsonNode?,
     ) {
         val actualAvroSchema =
             SCHEMA_CONVERTER.getAvroSchema(

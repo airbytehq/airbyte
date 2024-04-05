@@ -79,8 +79,8 @@ protected constructor(driverClassName: String) :
                 .withMessage(
                     String.format(
                         ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-                        e.message
-                    )
+                        e.message,
+                    ),
                 )
         } finally {
             close()
@@ -96,7 +96,7 @@ protected constructor(driverClassName: String) :
             val fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(database, tableInfos)
             return DbSourceDiscoverUtil.convertTableInfosToAirbyteCatalog(
                 tableInfos,
-                fullyQualifiedTableNameToPrimaryKeys
+                fullyQualifiedTableNameToPrimaryKeys,
             ) { columnType: DataType -> this.getAirbyteType(columnType) }
         } finally {
             close()
@@ -118,17 +118,13 @@ protected constructor(driverClassName: String) :
      * @throws Exception
      */
     @Throws(Exception::class)
-    override fun read(
-        config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog,
-        state: JsonNode?
-    ): AutoCloseableIterator<AirbyteMessage> {
+    override fun read(config: JsonNode, catalog: ConfiguredAirbyteCatalog, state: JsonNode?): AutoCloseableIterator<AirbyteMessage> {
         val supportedStateType = getSupportedStateType(config)
         val stateManager =
             StateManagerFactory.createStateManager(
                 supportedStateType,
                 StateGeneratorUtils.deserializeInitialState(state, supportedStateType),
-                catalog
+                catalog,
             )
         val emittedAt = Instant.now()
 
@@ -144,14 +140,14 @@ protected constructor(driverClassName: String) :
                         Function { t: TableInfo<CommonField<DataType>> ->
                             String.format("%s.%s", t.nameSpace, t.name)
                         },
-                        Function.identity()
-                    )
+                        Function.identity(),
+                    ),
                 )
 
         validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database)
 
         DbSourceDiscoverUtil.logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog) {
-            columnType: DataType ->
+                columnType: DataType ->
             this.getAirbyteType(columnType)
         }
 
@@ -161,7 +157,7 @@ protected constructor(driverClassName: String) :
                 catalog,
                 fullyQualifiedTableNameToInfo,
                 stateManager,
-                emittedAt
+                emittedAt,
             )
         val fullRefreshIterators =
             getFullRefreshIterators(
@@ -169,7 +165,7 @@ protected constructor(driverClassName: String) :
                 catalog,
                 fullyQualifiedTableNameToInfo,
                 stateManager,
-                emittedAt
+                emittedAt,
             )
         val iteratorList =
             Stream.of(incrementalIterators, fullRefreshIterators)
@@ -179,8 +175,8 @@ protected constructor(driverClassName: String) :
         return AutoCloseableIterators.appendOnClose(
             AutoCloseableIterators.concatWithEagerClose(
                 iteratorList,
-                AirbyteTraceMessageUtility::emitStreamStatusTrace
-            )
+                AirbyteTraceMessageUtility::emitStreamStatusTrace,
+            ),
         ) {
             LOGGER.info("Closing database connection pool.")
             Exceptions.toRuntime { this.close() }
@@ -192,7 +188,7 @@ protected constructor(driverClassName: String) :
     protected fun validateCursorFieldForIncrementalTables(
         tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
         catalog: ConfiguredAirbyteCatalog,
-        database: Database
+        database: Database,
     ) {
         val tablesWithInvalidCursor: MutableList<InvalidCursorInfoUtil.InvalidCursorInfo> =
             ArrayList()
@@ -201,12 +197,14 @@ protected constructor(driverClassName: String) :
             val fullyQualifiedTableName =
                 DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.namespace, stream.name)
             val hasSourceDefinedCursor =
-                (!Objects.isNull(airbyteStream.stream.sourceDefinedCursor) &&
-                    airbyteStream.stream.sourceDefinedCursor)
+                (
+                    !Objects.isNull(airbyteStream.stream.sourceDefinedCursor) &&
+                        airbyteStream.stream.sourceDefinedCursor
+                    )
             if (
                 !tableNameToTable.containsKey(fullyQualifiedTableName) ||
-                    airbyteStream.syncMode != SyncMode.INCREMENTAL ||
-                    hasSourceDefinedCursor
+                airbyteStream.syncMode != SyncMode.INCREMENTAL ||
+                hasSourceDefinedCursor
             ) {
                 continue
             }
@@ -230,8 +228,8 @@ protected constructor(driverClassName: String) :
                         fullyQualifiedTableName,
                         cursorField.get(),
                         cursorType.toString(),
-                        "Unsupported cursor type"
-                    )
+                        "Unsupported cursor type",
+                    ),
                 )
                 continue
             }
@@ -241,7 +239,7 @@ protected constructor(driverClassName: String) :
                     database,
                     stream.namespace,
                     stream.name,
-                    cursorField.get()
+                    cursorField.get(),
                 )
             ) {
                 tablesWithInvalidCursor.add(
@@ -249,15 +247,15 @@ protected constructor(driverClassName: String) :
                         fullyQualifiedTableName,
                         cursorField.get(),
                         cursorType.toString(),
-                        "Cursor column contains NULL value"
-                    )
+                        "Cursor column contains NULL value",
+                    ),
                 )
             }
         }
 
         if (!tablesWithInvalidCursor.isEmpty()) {
             throw ConfigErrorException(
-                InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor)
+                InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor),
             )
         }
     }
@@ -270,12 +268,7 @@ protected constructor(driverClassName: String) :
      * @throws SQLException exception
      */
     @Throws(SQLException::class)
-    protected open fun verifyCursorColumnValues(
-        database: Database,
-        schema: String?,
-        tableName: String?,
-        columnName: String?
-    ): Boolean {
+    protected open fun verifyCursorColumnValues(database: Database, schema: String?, tableName: String?, columnName: String?): Boolean {
         /* no-op */
         return true
     }
@@ -286,28 +279,27 @@ protected constructor(driverClassName: String) :
      *
      * @param database database
      */
-    protected open fun estimateFullRefreshSyncSize(
-        database: Database,
-        configuredAirbyteStream: ConfiguredAirbyteStream?
-    ) {
+    protected open fun estimateFullRefreshSyncSize(database: Database, configuredAirbyteStream: ConfiguredAirbyteStream?) {
         /* no-op */
     }
 
     @Throws(Exception::class)
-    protected fun discoverWithoutSystemTables(
-        database: Database
-    ): List<TableInfo<CommonField<DataType>>> {
+    protected fun discoverWithoutSystemTables(database: Database): List<TableInfo<CommonField<DataType>>> {
         val systemNameSpaces = excludedInternalNameSpaces
         val systemViews = excludedViews
         val discoveredTables = discoverInternal(database)
-        return (if (systemNameSpaces == null || systemNameSpaces.isEmpty()) discoveredTables
-        else
-            discoveredTables
-                .stream()
-                .filter { table: TableInfo<CommonField<DataType>> ->
-                    !systemNameSpaces.contains(table.nameSpace) && !systemViews.contains(table.name)
-                }
-                .collect(Collectors.toList()))
+        return (
+            if (systemNameSpaces == null || systemNameSpaces.isEmpty()) {
+                discoveredTables
+            } else {
+                discoveredTables
+                    .stream()
+                    .filter { table: TableInfo<CommonField<DataType>> ->
+                        !systemNameSpaces.contains(table.nameSpace) && !systemViews.contains(table.name)
+                    }
+                    .collect(Collectors.toList())
+            }
+            )
     }
 
     protected fun getFullRefreshIterators(
@@ -315,7 +307,7 @@ protected constructor(driverClassName: String) :
         catalog: ConfiguredAirbyteCatalog,
         tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         return getSelectedIterators(
             database,
@@ -323,7 +315,7 @@ protected constructor(driverClassName: String) :
             tableNameToTable,
             stateManager,
             emittedAt,
-            SyncMode.FULL_REFRESH
+            SyncMode.FULL_REFRESH,
         )
     }
 
@@ -332,7 +324,7 @@ protected constructor(driverClassName: String) :
         catalog: ConfiguredAirbyteCatalog,
         tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         return getSelectedIterators(
             database,
@@ -340,7 +332,7 @@ protected constructor(driverClassName: String) :
             tableNameToTable,
             stateManager,
             emittedAt,
-            SyncMode.INCREMENTAL
+            SyncMode.INCREMENTAL,
         )
     }
 
@@ -362,7 +354,7 @@ protected constructor(driverClassName: String) :
         tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
         emittedAt: Instant,
-        syncMode: SyncMode
+        syncMode: SyncMode,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         val iteratorList: MutableList<AutoCloseableIterator<AirbyteMessage>> = ArrayList()
         for (airbyteStream in catalog!!.streams) {
@@ -373,7 +365,7 @@ protected constructor(driverClassName: String) :
                 if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
                     LOGGER.info(
                         "Skipping stream {} because it is not in the source",
-                        fullyQualifiedTableName
+                        fullyQualifiedTableName,
                     )
                     continue
                 }
@@ -403,7 +395,7 @@ protected constructor(driverClassName: String) :
         airbyteStream: ConfiguredAirbyteStream,
         table: TableInfo<CommonField<DataType>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
@@ -433,7 +425,7 @@ protected constructor(driverClassName: String) :
                         selectedDatabaseFields,
                         table,
                         cursorInfo.get(),
-                        emittedAt
+                        emittedAt,
                     )
             } else {
                 // if no cursor is present then this is the first read for is the same as doing a
@@ -448,7 +440,7 @@ protected constructor(driverClassName: String) :
                         table,
                         emittedAt,
                         SyncMode.INCREMENTAL,
-                        Optional.of(cursorField)
+                        Optional.of(cursorField),
                     )
             }
 
@@ -464,11 +456,11 @@ protected constructor(driverClassName: String) :
                             autoCloseableIterator,
                             airbyteStream,
                             messageProducer,
-                            StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO)
+                            StateEmitFrequency(stateEmissionFrequency.toLong(), Duration.ZERO),
                         )
                     },
                     airbyteMessageIterator,
-                    AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace)
+                    AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace),
                 )
         } else if (airbyteStream.syncMode == SyncMode.FULL_REFRESH) {
             estimateFullRefreshSyncSize(database, airbyteStream)
@@ -481,26 +473,26 @@ protected constructor(driverClassName: String) :
                     table,
                     emittedAt,
                     SyncMode.FULL_REFRESH,
-                    Optional.empty()
+                    Optional.empty(),
                 )
         } else if (airbyteStream.syncMode == null) {
             throw IllegalArgumentException(
-                String.format("%s requires a source sync mode", this.javaClass)
+                String.format("%s requires a source sync mode", this.javaClass),
             )
         } else {
             throw IllegalArgumentException(
                 String.format(
                     "%s does not support sync mode: %s.",
                     this.javaClass,
-                    airbyteStream.syncMode
-                )
+                    airbyteStream.syncMode,
+                ),
             )
         }
 
         val recordCount = AtomicLong()
         return AutoCloseableIterators.transform<AirbyteMessage, AirbyteMessage>(
             iterator,
-            AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace)
+            AirbyteStreamUtils.convertFromNameAndNamespace(pair.name, pair.namespace),
         ) { r: AirbyteMessage ->
             val count = recordCount.incrementAndGet()
             if (count % 10000 == 0L) {
@@ -525,7 +517,7 @@ protected constructor(driverClassName: String) :
         selectedDatabaseFields: List<String>,
         table: TableInfo<CommonField<DataType>>,
         cursorInfo: CursorInfo,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
@@ -540,7 +532,7 @@ protected constructor(driverClassName: String) :
 
         Preconditions.checkState(
             table.fields.stream().anyMatch { f: CommonField<DataType> -> f.name == cursorField },
-            String.format("Could not find cursor field %s in table %s", cursorField, table.name)
+            String.format("Could not find cursor field %s in table %s", cursorField, table.name),
         )
 
         val queryIterator =
@@ -550,7 +542,7 @@ protected constructor(driverClassName: String) :
                 table.nameSpace,
                 table.name,
                 cursorInfo,
-                cursorType
+                cursorType,
             )
 
         return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli())
@@ -577,7 +569,7 @@ protected constructor(driverClassName: String) :
         table: TableInfo<CommonField<DataType>>,
         emittedAt: Instant,
         syncMode: SyncMode,
-        cursorField: Optional<String>
+        cursorField: Optional<String>,
     ): AutoCloseableIterator<AirbyteMessage> {
         val queryStream =
             queryTableFullRefresh(
@@ -586,7 +578,7 @@ protected constructor(driverClassName: String) :
                 table.nameSpace,
                 table.name,
                 syncMode,
-                cursorField
+                cursorField,
             )
         return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli())
     }
@@ -601,10 +593,7 @@ protected constructor(driverClassName: String) :
      * Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its owner).
      */
     @Throws(SQLException::class)
-    protected open fun <T> getPrivilegesTableForCurrentUser(
-        database: JdbcDatabase?,
-        schema: String?
-    ): Set<T> {
+    protected open fun <T> getPrivilegesTableForCurrentUser(database: JdbcDatabase?, schema: String?): Set<T> {
         return emptySet()
     }
 
@@ -638,10 +627,7 @@ protected constructor(driverClassName: String) :
      * @param catalog configured catalog.
      */
     @Throws(Exception::class)
-    protected open fun logPreSyncDebugData(
-        database: Database,
-        catalog: ConfiguredAirbyteCatalog?
-    ) {}
+    protected open fun logPreSyncDebugData(database: Database, catalog: ConfiguredAirbyteCatalog?) {}
 
     /**
      * Configures a list of operations that can be used to check the connection to the source.
@@ -649,9 +635,7 @@ protected constructor(driverClassName: String) :
      * @return list of consumers that run queries for the check command.
      */
     @Throws(Exception::class)
-    protected abstract fun getCheckOperations(
-        config: JsonNode?
-    ): List<CheckedConsumer<Database, Exception>>
+    protected abstract fun getCheckOperations(config: JsonNode?): List<CheckedConsumer<Database, Exception>>
 
     /**
      * Map source types to Airbyte types
@@ -687,9 +671,7 @@ protected constructor(driverClassName: String) :
      */
     @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
-    protected abstract fun discoverInternal(
-        database: Database
-    ): List<TableInfo<CommonField<DataType>>>
+    protected abstract fun discoverInternal(database: Database): List<TableInfo<CommonField<DataType>>>
 
     /**
      * Discovers all available tables within a schema in the source database.
@@ -703,10 +685,7 @@ protected constructor(driverClassName: String) :
      * - access to the database might lead to exceptions.
      */
     @Throws(Exception::class)
-    protected abstract fun discoverInternal(
-        database: Database,
-        schema: String?
-    ): List<TableInfo<CommonField<DataType>>>
+    protected abstract fun discoverInternal(database: Database, schema: String?): List<TableInfo<CommonField<DataType>>>
 
     /**
      * Discover Primary keys for each table and @return a map of namespace.table name to their
@@ -718,7 +697,7 @@ protected constructor(driverClassName: String) :
      */
     protected abstract fun discoverPrimaryKeys(
         database: Database,
-        tableInfos: List<TableInfo<CommonField<DataType>>>
+        tableInfos: List<TableInfo<CommonField<DataType>>>,
     ): Map<String, MutableList<String>>
 
     protected abstract val quoteString: String?
@@ -745,7 +724,7 @@ protected constructor(driverClassName: String) :
         schemaName: String?,
         tableName: String,
         syncMode: SyncMode,
-        cursorField: Optional<String>
+        cursorField: Optional<String>,
     ): AutoCloseableIterator<AirbyteRecordData>
 
     /**
@@ -762,7 +741,7 @@ protected constructor(driverClassName: String) :
         schemaName: String?,
         tableName: String,
         cursorInfo: CursorInfo,
-        cursorFieldType: DataType
+        cursorFieldType: DataType,
     ): AutoCloseableIterator<AirbyteRecordData>
 
     protected open val stateEmissionFrequency: Int
@@ -784,9 +763,7 @@ protected constructor(driverClassName: String) :
      * @param config The connector configuration.
      * @return A [AirbyteStateType] representing the state supported by this connector.
      */
-    protected open fun getSupportedStateType(
-        config: JsonNode?
-    ): AirbyteStateMessage.AirbyteStateType {
+    protected open fun getSupportedStateType(config: JsonNode?): AirbyteStateMessage.AirbyteStateType {
         return AirbyteStateMessage.AirbyteStateType.STREAM
     }
 
@@ -802,11 +779,11 @@ protected constructor(driverClassName: String) :
             recordIterator: AutoCloseableIterator<AirbyteRecordData>,
             streamName: String,
             namespace: String,
-            emittedAt: Long
+            emittedAt: Long,
         ): AutoCloseableIterator<AirbyteMessage> {
             return AutoCloseableIterators.transform(
                 recordIterator,
-                AirbyteStreamNameNamespacePair(streamName, namespace)
+                AirbyteStreamNameNamespacePair(streamName, namespace),
             ) { airbyteRecordData ->
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.RECORD)
@@ -817,9 +794,12 @@ protected constructor(driverClassName: String) :
                             .withEmittedAt(emittedAt)
                             .withData(airbyteRecordData.rawRowData)
                             .withMeta(
-                                if (isMetaChangesEmptyOrNull(airbyteRecordData.meta)) null
-                                else airbyteRecordData.meta
-                            )
+                                if (isMetaChangesEmptyOrNull(airbyteRecordData.meta)) {
+                                    null
+                                } else {
+                                    airbyteRecordData.meta
+                                },
+                            ),
                     )
             }
         }

@@ -37,7 +37,7 @@ class GcsParquetWriter(
     configuredStream: ConfiguredAirbyteStream,
     uploadTimestamp: Timestamp,
     schema: Schema?,
-    converter: JsonAvroConverter?
+    converter: JsonAvroConverter?,
 ) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val parquetWriter: ParquetWriter<GenericData.Record>
     private val avroRecordFactory: AvroRecordFactory
@@ -52,7 +52,7 @@ class GcsParquetWriter(
             "Storage path for stream '{}': {}/{}",
             stream.name,
             config.bucketName,
-            outputPath
+            outputPath,
         )
 
         fileLocation =
@@ -66,8 +66,8 @@ class GcsParquetWriter(
         val hadoopConfig = getHadoopConfig(config)
         this.parquetWriter =
             AvroParquetWriter.builder<GenericData.Record>(
-                    HadoopOutputFile.fromPath(path, hadoopConfig)
-                )
+                HadoopOutputFile.fromPath(path, hadoopConfig),
+            )
                 .withSchema(schema)
                 .withCompressionCodec(formatConfig.compressionCodec)
                 .withRowGroupSize(formatConfig.blockSize)

@@ -46,7 +46,7 @@ object ConnectorExceptionUtil {
         } else {
             String.format(
                 COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-                if (e!!.message != null) e.message else ""
+                if (e!!.message != null) e.message else "",
             )
         }
     }
@@ -91,10 +91,7 @@ object ConnectorExceptionUtil {
     }
 
     @JvmStatic
-    fun <T : Throwable, Result> getResultsOrLogAndThrowFirst(
-        initialMessage: String,
-        eithers: List<Either<out T, Result>>
-    ): List<Result> {
+    fun <T : Throwable, Result> getResultsOrLogAndThrowFirst(initialMessage: String, eithers: List<Either<out T, Result>>): List<Result> {
         val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }.toList()
         if (throwables.isNotEmpty()) {
             logAllAndThrowFirst(initialMessage, throwables)
@@ -117,8 +114,10 @@ object ConnectorExceptionUtil {
     }
 
     private fun isUnknownColumnInFieldListException(e: Throwable?): Boolean {
-        return (e is SQLSyntaxErrorException &&
-            e.message!!.lowercase().contains("unknown column") &&
-            e.message!!.lowercase().contains("in 'field list'"))
+        return (
+            e is SQLSyntaxErrorException &&
+                e.message!!.lowercase().contains("unknown column") &&
+                e.message!!.lowercase().contains("in 'field list'")
+            )
     }
 }

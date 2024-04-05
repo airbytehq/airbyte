@@ -10,7 +10,7 @@ class AzureBlobStorageConfig(
     val endpointDomainName: String = DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME,
     val accountName: String,
     val containerName: String,
-    val sasToken: String
+    val sasToken: String,
 ) {
 
     val endpointUrl: String
@@ -21,12 +21,14 @@ class AzureBlobStorageConfig(
 
         fun getAzureBlobConfig(config: JsonNode): AzureBlobStorageConfig {
             return AzureBlobStorageConfig(
-                if (config["azure_blob_storage_endpoint_domain_name"] == null)
+                if (config["azure_blob_storage_endpoint_domain_name"] == null) {
                     DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME
-                else config["azure_blob_storage_endpoint_domain_name"].asText(),
+                } else {
+                    config["azure_blob_storage_endpoint_domain_name"].asText()
+                },
                 config["azure_blob_storage_account_name"].asText(),
                 config["azure_blob_storage_container_name"].asText(),
-                config["azure_blob_storage_sas_token"].asText()
+                config["azure_blob_storage_sas_token"].asText(),
             )
         }
     }

@@ -19,7 +19,7 @@ class DebeziumMessageProducer<T>(
     targetPosition: CdcTargetPosition<T>,
     eventConverter: DebeziumEventConverter,
     offsetManager: AirbyteFileOffsetBackingStore?,
-    schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
+    schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>,
 ) : SourceStateMessageProducer<ChangeEventWithMetadata> {
     /**
      * `checkpointOffsetToSend` is used as temporal storage for the offset that we want to send as
@@ -59,9 +59,7 @@ class DebeziumMessageProducer<T>(
         this.initialOffset = HashMap(this.previousCheckpointOffset)
     }
 
-    override fun generateStateMessageAtCheckpoint(
-        stream: ConfiguredAirbyteStream?
-    ): AirbyteStateMessage {
+    override fun generateStateMessageAtCheckpoint(stream: ConfiguredAirbyteStream?): AirbyteStateMessage {
         LOGGER.info("Sending CDC checkpoint state message.")
         val stateMessage = createStateMessage(checkpointOffsetToSend)
         previousCheckpointOffset.clear()
@@ -76,10 +74,7 @@ class DebeziumMessageProducer<T>(
      * @param message
      * @return
      */
-    override fun processRecordMessage(
-        stream: ConfiguredAirbyteStream?,
-        message: ChangeEventWithMetadata
-    ): AirbyteMessage {
+    override fun processRecordMessage(stream: ConfiguredAirbyteStream?, message: ChangeEventWithMetadata): AirbyteMessage {
         if (checkpointOffsetToSend.isEmpty()) {
             try {
                 val temporalOffset = offsetManager!!.read()
@@ -88,7 +83,7 @@ class DebeziumMessageProducer<T>(
                 }
             } catch (e: ConnectException) {
                 LOGGER.warn(
-                    "Offset file is being written by Debezium. Skipping CDC checkpoint in this loop."
+                    "Offset file is being written by Debezium. Skipping CDC checkpoint in this loop.",
                 )
             }
         }
@@ -136,7 +131,7 @@ class DebeziumMessageProducer<T>(
                     offset,
                     schemaHistoryManager
                         .map { obj: AirbyteSchemaHistoryStorage -> obj.read() }
-                        .orElse(null)
+                        .orElse(null),
                 )!!
                 .state
         return message

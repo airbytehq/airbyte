@@ -26,7 +26,8 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
      * @throws Exception
      * - might throw any exception during initialization.
      */
-    @Throws(Exception::class) protected abstract fun setupDatabase(dbName: String?): Database
+    @Throws(Exception::class)
+    protected abstract fun setupDatabase(dbName: String?): Database
 
     /**
      * The test added test data to a new DB. 1. Set DB creds in static variables above 2. Set
@@ -42,7 +43,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
         numberOfDummyRecords: Int,
         numberOfBatches: Int,
         numberOfColumns: Int,
-        numberOfStreams: Int
+        numberOfStreams: Int,
     ) {
         val database = setupDatabase(dbName)
 
@@ -57,7 +58,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
                             schemaName,
                             i,
                             numberOfColumns,
-                            numberOfDummyRecords
+                            numberOfDummyRecords,
                         )
                     ctx.fetch(String.format(insertQueryTemplate, currentTableName))
                 }
@@ -83,11 +84,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
      */
     protected abstract fun provideParameters(): Stream<Arguments?>?
 
-    protected fun prepareCreateTableQuery(
-        dbSchemaName: String?,
-        numberOfColumns: Int,
-        currentTableName: String?
-    ): String {
+    protected fun prepareCreateTableQuery(dbSchemaName: String?, numberOfColumns: Int, currentTableName: String?): String {
         val sj = StringJoiner(",")
         for (i in 0 until numberOfColumns) {
             sj.add(String.format(" %s%s %s", testColumnName, i, TEST_DB_FIELD_TYPE))
@@ -97,16 +94,11 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
             CREATE_DB_TABLE_TEMPLATE,
             dbSchemaName,
             currentTableName,
-            sj.toString()
+            sj.toString(),
         )
     }
 
-    protected fun prepareInsertQueryTemplate(
-        dbSchemaName: String?,
-        batchNumber: Int,
-        numberOfColumns: Int,
-        recordsNumber: Int
-    ): String {
+    protected fun prepareInsertQueryTemplate(dbSchemaName: String?, batchNumber: Int, numberOfColumns: Int, recordsNumber: Int): String {
         val fieldsNames = StringJoiner(",")
         fieldsNames.add("id")
 
@@ -128,7 +120,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
                     baseInsertQuery
                         .toString()
                         .replace("id_placeholder".toRegex(), currentRecordNumber.toString()) +
-                    ")"
+                    ")",
             )
         }
 
@@ -137,7 +129,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
             dbSchemaName,
             "%s",
             fieldsNames.toString(),
-            insertGroupValuesJoiner.toString()
+            insertGroupValuesJoiner.toString(),
         )
     }
 

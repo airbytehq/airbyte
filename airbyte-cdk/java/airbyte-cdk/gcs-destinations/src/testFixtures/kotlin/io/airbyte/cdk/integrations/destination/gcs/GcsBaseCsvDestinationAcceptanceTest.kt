@@ -33,17 +33,12 @@ abstract class GcsBaseCsvDestinationAcceptanceTest : GcsDestinationAcceptanceTes
                     "flattening",
                     Flattening.ROOT_LEVEL.value,
                     "compression",
-                    Jsons.jsonNode(java.util.Map.of("compression_type", "No Compression"))
-                )
+                    Jsons.jsonNode(java.util.Map.of("compression_type", "No Compression")),
+                ),
             )
 
     @Throws(IOException::class)
-    override fun retrieveRecords(
-        testEnv: TestDestinationEnv?,
-        streamName: String,
-        namespace: String,
-        streamSchema: JsonNode
-    ): List<JsonNode> {
+    override fun retrieveRecords(testEnv: TestDestinationEnv?, streamName: String, namespace: String, streamSchema: JsonNode): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
 
         val fieldTypes = getFieldTypes(streamSchema)
@@ -87,10 +82,7 @@ abstract class GcsBaseCsvDestinationAcceptanceTest : GcsDestinationAcceptanceTes
             return fieldTypes
         }
 
-        private fun getJsonNode(
-            input: Map<String, String>,
-            fieldTypes: Map<String, String>
-        ): JsonNode {
+        private fun getJsonNode(input: Map<String, String>, fieldTypes: Map<String, String>): JsonNode {
             val json: ObjectNode = MAPPER.createObjectNode()
 
             if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
@@ -100,7 +92,7 @@ abstract class GcsBaseCsvDestinationAcceptanceTest : GcsDestinationAcceptanceTes
             for ((key, value) in input) {
                 if (
                     key == JavaBaseConstants.COLUMN_NAME_AB_ID ||
-                        (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                    (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
                 ) {
                     continue
                 }
@@ -122,7 +114,7 @@ abstract class GcsBaseCsvDestinationAcceptanceTest : GcsDestinationAcceptanceTes
         private fun addNoTypeValue(json: ObjectNode, key: String, value: String?) {
             if (
                 value != null && (value.matches("^\\[.*\\]$".toRegex())) ||
-                    value!!.matches("^\\{.*\\}$".toRegex())
+                value!!.matches("^\\{.*\\}$".toRegex())
             ) {
                 val newNode = Jsons.deserialize(value)
                 json.set<JsonNode>(key, newNode)

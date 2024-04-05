@@ -18,7 +18,7 @@ import org.codehaus.plexus.util.StringUtils
 class RelationalDbDebeziumPropertiesManager(
     properties: Properties,
     config: JsonNode,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
 ) : DebeziumPropertiesManager(properties, config, catalog) {
     override fun getConnectionConfiguration(config: JsonNode): Properties {
         val properties = Properties()
@@ -40,10 +40,7 @@ class RelationalDbDebeziumPropertiesManager(
         return config[JdbcUtils.DATABASE_KEY].asText()
     }
 
-    override fun getIncludeConfiguration(
-        catalog: ConfiguredAirbyteCatalog,
-        config: JsonNode?
-    ): Properties {
+    override fun getIncludeConfiguration(catalog: ConfiguredAirbyteCatalog, config: JsonNode?): Properties {
         val properties = Properties()
 
         // table selection

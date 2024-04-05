@@ -41,7 +41,7 @@ interface NormalizationRunner : AutoCloseable {
         jobRoot: Path,
         config: JsonNode?,
         resourceRequirements: ResourceRequirements?,
-        dbtConfig: OperatorDbt
+        dbtConfig: OperatorDbt,
     ): Boolean
 
     /**
@@ -70,7 +70,7 @@ interface NormalizationRunner : AutoCloseable {
         jobRoot: Path,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        resourceRequirements: ResourceRequirements?
+        resourceRequirements: ResourceRequirements?,
     ): Boolean
 
     val traceMessages: Stream<AirbyteTraceMessage>

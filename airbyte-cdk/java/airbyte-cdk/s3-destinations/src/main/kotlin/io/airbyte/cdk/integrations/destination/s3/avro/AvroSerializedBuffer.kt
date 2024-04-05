@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils
 class AvroSerializedBuffer(
     bufferStorage: BufferStorage,
     codecFactory: CodecFactory,
-    schema: Schema
+    schema: Schema,
 ) : BaseSerializedBuffer(bufferStorage) {
     private val codecFactory: CodecFactory
     private val schema: Schema
@@ -62,9 +62,9 @@ class AvroSerializedBuffer(
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(
             Jsons.deserialize(
-                    recordString,
-                    AirbyteRecordMessage::class.java,
-                )
+                recordString,
+                AirbyteRecordMessage::class.java,
+            )
                 .withEmittedAt(emittedAt),
         )
     }
@@ -82,14 +82,12 @@ class AvroSerializedBuffer(
     companion object {
         const val DEFAULT_SUFFIX: String = ".avro"
 
-        fun createFunction(
-            config: S3AvroFormatConfig,
-            createStorageFunction: Callable<BufferStorage>
-        ): BufferCreateFunction {
+        fun createFunction(config: S3AvroFormatConfig, createStorageFunction: Callable<BufferStorage>): BufferCreateFunction {
             val codecFactory = config.codecFactory
             return BufferCreateFunction {
-                stream: AirbyteStreamNameNamespacePair,
-                catalog: ConfiguredAirbyteCatalog ->
+                    stream: AirbyteStreamNameNamespacePair,
+                    catalog: ConfiguredAirbyteCatalog,
+                ->
                 val schemaConverter = JsonToAvroSchemaConverter()
                 val schema =
                     schemaConverter.getAvroSchema(
@@ -105,7 +103,7 @@ class AvroSerializedBuffer(
                             .findFirst()
                             .orElseThrow {
                                 RuntimeException(
-                                    "No such stream ${stream.namespace}.${stream.name}"
+                                    "No such stream ${stream.namespace}.${stream.name}",
                                 )
                             }
                             .stream

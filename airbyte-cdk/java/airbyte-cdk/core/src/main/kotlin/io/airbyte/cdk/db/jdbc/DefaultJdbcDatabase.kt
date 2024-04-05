@@ -23,7 +23,7 @@ open class DefaultJdbcDatabase
 @JvmOverloads
 constructor(
     protected val dataSource: DataSource,
-    sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations
+    sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations,
 ) : JdbcDatabase(sourceOperations) {
     @Throws(SQLException::class)
     override fun execute(query: CheckedConsumer<Connection, SQLException?>) {
@@ -33,7 +33,7 @@ constructor(
     @Throws(SQLException::class)
     override fun <T> bufferedResultSetQuery(
         query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>,
     ): List<T> {
         dataSource.connection.use { connection ->
             JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform)
@@ -47,7 +47,7 @@ constructor(
     @Throws(SQLException::class)
     override fun <T> unsafeResultSetQuery(
         query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>,
     ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform)
@@ -58,7 +58,7 @@ constructor(
                     } catch (e: SQLException) {
                         throw RuntimeException(e)
                     }
-                }
+                },
             )
     }
 
@@ -116,13 +116,13 @@ constructor(
     @Throws(SQLException::class)
     override fun <T> unsafeQuery(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>,
     ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(
-                statementCreator.apply(connection).executeQuery(),
-                recordTransform
-            )
+            statementCreator.apply(connection).executeQuery(),
+            recordTransform,
+        )
             .onClose(
                 Runnable {
                     try {
@@ -131,7 +131,7 @@ constructor(
                     } catch (e: SQLException) {
                         throw RuntimeException(e)
                     }
-                }
+                },
             )
     }
 

@@ -153,26 +153,24 @@ class AvroSerializedBufferTest() {
 
         private val expectedString: String
             get() =
-                ("{\"_airbyte_ab_id\": \"<UUID>\", \"_airbyte_emitted_at\": \"<timestamp>\", " +
-                    "\"field1\": 10000.0, \"another_field\": true, " +
-                    "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, " +
-                    "\"column2\": \"string value\", " +
-                    "\"_airbyte_additional_properties\": null}")
+                (
+                    "{\"_airbyte_ab_id\": \"<UUID>\", \"_airbyte_emitted_at\": \"<timestamp>\", " +
+                        "\"field1\": 10000.0, \"another_field\": true, " +
+                        "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, " +
+                        "\"column2\": \"string value\", " +
+                        "\"_airbyte_additional_properties\": null}"
+                    )
 
         @Throws(Exception::class)
-        private fun runTest(
-            buffer: BufferStorage,
-            minExpectedByte: Long,
-            maxExpectedByte: Long,
-            config: S3AvroFormatConfig,
-            expectedData: String
-        ) {
+        private fun runTest(buffer: BufferStorage, minExpectedByte: Long, maxExpectedByte: Long, config: S3AvroFormatConfig, expectedData: String) {
             val outputFile: File = buffer.file
-            (AvroSerializedBuffer.createFunction(config) { buffer }
+            (
+                AvroSerializedBuffer.createFunction(config) { buffer }
                     .apply(
                         streamPair,
                         catalog,
-                    ) as AvroSerializedBuffer)
+                    ) as AvroSerializedBuffer
+                )
                 .use { writer ->
                     writer.accept(message)
                     writer.accept(message)
@@ -186,9 +184,9 @@ class AvroSerializedBufferTest() {
                     )
                     val `in`: InputStream = writer.inputStream!!
                     DataFileReader(
-                            SeekableByteArrayInput(`in`.readAllBytes()),
-                            GenericDatumReader<GenericData.Record>(),
-                        )
+                        SeekableByteArrayInput(`in`.readAllBytes()),
+                        GenericDatumReader<GenericData.Record>(),
+                    )
                         .use { dataFileReader ->
                             while (dataFileReader.hasNext()) {
                                 val record: GenericData.Record = dataFileReader.next()

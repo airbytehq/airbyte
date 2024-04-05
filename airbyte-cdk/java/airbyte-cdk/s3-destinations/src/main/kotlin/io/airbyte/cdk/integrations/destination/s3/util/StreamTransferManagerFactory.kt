@@ -34,7 +34,7 @@ object StreamTransferManagerFactory {
     internal constructor(
         private val bucketName: String?,
         private val objectKey: String,
-        private val s3Client: AmazonS3?
+        private val s3Client: AmazonS3?,
     ) {
         private var userMetadata: Map<String, String>? = null
         private var partSize = DEFAULT_PART_SIZE_MB.toLong()
@@ -66,11 +66,11 @@ object StreamTransferManagerFactory {
                 userMetadata = emptyMap()
             }
             return StreamTransferManagerWithMetadata(
-                    bucketName,
-                    objectKey,
-                    s3Client,
-                    userMetadata,
-                )
+                bucketName,
+                objectKey,
+                s3Client,
+                userMetadata,
+            )
                 .numStreams(DEFAULT_NUM_STREAMS)
                 .queueCapacity(DEFAULT_QUEUE_CAPACITY)
                 .numUploadThreads(DEFAULT_UPLOAD_THREADS)

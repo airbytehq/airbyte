@@ -28,17 +28,12 @@ abstract class S3BaseJsonlDestinationAcceptanceTest protected constructor() :
                     "flattening",
                     Flattening.NO.value,
                     "compression",
-                    Jsons.jsonNode(Map.of("compression_type", "No Compression"))
-                )
+                    Jsons.jsonNode(Map.of("compression_type", "No Compression")),
+                ),
             )
 
     @Throws(IOException::class)
-    override fun retrieveRecords(
-        testEnv: TestDestinationEnv?,
-        streamName: String,
-        namespace: String,
-        streamSchema: JsonNode
-    ): List<JsonNode> {
+    override fun retrieveRecords(testEnv: TestDestinationEnv?, streamName: String, namespace: String, streamSchema: JsonNode): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 

@@ -41,7 +41,8 @@ interface TyperDeduper {
      * table may require us to run a soft reset. However, we should defer that soft reset until
      * [.prepareFinalTables].
      */
-    @Throws(Exception::class) fun prepareSchemasAndRunMigrations()
+    @Throws(Exception::class)
+    fun prepareSchemasAndRunMigrations()
 
     /**
      * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not
@@ -52,7 +53,8 @@ interface TyperDeduper {
      * This method should be called AFTER creating the raw tables, because it may run a soft reset
      * (which requires the raw tables to exist).
      */
-    @Throws(Exception::class) fun prepareFinalTables()
+    @Throws(Exception::class)
+    fun prepareFinalTables()
 
     /**
      * Suggest that we execute typing and deduping for a single stream (i.e. fetch new raw records
@@ -101,7 +103,8 @@ interface TyperDeduper {
     @Throws(Exception::class)
     fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 
-    @Throws(Exception::class) fun commitFinalTables()
+    @Throws(Exception::class)
+    fun commitFinalTables()
 
     fun cleanup()
 }

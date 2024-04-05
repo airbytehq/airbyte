@@ -26,7 +26,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
  * We encourage implementing this interface using the [FailureTrackingAirbyteMessageConsumer] class.
  */
 interface AirbyteMessageConsumer : CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
-    @Throws(Exception::class) fun start()
+    @Throws(Exception::class)
+    fun start()
 
     /**
      * Consumes all [AirbyteMessage]s
@@ -34,7 +35,8 @@ interface AirbyteMessageConsumer : CheckedConsumer<AirbyteMessage, Exception>, A
      * @param message [AirbyteMessage] to be processed
      * @throws Exception
      */
-    @Throws(Exception::class) override fun accept(message: AirbyteMessage)
+    @Throws(Exception::class)
+    override fun accept(message: AirbyteMessage)
 
     /**
      * Executes at the end of consumption of all incoming streamed data regardless of success or
@@ -42,14 +44,12 @@ interface AirbyteMessageConsumer : CheckedConsumer<AirbyteMessage, Exception>, A
      *
      * @throws Exception
      */
-    @Throws(Exception::class) override fun close()
+    @Throws(Exception::class)
+    override fun close()
 
     companion object {
         /** Append a function to be called on [AirbyteMessageConsumer.close]. */
-        fun appendOnClose(
-            consumer: AirbyteMessageConsumer?,
-            voidCallable: VoidCallable
-        ): AirbyteMessageConsumer? {
+        fun appendOnClose(consumer: AirbyteMessageConsumer?, voidCallable: VoidCallable): AirbyteMessageConsumer? {
             return object : AirbyteMessageConsumer {
                 @Throws(Exception::class)
                 override fun start() {

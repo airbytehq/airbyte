@@ -29,17 +29,12 @@ abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(
                     "flattening",
                     Flattening.ROOT_LEVEL.value,
                     "compression",
-                    Jsons.jsonNode(java.util.Map.of("compression_type", "No Compression"))
-                )
+                    Jsons.jsonNode(java.util.Map.of("compression_type", "No Compression")),
+                ),
             )
 
     @Throws(IOException::class)
-    override fun retrieveRecords(
-        testEnv: TestDestinationEnv?,
-        streamName: String,
-        namespace: String,
-        streamSchema: JsonNode
-    ): List<JsonNode> {
+    override fun retrieveRecords(testEnv: TestDestinationEnv?, streamName: String, namespace: String, streamSchema: JsonNode): List<JsonNode> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
 
         val fieldTypes = getFieldTypes(streamSchema)
@@ -83,10 +78,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(
             return fieldTypes
         }
 
-        private fun getJsonNode(
-            input: Map<String, String>,
-            fieldTypes: Map<String, String>
-        ): JsonNode {
+        private fun getJsonNode(input: Map<String, String>, fieldTypes: Map<String, String>): JsonNode {
             val json: ObjectNode = S3DestinationAcceptanceTest.Companion.MAPPER.createObjectNode()
 
             if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
@@ -96,7 +88,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(
             for ((key, value) in input) {
                 if (
                     key == JavaBaseConstants.COLUMN_NAME_AB_ID ||
-                        (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                    (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
                 ) {
                     continue
                 }
@@ -121,7 +113,7 @@ abstract class S3BaseCsvDestinationAcceptanceTest : S3DestinationAcceptanceTest(
         private fun addNoTypeValue(json: ObjectNode, key: String, value: String?) {
             if (
                 value != null && (value.matches("^\\[.*\\]$".toRegex())) ||
-                    value!!.matches("^\\{.*\\}$".toRegex())
+                value!!.matches("^\\{.*\\}$".toRegex())
             ) {
                 val newNode = Jsons.deserialize(value)
                 json.set<JsonNode>(key, newNode)

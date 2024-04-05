@@ -39,17 +39,16 @@ object RelationalDbQueryUtils {
 
     /** @return fully qualified table name with the schema (if a schema exists) in quotes. */
     @JvmStatic
-    fun getFullyQualifiedTableNameWithQuoting(
-        nameSpace: String?,
-        tableName: String,
-        quoteString: String
-    ): String {
-        return (if (nameSpace == null || nameSpace.isEmpty())
-            getIdentifierWithQuoting(tableName, quoteString)
-        else
-            getIdentifierWithQuoting(nameSpace, quoteString) +
-                "." +
-                getIdentifierWithQuoting(tableName, quoteString))
+    fun getFullyQualifiedTableNameWithQuoting(nameSpace: String?, tableName: String, quoteString: String): String {
+        return (
+            if (nameSpace == null || nameSpace.isEmpty()) {
+                getIdentifierWithQuoting(tableName, quoteString)
+            } else {
+                getIdentifierWithQuoting(nameSpace, quoteString) +
+                    "." +
+                    getIdentifierWithQuoting(tableName, quoteString)
+            }
+            )
     }
 
     /** @return fully qualified table name with the schema (if a schema exists) without quotes. */
@@ -66,7 +65,7 @@ object RelationalDbQueryUtils {
         database: Database,
         sqlQuery: String?,
         tableName: String?,
-        schemaName: String?
+        schemaName: String?,
     ): AutoCloseableIterator<JsonNode> {
         val airbyteStreamNameNamespacePair =
             AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
@@ -77,13 +76,13 @@ object RelationalDbQueryUtils {
                     val stream = database!!.unsafeQuery(sqlQuery)
                     return@lazyIterator AutoCloseableIterators.fromStream<JsonNode>(
                         stream,
-                        airbyteStreamNameNamespacePair
+                        airbyteStreamNameNamespacePair,
                     )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
                 }
             },
-            airbyteStreamNameNamespacePair
+            airbyteStreamNameNamespacePair,
         )
     }
 

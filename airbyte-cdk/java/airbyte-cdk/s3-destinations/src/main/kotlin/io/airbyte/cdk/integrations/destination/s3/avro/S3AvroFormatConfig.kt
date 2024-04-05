@@ -30,7 +30,8 @@ class S3AvroFormatConfig : S3FormatConfig {
         BZIP2("bzip2"),
         XZ("xz"),
         ZSTANDARD("zstandard"),
-        SNAPPY("snappy");
+        SNAPPY("snappy"),
+        ;
 
         companion object {
             fun fromConfigValue(configValue: String): CompressionCodec {
@@ -88,12 +89,7 @@ class S3AvroFormatConfig : S3FormatConfig {
             }
         }
 
-        fun getCompressionLevel(
-            compressionCodecConfig: JsonNode,
-            defaultLevel: Int,
-            minLevel: Int,
-            maxLevel: Int
-        ): Int {
+        fun getCompressionLevel(compressionCodecConfig: JsonNode, defaultLevel: Int, minLevel: Int, maxLevel: Int): Int {
             val levelConfig = compressionCodecConfig["compression_level"]
             if (levelConfig == null || levelConfig.isNull || !levelConfig.isIntegralNumber) {
                 return defaultLevel
@@ -104,7 +100,7 @@ class S3AvroFormatConfig : S3FormatConfig {
                     "Invalid compression level: %d, expected an integer in range [%d, %d]",
                     level,
                     minLevel,
-                    maxLevel
+                    maxLevel,
                 )
             }
             return level

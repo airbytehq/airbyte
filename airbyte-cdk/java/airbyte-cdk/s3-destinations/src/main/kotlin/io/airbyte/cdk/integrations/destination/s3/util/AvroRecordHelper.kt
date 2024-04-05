@@ -15,11 +15,7 @@ import io.airbyte.commons.util.MoreIterators
  */
 object AvroRecordHelper {
     @JvmStatic
-    fun getFieldNameUpdater(
-        streamName: String,
-        namespace: String?,
-        streamSchema: JsonNode
-    ): JsonFieldNameUpdater {
+    fun getFieldNameUpdater(streamName: String, namespace: String?, streamSchema: JsonNode): JsonFieldNameUpdater {
         val schemaConverter = JsonToAvroSchemaConverter()
         schemaConverter.getAvroSchema(streamSchema, streamName, namespace)
         return JsonFieldNameUpdater(schemaConverter.getStandardizedNames())

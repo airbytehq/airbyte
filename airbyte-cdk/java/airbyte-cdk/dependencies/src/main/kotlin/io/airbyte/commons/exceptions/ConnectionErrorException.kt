@@ -21,7 +21,7 @@ class ConnectionErrorException : RuntimeException {
     constructor(
         stateCode: String?,
         exceptionMessage: String?,
-        exception: Throwable?
+        exception: Throwable?,
     ) : super(exception) {
         this.stateCode = stateCode
         this.exceptionMessage = exceptionMessage
@@ -31,7 +31,7 @@ class ConnectionErrorException : RuntimeException {
         stateCode: String?,
         errorCode: Int,
         exceptionMessage: String?,
-        exception: Throwable?
+        exception: Throwable?,
     ) : super(exception) {
         this.stateCode = stateCode
         this.errorCode = errorCode

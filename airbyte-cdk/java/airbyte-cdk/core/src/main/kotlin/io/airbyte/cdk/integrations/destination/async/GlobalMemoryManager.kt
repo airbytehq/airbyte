@@ -91,7 +91,8 @@ class GlobalMemoryManager(val maxMemoryBytes: Long) {
         // overhead
         // is minimal for now, err on a smaller block sizes.
         const val BLOCK_SIZE_BYTES: Long =
-            (10 * 1024 * 1024 // 10MB
+            (
+                10 * 1024 * 1024 // 10MB
                 )
                 .toLong()
     }

@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory
 @SuppressFBWarnings(
     value = ["MS_SHOULD_BE_FINAL"],
     justification =
-        "The static variables are updated in sub classes for convenience, and cannot be final."
+    "The static variables are updated in sub classes for convenience, and cannot be final.",
 )
 abstract class JdbcStressTest {
     private var bitSet: BitSet? = null
@@ -95,12 +95,14 @@ abstract class JdbcStressTest {
             DefaultJdbcDatabase(
                 create(
                     jdbcConfig[JdbcUtils.USERNAME_KEY].asText(),
-                    if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
+                    if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY)) {
                         jdbcConfig[JdbcUtils.PASSWORD_KEY].asText()
-                    else null,
+                    } else {
+                        null
+                    },
                     driverClass,
-                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText()
-                )
+                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
+                ),
             )
 
         database.execute(
@@ -110,10 +112,10 @@ abstract class JdbcStressTest {
                     .execute(
                         createTableQuery(
                             "id_and_name",
-                            String.format("id %s, name VARCHAR(200)", COL_ID_TYPE)
-                        )
+                            String.format("id %s, name VARCHAR(200)", COL_ID_TYPE),
+                        ),
                     )
-            }
+            },
         )
         val batchCount = TOTAL_RECORDS / BATCH_SIZE
         LOGGER.info("writing {} batches of {}", batchCount, BATCH_SIZE)
@@ -129,7 +131,7 @@ abstract class JdbcStressTest {
             database.execute(
                 CheckedConsumer { connection: Connection ->
                     connection.createStatement().execute(sql)
-                }
+                },
             )
         }
     }
@@ -180,7 +182,7 @@ abstract class JdbcStressTest {
         Assertions.assertEquals(
             expectedRoundedRecordsCount,
             bitSet!!.cardinality().toLong(),
-            "testing: $testName"
+            "testing: $testName",
         )
     }
 
@@ -191,9 +193,11 @@ abstract class JdbcStressTest {
         actualMessage.record.emittedAt = null
 
         val expectedRecordNumber: Number =
-            if (driverClass.lowercase(Locale.getDefault()).contains("oracle"))
+            if (driverClass.lowercase(Locale.getDefault()).contains("oracle")) {
                 BigDecimal(recordNumber)
-            else recordNumber
+            } else {
+                recordNumber
+            }
 
         val expectedMessage =
             AirbyteMessage()
@@ -207,10 +211,10 @@ abstract class JdbcStressTest {
                                     COL_ID,
                                     expectedRecordNumber,
                                     COL_NAME,
-                                    "picard-$recordNumber"
-                                )
-                            )
-                        )
+                                    "picard-$recordNumber",
+                                ),
+                            ),
+                        ),
                 )
         Assertions.assertEquals(expectedMessage, actualMessage)
     }
@@ -221,7 +225,7 @@ abstract class JdbcStressTest {
         }
         return String.format(
             "INSERT INTO id_and_name (id, name) VALUES %s",
-            Strings.join(inserts, ", ")
+            Strings.join(inserts, ", "),
         )
     }
 
@@ -251,8 +255,8 @@ abstract class JdbcStressTest {
                                 .withStream(catalog.streams[0])
                                 .withCursorField(listOf(COL_ID))
                                 .withSyncMode(SyncMode.INCREMENTAL)
-                                .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                        )
+                                .withDestinationSyncMode(DestinationSyncMode.APPEND),
+                        ),
                     )
 
         private val catalog: AirbyteCatalog
@@ -261,14 +265,14 @@ abstract class JdbcStressTest {
                     .withStreams(
                         Lists.newArrayList(
                             CatalogHelpers.createAirbyteStream(
-                                    streamName,
-                                    Field.of(COL_ID, JsonSchemaType.NUMBER),
-                                    Field.of(COL_NAME, JsonSchemaType.STRING)
-                                )
+                                streamName,
+                                Field.of(COL_ID, JsonSchemaType.NUMBER),
+                                Field.of(COL_NAME, JsonSchemaType.STRING),
+                            )
                                 .withSupportedSyncModes(
-                                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-                                )
-                        )
+                                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                                ),
+                        ),
                     )
     }
 }

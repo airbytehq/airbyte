@@ -25,10 +25,7 @@ class RunningFlushWorkers {
      * @param stream the stream that is being flushed
      * @param flushWorkerId flush worker id
      */
-    fun trackFlushWorker(
-        stream: StreamDescriptor,
-        flushWorkerId: UUID,
-    ) {
+    fun trackFlushWorker(stream: StreamDescriptor, flushWorkerId: UUID) {
         streamToFlushWorkerToBatchSize
             .computeIfAbsent(
                 stream,
@@ -48,10 +45,7 @@ class RunningFlushWorkers {
      * @param stream the stream that was flushed
      * @param flushWorkerId flush worker id
      */
-    fun completeFlushWorker(
-        stream: StreamDescriptor,
-        flushWorkerId: UUID,
-    ) {
+    fun completeFlushWorker(stream: StreamDescriptor, flushWorkerId: UUID) {
         Preconditions.checkState(
             streamToFlushWorkerToBatchSize.containsKey(stream) &&
                 streamToFlushWorkerToBatchSize[stream]!!.containsKey(flushWorkerId),
@@ -70,14 +64,12 @@ class RunningFlushWorkers {
      * @param stream stream
      * @param batchSize batch size
      */
-    fun registerBatchSize(
-        stream: StreamDescriptor,
-        flushWorkerId: UUID,
-        batchSize: Long,
-    ) {
+    fun registerBatchSize(stream: StreamDescriptor, flushWorkerId: UUID, batchSize: Long) {
         Preconditions.checkState(
-            (streamToFlushWorkerToBatchSize.containsKey(stream) &&
-                streamToFlushWorkerToBatchSize[stream]!!.containsKey(flushWorkerId)),
+            (
+                streamToFlushWorkerToBatchSize.containsKey(stream) &&
+                    streamToFlushWorkerToBatchSize[stream]!!.containsKey(flushWorkerId)
+                ),
             "Cannot register a batch size for a flush worker that has not been initialized",
         )
         streamToFlushWorkerToBatchSize[stream]!![flushWorkerId] = Optional.of(batchSize)

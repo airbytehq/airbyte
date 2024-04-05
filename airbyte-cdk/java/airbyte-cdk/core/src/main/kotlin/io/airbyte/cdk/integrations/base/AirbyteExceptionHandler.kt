@@ -39,7 +39,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
                 .stream()
                 .filter { t: Throwable ->
                     THROWABLES_TO_DEINTERPOLATE.stream().anyMatch {
-                        deinterpolatableClass: Class<out Throwable> ->
+                            deinterpolatableClass: Class<out Throwable> ->
                         deinterpolatableClass.isAssignableFrom(t.javaClass)
                     }
                 }

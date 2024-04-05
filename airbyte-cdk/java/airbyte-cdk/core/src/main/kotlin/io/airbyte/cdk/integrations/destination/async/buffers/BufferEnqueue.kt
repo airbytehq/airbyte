@@ -28,11 +28,7 @@ class BufferEnqueue(
      * @param message to buffer
      * @param sizeInBytes
      */
-    fun addRecord(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Int,
-        defaultNamespace: Optional<String>,
-    ) {
+    fun addRecord(message: PartialAirbyteMessage, sizeInBytes: Int, defaultNamespace: Optional<String>) {
         if (message.type == AirbyteMessage.Type.RECORD) {
             handleRecord(message, sizeInBytes)
         } else if (message.type == AirbyteMessage.Type.STATE) {
@@ -40,10 +36,7 @@ class BufferEnqueue(
         }
     }
 
-    private fun handleRecord(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Int,
-    ) {
+    private fun handleRecord(message: PartialAirbyteMessage, sizeInBytes: Int) {
         val streamDescriptor = extractStateFromRecord(message)
         val queue =
             buffers.computeIfAbsent(

@@ -43,26 +43,28 @@ class AirbyteVersion : Version {
                 """
                         Version mismatch between %s and %s.
                         Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte
-                        """.trimIndent(),
+                """.trimIndent(),
                 version1.serialize(),
-                version2.serialize()
+                version2.serialize(),
             )
         }
 
         fun versionWithoutPatch(airbyteVersion: AirbyteVersion): AirbyteVersion {
             val versionWithoutPatch =
-                ("" +
-                    airbyteVersion.major +
-                    "." +
-                    airbyteVersion.minor +
-                    ".0-" +
-                    airbyteVersion
-                        .serialize()
-                        .replace("\n", "")
-                        .trim()
-                        .split("-".toRegex())
-                        .dropLastWhile { it.isEmpty() }
-                        .toTypedArray()[1])
+                (
+                    "" +
+                        airbyteVersion.major +
+                        "." +
+                        airbyteVersion.minor +
+                        ".0-" +
+                        airbyteVersion
+                            .serialize()
+                            .replace("\n", "")
+                            .trim()
+                            .split("-".toRegex())
+                            .dropLastWhile { it.isEmpty() }
+                            .toTypedArray()[1]
+                    )
             return AirbyteVersion(versionWithoutPatch)
         }
 

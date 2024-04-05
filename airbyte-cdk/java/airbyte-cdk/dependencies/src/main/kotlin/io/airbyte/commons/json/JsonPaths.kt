@@ -69,7 +69,7 @@ object JsonPaths {
                      */
                     return EnumSet.of(Option.ALWAYS_RETURN_LIST)
                 }
-            }
+            },
         )
     }
 
@@ -96,8 +96,11 @@ object JsonPaths {
         var jsonPath = empty()
         for (fieldNameOrList in jsonSchemaPath) {
             jsonPath =
-                if (fieldNameOrList.isList) appendAppendListSplat(jsonPath)
-                else appendField(jsonPath, fieldNameOrList.fieldName)
+                if (fieldNameOrList.isList) {
+                    appendAppendListSplat(jsonPath)
+                } else {
+                    appendField(jsonPath, fieldNameOrList.fieldName)
+                }
         }
         return jsonPath
     }
@@ -130,7 +133,7 @@ object JsonPaths {
     fun assertIsSingleReturnQuery(jsonPath: String?) {
         Preconditions.checkArgument(
             JsonPath.isPathDefinite(jsonPath),
-            "Cannot accept paths with wildcards because they may return more than one item."
+            "Cannot accept paths with wildcards because they may return more than one item.",
         )
     }
 
@@ -197,8 +200,8 @@ object JsonPaths {
             String.format(
                 "Path returned more than one item. path: %s items: %s",
                 jsonPath,
-                jsonNodes
-            )
+                jsonNodes,
+            ),
         )
         return if (jsonNodes.isEmpty()) Optional.empty() else Optional.of(jsonNodes[0])
     }
@@ -226,8 +229,8 @@ object JsonPaths {
             String.format(
                 "Path returned more than one item. path: %s items: %s",
                 jsonPath,
-                foundPaths
-            )
+                foundPaths,
+            ),
         )
         return !foundPaths.isEmpty()
     }
@@ -311,11 +314,7 @@ object JsonPaths {
      * - a function that takes in a node that matches the path as well as the path to the node
      * itself. the return of this function will replace the current node.
      */
-    fun replaceAt(
-        json: JsonNode,
-        jsonPath: String,
-        replacementFunction: BiFunction<JsonNode, String, JsonNode>
-    ): JsonNode? {
+    fun replaceAt(json: JsonNode, jsonPath: String, replacementFunction: BiFunction<JsonNode, String, JsonNode>): JsonNode? {
         var clone = Jsons.clone(json)
         assertIsJsonPath(jsonPath)
         val foundPaths = getPaths(clone, jsonPath)
@@ -341,15 +340,11 @@ object JsonPaths {
      * @return all values that match the input query (whether the values are paths or actual values
      * in the json object is determined by the conf)
      */
-    private fun getInternal(
-        conf: Configuration,
-        json: JsonNode?,
-        jsonPath: String
-    ): List<JsonNode> {
+    private fun getInternal(conf: Configuration, json: JsonNode?, jsonPath: String): List<JsonNode> {
         assertIsJsonPath(jsonPath)
         return try {
             MoreIterators.toList(
-                JsonPath.using(conf).parse(json).read(jsonPath, ArrayNode::class.java).iterator()
+                JsonPath.using(conf).parse(json).read(jsonPath, ArrayNode::class.java).iterator(),
             )
         } catch (e: PathNotFoundException) {
             emptyList()

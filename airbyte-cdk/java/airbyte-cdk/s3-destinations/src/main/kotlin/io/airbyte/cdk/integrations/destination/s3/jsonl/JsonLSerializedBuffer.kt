@@ -28,7 +28,7 @@ import java.util.concurrent.Callable
 class JsonLSerializedBuffer(
     bufferStorage: BufferStorage,
     gzipCompression: Boolean,
-    private val flattenData: Boolean = false
+    private val flattenData: Boolean = false,
 ) : BaseSerializedBuffer(bufferStorage) {
 
     private lateinit var printWriter: PrintWriter
@@ -64,9 +64,9 @@ class JsonLSerializedBuffer(
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(
             Jsons.deserialize(
-                    recordString,
-                    AirbyteRecordMessage::class.java,
-                )
+                recordString,
+                AirbyteRecordMessage::class.java,
+            )
                 .withEmittedAt(emittedAt),
         )
     }
@@ -83,16 +83,17 @@ class JsonLSerializedBuffer(
         private val MAPPER: ObjectMapper = MoreMappers.initMapper()
 
         @JvmStatic
-        fun createBufferFunction(
-            config: S3JsonlFormatConfig?,
-            createStorageFunction: Callable<BufferStorage>
-        ): BufferCreateFunction {
+        fun createBufferFunction(config: S3JsonlFormatConfig?, createStorageFunction: Callable<BufferStorage>): BufferCreateFunction {
             return BufferCreateFunction {
-                _: AirbyteStreamNameNamespacePair?,
-                _: ConfiguredAirbyteCatalog? ->
+                    _: AirbyteStreamNameNamespacePair?,
+                    _: ConfiguredAirbyteCatalog?,
+                ->
                 val compressionType =
-                    if (config == null) S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
-                    else config.compressionType
+                    if (config == null) {
+                        S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+                    } else {
+                        config.compressionType
+                    }
                 val flattening = if (config == null) Flattening.NO else config.flatteningType
                 JsonLSerializedBuffer(
                     createStorageFunction.call(),

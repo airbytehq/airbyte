@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 class GcsStorageOperations(
     nameTransformer: NamingConventionTransformer,
     s3Client: AmazonS3,
-    s3Config: S3DestinationConfig
+    s3Config: S3DestinationConfig,
 ) : S3StorageOperations(nameTransformer!!, s3Client!!, s3Config!!) {
     /** GCS only supports the legacy AmazonS3#doesBucketExist method. */
     override fun doesBucketExist(bucket: String?): Boolean {
@@ -26,10 +26,7 @@ class GcsStorageOperations(
      * only difference is that the AmazonS3#deleteObjects method is replaced with
      * AmazonS3#deleteObject.
      */
-    override fun cleanUpObjects(
-        bucket: String?,
-        keysToDelete: List<DeleteObjectsRequest.KeyVersion>
-    ) {
+    override fun cleanUpObjects(bucket: String?, keysToDelete: List<DeleteObjectsRequest.KeyVersion>) {
         for (keyToDelete in keysToDelete) {
             LOGGER.info("Deleting object {}", keyToDelete.key)
             s3Client.deleteObject(bucket, keyToDelete.key)

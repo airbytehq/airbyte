@@ -68,10 +68,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
     }
 
     /** Helper method to retrieve all synced objects inside the configured bucket path. */
-    protected fun getAllSyncedObjects(
-        streamName: String,
-        namespace: String
-    ): List<S3ObjectSummary> {
+    protected fun getAllSyncedObjects(streamName: String, namespace: String): List<S3ObjectSummary> {
         val namespaceStr = s3nameTransformer.getNamespace(namespace)
         val streamNameStr = s3nameTransformer.getIdentifier(streamName)
         val outputPrefix =
@@ -79,7 +76,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                s3DestinationConfig.pathFormat!!
+                s3DestinationConfig.pathFormat!!,
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
@@ -96,7 +93,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
             objectSummaries
                 .stream()
                 .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .collect(Collectors.toList())
+                .collect(Collectors.toList()),
         )
         return objectSummaries
     }
@@ -117,7 +114,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
             String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5)
+                RandomStringUtils.randomAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("s3_bucket_path", testBucketPath)
@@ -128,7 +125,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
         LOGGER.info(
             "Test full path: {}/{}",
             s3DestinationConfig.bucketName,
-            s3DestinationConfig.bucketPath
+            s3DestinationConfig.bucketPath,
         )
 
         this.s3Client = s3DestinationConfig.getS3Client()
@@ -152,11 +149,11 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
             LOGGER.info(
                 "Tearing down test bucket path: {}/{}",
                 s3DestinationConfig.bucketName,
-                s3DestinationConfig.bucketPath
+                s3DestinationConfig.bucketPath,
             )
             val result =
                 s3Client!!.deleteObjects(
-                    DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete)
+                    DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete),
                 )
             LOGGER.info("Deleted {} file(s).", result.deletedObjects.size)
         }
@@ -183,6 +180,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
     companion object {
         protected val LOGGER: Logger =
             LoggerFactory.getLogger(S3DestinationAcceptanceTest::class.java)
+
         @JvmStatic protected val MAPPER: ObjectMapper = MoreMappers.initMapper()
     }
 }

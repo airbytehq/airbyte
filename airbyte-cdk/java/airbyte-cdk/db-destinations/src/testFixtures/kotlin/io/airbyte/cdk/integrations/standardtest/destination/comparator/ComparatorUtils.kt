@@ -7,11 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import java.util.function.Function
 
 object ComparatorUtils {
-    fun getActualValueByExpectedKey(
-        expectedKey: String?,
-        actualJsonNode: JsonNode,
-        nameResolver: Function<String?, List<String?>>
-    ): JsonNode? {
+    fun getActualValueByExpectedKey(expectedKey: String?, actualJsonNode: JsonNode, nameResolver: Function<String?, List<String?>>): JsonNode? {
         for (actualKey in nameResolver.apply(expectedKey)) {
             if (actualJsonNode.has(actualKey)) {
                 return actualJsonNode[actualKey]

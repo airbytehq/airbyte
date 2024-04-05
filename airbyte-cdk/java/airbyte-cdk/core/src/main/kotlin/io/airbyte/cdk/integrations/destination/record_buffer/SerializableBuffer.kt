@@ -24,7 +24,9 @@ interface SerializableBuffer : AutoCloseable {
      * @param record [AirbyteRecordMessage] to be added to buffer
      * @return number of bytes written to the buffer
      */
-    @Deprecated("") @Throws(Exception::class) fun accept(record: AirbyteRecordMessage): Long
+    @Deprecated("")
+    @Throws(Exception::class)
+    fun accept(record: AirbyteRecordMessage): Long
 
     /**
      * TODO: (ryankfu) Move all destination connectors to pass the serialized record string instead
@@ -40,7 +42,8 @@ interface SerializableBuffer : AutoCloseable {
     fun accept(recordString: String, airbyteMetaString: String, emittedAt: Long): Long
 
     /** Flush a buffer implementation. */
-    @Throws(Exception::class) fun flush()
+    @Throws(Exception::class)
+    fun flush()
 
     /**
      * The buffer implementation should be keeping track of how many bytes it accumulated so far. If
@@ -49,11 +52,14 @@ interface SerializableBuffer : AutoCloseable {
      */
     val byteCount: Long
 
-    @get:Throws(IOException::class) val filename: String
+    @get:Throws(IOException::class)
+    val filename: String
 
-    @get:Throws(IOException::class) val file: File?
+    @get:Throws(IOException::class)
+    val file: File?
 
-    @get:Throws(FileNotFoundException::class) val inputStream: InputStream?
+    @get:Throws(FileNotFoundException::class)
+    val inputStream: InputStream?
 
     /*
      * Depending on the implementation of the storage, methods below defined reasonable thresholds

@@ -22,7 +22,8 @@ class InMemoryBuffer(private val fileExtension: String) : BufferStorage {
     // "To optimize the number of parallel operations for a load,
     // we recommend aiming to produce data files roughly 100-250 MB (or larger) in size compressed."
     override val maxPerStreamBufferSizeInBytes: Long =
-        (200 * 1024 * 1024 // 200 MB
+        (
+            200 * 1024 * 1024 // 200 MB
             )
             .toLong()
 
@@ -31,7 +32,8 @@ class InMemoryBuffer(private val fileExtension: String) : BufferStorage {
     // Since this class is storing data in memory, the buffer size limits below are tied to the
     // necessary RAM space.
     override val maxTotalBufferSizeInBytes: Long =
-        (1024 * 1024 * 1024 // 1 GB
+        (
+            1024 * 1024 * 1024 // 1 GB
             )
             .toLong()
 

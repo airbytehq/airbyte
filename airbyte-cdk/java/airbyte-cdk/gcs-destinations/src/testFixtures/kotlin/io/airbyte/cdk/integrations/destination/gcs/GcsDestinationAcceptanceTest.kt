@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory
 abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format) :
     DestinationAcceptanceTest() {
     protected var configJson: JsonNode? = null
+
     // Not a big fan of those mocks(). Here to make spotbugs happy
     protected var config: GcsDestinationConfig = mock()
     protected var s3Client: AmazonS3 = mock()
@@ -97,10 +98,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
     }
 
     /** Helper method to retrieve all synced objects inside the configured bucket path. */
-    protected fun getAllSyncedObjects(
-        streamName: String,
-        namespace: String
-    ): List<S3ObjectSummary> {
+    protected fun getAllSyncedObjects(streamName: String, namespace: String): List<S3ObjectSummary> {
         val namespaceStr = nameTransformer.getNamespace(namespace)
         val streamNameStr = nameTransformer.getIdentifier(streamName)
         val outputPrefix =
@@ -108,7 +106,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                config.pathFormat!!
+                config.pathFormat!!,
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
@@ -125,7 +123,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
             objectSummaries
                 .stream()
                 .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .collect(Collectors.toList())
+                .collect(Collectors.toList()),
         )
         return objectSummaries
     }
@@ -146,7 +144,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
             String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5)
+                RandomStringUtils.randomAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("gcs_bucket_path", testBucketPath)
@@ -172,7 +170,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
             LOGGER.info(
                 "Tearing down test bucket path: {}/{}",
                 config!!.bucketName,
-                config!!.bucketPath
+                config!!.bucketPath,
             )
             // Google Cloud Storage doesn't accept request to delete multiple objects
             for (keyToDelete in keysToDelete) {
@@ -199,7 +197,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
             String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5)
+                RandomStringUtils.randomAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("gcs_bucket_path", testBucketPath)
@@ -207,7 +205,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
 
         Assertions.assertEquals(
             StandardCheckConnectionOutput.Status.FAILED,
-            runCheck(configJson).status
+            runCheck(configJson).status,
         )
     }
 
@@ -220,7 +218,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
                     .put("credential_type", "HMAC_KEY")
                     .put("hmac_key_access_id", "fake-key")
                     .put("hmac_key_secret", baseJson["credential"]["hmac_key_secret"].asText())
-                    .build()
+                    .build(),
             )
 
         (baseJson as ObjectNode).put("credential", credential)
@@ -241,10 +239,10 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
                     .put("credential_type", "HMAC_KEY")
                     .put(
                         "hmac_key_access_id",
-                        baseJson["credential"]["hmac_key_access_id"].asText()
+                        baseJson["credential"]["hmac_key_access_id"].asText(),
                     )
                     .put("hmac_key_secret", "fake-secret")
-                    .build()
+                    .build(),
             )
 
         (baseJson as ObjectNode).put("credential", credential)
@@ -271,6 +269,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
     companion object {
         protected val LOGGER: Logger =
             LoggerFactory.getLogger(GcsDestinationAcceptanceTest::class.java)
+
         @JvmStatic protected val MAPPER: ObjectMapper = MoreMappers.initMapper()
 
         protected const val SECRET_FILE_PATH: String = "secrets/config.json"

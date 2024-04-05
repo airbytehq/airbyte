@@ -39,18 +39,13 @@ private val logger = KotlinLogging.logger {}
 open class S3StorageOperations(
     private val nameTransformer: NamingConventionTransformer,
     var s3Client: AmazonS3,
-    private val s3Config: S3DestinationConfig
+    private val s3Config: S3DestinationConfig,
 ) : BlobStorageOperations() {
     private val s3FilenameTemplateManager: S3FilenameTemplateManager = S3FilenameTemplateManager()
 
     private val partCounts: ConcurrentMap<String, AtomicInteger> = ConcurrentHashMap()
 
-    override fun getBucketObjectPath(
-        namespace: String,
-        streamName: String,
-        writeDatetime: DateTime,
-        customFormat: String
-    ): String {
+    override fun getBucketObjectPath(namespace: String, streamName: String, writeDatetime: DateTime, customFormat: String): String {
         val namespaceStr: String =
             nameTransformer.getNamespace(if (Strings.isNotBlank(namespace)) namespace else "")
         val streamNameStr: String = nameTransformer.getIdentifier(streamName)
@@ -112,11 +107,7 @@ open class S3StorageOperations(
         return s3Client.doesBucketExistV2(bucket)
     }
 
-    override fun uploadRecordsToBucket(
-        recordsData: SerializableBuffer,
-        namespace: String,
-        objectPath: String
-    ): String {
+    override fun uploadRecordsToBucket(recordsData: SerializableBuffer, namespace: String, objectPath: String): String {
         val exceptionsThrown: MutableList<Exception> = ArrayList()
         while (exceptionsThrown.size < UPLOAD_RETRY_LIMIT) {
             if (exceptionsThrown.isNotEmpty()) {
@@ -193,10 +184,10 @@ open class S3StorageOperations(
         }
         val uploadManager: StreamTransferManager =
             StreamTransferManagerFactory.create(
-                    bucket,
-                    fullObjectKey,
-                    s3Client,
-                )
+                bucket,
+                fullObjectKey,
+                s3Client,
+            )
                 .setPartSize(partSize)
                 .setUserMetadata(metadata)
                 .get()
@@ -290,12 +281,7 @@ open class S3StorageOperations(
         cleanUpBucketObject(objectPath, listOf())
     }
 
-    override fun cleanUpBucketObject(
-        namespace: String,
-        streamName: String,
-        objectPath: String,
-        pathFormat: String
-    ) {
+    override fun cleanUpBucketObject(namespace: String, streamName: String, objectPath: String, pathFormat: String) {
         val bucket: String? = s3Config.bucketName
         var objects: ObjectListing =
             s3Client.listObjects(
@@ -342,20 +328,22 @@ open class S3StorageOperations(
         val namespaceStr: String = nameTransformer.getNamespace(namespace ?: "")
         val streamNameStr: String = nameTransformer.getIdentifier(streamName)
         return nameTransformer.applyDefaultCase(
-            (pathFormat
-                .replace(Pattern.quote(FORMAT_VARIABLE_NAMESPACE).toRegex(), namespaceStr)
-                .replace(Pattern.quote(FORMAT_VARIABLE_STREAM_NAME).toRegex(), streamNameStr)
-                .replace(Pattern.quote(FORMAT_VARIABLE_YEAR).toRegex(), "[0-9]{4}")
-                .replace(Pattern.quote(FORMAT_VARIABLE_MONTH).toRegex(), "[0-9]{2}")
-                .replace(Pattern.quote(FORMAT_VARIABLE_DAY).toRegex(), "[0-9]{2}")
-                .replace(Pattern.quote(FORMAT_VARIABLE_HOUR).toRegex(), "[0-9]{2}")
-                .replace(Pattern.quote(FORMAT_VARIABLE_MINUTE).toRegex(), "[0-9]{2}")
-                .replace(Pattern.quote(FORMAT_VARIABLE_SECOND).toRegex(), "[0-9]{2}")
-                .replace(Pattern.quote(FORMAT_VARIABLE_MILLISECOND).toRegex(), "[0-9]{4}")
-                .replace(Pattern.quote(FORMAT_VARIABLE_EPOCH).toRegex(), "[0-9]+")
-                .replace(Pattern.quote(FORMAT_VARIABLE_UUID).toRegex(), ".*")
-                .replace("/+".toRegex(), "/") // match part_id and extension at the end
-            + ".*"),
+            (
+                pathFormat
+                    .replace(Pattern.quote(FORMAT_VARIABLE_NAMESPACE).toRegex(), namespaceStr)
+                    .replace(Pattern.quote(FORMAT_VARIABLE_STREAM_NAME).toRegex(), streamNameStr)
+                    .replace(Pattern.quote(FORMAT_VARIABLE_YEAR).toRegex(), "[0-9]{4}")
+                    .replace(Pattern.quote(FORMAT_VARIABLE_MONTH).toRegex(), "[0-9]{2}")
+                    .replace(Pattern.quote(FORMAT_VARIABLE_DAY).toRegex(), "[0-9]{2}")
+                    .replace(Pattern.quote(FORMAT_VARIABLE_HOUR).toRegex(), "[0-9]{2}")
+                    .replace(Pattern.quote(FORMAT_VARIABLE_MINUTE).toRegex(), "[0-9]{2}")
+                    .replace(Pattern.quote(FORMAT_VARIABLE_SECOND).toRegex(), "[0-9]{2}")
+                    .replace(Pattern.quote(FORMAT_VARIABLE_MILLISECOND).toRegex(), "[0-9]{4}")
+                    .replace(Pattern.quote(FORMAT_VARIABLE_EPOCH).toRegex(), "[0-9]+")
+                    .replace(Pattern.quote(FORMAT_VARIABLE_UUID).toRegex(), ".*")
+                    .replace("/+".toRegex(), "/") + // match part_id and extension at the end
+                    ".*"
+                ),
         )
     }
 
@@ -390,14 +378,11 @@ open class S3StorageOperations(
         }
     }
 
-    protected open fun cleanUpObjects(
-        bucket: String?,
-        keysToDelete: List<DeleteObjectsRequest.KeyVersion>
-    ) {
+    protected open fun cleanUpObjects(bucket: String?, keysToDelete: List<DeleteObjectsRequest.KeyVersion>) {
         if (keysToDelete.isNotEmpty()) {
             logger.info {
                 "Deleting objects ${keysToDelete.stream().map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
-                .toList().joinToString(separator = ", ")}"
+                    .toList().joinToString(separator = ", ")}"
             }
             s3Client.deleteObjects(DeleteObjectsRequest(bucket).withKeys(keysToDelete))
         }
@@ -439,6 +424,7 @@ open class S3StorageOperations(
         private const val FORMAT_VARIABLE_EPOCH: String = "\${EPOCH}"
         private const val FORMAT_VARIABLE_UUID: String = "\${UUID}"
         private const val GZ_FILE_EXTENSION: String = "gz"
+
         @VisibleForTesting
         @JvmStatic
         fun getFilename(fullPath: String): String {

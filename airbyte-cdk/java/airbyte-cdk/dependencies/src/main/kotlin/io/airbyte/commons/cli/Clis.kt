@@ -16,12 +16,7 @@ object Clis {
      * @return object with parsed values.
      */
     @JvmOverloads
-    fun parse(
-        args: Array<String>,
-        options: Options,
-        parser: CommandLineParser = DefaultParser(),
-        commandLineSyntax: String? = null
-    ): CommandLine {
+    fun parse(args: Array<String>, options: Options, parser: CommandLineParser = DefaultParser(), commandLineSyntax: String? = null): CommandLine {
         val helpFormatter = HelpFormatter()
 
         try {

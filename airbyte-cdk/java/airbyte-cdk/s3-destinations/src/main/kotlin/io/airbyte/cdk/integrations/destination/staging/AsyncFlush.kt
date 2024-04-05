@@ -39,7 +39,7 @@ internal class AsyncFlush(
     // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
     // freed earlier similar to a sliding window effect
     override val optimalBatchSizeBytes: Long,
-    private val useDestinationsV2Columns: Boolean
+    private val useDestinationsV2Columns: Boolean,
 ) : DestinationFlushFunction {
     private val streamDescToWriteConfig: Map<StreamDescriptor, WriteConfig> =
         streamDescToWriteConfig
@@ -52,7 +52,7 @@ internal class AsyncFlush(
                 CsvSerializedBuffer(
                     FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
                     StagingDatabaseCsvSheetGenerator(useDestinationsV2Columns),
-                    true
+                    true,
                 )
 
             // reassign as lambdas require references to be final.
@@ -66,7 +66,7 @@ internal class AsyncFlush(
                     writer.accept(
                         record!!.serialized!!,
                         Jsons.serialize(record.record!!.meta),
-                        record.record!!.emittedAt
+                        record.record!!.emittedAt,
                     )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
@@ -83,7 +83,7 @@ internal class AsyncFlush(
         require(streamDescToWriteConfig.containsKey(decs)) {
             String.format(
                 "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
-                Jsons.serialize(catalog)
+                Jsons.serialize(catalog),
             )
         }
 
@@ -96,7 +96,7 @@ internal class AsyncFlush(
                 schemaName,
                 writeConfig.streamName,
                 writeConfig.outputTableName,
-                writeConfig.writeDatetime
+                writeConfig.writeDatetime,
             )
         try {
             val stagedFile =
@@ -105,7 +105,7 @@ internal class AsyncFlush(
                     writer,
                     schemaName,
                     stageName,
-                    stagingPath
+                    stagingPath,
                 )
             GeneralStagingFunctions.copyIntoTableFromStage(
                 database,
@@ -118,7 +118,7 @@ internal class AsyncFlush(
                 writeConfig.namespace,
                 writeConfig.streamName,
                 typerDeduperValve,
-                typerDeduper
+                typerDeduper,
             )
         } catch (e: Exception) {
             logger.error(e) {

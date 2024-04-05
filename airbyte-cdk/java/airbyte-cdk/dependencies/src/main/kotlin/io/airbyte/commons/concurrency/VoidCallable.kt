@@ -13,7 +13,8 @@ fun interface VoidCallable : Callable<Void?> {
         return null
     }
 
-    @Throws(Exception::class) fun voidCall()
+    @Throws(Exception::class)
+    fun voidCall()
 
     companion object {
         @JvmField val NOOP: VoidCallable = VoidCallable {}

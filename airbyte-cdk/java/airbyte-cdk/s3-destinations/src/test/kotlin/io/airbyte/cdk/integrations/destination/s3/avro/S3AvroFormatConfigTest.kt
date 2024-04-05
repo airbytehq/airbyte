@@ -24,7 +24,7 @@ internal class S3AvroFormatConfigTest {
         for (nullConfig in nullConfigs) {
             Assertions.assertEquals(
                 DataFileConstants.NULL_CODEC,
-                parseCodecConfig(deserialize(nullConfig)).toString()
+                parseCodecConfig(deserialize(nullConfig)).toString(),
             )
         }
     }
@@ -71,8 +71,8 @@ internal class S3AvroFormatConfigTest {
         val codecFactory2 =
             parseCodecConfig(
                 deserialize(
-                    "{ \"codec\": \"zstandard\", \"compression_level\": 20, \"include_checksum\": true }"
-                )
+                    "{ \"codec\": \"zstandard\", \"compression_level\": 20, \"include_checksum\": true }",
+                ),
             )
         // There is no way to verify the checksum; all relevant methods are private or protected...
         Assertions.assertEquals("zstandard[20]", codecFactory2.toString())
@@ -99,9 +99,13 @@ internal class S3AvroFormatConfigTest {
     @Test
     @Throws(IllegalAccessException::class)
     fun testHandlePartSizeConfig() {
-        val config = ConfigTestUtils.getBaseConfig(deserialize("""{
+        val config = ConfigTestUtils.getBaseConfig(
+            deserialize(
+                """{
   "format_type": "AVRO"
-}"""))
+}""",
+            ),
+        )
 
         val s3DestinationConfig = getS3DestinationConfig(config!!, StorageProvider.AWS_S3)
         ConfigTestUtils.assertBaseConfig(s3DestinationConfig)
@@ -116,16 +120,20 @@ internal class S3AvroFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 
     @Test
     @Throws(IllegalAccessException::class)
     fun testHandleAbsenceOfPartSizeConfig() {
-        val config = ConfigTestUtils.getBaseConfig(deserialize("""{
+        val config = ConfigTestUtils.getBaseConfig(
+            deserialize(
+                """{
   "format_type": "AVRO"
-}"""))
+}""",
+            ),
+        )
 
         val s3DestinationConfig = getS3DestinationConfig(config!!, StorageProvider.AWS_S3)
         ConfigTestUtils.assertBaseConfig(s3DestinationConfig)
@@ -137,7 +145,7 @@ internal class S3AvroFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 }

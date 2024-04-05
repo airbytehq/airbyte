@@ -163,14 +163,16 @@ class CsvSerializedBufferTest {
         minExpectedByte: Long,
         maxExpectedByte: Long,
         config: S3CsvFormatConfig?,
-        expectedData: String
+        expectedData: String,
     ) {
         val outputFile = buffer.file
-        (CsvSerializedBuffer.createFunction(config) { buffer }
+        (
+            CsvSerializedBuffer.createFunction(config) { buffer }
                 .apply(
                     streamPair,
                     catalog,
-                ) as CsvSerializedBuffer)
+                ) as CsvSerializedBuffer
+            )
             .use { writer ->
                 writer.withCsvFormat(csvFormat)
                 writer.withCompression(withCompression)
@@ -194,9 +196,9 @@ class CsvSerializedBufferTest {
                 if (config == null) {
                     actualData =
                         String(
-                                inputStream.readAllBytes(),
-                                StandardCharsets.UTF_8,
-                            )
+                            inputStream.readAllBytes(),
+                            StandardCharsets.UTF_8,
+                        )
                             .substring(
                                 UUID.randomUUID().toString().length + 1,
                             ) // remove the last part of the string with random timestamp
@@ -211,7 +213,7 @@ class CsvSerializedBufferTest {
                         tmpData.append(
                             line // remove uuid
                                 .substring(
-                                    UUID.randomUUID().toString().length + 1
+                                    UUID.randomUUID().toString().length + 1,
                                 ) // remove timestamp
                                 .replace("\\A[0-9]+,".toRegex(), ""),
                         )

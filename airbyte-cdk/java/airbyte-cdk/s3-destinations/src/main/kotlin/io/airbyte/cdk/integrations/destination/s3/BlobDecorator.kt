@@ -26,10 +26,7 @@ interface BlobDecorator {
      * @param metadata The blob's metadata
      * @param metadataKeyMapping The mapping from canonical to vendor-specific key names
      */
-    fun updateMetadata(
-        metadata: MutableMap<String, String>,
-        metadataKeyMapping: Map<String, String>
-    )
+    fun updateMetadata(metadata: MutableMap<String, String>, metadataKeyMapping: Map<String, String>)
 
     companion object {
         /**
@@ -37,12 +34,7 @@ interface BlobDecorator {
          * the metadataKeyMapping.
          */
         @VisibleForTesting
-        fun insertMetadata(
-            metadata: MutableMap<String, String>,
-            metadataKeyMapping: Map<String, String>,
-            key: String,
-            value: String
-        ) {
+        fun insertMetadata(metadata: MutableMap<String, String>, metadataKeyMapping: Map<String, String>, key: String, value: String) {
             if (metadataKeyMapping.containsKey(key)) {
                 metadata[metadataKeyMapping.getValue(key)] = value
             }

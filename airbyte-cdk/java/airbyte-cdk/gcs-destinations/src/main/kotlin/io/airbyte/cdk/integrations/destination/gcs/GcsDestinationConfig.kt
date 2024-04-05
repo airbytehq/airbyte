@@ -28,7 +28,7 @@ class GcsDestinationConfig(
     bucketPath: String,
     bucketRegion: String?,
     val gcsCredentialConfig: GcsCredentialConfig,
-    formatConfig: S3FormatConfig
+    formatConfig: S3FormatConfig,
 ) :
     S3DestinationConfig(
         GCS_ENDPOINT,
@@ -41,7 +41,7 @@ class GcsDestinationConfig(
         null,
         null,
         false,
-        S3StorageOperations.DEFAULT_UPLOAD_THREADS
+        S3StorageOperations.DEFAULT_UPLOAD_THREADS,
     ) {
     override fun createS3Client(): AmazonS3 {
         when (gcsCredentialConfig.credentialType) {
@@ -50,19 +50,19 @@ class GcsDestinationConfig(
                 val awsCreds =
                     BasicAWSCredentials(
                         hmacKeyCredential.hmacKeyAccessId,
-                        hmacKeyCredential.hmacKeySecret
+                        hmacKeyCredential.hmacKeySecret,
                     )
 
                 return AmazonS3ClientBuilder.standard()
                     .withEndpointConfiguration(
-                        AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, bucketRegion)
+                        AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, bucketRegion),
                     )
                     .withCredentials(AWSStaticCredentialsProvider(awsCreds))
                     .build()
             }
             else ->
                 throw IllegalArgumentException(
-                    "Unsupported credential type: " + gcsCredentialConfig.credentialType!!.name
+                    "Unsupported credential type: " + gcsCredentialConfig.credentialType!!.name,
                 )
         }
     }
@@ -76,7 +76,7 @@ class GcsDestinationConfig(
                 config["gcs_bucket_path"].asText(),
                 config["gcs_bucket_region"].asText(),
                 GcsCredentialConfigs.getCredentialConfig(config),
-                getS3FormatConfig(config)
+                getS3FormatConfig(config),
             )
         }
     }

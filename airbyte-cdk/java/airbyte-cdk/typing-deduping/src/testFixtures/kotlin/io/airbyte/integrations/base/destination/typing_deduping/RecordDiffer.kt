@@ -28,7 +28,7 @@ class RecordDiffer
 constructor(
     private val rawRecordColumnNames: Map<String, String>,
     private val finalRecordColumnNames: Map<String, String>,
-    vararg identifyingColumns: Pair<ColumnId, AirbyteType>
+    vararg identifyingColumns: Pair<ColumnId, AirbyteType>,
 ) {
     private val rawRecordIdentityComparator: Comparator<JsonNode>
     private val rawRecordSortComparator: Comparator<JsonNode>
@@ -78,11 +78,11 @@ constructor(
         expectedRawRecords: List<JsonNode>,
         actualRawRecords: List<JsonNode>,
         expectedFinalRecords: List<JsonNode>,
-        actualFinalRecords: List<JsonNode>
+        actualFinalRecords: List<JsonNode>,
     ) {
         Assertions.assertAll(
             Executable { diffRawTableRecords(expectedRawRecords, actualRawRecords) },
-            Executable { diffFinalTableRecords(expectedFinalRecords, actualFinalRecords) }
+            Executable { diffFinalTableRecords(expectedFinalRecords, actualFinalRecords) },
         )
     }
 
@@ -100,7 +100,7 @@ constructor(
                 rawRecordIdentityComparator,
                 rawRecordSortComparator,
                 rawRecordIdentityExtractor,
-                rawRecordColumnNames
+                rawRecordColumnNames,
             )
 
         if (!diff.isEmpty()) {
@@ -116,7 +116,7 @@ constructor(
                 finalRecordIdentityComparator,
                 finalRecordSortComparator,
                 finalRecordIdentityExtractor,
-                finalRecordColumnNames
+                finalRecordColumnNames,
             )
 
         if (!diff.isEmpty()) {
@@ -145,7 +145,7 @@ constructor(
                 // _airbyte_raw_id)
                 // We don't support that in production, so we don't support it here either.
                 throw RuntimeException(
-                    "Cannot lift field " + field.key + " because it already exists in the record."
+                    "Cannot lift field " + field.key + " because it already exists in the record.",
                 )
             }
         }
@@ -158,7 +158,7 @@ constructor(
      */
     private fun buildIdentityComparator(
         identifyingColumns: Array<Pair<String, AirbyteType>>,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): Comparator<JsonNode> {
         // Start with a noop comparator for convenience
         var comp: Comparator<JsonNode> = Comparator.comparing { record -> 0 }
@@ -168,7 +168,7 @@ constructor(
         comp =
             comp.thenComparing { record ->
                 asTimestampWithTimezone(
-                    record!![getMetadataColumnName(columnNames, "_airbyte_extracted_at")]
+                    record!![getMetadataColumnName(columnNames, "_airbyte_extracted_at")],
                 )
             }
         return comp
@@ -177,18 +177,20 @@ constructor(
     /** See [&lt;][.buildIdentityComparator] for an explanation of dataExtractor. */
     private fun buildIdentityExtractor(
         identifyingColumns: Array<Pair<String, AirbyteType>>,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): Function<JsonNode, String> {
         return Function { record: JsonNode ->
-            (Arrays.stream(identifyingColumns)
-                .map { column: Pair<String, AirbyteType> ->
-                    getPrintableFieldIfPresent(record, column.first)
-                }
-                .collect(Collectors.joining(", ")) +
-                getPrintableFieldIfPresent(
-                    record,
-                    getMetadataColumnName(columnNames, "_airbyte_extracted_at")
-                ))
+            (
+                Arrays.stream(identifyingColumns)
+                    .map { column: Pair<String, AirbyteType> ->
+                        getPrintableFieldIfPresent(record, column.first)
+                    }
+                    .collect(Collectors.joining(", ")) +
+                    getPrintableFieldIfPresent(
+                        record,
+                        getMetadataColumnName(columnNames, "_airbyte_extracted_at"),
+                    )
+                )
         }
     }
 
@@ -216,7 +218,7 @@ constructor(
         identityComparator: Comparator<JsonNode>,
         sortComparator: Comparator<JsonNode>,
         recordIdExtractor: Function<JsonNode, String>,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): String {
         val expectedRecords = originalExpectedRecords.stream().sorted(sortComparator).toList()
         val actualRecords = originalActualRecords.stream().sorted(sortComparator).toList()
@@ -273,7 +275,7 @@ constructor(
         recordIdExtractor: Function<JsonNode, String>,
         expectedRecord: JsonNode,
         actualRecord: JsonNode,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): String {
         var foundMismatch = false
         var mismatchedRecordMessage =
@@ -317,7 +319,7 @@ constructor(
     private fun checkForExtraOrNonNullFields(
         expectedRecord: JsonNode,
         actualRecord: JsonNode,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): LinkedHashMap<String, JsonNode> {
         val extraFields = LinkedHashMap<String, JsonNode>()
         for (column in Streams.stream<String>(actualRecord.fieldNames()).sorted().toList()) {
@@ -332,10 +334,7 @@ constructor(
         return extraFields
     }
 
-    private fun getMetadataColumnName(
-        columnNames: Map<String, String>,
-        columnName: String
-    ): String {
+    private fun getMetadataColumnName(columnNames: Map<String, String>, columnName: String): String {
         return columnNames.getOrDefault(columnName, columnName)
     }
 
@@ -348,10 +347,7 @@ constructor(
             }
         }
 
-        private fun areJsonNodesEquivalent(
-            expectedValue: JsonNode?,
-            actualValue: JsonNode?
-        ): Boolean {
+        private fun areJsonNodesEquivalent(expectedValue: JsonNode?, actualValue: JsonNode?): Boolean {
             return if (expectedValue == null || actualValue == null) {
                 // If one of the values is null, then we expect both of them to be null.
                 expectedValue == null && actualValue == null
@@ -373,13 +369,19 @@ constructor(
                 // Otherwise, we need to compare the actual values.
                 // This is kind of sketchy, but seems to work fine for the data we have in our test
                 // cases.
-                (expectedValue == actualValue ||
-                    (expectedValue.isIntegralNumber &&
-                        actualValue.isIntegralNumber &&
-                        expectedValue.bigIntegerValue() == actualValue.bigIntegerValue()) ||
-                    (expectedValue.isNumber &&
-                        actualValue.isNumber &&
-                        expectedValue.decimalValue() == actualValue.decimalValue()))
+                (
+                    expectedValue == actualValue ||
+                        (
+                            expectedValue.isIntegralNumber &&
+                                actualValue.isIntegralNumber &&
+                                expectedValue.bigIntegerValue() == actualValue.bigIntegerValue()
+                            ) ||
+                        (
+                            expectedValue.isNumber &&
+                                actualValue.isNumber &&
+                                expectedValue.decimalValue() == actualValue.decimalValue()
+                            )
+                    )
             }
         }
 
@@ -388,11 +390,7 @@ constructor(
          * leading spaces are intentional, to make the message easier to read when it's embedded in
          * a larger stacktrace.
          */
-        private fun generateFieldError(
-            fieldname: String,
-            expectedValue: JsonNode?,
-            actualValue: JsonNode?
-        ): String {
+        private fun generateFieldError(fieldname: String, expectedValue: JsonNode?, actualValue: JsonNode?): String {
             val expectedString = expectedValue?.toString() ?: "SQL NULL (i.e. no value)"
             val actualString = actualValue?.toString() ?: "SQL NULL (i.e. no value)"
             return "  For $fieldname, expected $expectedString but got $actualString\n"
@@ -523,7 +521,7 @@ constructor(
                     }
                 } else {
                     node.toString()
-                }
+                },
             )
         }
     }

@@ -40,12 +40,12 @@ object PostgresSslConnectionUtils {
             when (method) {
                 VERIFY_CA -> {
                     additionalParameters.putAll(
-                        obtainConnectionCaOptions(encryption, method, keyStorePassword)
+                        obtainConnectionCaOptions(encryption, method, keyStorePassword),
                     )
                 }
                 VERIFY_FULL -> {
                     additionalParameters.putAll(
-                        obtainConnectionFullOptions(encryption, method, keyStorePassword)
+                        obtainConnectionFullOptions(encryption, method, keyStorePassword),
                     )
                 }
                 else -> {
@@ -59,9 +59,11 @@ object PostgresSslConnectionUtils {
 
     private fun checkOrCreatePassword(encryption: JsonNode): String {
         val sslPassword =
-            if (encryption.has(PARAM_CLIENT_KEY_PASSWORD))
+            if (encryption.has(PARAM_CLIENT_KEY_PASSWORD)) {
                 encryption[PARAM_CLIENT_KEY_PASSWORD].asText()
-            else ""
+            } else {
+                ""
+            }
         var keyStorePassword = RandomStringUtils.randomAlphanumeric(10)
         if (sslPassword.isEmpty()) {
             val file = File(ENCRYPT_FILE_NAME)
@@ -91,18 +93,14 @@ object PostgresSslConnectionUtils {
         }
     }
 
-    private fun obtainConnectionFullOptions(
-        encryption: JsonNode,
-        method: String,
-        clientKeyPassword: String
-    ): Map<String, String> {
+    private fun obtainConnectionFullOptions(encryption: JsonNode, method: String, clientKeyPassword: String): Map<String, String> {
         val additionalParameters: MutableMap<String, String> = HashMap()
         try {
             convertAndImportFullCertificate(
                 encryption[PARAM_CA_CERTIFICATE].asText(),
                 encryption[PARAM_CLIENT_CERTIFICATE].asText(),
                 encryption[PARAM_CLIENT_KEY].asText(),
-                clientKeyPassword
+                clientKeyPassword,
             )
         } catch (e: IOException) {
             throw RuntimeException("Failed to import certificate into Java Keystore")
@@ -118,16 +116,12 @@ object PostgresSslConnectionUtils {
         return additionalParameters
     }
 
-    private fun obtainConnectionCaOptions(
-        encryption: JsonNode,
-        method: String,
-        clientKeyPassword: String
-    ): Map<String, String> {
+    private fun obtainConnectionCaOptions(encryption: JsonNode, method: String, clientKeyPassword: String): Map<String, String> {
         val additionalParameters: MutableMap<String, String> = HashMap()
         try {
             convertAndImportCaCertificate(
                 encryption[PARAM_CA_CERTIFICATE].asText(),
-                clientKeyPassword
+                clientKeyPassword,
             )
         } catch (e: IOException) {
             throw RuntimeException("Failed to import certificate into Java Keystore")
@@ -142,12 +136,7 @@ object PostgresSslConnectionUtils {
     }
 
     @Throws(IOException::class, InterruptedException::class)
-    private fun convertAndImportFullCertificate(
-        caCertificate: String,
-        clientCertificate: String,
-        clientKey: String,
-        clientKeyPassword: String
-    ) {
+    private fun convertAndImportFullCertificate(caCertificate: String, clientCertificate: String, clientKey: String, clientKeyPassword: String) {
         val run = Runtime.getRuntime()
         createCaCertificate(caCertificate, clientKeyPassword, run)
         createCertificateFile(CLIENT_CERTIFICATE, clientCertificate)
@@ -160,7 +149,7 @@ object PostgresSslConnectionUtils {
                 " -storepass " +
                 clientKeyPassword +
                 " -noprompt",
-            run
+            run,
         )
         // convert client.key to client.pk8 based on the documentation
         runProcess(
@@ -169,7 +158,7 @@ object PostgresSslConnectionUtils {
                 " -outform DER -out " +
                 CLIENT_ENCRYPTED_KEY +
                 " -nocrypt",
-            run
+            run,
         )
         runProcess("rm " + CLIENT_KEY, run)
 
@@ -184,11 +173,7 @@ object PostgresSslConnectionUtils {
     }
 
     @Throws(IOException::class, InterruptedException::class)
-    private fun createCaCertificate(
-        caCertificate: String,
-        clientKeyPassword: String,
-        run: Runtime
-    ) {
+    private fun createCaCertificate(caCertificate: String, clientKeyPassword: String, run: Runtime) {
         createCertificateFile(CA_CERTIFICATE, caCertificate)
         // add CA certificate to the custom keystore
         runProcess(
@@ -198,7 +183,7 @@ object PostgresSslConnectionUtils {
                 " -storepass " +
                 clientKeyPassword +
                 " -noprompt",
-            run
+            run,
         )
     }
 

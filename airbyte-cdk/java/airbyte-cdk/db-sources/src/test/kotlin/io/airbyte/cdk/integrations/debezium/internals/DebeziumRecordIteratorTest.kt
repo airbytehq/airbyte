@@ -19,22 +19,18 @@ class DebeziumRecordIteratorTest {
             DebeziumRecordIterator(
                 mock(),
                 object : CdcTargetPosition<Long?> {
-                    override fun reachedTargetPosition(
-                        changeEventWithMetadata: ChangeEventWithMetadata?
-                    ): Boolean {
+                    override fun reachedTargetPosition(changeEventWithMetadata: ChangeEventWithMetadata?): Boolean {
                         return false
                     }
 
-                    override fun extractPositionFromHeartbeatOffset(
-                        sourceOffset: Map<String?, *>
-                    ): Long {
+                    override fun extractPositionFromHeartbeatOffset(sourceOffset: Map<String?, *>): Long {
                         return sourceOffset!!["lsn"] as Long
                     }
                 },
                 { false },
                 mock(),
                 Duration.ZERO,
-                Duration.ZERO
+                Duration.ZERO,
             )
         val lsn =
             debeziumRecordIterator.getHeartbeatPosition(
@@ -45,7 +41,7 @@ class DebeziumRecordIteratorTest {
                             Collections.singletonMap("lsn", 358824993496L),
                             null,
                             null,
-                            null
+                            null,
                         )
 
                     override fun key(): String? {
@@ -63,7 +59,7 @@ class DebeziumRecordIteratorTest {
                     fun sourceRecord(): SourceRecord {
                         return sourceRecord
                     }
-                }
+                },
             )
 
         Assertions.assertEquals(lsn, 358824993496L)

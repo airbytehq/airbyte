@@ -44,7 +44,7 @@ internal class DefaultAirbyteStreamFactoryTest {
 
         Assertions.assertEquals(
             expectedStream.collect(Collectors.toList()),
-            messageStream.collect(Collectors.toList())
+            messageStream.collect(Collectors.toList()),
         )
         Mockito.verifyNoInteractions(logger)
     }
@@ -108,12 +108,12 @@ internal class DefaultAirbyteStreamFactoryTest {
 
         val messageStream =
             DefaultAirbyteStreamFactory(
-                    protocolPredicate,
-                    logger,
-                    MdcScope.Builder(),
-                    Optional.of(RuntimeException::class.java),
-                    1L
-                )
+                protocolPredicate,
+                logger,
+                MdcScope.Builder(),
+                Optional.of(RuntimeException::class.java),
+                1L,
+            )
                 .create(bufferedReader)
 
         Assertions.assertThrows(RuntimeException::class.java) { messageStream.toList() }
@@ -139,11 +139,11 @@ internal class DefaultAirbyteStreamFactoryTest {
             ByteArrayInputStream(inputString.toByteArray(StandardCharsets.UTF_8))
         val bufferedReader = BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
         return DefaultAirbyteStreamFactory(
-                protocolPredicate,
-                logger,
-                MdcScope.Builder(),
-                Optional.empty()
-            )
+            protocolPredicate,
+            logger,
+            MdcScope.Builder(),
+            Optional.empty(),
+        )
             .create(bufferedReader)
     }
 

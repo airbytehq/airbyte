@@ -24,9 +24,9 @@ class SshBastionContainer : AutoCloseable {
         override fun createNewContainer(imageName: DockerImageName?): GenericContainer<*>? {
             val container: GenericContainer<*> =
                 GenericContainer<Nothing>(
-                        ImageFromDockerfile("bastion-test")
-                            .withFileFromClasspath("Dockerfile", "bastion/Dockerfile")
-                    )
+                    ImageFromDockerfile("bastion-test")
+                        .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"),
+                )
                     .withExposedPorts(22)
             return container
         }
@@ -36,7 +36,7 @@ class SshBastionContainer : AutoCloseable {
             val container =
                 super.exclusive(
                     "bastion-test",
-                    NamedContainerModifierImpl("withNetwork", imageModifier)
+                    NamedContainerModifierImpl("withNetwork", imageModifier),
                 )
             return container
         }
@@ -53,8 +53,11 @@ class SshBastionContainer : AutoCloseable {
     @Throws(IOException::class, InterruptedException::class)
     fun getTunnelMethod(tunnelMethod: SshTunnel.TunnelMethod, innerAddress: Boolean): JsonNode? {
         val containerAddress =
-            if (innerAddress) getInnerContainerAddress(container!!)
-            else getOuterContainerAddress(container!!)
+            if (innerAddress) {
+                getInnerContainerAddress(container!!)
+            } else {
+                getOuterContainerAddress(container!!)
+            }
         return Jsons.jsonNode(
             ImmutableMap.builder<Any?, Any?>()
                 .put("tunnel_host", Objects.requireNonNull(containerAddress!!.left))
@@ -63,29 +66,30 @@ class SshBastionContainer : AutoCloseable {
                 .put("tunnel_user", SSH_USER)
                 .put(
                     "tunnel_user_password",
-                    if (tunnelMethod == SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH) SSH_PASSWORD
-                    else ""
+                    if (tunnelMethod == SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH) {
+                        SSH_PASSWORD
+                    } else {
+                        ""
+                    },
                 )
                 .put(
                     "ssh_key",
-                    if (tunnelMethod == SshTunnel.TunnelMethod.SSH_KEY_AUTH)
+                    if (tunnelMethod == SshTunnel.TunnelMethod.SSH_KEY_AUTH) {
                         container!!.execInContainer("cat", "var/bastion/id_rsa").stdout
-                    else ""
+                    } else {
+                        ""
+                    },
                 )
-                .build()
+                .build(),
         )
     }
 
     @Throws(IOException::class, InterruptedException::class)
-    fun getTunnelConfig(
-        tunnelMethod: SshTunnel.TunnelMethod,
-        builderWithSchema: ImmutableMap.Builder<Any, Any>,
-        innerAddress: Boolean
-    ): JsonNode? {
+    fun getTunnelConfig(tunnelMethod: SshTunnel.TunnelMethod, builderWithSchema: ImmutableMap.Builder<Any, Any>, innerAddress: Boolean): JsonNode? {
         return Jsons.jsonNode(
             builderWithSchema
                 .put("tunnel_method", getTunnelMethod(tunnelMethod, innerAddress))
-                .build()
+                .build(),
         )
     }
 
@@ -93,17 +97,11 @@ class SshBastionContainer : AutoCloseable {
         return getBasicDbConfigBuider(db, db.databaseName)
     }
 
-    fun getBasicDbConfigBuider(
-        db: JdbcDatabaseContainer<*>,
-        schemas: MutableList<String>
-    ): ImmutableMap.Builder<Any, Any> {
+    fun getBasicDbConfigBuider(db: JdbcDatabaseContainer<*>, schemas: MutableList<String>): ImmutableMap.Builder<Any, Any> {
         return getBasicDbConfigBuider(db, db.databaseName).put("schemas", schemas)
     }
 
-    fun getBasicDbConfigBuider(
-        db: JdbcDatabaseContainer<*>,
-        schemaName: String
-    ): ImmutableMap.Builder<Any, Any> {
+    fun getBasicDbConfigBuider(db: JdbcDatabaseContainer<*>, schemaName: String): ImmutableMap.Builder<Any, Any> {
         return ImmutableMap.builder<Any, Any>()
             .put("host", Objects.requireNonNull(HostPortResolver.resolveHost(db)))
             .put("username", db.username)
@@ -134,7 +132,6 @@ class SshBastionContainer : AutoCloseable {
         private val SSH_USER: String = "sshuser"
         private val SSH_PASSWORD: String = "secret"
 
-        @JvmStatic
         /**
          * Returns the inner docker network ip address and port of a container. This can be used to
          * reach a container from another container running on the same network
@@ -142,6 +139,7 @@ class SshBastionContainer : AutoCloseable {
          * @param container container
          * @return a pair of host and port
          */
+        @JvmStatic
         fun getInnerContainerAddress(container: Container<*>): ImmutablePair<String, Int> {
             return ImmutablePair.of(
                 container.containerInfo.networkSettings.networks.entries
@@ -150,11 +148,10 @@ class SshBastionContainer : AutoCloseable {
                     .get()
                     .value
                     .ipAddress,
-                container.exposedPorts.stream().findFirst().get()
+                container.exposedPorts.stream().findFirst().get(),
             )
         }
 
-        @JvmStatic
         /**
          * Returns the outer docker network ip address and port of a container. This can be used to
          * reach a container from the host machine
@@ -162,6 +159,7 @@ class SshBastionContainer : AutoCloseable {
          * @param container container
          * @return a pair of host and port
          */
+        @JvmStatic
         fun getOuterContainerAddress(container: Container<*>): ImmutablePair<String, Int> {
             return ImmutablePair.of(container.host, container.firstMappedPort)
         }

@@ -17,8 +17,8 @@ class RootLevelFlatteningSheetGenerator(jsonSchema: JsonNode) :
     /** Keep a header list to iterate the input json object with a defined order. */
     private val recordHeaders: List<String> =
         MoreIterators.toList(
-                jsonSchema["properties"].fieldNames(),
-            )
+            jsonSchema["properties"].fieldNames(),
+        )
             .stream()
             .sorted()
             .collect(Collectors.toList())

@@ -29,7 +29,8 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
      *
      * @throws Exception
      */
-    @Throws(Exception::class) protected abstract fun startTracked()
+    @Throws(Exception::class)
+    protected abstract fun startTracked()
 
     @Throws(Exception::class)
     override fun start() {
@@ -51,7 +52,8 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
      * @param msg [AirbyteMessage] to be processed
      * @throws Exception
      */
-    @Throws(Exception::class) protected abstract fun acceptTracked(msg: AirbyteMessage)
+    @Throws(Exception::class)
+    protected abstract fun acceptTracked(msg: AirbyteMessage)
 
     @Throws(Exception::class)
     override fun accept(msg: AirbyteMessage) {
@@ -64,7 +66,8 @@ abstract class FailureTrackingAirbyteMessageConsumer : AirbyteMessageConsumer {
         }
     }
 
-    @Throws(Exception::class) protected abstract fun close(hasFailed: Boolean)
+    @Throws(Exception::class)
+    protected abstract fun close(hasFailed: Boolean)
 
     @Throws(Exception::class)
     override fun close() {

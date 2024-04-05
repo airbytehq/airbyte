@@ -75,7 +75,8 @@ abstract class BaseTypingDedupingTest {
      *
      * Sublcasses which need access to the config may use [.getConfig].
      */
-    @Throws(Exception::class) protected abstract fun generateConfig(): JsonNode?
+    @Throws(Exception::class)
+    protected abstract fun generateConfig(): JsonNode?
 
     /**
      * For a given stream, return the records that exist in the destination's raw table. Each record
@@ -88,10 +89,7 @@ abstract class BaseTypingDedupingTest {
      * streamNamespace may be null, in which case you should query from the default namespace.
      */
     @Throws(Exception::class)
-    protected abstract fun dumpRawTableRecords(
-        streamNamespace: String?,
-        streamName: String
-    ): List<JsonNode>
+    protected abstract fun dumpRawTableRecords(streamNamespace: String?, streamName: String): List<JsonNode>
 
     /**
      * Utility method for tests to check if table exists
@@ -146,7 +144,8 @@ abstract class BaseTypingDedupingTest {
      * this method. For example, if you want to gracefully close a database connection, you should
      * do that here.
      */
-    @Throws(Exception::class) protected open fun globalTeardown() {}
+    @Throws(Exception::class)
+    protected open fun globalTeardown() {}
 
     val rawMetadataColumnNames: Map<String, String>
         /** Conceptually identical to [.getFinalMetadataColumnNames], but for the raw table. */
@@ -204,7 +203,7 @@ abstract class BaseTypingDedupingTest {
                 generator.buildColumnId("id2") to AirbyteProtocolType.INTEGER,
                 generator.buildColumnId("updated_at") to
                     AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-                generator.buildColumnId("old_cursor") to AirbyteProtocolType.INTEGER
+                generator.buildColumnId("old_cursor") to AirbyteProtocolType.INTEGER,
             )
 
         LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName)
@@ -239,9 +238,9 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // First sync
@@ -285,9 +284,9 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // First sync
@@ -335,9 +334,9 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // First sync
@@ -382,9 +381,9 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // First sync
@@ -429,9 +428,9 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // Run a sync with 25K copies of the input messages
@@ -464,9 +463,9 @@ abstract class BaseTypingDedupingTest {
                             .withStream(
                                 AirbyteStream() // NB: we don't call `withNamespace` here
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // First sync
@@ -481,7 +480,7 @@ abstract class BaseTypingDedupingTest {
             expectedFinalRecords1,
             null,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
 
         // Second sync
@@ -497,7 +496,7 @@ abstract class BaseTypingDedupingTest {
             expectedFinalRecords2,
             null,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
     }
 
@@ -514,13 +513,13 @@ abstract class BaseTypingDedupingTest {
                 .put("currency", "USD\u2028")
                 .put(
                     "date",
-                    "2020-03-\n31T00:00:00Z\r"
+                    "2020-03-\n31T00:00:00Z\r",
                 ) // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores
                 // 10.1 as "10" which
                 // fails destination tests
                 .put("HKD", 10.1)
                 .put("NZD", 700.1)
-                .build()
+                .build(),
         )
     }
 
@@ -545,8 +544,8 @@ abstract class BaseTypingDedupingTest {
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                            .withStream(stream)
-                    )
+                            .withStream(stream),
+                    ),
                 )
 
         // First sync
@@ -599,9 +598,9 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(null)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
     }
 
@@ -632,7 +631,7 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(namespace1)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
+                                    .withJsonSchema(SCHEMA),
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
@@ -643,17 +642,17 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(namespace2)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         // First sync
         val messages1 =
             Stream.concat(
-                    readMessages("dat/sync1_messages.jsonl", namespace1, streamName).stream(),
-                    readMessages("dat/sync1_messages2.jsonl", namespace2, streamName).stream()
-                )
+                readMessages("dat/sync1_messages.jsonl", namespace1, streamName).stream(),
+                readMessages("dat/sync1_messages2.jsonl", namespace2, streamName).stream(),
+            )
                 .toList()
 
         runSync(catalog, messages1)
@@ -663,22 +662,22 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
             namespace1,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
         verifySyncResult(
             readRecords("dat/sync1_expectedrecords_raw2.jsonl"),
             readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
             namespace2,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
 
         // Second sync
         val messages2 =
             Stream.concat(
-                    readMessages("dat/sync2_messages.jsonl", namespace1, streamName).stream(),
-                    readMessages("dat/sync2_messages2.jsonl", namespace2, streamName).stream()
-                )
+                readMessages("dat/sync2_messages.jsonl", namespace1, streamName).stream(),
+                readMessages("dat/sync2_messages2.jsonl", namespace2, streamName).stream(),
+            )
                 .toList()
 
         runSync(catalog, messages2)
@@ -688,14 +687,14 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl"),
             namespace1,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
         verifySyncResult(
             readRecords("dat/sync2_expectedrecords_raw2.jsonl"),
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
             namespace2,
             streamName,
-            disableFinalTableComparison()
+            disableFinalTableComparison(),
         )
     }
 
@@ -727,9 +726,9 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(namespace1)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         val namespace2 = streamNamespace + "_2"
@@ -747,9 +746,9 @@ abstract class BaseTypingDedupingTest {
                                 AirbyteStream()
                                     .withNamespace(namespace2)
                                     .withName(streamName)
-                                    .withJsonSchema(SCHEMA)
-                            )
-                    )
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
                 )
 
         val messages1 = readMessages("dat/sync1_messages.jsonl", namespace1, streamName)
@@ -783,15 +782,15 @@ abstract class BaseTypingDedupingTest {
             Executable {
                 DIFFER!!.diffFinalTableRecords(
                     readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
-                    dumpFinalTableRecords(namespace1, streamName)
+                    dumpFinalTableRecords(namespace1, streamName),
                 )
             },
             Executable {
                 DIFFER!!.diffFinalTableRecords(
                     readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
-                    dumpFinalTableRecords(namespace2, streamName)
+                    dumpFinalTableRecords(namespace2, streamName),
                 )
-            }
+            },
         )
     }
 
@@ -824,8 +823,8 @@ abstract class BaseTypingDedupingTest {
                 """
             {"type": "integer"}
             
-            """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
         val configuredStream =
             ConfiguredAirbyteStream()
@@ -837,7 +836,7 @@ abstract class BaseTypingDedupingTest {
                     AirbyteStream()
                         .withNamespace(streamNamespace)
                         .withName(streamName)
-                        .withJsonSchema(mangledSchema)
+                        .withJsonSchema(mangledSchema),
                 )
         val catalog =
             io.airbyte.protocol.models.v0
@@ -905,17 +904,13 @@ abstract class BaseTypingDedupingTest {
     }
 
     @Throws(Exception::class)
-    protected fun verifySyncResult(
-        expectedRawRecords: List<JsonNode>,
-        expectedFinalRecords: List<JsonNode>,
-        disableFinalTableComparison: Boolean
-    ) {
+    protected fun verifySyncResult(expectedRawRecords: List<JsonNode>, expectedFinalRecords: List<JsonNode>, disableFinalTableComparison: Boolean) {
         verifySyncResult(
             expectedRawRecords,
             expectedFinalRecords,
             streamNamespace,
             streamName,
-            disableFinalTableComparison
+            disableFinalTableComparison,
         )
     }
 
@@ -925,7 +920,7 @@ abstract class BaseTypingDedupingTest {
         expectedFinalRecords: List<JsonNode>,
         streamNamespace: String?,
         streamName: String,
-        disableFinalTableComparison: Boolean
+        disableFinalTableComparison: Boolean,
     ) {
         val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
         if (disableFinalTableComparison) {
@@ -936,7 +931,7 @@ abstract class BaseTypingDedupingTest {
                 expectedRawRecords,
                 actualRawRecords,
                 expectedFinalRecords,
-                actualFinalRecords
+                actualFinalRecords,
             )
         }
     }
@@ -951,7 +946,7 @@ abstract class BaseTypingDedupingTest {
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         messages: List<AirbyteMessage>,
         imageName: String = this.imageName,
-        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
+        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity(),
     ) {
         val destination = startSync(catalog, imageName, configTransformer)
         val outputFuture = destinationOutputFuture(destination)
@@ -961,9 +956,7 @@ abstract class BaseTypingDedupingTest {
 
     // In the background, read messages from the destination until it terminates. We need to clear
     // stdout in real time, to prevent the buffer from filling up and blocking the destination.
-    private fun destinationOutputFuture(
-        destination: AirbyteDestination
-    ): CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> {
+    private fun destinationOutputFuture(destination: AirbyteDestination): CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>> {
         val outputFuture = CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>>()
         Executors.newSingleThreadExecutor()
             .submit<Void?>(
@@ -975,13 +968,13 @@ abstract class BaseTypingDedupingTest {
                         // attemptRead isn't threadsafe, we read stdout fully here.
                         // i.e. we shouldn't call attemptRead anywhere else.
                         destination.attemptRead().ifPresent {
-                            e: io.airbyte.protocol.models.AirbyteMessage ->
+                                e: io.airbyte.protocol.models.AirbyteMessage ->
                             destinationMessages.add(e)
                         }
                     }
                     outputFuture.complete(destinationMessages)
                     null
-                }
+                },
             )
         return outputFuture
     }
@@ -999,15 +992,15 @@ abstract class BaseTypingDedupingTest {
     protected fun startSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         imageName: String = this.imageName,
-        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
+        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity(),
     ): AirbyteDestination {
         synchronized(this) {
             catalog.streams.forEach(
                 Consumer { s: ConfiguredAirbyteStream ->
                     streamsToTearDown!!.add(
-                        AirbyteStreamNameNamespacePair.fromAirbyteStream(s.stream)
+                        AirbyteStreamNameNamespacePair.fromAirbyteStream(s.stream),
                     )
-                }
+                },
             )
         }
 
@@ -1022,7 +1015,7 @@ abstract class BaseTypingDedupingTest {
                 workspaceRoot.toString(),
                 localRoot.toString(),
                 "host",
-                emptyMap()
+                emptyMap(),
             )
         val transformedConfig = configTransformer.apply(config)
         val destinationConfig =
@@ -1041,8 +1034,8 @@ abstract class BaseTypingDedupingTest {
                     null,
                     null,
                     false,
-                    EnvVariableFeatureFlags()
-                )
+                    EnvVariableFeatureFlags(),
+                ),
             )
 
         destination.start(destinationConfig, jobRoot, emptyMap())
@@ -1053,7 +1046,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected fun endSync(
         destination: AirbyteDestination,
-        destinationOutputFuture: CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>>
+        destinationOutputFuture: CompletableFuture<List<io.airbyte.protocol.models.AirbyteMessage>>,
     ) {
         destination.notifyEndOfInput()
         // TODO Eventually we'll want to somehow extract the state messages while a sync is running,
@@ -1097,11 +1090,7 @@ abstract class BaseTypingDedupingTest {
         }
 
         @Throws(IOException::class)
-        protected fun readMessages(
-            filename: String,
-            streamNamespace: String?,
-            streamName: String?
-        ): List<AirbyteMessage> {
+        protected fun readMessages(filename: String, streamNamespace: String?, streamName: String?): List<AirbyteMessage> {
             return readRecords(filename)
                 .stream()
                 .map { record: JsonNode? -> Jsons.convertValue(record, AirbyteMessage::class.java) }
@@ -1112,21 +1101,18 @@ abstract class BaseTypingDedupingTest {
                 .toList()
         }
 
-        protected fun pushMessages(
-            messages: List<AirbyteMessage>,
-            destination: AirbyteDestination
-        ) {
+        protected fun pushMessages(messages: List<AirbyteMessage>, destination: AirbyteDestination) {
             messages.forEach(
                 Consumer { message: AirbyteMessage ->
                     Exceptions.toRuntime {
                         destination.accept(
                             convertProtocolObject(
                                 message,
-                                io.airbyte.protocol.models.AirbyteMessage::class.java
-                            )
+                                io.airbyte.protocol.models.AirbyteMessage::class.java,
+                            ),
                         )
                     }
-                }
+                },
             )
         }
 

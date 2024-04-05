@@ -20,12 +20,7 @@ object GcsUtils {
     private val NULLABLE_TIMESTAMP_MILLIS: Schema =
         SchemaBuilder.builder().unionOf().nullType().and().type(TIMESTAMP_MILLIS_SCHEMA).endUnion()
 
-    fun getDefaultAvroSchema(
-        name: String,
-        namespace: String,
-        appendAirbyteFields: Boolean,
-        useDestinationsV2Columns: Boolean
-    ): Schema? {
+    fun getDefaultAvroSchema(name: String, namespace: String, appendAirbyteFields: Boolean, useDestinationsV2Columns: Boolean): Schema? {
         LOGGER.info("Default schema.")
         val stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name!!)
         val stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(namespace!!)

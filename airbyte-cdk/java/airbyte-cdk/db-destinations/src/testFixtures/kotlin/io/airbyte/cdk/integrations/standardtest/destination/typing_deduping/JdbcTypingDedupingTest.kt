@@ -88,17 +88,14 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     @Throws(Exception::class)
-    override fun dumpFinalTableRecords(
-        streamNamespace: String?,
-        streamName: String
-    ): List<JsonNode> {
+    override fun dumpFinalTableRecords(streamNamespace: String?, streamName: String): List<JsonNode> {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
         return database!!.queryJsons(
             DSL.selectFrom(DSL.name(streamNamespace, Names.toAlphanumericAndUnderscore(streamName)))
-                .sql
+                .sql,
         )
     }
 
@@ -110,9 +107,9 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
         }
         database!!.execute(
             DSL.dropTableIfExists(
-                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName))
-                )
-                .sql
+                DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName)),
+            )
+                .sql,
         )
         database!!.execute(DSL.dropSchemaIfExists(DSL.name(streamNamespace)).cascade().sql)
     }

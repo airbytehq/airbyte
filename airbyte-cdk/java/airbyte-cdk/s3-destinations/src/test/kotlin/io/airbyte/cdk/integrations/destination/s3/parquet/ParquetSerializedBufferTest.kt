@@ -240,26 +240,23 @@ class ParquetSerializedBufferTest {
     }
 
     private fun getExpectedString(): String {
-        return ("{\"_airbyte_ab_id\": \"<UUID>\", \"_airbyte_emitted_at\": \"<timestamp>\", " +
-            "\"field1\": 10000.0, \"another_field\": true, " +
-            "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, " +
-            "\"column2\": \"string value\", " +
-            "\"string_array_column\": [\"test_string\", null], " +
-            "\"datetime_with_timezone\": 1652369744192000, " +
-            "\"_airbyte_additional_properties\": null}")
+        return (
+            "{\"_airbyte_ab_id\": \"<UUID>\", \"_airbyte_emitted_at\": \"<timestamp>\", " +
+                "\"field1\": 10000.0, \"another_field\": true, " +
+                "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, " +
+                "\"column2\": \"string value\", " +
+                "\"string_array_column\": [\"test_string\", null], " +
+                "\"datetime_with_timezone\": 1652369744192000, " +
+                "\"_airbyte_additional_properties\": null}"
+            )
     }
 
     @Throws(Exception::class)
     @Suppress("DEPRECATION")
-    private fun runTest(
-        minExpectedByte: Long,
-        maxExpectedByte: Long,
-        config: S3DestinationConfig,
-        expectedData: String
-    ) {
+    private fun runTest(minExpectedByte: Long, maxExpectedByte: Long, config: S3DestinationConfig, expectedData: String) {
         val tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet").toFile()
         try {
-            ParquetSerializedBuffer.createFunction(config).apply(streamPair, catalog).use { writer
+            ParquetSerializedBuffer.createFunction(config).apply(streamPair, catalog).use { writer,
                 ->
                 writer!!.accept(message)
                 writer.accept(message)
@@ -274,9 +271,9 @@ class ParquetSerializedBufferTest {
                 val `in`: InputStream = writer.inputStream!!
                 FileOutputStream(tempFile).use { outFile -> IOUtils.copy(`in`, outFile) }
                 ParquetReader.builder(
-                        AvroReadSupport<GenericData.Record>(),
-                        Path(tempFile.absolutePath),
-                    )
+                    AvroReadSupport<GenericData.Record>(),
+                    Path(tempFile.absolutePath),
+                )
                     .withConf(Configuration())
                     .build()
                     .use { parquetReader ->

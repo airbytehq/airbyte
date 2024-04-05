@@ -27,7 +27,7 @@ abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
         configuredStream: ConfiguredAirbyteStream?,
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
-        sqlOperations: SqlOperations?
+        sqlOperations: SqlOperations?,
     ): StreamCopier? {
         try {
             val stream = configuredStream!!.stream
@@ -53,7 +53,7 @@ abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
                 db,
                 gcsConfig,
                 nameTransformer,
-                sqlOperations
+                sqlOperations,
             )
         } catch (e: Exception) {
             throw RuntimeException(e)
@@ -71,6 +71,6 @@ abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
         db: JdbcDatabase?,
         gcsConfig: GcsConfig?,
         nameTransformer: StandardNameTransformer?,
-        sqlOperations: SqlOperations?
+        sqlOperations: SqlOperations?,
     ): StreamCopier?
 }

@@ -23,7 +23,7 @@ internal constructor(
     val partId: String?,
     val s3Format: S3Format?,
     val timestamp: Timestamp?,
-    val customSuffix: String?
+    val customSuffix: String?,
 ) {
     class S3FilenameTemplateParameterObjectBuilder internal constructor() {
         private var objectPath: String? = null
@@ -40,9 +40,7 @@ internal constructor(
             return this
         }
 
-        fun recordsData(
-            recordsData: SerializableBuffer?
-        ): S3FilenameTemplateParameterObjectBuilder {
+        fun recordsData(recordsData: SerializableBuffer?): S3FilenameTemplateParameterObjectBuilder {
             this.recordsData = recordsData
             return this
         }
@@ -91,23 +89,25 @@ internal constructor(
         }
 
         override fun toString(): String {
-            return ("S3FilenameTemplateParameterObject.S3FilenameTemplateParameterObjectBuilder(objectPath=" +
-                this.objectPath +
-                ", recordsData=" +
-                this.recordsData +
-                ", fileNamePattern=" +
-                this.fileNamePattern +
-                ", fileExtension=" +
-                this.fileExtension +
-                ", partId=" +
-                this.partId +
-                ", s3Format=" +
-                this.s3Format +
-                ", timestamp=" +
-                this.timestamp +
-                ", customSuffix=" +
-                this.customSuffix +
-                ")")
+            return (
+                "S3FilenameTemplateParameterObject.S3FilenameTemplateParameterObjectBuilder(objectPath=" +
+                    this.objectPath +
+                    ", recordsData=" +
+                    this.recordsData +
+                    ", fileNamePattern=" +
+                    this.fileNamePattern +
+                    ", fileExtension=" +
+                    this.fileExtension +
+                    ", partId=" +
+                    this.partId +
+                    ", s3Format=" +
+                    this.s3Format +
+                    ", timestamp=" +
+                    this.timestamp +
+                    ", customSuffix=" +
+                    this.customSuffix +
+                    ")"
+                )
         }
     }
 

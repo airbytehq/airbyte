@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 
 class CursorStateMessageProducer(
     private val stateManager: StateManager?,
-    private val initialCursor: Optional<String>
+    private val initialCursor: Optional<String>,
 ) : SourceStateMessageProducer<AirbyteMessage> {
     private var currentMaxCursor: Optional<String>
 
@@ -31,9 +31,7 @@ class CursorStateMessageProducer(
         this.currentMaxCursor = initialCursor
     }
 
-    override fun generateStateMessageAtCheckpoint(
-        stream: ConfiguredAirbyteStream?
-    ): AirbyteStateMessage? {
+    override fun generateStateMessageAtCheckpoint(stream: ConfiguredAirbyteStream?): AirbyteStateMessage? {
         // At this stage intermediate state message should never be null; otherwise it would have
         // been
         // blocked by shouldEmitStateMessage check.
@@ -42,7 +40,7 @@ class CursorStateMessageProducer(
         if (cursorOutOfOrderDetected) {
             LOGGER.warn(
                 "Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, " +
-                    "data loss can occur."
+                    "data loss can occur.",
             )
         }
         return message
@@ -54,10 +52,7 @@ class CursorStateMessageProducer(
      * sync if we have fixed the underlying issue, of if the issue is transient.
      */
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-    override fun processRecordMessage(
-        stream: ConfiguredAirbyteStream?,
-        message: AirbyteMessage
-    ): AirbyteMessage {
+    override fun processRecordMessage(stream: ConfiguredAirbyteStream?, message: AirbyteMessage): AirbyteMessage {
         val cursorField = getCursorField(stream!!)
         if (message.record.data.hasNonNull(cursorField)) {
             val cursorCandidate = getCursorCandidate(cursorField, message)
@@ -109,13 +104,13 @@ class CursorStateMessageProducer(
                 " " +
                 currentMaxCursor.orElse(null) +
                 " " +
-                currentCursorRecordCount
+                currentCursorRecordCount,
         )
         val stateMessage =
             stateManager!!.updateAndEmit(
                 pair,
                 currentMaxCursor.orElse(null),
-                currentCursorRecordCount.toLong()
+                currentCursorRecordCount.toLong(),
             )
         val cursorInfo = stateManager.getCursorInfo(pair)
 

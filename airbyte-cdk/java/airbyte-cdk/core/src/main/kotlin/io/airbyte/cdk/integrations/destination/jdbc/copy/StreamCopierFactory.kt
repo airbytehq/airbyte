@@ -16,16 +16,12 @@ interface StreamCopierFactory<T> {
         configuredStream: ConfiguredAirbyteStream?,
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
-        sqlOperations: SqlOperations?
+        sqlOperations: SqlOperations?,
     ): StreamCopier?
 
     companion object {
         @JvmStatic
-        fun getSchema(
-            namespace: String?,
-            configuredSchema: String,
-            nameTransformer: StandardNameTransformer
-        ): String? {
+        fun getSchema(namespace: String?, configuredSchema: String, nameTransformer: StandardNameTransformer): String? {
             return if (namespace != null) {
                 nameTransformer.convertStreamName(namespace)
             } else {

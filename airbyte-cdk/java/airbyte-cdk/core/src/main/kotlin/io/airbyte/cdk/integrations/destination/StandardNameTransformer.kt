@@ -75,7 +75,7 @@ open class StandardNameTransformer : NamingConventionTransformer {
                     MoreIterators.toList(root.elements())
                         .stream()
                         .map { root: JsonNode -> formatJsonPath(root) }
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toList()),
                 )
             } else {
                 return root

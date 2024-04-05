@@ -51,8 +51,9 @@ class Enums {
         fun <T1 : Enum<T1>?, T2 : Enum<T2>?> isCompatible(c1: Class<T1>, c2: Class<T2>): Boolean {
             Preconditions.checkArgument(c1.isEnum)
             Preconditions.checkArgument(c2.isEnum)
-            return (c1.enumConstants.size == c2.enumConstants.size &&
-                Sets.difference(
+            return (
+                c1.enumConstants.size == c2.enumConstants.size &&
+                    Sets.difference(
                         Arrays.stream(c1.enumConstants)
                             .map { obj: T1 -> obj!!.name }
                             .collect(Collectors.toSet()),
@@ -60,13 +61,11 @@ class Enums {
                             .map { obj: T2 -> obj!!.name }
                             .collect(Collectors.toSet()),
                     )
-                    .isEmpty())
+                        .isEmpty()
+                )
         }
 
-        inline fun <T1 : Enum<T1>, reified T2 : Enum<T2>> convertListTo(
-            ies: List<T1>,
-            oe: Class<T2>
-        ): List<T2?> {
+        inline fun <T1 : Enum<T1>, reified T2 : Enum<T2>> convertListTo(ies: List<T1>, oe: Class<T2>): List<T2?> {
             return ies.map { convertTo(it, oe) }.toList()
         }
     }

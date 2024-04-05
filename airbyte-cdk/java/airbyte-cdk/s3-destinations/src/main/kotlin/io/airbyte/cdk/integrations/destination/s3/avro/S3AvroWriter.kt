@@ -32,7 +32,7 @@ class S3AvroWriter(
     configuredStream: ConfiguredAirbyteStream,
     uploadTimestamp: Timestamp?,
     schema: Schema?,
-    converter: JsonAvroConverter?
+    converter: JsonAvroConverter?,
 ) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val avroRecordFactory: AvroRecordFactory
     private val uploadManager: StreamTransferManager
@@ -49,7 +49,7 @@ class S3AvroWriter(
                     .s3Format(S3Format.AVRO)
                     .fileExtension(S3Format.AVRO.fileExtension)
                     .fileNamePattern(config.fileNamePattern)
-                    .build()
+                    .build(),
             )
 
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
@@ -58,7 +58,7 @@ class S3AvroWriter(
             "Full S3 path for stream '{}': s3://{}/{}",
             stream.name,
             config.bucketName,
-            outputPath
+            outputPath,
         )
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 

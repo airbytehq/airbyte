@@ -42,7 +42,7 @@ internal constructor(
     private val databaseName: String,
     private val collectionName: String,
     private val username: String,
-    private val password: String
+    private val password: String,
 ) {
 
     @Throws(InterruptedException::class, IOException::class)
@@ -66,8 +66,8 @@ internal constructor(
             MongoClientSettings.builder()
                 .applyConnectionString(
                     ConnectionString(
-                        "mongodb+srv://$username:$password@cluster0.iqgf8.mongodb.net/"
-                    )
+                        "mongodb+srv://$username:$password@cluster0.iqgf8.mongodb.net/",
+                    ),
                 )
                 .readPreference(ReadPreference.secondaryPreferred())
                 .build()
@@ -94,10 +94,7 @@ internal constructor(
     }
 
     @Throws(InterruptedException::class, IOException::class)
-    private fun initialSync(
-        queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>,
-        path: Path
-    ) {
+    private fun initialSync(queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>, path: Path) {
         val executorService = Executors.newSingleThreadExecutor()
         val thrownError = AtomicReference<Throwable?>()
         val engineLatch = CountDownLatch(1)
@@ -108,13 +105,13 @@ internal constructor(
                         path,
                         listOf("$databaseName\\.$collectionName")
                             .stream()
-                            .collect(Collectors.joining(","))
-                    )
+                            .collect(Collectors.joining(",")),
+                    ),
                 )
                 .using(io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying(
                     Consumer<io.debezium.engine.ChangeEvent<String, String>> {
-                        e: io.debezium.engine.ChangeEvent<String, String> ->
+                            e: io.debezium.engine.ChangeEvent<String, String> ->
                         // debezium outputs a tombstone event that has a value of null. this is an
                         // artifact of how it
                         // interacts with kafka. we want to ignore it.
@@ -127,7 +124,7 @@ internal constructor(
                                 inserted = queue.offer(e)
                             }
                         }
-                    }
+                    },
                 )
                 .using { _: Boolean, message: String?, error: Throwable? ->
                     LOGGER.info("Initial sync Debezium engine shutdown.")
@@ -151,10 +148,7 @@ internal constructor(
     }
 
     @Throws(InterruptedException::class, IOException::class)
-    private fun engineWithIncrementalSnapshot(
-        queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>,
-        path: Path
-    ) {
+    private fun engineWithIncrementalSnapshot(queue: LinkedBlockingQueue<io.debezium.engine.ChangeEvent<String, String>>, path: Path) {
         val executorService2 = Executors.newSingleThreadExecutor()
         val thrownError2 = AtomicReference<Throwable?>()
         val engineLatch2 = CountDownLatch(1)
@@ -165,8 +159,8 @@ internal constructor(
                         path,
                         listOf("$databaseName\\.$collectionName")
                             .stream()
-                            .collect(Collectors.joining(","))
-                    )
+                            .collect(Collectors.joining(",")),
+                    ),
                 )
                 .using(io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying { e: io.debezium.engine.ChangeEvent<String, String> ->
@@ -185,16 +179,17 @@ internal constructor(
                 }
                 .using(
                     io.debezium.engine.DebeziumEngine.CompletionCallback {
-                        success: Boolean,
-                        message: String?,
-                        error: Throwable? ->
+                            success: Boolean,
+                            message: String?,
+                            error: Throwable?,
+                        ->
                         LOGGER.info("Incremental snapshot Debezium engine shutdown.")
                         if (error != null) {
                             LOGGER.error("error occurred: {}", message, error)
                         }
                         engineLatch2.countDown()
                         thrownError2.set(error)
-                    }
+                    },
                 )
                 .build()
         executorService2.execute(engine2)
@@ -209,10 +204,7 @@ internal constructor(
         }
     }
 
-    protected fun getDebeziumProperties(
-        cdcOffsetFilePath: Path,
-        collectionNames: String
-    ): Properties {
+    protected fun getDebeziumProperties(cdcOffsetFilePath: Path, collectionNames: String): Properties {
         val props = Properties()
         LOGGER.info("Included collection names regular expression: '{}'.", collectionNames)
         props.setProperty("connector.class", MongoDbConnector::class.java.getName())
@@ -234,7 +226,7 @@ internal constructor(
         // Offset storage configuration
         props.setProperty(
             "offset.storage",
-            "org.apache.kafka.connect.storage.FileOffsetBackingStore"
+            "org.apache.kafka.connect.storage.FileOffsetBackingStore",
         )
         props.setProperty("offset.storage.file.filename", cdcOffsetFilePath.toString())
         props.setProperty("offset.flush.interval.ms", "1000")
@@ -282,9 +274,9 @@ internal constructor(
                         LOGGER.info(
                             "{}:{}",
                             String(ByteBuffer.wrap(key).array(), StandardCharsets.UTF_8),
-                            String(ByteBuffer.wrap(value).array(), StandardCharsets.UTF_8)
+                            String(ByteBuffer.wrap(value).array(), StandardCharsets.UTF_8),
                         )
-                    }
+                    },
                 )
             }
         } catch (e: IOException) {
@@ -296,6 +288,7 @@ internal constructor(
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(DebeziumMongoDbConnectorTest::class.java)
+
         @Throws(IOException::class, InterruptedException::class)
         @JvmStatic
         fun main(args: Array<String>) {
@@ -306,7 +299,7 @@ internal constructor(
                         ArgType.String,
                         fullName = "connection-string",
                         shortName = "cs",
-                        description = "MongoDB Connection String"
+                        description = "MongoDB Connection String",
                     )
                     .required()
             val databaseName by
@@ -315,7 +308,7 @@ internal constructor(
                         ArgType.String,
                         fullName = "database-name",
                         shortName = "d",
-                        description = "Database Name"
+                        description = "Database Name",
                     )
                     .required()
             val collectionName by
@@ -324,7 +317,7 @@ internal constructor(
                         ArgType.String,
                         fullName = "collection-name",
                         shortName = "cn",
-                        description = "Collection Name"
+                        description = "Collection Name",
                     )
                     .required()
             val username by
@@ -333,7 +326,7 @@ internal constructor(
                         ArgType.String,
                         fullName = "username",
                         shortName = "u",
-                        description = "Username"
+                        description = "Username",
                     )
                     .required()
 
@@ -348,7 +341,7 @@ internal constructor(
                     databaseName,
                     collectionName,
                     username,
-                    password
+                    password,
                 )
             debeziumEngineTest.startTest()
         }

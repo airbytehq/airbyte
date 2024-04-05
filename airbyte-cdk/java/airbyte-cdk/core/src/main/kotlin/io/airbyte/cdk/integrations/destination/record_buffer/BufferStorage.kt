@@ -20,23 +20,29 @@ import java.io.*
  * limits are possible.
  */
 interface BufferStorage {
-    @get:Throws(IOException::class) val filename: String
+    @get:Throws(IOException::class)
+    val filename: String
 
-    @get:Throws(IOException::class) val file: File
+    @get:Throws(IOException::class)
+    val file: File
 
     /**
      * Once buffering has reached some limits, the storage stream should be turned into an
      * InputStream. This method should assume we are not going to write to buffer anymore, and it is
      * safe to convert to some other format to be read from now.
      */
-    @Throws(IOException::class) fun convertToInputStream(): InputStream
+    @Throws(IOException::class)
+    fun convertToInputStream(): InputStream
 
-    @Throws(IOException::class) fun close()
+    @Throws(IOException::class)
+    fun close()
 
     /** Cleans-up any file that was produced in the process of buffering (if any were produced) */
-    @Throws(IOException::class) fun deleteFile()
+    @Throws(IOException::class)
+    fun deleteFile()
 
-    @Throws(IOException::class) fun getOutputStream(): OutputStream
+    @Throws(IOException::class)
+    fun getOutputStream(): OutputStream
 
     /*
      * Depending on the implementation of the storage, methods below defined reasonable thresholds

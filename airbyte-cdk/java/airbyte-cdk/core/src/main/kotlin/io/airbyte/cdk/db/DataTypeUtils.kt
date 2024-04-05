@@ -22,17 +22,22 @@ object DataTypeUtils {
     const val DATE_FORMAT_WITH_MILLISECONDS_PATTERN: String = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
     @JvmField val TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSS")
+
     @JvmField
     val TIMESTAMP_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+
     @JvmField
     val TIMETZ_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSXXX")
+
     @JvmField
     val TIMESTAMPTZ_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+
     @JvmField
     val OFFSETDATETIME_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS XXX")
+
     @JvmField val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     @JvmStatic
@@ -53,10 +58,7 @@ object DataTypeUtils {
     }
 
     @JvmStatic
-    fun <T> returnNullIfInvalid(
-        valueProducer: DataTypeSupplier<T>,
-        isValidFn: Function<T?, Boolean>
-    ): T? {
+    fun <T> returnNullIfInvalid(valueProducer: DataTypeSupplier<T>, isValidFn: Function<T?, Boolean>): T? {
         // Some edge case values (e.g: Infinity, NaN) have no java or JSON equivalent, and will
         // throw an
         // exception when parsed. We want to parse those
@@ -131,9 +133,9 @@ object DataTypeUtils {
             Date.from(
                 Instant.ofEpochSecond(
                     abs(duration.seconds.toDouble()).toLong(),
-                    abs(duration.nano.toDouble()).toLong()
-                )
-            )
+                    abs(duration.nano.toDouble()).toLong(),
+                ),
+            ),
         )
     }
 }

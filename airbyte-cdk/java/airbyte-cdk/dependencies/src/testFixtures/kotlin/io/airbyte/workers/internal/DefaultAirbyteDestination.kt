@@ -42,7 +42,7 @@ constructor(
         DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
     private val messageWriterFactory: AirbyteMessageBufferedWriterFactory =
         DefaultAirbyteMessageBufferedWriterFactory(),
-    private val protocolSerializer: ProtocolSerializer = DefaultProtocolSerializer()
+    private val protocolSerializer: ProtocolSerializer = DefaultProtocolSerializer(),
 ) : AirbyteDestination {
     private val inputHasEnded = AtomicBoolean(false)
 
@@ -55,11 +55,11 @@ constructor(
     override fun getExitValue(): Int {
         Preconditions.checkState(
             destinationProcess != null,
-            "Destination process is null, cannot retrieve exit value."
+            "Destination process is null, cannot retrieve exit value.",
         )
         Preconditions.checkState(
             !destinationProcess!!.isAlive,
-            "Destination process is still alive, cannot retrieve exit value."
+            "Destination process is still alive, cannot retrieve exit value.",
         )
 
         if (!exitValueIsSet) {
@@ -71,11 +71,7 @@ constructor(
     }
 
     @Throws(IOException::class, TestHarnessException::class)
-    override fun start(
-        destinationConfig: WorkerDestinationConfig,
-        jobRoot: Path,
-        additionalEnvironmentVariables: Map<String, String>
-    ) {
+    override fun start(destinationConfig: WorkerDestinationConfig, jobRoot: Path, additionalEnvironmentVariables: Map<String, String>) {
         Preconditions.checkState(destinationProcess == null)
 
         LOGGER.info("Running destination...")
@@ -86,28 +82,28 @@ constructor(
                 Jsons.serialize(destinationConfig.destinationConnectionConfiguration),
                 WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
                 protocolSerializer.serialize(destinationConfig.catalog),
-                additionalEnvironmentVariables
+                additionalEnvironmentVariables,
             )
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             destinationProcess!!.errorStream,
             { msg: String? -> LOGGER.error(msg) },
             "airbyte-destination",
-            CONTAINER_LOG_MDC_BUILDER
+            CONTAINER_LOG_MDC_BUILDER,
         )
 
         writer =
             messageWriterFactory.createWriter(
                 BufferedWriter(
-                    OutputStreamWriter(destinationProcess!!.outputStream, Charsets.UTF_8)
-                )
+                    OutputStreamWriter(destinationProcess!!.outputStream, Charsets.UTF_8),
+                ),
             )
 
         val acceptedMessageTypes =
             List.of(
                 AirbyteMessage.Type.STATE,
                 AirbyteMessage.Type.TRACE,
-                AirbyteMessage.Type.CONTROL
+                AirbyteMessage.Type.CONTROL,
             )
         messageIterator =
             streamFactory
@@ -147,8 +143,11 @@ constructor(
         TestHarnessUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES)
         if (destinationProcess!!.isAlive || !IGNORED_EXIT_CODES.contains(exitValue)) {
             val message =
-                if (destinationProcess!!.isAlive) "Destination has not terminated "
-                else "Destination process exit with code " + exitValue
+                if (destinationProcess!!.isAlive) {
+                    "Destination has not terminated "
+                } else {
+                    "Destination process exit with code " + exitValue
+                }
             throw TestHarnessException("$message. This warning is normal if the job was cancelled.")
         }
     }
@@ -179,7 +178,7 @@ constructor(
         Preconditions.checkState(destinationProcess != null)
 
         return Optional.ofNullable(
-            if (messageIterator!!.hasNext()) messageIterator!!.next() else null
+            if (messageIterator!!.hasNext()) messageIterator!!.next() else null,
         )
     }
 
@@ -192,7 +191,7 @@ constructor(
         val IGNORED_EXIT_CODES: Set<Int> =
             setOf(
                 0, // Normal exit
-                143 // SIGTERM
+                143, // SIGTERM
             )
     }
 }

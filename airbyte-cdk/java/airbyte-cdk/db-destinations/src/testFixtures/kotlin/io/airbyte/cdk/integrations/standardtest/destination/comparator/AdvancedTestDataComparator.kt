@@ -39,7 +39,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
                 val key = expectedEntry.key
                 val actualValue =
                     ComparatorUtils.getActualValueByExpectedKey(key, actualObject) {
-                        identifier: String? ->
+                            identifier: String? ->
                         this.resolveIdentifier(identifier)
                     }
                 LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue)
@@ -65,7 +65,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
 
         Assertions.assertTrue(
             compareJsonNodes(expectedValue, actualValue),
-            "Expected value $expectedValue vs Actual value $actualValue"
+            "Expected value $expectedValue vs Actual value $actualValue",
         )
     }
 
@@ -136,17 +136,11 @@ open class AdvancedTestDataComparator : TestDataComparator {
         }
     }
 
-    protected fun compareBooleanValues(
-        firstBooleanValue: String,
-        secondBooleanValue: String
-    ): Boolean {
+    protected fun compareBooleanValues(firstBooleanValue: String, secondBooleanValue: String): Boolean {
         return firstBooleanValue.toBoolean() == secondBooleanValue.toBoolean()
     }
 
-    protected fun compareNumericValues(
-        firstNumericValue: String,
-        secondNumericValue: String
-    ): Boolean {
+    protected fun compareNumericValues(firstNumericValue: String, secondNumericValue: String): Boolean {
         val firstValue = firstNumericValue.toDouble()
         val secondValue = secondNumericValue.toDouble()
 
@@ -162,22 +156,19 @@ open class AdvancedTestDataComparator : TestDataComparator {
     protected fun isDateTimeWithTzValue(value: String): Boolean {
         return !TEST_DATASET_IGNORE_LIST.contains(value) &&
             value.matches(
-                "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})( BC)?$".toRegex()
+                "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})( BC)?$".toRegex(),
             )
     }
 
     protected open fun parseDestinationDateWithTz(destinationValue: String): ZonedDateTime {
         return ZonedDateTime.parse(
-                destinationValue,
-                DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_WITH_TZ_FORMAT)
-            )
+            destinationValue,
+            DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_WITH_TZ_FORMAT),
+        )
             .withZoneSameInstant(ZoneOffset.UTC)
     }
 
-    protected open fun compareDateTimeWithTzValues(
-        airbyteMessageValue: String,
-        destinationValue: String
-    ): Boolean {
+    protected open fun compareDateTimeWithTzValues(airbyteMessageValue: String, destinationValue: String): Boolean {
         try {
             val airbyteDate =
                 ZonedDateTime.parse(airbyteMessageValue, airbyteDateTimeWithTzFormatter)
@@ -189,7 +180,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
                 "Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
                 airbyteMessageValue,
                 destinationValue,
-                e
+                e,
             )
             return compareTextValues(airbyteMessageValue, destinationValue)
         }
@@ -197,7 +188,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
 
     protected fun isDateTimeValue(value: String): Boolean {
         return value.matches(
-            "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?( BC)?$".toRegex()
+            "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?( BC)?$".toRegex(),
         )
     }
 
@@ -209,10 +200,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
         return value.matches("^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$".toRegex())
     }
 
-    protected open fun compareDateTimeValues(
-        airbyteMessageValue: String,
-        destinationValue: String
-    ): Boolean {
+    protected open fun compareDateTimeValues(airbyteMessageValue: String, destinationValue: String): Boolean {
         return compareTextValues(airbyteMessageValue, destinationValue)
     }
 
@@ -220,24 +208,15 @@ open class AdvancedTestDataComparator : TestDataComparator {
         return value.matches("^\\d{4}-\\d{2}-\\d{2}( BC)?$".toRegex())
     }
 
-    protected open fun compareDateValues(
-        airbyteMessageValue: String,
-        destinationValue: String
-    ): Boolean {
+    protected open fun compareDateValues(airbyteMessageValue: String, destinationValue: String): Boolean {
         return compareTextValues(airbyteMessageValue, destinationValue)
     }
 
-    protected open fun compareTimeWithoutTimeZone(
-        airbyteMessageValue: String,
-        destinationValue: String
-    ): Boolean {
+    protected open fun compareTimeWithoutTimeZone(airbyteMessageValue: String, destinationValue: String): Boolean {
         return compareTextValues(airbyteMessageValue, destinationValue)
     }
 
-    protected fun compareTimeWithTimeZone(
-        airbyteMessageValue: String,
-        destinationValue: String
-    ): Boolean {
+    protected fun compareTimeWithTimeZone(airbyteMessageValue: String, destinationValue: String): Boolean {
         return compareTextValues(airbyteMessageValue, destinationValue)
     }
 
@@ -253,8 +232,10 @@ open class AdvancedTestDataComparator : TestDataComparator {
         const val AIRBYTE_DATETIME_PARSED_FORMAT: String = "yyyy-MM-dd HH:mm:ss.S"
         const val AIRBYTE_DATETIME_PARSED_FORMAT_TZ: String = "yyyy-MM-dd HH:mm:ss XXX"
         const val AIRBYTE_DATETIME_WITH_TZ_FORMAT: String =
-            ("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
-                "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][' '][G]]]")
+            (
+                "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
+                    "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][' '][G]]]"
+                )
 
         // TODO revisit dataset which used date as string: exchange_rate_catalog.json
         // tried to change it to date time type but some connectors failed to store it e.i.
@@ -266,7 +247,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
                 "2020-08-31T00:00:00Z",
                 "2020-09-01T00:00:00Z",
                 "2020-09-15T16:58:52.000000Z",
-                "2020-03-31T00:00:00Z"
+                "2020-03-31T00:00:00Z",
             )
     }
 }

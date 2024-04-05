@@ -27,12 +27,7 @@ abstract class S3BaseParquetDestinationAcceptanceTest protected constructor() :
             Jsons.jsonNode(java.util.Map.of("format_type", "Parquet", "compression_codec", "GZIP"))
 
     @Throws(IOException::class, URISyntaxException::class)
-    override fun retrieveRecords(
-        testEnv: TestDestinationEnv?,
-        streamName: String,
-        namespace: String,
-        streamSchema: JsonNode
-    ): List<JsonNode> {
+    override fun retrieveRecords(testEnv: TestDestinationEnv?, streamName: String, namespace: String, streamSchema: JsonNode): List<JsonNode> {
         val nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
@@ -66,10 +61,7 @@ abstract class S3BaseParquetDestinationAcceptanceTest protected constructor() :
     override fun getTestDataComparator(): TestDataComparator = S3AvroParquetTestDataComparator()
 
     @Throws(Exception::class)
-    override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String,
-        namespace: String
-    ): Map<String, Set<Schema.Type>> {
+    override fun retrieveDataTypesFromPersistedFiles(streamName: String, namespace: String): Map<String, Set<Schema.Type>> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val resultDataTypes: MutableMap<String, Set<Schema.Type>> = HashMap()
 

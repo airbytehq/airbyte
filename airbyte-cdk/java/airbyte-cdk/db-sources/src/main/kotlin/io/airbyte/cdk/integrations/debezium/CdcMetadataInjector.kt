@@ -22,11 +22,7 @@ interface CdcMetadataInjector<T> {
      */
     fun addMetaData(event: ObjectNode?, source: JsonNode?)
 
-    fun addMetaDataToRowsFetchedOutsideDebezium(
-        record: ObjectNode?,
-        transactionTimestamp: String?,
-        metadataToAdd: T
-    ) {
+    fun addMetaDataToRowsFetchedOutsideDebezium(record: ObjectNode?, transactionTimestamp: String?, metadataToAdd: T) {
         throw RuntimeException("Not Supported")
     }
 

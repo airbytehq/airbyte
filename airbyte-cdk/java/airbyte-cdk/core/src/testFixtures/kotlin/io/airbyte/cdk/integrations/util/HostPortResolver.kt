@@ -29,7 +29,7 @@ object HostPortResolver {
                 .findFirst()
                 .get()
                 .value
-                .ipAddress
+                .ipAddress,
         )!!
     }
 }

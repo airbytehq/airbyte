@@ -21,7 +21,7 @@ abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBl
         configuredStream: ConfiguredAirbyteStream?,
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
-        sqlOperations: SqlOperations?
+        sqlOperations: SqlOperations?,
     ): StreamCopier? {
         try {
             val stream = configuredStream!!.stream
@@ -44,7 +44,7 @@ abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBl
                 db,
                 azureBlobConfig,
                 nameTransformer,
-                sqlOperations
+                sqlOperations,
             )
         } catch (e: Exception) {
             throw RuntimeException(e)
@@ -61,6 +61,6 @@ abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBl
         db: JdbcDatabase?,
         azureBlobConfig: AzureBlobStorageConfig?,
         nameTransformer: StandardNameTransformer?,
-        sqlOperations: SqlOperations?
+        sqlOperations: SqlOperations?,
     ): StreamCopier?
 }

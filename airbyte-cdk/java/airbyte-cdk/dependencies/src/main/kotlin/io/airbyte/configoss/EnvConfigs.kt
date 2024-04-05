@@ -28,12 +28,7 @@ class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = Syste
         return getEnvOrDefault(key, defaultValue, Function.identity(), false)
     }
 
-    fun <T> getEnvOrDefault(
-        key: String,
-        defaultValue: T,
-        parser: Function<String, T>,
-        isSecret: Boolean
-    ): T {
+    fun <T> getEnvOrDefault(key: String, defaultValue: T, parser: Function<String, T>, isSecret: Boolean): T {
         val value = getEnv.apply(key)
         if (value != null && !value.isEmpty()) {
             return parser.apply(value)
@@ -41,7 +36,7 @@ class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = Syste
             LOGGER.info(
                 "Using default value for environment variable {}: '{}'",
                 key,
-                if (isSecret) "*****" else defaultValue
+                if (isSecret) "*****" else defaultValue,
             )
             return defaultValue
         }

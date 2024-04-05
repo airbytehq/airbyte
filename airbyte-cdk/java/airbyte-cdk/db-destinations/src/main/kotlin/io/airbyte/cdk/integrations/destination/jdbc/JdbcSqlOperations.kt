@@ -50,11 +50,7 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     @Throws(SQLException::class)
-    override fun createTableIfNotExists(
-        database: JdbcDatabase,
-        schemaName: String?,
-        tableName: String?
-    ) {
+    override fun createTableIfNotExists(database: JdbcDatabase, schemaName: String?, tableName: String?) {
         try {
             database.execute(createTableQuery(database, schemaName, tableName))
             for (postCreateSql in postCreateTableQueries(schemaName, tableName)) {
@@ -65,11 +61,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         }
     }
 
-    override fun createTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        tableName: String?
-    ): String? {
+    override fun createTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String? {
         return if (isDestinationV2) {
             createTableQueryV2(schemaName, tableName)
         } else {
@@ -82,10 +74,7 @@ abstract class JdbcSqlOperations : SqlOperations {
      * For example, Postgres does not support index definitions within a CREATE TABLE statement, so
      * we need to run CREATE INDEX statements after creating the table.
      */
-    protected open fun postCreateTableQueries(
-        schemaName: String?,
-        tableName: String?
-    ): List<String> {
+    protected open fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
         return listOf()
     }
 
@@ -98,12 +87,12 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         
-        """.trimIndent(),
+            """.trimIndent(),
             schemaName,
             tableName,
             JavaBaseConstants.COLUMN_NAME_AB_ID,
             JavaBaseConstants.COLUMN_NAME_DATA,
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
         )
     }
 
@@ -121,14 +110,14 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s JSONB
         );
         
-        """.trimIndent(),
+            """.trimIndent(),
             schemaName,
             tableName,
             JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
+            JavaBaseConstants.COLUMN_NAME_AB_META,
         )
     }
 
@@ -159,26 +148,17 @@ abstract class JdbcSqlOperations : SqlOperations {
         return data
     }
 
-    override fun truncateTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        tableName: String?
-    ): String {
+    override fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String {
         return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName)
     }
 
-    override fun insertTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        srcTableName: String?,
-        dstTableName: String?
-    ): String? {
+    override fun insertTableQuery(database: JdbcDatabase?, schemaName: String?, srcTableName: String?, dstTableName: String?): String? {
         return String.format(
             "INSERT INTO %s.%s SELECT * FROM %s.%s;\n",
             schemaName,
             dstTableName,
             schemaName,
-            srcTableName
+            srcTableName,
         )
     }
 
@@ -194,11 +174,7 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     @Throws(SQLException::class)
-    override fun dropTableIfExists(
-        database: JdbcDatabase,
-        schemaName: String?,
-        tableName: String?
-    ) {
+    override fun dropTableIfExists(database: JdbcDatabase, schemaName: String?, tableName: String?) {
         try {
             database.execute(dropTableIfExistsQuery(schemaName, tableName))
         } catch (e: SQLException) {
@@ -218,12 +194,7 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     @Throws(Exception::class)
-    override fun insertRecords(
-        database: JdbcDatabase,
-        records: List<PartialAirbyteMessage>,
-        schemaName: String?,
-        tableName: String?
-    ) {
+    override fun insertRecords(database: JdbcDatabase, records: List<PartialAirbyteMessage>, schemaName: String?, tableName: String?) {
         if (isDestinationV2) {
             insertRecordsInternalV2(database, records, schemaName, tableName)
         } else {
@@ -236,7 +207,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     )
 
     @Throws(Exception::class)
@@ -244,7 +215,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     )
 
     companion object {

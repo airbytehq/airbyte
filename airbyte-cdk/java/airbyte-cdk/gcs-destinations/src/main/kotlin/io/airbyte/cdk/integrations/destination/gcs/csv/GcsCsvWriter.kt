@@ -33,7 +33,7 @@ class GcsCsvWriter(
     config: GcsDestinationConfig,
     s3Client: AmazonS3,
     configuredStream: ConfiguredAirbyteStream,
-    uploadTimestamp: Timestamp
+    uploadTimestamp: Timestamp,
 ) : BaseGcsWriter(config, s3Client, configuredStream), DestinationFileWriter {
     private val csvSheetGenerator: CsvSheetGenerator
     private val uploadManager: StreamTransferManager
@@ -55,7 +55,7 @@ class GcsCsvWriter(
             "Full GCS path for stream '{}': {}/{}",
             stream.name,
             config.bucketName,
-            outputPath
+            outputPath,
         )
 
         this.uploadManager =
@@ -69,7 +69,7 @@ class GcsCsvWriter(
             CSVPrinter(
                 PrintWriter(outputStream, true, StandardCharsets.UTF_8),
                 CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-                    .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>())
+                    .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>()),
             )
     }
 

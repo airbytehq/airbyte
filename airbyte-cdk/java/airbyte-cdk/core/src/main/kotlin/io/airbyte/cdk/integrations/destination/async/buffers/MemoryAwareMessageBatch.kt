@@ -35,10 +35,7 @@ class MemoryAwareMessageBatch(
      * For the batch, marks all the states that have now been flushed. Also writes the states that
      * can be flushed back to platform via stateManager.
      */
-    fun flushStates(
-        stateIdToCount: Map<Long?, Long?>,
-        outputRecordCollector: Consumer<AirbyteMessage>,
-    ) {
+    fun flushStates(stateIdToCount: Map<Long?, Long?>, outputRecordCollector: Consumer<AirbyteMessage>) {
         stateIdToCount.forEach { (stateId: Long?, count: Long?) ->
             stateManager.decrement(
                 stateId!!,

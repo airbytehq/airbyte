@@ -30,15 +30,15 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
     fun start(
         queue: BlockingQueue<ChangeEvent<String?, String?>>,
         offsetManager: AirbyteFileOffsetBackingStore,
-        schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
+        schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>,
     ) {
         engine =
             DebeziumEngine.create(Json::class.java)
                 .using(
                     debeziumPropertiesManager.getDebeziumProperties(
                         offsetManager,
-                        schemaHistoryManager
-                    )
+                        schemaHistoryManager,
+                    ),
                 )
                 .using(OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying { e: ChangeEvent<String?, String?> ->
@@ -59,7 +59,7 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                 .using { success: Boolean, message: String?, error: Throwable? ->
                     LOGGER.info(
                         "Debezium engine shutdown. Engine terminated successfully : {}",
-                        success
+                        success,
                     )
                     LOGGER.info(message)
                     if (!success) {

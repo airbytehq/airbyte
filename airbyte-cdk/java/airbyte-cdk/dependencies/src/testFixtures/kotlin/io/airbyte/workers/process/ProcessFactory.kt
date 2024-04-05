@@ -51,7 +51,7 @@ interface ProcessFactory {
         jobMetadata: Map<String, String>,
         portMapping: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
-        vararg args: String?
+        vararg args: String?,
     ): Process
 
     companion object {
@@ -64,13 +64,7 @@ interface ProcessFactory {
          * present that can be used by the factories implementing this interface for easier
          * operations.
          */
-        fun createProcessName(
-            fullImagePath: String,
-            jobType: String?,
-            jobId: String,
-            attempt: Int,
-            lenLimit: Int
-        ): String {
+        fun createProcessName(fullImagePath: String, jobType: String?, jobId: String, attempt: Int, lenLimit: Int): String {
             var imageName = extractShortImageName(fullImagePath)
             val randSuffix = RandomStringUtils.randomAlphabetic(5).lowercase(Locale.getDefault())
             val suffix = "$jobType-$jobId-$attempt-$randSuffix"

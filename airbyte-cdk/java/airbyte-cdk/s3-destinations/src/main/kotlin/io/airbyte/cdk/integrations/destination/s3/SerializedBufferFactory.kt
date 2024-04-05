@@ -45,7 +45,7 @@ class SerializedBufferFactory {
         @JvmStatic
         fun getCreateFunction(
             config: S3DestinationConfig,
-            createStorageFunctionWithoutExtension: Function<String, BufferStorage>
+            createStorageFunctionWithoutExtension: Function<String, BufferStorage>,
         ): BufferCreateFunction {
             val formatConfig = config.formatConfig!!
             logger.info { "S3 format config: $formatConfig" }

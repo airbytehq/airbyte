@@ -10,12 +10,7 @@ object ErrorMessage {
     // no
     // errorCode exists
     @JvmStatic
-    fun getErrorMessage(
-        stateCode: String?,
-        errorCode: Int,
-        message: String?,
-        exception: Exception
-    ): String {
+    fun getErrorMessage(stateCode: String?, errorCode: Int, message: String?, exception: Exception): String {
         return if (Objects.isNull(message)) {
             configMessage(stateCode, 0, exception.message)
         } else {

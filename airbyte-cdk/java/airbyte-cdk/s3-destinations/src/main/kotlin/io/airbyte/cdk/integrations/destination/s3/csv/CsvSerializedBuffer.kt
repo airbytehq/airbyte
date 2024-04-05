@@ -29,7 +29,7 @@ private val logger = KotlinLogging.logger {}
 class CsvSerializedBuffer(
     bufferStorage: BufferStorage,
     private val csvSheetGenerator: CsvSheetGenerator,
-    compression: Boolean
+    compression: Boolean,
 ) : BaseSerializedBuffer(bufferStorage) {
     private var csvPrinter: CSVPrinter? = null
     private var csvFormat: CSVFormat
@@ -107,13 +107,11 @@ class CsvSerializedBuffer(
 
         @JvmStatic
         @Suppress("DEPRECATION")
-        fun createFunction(
-            config: S3CsvFormatConfig?,
-            createStorageFunction: Callable<BufferStorage>
-        ): BufferCreateFunction {
+        fun createFunction(config: S3CsvFormatConfig?, createStorageFunction: Callable<BufferStorage>): BufferCreateFunction {
             return BufferCreateFunction {
-                stream: AirbyteStreamNameNamespacePair,
-                catalog: ConfiguredAirbyteCatalog ->
+                    stream: AirbyteStreamNameNamespacePair,
+                    catalog: ConfiguredAirbyteCatalog,
+                ->
                 if (config == null) {
                     return@BufferCreateFunction CsvSerializedBuffer(
                         createStorageFunction.call(),
@@ -151,10 +149,10 @@ class CsvSerializedBuffer(
                         .withHeader(*csvSheetGenerator.getHeaderRow().toTypedArray<String>())
                 val compression = config.compressionType != CompressionType.NO_COMPRESSION
                 CsvSerializedBuffer(
-                        createStorageFunction.call(),
-                        csvSheetGenerator,
-                        compression,
-                    )
+                    createStorageFunction.call(),
+                    csvSheetGenerator,
+                    compression,
+                )
                     .withCsvFormat(csvSettings)
             }
         }

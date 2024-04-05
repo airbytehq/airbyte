@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 class InMemoryRecordBufferingStrategy(
     private val recordWriter: RecordWriter<AirbyteRecordMessage>,
     private val checkAndRemoveRecordWriter: CheckAndRemoveRecordWriter?,
-    private val maxQueueSizeInBytes: Long
+    private val maxQueueSizeInBytes: Long,
 ) : BufferingStrategy {
     private var streamBuffer:
         MutableMap<AirbyteStreamNameNamespacePair, MutableList<AirbyteRecordMessage>> =
@@ -35,14 +35,11 @@ class InMemoryRecordBufferingStrategy(
 
     constructor(
         recordWriter: RecordWriter<AirbyteRecordMessage>,
-        maxQueueSizeInBytes: Long
+        maxQueueSizeInBytes: Long,
     ) : this(recordWriter, null, maxQueueSizeInBytes)
 
     @Throws(Exception::class)
-    override fun addRecord(
-        stream: AirbyteStreamNameNamespacePair,
-        message: AirbyteMessage
-    ): Optional<BufferFlushType> {
+    override fun addRecord(stream: AirbyteStreamNameNamespacePair, message: AirbyteMessage): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
         val messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.record)
@@ -62,14 +59,11 @@ class InMemoryRecordBufferingStrategy(
     }
 
     @Throws(Exception::class)
-    override fun flushSingleBuffer(
-        stream: AirbyteStreamNameNamespacePair,
-        buffer: SerializableBuffer
-    ) {
+    override fun flushSingleBuffer(stream: AirbyteStreamNameNamespacePair, buffer: SerializableBuffer) {
         LOGGER.info(
             "Flushing single stream {}: {} records",
             stream.name,
-            streamBuffer[stream]!!.size
+            streamBuffer[stream]!!.size,
         )
         recordWriter.accept(stream, streamBuffer[stream]!!.toList())
         LOGGER.info("Flushing completed for {}", stream.name)
@@ -82,7 +76,7 @@ class InMemoryRecordBufferingStrategy(
                 "Flushing {}: {} records ({})",
                 key.name,
                 value.size,
-                FileUtils.byteCountToDisplaySize(bufferSizeInBytes)
+                FileUtils.byteCountToDisplaySize(bufferSizeInBytes),
             )
             recordWriter.accept(key, value)
             if (checkAndRemoveRecordWriter != null) {
@@ -99,7 +93,8 @@ class InMemoryRecordBufferingStrategy(
         streamBuffer = HashMap()
     }
 
-    @Throws(Exception::class) override fun close() {}
+    @Throws(Exception::class)
+    override fun close() {}
 
     companion object {
         private val LOGGER: Logger =

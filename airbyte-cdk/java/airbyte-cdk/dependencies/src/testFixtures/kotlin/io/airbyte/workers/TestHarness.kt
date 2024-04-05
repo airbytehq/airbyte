@@ -11,7 +11,8 @@ interface TestHarness<InputType, OutputType> {
      * Blocking call to run the worker's workflow. Once this is complete, getStatus should return
      * either COMPLETE, FAILED, or CANCELLED.
      */
-    @Throws(TestHarnessException::class) fun run(inputType: InputType, jobRoot: Path): OutputType
+    @Throws(TestHarnessException::class)
+    fun run(inputType: InputType, jobRoot: Path): OutputType
 
     /**
      * Cancels in-progress workers. Although all workers support cancel, in reality only the

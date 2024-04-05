@@ -10,11 +10,9 @@ import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 
 abstract class AbstractDbSourceForTest<DataType, Database : AbstractDatabase?>(
-    driverClassName: String
+    driverClassName: String,
 ) : AbstractDbSource<DataType, Database>(driverClassName) {
-    public override fun getSupportedStateType(
-        config: JsonNode?
-    ): AirbyteStateMessage.AirbyteStateType {
+    public override fun getSupportedStateType(config: JsonNode?): AirbyteStateMessage.AirbyteStateType {
         return super.getSupportedStateType(config)
     }
 }

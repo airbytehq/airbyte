@@ -27,10 +27,7 @@ object FutureUtils {
      * This mimics the behavior of running the futures in serial, where the first failure
      */
     @Throws(Exception::class)
-    fun reduceExceptions(
-        potentialExceptions: Collection<CompletableFuture<Optional<Exception>>>,
-        initialMessage: String
-    ) {
+    fun reduceExceptions(potentialExceptions: Collection<CompletableFuture<Optional<Exception>>>, initialMessage: String) {
         val exceptions =
             potentialExceptions
                 .stream()

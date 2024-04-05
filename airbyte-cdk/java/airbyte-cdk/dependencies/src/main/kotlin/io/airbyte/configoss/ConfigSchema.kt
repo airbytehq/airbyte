@@ -12,7 +12,7 @@ enum class ConfigSchema : AirbyteConfig {
     // workspace
     WORKSPACE_WEBHOOK_OPERATION_CONFIGS(
         "WebhookOperationConfigs.yaml",
-        WebhookOperationConfigs::class.java
+        WebhookOperationConfigs::class.java,
     ),
 
     // source
@@ -20,10 +20,10 @@ enum class ConfigSchema : AirbyteConfig {
         "StandardSourceDefinition.yaml",
         StandardSourceDefinition::class.java,
         Function<StandardSourceDefinition, String> {
-            standardSourceDefinition: StandardSourceDefinition ->
+                standardSourceDefinition: StandardSourceDefinition ->
             standardSourceDefinition.sourceDefinitionId.toString()
         },
-        "sourceDefinitionId"
+        "sourceDefinitionId",
     ),
     SOURCE_CONNECTION(
         "SourceConnection.yaml",
@@ -31,7 +31,7 @@ enum class ConfigSchema : AirbyteConfig {
         Function<SourceConnection, String> { sourceConnection: SourceConnection ->
             sourceConnection.sourceId.toString()
         },
-        "sourceId"
+        "sourceId",
     ),
 
     // destination
@@ -39,10 +39,10 @@ enum class ConfigSchema : AirbyteConfig {
         "StandardDestinationDefinition.yaml",
         StandardDestinationDefinition::class.java,
         Function<StandardDestinationDefinition, String> {
-            standardDestinationDefinition: StandardDestinationDefinition ->
+                standardDestinationDefinition: StandardDestinationDefinition ->
             standardDestinationDefinition.destinationDefinitionId.toString()
         },
-        "destinationDefinitionId"
+        "destinationDefinitionId",
     ),
     DESTINATION_CONNECTION(
         "DestinationConnection.yaml",
@@ -50,7 +50,7 @@ enum class ConfigSchema : AirbyteConfig {
         Function<DestinationConnection, String> { destinationConnection: DestinationConnection ->
             destinationConnection.destinationId.toString()
         },
-        "destinationId"
+        "destinationId",
     ),
     STANDARD_SYNC_OPERATION(
         "StandardSyncOperation.yaml",
@@ -58,7 +58,7 @@ enum class ConfigSchema : AirbyteConfig {
         Function<StandardSyncOperation, String> { standardSyncOperation: StandardSyncOperation ->
             standardSyncOperation.operationId.toString()
         },
-        "operationId"
+        "operationId",
     ),
     SOURCE_OAUTH_PARAM(
         "SourceOAuthParameter.yaml",
@@ -66,21 +66,22 @@ enum class ConfigSchema : AirbyteConfig {
         Function<SourceOAuthParameter, String> { sourceOAuthParameter: SourceOAuthParameter ->
             sourceOAuthParameter.oauthParameterId.toString()
         },
-        "oauthParameterId"
+        "oauthParameterId",
     ),
     DESTINATION_OAUTH_PARAM(
         "DestinationOAuthParameter.yaml",
         DestinationOAuthParameter::class.java,
         Function<DestinationOAuthParameter, String> {
-            destinationOAuthParameter: DestinationOAuthParameter ->
+                destinationOAuthParameter: DestinationOAuthParameter ->
             destinationOAuthParameter.oauthParameterId.toString()
         },
-        "oauthParameterId"
+        "oauthParameterId",
     ),
 
     // worker
     STANDARD_SYNC_INPUT("StandardSyncInput.yaml", StandardSyncInput::class.java),
-    STATE("State.yaml", State::class.java);
+    STATE("State.yaml", State::class.java),
+    ;
 
     private val schemaFilename: String
     private val className: Class<*>
@@ -91,7 +92,7 @@ enum class ConfigSchema : AirbyteConfig {
         schemaFilename: String,
         className: Class<*>,
         extractId: Function<*, String>,
-        idFieldName: String
+        idFieldName: String,
     ) {
         this.schemaFilename = schemaFilename
         this.className = className
@@ -120,7 +121,7 @@ enum class ConfigSchema : AirbyteConfig {
             return (extractId as Function<T, String>).apply(`object`)
         }
         throw RuntimeException(
-            "Object: " + `object` + " is not instance of class " + getClassName<Any>().name
+            "Object: " + `object` + " is not instance of class " + getClassName<Any>().name,
         )
     }
 

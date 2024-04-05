@@ -11,10 +11,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
  * which suits them. Also, it adds some utils to verify CDC event status.
  */
 interface CdcStateHandler {
-    fun saveState(
-        offset: Map<String, String>,
-        dbHistory: AirbyteSchemaHistoryStorage.SchemaHistory<String>?
-    ): AirbyteMessage?
+    fun saveState(offset: Map<String, String>, dbHistory: AirbyteSchemaHistoryStorage.SchemaHistory<String>?): AirbyteMessage?
 
     fun saveStateAfterCompletionOfSnapshotOfNewStreams(): AirbyteMessage?
 

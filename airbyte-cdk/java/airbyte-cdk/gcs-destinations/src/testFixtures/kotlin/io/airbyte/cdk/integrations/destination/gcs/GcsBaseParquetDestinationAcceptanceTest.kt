@@ -35,12 +35,7 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
     override fun getTestDataComparator(): TestDataComparator = GcsAvroTestDataComparator()
 
     @Throws(IOException::class, URISyntaxException::class)
-    override fun retrieveRecords(
-        testEnv: TestDestinationEnv?,
-        streamName: String,
-        namespace: String,
-        streamSchema: JsonNode
-    ): List<JsonNode> {
+    override fun retrieveRecords(testEnv: TestDestinationEnv?, streamName: String, namespace: String, streamSchema: JsonNode): List<JsonNode> {
         val nameUpdater = getFieldNameUpdater(streamName, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
@@ -72,10 +67,7 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
     }
 
     @Throws(Exception::class)
-    override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String,
-        namespace: String
-    ): Map<String?, Set<Schema.Type?>?> {
+    override fun retrieveDataTypesFromPersistedFiles(streamName: String, namespace: String): Map<String?, Set<Schema.Type?>?> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
 

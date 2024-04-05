@@ -38,10 +38,7 @@ class BufferDequeue(
      * @param optimalBytesToRead bytes to read, if possible
      * @return autocloseable batch object, that frees memory.
      */
-    fun take(
-        streamDescriptor: StreamDescriptor,
-        optimalBytesToRead: Long,
-    ): MemoryAwareMessageBatch {
+    fun take(streamDescriptor: StreamDescriptor, optimalBytesToRead: Long): MemoryAwareMessageBatch {
         val lock: ReentrantLock =
             bufferLocks.computeIfAbsent(
                 streamDescriptor,
@@ -59,7 +56,8 @@ class BufferDequeue(
             while (queue!!.size() > 0) {
                 val memoryItem:
                     MemoryBoundedLinkedBlockingQueue.MemoryItem<
-                        StreamAwareQueue.MessageWithMeta?>? =
+                        StreamAwareQueue.MessageWithMeta?,
+                        >? =
                     queue.peek().orElseThrow()
 
                 // otherwise pull records until we hit the memory limit.

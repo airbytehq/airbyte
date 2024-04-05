@@ -41,7 +41,7 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
             testMultipartUpload(
                 s3Client,
                 destinationConfig.bucketName,
-                destinationConfig.bucketPath!!
+                destinationConfig.bucketPath!!,
             )
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
@@ -56,14 +56,14 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
             LOGGER.error(
                 "Exception attempting to access the Gcs bucket: {}. Please make sure you account has all of these roles: " +
                     EXPECTED_ROLES,
-                e
+                e,
             )
             emitConfigErrorTrace(e, e.message)
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
                     "Could not connect to the Gcs bucket with the provided configuration. \n" +
-                        e.message
+                        e.message,
                 )
         }
     }
@@ -71,7 +71,7 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
     override fun getConsumer(
         config: JsonNode,
         configuredCatalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         val gcsConfig: GcsDestinationConfig =
             GcsDestinationConfig.Companion.getGcsDestinationConfig(config)
@@ -84,17 +84,19 @@ abstract class BaseGcsDestination : BaseConnector(), Destination {
                     gcsConfig,
                     Function<String, BufferStorage> { fileExtension: String ->
                         FileBuffer(fileExtension)
-                    }
+                    },
                 ),
                 gcsConfig,
-                configuredCatalog
+                configuredCatalog,
             )
     }
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(BaseGcsDestination::class.java)
         const val EXPECTED_ROLES: String =
-            ("storage.multipartUploads.abort, storage.multipartUploads.create, " +
-                "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list")
+            (
+                "storage.multipartUploads.abort, storage.multipartUploads.create, " +
+                    "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list"
+                )
     }
 }

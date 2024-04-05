@@ -15,7 +15,8 @@ interface Integration {
      * @throws Exception
      * - any exception.
      */
-    @Throws(Exception::class) fun spec(): ConnectorSpecification
+    @Throws(Exception::class)
+    fun spec(): ConnectorSpecification
 
     /**
      * Check whether, given the current configuration, the integration can connect to the
@@ -28,5 +29,6 @@ interface Integration {
      * @throws Exception
      * - any exception.
      */
-    @Throws(Exception::class) fun check(config: JsonNode): AirbyteConnectionStatus?
+    @Throws(Exception::class)
+    fun check(config: JsonNode): AirbyteConnectionStatus?
 }

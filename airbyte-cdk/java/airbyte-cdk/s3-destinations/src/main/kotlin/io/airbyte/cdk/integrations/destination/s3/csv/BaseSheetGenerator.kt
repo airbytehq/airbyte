@@ -24,12 +24,7 @@ abstract class BaseSheetGenerator : CsvSheetGenerator {
         return LinkedList<Any>(getRecordColumns(formattedData))
     }
 
-    override fun getDataRow(
-        id: UUID,
-        formattedString: String,
-        emittedAt: Long,
-        airbyteMetaString: String
-    ): List<Any> {
+    override fun getDataRow(id: UUID, formattedString: String, emittedAt: Long, airbyteMetaString: String): List<Any> {
         // TODO: Make this abstract or default if No-op is intended in NoFlatteningSheetGenerator or
         // RootLevelFlatteningSheetGenerator
         throw UnsupportedOperationException("Not implemented in BaseSheetGenerator")

@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest() {
     override var config: JsonNode? = null
+
     /**
      * The column name will be used for a PK column in the test tables. Override it if default name
      * is not valid for your source.
@@ -37,7 +38,8 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
      * @throws Exception
      * - might throw any exception during initialization.
      */
-    @Throws(Exception::class) protected abstract fun setupDatabase(dbName: String?)
+    @Throws(Exception::class)
+    protected abstract fun setupDatabase(dbName: String?)
 
     override fun tearDown(testEnv: TestDestinationEnv?) {}
 
@@ -62,13 +64,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
     @ParameterizedTest
     @MethodSource("provideParameters")
     @Throws(Exception::class)
-    fun testPerformance(
-        dbName: String?,
-        schemaName: String?,
-        numberOfDummyRecords: Int,
-        numberOfColumns: Int,
-        numberOfStreams: Int
-    ) {
+    fun testPerformance(dbName: String?, schemaName: String?, numberOfDummyRecords: Int, numberOfColumns: Int, numberOfStreams: Int) {
         setupDatabase(dbName)
 
         val catalog = getConfiguredCatalog(schemaName, numberOfStreams, numberOfColumns)
@@ -88,8 +84,8 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
                 .collect(
                     Collectors.toMap(
                         Function { obj: Map.Entry<String, Int> -> obj.key },
-                        Function { obj: Map.Entry<String, Int> -> obj.value }
-                    )
+                        Function { obj: Map.Entry<String, Int> -> obj.value },
+                    ),
                 )
 
         if (failedStreamsMap.isNotEmpty()) {
@@ -98,10 +94,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
         c.info("Finished all checks, no issues found for {} of streams", checkStatusMap.size)
     }
 
-    protected fun prepareMapWithExpectedRecords(
-        streamNumber: Int,
-        expectedRecordsNumberInEachStream: Int
-    ): MutableMap<String, Int> {
+    protected fun prepareMapWithExpectedRecords(streamNumber: Int, expectedRecordsNumberInEachStream: Int): MutableMap<String, Int> {
         val resultMap: MutableMap<String, Int> = HashMap() // streamName&expected records in stream
 
         for (currentStream in 0 until streamNumber) {
@@ -116,11 +109,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
      *
      * @return configured catalog
      */
-    protected fun getConfiguredCatalog(
-        nameSpace: String?,
-        numberOfStreams: Int,
-        numberOfColumns: Int
-    ): ConfiguredAirbyteCatalog {
+    protected fun getConfiguredCatalog(nameSpace: String?, numberOfStreams: Int, numberOfColumns: Int): ConfiguredAirbyteCatalog {
         val streams: MutableList<ConfiguredAirbyteStream> = ArrayList()
 
         for (currentStream in 0 until numberOfStreams) {
@@ -135,18 +124,18 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
 
             val airbyteStream =
                 CatalogHelpers.createAirbyteStream(
-                        String.format(testStreamNameTemplate, currentStream),
-                        nameSpace,
-                        fields
-                    )
+                    String.format(testStreamNameTemplate, currentStream),
+                    nameSpace,
+                    fields,
+                )
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(
                         java.util.List.of<List<String>>(
-                            java.util.List.of<String>(this.idColumnName)
-                        )
+                            java.util.List.of<String>(this.idColumnName),
+                        ),
                     )
                     .withSupportedSyncModes(
-                        Lists.newArrayList<SyncMode>(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                        Lists.newArrayList<SyncMode>(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                     )
 
             val configuredAirbyteStream =

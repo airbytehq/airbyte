@@ -34,8 +34,8 @@ class LegacyStateManagerTest {
                             .withCursor(StateTestConstants.CURSOR),
                         DbStreamState()
                             .withStreamName(StateTestConstants.STREAM_NAME2)
-                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                    )
+                            .withStreamNamespace(StateTestConstants.NAMESPACE),
+                    ),
                 )
 
         val catalog =
@@ -46,52 +46,52 @@ class LegacyStateManagerTest {
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME1)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
+                                    .withNamespace(StateTestConstants.NAMESPACE),
                             )
                             .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
-                            )
-                    )
+                                    .withNamespace(StateTestConstants.NAMESPACE),
+                            ),
+                    ),
                 )
 
         val stateManager: StateManager = LegacyStateManager(state, catalog)
 
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR_FIELD1),
-            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR),
-            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR_FIELD1),
-            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
         Assertions.assertEquals(
             Optional.of(StateTestConstants.CURSOR),
-            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR1)
+            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR1),
         )
 
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getOriginalCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getOriginalCursor(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getCursorField(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
         Assertions.assertEquals(
             Optional.empty<Any>(),
-            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR2)
+            stateManager.getCursor(StateTestConstants.NAME_NAMESPACE_PAIR2),
         )
     }
 
@@ -105,23 +105,23 @@ class LegacyStateManagerTest {
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME1)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
+                                    .withNamespace(StateTestConstants.NAMESPACE),
                             )
                             .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
+                                    .withNamespace(StateTestConstants.NAMESPACE),
                             )
                             .withCursorField(List.of(StateTestConstants.CURSOR_FIELD2)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME3)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
-                            )
-                    )
+                                    .withNamespace(StateTestConstants.NAMESPACE),
+                            ),
+                    ),
                 )
 
         val stateManager: StateManager = LegacyStateManager(DbState(), catalog)
@@ -134,33 +134,33 @@ class LegacyStateManagerTest {
                         DbState()
                             .withStreams(
                                 List.of(
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME1)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD1)
-                                            )
-                                            .withCursor("a"),
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME2)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD2)
-                                            ),
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME3)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                    )
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME1)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(
+                                            List.of(StateTestConstants.CURSOR_FIELD1),
+                                        )
+                                        .withCursor("a"),
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME2)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(
+                                            List.of(StateTestConstants.CURSOR_FIELD2),
+                                        ),
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME3)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE),
+                                )
                                     .stream()
                                     .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
-                                        }
+                                        },
                                     )
-                                    .collect(Collectors.toList())
+                                    .collect(Collectors.toList()),
                             )
-                            .withCdc(false)
-                    )
+                            .withCdc(false),
+                    ),
                 )
         val actualFirstEmission =
             stateManager.updateAndEmit(StateTestConstants.NAME_NAMESPACE_PAIR1, "a")
@@ -173,34 +173,34 @@ class LegacyStateManagerTest {
                         DbState()
                             .withStreams(
                                 List.of(
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME1)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD1)
-                                            )
-                                            .withCursor("a"),
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME2)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD2)
-                                            )
-                                            .withCursor("b"),
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME3)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                    )
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME1)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(
+                                            List.of(StateTestConstants.CURSOR_FIELD1),
+                                        )
+                                        .withCursor("a"),
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME2)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(
+                                            List.of(StateTestConstants.CURSOR_FIELD2),
+                                        )
+                                        .withCursor("b"),
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME3)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE),
+                                )
                                     .stream()
                                     .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
-                                        }
+                                        },
                                     )
-                                    .collect(Collectors.toList())
+                                    .collect(Collectors.toList()),
                             )
-                            .withCdc(false)
-                    )
+                            .withCdc(false),
+                    ),
                 )
         val actualSecondEmission =
             stateManager.updateAndEmit(StateTestConstants.NAME_NAMESPACE_PAIR2, "b")
@@ -217,16 +217,16 @@ class LegacyStateManagerTest {
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME1)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
+                                    .withNamespace(StateTestConstants.NAMESPACE),
                             )
                             .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
-                            )
-                    )
+                                    .withNamespace(StateTestConstants.NAMESPACE),
+                            ),
+                    ),
                 )
         val stateManager: StateManager = LegacyStateManager(DbState(), catalog)
 
@@ -238,27 +238,27 @@ class LegacyStateManagerTest {
                         DbState()
                             .withStreams(
                                 List.of(
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME1)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD1)
-                                            )
-                                            .withCursor("a"),
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME2)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                    )
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME1)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(
+                                            List.of(StateTestConstants.CURSOR_FIELD1),
+                                        )
+                                        .withCursor("a"),
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME2)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE),
+                                )
                                     .stream()
                                     .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
-                                        }
+                                        },
                                     )
-                                    .collect(Collectors.toList())
+                                    .collect(Collectors.toList()),
                             )
-                            .withCdc(false)
-                    )
+                            .withCdc(false),
+                    ),
                 )
 
         val actualFirstEmission =
@@ -276,16 +276,16 @@ class LegacyStateManagerTest {
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME1)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
+                                    .withNamespace(StateTestConstants.NAMESPACE),
                             )
                             .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
-                                    .withNamespace(StateTestConstants.NAMESPACE)
-                            )
-                    )
+                                    .withNamespace(StateTestConstants.NAMESPACE),
+                            ),
+                    ),
                 )
 
         val state = DbState()
@@ -300,28 +300,28 @@ class LegacyStateManagerTest {
                         DbState()
                             .withStreams(
                                 List.of(
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME1)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD1)
-                                            )
-                                            .withCursor(null),
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME2)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(listOf())
-                                    )
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME1)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(
+                                            List.of(StateTestConstants.CURSOR_FIELD1),
+                                        )
+                                        .withCursor(null),
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME2)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(listOf()),
+                                )
                                     .stream()
                                     .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
-                                        }
+                                        },
                                     )
-                                    .collect(Collectors.toList())
+                                    .collect(Collectors.toList()),
                             )
-                            .withCdc(true)
-                    )
+                            .withCdc(true),
+                    ),
                 )
         val actualFirstEmission =
             stateManager.updateAndEmit(StateTestConstants.NAME_NAMESPACE_PAIR1, "a")
@@ -334,29 +334,29 @@ class LegacyStateManagerTest {
                         DbState()
                             .withStreams(
                                 List.of(
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME1)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD1)
-                                            )
-                                            .withCursor(null),
-                                        DbStreamState()
-                                            .withStreamName(StateTestConstants.STREAM_NAME2)
-                                            .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                            .withCursorField(listOf())
-                                            .withCursor(null)
-                                    )
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME1)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(
+                                            List.of(StateTestConstants.CURSOR_FIELD1),
+                                        )
+                                        .withCursor(null),
+                                    DbStreamState()
+                                        .withStreamName(StateTestConstants.STREAM_NAME2)
+                                        .withStreamNamespace(StateTestConstants.NAMESPACE)
+                                        .withCursorField(listOf())
+                                        .withCursor(null),
+                                )
                                     .stream()
                                     .sorted(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
-                                        }
+                                        },
                                     )
-                                    .collect(Collectors.toList())
+                                    .collect(Collectors.toList()),
                             )
-                            .withCdc(true)
-                    )
+                            .withCdc(true),
+                    ),
                 )
         val actualSecondEmission =
             stateManager.updateAndEmit(StateTestConstants.NAME_NAMESPACE_PAIR2, "b")
@@ -374,8 +374,8 @@ class LegacyStateManagerTest {
                     List.of(
                         DbStreamState()
                             .withStreamNamespace(StateTestConstants.NAMESPACE)
-                            .withStreamName(StateTestConstants.STREAM_NAME1)
-                    )
+                            .withStreamName(StateTestConstants.STREAM_NAME1),
+                    ),
                 )
         val stateManager: StateManager = LegacyStateManager(dbState, catalog)
         Assertions.assertNotNull(stateManager.cdcStateManager)

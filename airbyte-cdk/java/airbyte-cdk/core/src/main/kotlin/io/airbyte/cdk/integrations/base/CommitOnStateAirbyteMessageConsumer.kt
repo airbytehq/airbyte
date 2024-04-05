@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
  * message. This should only be used in cases when the commit is relatively cheap. immediately.
  */
 abstract class CommitOnStateAirbyteMessageConsumer(
-    private val outputRecordCollector: Consumer<AirbyteMessage>
+    private val outputRecordCollector: Consumer<AirbyteMessage>,
 ) : FailureTrackingAirbyteMessageConsumer(), AirbyteMessageConsumer {
     @Throws(Exception::class)
     override fun accept(message: AirbyteMessage) {
@@ -25,7 +25,8 @@ abstract class CommitOnStateAirbyteMessageConsumer(
         super.accept(message)
     }
 
-    @Throws(Exception::class) abstract fun commit()
+    @Throws(Exception::class)
+    abstract fun commit()
 
     companion object {
         private val LOGGER: Logger =

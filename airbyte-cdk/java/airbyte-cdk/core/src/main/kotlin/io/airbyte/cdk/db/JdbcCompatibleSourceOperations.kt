@@ -19,12 +19,7 @@ interface JdbcCompatibleSourceOperations<SourceType> : SourceOperations<ResultSe
 
     /** Set the cursor field in incremental table query. */
     @Throws(SQLException::class)
-    fun setCursorField(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        cursorFieldType: SourceType?,
-        value: String?
-    )
+    fun setCursorField(preparedStatement: PreparedStatement, parameterIndex: Int, cursorFieldType: SourceType?, value: String?)
 
     /** Determine the database specific type of the input field based on its column metadata. */
     fun getDatabaseFieldType(field: JsonNode): SourceType

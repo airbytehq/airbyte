@@ -51,23 +51,13 @@ object FailureHelper {
             .withMetadata(traceMessageMetadata(jobId, attemptNumber))
     }
 
-    fun connectorCommandFailure(
-        m: AirbyteTraceMessage,
-        jobId: Long?,
-        attemptNumber: Int?,
-        connectorCommand: ConnectorCommand
-    ): FailureReason {
+    fun connectorCommandFailure(m: AirbyteTraceMessage, jobId: Long?, attemptNumber: Int?, connectorCommand: ConnectorCommand): FailureReason {
         val metadata = traceMessageMetadata(jobId, attemptNumber)
         metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString())
         return genericFailure(m, jobId, attemptNumber).withMetadata(metadata)
     }
 
-    fun connectorCommandFailure(
-        t: Throwable,
-        jobId: Long,
-        attemptNumber: Int,
-        connectorCommand: ConnectorCommand
-    ): FailureReason {
+    fun connectorCommandFailure(t: Throwable, jobId: Long, attemptNumber: Int, connectorCommand: ConnectorCommand): FailureReason {
         val metadata = jobAndAttemptMetadata(jobId, attemptNumber)
         metadata.withAdditionalProperty(CONNECTOR_COMMAND_METADATA_KEY, connectorCommand.toString())
         return genericFailure(t, jobId, attemptNumber).withMetadata(metadata)
@@ -90,21 +80,12 @@ object FailureHelper {
             .withExternalMessage("Something went wrong within the destination connector")
     }
 
-    fun destinationFailure(
-        m: AirbyteTraceMessage,
-        jobId: Long?,
-        attemptNumber: Int?
-    ): FailureReason {
+    fun destinationFailure(m: AirbyteTraceMessage, jobId: Long?, attemptNumber: Int?): FailureReason {
         return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.WRITE)
             .withFailureOrigin(FailureReason.FailureOrigin.DESTINATION)
     }
 
-    fun checkFailure(
-        t: Throwable,
-        jobId: Long,
-        attemptNumber: Int,
-        origin: FailureReason.FailureOrigin?
-    ): FailureReason {
+    fun checkFailure(t: Throwable, jobId: Long, attemptNumber: Int, origin: FailureReason.FailureOrigin?): FailureReason {
         return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.CHECK)
             .withFailureOrigin(origin)
             .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
@@ -112,8 +93,8 @@ object FailureHelper {
             .withExternalMessage(
                 String.format(
                     "Checking %s connection failed - please review this connection's configuration to prevent future syncs from failing",
-                    origin
-                )
+                    origin,
+                ),
             )
     }
 
@@ -147,11 +128,13 @@ object FailureHelper {
                 if (metadata != null) {
                     return@comparing if (
                         failureReason.metadata.additionalProperties.containsKey(
-                            TRACE_MESSAGE_METADATA_KEY
+                            TRACE_MESSAGE_METADATA_KEY,
                         )
-                    )
+                    ) {
                         0
-                    else 1
+                    } else {
+                        1
+                    }
                 } else {
                     return@comparing 1
                 }
@@ -166,7 +149,8 @@ object FailureHelper {
         CHECK("check"),
         DISCOVER("discover"),
         WRITE("write"),
-        READ("read");
+        READ("read"),
+        ;
 
         @JsonValue
         override fun toString(): String {

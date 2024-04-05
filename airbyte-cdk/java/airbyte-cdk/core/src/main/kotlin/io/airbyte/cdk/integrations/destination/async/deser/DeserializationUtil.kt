@@ -19,10 +19,7 @@ class DeserializationUtil {
      * @param messageString the string to deserialize
      * @return PartialAirbyteMessage if the message is valid, empty otherwise
      */
-    fun deserializeAirbyteMessage(
-        messageString: String?,
-        dataTransformer: StreamAwareDataTransformer,
-    ): PartialAirbyteMessage {
+    fun deserializeAirbyteMessage(messageString: String?, dataTransformer: StreamAwareDataTransformer): PartialAirbyteMessage {
         // TODO: This is doing some sketchy assumptions by deserializing either the whole or the
         // partial based on type.
         // Use JsonSubTypes and extend StdDeserializer to properly handle this.

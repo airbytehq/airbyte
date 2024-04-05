@@ -15,6 +15,6 @@ interface S3WriterFactory {
         config: S3DestinationConfig,
         s3Client: AmazonS3,
         configuredStream: ConfiguredAirbyteStream,
-        uploadTimestamp: Timestamp
+        uploadTimestamp: Timestamp,
     ): DestinationFileWriter?
 }

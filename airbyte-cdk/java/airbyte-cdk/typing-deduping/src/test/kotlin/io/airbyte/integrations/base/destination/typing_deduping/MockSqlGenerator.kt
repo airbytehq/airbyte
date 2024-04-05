@@ -10,11 +10,7 @@ import java.util.function.Function
 
 /** Basic SqlGenerator mock. See [DefaultTyperDeduperTest] for example usage. */
 internal class MockSqlGenerator : SqlGenerator {
-    override fun buildStreamId(
-        namespace: String,
-        name: String,
-        rawNamespaceOverride: String
-    ): StreamId {
+    override fun buildStreamId(namespace: String, name: String, rawNamespaceOverride: String): StreamId {
         throw RuntimeException()
     }
 
@@ -30,12 +26,7 @@ internal class MockSqlGenerator : SqlGenerator {
         return of("CREATE TABLE " + stream!!.id.finalTableId("", suffix!!))
     }
 
-    override fun updateTable(
-        stream: StreamConfig,
-        finalSuffix: String,
-        minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
-    ): Sql {
+    override fun updateTable(stream: StreamConfig, finalSuffix: String, minRawTimestamp: Optional<Instant>, useExpensiveSaferCasting: Boolean): Sql {
         val timestampFilter =
             minRawTimestamp
                 .map(Function { timestamp: Instant? -> " WHERE extracted_at > $timestamp" })
@@ -44,7 +35,7 @@ internal class MockSqlGenerator : SqlGenerator {
         return of(
             ("UPDATE TABLE " + stream.id.finalTableId("", finalSuffix)).toString() +
                 casting +
-                timestampFilter
+                timestampFilter,
         )
     }
 
@@ -53,20 +44,16 @@ internal class MockSqlGenerator : SqlGenerator {
             "OVERWRITE TABLE " +
                 stream.finalTableId("") +
                 " FROM " +
-                stream.finalTableId("", finalSuffix)
+                stream.finalTableId("", finalSuffix),
         )
     }
 
-    override fun migrateFromV1toV2(
-        streamId: StreamId,
-        namespace: String?,
-        tableName: String?
-    ): Sql {
+    override fun migrateFromV1toV2(streamId: StreamId, namespace: String?, tableName: String?): Sql {
         return of(
             "MIGRATE TABLE " +
                 java.lang.String.join(".", namespace, tableName) +
                 " TO " +
-                streamId!!.rawTableId("")
+                streamId!!.rawTableId(""),
         )
     }
 
@@ -74,7 +61,7 @@ internal class MockSqlGenerator : SqlGenerator {
         return of(
             "PREPARE " +
                 java.lang.String.join(".", stream.id.originalNamespace, stream.id.originalName) +
-                " FOR SOFT RESET"
+                " FOR SOFT RESET",
         )
     }
 

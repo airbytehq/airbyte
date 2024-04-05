@@ -24,6 +24,6 @@ interface Configs {
 
     enum class DeploymentMode {
         OSS,
-        CLOUD
+        CLOUD,
     }
 }

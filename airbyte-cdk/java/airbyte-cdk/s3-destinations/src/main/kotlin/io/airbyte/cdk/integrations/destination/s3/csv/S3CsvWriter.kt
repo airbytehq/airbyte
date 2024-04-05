@@ -37,7 +37,7 @@ private constructor(
     queueCapacity: Int,
     writeHeader: Boolean,
     csvSettings: CSVFormat,
-    csvSheetGenerator: CsvSheetGenerator
+    csvSheetGenerator: CsvSheetGenerator,
 ) : BaseS3Writer(config, s3Client, configuredStream), DestinationFileWriter {
     private val csvSheetGenerator: CsvSheetGenerator
     private val uploadManager: StreamTransferManager
@@ -59,7 +59,7 @@ private constructor(
                     .fileExtension(S3Format.CSV.fileExtension)
                     .fileNamePattern(config.fileNamePattern)
                     .timestamp(uploadTimestamp)
-                    .build()
+                    .build(),
             )
         this.outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
@@ -67,7 +67,7 @@ private constructor(
             "Full S3 path for stream '{}': s3://{}/{}",
             stream.name,
             config.bucketName,
-            outputPath
+            outputPath,
         )
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
@@ -91,7 +91,7 @@ private constructor(
         private val config: S3DestinationConfig,
         private val s3Client: AmazonS3,
         private val configuredStream: ConfiguredAirbyteStream,
-        private val uploadTimestamp: Timestamp
+        private val uploadTimestamp: Timestamp,
     ) {
         private var uploadThreads = StreamTransferManagerFactory.DEFAULT_UPLOAD_THREADS
         private var queueCapacity = StreamTransferManagerFactory.DEFAULT_QUEUE_CAPACITY
@@ -131,7 +131,7 @@ private constructor(
                 _csvSheetGenerator =
                     CsvSheetGenerator.Factory.create(
                         configuredStream.stream.jsonSchema,
-                        formatConfig
+                        formatConfig,
                     )
             }
             return S3CsvWriter(
@@ -143,7 +143,7 @@ private constructor(
                 queueCapacity,
                 withHeader,
                 csvSettings,
-                _csvSheetGenerator
+                _csvSheetGenerator,
             )
         }
     }

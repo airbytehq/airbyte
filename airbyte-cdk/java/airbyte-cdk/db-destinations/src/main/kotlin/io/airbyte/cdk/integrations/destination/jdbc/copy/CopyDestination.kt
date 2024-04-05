@@ -37,7 +37,8 @@ abstract class CopyDestination : BaseConnector, Destination {
      * A self contained method for writing a file to the persistence for testing. This method should
      * try to clean up after itself by deleting the file it creates.
      */
-    @Throws(Exception::class) abstract fun checkPersistence(config: JsonNode?)
+    @Throws(Exception::class)
+    abstract fun checkPersistence(config: JsonNode?)
 
     abstract val nameTransformer: StandardNameTransformer
 
@@ -58,7 +59,7 @@ abstract class CopyDestination : BaseConnector, Destination {
                     """
     Could not connect to the staging persistence with the provided configuration. 
     ${e.message}
-    """.trimIndent()
+                    """.trimIndent(),
                 )
         }
 
@@ -86,7 +87,7 @@ abstract class CopyDestination : BaseConnector, Destination {
                     """
     Could not connect to the warehouse with the provided configuration. 
     ${e.message}
-    """.trimIndent()
+                    """.trimIndent(),
                 )
         } finally {
             try {
@@ -98,17 +99,13 @@ abstract class CopyDestination : BaseConnector, Destination {
     }
 
     @Throws(Exception::class)
-    protected fun performCreateInsertTestOnDestination(
-        outputSchema: String?,
-        database: JdbcDatabase,
-        nameTransformer: NamingConventionTransformer
-    ) {
+    protected fun performCreateInsertTestOnDestination(outputSchema: String?, database: JdbcDatabase, nameTransformer: NamingConventionTransformer) {
         AbstractJdbcDestination.Companion.attemptTableOperations(
             outputSchema,
             database,
             nameTransformer,
             sqlOperations,
-            true
+            true,
         )
     }
 

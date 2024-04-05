@@ -22,7 +22,7 @@ import lombok.SneakyThrows
 class JdbcV1V2Migrator(
     private val namingConventionTransformer: NamingConventionTransformer,
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
     @SneakyThrows
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
@@ -30,7 +30,7 @@ class JdbcV1V2Migrator(
             database.executeMetadataQuery<String> { dbMetadata: DatabaseMetaData? ->
                 try {
                     dbMetadata!!.getSchemas(databaseName, streamConfig!!.id.rawNamespace).use {
-                        columns ->
+                            columns ->
                         var schema = ""
                         while (columns.next()) {
                             // Catalog can be null, so don't do anything with it.
@@ -47,24 +47,18 @@ class JdbcV1V2Migrator(
         return !retrievedSchema.isEmpty()
     }
 
-    override fun schemaMatchesExpectation(
-        existingTable: TableDefinition,
-        columns: Collection<String>
-    ): Boolean {
+    override fun schemaMatchesExpectation(existingTable: TableDefinition, columns: Collection<String>): Boolean {
         return existingTable.columns.keys.containsAll(columns)
     }
 
     @SneakyThrows
     @Throws(Exception::class)
-    override fun getTableIfExists(
-        namespace: String?,
-        tableName: String?
-    ): Optional<TableDefinition> {
+    override fun getTableIfExists(namespace: String?, tableName: String?): Optional<TableDefinition> {
         return JdbcDestinationHandler.Companion.findExistingTable(
             database,
             databaseName,
             namespace,
-            tableName
+            tableName,
         )
     }
 
@@ -73,7 +67,7 @@ class JdbcV1V2Migrator(
         val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName!!)
         return NamespacedTableName(
             namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace!!),
-            tableName
+            tableName,
         )
     }
 }

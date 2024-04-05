@@ -182,10 +182,7 @@ constructor(
     }
 
     @Throws(Exception::class)
-    override fun accept(
-        messageString: String,
-        sizeInBytes: Int,
-    ) {
+    override fun accept(messageString: String, sizeInBytes: Int) {
         Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started")
         propagateFlushWorkerExceptionIfPresent()
         /*
@@ -280,10 +277,7 @@ constructor(
         // within it. Using 8 bytes as we assumed a 64 bit JVM.
         private const val PARTIAL_DESERIALIZE_REF_BYTES: Int = 10 * 8
 
-        private fun throwUnrecognizedStream(
-            catalog: ConfiguredAirbyteCatalog?,
-            message: PartialAirbyteMessage,
-        ) {
+        private fun throwUnrecognizedStream(catalog: ConfiguredAirbyteCatalog?, message: PartialAirbyteMessage) {
             throw IllegalArgumentException(
                 "Message contained record from a stream that was not in the catalog. " +
                     "\ncatalog: ${Jsons.serialize(catalog)}, " +

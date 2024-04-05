@@ -27,7 +27,7 @@ class DefaultDestStateLifecycleManager
 @VisibleForTesting
 internal constructor(
     singleStateManager: DestStateLifecycleManager,
-    streamStateManager: DestStateLifecycleManager
+    streamStateManager: DestStateLifecycleManager,
 ) : DestStateLifecycleManager {
     private var stateType: AirbyteStateMessage.AirbyteStateType? = null
 
@@ -35,8 +35,8 @@ internal constructor(
     private val internalStateManagerSupplier = Supplier {
         if (
             stateType == AirbyteStateMessage.AirbyteStateType.GLOBAL ||
-                stateType == AirbyteStateMessage.AirbyteStateType.LEGACY ||
-                stateType == null
+            stateType == AirbyteStateMessage.AirbyteStateType.LEGACY ||
+            stateType == null
         ) {
             return@Supplier singleStateManager
         } else if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) {
@@ -47,13 +47,13 @@ internal constructor(
     }
 
     constructor(
-        defaultNamespace: String?
+        defaultNamespace: String?,
     ) : this(DestSingleStateLifecycleManager(), DestStreamStateLifecycleManager(defaultNamespace))
 
     override fun addState(message: AirbyteMessage) {
         Preconditions.checkArgument(
             message.type == AirbyteMessage.Type.STATE,
-            "Messages passed to State Manager must be of type STATE."
+            "Messages passed to State Manager must be of type STATE.",
         )
         Preconditions.checkArgument(isStateTypeCompatible(stateType, message.state.type))
 
@@ -131,11 +131,11 @@ internal constructor(
          */
         private fun isStateTypeCompatible(
             previousStateType: AirbyteStateMessage.AirbyteStateType?,
-            newStateType: AirbyteStateMessage.AirbyteStateType?
+            newStateType: AirbyteStateMessage.AirbyteStateType?,
         ): Boolean {
             return previousStateType == null ||
                 previousStateType == AirbyteStateMessage.AirbyteStateType.LEGACY &&
-                    newStateType == null ||
+                newStateType == null ||
                 previousStateType == newStateType
         }
     }

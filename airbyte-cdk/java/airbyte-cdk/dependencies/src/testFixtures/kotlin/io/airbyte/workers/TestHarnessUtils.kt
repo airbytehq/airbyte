@@ -58,7 +58,7 @@ object TestHarnessUtils {
             process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS)
             if (process.isAlive) {
                 LOGGER.warn(
-                    "Process is still alive after calling destroy. Attempting to destroy forcibly..."
+                    "Process is still alive after calling destroy. Attempting to destroy forcibly...",
                 )
                 process.destroyForcibly()
             }
@@ -103,9 +103,7 @@ object TestHarnessUtils {
             .withState(sync.state)
     }
 
-    private fun getConnectorCommandFromOutputType(
-        outputType: ConnectorJobOutput.OutputType
-    ): FailureHelper.ConnectorCommand {
+    private fun getConnectorCommandFromOutputType(outputType: ConnectorJobOutput.OutputType): FailureHelper.ConnectorCommand {
         return when (outputType) {
             ConnectorJobOutput.OutputType.SPEC -> FailureHelper.ConnectorCommand.SPEC
             ConnectorJobOutput.OutputType.CHECK_CONNECTION -> FailureHelper.ConnectorCommand.CHECK
@@ -115,7 +113,7 @@ object TestHarnessUtils {
     }
 
     fun getMostRecentConfigControlMessage(
-        messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
+        messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>,
     ): Optional<AirbyteControlConnectorConfigMessage> {
         return messagesByType
             .getOrDefault(AirbyteMessage.Type.CONTROL, ArrayList())
@@ -126,15 +124,14 @@ object TestHarnessUtils {
             }
             .map { obj: AirbyteControlMessage -> obj.connectorConfig }
             .reduce {
-                first: AirbyteControlConnectorConfigMessage?,
-                second: AirbyteControlConnectorConfigMessage ->
+                    first: AirbyteControlConnectorConfigMessage?,
+                    second: AirbyteControlConnectorConfigMessage,
+                ->
                 second
             }
     }
 
-    private fun getTraceMessageFromMessagesByType(
-        messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
-    ): Optional<AirbyteTraceMessage> {
+    private fun getTraceMessageFromMessagesByType(messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>): Optional<AirbyteTraceMessage> {
         return messagesByType
             .getOrDefault(AirbyteMessage.Type.TRACE, ArrayList())
             .stream()
@@ -143,21 +140,14 @@ object TestHarnessUtils {
             .findFirst()
     }
 
-    fun getDidControlMessageChangeConfig(
-        initialConfigJson: JsonNode,
-        configMessage: AirbyteControlConnectorConfigMessage
-    ): Boolean {
+    fun getDidControlMessageChangeConfig(initialConfigJson: JsonNode, configMessage: AirbyteControlConnectorConfigMessage): Boolean {
         val newConfig = configMessage.config
         val newConfigJson = Jsons.jsonNode(newConfig)
         return initialConfigJson != newConfigJson
     }
 
     @Throws(IOException::class)
-    fun getMessagesByType(
-        process: Process,
-        streamFactory: AirbyteStreamFactory,
-        timeOut: Int
-    ): Map<AirbyteMessage.Type, List<AirbyteMessage>> {
+    fun getMessagesByType(process: Process, streamFactory: AirbyteStreamFactory, timeOut: Int): Map<AirbyteMessage.Type, List<AirbyteMessage>> {
         val messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
         process.inputStream.use { stdout ->
             messagesByType =
@@ -171,7 +161,7 @@ object TestHarnessUtils {
 
     fun getJobFailureReasonFromMessages(
         outputType: ConnectorJobOutput.OutputType,
-        messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
+        messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>,
     ): Optional<FailureReason> {
         val traceMessage = getTraceMessageFromMessagesByType(messagesByType)
         if (traceMessage.isPresent) {
@@ -181,17 +171,15 @@ object TestHarnessUtils {
                     traceMessage.get(),
                     null,
                     null,
-                    connectorCommand
-                )
+                    connectorCommand,
+                ),
             )
         } else {
             return Optional.empty()
         }
     }
 
-    fun mapStreamNamesToSchemas(
-        syncInput: StandardSyncInput
-    ): Map<AirbyteStreamNameNamespacePair, JsonNode> {
+    fun mapStreamNamesToSchemas(syncInput: StandardSyncInput): Map<AirbyteStreamNameNamespacePair, JsonNode> {
         return syncInput.catalog.streams.associate {
             AirbyteStreamNameNamespacePair.fromAirbyteStream(it.stream) to it.stream.jsonSchema
         }

@@ -36,7 +36,7 @@ class EnvVariableFeatureFlags : FeatureFlags {
 
     override fun strictComparisonNormalizationTag(): String? {
         return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison2") {
-            arg: String? ->
+                arg: String? ->
             arg
         }
     }

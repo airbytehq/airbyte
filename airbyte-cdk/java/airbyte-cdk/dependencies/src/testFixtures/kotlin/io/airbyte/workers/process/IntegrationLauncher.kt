@@ -15,7 +15,8 @@ import java.nio.file.Path
  * as temporary file system storage.
  */
 interface IntegrationLauncher {
-    @Throws(TestHarnessException::class) fun spec(jobRoot: Path): Process
+    @Throws(TestHarnessException::class)
+    fun spec(jobRoot: Path): Process
 
     @Throws(TestHarnessException::class)
     fun check(jobRoot: Path, configFilename: String, configContents: String): Process
@@ -31,17 +32,11 @@ interface IntegrationLauncher {
         catalogFilename: String?,
         catalogContents: String?,
         stateFilename: String?,
-        stateContents: String?
+        stateContents: String?,
     ): Process?
 
     @Throws(TestHarnessException::class)
-    fun read(
-        jobRoot: Path,
-        configFilename: String?,
-        configContents: String?,
-        catalogFilename: String?,
-        catalogContents: String?
-    ): Process? {
+    fun read(jobRoot: Path, configFilename: String?, configContents: String?, catalogFilename: String?, catalogContents: String?): Process? {
         return read(
             jobRoot,
             configFilename,
@@ -49,7 +44,7 @@ interface IntegrationLauncher {
             catalogFilename,
             catalogContents,
             null,
-            null
+            null,
         )
     }
 
@@ -60,6 +55,6 @@ interface IntegrationLauncher {
         configContents: String,
         catalogFilename: String,
         catalogContents: String,
-        additionalEnvironmentVariables: Map<String, String>
+        additionalEnvironmentVariables: Map<String, String>,
     ): Process?
 }

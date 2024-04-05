@@ -19,12 +19,12 @@ class HeartbeatMonitor
 @VisibleForTesting
 constructor(
     private val heartBeatFreshDuration: Duration?,
-    private val nowSupplier: Supplier<Instant>
+    private val nowSupplier: Supplier<Instant>,
 ) {
     private val lastBeat = AtomicReference<Instant?>(null)
 
     constructor(
-        heartBeatFreshDuration: Duration?
+        heartBeatFreshDuration: Duration?,
     ) : this(heartBeatFreshDuration, Supplier<Instant> { Instant.now() })
 
     /** Register a heartbeat */

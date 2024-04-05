@@ -31,11 +31,7 @@ interface Destination : Integration {
      * - any exception.
      */
     @Throws(Exception::class)
-    fun getConsumer(
-        config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
-    ): AirbyteMessageConsumer?
+    fun getConsumer(config: JsonNode, catalog: ConfiguredAirbyteCatalog, outputRecordCollector: Consumer<AirbyteMessage>): AirbyteMessageConsumer?
 
     /**
      * Default implementation allows us to not have to touch existing destinations while avoiding a
@@ -53,10 +49,10 @@ interface Destination : Integration {
     fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer? {
         return ShimToSerializedAirbyteMessageConsumer(
-            getConsumer(config, catalog, outputRecordCollector)
+            getConsumer(config, catalog, outputRecordCollector),
         )
     }
 
@@ -108,6 +104,7 @@ interface Destination : Integration {
         companion object {
             private val LOGGER: Logger =
                 LoggerFactory.getLogger(ShimToSerializedAirbyteMessageConsumer::class.java)
+
             /**
              * Consumes an [AirbyteMessage] for processing.
              *

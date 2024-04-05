@@ -115,7 +115,7 @@ class NormalizationLogParser {
             val normalizationLogParser = NormalizationLogParser()
             val airbyteMessageStream =
                 normalizationLogParser.create(
-                    BufferedReader(InputStreamReader(System.`in`, StandardCharsets.UTF_8))
+                    BufferedReader(InputStreamReader(System.`in`, StandardCharsets.UTF_8)),
                 )
             airbyteMessageStream.forEachOrdered { message: AirbyteMessage? ->
                 println(Jsons.serialize(message))
@@ -138,14 +138,14 @@ class NormalizationLogParser {
                                 .withError(
                                     AirbyteErrorTraceMessage()
                                         .withFailureType(
-                                            AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR
+                                            AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
                                         )
                                         .withMessage(
-                                            "Normalization failed during the dbt run. This may indicate a problem with the data itself."
+                                            "Normalization failed during the dbt run. This may indicate a problem with the data itself.",
                                         )
                                         .withStackTrace("AirbyteDbtError: \n$dbtErrorStack")
-                                        .withInternalMessage(internalMessage)
-                                )
+                                        .withInternalMessage(internalMessage),
+                                ),
                         )
                 println(Jsons.serialize(traceMessage))
             }

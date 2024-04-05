@@ -50,7 +50,7 @@ class TypeAndDedupeOperationValveTest {
         Assertions.assertEquals(-1, valve.getIncrementInterval(STREAM_A))
         Assertions.assertEquals(
             valve.readyToTypeAndDedupe(STREAM_A),
-            enableIncrementalTypingAndDeduping
+            enableIncrementalTypingAndDeduping,
         )
         Assertions.assertEquals(valve[STREAM_A], 0L)
     }
@@ -68,12 +68,12 @@ class TypeAndDedupeOperationValveTest {
         // method call increments time
         Assertions.assertEquals(
             valve.readyToTypeAndDedupe(STREAM_A),
-            enableIncrementalTypingAndDeduping
+            enableIncrementalTypingAndDeduping,
         )
         elapseTime(minuteUpdates, 1)
         Assertions.assertEquals(
             valve.readyToTypeAndDedupe(STREAM_B),
-            enableIncrementalTypingAndDeduping
+            enableIncrementalTypingAndDeduping,
         )
         valve.updateTimeAndIncreaseInterval(STREAM_A)
         Assertions.assertEquals((1000 * 60 * 60 * 6).toLong(), valve.getIncrementInterval(STREAM_A))
@@ -83,7 +83,7 @@ class TypeAndDedupeOperationValveTest {
         elapseTime(minuteUpdates, 60 * 6)
         Assertions.assertEquals(
             valve.readyToTypeAndDedupe(STREAM_A),
-            enableIncrementalTypingAndDeduping
+            enableIncrementalTypingAndDeduping,
         )
     }
 
@@ -96,14 +96,14 @@ class TypeAndDedupeOperationValveTest {
         IntStream.range(0, 1).forEach { `__`: Int ->
             Assertions.assertEquals(
                 valve.readyToTypeAndDedupe(STREAM_A),
-                enableIncrementalTypingAndDeduping
+                enableIncrementalTypingAndDeduping,
             )
         } // start
         // ready
         // to T&D
         Assertions.assertEquals(
             valve.readyToTypeAndDedupe(STREAM_A),
-            enableIncrementalTypingAndDeduping
+            enableIncrementalTypingAndDeduping,
         )
         valve.updateTimeAndIncreaseInterval(STREAM_A)
         IntStream.range(0, 360).forEach { `__`: Int ->
@@ -111,7 +111,7 @@ class TypeAndDedupeOperationValveTest {
         }
         Assertions.assertEquals(
             valve.readyToTypeAndDedupe(STREAM_A),
-            enableIncrementalTypingAndDeduping
+            enableIncrementalTypingAndDeduping,
         )
     }
 

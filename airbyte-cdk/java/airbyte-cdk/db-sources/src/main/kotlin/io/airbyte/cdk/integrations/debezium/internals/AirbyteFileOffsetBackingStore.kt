@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory
  */
 class AirbyteFileOffsetBackingStore(
     private val offsetFilePath: Path,
-    private val dbName: Optional<String>
+    private val dbName: Optional<String>,
 ) {
     fun read(): Map<String, String> {
         val raw = load()
@@ -48,16 +48,18 @@ class AirbyteFileOffsetBackingStore(
                     },
                     Function { e: Map.Entry<ByteBuffer?, ByteBuffer?> ->
                         byteBufferToString(e.value)
-                    }
-                )
+                    },
+                ),
             )
     }
 
     fun persist(cdcState: JsonNode?) {
         val mapAsString: Map<String, String> =
-            if (cdcState != null)
+            if (cdcState != null) {
                 Jsons.`object`(cdcState, MutableMap::class.java) as Map<String, String>
-            else emptyMap()
+            } else {
+                emptyMap()
+            }
 
         val updatedMap = updateStateForDebezium2_1(mapAsString)
 
@@ -67,8 +69,8 @@ class AirbyteFileOffsetBackingStore(
                 .collect(
                     Collectors.toMap(
                         Function { e: Map.Entry<String, String?> -> stringToByteBuffer(e.key) },
-                        Function { e: Map.Entry<String, String?> -> stringToByteBuffer(e.value) }
-                    )
+                        Function { e: Map.Entry<String, String?> -> stringToByteBuffer(e.value) },
+                    ),
                 )
 
         FileUtils.deleteQuietly(offsetFilePath.toFile())
@@ -89,9 +91,11 @@ class AirbyteFileOffsetBackingStore(
 
             LOGGER.info("Mutating sate to make it Debezium 2.1 compatible")
             val newKey =
-                if (dbName.isPresent)
+                if (dbName.isPresent) {
                     SQL_SERVER_STATE_MUTATION.apply(key.substring(i, i1 + 1), dbName.get())
-                else key.substring(i, i1 + 1)
+                } else {
+                    key.substring(i, i1 + 1)
+                }
             val value = mapAsString[key]
             updatedMap[newKey] = value
         }
@@ -128,8 +132,9 @@ class AirbyteFileOffsetBackingStore(
             throw ConnectException(e)
         }
 
-        if (obj !is HashMap<*, *>)
+        if (obj !is HashMap<*, *>) {
             throw ConnectException("Expected HashMap but found " + obj.javaClass)
+        }
         val raw = obj as Map<ByteArray?, ByteArray?>
         val data: MutableMap<ByteBuffer?, ByteBuffer?> = HashMap()
         for ((key1, value1) in raw) {
@@ -166,7 +171,7 @@ class AirbyteFileOffsetBackingStore(
         // https://debezium.io/documentation/reference/2.2/development/engine.html#engine-properties
         props.setProperty(
             "offset.storage",
-            "org.apache.kafka.connect.storage.FileOffsetBackingStore"
+            "org.apache.kafka.connect.storage.FileOffsetBackingStore",
         )
         props.setProperty("offset.storage.file.filename", offsetFilePath.toString())
         props.setProperty("offset.flush.interval.ms", "1000") // todo: make this longer
@@ -176,11 +181,13 @@ class AirbyteFileOffsetBackingStore(
         private val LOGGER: Logger =
             LoggerFactory.getLogger(AirbyteFileOffsetBackingStore::class.java)
         private val SQL_SERVER_STATE_MUTATION = BiFunction { key: String, databaseName: String ->
-            (key.substring(0, key.length - 2) +
-                ",\"database\":\"" +
-                databaseName +
-                "\"" +
-                key.substring(key.length - 2))
+            (
+                key.substring(0, key.length - 2) +
+                    ",\"database\":\"" +
+                    databaseName +
+                    "\"" +
+                    key.substring(key.length - 2)
+                )
         }
 
         private fun byteBufferToString(byteBuffer: ByteBuffer?): String {
@@ -194,10 +201,7 @@ class AirbyteFileOffsetBackingStore(
         }
 
         @JvmStatic
-        fun initializeState(
-            cdcState: JsonNode?,
-            dbName: Optional<String>
-        ): AirbyteFileOffsetBackingStore {
+        fun initializeState(cdcState: JsonNode?, dbName: Optional<String>): AirbyteFileOffsetBackingStore {
             val cdcWorkingDir: Path
             try {
                 cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset")

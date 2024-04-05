@@ -29,7 +29,7 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
                 initialSampleSize,
                 FetchSizeConstants.MIN_FETCH_SIZE,
                 FetchSizeConstants.DEFAULT_FETCH_SIZE,
-                FetchSizeConstants.MAX_FETCH_SIZE
+                FetchSizeConstants.MAX_FETCH_SIZE,
             )
     }
 
@@ -48,7 +48,7 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
                         delegate.maxRowByteSize,
                         FetchSizeConstants.MIN_FETCH_SIZE,
                         FetchSizeConstants.DEFAULT_FETCH_SIZE,
-                        FetchSizeConstants.MAX_FETCH_SIZE
+                        FetchSizeConstants.MAX_FETCH_SIZE,
                     )
             }
         }
@@ -67,7 +67,7 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
             if (maxMemory == null || maxMemory == Long.MAX_VALUE) {
                 LOGGER.info(
                     "No max memory limit found, use min JDBC buffer size: {}",
-                    FetchSizeConstants.MIN_BUFFER_BYTE_SIZE
+                    FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
                 )
                 return FetchSizeConstants.MIN_BUFFER_BYTE_SIZE
             }
@@ -75,14 +75,14 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
                 Math.round(maxMemory * FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO)
             val finalBufferByteSize =
                 max(
-                        FetchSizeConstants.MIN_BUFFER_BYTE_SIZE.toDouble(),
-                        targetBufferByteSize.toDouble()
-                    )
+                    FetchSizeConstants.MIN_BUFFER_BYTE_SIZE.toDouble(),
+                    targetBufferByteSize.toDouble(),
+                )
                     .toLong()
             LOGGER.info(
                 "Max memory limit: {}, JDBC buffer size: {}",
                 maxMemory,
-                finalBufferByteSize
+                finalBufferByteSize,
             )
             return finalBufferByteSize
         }

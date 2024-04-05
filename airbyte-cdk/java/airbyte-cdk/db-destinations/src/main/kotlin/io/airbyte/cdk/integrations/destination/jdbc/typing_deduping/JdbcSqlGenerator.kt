@@ -32,18 +32,14 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     SqlGenerator {
     protected val cdcDeletedAtColumn: ColumnId = buildColumnId("_ab_cdc_deleted_at")
 
-    override fun buildStreamId(
-        namespace: String,
-        name: String,
-        rawNamespaceOverride: String
-    ): StreamId {
+    override fun buildStreamId(namespace: String, name: String, rawNamespaceOverride: String): StreamId {
         return StreamId(
             namingTransformer.getNamespace(namespace),
             namingTransformer.convertStreamName(name),
             namingTransformer.getNamespace(rawNamespaceOverride),
             namingTransformer.convertStreamName(concatenateRawTableName(namespace, name)),
             namespace,
-            name
+            name,
         )
     }
 
@@ -52,7 +48,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         return ColumnId(
             namingTransformer.getIdentifier(nameWithSuffix),
             name,
-            namingTransformer.getIdentifier(nameWithSuffix)
+            namingTransformer.getIdentifier(nameWithSuffix),
         )
     }
 
@@ -62,7 +58,8 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         }
         return when (type.typeName) {
             Struct.TYPE,
-            UnsupportedOneOf.TYPE -> structType
+            UnsupportedOneOf.TYPE,
+            -> structType
             Array.TYPE -> arrayType!!
             Union.TYPE -> toDialectType((type as Union).chooseType())
             else -> throw IllegalArgumentException("Unsupported AirbyteType: $type")
@@ -109,7 +106,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
      */
     protected abstract fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): MutableList<Field<*>>
 
     /**
@@ -118,9 +115,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
      * column
      * @return
      */
-    protected abstract fun buildAirbyteMetaColumn(
-        columns: LinkedHashMap<ColumnId, AirbyteType>
-    ): Field<*>?
+    protected abstract fun buildAirbyteMetaColumn(columns: LinkedHashMap<ColumnId, AirbyteType>): Field<*>?
 
     /**
      * Get the cdc_deleted_at column condition for append_dedup mode by extracting it from
@@ -138,10 +133,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
      * @param cursorField cursor field used for ordering
      * @return
      */
-    protected abstract fun getRowNumber(
-        primaryKey: List<ColumnId?>?,
-        cursorField: Optional<ColumnId>
-    ): Field<Int>
+    protected abstract fun getRowNumber(primaryKey: List<ColumnId?>?, cursorField: Optional<ColumnId>): Field<Int>
 
     protected open val dslContext: DSLContext
         get() = DSL.using(dialect)
@@ -154,10 +146,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
      * @return
      */
     @VisibleForTesting
-    fun buildFinalTableFields(
-        columns: LinkedHashMap<ColumnId, AirbyteType>,
-        metaColumns: Map<String?, DataType<*>?>
-    ): List<Field<*>> {
+    fun buildFinalTableFields(columns: LinkedHashMap<ColumnId, AirbyteType>, metaColumns: Map<String?, DataType<*>?>): List<Field<*>> {
         val fields =
             metaColumns.entries
                 .stream()
@@ -188,8 +177,9 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             SQLDataType.VARCHAR(36).nullable(false)
         metaColumns[JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT] =
             timestampWithTimeZoneType.nullable(false)
-        if (includeMetaColumn)
+        if (includeMetaColumn) {
             metaColumns[JavaBaseConstants.COLUMN_NAME_AB_META] = structType.nullable(false)
+        }
         return metaColumns
     }
 
@@ -205,7 +195,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     fun buildRawTableSelectFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
         metaColumns: Map<String?, DataType<*>?>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): List<Field<*>> {
         val fields =
             metaColumns.entries
@@ -221,11 +211,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     }
 
     @VisibleForTesting
-    fun rawTableCondition(
-        syncMode: DestinationSyncMode,
-        isCdcDeletedAtPresent: Boolean,
-        minRawTimestamp: Optional<Instant>
-    ): Condition {
+    fun rawTableCondition(syncMode: DestinationSyncMode, isCdcDeletedAtPresent: Boolean, minRawTimestamp: Optional<Instant>): Condition {
         var condition: Condition =
             DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)).isNull()
         if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
@@ -237,7 +223,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             condition =
                 condition.and(
                     DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-                        .gt(minRawTimestamp.get().toString())
+                        .gt(minRawTimestamp.get().toString()),
                 )
         }
         return condition
@@ -253,34 +239,34 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         if (!force) {
             return transactionally(
                 Stream.concat(
-                        Stream.of(
-                            createTableSql(
-                                stream.id.finalNamespace,
-                                finalTableIdentifier,
-                                stream.columns!!
-                            )
+                    Stream.of(
+                        createTableSql(
+                            stream.id.finalNamespace,
+                            finalTableIdentifier,
+                            stream.columns!!,
                         ),
-                        createIndexSql(stream, suffix).stream()
-                    )
-                    .toList()
+                    ),
+                    createIndexSql(stream, suffix).stream(),
+                )
+                    .toList(),
             )
         }
         return transactionally(
             Stream.concat(
-                    Stream.of(
-                        DSL.dropTableIfExists(
-                                DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier)
-                            )
-                            .getSQL(ParamType.INLINED),
-                        createTableSql(
-                            stream.id.finalNamespace,
-                            finalTableIdentifier,
-                            stream.columns!!
-                        )
+                Stream.of(
+                    DSL.dropTableIfExists(
+                        DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier),
+                    )
+                        .getSQL(ParamType.INLINED),
+                    createTableSql(
+                        stream.id.finalNamespace,
+                        finalTableIdentifier,
+                        stream.columns!!,
                     ),
-                    createIndexSql(stream, suffix).stream()
-                )
-                .toList()
+                ),
+                createIndexSql(stream, suffix).stream(),
+            )
+                .toList(),
         )
     }
 
@@ -288,7 +274,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         streamConfig: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         // TODO: Add flag to use merge vs insert/delete
 
@@ -296,7 +282,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             streamConfig,
             finalSuffix,
             minRawTimestamp,
-            useExpensiveSaferCasting
+            useExpensiveSaferCasting,
         )
     }
 
@@ -306,15 +292,11 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
                 .getSQL(ParamType.INLINED),
             DSL.alterTable(DSL.name(stream.finalNamespace, stream.finalName + finalSuffix))
                 .renameTo(DSL.name(stream.finalName))
-                .sql
+                .sql,
         )
     }
 
-    override fun migrateFromV1toV2(
-        streamId: StreamId,
-        namespace: String?,
-        tableName: String?
-    ): Sql {
+    override fun migrateFromV1toV2(streamId: StreamId, namespace: String?, tableName: String?): Sql {
         val rawTableName = DSL.name(streamId.rawNamespace, streamId.rawName)
         val dsl = dslContext
         return transactionally(
@@ -323,33 +305,33 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             DSL.createTable(rawTableName)
                 .column(
                     JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-                    SQLDataType.VARCHAR(36).nullable(false)
+                    SQLDataType.VARCHAR(36).nullable(false),
                 )
                 .column(
                     JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-                    timestampWithTimeZoneType.nullable(false)
+                    timestampWithTimeZoneType.nullable(false),
                 )
                 .column(
                     JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-                    timestampWithTimeZoneType.nullable(true)
+                    timestampWithTimeZoneType.nullable(true),
                 )
                 .column(JavaBaseConstants.COLUMN_NAME_DATA, structType.nullable(false))
                 .column(JavaBaseConstants.COLUMN_NAME_AB_META, structType.nullable(true))
                 .`as`(
                     DSL.select(
-                            DSL.field(JavaBaseConstants.COLUMN_NAME_AB_ID)
-                                .`as`(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
-                            DSL.field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
-                                .`as`(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
-                            DSL.cast(null, timestampWithTimeZoneType)
-                                .`as`(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
-                            DSL.field(JavaBaseConstants.COLUMN_NAME_DATA)
-                                .`as`(JavaBaseConstants.COLUMN_NAME_DATA),
-                            DSL.cast(null, structType).`as`(JavaBaseConstants.COLUMN_NAME_AB_META)
-                        )
-                        .from(DSL.table(DSL.name(namespace, tableName)))
+                        DSL.field(JavaBaseConstants.COLUMN_NAME_AB_ID)
+                            .`as`(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
+                        DSL.field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                            .`as`(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
+                        DSL.cast(null, timestampWithTimeZoneType)
+                            .`as`(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
+                        DSL.field(JavaBaseConstants.COLUMN_NAME_DATA)
+                            .`as`(JavaBaseConstants.COLUMN_NAME_DATA),
+                        DSL.cast(null, structType).`as`(JavaBaseConstants.COLUMN_NAME_AB_META),
+                    )
+                        .from(DSL.table(DSL.name(namespace, tableName))),
                 )
-                .getSQL(ParamType.INLINED)
+                .getSQL(ParamType.INLINED),
         )
     }
 
@@ -358,9 +340,9 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             DSL.update<Record>(DSL.table(DSL.name(streamId.rawNamespace, streamId.rawName)))
                 .set<Any>(
                     DSL.field(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
-                    DSL.inline(null as String?)
+                    DSL.inline(null as String?),
                 )
-                .sql
+                .sql,
         )
     }
 
@@ -371,7 +353,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         columns: LinkedHashMap<ColumnId, AirbyteType>,
         metaColumns: Map<String?, DataType<*>?>,
         condition: Condition?,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): SelectConditionStep<Record> {
         val dsl = dslContext
         return dsl.select(buildRawTableSelectFields(columns, metaColumns, useExpensiveSaferCasting))
@@ -385,7 +367,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         schemaName: String?,
         tableName: String?,
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        metaFields: Map<String?, DataType<*>?>
+        metaFields: Map<String?, DataType<*>?>,
     ): InsertValuesStepN<Record> {
         val dsl = dslContext
         return dsl.insertInto(DSL.table(DSL.quotedName(schemaName, tableName)))
@@ -396,7 +378,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         streamConfig: StreamConfig,
         finalSuffix: String?,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Sql {
         val finalSchema = streamConfig.id.finalNamespace
         val finalTable =
@@ -418,10 +400,10 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
                         rawTableCondition(
                             streamConfig.destinationSyncMode!!,
                             streamConfig.columns!!.containsKey(cdcDeletedAtColumn),
-                            minRawTimestamp
+                            minRawTimestamp,
                         ),
-                        useExpensiveSaferCasting
-                    )
+                        useExpensiveSaferCasting,
+                    ),
                 )
         val finalTableFields =
             buildFinalTableFields(streamConfig.columns!!, getFinalTableMetaColumns(true))
@@ -433,35 +415,35 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         // Used for append-dedupe mode.
         val insertStmtWithDedupe =
             insertIntoFinalTable(
-                    finalSchema,
-                    finalTable,
-                    streamConfig.columns!!,
-                    getFinalTableMetaColumns(true)
-                )
+                finalSchema,
+                finalTable,
+                streamConfig.columns!!,
+                getFinalTableMetaColumns(true),
+            )
                 .select(
                     DSL.with(rawTableRowsWithCast)
                         .with(filteredRows)
                         .select(finalTableFields)
                         .from(filteredRows)
                         .where(
-                            DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME), Int::class.java).eq(1)
-                        ) // Can refer by CTE.field but no use since we don't strongly type
+                            DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME), Int::class.java).eq(1),
+                        ), // Can refer by CTE.field but no use since we don't strongly type
                     // them.
-                    )
+                )
                 .getSQL(ParamType.INLINED)
 
         // Used for append and overwrite modes.
         val insertStmt =
             insertIntoFinalTable(
-                    finalSchema,
-                    finalTable,
-                    streamConfig.columns!!,
-                    getFinalTableMetaColumns(true)
-                )
+                finalSchema,
+                finalTable,
+                streamConfig.columns!!,
+                getFinalTableMetaColumns(true),
+            )
                 .select(
                     DSL.with(rawTableRowsWithCast)
                         .select(finalTableFields)
-                        .from(rawTableRowsWithCast)
+                        .from(rawTableRowsWithCast),
                 )
                 .getSQL(ParamType.INLINED)
         val deleteStmt =
@@ -469,12 +451,14 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
                 finalSchema,
                 finalTable,
                 streamConfig.primaryKey!!,
-                streamConfig.cursor!!
+                streamConfig.cursor!!,
             )
         val deleteCdcDeletesStmt =
-            if (streamConfig.columns!!.containsKey(cdcDeletedAtColumn))
+            if (streamConfig.columns!!.containsKey(cdcDeletedAtColumn)) {
                 deleteFromFinalTableCdcDeletes(finalSchema, finalTable)
-            else ""
+            } else {
+                ""
+            }
         val checkpointStmt = checkpointRawTable(rawSchema, rawTable, minRawTimestamp)
 
         if (streamConfig.destinationSyncMode != DestinationSyncMode.APPEND_DEDUP) {
@@ -486,7 +470,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             insertStmtWithDedupe,
             deleteStmt,
             deleteCdcDeletesStmt,
-            checkpointStmt
+            checkpointStmt,
         )
     }
 
@@ -496,11 +480,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         return createSchemaSql.sql
     }
 
-    protected fun createTableSql(
-        namespace: String?,
-        tableName: String?,
-        columns: LinkedHashMap<ColumnId, AirbyteType>
-    ): String {
+    protected fun createTableSql(namespace: String?, tableName: String?, columns: LinkedHashMap<ColumnId, AirbyteType>): String {
         val dsl = dslContext
         val createTableSql =
             dsl.createTable(DSL.quotedName(namespace, tableName))
@@ -529,12 +509,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         return commitTransaction() + ";"
     }
 
-    private fun deleteFromFinalTable(
-        schemaName: String?,
-        tableName: String,
-        primaryKeys: List<ColumnId?>,
-        cursor: Optional<ColumnId>
-    ): String {
+    private fun deleteFromFinalTable(schemaName: String?, tableName: String, primaryKeys: List<ColumnId?>, cursor: Optional<ColumnId>): String {
         val dsl = dslContext
         // Unknown type doesn't play well with where .. in (select..)
         val airbyteRawId: Field<Any> =
@@ -547,10 +522,10 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
                         .from(
                             DSL.select(airbyteRawId, rowNumber)
                                 .from(DSL.table(DSL.quotedName(schemaName, tableName)))
-                                .asTable("airbyte_ids")
+                                .asTable("airbyte_ids"),
                         )
-                        .where(DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME)).ne(1))
-                )
+                        .where(DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME)).ne(1)),
+                ),
             )
             .getSQL(ParamType.INLINED)
     }
@@ -562,36 +537,27 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
             .getSQL(ParamType.INLINED)
     }
 
-    private fun checkpointRawTable(
-        schemaName: String?,
-        tableName: String?,
-        minRawTimestamp: Optional<Instant>
-    ): String {
+    private fun checkpointRawTable(schemaName: String?, tableName: String?, minRawTimestamp: Optional<Instant>): String {
         val dsl = dslContext
         var extractedAtCondition = DSL.noCondition()
         if (minRawTimestamp.isPresent) {
             extractedAtCondition =
                 extractedAtCondition.and(
                     DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-                        .gt(minRawTimestamp.get().toString())
+                        .gt(minRawTimestamp.get().toString()),
                 )
         }
         return dsl.update<Record>(DSL.table(DSL.quotedName(schemaName, tableName)))
             .set<Any>(
                 DSL.field(DSL.quotedName(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
-                currentTimestamp()
+                currentTimestamp(),
             )
             .where(DSL.field(DSL.quotedName(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)).isNull())
             .and(extractedAtCondition)
             .getSQL(ParamType.INLINED)
     }
 
-    protected open fun castedField(
-        field: Field<*>?,
-        type: AirbyteType,
-        alias: String?,
-        useExpensiveSaferCasting: Boolean
-    ): Field<*> {
+    protected open fun castedField(field: Field<*>?, type: AirbyteType, alias: String?, useExpensiveSaferCasting: Boolean): Field<*> {
         if (type is AirbyteProtocolType) {
             return castedField(field, type, useExpensiveSaferCasting).`as`(DSL.quotedName(alias))
         }
@@ -599,7 +565,8 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         // Redshift SUPER can silently cast an array type to struct and vice versa.
         return when (type.typeName) {
             Struct.TYPE,
-            UnsupportedOneOf.TYPE -> DSL.cast(field, structType).`as`(DSL.quotedName(alias))
+            UnsupportedOneOf.TYPE,
+            -> DSL.cast(field, structType).`as`(DSL.quotedName(alias))
             Array.TYPE -> DSL.cast(field, arrayType).`as`(DSL.quotedName(alias))
             Union.TYPE ->
                 castedField(field, (type as Union).chooseType(), alias, useExpensiveSaferCasting)
@@ -607,11 +574,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         }
     }
 
-    protected open fun castedField(
-        field: Field<*>?,
-        type: AirbyteProtocolType,
-        useExpensiveSaferCasting: Boolean
-    ): Field<*> {
+    protected open fun castedField(field: Field<*>?, type: AirbyteProtocolType, useExpensiveSaferCasting: Boolean): Field<*> {
         return DSL.cast(field, toDialectType(type))
     }
 

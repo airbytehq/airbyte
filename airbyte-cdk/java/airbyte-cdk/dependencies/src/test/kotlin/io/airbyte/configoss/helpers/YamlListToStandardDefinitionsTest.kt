@@ -63,7 +63,7 @@ internal class YamlListToStandardDefinitionsTest {
             val defs =
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    GOOD_DES_DEF_YAML
+                    GOOD_DES_DEF_YAML,
                 )
             Assertions.assertEquals(1, defs.size)
             Assertions.assertEquals("Local JSON", defs[0].name)
@@ -74,7 +74,7 @@ internal class YamlListToStandardDefinitionsTest {
             Assertions.assertThrows(RuntimeException::class.java) {
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    DUPLICATE_ID
+                    DUPLICATE_ID,
                 )
             }
         }
@@ -84,7 +84,7 @@ internal class YamlListToStandardDefinitionsTest {
             Assertions.assertThrows(RuntimeException::class.java) {
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    DUPLICATE_NAME
+                    DUPLICATE_NAME,
                 )
             }
         }
@@ -94,7 +94,7 @@ internal class YamlListToStandardDefinitionsTest {
             Assertions.assertThrows(RuntimeException::class.java) {
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    ""
+                    "",
                 )
             }
         }
@@ -104,7 +104,7 @@ internal class YamlListToStandardDefinitionsTest {
             Assertions.assertThrows(RuntimeException::class.java) {
                 YamlListToStandardDefinitions.verifyAndConvertToModelList(
                     StandardDestinationDefinition::class.java,
-                    BAD_DATA
+                    BAD_DATA,
                 )
             }
         }
@@ -117,11 +117,13 @@ internal class YamlListToStandardDefinitionsTest {
         private const val DOCKER_REPO = "  dockerRepository: airbyte/destination-local-json\n"
         private const val DOCKER_IMAGE_TAG = "  dockerImageTag: 0.1.4\n"
         private const val GOOD_DES_DEF_YAML =
-            (DESTINATION_DEFINITION_ID +
-                DESTINATION_NAME +
-                DOCKER_REPO +
-                DOCKER_IMAGE_TAG +
-                "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json")
+            (
+                DESTINATION_DEFINITION_ID +
+                    DESTINATION_NAME +
+                    DOCKER_REPO +
+                    DOCKER_IMAGE_TAG +
+                    "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json"
+                )
         private const val DUPLICATE_ID =
             """$DESTINATION_DEFINITION_ID$DESTINATION_NAME$DOCKER_REPO$DOCKER_IMAGE_TAG  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json$DESTINATION_DEFINITION_ID  name: JSON 2
 $DOCKER_REPO$DOCKER_IMAGE_TAG  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json"""

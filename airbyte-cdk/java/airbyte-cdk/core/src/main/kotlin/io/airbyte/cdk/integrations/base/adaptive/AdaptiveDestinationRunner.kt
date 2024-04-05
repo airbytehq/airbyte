@@ -26,20 +26,16 @@ object AdaptiveDestinationRunner {
     }
 
     class OssDestinationBuilder(private val deploymentMode: String) {
-        fun <OT : Destination> withOssDestination(
-            ossDestinationSupplier: Supplier<OT>
-        ): CloudDestinationBuilder<OT> {
+        fun <OT : Destination> withOssDestination(ossDestinationSupplier: Supplier<OT>): CloudDestinationBuilder<OT> {
             return CloudDestinationBuilder(deploymentMode, ossDestinationSupplier)
         }
     }
 
     class CloudDestinationBuilder<OT : Destination>(
         private val deploymentMode: String,
-        private val ossDestinationSupplier: Supplier<OT>
+        private val ossDestinationSupplier: Supplier<OT>,
     ) {
-        fun <CT : Destination> withCloudDestination(
-            cloudDestinationSupplier: Supplier<CT>
-        ): Runner<OT, CT> {
+        fun <CT : Destination> withCloudDestination(cloudDestinationSupplier: Supplier<CT>): Runner<OT, CT> {
             return Runner(deploymentMode, ossDestinationSupplier, cloudDestinationSupplier)
         }
     }
@@ -47,7 +43,7 @@ object AdaptiveDestinationRunner {
     class Runner<OT : Destination, CT : Destination>(
         private val deploymentMode: String?,
         private val ossDestinationSupplier: Supplier<OT>,
-        private val cloudDestinationSupplier: Supplier<CT>
+        private val cloudDestinationSupplier: Supplier<CT>,
     ) {
         private val destination: Destination
             get() {

@@ -84,11 +84,12 @@ import org.slf4j.LoggerFactory
 abstract class AbstractJdbcSource<Datatype>(
     driverClass: String,
     @JvmField val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
-    sourceOperations: JdbcCompatibleSourceOperations<Datatype>
+    sourceOperations: JdbcCompatibleSourceOperations<Datatype>,
 ) : AbstractDbSource<Datatype, JdbcDatabase>(driverClass), Source {
     @JvmField val sourceOperations: JdbcCompatibleSourceOperations<Datatype>
 
     override var quoteString: String? = null
+
     @JvmField val dataSources: MutableCollection<DataSource> = ArrayList()
 
     init {
@@ -101,7 +102,7 @@ abstract class AbstractJdbcSource<Datatype>(
         schemaName: String?,
         tableName: String,
         syncMode: SyncMode,
-        cursorField: Optional<String>
+        cursorField: Optional<String>,
     ): AutoCloseableIterator<AirbyteRecordData> {
         AbstractDbSource.LOGGER.info("Queueing query for table: {}", tableName)
         val airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
@@ -113,13 +114,13 @@ abstract class AbstractJdbcSource<Datatype>(
                             { connection: Connection ->
                                 AbstractDbSource.LOGGER.info(
                                     "Preparing query for table: {}",
-                                    tableName
+                                    tableName,
                                 )
                                 val fullTableName: String =
                                     RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(
                                         schemaName,
                                         tableName,
-                                        quoteString!!
+                                        quoteString!!,
                                     )
 
                                 val wrappedColumnNames =
@@ -128,15 +129,15 @@ abstract class AbstractJdbcSource<Datatype>(
                                         connection,
                                         columnNames,
                                         schemaName,
-                                        tableName
+                                        tableName,
                                     )
                                 val sql =
                                     java.lang.StringBuilder(
                                         String.format(
                                             "SELECT %s FROM %s",
                                             wrappedColumnNames,
-                                            fullTableName
-                                        )
+                                            fullTableName,
+                                        ),
                                     )
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
@@ -153,21 +154,21 @@ abstract class AbstractJdbcSource<Datatype>(
                                 AbstractDbSource.LOGGER.info(
                                     "Executing query for table {}: {}",
                                     tableName,
-                                    preparedStatement
+                                    preparedStatement,
                                 )
                                 preparedStatement
                             },
-                            sourceOperations::convertDatabaseRowToAirbyteRecordData
+                            sourceOperations::convertDatabaseRowToAirbyteRecordData,
                         )
                     return@Supplier AutoCloseableIterators.fromStream<AirbyteRecordData>(
                         stream,
-                        airbyteStream
+                        airbyteStream,
                     )
                 } catch (e: SQLException) {
                     throw java.lang.RuntimeException(e)
                 }
             },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -178,35 +179,34 @@ abstract class AbstractJdbcSource<Datatype>(
      */
     @Trace(operationName = AbstractDbSource.Companion.CHECK_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
-    override fun getCheckOperations(
-        config: JsonNode?
-    ): List<CheckedConsumer<JdbcDatabase, Exception>> {
+    override fun getCheckOperations(config: JsonNode?): List<CheckedConsumer<JdbcDatabase, Exception>> {
         return ImmutableList.of(
             CheckedConsumer { database: JdbcDatabase ->
                 LOGGER.info(
-                    "Attempting to get metadata from the database to see if we can connect."
+                    "Attempting to get metadata from the database to see if we can connect.",
                 )
                 database.bufferedResultSetQuery(
                     CheckedFunction { connection: Connection -> connection.metaData.catalogs },
                     CheckedFunction { queryResult: ResultSet? ->
                         sourceOperations.rowToJson(queryResult!!)
-                    }
+                    },
                 )
-            }
+            },
         )
     }
 
     private fun getCatalog(database: SqlDatabase): String? {
-        return (if (database.sourceConfig!!.has(JdbcUtils.DATABASE_KEY))
-            database.sourceConfig!![JdbcUtils.DATABASE_KEY].asText()
-        else null)
+        return (
+            if (database.sourceConfig!!.has(JdbcUtils.DATABASE_KEY)) {
+                database.sourceConfig!![JdbcUtils.DATABASE_KEY].asText()
+            } else {
+                null
+            }
+            )
     }
 
     @Throws(Exception::class)
-    override fun discoverInternal(
-        database: JdbcDatabase,
-        schema: String?
-    ): List<TableInfo<CommonField<Datatype>>> {
+    override fun discoverInternal(database: JdbcDatabase, schema: String?): List<TableInfo<CommonField<Datatype>>> {
         val internalSchemas: Set<String?> = HashSet(excludedInternalNameSpaces)
         LOGGER.info("Internal schemas to exclude: {}", internalSchemas)
         val tablesWithSelectGrantPrivilege =
@@ -217,11 +217,11 @@ abstract class AbstractJdbcSource<Datatype>(
                     connection.metaData.getColumns(getCatalog(database), schema, null, null)
                 }, // store essential column metadata to a Json object from the result set about
                 // each column
-                { resultSet: ResultSet -> this.getColumnMetadata(resultSet) }
+                { resultSet: ResultSet -> this.getColumnMetadata(resultSet) },
             )
             .stream()
             .filter(
-                excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege)
+                excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege),
             ) // group by schema and table name to handle the case where a table with the same name
             // exists in
             // multiple schemas.
@@ -230,10 +230,10 @@ abstract class AbstractJdbcSource<Datatype>(
                     Function<JsonNode, ImmutablePair<String, String>> { t: JsonNode ->
                         ImmutablePair.of<String, String>(
                             t.get(INTERNAL_SCHEMA_NAME).asText(),
-                            t.get(INTERNAL_TABLE_NAME).asText()
+                            t.get(INTERNAL_TABLE_NAME).asText(),
                         )
-                    }
-                )
+                    },
+                ),
             )
             .values
             .stream()
@@ -242,29 +242,29 @@ abstract class AbstractJdbcSource<Datatype>(
                     nameSpace = fields[0].get(INTERNAL_SCHEMA_NAME).asText(),
                     name = fields[0].get(INTERNAL_TABLE_NAME).asText(),
                     fields =
-                        fields
-                            .stream() // read the column metadata Json object, and determine its
-                            // type
-                            .map { f: JsonNode ->
-                                val datatype = sourceOperations.getDatabaseFieldType(f)
-                                val jsonType = getAirbyteType(datatype)
-                                LOGGER.debug(
-                                    "Table {} column {} (type {}[{}], nullable {}) -> {}",
-                                    fields[0].get(INTERNAL_TABLE_NAME).asText(),
+                    fields
+                        .stream() // read the column metadata Json object, and determine its
+                        // type
+                        .map { f: JsonNode ->
+                            val datatype = sourceOperations.getDatabaseFieldType(f)
+                            val jsonType = getAirbyteType(datatype)
+                            LOGGER.debug(
+                                "Table {} column {} (type {}[{}], nullable {}) -> {}",
+                                fields[0].get(INTERNAL_TABLE_NAME).asText(),
+                                f.get(INTERNAL_COLUMN_NAME).asText(),
+                                f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
+                                f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                                f.get(INTERNAL_IS_NULLABLE).asBoolean(),
+                                jsonType,
+                            )
+                            object :
+                                CommonField<Datatype>(
                                     f.get(INTERNAL_COLUMN_NAME).asText(),
-                                    f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
-                                    f.get(INTERNAL_COLUMN_SIZE).asInt(),
-                                    f.get(INTERNAL_IS_NULLABLE).asBoolean(),
-                                    jsonType
-                                )
-                                object :
-                                    CommonField<Datatype>(
-                                        f.get(INTERNAL_COLUMN_NAME).asText(),
-                                        datatype
-                                    ) {}
-                            }
-                            .collect(Collectors.toList<CommonField<Datatype>>()),
-                    cursorFields = extractCursorFields(fields)
+                                    datatype,
+                                ) {}
+                        }
+                        .collect(Collectors.toList<CommonField<Datatype>>()),
+                    cursorFields = extractCursorFields(fields),
                 )
             }
             .collect(Collectors.toList<TableInfo<CommonField<Datatype>>>())
@@ -279,35 +279,34 @@ abstract class AbstractJdbcSource<Datatype>(
             .map<String>(
                 Function<JsonNode, String> { field: JsonNode ->
                     field.get(INTERNAL_COLUMN_NAME).asText()
-                }
+                },
             )
             .collect(Collectors.toList<String>())
     }
 
     protected fun excludeNotAccessibleTables(
         internalSchemas: Set<String?>,
-        tablesWithSelectGrantPrivilege: Set<JdbcPrivilegeDto>?
+        tablesWithSelectGrantPrivilege: Set<JdbcPrivilegeDto>?,
     ): Predicate<JsonNode> {
         return Predicate<JsonNode> { jsonNode: JsonNode ->
             if (tablesWithSelectGrantPrivilege!!.isEmpty()) {
                 return@Predicate isNotInternalSchema(jsonNode, internalSchemas)
             }
-            (tablesWithSelectGrantPrivilege.stream().anyMatch { e: JdbcPrivilegeDto ->
-                e.schemaName == jsonNode.get(INTERNAL_SCHEMA_NAME).asText()
-            } &&
+            (
                 tablesWithSelectGrantPrivilege.stream().anyMatch { e: JdbcPrivilegeDto ->
-                    e.tableName == jsonNode.get(INTERNAL_TABLE_NAME).asText()
+                    e.schemaName == jsonNode.get(INTERNAL_SCHEMA_NAME).asText()
                 } &&
-                !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
+                    tablesWithSelectGrantPrivilege.stream().anyMatch { e: JdbcPrivilegeDto ->
+                        e.tableName == jsonNode.get(INTERNAL_TABLE_NAME).asText()
+                    } &&
+                    !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText())
+                )
         }
     }
 
     // needs to override isNotInternalSchema for connectors that override
     // getPrivilegesTableForCurrentUser()
-    protected open fun isNotInternalSchema(
-        jsonNode: JsonNode,
-        internalSchemas: Set<String?>
-    ): Boolean {
+    protected open fun isNotInternalSchema(jsonNode: JsonNode, internalSchemas: Set<String?>): Boolean {
         return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText())
     }
 
@@ -320,13 +319,16 @@ abstract class AbstractJdbcSource<Datatype>(
     private fun getColumnMetadata(resultSet: ResultSet): JsonNode {
         val fieldMap =
             ImmutableMap.builder<
-                    String, Any
+                String,
+                Any,
                 >() // we always want a namespace, if we cannot get a schema, use db name.
                 .put(
                     INTERNAL_SCHEMA_NAME,
-                    if (resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null)
+                    if (resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null) {
                         resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
-                    else resultSet.getObject(JDBC_COLUMN_DATABASE_NAME)
+                    } else {
+                        resultSet.getObject(JDBC_COLUMN_DATABASE_NAME)
+                    },
                 )
                 .put(INTERNAL_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
                 .put(INTERNAL_COLUMN_NAME, resultSet.getString(JDBC_COLUMN_COLUMN_NAME))
@@ -341,9 +343,7 @@ abstract class AbstractJdbcSource<Datatype>(
     }
 
     @Throws(Exception::class)
-    public override fun discoverInternal(
-        database: JdbcDatabase
-    ): List<TableInfo<CommonField<Datatype>>> {
+    public override fun discoverInternal(database: JdbcDatabase): List<TableInfo<CommonField<Datatype>>> {
         return discoverInternal(database, null)
     }
 
@@ -356,19 +356,16 @@ abstract class AbstractJdbcSource<Datatype>(
     data class PrimaryKeyAttributesFromDb(
         val streamName: String,
         val primaryKey: String,
-        val keySequence: Int
+        val keySequence: Int,
     )
 
-    override fun discoverPrimaryKeys(
-        database: JdbcDatabase,
-        tableInfos: List<TableInfo<CommonField<Datatype>>>
-    ): Map<String, MutableList<String>> {
+    override fun discoverPrimaryKeys(database: JdbcDatabase, tableInfos: List<TableInfo<CommonField<Datatype>>>): Map<String, MutableList<String>> {
         LOGGER.info(
             "Discover primary keys for tables: " +
                 tableInfos
                     .stream()
                     .map { obj: TableInfo<CommonField<Datatype>> -> obj.name }
-                    .collect(Collectors.toSet())
+                    .collect(Collectors.toSet()),
         )
         try {
             // Get all primary keys without specifying a table name
@@ -380,19 +377,21 @@ abstract class AbstractJdbcSource<Datatype>(
                         },
                         { r: ResultSet ->
                             val schemaName: String =
-                                if (r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null)
+                                if (r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null) {
                                     r.getString(JDBC_COLUMN_SCHEMA_NAME)
-                                else r.getString(JDBC_COLUMN_DATABASE_NAME)
+                                } else {
+                                    r.getString(JDBC_COLUMN_DATABASE_NAME)
+                                }
                             val streamName =
                                 getFullyQualifiedTableName(
                                     schemaName,
-                                    r.getString(JDBC_COLUMN_TABLE_NAME)
+                                    r.getString(JDBC_COLUMN_TABLE_NAME),
                                 )
                             val primaryKey: String = r.getString(JDBC_COLUMN_COLUMN_NAME)
                             val keySeq: Int = r.getInt(KEY_SEQ)
                             PrimaryKeyAttributesFromDb(streamName, primaryKey, keySeq)
-                        }
-                    )
+                        },
+                    ),
                 )
             if (!tablePrimaryKeys.isEmpty()) {
                 return tablePrimaryKeys
@@ -401,8 +400,8 @@ abstract class AbstractJdbcSource<Datatype>(
             LOGGER.debug(
                 String.format(
                     "Could not retrieve primary keys without a table name (%s), retrying",
-                    e
-                )
+                    e,
+                ),
             )
         }
         // Get primary keys one table at a time
@@ -411,11 +410,11 @@ abstract class AbstractJdbcSource<Datatype>(
             .collect(
                 Collectors.toMap<TableInfo<CommonField<Datatype>>, String, MutableList<String>>(
                     Function<TableInfo<CommonField<Datatype>>, String> {
-                        tableInfo: TableInfo<CommonField<Datatype>> ->
+                            tableInfo: TableInfo<CommonField<Datatype>> ->
                         getFullyQualifiedTableName(tableInfo.nameSpace, tableInfo.name)
                     },
                     Function<TableInfo<CommonField<Datatype>>, MutableList<String>> toMap@{
-                        tableInfo: TableInfo<CommonField<Datatype>> ->
+                            tableInfo: TableInfo<CommonField<Datatype>> ->
                         val streamName =
                             getFullyQualifiedTableName(tableInfo.nameSpace, tableInfo.name)
                         try {
@@ -426,34 +425,34 @@ abstract class AbstractJdbcSource<Datatype>(
                                             connection.metaData.getPrimaryKeys(
                                                 getCatalog(database),
                                                 tableInfo.nameSpace,
-                                                tableInfo.name
+                                                tableInfo.name,
                                             )
                                         },
                                         { r: ResultSet ->
                                             PrimaryKeyAttributesFromDb(
                                                 streamName,
                                                 r.getString(JDBC_COLUMN_COLUMN_NAME),
-                                                r.getInt(KEY_SEQ)
+                                                r.getInt(KEY_SEQ),
                                             )
-                                        }
-                                    )
+                                        },
+                                    ),
                                 )
                             return@toMap primaryKeys.getOrDefault(
                                 streamName,
-                                mutableListOf<String>()
+                                mutableListOf<String>(),
                             )
                         } catch (e: SQLException) {
                             LOGGER.error(
                                 String.format(
                                     "Could not retrieve primary keys for %s: %s",
                                     streamName,
-                                    e
-                                )
+                                    e,
+                                ),
                             )
                             return@toMap mutableListOf<String>()
                         }
-                    }
-                )
+                    },
+                ),
             )
     }
 
@@ -467,7 +466,7 @@ abstract class AbstractJdbcSource<Datatype>(
         schemaName: String?,
         tableName: String,
         cursorInfo: CursorInfo,
-        cursorFieldType: Datatype
+        cursorFieldType: Datatype,
     ): AutoCloseableIterator<AirbyteRecordData> {
         AbstractDbSource.LOGGER.info("Queueing query for table: {}", tableName)
         val airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
@@ -479,13 +478,13 @@ abstract class AbstractJdbcSource<Datatype>(
                             { connection: Connection ->
                                 AbstractDbSource.LOGGER.info(
                                     "Preparing query for table: {}",
-                                    tableName
+                                    tableName,
                                 )
                                 val fullTableName: String =
                                     RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(
                                         schemaName,
                                         tableName,
-                                        quoteString!!
+                                        quoteString!!,
                                     )
                                 val quotedCursorField: String =
                                     enquoteIdentifier(cursorInfo.cursorField, quoteString)
@@ -499,13 +498,13 @@ abstract class AbstractJdbcSource<Datatype>(
                                             fullTableName,
                                             quotedCursorField,
                                             cursorFieldType,
-                                            cursorInfo.cursor
+                                            cursorInfo.cursor,
                                         )
                                     AbstractDbSource.LOGGER.info(
                                         "Table {} cursor count: expected {}, actual {}",
                                         tableName,
                                         cursorInfo.cursorRecordCount,
-                                        actualRecordCount
+                                        actualRecordCount,
                                     )
                                     operator =
                                         if (actualRecordCount == cursorInfo.cursorRecordCount) {
@@ -520,7 +519,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                         connection,
                                         columnNames,
                                         schemaName,
-                                        tableName
+                                        tableName,
                                     )
                                 val sql =
                                     StringBuilder(
@@ -529,8 +528,8 @@ abstract class AbstractJdbcSource<Datatype>(
                                             wrappedColumnNames,
                                             fullTableName,
                                             quotedCursorField,
-                                            operator
-                                        )
+                                            operator,
+                                        ),
                                     )
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
@@ -542,27 +541,27 @@ abstract class AbstractJdbcSource<Datatype>(
                                 AbstractDbSource.LOGGER.info(
                                     "Executing query for table {}: {}",
                                     tableName,
-                                    preparedStatement
+                                    preparedStatement,
                                 )
                                 sourceOperations.setCursorField(
                                     preparedStatement,
                                     1,
                                     cursorFieldType,
-                                    cursorInfo.cursor!!
+                                    cursorInfo.cursor!!,
                                 )
                                 preparedStatement
                             },
-                            sourceOperations::convertDatabaseRowToAirbyteRecordData
+                            sourceOperations::convertDatabaseRowToAirbyteRecordData,
                         )
                     return@lazyIterator AutoCloseableIterators.fromStream<AirbyteRecordData>(
                         stream,
-                        airbyteStream
+                        airbyteStream,
                     )
                 } catch (e: SQLException) {
                     throw RuntimeException(e)
                 }
             },
-            airbyteStream
+            airbyteStream,
         )
     }
 
@@ -577,7 +576,7 @@ abstract class AbstractJdbcSource<Datatype>(
         connection: Connection?,
         columnNames: List<String>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ): String? {
         return RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString!!)
     }
@@ -588,7 +587,7 @@ abstract class AbstractJdbcSource<Datatype>(
         fullTableName: String?,
         quotedCursorField: String?,
         cursorFieldType: Datatype,
-        cursor: String?
+        cursor: String?,
     ): Long {
         val columnName = getCountColumnName()
         val cursorRecordStatement: PreparedStatement
@@ -598,7 +597,7 @@ abstract class AbstractJdbcSource<Datatype>(
                     "SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
                     columnName,
                     fullTableName,
-                    quotedCursorField
+                    quotedCursorField,
                 )
             cursorRecordStatement = connection.prepareStatement(cursorRecordQuery)
         } else {
@@ -607,7 +606,7 @@ abstract class AbstractJdbcSource<Datatype>(
                     "SELECT COUNT(*) AS %s FROM %s WHERE %s = ?",
                     columnName,
                     fullTableName,
-                    quotedCursorField
+                    quotedCursorField,
                 )
             cursorRecordStatement = connection.prepareStatement(cursorRecordQuery)
 
@@ -634,16 +633,20 @@ abstract class AbstractJdbcSource<Datatype>(
         // Create the data source
         val dataSource =
             create(
-                if (jdbcConfig!!.has(JdbcUtils.USERNAME_KEY))
+                if (jdbcConfig!!.has(JdbcUtils.USERNAME_KEY)) {
                     jdbcConfig[JdbcUtils.USERNAME_KEY].asText()
-                else null,
-                if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
+                } else {
+                    null
+                },
+                if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY)) {
                     jdbcConfig[JdbcUtils.PASSWORD_KEY].asText()
-                else null,
+                } else {
+                    null
+                },
                 driverClassName,
                 jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 connectionProperties,
-                getConnectionTimeout(connectionProperties!!)
+                getConnectionTimeout(connectionProperties!!),
             )
         // Record the data source so that it can be closed.
         dataSources.add(dataSource)
@@ -670,7 +673,7 @@ abstract class AbstractJdbcSource<Datatype>(
         LOGGER.info(
             "Data source product recognized as {}:{}",
             database.metaData.databaseProductName,
-            database.metaData.databaseProductVersion
+            database.metaData.databaseProductVersion,
         )
     }
 
@@ -682,19 +685,16 @@ abstract class AbstractJdbcSource<Datatype>(
                 } catch (e: Exception) {
                     LOGGER.warn("Unable to close data source.", e)
                 }
-            }
+            },
         )
         dataSources.clear()
     }
 
-    protected fun identifyStreamsToSnapshot(
-        catalog: ConfiguredAirbyteCatalog,
-        stateManager: StateManager
-    ): List<ConfiguredAirbyteStream> {
+    protected fun identifyStreamsToSnapshot(catalog: ConfiguredAirbyteCatalog, stateManager: StateManager): List<ConfiguredAirbyteStream> {
         val alreadySyncedStreams = stateManager.cdcStateManager.initialStreamsSynced
         if (
             alreadySyncedStreams!!.isEmpty() &&
-                (stateManager.cdcStateManager.cdcState?.state == null)
+            (stateManager.cdcStateManager.cdcState?.state == null)
         ) {
             return emptyList()
         }
@@ -709,7 +709,7 @@ abstract class AbstractJdbcSource<Datatype>(
             .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 newlyAddedStreams.contains(
-                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
+                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream),
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
@@ -725,9 +725,7 @@ abstract class AbstractJdbcSource<Datatype>(
          * @return a map by StreamName to associated list of primary keys
          */
         @VisibleForTesting
-        fun aggregatePrimateKeys(
-            entries: List<PrimaryKeyAttributesFromDb>
-        ): Map<String, MutableList<String>> {
+        fun aggregatePrimateKeys(entries: List<PrimaryKeyAttributesFromDb>): Map<String, MutableList<String>> {
             val result: MutableMap<String, MutableList<String>> = HashMap()
             entries
                 .stream()

@@ -47,15 +47,13 @@ import javax.crypto.spec.SecretKeySpec
 class AesCbcEnvelopeEncryptionBlobDecorator
 @VisibleForTesting
 internal constructor( // The real "secret key". Should be handled with great care.
-    private val keyEncryptingKey:
-        SecretKey?, // A random key generated for each file. Also should be handled with care.
-    private val contentEncryptingKey:
-        SecretKey, // Arbitrary bytes required by the CBC algorithm. Not a sensitive value.
+    private val keyEncryptingKey: SecretKey?, // A random key generated for each file. Also should be handled with care.
+    private val contentEncryptingKey: SecretKey, // Arbitrary bytes required by the CBC algorithm. Not a sensitive value.
     // The only requirement is that we never reuse an (IV, CEK) pair.
-    private val initializationVector: ByteArray
+    private val initializationVector: ByteArray,
 ) : BlobDecorator {
     constructor(
-        keyEncryptingKey: SecretKey?
+        keyEncryptingKey: SecretKey?,
     ) : this(
         keyEncryptingKey,
         randomContentEncryptingKey(),
@@ -63,7 +61,7 @@ internal constructor( // The real "secret key". Should be handled with great car
     )
 
     constructor(
-        keyEncryptingKey: ByteArray?
+        keyEncryptingKey: ByteArray?,
     ) : this(
         SecretKeySpec(
             keyEncryptingKey,
@@ -101,10 +99,7 @@ internal constructor( // The real "secret key". Should be handled with great car
         value = ["CIPINT", "SECECB"],
         justification = "We're using this cipher for compatibility with Redshift/Snowflake.",
     )
-    override fun updateMetadata(
-        metadata: MutableMap<String, String>,
-        metadataKeyMapping: Map<String, String>
-    ) {
+    override fun updateMetadata(metadata: MutableMap<String, String>, metadataKeyMapping: Map<String, String>) {
         try {
             val keyCipher = Cipher.getInstance(KEY_ENCRYPTING_ALGO)
             keyCipher.init(Cipher.ENCRYPT_MODE, keyEncryptingKey)

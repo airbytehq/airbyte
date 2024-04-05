@@ -40,12 +40,12 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
 
     @JvmOverloads
     constructor(
-        containerLogMdcBuilder: MdcScope.Builder = MdcScope.DEFAULT_BUILDER
+        containerLogMdcBuilder: MdcScope.Builder = MdcScope.DEFAULT_BUILDER,
     ) : this(
         AirbyteProtocolPredicate(),
         LOGGER,
         containerLogMdcBuilder,
-        Optional.empty<Class<out RuntimeException?>>()
+        Optional.empty<Class<out RuntimeException?>>(),
     )
 
     /**
@@ -58,7 +58,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         protocolPredicate: AirbyteProtocolPredicate,
         logger: Logger,
         containerLogMdcBuilder: MdcScope.Builder,
-        messageSizeExceptionClass: Optional<Class<out RuntimeException?>>
+        messageSizeExceptionClass: Optional<Class<out RuntimeException?>>,
     ) {
         protocolValidator = protocolPredicate
         this.logger = logger
@@ -73,7 +73,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         logger: Logger,
         containerLogMdcBuilder: MdcScope.Builder,
         messageSizeExceptionClass: Optional<Class<out RuntimeException?>>,
-        maxMemory: Long
+        maxMemory: Long,
     ) {
         protocolValidator = protocolPredicate
         this.logger = logger
@@ -92,11 +92,11 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
                         try {
                             val errorMessage =
                                 String.format(
-                                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). "+
-                                            "The sync has been failed to prevent running out of memory.",
+                                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). " +
+                                        "The sync has been failed to prevent running out of memory.",
                                     Instant.now(),
                                     humanReadableByteCountSI(maxMemory),
-                                    humanReadableByteCountSI(messageSize)
+                                    humanReadableByteCountSI(messageSize),
                                 )
                             throw exceptionClass
                                 .get()
@@ -158,13 +158,18 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     protected fun internalLog(logMessage: AirbyteLogMessage) {
         val combinedMessage =
             logMessage.message +
-                (if (logMessage.stackTrace != null)
-                    (System.lineSeparator() + "Stack Trace: " + logMessage.stackTrace)
-                else "")
+                (
+                    if (logMessage.stackTrace != null) {
+                        (System.lineSeparator() + "Stack Trace: " + logMessage.stackTrace)
+                    } else {
+                        ""
+                    }
+                    )
 
         when (logMessage.level) {
             AirbyteLogMessage.Level.FATAL,
-            AirbyteLogMessage.Level.ERROR -> logger.error(combinedMessage)
+            AirbyteLogMessage.Level.ERROR,
+            -> logger.error(combinedMessage)
             AirbyteLogMessage.Level.WARN -> logger.warn(combinedMessage)
             AirbyteLogMessage.Level.DEBUG -> logger.debug(combinedMessage)
             AirbyteLogMessage.Level.TRACE -> logger.trace(combinedMessage)

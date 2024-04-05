@@ -16,18 +16,13 @@ class TestJdbcSqlOperations : JdbcSqlOperations() {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
     ) {
         // Not required for the testing
     }
 
     @Throws(Exception::class)
-    override fun insertRecordsInternalV2(
-        database: JdbcDatabase,
-        records: List<PartialAirbyteMessage>,
-        schemaName: String?,
-        tableName: String?
-    ) {
+    override fun insertRecordsInternalV2(database: JdbcDatabase, records: List<PartialAirbyteMessage>, schemaName: String?, tableName: String?) {
         // Not required for the testing
     }
 

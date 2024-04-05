@@ -24,7 +24,7 @@ internal class GcsAvroFormatConfigTest {
         for (nullConfig in nullConfigs) {
             Assertions.assertEquals(
                 DataFileConstants.NULL_CODEC,
-                parseCodecConfig(Jsons.deserialize(nullConfig)).toString()
+                parseCodecConfig(Jsons.deserialize(nullConfig)).toString(),
             )
         }
     }
@@ -38,7 +38,7 @@ internal class GcsAvroFormatConfigTest {
         // compression level 5
         val codecFactory2 =
             parseCodecConfig(
-                Jsons.deserialize("{ \"codec\": \"deflate\", \"compression_level\": 5 }")
+                Jsons.deserialize("{ \"codec\": \"deflate\", \"compression_level\": 5 }"),
             )
         Assertions.assertEquals("deflate-5", codecFactory2.toString())
     }
@@ -73,8 +73,8 @@ internal class GcsAvroFormatConfigTest {
         val codecFactory2 =
             parseCodecConfig(
                 Jsons.deserialize(
-                    "{ \"codec\": \"zstandard\", \"compression_level\": 20, \"include_checksum\": true }"
-                )
+                    "{ \"codec\": \"zstandard\", \"compression_level\": 20, \"include_checksum\": true }",
+                ),
             )
         // There is no way to verify the checksum; all relevant methods are private or protected...
         Assertions.assertEquals("zstandard[20]", codecFactory2.toString())
@@ -99,9 +99,13 @@ internal class GcsAvroFormatConfigTest {
     @Throws(IllegalAccessException::class)
     fun testHandlePartSizeConfig() {
         val config =
-            ConfigTestUtils.getBaseConfig(Jsons.deserialize("""{
+            ConfigTestUtils.getBaseConfig(
+                Jsons.deserialize(
+                    """{
   "format_type": "AVRO"
-}"""))
+}""",
+                ),
+            )
 
         val gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
         ConfigTestUtils.assertBaseConfig(gcsDestinationConfig)
@@ -114,7 +118,7 @@ internal class GcsAvroFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 
@@ -122,9 +126,13 @@ internal class GcsAvroFormatConfigTest {
     @Throws(IllegalAccessException::class)
     fun testHandleAbsenceOfPartSizeConfig() {
         val config =
-            ConfigTestUtils.getBaseConfig(Jsons.deserialize("""{
+            ConfigTestUtils.getBaseConfig(
+                Jsons.deserialize(
+                    """{
   "format_type": "AVRO"
-}"""))
+}""",
+                ),
+            )
 
         val gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
         ConfigTestUtils.assertBaseConfig(gcsDestinationConfig)
@@ -134,7 +142,7 @@ internal class GcsAvroFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 }

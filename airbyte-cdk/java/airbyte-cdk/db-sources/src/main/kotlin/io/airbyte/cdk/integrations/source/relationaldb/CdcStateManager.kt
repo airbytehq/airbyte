@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 class CdcStateManager(
     private val initialState: CdcState?,
     initialStreamsSynced: Set<AirbyteStreamNameNamespacePair>?,
-    stateMessage: AirbyteStateMessage?
+    stateMessage: AirbyteStateMessage?,
 ) {
     val initialStreamsSynced: Set<AirbyteStreamNameNamespacePair>?
     val rawStateMessage: AirbyteStateMessage?
@@ -23,8 +23,11 @@ class CdcStateManager(
     init {
         this.currentState = initialState
         this.initialStreamsSynced =
-            if (initialStreamsSynced != null) Collections.unmodifiableSet(initialStreamsSynced)
-            else null
+            if (initialStreamsSynced != null) {
+                Collections.unmodifiableSet(initialStreamsSynced)
+            } else {
+                null
+            }
         this.rawStateMessage = stateMessage
         LOGGER.info("Initialized CDC state")
     }

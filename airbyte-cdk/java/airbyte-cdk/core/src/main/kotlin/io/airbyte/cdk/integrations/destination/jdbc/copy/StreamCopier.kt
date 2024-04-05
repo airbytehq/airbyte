@@ -20,41 +20,49 @@ interface StreamCopier {
      * certain size specified in GlobalDataSizeConstants + one more buffer. The writer for the
      * stream will close with a note that no errors were found.
      */
-    @Throws(Exception::class) fun closeNonCurrentStagingFileWriters()
+    @Throws(Exception::class)
+    fun closeNonCurrentStagingFileWriters()
 
     /**
      * Closes the writer for the stream to the staging persistence. This method should block until
      * all buffered data has been written to the persistence.
      */
-    @Throws(Exception::class) fun closeStagingUploader(hasFailed: Boolean)
+    @Throws(Exception::class)
+    fun closeStagingUploader(hasFailed: Boolean)
 
     /** Creates a temporary table in the target database. */
-    @Throws(Exception::class) fun createTemporaryTable()
+    @Throws(Exception::class)
+    fun createTemporaryTable()
 
     /**
      * Copies the staging file to the temporary table. This method should block until the
      * copy/upload has completed.
      */
-    @Throws(Exception::class) fun copyStagingFileToTemporaryTable()
+    @Throws(Exception::class)
+    fun copyStagingFileToTemporaryTable()
 
     /** Creates the destination schema if it does not already exist. */
-    @Throws(Exception::class) fun createDestinationSchema()
+    @Throws(Exception::class)
+    fun createDestinationSchema()
 
     /**
      * Creates the destination table if it does not already exist.
      *
      * @return the name of the destination table
      */
-    @Throws(Exception::class) fun createDestinationTable(): String?
+    @Throws(Exception::class)
+    fun createDestinationTable(): String?
 
     /** Generates a merge SQL statement from the temporary table to the final table. */
-    @Throws(Exception::class) fun generateMergeStatement(destTableName: String?): String
+    @Throws(Exception::class)
+    fun generateMergeStatement(destTableName: String?): String
 
     /**
      * Cleans up the copier by removing the staging file and dropping the temporary table after
      * completion or failure.
      */
-    @Throws(Exception::class) fun removeFileAndDropTmpTable()
+    @Throws(Exception::class)
+    fun removeFileAndDropTmpTable()
 
     /**
      * Creates the staging file and all the necessary items to write data to this file.

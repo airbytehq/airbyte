@@ -41,19 +41,19 @@ class RunningFlushWorkersTest {
     @Test
     internal fun testTrackFlushWorker() {
         Assertions.assertThat(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
+        )
             .isEqualTo(0)
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID1)
         Assertions.assertThat(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
+        )
             .isEqualTo(1)
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID2)
         runningFlushWorkers.trackFlushWorker(STREAM2, FLUSH_WORKER_ID1)
         Assertions.assertThat(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
+        )
             .isEqualTo(2)
     }
 
@@ -63,24 +63,24 @@ class RunningFlushWorkersTest {
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID2)
         runningFlushWorkers.completeFlushWorker(STREAM1, FLUSH_WORKER_ID1)
         Assertions.assertThat(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
+        )
             .isEqualTo(1)
         runningFlushWorkers.completeFlushWorker(STREAM1, FLUSH_WORKER_ID2)
         Assertions.assertThat(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
+        )
             .isEqualTo(0)
     }
 
     @Test
     internal fun testCompleteFlushWorkerWithoutTrackThrowsException() {
         Assertions.assertThatThrownBy {
-                runningFlushWorkers.completeFlushWorker(
-                    STREAM1,
-                    FLUSH_WORKER_ID1,
-                )
-            }
+            runningFlushWorkers.completeFlushWorker(
+                STREAM1,
+                FLUSH_WORKER_ID1,
+            )
+        }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessageContaining("Cannot complete flush worker for stream that has not started.")
     }
@@ -90,12 +90,12 @@ class RunningFlushWorkersTest {
         runningFlushWorkers.trackFlushWorker(STREAM1, FLUSH_WORKER_ID1)
         runningFlushWorkers.trackFlushWorker(STREAM2, FLUSH_WORKER_ID1)
         Assertions.assertThat(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM1).size,
+        )
             .isEqualTo(1)
         Assertions.assertThat(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM2).size,
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(STREAM2).size,
+        )
             .isEqualTo(1)
     }
 

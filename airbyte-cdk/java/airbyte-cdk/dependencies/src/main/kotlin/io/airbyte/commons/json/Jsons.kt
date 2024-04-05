@@ -287,11 +287,7 @@ object Jsons {
         }
     }
 
-    private fun replaceNested(
-        json: JsonNode,
-        keys: List<String?>,
-        typedReplacement: BiConsumer<ObjectNode, String?>
-    ) {
+    private fun replaceNested(json: JsonNode, keys: List<String?>, typedReplacement: BiConsumer<ObjectNode, String?>) {
         Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key")
         val nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size - 1))
         typedReplacement.accept(nodeContainingFinalKey as ObjectNode, keys[keys.size - 1])
@@ -391,11 +387,7 @@ object Jsons {
      * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
      * treated as {prefix: value} when merging into originalMap.
      */
-    fun mergeMaps(
-        originalMap: MutableMap<String?, Any>,
-        prefix: String,
-        subMap: Map<String?, Any>
-    ) {
+    fun mergeMaps(originalMap: MutableMap<String?, Any>, prefix: String, subMap: Map<String?, Any>) {
         originalMap.putAll(
             subMap.mapKeys toMap@{
                 val key = it.key
@@ -404,7 +396,7 @@ object Jsons {
                 } else {
                     return@toMap prefix
                 }
-            }
+            },
         )
     }
 

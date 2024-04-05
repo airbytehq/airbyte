@@ -9,7 +9,8 @@ import kotlin.jvm.Throws
 
 enum class Flattening(val value: String) {
     NO("No flattening"),
-    ROOT_LEVEL("Root level flattening");
+    ROOT_LEVEL("Root level flattening"),
+    ;
 
     companion object {
         @JvmStatic

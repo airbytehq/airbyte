@@ -28,11 +28,7 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
      * - throws if there is any failure in startup.
      */
     @Throws(Exception::class)
-    fun start(
-        destinationConfig: WorkerDestinationConfig,
-        jobRoot: Path,
-        additionalEnvironmentVariables: Map<String, String>
-    )
+    fun start(destinationConfig: WorkerDestinationConfig, jobRoot: Path, additionalEnvironmentVariables: Map<String, String>)
 
     /**
      * Accepts an AirbyteMessage and writes it to STDIN of the Destination. Blocks if STDIN's buffer
@@ -42,7 +38,8 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
      * @throws Exception
      * - throws if there is any failure in writing to Destination.
      */
-    @Throws(Exception::class) override fun accept(message: AirbyteMessage)
+    @Throws(Exception::class)
+    override fun accept(message: AirbyteMessage)
 
     /**
      * This method is a flush to make sure all data that should be written to the Destination is
@@ -55,7 +52,8 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
      * @throws Exception
      * - throws if there is any failure when flushing.
      */
-    @Throws(Exception::class) fun notifyEndOfInput()
+    @Throws(Exception::class)
+    fun notifyEndOfInput()
 
     /**
      * Means no more data will be emitted by the Destination. This may be because all data has
@@ -89,7 +87,8 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
      * @throws Exception
      * - throws if there is any failure in shutdown.
      */
-    @Throws(Exception::class) override fun close()
+    @Throws(Exception::class)
+    override fun close()
 
     /**
      * Attempt to shut down the Destination's container quickly.
@@ -97,5 +96,6 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
      * @throws Exception
      * - throws if there is any failure in shutdown.
      */
-    @Throws(Exception::class) fun cancel()
+    @Throws(Exception::class)
+    fun cancel()
 }

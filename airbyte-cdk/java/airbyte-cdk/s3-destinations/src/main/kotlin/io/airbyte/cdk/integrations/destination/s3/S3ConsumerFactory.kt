@@ -33,7 +33,7 @@ class S3ConsumerFactory {
         namingResolver: NamingConventionTransformer,
         onCreateBuffer: BufferCreateFunction,
         s3Config: S3DestinationConfig,
-        catalog: ConfiguredAirbyteCatalog
+        catalog: ConfiguredAirbyteCatalog,
     ): AirbyteMessageConsumer {
         val writeConfigs = createWriteConfigs(storageOperations, namingResolver, s3Config, catalog)
         return BufferedStreamConsumer(
@@ -42,17 +42,14 @@ class S3ConsumerFactory {
             SerializedBufferingStrategy(
                 onCreateBuffer,
                 catalog,
-                flushBufferFunction(storageOperations, writeConfigs, catalog)
+                flushBufferFunction(storageOperations, writeConfigs, catalog),
             ),
             onCloseFunction(storageOperations, writeConfigs),
-            catalog
+            catalog,
         ) { jsonNode: JsonNode? -> storageOperations.isValidData(jsonNode!!) }
     }
 
-    private fun onStartFunction(
-        storageOperations: BlobStorageOperations,
-        writeConfigs: List<WriteConfig>
-    ): OnStartFunction {
+    private fun onStartFunction(storageOperations: BlobStorageOperations, writeConfigs: List<WriteConfig>): OnStartFunction {
         return OnStartFunction {
             LOGGER.info("Preparing bucket in destination started for {} streams", writeConfigs.size)
             for (writeConfig in writeConfigs) {
@@ -66,19 +63,19 @@ class S3ConsumerFactory {
                         namespace,
                         stream,
                         outputBucketPath,
-                        pathFormat
+                        pathFormat,
                     )
                     storageOperations.cleanUpBucketObject(
                         namespace!!,
                         stream,
                         outputBucketPath,
-                        pathFormat
+                        pathFormat,
                     )
                     LOGGER.info(
                         "Clearing storage area in destination completed for namespace {} stream {} bucketObject {}",
                         namespace,
                         stream,
-                        outputBucketPath
+                        outputBucketPath,
                     )
                 }
             }
@@ -89,7 +86,7 @@ class S3ConsumerFactory {
     private fun flushBufferFunction(
         storageOperations: BlobStorageOperations,
         writeConfigs: List<WriteConfig>,
-        catalog: ConfiguredAirbyteCatalog?
+        catalog: ConfiguredAirbyteCatalog?,
     ): FlushBufferFunction {
         val pairToWriteConfig =
             writeConfigs
@@ -97,23 +94,24 @@ class S3ConsumerFactory {
                 .collect(
                     Collectors.toUnmodifiableMap(
                         Function { config: WriteConfig -> toNameNamespacePair(config) },
-                        Function.identity()
-                    )
+                        Function.identity(),
+                    ),
                 )
 
         return FlushBufferFunction {
-            pair: AirbyteStreamNameNamespacePair,
-            writer: SerializableBuffer ->
+                pair: AirbyteStreamNameNamespacePair,
+                writer: SerializableBuffer,
+            ->
             LOGGER.info(
                 "Flushing buffer for stream {} ({}) to storage",
                 pair.name,
-                FileUtils.byteCountToDisplaySize(writer.byteCount)
+                FileUtils.byteCountToDisplaySize(writer.byteCount),
             )
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream %s that was not in the catalog. \ncatalog: %s",
                     pair,
-                    Jsons.serialize(catalog)
+                    Jsons.serialize(catalog),
                 )
             }
 
@@ -125,8 +123,8 @@ class S3ConsumerFactory {
                         storageOperations.uploadRecordsToBucket(
                             writer,
                             writeConfig.namespace!!,
-                            writeConfig.fullOutputPath
-                        )!!
+                            writeConfig.fullOutputPath,
+                        )!!,
                     )
                 }
             } catch (e: Exception) {
@@ -136,17 +134,14 @@ class S3ConsumerFactory {
         }
     }
 
-    private fun onCloseFunction(
-        storageOperations: BlobStorageOperations,
-        writeConfigs: List<WriteConfig>
-    ): OnCloseFunction {
+    private fun onCloseFunction(storageOperations: BlobStorageOperations, writeConfigs: List<WriteConfig>): OnCloseFunction {
         return OnCloseFunction { hasFailed: Boolean, _: Map<StreamDescriptor, StreamSyncSummary> ->
             if (hasFailed) {
                 LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size)
                 for (writeConfig in writeConfigs) {
                     storageOperations.cleanUpBucketObject(
                         writeConfig.fullOutputPath,
-                        writeConfig.storedFiles
+                        writeConfig.storedFiles,
                     )
                     writeConfig.clearStoredFiles()
                 }
@@ -163,7 +158,7 @@ class S3ConsumerFactory {
             storageOperations: BlobStorageOperations,
             namingResolver: NamingConventionTransformer,
             config: S3DestinationConfig,
-            catalog: ConfiguredAirbyteCatalog?
+            catalog: ConfiguredAirbyteCatalog?,
         ): List<WriteConfig> {
             return catalog!!
                 .streams
@@ -175,12 +170,12 @@ class S3ConsumerFactory {
         private fun toWriteConfig(
             storageOperations: BlobStorageOperations,
             namingResolver: NamingConventionTransformer,
-            s3Config: S3DestinationConfig
+            s3Config: S3DestinationConfig,
         ): Function<ConfiguredAirbyteStream, WriteConfig> {
             return Function { stream: ConfiguredAirbyteStream ->
                 Preconditions.checkNotNull(
                     stream.destinationSyncMode,
-                    "Undefined destination sync mode"
+                    "Undefined destination sync mode",
                 )
                 val abStream = stream.stream
                 val namespace = abStream.namespace
@@ -192,7 +187,7 @@ class S3ConsumerFactory {
                         namespace,
                         streamName,
                         SYNC_DATETIME,
-                        customOutputFormat
+                        customOutputFormat,
                     )
                 val syncMode = stream.destinationSyncMode
                 val writeConfig =
@@ -202,7 +197,7 @@ class S3ConsumerFactory {
                         bucketPath!!,
                         customOutputFormat,
                         fullOutputPath!!,
-                        syncMode
+                        syncMode,
                     )
                 LOGGER.info("Write config: {}", writeConfig)
                 writeConfig

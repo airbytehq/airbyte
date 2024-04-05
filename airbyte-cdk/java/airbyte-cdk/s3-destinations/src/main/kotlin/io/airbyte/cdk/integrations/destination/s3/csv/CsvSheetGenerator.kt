@@ -22,12 +22,7 @@ interface CsvSheetGenerator {
 
     fun getDataRow(formattedData: JsonNode): List<Any>
 
-    fun getDataRow(
-        id: UUID,
-        formattedString: String,
-        emittedAt: Long,
-        formattedAirbyteMetaString: String
-    ): List<Any>
+    fun getDataRow(id: UUID, formattedString: String, emittedAt: Long, formattedAirbyteMetaString: String): List<Any>
 
     object Factory {
         @JvmStatic
@@ -38,7 +33,7 @@ interface CsvSheetGenerator {
                 RootLevelFlatteningSheetGenerator(jsonSchema!!)
             } else {
                 throw IllegalArgumentException(
-                    "Unexpected flattening config: " + formatConfig.flattening
+                    "Unexpected flattening config: " + formatConfig.flattening,
                 )
             }
         }

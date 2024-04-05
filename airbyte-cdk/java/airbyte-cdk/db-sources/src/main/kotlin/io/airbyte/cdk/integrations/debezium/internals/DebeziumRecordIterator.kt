@@ -36,7 +36,7 @@ class DebeziumRecordIterator<T>(
     private val publisherStatusSupplier: Supplier<Boolean>,
     private val debeziumShutdownProcedure: DebeziumShutdownProcedure<ChangeEvent<String?, String?>>,
     private val firstRecordWaitTime: Duration,
-    subsequentRecordWaitTime: Duration?
+    subsequentRecordWaitTime: Duration?,
 ) : AbstractIterator<ChangeEventWithMetadata>(), AutoCloseableIterator<ChangeEventWithMetadata> {
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
@@ -82,8 +82,8 @@ class DebeziumRecordIterator<T>(
                     requestClose(
                         String.format(
                             "No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
-                            waitTime.seconds
-                        )
+                            waitTime.seconds,
+                        ),
                     )
                 }
                 LOGGER.info("no record found. polling again.")
@@ -102,7 +102,7 @@ class DebeziumRecordIterator<T>(
                 // too long
                 if (targetPosition.reachedTargetPosition(heartbeatPos)) {
                     requestClose(
-                        "Closing: Heartbeat indicates sync is done by reaching the target position"
+                        "Closing: Heartbeat indicates sync is done by reaching the target position",
                     )
                 } else if (
                     heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging()
@@ -142,7 +142,7 @@ class DebeziumRecordIterator<T>(
                 event =
                     debeziumShutdownProcedure.recordsRemainingAfterShutdown.poll(
                         100,
-                        TimeUnit.MILLISECONDS
+                        TimeUnit.MILLISECONDS,
                     )
             } catch (e: InterruptedException) {
                 throw RuntimeException(e)
@@ -193,7 +193,7 @@ class DebeziumRecordIterator<T>(
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
         LOGGER.info(
             "Time since last hb_pos change {}s",
-            timeElapsedSinceLastHeartbeatTs.toSeconds()
+            timeElapsedSinceLastHeartbeatTs.toSeconds(),
         )
         // wait time for no change in heartbeat position is half of initial waitTime
         return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
@@ -233,7 +233,7 @@ class DebeziumRecordIterator<T>(
                 if (heartbeatEventSourceField.size > 1) {
                     LOGGER.warn(
                         "Field Cache size growing beyond expected size of 1, size is " +
-                            heartbeatEventSourceField.size
+                            heartbeatEventSourceField.size,
                     )
                 }
             }

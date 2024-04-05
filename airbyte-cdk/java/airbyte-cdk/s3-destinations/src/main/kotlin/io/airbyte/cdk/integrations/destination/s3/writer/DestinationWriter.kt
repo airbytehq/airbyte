@@ -15,12 +15,15 @@ import java.util.*
  */
 interface DestinationWriter {
     /** Prepare an S3 writer for the stream. */
-    @Throws(IOException::class) fun initialize()
+    @Throws(IOException::class)
+    fun initialize()
 
     /** Write an Airbyte record message to an S3 object. */
-    @Throws(IOException::class) fun write(id: UUID, recordMessage: AirbyteRecordMessage)
+    @Throws(IOException::class)
+    fun write(id: UUID, recordMessage: AirbyteRecordMessage)
 
-    @Throws(IOException::class) fun write(formattedData: JsonNode)
+    @Throws(IOException::class)
+    fun write(formattedData: JsonNode)
 
     @Throws(IOException::class)
     fun write(formattedData: String?) {
@@ -28,7 +31,8 @@ interface DestinationWriter {
     }
 
     /** Close the S3 writer for the stream. */
-    @Throws(IOException::class) fun close(hasFailed: Boolean)
+    @Throws(IOException::class)
+    fun close(hasFailed: Boolean)
 
     @Throws(IOException::class)
     fun closeAfterPush() {

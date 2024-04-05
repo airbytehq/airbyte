@@ -63,12 +63,7 @@ interface SqlGenerator {
      * however sometimes we get badly typed data. In these cases we can use a more expensive query
      * which handles casting exceptions.
      */
-    fun updateTable(
-        stream: StreamConfig,
-        finalSuffix: String,
-        minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
-    ): Sql
+    fun updateTable(stream: StreamConfig, finalSuffix: String, minRawTimestamp: Optional<Instant>, useExpensiveSaferCasting: Boolean): Sql
 
     /**
      * Drop the previous final table, and rename the new final table to match the old final table.

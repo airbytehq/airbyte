@@ -25,7 +25,7 @@ class TyperDeduperUtil {
             executorService: ExecutorService,
             destinationHandler: DestinationHandler<DestinationState>,
             migrations: List<Migration<DestinationState>>,
-            initialStates: List<DestinationInitialStatus<DestinationState>>
+            initialStates: List<DestinationInitialStatus<DestinationState>>,
         ): List<DestinationInitialStatus<DestinationState>> {
             // TODO: Either the migrations run the soft reset and create v2 tables or the actual
             // prepare tables.
@@ -55,16 +55,16 @@ class TyperDeduperUtil {
                                         executorService,
                                         destinationHandler,
                                         migration,
-                                        initialState
+                                        initialState,
                                     )
-                                }
-                            )
+                                },
+                            ),
                         )
                 val migrationResultFutures =
                     CompletableFutures.allOf(futures.values.toList()).toCompletableFuture().join()
                 getResultsOrLogAndThrowFirst(
                     "The following exceptions were thrown attempting to run migrations:\n",
-                    migrationResultFutures
+                    migrationResultFutures,
                 )
                 val migrationResults: Map<StreamId, Migration.MigrationResult<DestinationState>> =
                     futures.mapValues { it.value.toCompletableFuture().join() }
@@ -79,7 +79,7 @@ class TyperDeduperUtil {
                         destinationHandler.gatherInitialState(
                             currentStates
                                 .filter { invalidatedStreams.contains(it.streamConfig.id) }
-                                .map { it.streamConfig }
+                                .map { it.streamConfig },
                         )
                     LOGGER.info("Updated states: $updatedStates")
                 } else {
@@ -101,7 +101,7 @@ class TyperDeduperUtil {
                             return@map updatedStates
                                 .filter { updatedState ->
                                     updatedState.streamConfig.id.equals(
-                                        initialState.streamConfig.id
+                                        initialState.streamConfig.id,
                                     )
                                 }
                                 .first()
@@ -132,7 +132,7 @@ class TyperDeduperUtil {
             destinationHandler: DestinationHandler<DestinationState>,
             v1V2Migrator: DestinationV1V2Migrator,
             v2TableMigrator: V2TableMigrator,
-            parsedCatalog: ParsedCatalog
+            parsedCatalog: ParsedCatalog,
         ) {
             val futures =
                 parsedCatalog.streams.map {
@@ -141,12 +141,12 @@ class TyperDeduperUtil {
                             v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, it)
                             v2TableMigrator.migrateIfNecessary(it)
                         },
-                        executorService
+                        executorService,
                     )
                 }
             getResultsOrLogAndThrowFirst(
                 "The following exceptions were thrown attempting to run migrations:\n",
-                CompletableFutures.allOf(futures.toList()).toCompletableFuture().join()
+                CompletableFutures.allOf(futures.toList()).toCompletableFuture().join(),
             )
         }
 
@@ -158,7 +158,7 @@ class TyperDeduperUtil {
         fun <DestinationState> prepareSchemas(
             sqlGenerator: SqlGenerator,
             destinationHandler: DestinationHandler<DestinationState>,
-            parsedCatalog: ParsedCatalog
+            parsedCatalog: ParsedCatalog,
         ) {
             val rawSchema = parsedCatalog.streams.map { it.id.rawNamespace }
             val finalSchema = parsedCatalog.streams.map { it.id.finalNamespace }
@@ -171,13 +171,13 @@ class TyperDeduperUtil {
             executorService: ExecutorService,
             destinationHandler: DestinationHandler<DestinationState>,
             migration: Migration<DestinationState>,
-            initialStatus: DestinationInitialStatus<DestinationState>
+            initialStatus: DestinationInitialStatus<DestinationState>,
         ): CompletionStage<Migration.MigrationResult<DestinationState>> {
             return CompletableFuture.supplyAsync(
                 {
                     LOGGER.info(
-                        "Maybe executing ${migration.javaClass.simpleName} migration for "+
-                                "stream ${initialStatus.streamConfig.id.originalNamespace}.${initialStatus.streamConfig.id.originalName}."
+                        "Maybe executing ${migration.javaClass.simpleName} migration for " +
+                            "stream ${initialStatus.streamConfig.id.originalNamespace}.${initialStatus.streamConfig.id.originalName}.",
                     )
 
                     // We technically don't need to track this, but might as well hedge against
@@ -188,18 +188,18 @@ class TyperDeduperUtil {
                         migration.migrateIfNecessary(
                             destinationHandler,
                             initialStatus.streamConfig,
-                            initialStatus
+                            initialStatus,
                         )
                     val updatedNeedsSoftReset =
                         softReset || migrationResult.updatedDestinationState.needsSoftReset()
                     return@supplyAsync migrationResult.copy(
                         updatedDestinationState =
-                            migrationResult.updatedDestinationState.withSoftReset(
-                                updatedNeedsSoftReset
-                            )
+                        migrationResult.updatedDestinationState.withSoftReset(
+                            updatedNeedsSoftReset,
+                        ),
                     )
                 },
-                executorService
+                executorService,
             )
         }
     }

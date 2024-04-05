@@ -30,7 +30,7 @@ class SerializedBufferingStrategy
 (
     private val onCreateBuffer: BufferCreateFunction,
     private val catalog: ConfiguredAirbyteCatalog,
-    private val onStreamFlush: FlushBufferFunction
+    private val onStreamFlush: FlushBufferFunction,
 ) : BufferingStrategy {
     private var allBuffers: MutableMap<AirbyteStreamNameNamespacePair, SerializableBuffer> =
         HashMap()
@@ -44,10 +44,7 @@ class SerializedBufferingStrategy
      * @return Optional which contains a [BufferFlushType] if a flush occurred, otherwise empty)
      */
     @Throws(Exception::class)
-    override fun addRecord(
-        stream: AirbyteStreamNameNamespacePair,
-        message: AirbyteMessage
-    ): Optional<BufferFlushType> {
+    override fun addRecord(stream: AirbyteStreamNameNamespacePair, message: AirbyteMessage): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
         val buffer =
@@ -56,8 +53,8 @@ class SerializedBufferingStrategy
                     String.format(
                         "Failed to create/get buffer for stream %s.%s",
                         stream.namespace,
-                        stream.name
-                    )
+                        stream.name,
+                    ),
                 )
 
         val actualMessageSizeInBytes = buffer.accept(message.record)
@@ -66,7 +63,7 @@ class SerializedBufferingStrategy
         // filled
         if (
             totalBufferSizeInBytes >= buffer.maxTotalBufferSizeInBytes ||
-                allBuffers.size >= buffer.maxConcurrentStreamsInBuffer
+            allBuffers.size >= buffer.maxConcurrentStreamsInBuffer
         ) {
             flushAllBuffers()
             flushed = Optional.of(BufferFlushType.FLUSH_ALL)
@@ -102,7 +99,7 @@ class SerializedBufferingStrategy
                 "Starting a new buffer for stream {} (current state: {} in {} buffers)",
                 stream.name,
                 FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes),
-                allBuffers.size
+                allBuffers.size,
             )
             try {
                 return@computeIfAbsent onCreateBuffer.apply(stream, catalog)!!
@@ -114,14 +111,11 @@ class SerializedBufferingStrategy
     }
 
     @Throws(Exception::class)
-    override fun flushSingleBuffer(
-        stream: AirbyteStreamNameNamespacePair,
-        buffer: SerializableBuffer
-    ) {
+    override fun flushSingleBuffer(stream: AirbyteStreamNameNamespacePair, buffer: SerializableBuffer) {
         LOGGER.info(
             "Flushing buffer of stream {} ({})",
             stream.name,
-            FileUtils.byteCountToDisplaySize(buffer.byteCount)
+            FileUtils.byteCountToDisplaySize(buffer.byteCount),
         )
         onStreamFlush.accept(stream, buffer)
         totalBufferSizeInBytes -= buffer.byteCount
@@ -134,13 +128,13 @@ class SerializedBufferingStrategy
         LOGGER.info(
             "Flushing all {} current buffers ({} in total)",
             allBuffers.size,
-            FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes)
+            FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes),
         )
         for ((stream, buffer) in allBuffers) {
             LOGGER.info(
                 "Flushing buffer of stream {} ({})",
                 stream.name,
-                FileUtils.byteCountToDisplaySize(buffer.byteCount)
+                FileUtils.byteCountToDisplaySize(buffer.byteCount),
             )
             onStreamFlush.accept(stream, buffer)
             LOGGER.info("Flushing completed for {}", stream.name)
@@ -171,7 +165,7 @@ class SerializedBufferingStrategy
 
         ConnectorExceptionUtil.logAllAndThrowFirst(
             "Exceptions thrown while closing buffers: ",
-            exceptionsThrown
+            exceptionsThrown,
         )
     }
 

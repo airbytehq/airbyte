@@ -35,7 +35,7 @@ object SqlOperationsUtils {
         insertQueryComponent: String?,
         recordQueryComponent: String?,
         jdbcDatabase: JdbcDatabase,
-        records: List<PartialAirbyteMessage>
+        records: List<PartialAirbyteMessage>,
     ) {
         insertRawRecordsInSingleQuery(
             insertQueryComponent,
@@ -43,7 +43,7 @@ object SqlOperationsUtils {
             jdbcDatabase,
             records,
             { UUID.randomUUID() },
-            true
+            true,
         )
     }
 
@@ -65,7 +65,7 @@ object SqlOperationsUtils {
         insertQueryComponent: String?,
         recordQueryComponent: String?,
         jdbcDatabase: JdbcDatabase,
-        records: List<PartialAirbyteMessage>
+        records: List<PartialAirbyteMessage>,
     ) {
         insertRawRecordsInSingleQuery(
             insertQueryComponent,
@@ -73,7 +73,7 @@ object SqlOperationsUtils {
             jdbcDatabase,
             records,
             { UUID.randomUUID() },
-            false
+            false,
         )
     }
 
@@ -85,7 +85,7 @@ object SqlOperationsUtils {
         jdbcDatabase: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         uuidSupplier: Supplier<UUID>,
-        sem: Boolean
+        sem: Boolean,
     ) {
         if (records.isEmpty()) {
             return
@@ -112,7 +112,7 @@ object SqlOperationsUtils {
                 for (partition in Iterables.partition(records, 10000)) {
                     val sql = StringBuilder(insertQueryComponent)
                     partition.forEach(
-                        Consumer { r: PartialAirbyteMessage? -> sql.append(recordQueryComponent) }
+                        Consumer { r: PartialAirbyteMessage? -> sql.append(recordQueryComponent) },
                     )
                     val s = sql.toString()
                     val s1 = s.substring(0, s.length - 2) + (if (sem) ";" else "")
@@ -133,7 +133,7 @@ object SqlOperationsUtils {
                             // Extracted At
                             statement.setTimestamp(
                                 i,
-                                Timestamp.from(Instant.ofEpochMilli(message.record!!.emittedAt))
+                                Timestamp.from(Instant.ofEpochMilli(message.record!!.emittedAt)),
                             )
                             i++
 
@@ -146,7 +146,7 @@ object SqlOperationsUtils {
                         statement.execute()
                     }
                 }
-            }
+            },
         )
     }
 }

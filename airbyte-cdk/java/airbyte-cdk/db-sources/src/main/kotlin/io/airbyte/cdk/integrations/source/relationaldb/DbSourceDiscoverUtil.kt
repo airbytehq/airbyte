@@ -32,7 +32,7 @@ object DbSourceDiscoverUtil {
     fun <DataType> logSourceSchemaChange(
         fullyQualifiedTableNameToInfo: Map<String?, TableInfo<CommonField<DataType>>>,
         catalog: ConfiguredAirbyteCatalog,
-        airbyteTypeConverter: Function<DataType, JsonSchemaType>
+        airbyteTypeConverter: Function<DataType, JsonSchemaType>,
     ) {
         for (airbyteStream in catalog.streams) {
             val stream = airbyteStream.stream
@@ -63,7 +63,7 @@ object DbSourceDiscoverUtil {
                 }
                 if (
                     !currentSchemaProperties.has(fieldName) ||
-                        currentSchemaProperties[fieldName] != catalogProperties[fieldName]
+                    currentSchemaProperties[fieldName] != catalogProperties[fieldName]
                 ) {
                     mismatchedFields.add(fieldName)
                 }
@@ -75,7 +75,7 @@ object DbSourceDiscoverUtil {
                     fullyQualifiedTableName,
                     java.lang.String.join(", ", mismatchedFields.toString()),
                     currentJsonSchema,
-                    catalogSchema
+                    catalogSchema,
                 )
             }
         }
@@ -84,7 +84,7 @@ object DbSourceDiscoverUtil {
     fun <DataType> convertTableInfosToAirbyteCatalog(
         tableInfos: List<TableInfo<CommonField<DataType>>>,
         fullyQualifiedTableNameToPrimaryKeys: Map<String, MutableList<String>>,
-        airbyteTypeConverter: Function<DataType, JsonSchemaType>
+        airbyteTypeConverter: Function<DataType, JsonSchemaType>,
     ): AirbyteCatalog {
         val tableInfoFieldList =
             tableInfos
@@ -109,14 +109,14 @@ object DbSourceDiscoverUtil {
                     val primaryKeys =
                         fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
                             fullyQualifiedTableName,
-                            emptyList()
+                            emptyList(),
                         )
                     TableInfo(
                         nameSpace = t.nameSpace,
                         name = t.name,
                         fields = fields,
                         primaryKeys = primaryKeys,
-                        cursorFields = t.cursorFields
+                        cursorFields = t.cursorFields,
                     )
                 }
                 .collect(Collectors.toList())
@@ -132,14 +132,16 @@ object DbSourceDiscoverUtil {
                             .map { listOf(it) }
                             .toList()
                     CatalogHelpers.createAirbyteStream(
-                            tableInfo.name,
-                            tableInfo.nameSpace,
-                            tableInfo.fields
-                        )
+                        tableInfo.name,
+                        tableInfo.nameSpace,
+                        tableInfo.fields,
+                    )
                         .withSupportedSyncModes(
-                            if (tableInfo.cursorFields != null && tableInfo.cursorFields.isEmpty())
+                            if (tableInfo.cursorFields != null && tableInfo.cursorFields.isEmpty()) {
                                 Lists.newArrayList(SyncMode.FULL_REFRESH)
-                            else Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                            } else {
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                            },
                         )
                         .withSourceDefinedPrimaryKey(primaryKeys)
                 }
@@ -152,14 +154,11 @@ object DbSourceDiscoverUtil {
         return if (nameSpace != null) "$nameSpace.$tableName" else tableName
     }
 
-    private fun <DataType> toField(
-        commonField: CommonField<DataType>,
-        airbyteTypeConverter: Function<DataType, JsonSchemaType>
-    ): Field {
+    private fun <DataType> toField(commonField: CommonField<DataType>, airbyteTypeConverter: Function<DataType, JsonSchemaType>): Field {
         if (
             airbyteTypeConverter.apply(commonField.type) === JsonSchemaType.OBJECT &&
-                commonField.properties != null &&
-                !commonField.properties.isEmpty()
+            commonField.properties != null &&
+            !commonField.properties.isEmpty()
         ) {
             val properties =
                 commonField.properties
@@ -171,18 +170,14 @@ object DbSourceDiscoverUtil {
             return Field.of(
                 commonField.name,
                 airbyteTypeConverter.apply(commonField.type),
-                properties
+                properties,
             )
         } else {
             return Field.of(commonField.name, airbyteTypeConverter.apply(commonField.type))
         }
     }
 
-    private fun <DataType> assertColumnsWithSameNameAreSame(
-        nameSpace: String,
-        tableName: String,
-        columns: List<CommonField<DataType>>
-    ) {
+    private fun <DataType> assertColumnsWithSameNameAreSame(nameSpace: String, tableName: String, columns: List<CommonField<DataType>>) {
         columns
             .stream()
             .collect(Collectors.groupingBy(Function { obj: CommonField<DataType> -> obj.name }))
@@ -199,13 +194,13 @@ object DbSourceDiscoverUtil {
                                         comparisonColumn.name,
                                         nameSpace,
                                         tableName,
-                                        columns
-                                    )
+                                        columns,
+                                    ),
                                 )
                             }
-                        }
+                        },
                     )
-                }
+                },
             )
     }
 }

@@ -47,7 +47,7 @@ object SerialFlush {
         writeConfigs: List<WriteConfig>,
         catalog: ConfiguredAirbyteCatalog,
         typerDeduperValve: TypeAndDedupeOperationValve,
-        typerDeduper: TyperDeduper
+        typerDeduper: TyperDeduper,
     ): FlushBufferFunction {
         // TODO: (ryankfu) move this block of code that executes before the lambda to
         // #onStartFunction
@@ -68,28 +68,29 @@ object SerialFlush {
         if (!conflictingStreams.isEmpty()) {
             val message =
                 String.format(
-                    "You are trying to write multiple streams to the same table. "+
-                            "Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, "+
-                            "or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
+                    "You are trying to write multiple streams to the same table. " +
+                        "Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, " +
+                        "or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
                     conflictingStreams
                         .stream()
                         .map { config: WriteConfig -> config.namespace + "." + config.streamName }
-                        .collect(Collectors.joining(", "))
+                        .collect(Collectors.joining(", ")),
                 )
             throw ConfigErrorException(message)
         }
         return FlushBufferFunction {
-            pair: AirbyteStreamNameNamespacePair,
-            writer: SerializableBuffer ->
+                pair: AirbyteStreamNameNamespacePair,
+                writer: SerializableBuffer,
+            ->
             log.info(
                 "Flushing buffer for stream {} ({}) to staging",
                 pair.name,
-                FileUtils.byteCountToDisplaySize(writer.byteCount)
+                FileUtils.byteCountToDisplaySize(writer.byteCount),
             )
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
-                    Jsons.serialize(catalog)
+                    Jsons.serialize(catalog),
                 )
             }
 
@@ -102,7 +103,7 @@ object SerialFlush {
                     schemaName,
                     writeConfig.streamName,
                     writeConfig.outputTableName,
-                    writeConfig.writeDatetime
+                    writeConfig.writeDatetime,
                 )
             try {
                 writer.use {
@@ -113,7 +114,7 @@ object SerialFlush {
                             writer,
                             schemaName,
                             stageName,
-                            stagingPath
+                            stagingPath,
                         )
                     GeneralStagingFunctions.copyIntoTableFromStage(
                         database,
@@ -126,14 +127,14 @@ object SerialFlush {
                         writeConfig.namespace,
                         writeConfig.streamName,
                         typerDeduperValve,
-                        typerDeduper
+                        typerDeduper,
                     )
                 }
             } catch (e: Exception) {
                 log.error("Failed to flush and commit buffer data into destination's raw table", e)
                 throw RuntimeException(
                     "Failed to upload buffer to stage and commit to destination",
-                    e
+                    e,
                 )
             }
         }

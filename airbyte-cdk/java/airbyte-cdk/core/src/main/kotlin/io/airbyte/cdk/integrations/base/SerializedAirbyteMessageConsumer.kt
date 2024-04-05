@@ -29,7 +29,8 @@ interface SerializedAirbyteMessageConsumer :
      *
      * @throws Exception exception
      */
-    @Throws(Exception::class) fun start()
+    @Throws(Exception::class)
+    fun start()
 
     /**
      * Consumes all [AirbyteMessage]s
@@ -38,7 +39,8 @@ interface SerializedAirbyteMessageConsumer :
      * @param sizeInBytes size of that string in bytes
      * @throws Exception exception
      */
-    @Throws(Exception::class) override fun accept(message: String, sizeInBytes: Int)
+    @Throws(Exception::class)
+    override fun accept(message: String, sizeInBytes: Int)
 
     /**
      * Executes at the end of consumption of all incoming streamed data regardless of success or
@@ -46,14 +48,12 @@ interface SerializedAirbyteMessageConsumer :
      *
      * @throws Exception exception
      */
-    @Throws(Exception::class) override fun close()
+    @Throws(Exception::class)
+    override fun close()
 
     companion object {
         /** Append a function to be called on [SerializedAirbyteMessageConsumer.close]. */
-        fun appendOnClose(
-            consumer: SerializedAirbyteMessageConsumer?,
-            voidCallable: VoidCallable
-        ): SerializedAirbyteMessageConsumer? {
+        fun appendOnClose(consumer: SerializedAirbyteMessageConsumer?, voidCallable: VoidCallable): SerializedAirbyteMessageConsumer? {
             return object : SerializedAirbyteMessageConsumer {
                 @Throws(Exception::class)
                 override fun start() {

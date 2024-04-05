@@ -18,7 +18,7 @@ object DateTimeConverter {
     private val LOGGER: Logger = LoggerFactory.getLogger(DateTimeConverter::class.java)
     val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern(
-            "HH:mm:ss[.][SSSSSSSSS][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][''][XXX][XX][X]"
+            "HH:mm:ss[.][SSSSSSSSS][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][''][XXX][XX][X]",
         )
     private var loggedUnknownTimeWithTimeZoneClass = false
     private var loggedUnknownTimeClass = false
@@ -29,18 +29,22 @@ object DateTimeConverter {
     @JvmStatic
     fun convertToTimeWithTimezone(time: Any): String {
         if (time is OffsetTime) {
-            return if (hasZeroSecondsAndNanos(time.toLocalTime()))
+            return if (hasZeroSecondsAndNanos(time.toLocalTime())) {
                 time.format(DataTypeUtils.TIMETZ_FORMATTER)
-            else time.toString()
+            } else {
+                time.toString()
+            }
         } else {
             if (!loggedUnknownTimeWithTimeZoneClass) {
                 LOGGER.info("Unknown class for Time with timezone data type" + time.javaClass)
                 loggedUnknownTimeWithTimeZoneClass = true
             }
             val timetz = OffsetTime.parse(time.toString(), TIME_WITH_TIMEZONE_FORMATTER)
-            return if (hasZeroSecondsAndNanos(timetz.toLocalTime()))
+            return if (hasZeroSecondsAndNanos(timetz.toLocalTime())) {
                 timetz.format(DataTypeUtils.TIMETZ_FORMATTER)
-            else timetz.toString()
+            } else {
+                timetz.toString()
+            }
         }
     }
 
@@ -63,12 +67,12 @@ object DateTimeConverter {
         } else if (timestamp is OffsetDateTime) {
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(
                 timestamp.toLocalDate(),
-                timestamp.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER)
+                timestamp.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER),
             )
         } else if (timestamp is ZonedDateTime) {
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(
                 timestamp.toLocalDate(),
-                timestamp.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER)
+                timestamp.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER),
             )
         } else if (timestamp is Instant) {
             val offsetDateTime = OffsetDateTime.ofInstant(timestamp, ZoneOffset.UTC)
@@ -79,7 +83,7 @@ object DateTimeConverter {
         } else {
             if (!loggedUnknownTimestampWithTimeZoneClass) {
                 LOGGER.info(
-                    "Unknown class for Timestamp with time zone data type" + timestamp.javaClass
+                    "Unknown class for Timestamp with time zone data type" + timestamp.javaClass,
                 )
                 loggedUnknownTimestampWithTimeZoneClass = true
             }
@@ -100,9 +104,11 @@ object DateTimeConverter {
             val localDateTime: LocalDateTime = timestamp.toLocalDateTime()
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(
                 timestamp,
-                if (hasZeroSecondsAndNanos(localDateTime.toLocalTime()))
+                if (hasZeroSecondsAndNanos(localDateTime.toLocalTime())) {
                     localDateTime.format(DataTypeUtils.TIMESTAMP_FORMATTER)
-                else localDateTime.toString()
+                } else {
+                    localDateTime.toString()
+                },
             )
         } else if (timestamp is Instant) {
             // Incremental mode
@@ -111,15 +117,17 @@ object DateTimeConverter {
                 timestamp
                     .atOffset(ZoneOffset.UTC)
                     .toLocalDateTime()
-                    .format(DataTypeUtils.TIMESTAMP_FORMATTER)
+                    .format(DataTypeUtils.TIMESTAMP_FORMATTER),
             )
         } else if (timestamp is LocalDateTime) {
             val date: LocalDate = timestamp.toLocalDate()
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(
                 date,
-                if (hasZeroSecondsAndNanos(timestamp.toLocalTime()))
+                if (hasZeroSecondsAndNanos(timestamp.toLocalTime())) {
                     timestamp.format(DataTypeUtils.TIMESTAMP_FORMATTER)
-                else timestamp.toString()
+                } else {
+                    timestamp.toString()
+                },
             )
         } else {
             if (!loggedUnknownTimestampClass) {
@@ -130,9 +138,11 @@ object DateTimeConverter {
             val date = localDateTime.toLocalDate()
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(
                 date,
-                if (hasZeroSecondsAndNanos(localDateTime.toLocalTime()))
+                if (hasZeroSecondsAndNanos(localDateTime.toLocalTime())) {
                     localDateTime.format(DataTypeUtils.TIMESTAMP_FORMATTER)
-                else localDateTime.toString()
+                } else {
+                    localDateTime.toString()
+                },
             )
         }
     }
@@ -145,13 +155,13 @@ object DateTimeConverter {
             val localDate = date.toLocalDate()
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(
                 date,
-                localDate.format(DataTypeUtils.DATE_FORMATTER)
+                localDate.format(DataTypeUtils.DATE_FORMATTER),
             )
         } else if (date is LocalDate) {
             // Incremental mode
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(
                 date,
-                date.format(DataTypeUtils.DATE_FORMATTER)
+                date.format(DataTypeUtils.DATE_FORMATTER),
             )
         } else if (date is Integer) {
             // Incremental mode
@@ -164,7 +174,7 @@ object DateTimeConverter {
             val localDate = LocalDate.parse(date.toString())
             return AbstractJdbcCompatibleSourceOperations.Companion.resolveEra(
                 localDate,
-                localDate.format(DataTypeUtils.DATE_FORMATTER)
+                localDate.format(DataTypeUtils.DATE_FORMATTER),
             )
         }
     }
@@ -185,7 +195,7 @@ object DateTimeConverter {
                 LOGGER.debug(
                     "Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ",
                     value,
-                    updatedValue
+                    updatedValue,
                 )
                 return formatTime(LocalTime.ofNanoOfDay(updatedValue))
             }
@@ -206,8 +216,11 @@ object DateTimeConverter {
 
     @JvmStatic
     private fun formatTime(localTime: LocalTime): String {
-        return if (hasZeroSecondsAndNanos(localTime)) localTime.format(DataTypeUtils.TIME_FORMATTER)
-        else localTime.toString()
+        return if (hasZeroSecondsAndNanos(localTime)) {
+            localTime.format(DataTypeUtils.TIME_FORMATTER)
+        } else {
+            localTime.toString()
+        }
     }
 
     @JvmStatic

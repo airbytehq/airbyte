@@ -73,17 +73,17 @@ constructor(
         val messages = mutableListOf<String>()
 
         messages.add(
-            "Global: max: ${ AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes)}, "+
-                    "allocated: ${AirbyteFileUtils.byteCountToDisplaySize(memoryManager.currentMemoryBytes.get())} "+
-                    "(${memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024} MB), "+
-                    "%% used: ${memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes}",
+            "Global: max: ${ AirbyteFileUtils.byteCountToDisplaySize(memoryManager.maxMemoryBytes)}, " +
+                "allocated: ${AirbyteFileUtils.byteCountToDisplaySize(memoryManager.currentMemoryBytes.get())} " +
+                "(${memoryManager.currentMemoryBytes.toDouble() / 1024 / 1024} MB), " +
+                "%% used: ${memoryManager.currentMemoryBytes.toDouble() / memoryManager.maxMemoryBytes}",
         )
 
         for ((key, queue) in buffers) {
             messages.add(
-                "Queue `${key.name}`, num records: ${queue.size()}, "+
-                        "num bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.currentMemoryUsage)}, "+
-                        "allocated bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.maxMemoryUsage)}"
+                "Queue `${key.name}`, num records: ${queue.size()}, " +
+                    "num bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.currentMemoryUsage)}, " +
+                    "allocated bytes: ${AirbyteFileUtils.byteCountToDisplaySize(queue.maxMemoryUsage)}",
             )
         }
 

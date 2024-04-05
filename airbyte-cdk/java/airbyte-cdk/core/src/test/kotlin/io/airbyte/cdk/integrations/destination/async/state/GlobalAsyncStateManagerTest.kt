@@ -26,7 +26,8 @@ import org.junit.jupiter.api.Test
 class GlobalAsyncStateManagerTest {
     companion object {
         private const val TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES =
-            (100 * 1024 * 1024 // 10MB
+            (
+                100 * 1024 * 1024 // 10MB
                 )
                 .toLong()
         private const val DEFAULT_NAMESPACE = "foo_namespace"
@@ -147,11 +148,7 @@ class GlobalAsyncStateManagerTest {
                     ),
                 )
 
-        private fun serializedState(
-            streamDescriptor: StreamDescriptor?,
-            type: AirbyteStateMessage.AirbyteStateType?,
-            state: JsonNode?,
-        ): String {
+        private fun serializedState(streamDescriptor: StreamDescriptor?, type: AirbyteStateMessage.AirbyteStateType?, state: JsonNode?): String {
             return when (type) {
                 AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
                     Jsons.serialize(
@@ -254,10 +251,7 @@ class GlobalAsyncStateManagerTest {
         assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.stream().toList())
     }
 
-    private fun attachDestinationStateStats(
-        stateMessage: AirbyteMessage,
-        airbyteStateStats: AirbyteStateStats?,
-    ): AirbyteMessage {
+    private fun attachDestinationStateStats(stateMessage: AirbyteMessage, airbyteStateStats: AirbyteStateStats?): AirbyteMessage {
         stateMessage.state.withDestinationStats(airbyteStateStats)
         return stateMessage
     }
@@ -946,11 +940,7 @@ class GlobalAsyncStateManagerTest {
         }
     }
 
-    private fun simulateIncomingRecords(
-        desc: StreamDescriptor,
-        count: Long,
-        manager: GlobalAsyncStateManager,
-    ): Long {
+    private fun simulateIncomingRecords(desc: StreamDescriptor, count: Long, manager: GlobalAsyncStateManager): Long {
         var stateId = 0L
         for (i in 0 until count) {
             stateId = manager.getStateIdAndIncrementCounter(desc)

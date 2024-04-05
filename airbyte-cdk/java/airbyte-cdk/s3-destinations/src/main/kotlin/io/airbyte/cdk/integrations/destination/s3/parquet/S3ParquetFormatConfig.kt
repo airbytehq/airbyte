@@ -11,9 +11,13 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 class S3ParquetFormatConfig(formatConfig: JsonNode) : S3FormatConfig {
     @JvmField val compressionCodec: CompressionCodecName
+
     @JvmField val blockSize: Int
+
     @JvmField val maxPaddingSize: Int
+
     @JvmField val pageSize: Int
+
     @JvmField val dictionaryPageSize: Int
     val isDictionaryEncoding: Boolean
     override val fileExtension: String = PARQUET_SUFFIX
@@ -23,35 +27,35 @@ class S3ParquetFormatConfig(formatConfig: JsonNode) : S3FormatConfig {
             S3FormatConfig.Companion.withDefault(
                 formatConfig,
                 "block_size_mb",
-                S3ParquetConstants.DEFAULT_BLOCK_SIZE_MB
+                S3ParquetConstants.DEFAULT_BLOCK_SIZE_MB,
             )
         val maxPaddingSizeMb: Int =
             S3FormatConfig.Companion.withDefault(
                 formatConfig,
                 "max_padding_size_mb",
-                S3ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB
+                S3ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB,
             )
         val pageSizeKb: Int =
             S3FormatConfig.Companion.withDefault(
                 formatConfig,
                 "page_size_kb",
-                S3ParquetConstants.DEFAULT_PAGE_SIZE_KB
+                S3ParquetConstants.DEFAULT_PAGE_SIZE_KB,
             )
         val dictionaryPageSizeKb: Int =
             S3FormatConfig.Companion.withDefault(
                 formatConfig,
                 "dictionary_page_size_kb",
-                S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB
+                S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB,
             )
 
         this.compressionCodec =
             CompressionCodecName.valueOf(
                 S3FormatConfig.Companion.withDefault(
-                        formatConfig,
-                        "compression_codec",
-                        S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name
-                    )
-                    .uppercase(Locale.getDefault())
+                    formatConfig,
+                    "compression_codec",
+                    S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name,
+                )
+                    .uppercase(Locale.getDefault()),
             )
         this.blockSize = blockSizeMb * 1024 * 1024
         this.maxPaddingSize = maxPaddingSizeMb * 1024 * 1024
@@ -61,7 +65,7 @@ class S3ParquetFormatConfig(formatConfig: JsonNode) : S3FormatConfig {
             S3FormatConfig.Companion.withDefault(
                 formatConfig,
                 "dictionary_encoding",
-                S3ParquetConstants.DEFAULT_DICTIONARY_ENCODING
+                S3ParquetConstants.DEFAULT_DICTIONARY_ENCODING,
             )
     }
 

@@ -57,7 +57,7 @@ class DebeziumConverterUtils private constructor() {
             }
             LOGGER.warn(
                 "Uncovered date class type '{}'. Use default converter",
-                input.javaClass.name
+                input.javaClass.name,
             )
             return input.toString()
         }

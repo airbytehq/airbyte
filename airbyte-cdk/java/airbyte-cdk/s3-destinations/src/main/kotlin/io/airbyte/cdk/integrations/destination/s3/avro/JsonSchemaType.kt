@@ -17,28 +17,45 @@ enum class JsonSchemaType {
     DATE_V1("WellKnownTypes.json#/definitions/Date", Schema.Type.INT),
     TIMESTAMP_WITH_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimestampWithTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     TIMESTAMP_WITHOUT_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimestampWithoutTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     TIME_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithTimezone", Schema.Type.STRING),
     TIME_WITHOUT_TIMEZONE_V1(
         "WellKnownTypes.json#/definitions/TimeWithoutTimezone",
-        Schema.Type.LONG
+        Schema.Type.LONG,
     ),
     OBJECT("object", Schema.Type.RECORD),
     ARRAY("array", Schema.Type.ARRAY),
     COMBINED("combined", Schema.Type.UNION),
-    @Deprecated("") STRING_V0("string", null, Schema.Type.STRING),
-    @Deprecated("") NUMBER_INT_V0("number", "integer", Schema.Type.LONG),
-    @Deprecated("") NUMBER_BIGINT_V0("string", "big_integer", Schema.Type.STRING),
-    @Deprecated("") NUMBER_FLOAT_V0("number", "float", Schema.Type.FLOAT),
-    @Deprecated("") NUMBER_V0("number", null, Schema.Type.DOUBLE),
-    @Deprecated("") INTEGER_V0("integer", null, Schema.Type.LONG),
-    @Deprecated("") BOOLEAN_V0("boolean", null, Schema.Type.BOOLEAN),
-    @Deprecated("") NULL("null", null, Schema.Type.NULL);
+
+    @Deprecated("")
+    STRING_V0("string", null, Schema.Type.STRING),
+
+    @Deprecated("")
+    NUMBER_INT_V0("number", "integer", Schema.Type.LONG),
+
+    @Deprecated("")
+    NUMBER_BIGINT_V0("string", "big_integer", Schema.Type.STRING),
+
+    @Deprecated("")
+    NUMBER_FLOAT_V0("number", "float", Schema.Type.FLOAT),
+
+    @Deprecated("")
+    NUMBER_V0("number", null, Schema.Type.DOUBLE),
+
+    @Deprecated("")
+    INTEGER_V0("integer", null, Schema.Type.LONG),
+
+    @Deprecated("")
+    BOOLEAN_V0("boolean", null, Schema.Type.BOOLEAN),
+
+    @Deprecated("")
+    NULL("null", null, Schema.Type.NULL),
+    ;
 
     @JvmField val jsonSchemaType: String
     val avroType: Schema.Type
@@ -63,10 +80,7 @@ enum class JsonSchemaType {
     companion object {
         @JvmStatic
         @JvmOverloads
-        fun fromJsonSchemaType(
-            @Nonnull jsonSchemaType: String,
-            jsonSchemaAirbyteType: String? = null
-        ): JsonSchemaType {
+        fun fromJsonSchemaType(@Nonnull jsonSchemaType: String, jsonSchemaAirbyteType: String? = null): JsonSchemaType {
             var matchSchemaType: List<JsonSchemaType>? = null
             // Match by Type + airbyteType
             if (jsonSchemaAirbyteType != null) {
@@ -94,7 +108,7 @@ enum class JsonSchemaType {
                 String.format(
                     "Unexpected jsonSchemaType - %s and jsonSchemaAirbyteType - %s",
                     jsonSchemaType,
-                    jsonSchemaAirbyteType
+                    jsonSchemaAirbyteType,
                 )
             }
             if (matchSchemaType.size > 1) {
@@ -103,8 +117,8 @@ enum class JsonSchemaType {
                         "Match with more than one json type! Matched types : %s, Inputs jsonSchemaType : %s, jsonSchemaAirbyteType : %s",
                         matchSchemaType,
                         jsonSchemaType,
-                        jsonSchemaAirbyteType
-                    )
+                        jsonSchemaAirbyteType,
+                    ),
                 )
             } else {
                 return matchSchemaType[0]

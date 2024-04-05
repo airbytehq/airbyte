@@ -25,12 +25,7 @@ object DataSourceFactory {
      * @return The configured [DataSource].
      */
     @JvmStatic
-    fun create(
-        username: String?,
-        password: String?,
-        driverClassName: String,
-        jdbcConnectionString: String?
-    ): DataSource {
+    fun create(username: String?, password: String?, driverClassName: String, jdbcConnectionString: String?): DataSource {
         return DataSourceBuilder(username, password, driverClassName, jdbcConnectionString).build()
     }
 
@@ -51,7 +46,7 @@ object DataSourceFactory {
         driverClassName: String,
         jdbcConnectionString: String?,
         connectionProperties: Map<String, String>?,
-        connectionTimeout: Duration?
+        connectionTimeout: Duration?,
     ): DataSource {
         return DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
             .withConnectionProperties(connectionProperties)
@@ -70,14 +65,7 @@ object DataSourceFactory {
      * @param driverClassName The fully qualified name of the JDBC driver class.
      * @return The configured [DataSource].
      */
-    fun create(
-        username: String?,
-        password: String?,
-        host: String?,
-        port: Int,
-        database: String?,
-        driverClassName: String
-    ): DataSource {
+    fun create(username: String?, password: String?, host: String?, port: Int, database: String?, driverClassName: String): DataSource {
         return DataSourceBuilder(username, password, driverClassName, host, port, database).build()
     }
 
@@ -100,7 +88,7 @@ object DataSourceFactory {
         port: Int,
         database: String?,
         driverClassName: String,
-        connectionProperties: Map<String, String>?
+        connectionProperties: Map<String, String>?,
     ): DataSource {
         return DataSourceBuilder(username, password, driverClassName, host, port, database)
             .withConnectionProperties(connectionProperties)
@@ -118,13 +106,7 @@ object DataSourceFactory {
      * @param database The name of the database.
      * @return The configured [DataSource].
      */
-    fun createPostgres(
-        username: String?,
-        password: String?,
-        host: String?,
-        port: Int,
-        database: String?
-    ): DataSource {
+    fun createPostgres(username: String?, password: String?, host: String?, port: Int, database: String?): DataSource {
         return DataSourceBuilder(username, password, "org.postgresql.Driver", host, port, database)
             .build()
     }
@@ -150,7 +132,7 @@ object DataSourceFactory {
     private constructor(
         private var username: String?,
         private var password: String?,
-        private var driverClassName: String
+        private var driverClassName: String,
     ) {
         private var connectionProperties: Map<String, String> = java.util.Map.of()
         private var database: String? = null
@@ -166,7 +148,7 @@ object DataSourceFactory {
             username: String?,
             password: String?,
             driverClassName: String,
-            jdbcUrl: String?
+            jdbcUrl: String?,
         ) : this(username, password, driverClassName) {
             this.jdbcUrl = jdbcUrl
         }
@@ -177,16 +159,14 @@ object DataSourceFactory {
             driverClassName: String,
             host: String?,
             port: Int,
-            database: String?
+            database: String?,
         ) : this(username, password, driverClassName) {
             this.host = host
             this.port = port
             this.database = database
         }
 
-        fun withConnectionProperties(
-            connectionProperties: Map<String, String>?
-        ): DataSourceBuilder {
+        fun withConnectionProperties(connectionProperties: Map<String, String>?): DataSourceBuilder {
             if (connectionProperties != null) {
                 this.connectionProperties = connectionProperties
             }
@@ -262,15 +242,18 @@ object DataSourceFactory {
 
             Preconditions.checkNotNull(
                 databaseDriver,
-                "Unknown or blank driver class name: '$driverClassName'."
+                "Unknown or blank driver class name: '$driverClassName'.",
             )
 
             val config = HikariConfig()
 
             config.driverClassName = databaseDriver.driverClassName
             config.jdbcUrl =
-                if (jdbcUrl != null) jdbcUrl
-                else String.format(databaseDriver.urlFormatString, host, port, database)
+                if (jdbcUrl != null) {
+                    jdbcUrl
+                } else {
+                    String.format(databaseDriver.urlFormatString, host, port, database)
+                }
             config.maximumPoolSize = maximumPoolSize
             config.minimumIdle = minimumPoolSize
             // HikariCP uses milliseconds for all time values:

@@ -24,13 +24,13 @@ internal class CatalogParserTest {
     fun setup() {
         sqlGenerator = Mockito.mock(SqlGenerator::class.java)
         // noop quoting logic
-        Mockito.`when`(sqlGenerator.buildColumnId(any())).thenAnswer { invocation: InvocationOnMock
+        Mockito.`when`(sqlGenerator.buildColumnId(any())).thenAnswer { invocation: InvocationOnMock,
             ->
             val fieldName = invocation.getArgument<String>(0)
             ColumnId(fieldName, fieldName, fieldName)
         }
         Mockito.`when`(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer {
-            invocation: InvocationOnMock ->
+                invocation: InvocationOnMock ->
             val namespace = invocation.getArgument<String>(0)
             val name = invocation.getArgument<String>(1)
             val rawNamespace = invocation.getArgument<String>(1)
@@ -47,7 +47,7 @@ internal class CatalogParserTest {
     @Test
     fun finalNameCollision() {
         Mockito.`when`(sqlGenerator!!.buildStreamId(any(), any(), any())).thenAnswer {
-            invocation: InvocationOnMock ->
+                invocation: InvocationOnMock ->
             val originalNamespace = invocation.getArgument<String>(0)
             val originalName = (invocation.getArgument<String>(1))
             val originalRawNamespace = (invocation.getArgument<String>(1))
@@ -60,7 +60,7 @@ internal class CatalogParserTest {
                 originalRawNamespace,
                 originalNamespace + "_abab_" + quotedName,
                 originalNamespace,
-                originalName
+                originalName,
             )
         }
         val catalog =
@@ -71,7 +71,7 @@ internal class CatalogParserTest {
 
         Assertions.assertNotEquals(
             parsedCatalog.streams.get(0).id.finalName,
-            parsedCatalog.streams.get(1).id.finalName
+            parsedCatalog.streams.get(1).id.finalName,
         )
     }
 
@@ -82,7 +82,7 @@ internal class CatalogParserTest {
     @Test
     fun columnNameCollision() {
         Mockito.`when`(sqlGenerator!!.buildColumnId(any(), any())).thenAnswer {
-            invocation: InvocationOnMock ->
+                invocation: InvocationOnMock ->
             val originalName = invocation.getArgument<String>(0)
             // emulate quoting logic that causes a name collision
             val quotedName = originalName.replace("bar".toRegex(), "")
@@ -99,7 +99,7 @@ internal class CatalogParserTest {
                                                 }
                                               }
                                               
-                                              """.trimIndent()
+                """.trimIndent(),
             )
         val catalog = ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)))
 
@@ -122,12 +122,12 @@ internal class CatalogParserTest {
                             }
                           }
                           
-                          """.trimIndent()
-                )
+                    """.trimIndent(),
+                ),
         ): ConfiguredAirbyteStream {
             return ConfiguredAirbyteStream()
                 .withStream(
-                    AirbyteStream().withNamespace(namespace).withName(name).withJsonSchema(schema)
+                    AirbyteStream().withNamespace(namespace).withName(name).withJsonSchema(schema),
                 )
         }
     }

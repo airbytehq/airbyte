@@ -64,7 +64,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     abstract fun <T> bufferedResultSetQuery(
         query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>,
     ): List<T>
 
     /**
@@ -86,7 +86,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     abstract fun <T> unsafeResultSetQuery(
         query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>,
     ): Stream<T>
 
     /**
@@ -96,7 +96,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     fun queryStrings(
         query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, String, SQLException?>
+        recordTransform: CheckedFunction<ResultSet, String, SQLException?>,
     ): List<String> {
         unsafeResultSetQuery(query, recordTransform).use { stream ->
             return stream.toList()
@@ -123,7 +123,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     abstract fun <T> unsafeQuery(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException?>,
     ): Stream<T>
 
     /**
@@ -133,7 +133,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     fun queryJsons(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, JsonNode, SQLException?>
+        recordTransform: CheckedFunction<ResultSet, JsonNode, SQLException?>,
     ): List<JsonNode> {
         unsafeQuery(statementCreator, recordTransform).use { stream ->
             return stream.toList()
@@ -143,9 +143,9 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     fun queryInt(sql: String, vararg params: String): Int {
         unsafeQuery(
-                { c: Connection -> getPreparedStatement(sql, params, c) },
-                { rs: ResultSet -> rs.getInt(1) }
-            )
+            { c: Connection -> getPreparedStatement(sql, params, c) },
+            { rs: ResultSet -> rs.getInt(1) },
+        )
             .use { stream ->
                 return stream.findFirst().get()
             }
@@ -154,9 +154,9 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     fun queryBoolean(sql: String, vararg params: String): Boolean {
         unsafeQuery(
-                { c: Connection -> getPreparedStatement(sql, params, c) },
-                { rs: ResultSet -> rs.getBoolean(1) }
-            )
+            { c: Connection -> getPreparedStatement(sql, params, c) },
+            { rs: ResultSet -> rs.getBoolean(1) },
+        )
             .use { stream ->
                 return stream.findFirst().get()
             }
@@ -179,7 +179,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
                 }
                 statement
             },
-            { queryResult: ResultSet -> sourceOperations!!.rowToJson(queryResult) }
+            { queryResult: ResultSet -> sourceOperations!!.rowToJson(queryResult) },
         )
     }
 
@@ -197,15 +197,16 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     fun queryMetadata(sql: String, vararg params: String): ResultSetMetaData {
         unsafeQuery(
-                { c: Connection -> getPreparedStatement(sql, params, c) },
-                { obj: ResultSet -> obj.metaData }
-            )
+            { c: Connection -> getPreparedStatement(sql, params, c) },
+            { obj: ResultSet -> obj.metaData },
+        )
             .use { q ->
                 return q.findFirst().orElse(null)
             }
     }
 
-    @get:Throws(SQLException::class) abstract val metaData: DatabaseMetaData
+    @get:Throws(SQLException::class)
+    abstract val metaData: DatabaseMetaData
 
     @Throws(SQLException::class)
     abstract fun <T> executeMetadataQuery(query: Function<DatabaseMetaData?, T>): T
@@ -222,10 +223,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
          */
         @JvmStatic
         @MustBeClosed
-        fun <T> toUnsafeStream(
-            resultSet: ResultSet,
-            mapper: CheckedFunction<ResultSet, T, SQLException?>
-        ): Stream<T> {
+        fun <T> toUnsafeStream(resultSet: ResultSet, mapper: CheckedFunction<ResultSet, T, SQLException?>): Stream<T> {
             return StreamSupport.stream(
                 object : AbstractSpliterator<T>(Long.MAX_VALUE, ORDERED) {
                     override fun tryAdvance(action: Consumer<in T>): Boolean {
@@ -241,16 +239,12 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
                         }
                     }
                 },
-                false
+                false,
             )
         }
 
         @Throws(SQLException::class)
-        private fun getPreparedStatement(
-            sql: String,
-            params: Array<out String>,
-            c: Connection
-        ): PreparedStatement {
+        private fun getPreparedStatement(sql: String, params: Array<out String>, c: Connection): PreparedStatement {
             val statement = c.prepareStatement(sql)
             var i = 1
             for (param in params) {

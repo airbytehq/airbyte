@@ -31,7 +31,7 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
 
     override fun addState(message: AirbyteMessage) {
         Preconditions.checkArgument(
-            message.state.type == AirbyteStateMessage.AirbyteStateType.STREAM
+            message.state.type == AirbyteStateMessage.AirbyteStateType.STREAM,
         )
         val originalStreamId = message.state.stream.streamDescriptor
         val actualStreamId: StreamDescriptor
@@ -122,31 +122,29 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
          * - map of stream descriptor to its last state
          * @return queue with the states ordered per the sort mentioned above
          */
-        private fun listStatesInOrder(
-            streamToState: Map<StreamDescriptor, AirbyteMessage>
-        ): Queue<AirbyteMessage> {
+        private fun listStatesInOrder(streamToState: Map<StreamDescriptor, AirbyteMessage>): Queue<AirbyteMessage> {
             return streamToState.entries
                 .stream() // typically, we support by namespace and then stream name, so we retain
                 // that pattern here.
                 .sorted(
                     Comparator.comparing<Map.Entry<StreamDescriptor, AirbyteMessage>, String>(
-                            { entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
-                                entry.key.namespace
-                            },
-                            Comparator.nullsFirst<String>(Comparator.naturalOrder<String>())
-                        ) // namespace is allowed to be null
-                        .thenComparing<String> { entry: Map.Entry<StreamDescriptor, AirbyteMessage>
+                        { entry: Map.Entry<StreamDescriptor, AirbyteMessage> ->
+                            entry.key.namespace
+                        },
+                        Comparator.nullsFirst<String>(Comparator.naturalOrder<String>()),
+                    ) // namespace is allowed to be null
+                        .thenComparing<String> { entry: Map.Entry<StreamDescriptor, AirbyteMessage>,
                             ->
                             entry.key.name
-                        }
+                        },
                 )
                 .map<AirbyteMessage> { obj: Map.Entry<StreamDescriptor, AirbyteMessage> ->
                     obj.value
                 }
                 .collect(
                     Collectors.toCollection<AirbyteMessage, LinkedList<AirbyteMessage>>(
-                        Supplier<LinkedList<AirbyteMessage>> { LinkedList() }
-                    )
+                        Supplier<LinkedList<AirbyteMessage>> { LinkedList() },
+                    ),
                 )
         }
 
@@ -161,7 +159,7 @@ class DestStreamStateLifecycleManager(private val defaultNamespace: String?) :
          */
         private fun moveToNextPhase(
             prevPhase: MutableMap<StreamDescriptor, AirbyteMessage>,
-            nextPhase: MutableMap<StreamDescriptor, AirbyteMessage>
+            nextPhase: MutableMap<StreamDescriptor, AirbyteMessage>,
         ) {
             if (!prevPhase.isEmpty()) {
                 nextPhase.putAll(prevPhase)

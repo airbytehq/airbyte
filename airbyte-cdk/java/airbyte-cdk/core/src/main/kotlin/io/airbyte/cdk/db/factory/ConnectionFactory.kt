@@ -24,12 +24,7 @@ object ConnectionFactory {
      * @return The configured [Connection]
      */
     @JvmStatic
-    fun create(
-        username: String?,
-        password: String?,
-        connectionProperties: Map<String?, String?>,
-        jdbcConnectionString: String?
-    ): Connection {
+    fun create(username: String?, password: String?, connectionProperties: Map<String?, String?>, jdbcConnectionString: String?): Connection {
         try {
             val properties = Properties()
             properties["user"] = username

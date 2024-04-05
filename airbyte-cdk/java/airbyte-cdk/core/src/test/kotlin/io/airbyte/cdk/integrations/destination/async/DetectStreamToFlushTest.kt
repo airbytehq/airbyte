@@ -86,8 +86,8 @@ class DetectStreamToFlushTest {
                 RunningFlushWorkers::class.java,
             )
         Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        )
             .thenReturn(
                 listOf(
                     Optional.of(SIZE_10MB),
@@ -113,8 +113,8 @@ class DetectStreamToFlushTest {
                 RunningFlushWorkers::class.java,
             )
         Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        )
             .thenReturn(
                 listOf(
                     Optional.of(SIZE_10MB),

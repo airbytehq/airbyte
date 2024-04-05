@@ -36,7 +36,7 @@ interface Migration<DestinationState : MinimumDestinationState> {
     fun migrateIfNecessary(
         destinationHandler: DestinationHandler<DestinationState>,
         stream: StreamConfig,
-        state: DestinationInitialStatus<DestinationState>
+        state: DestinationInitialStatus<DestinationState>,
     ): MigrationResult<DestinationState>
 
     /**
@@ -45,6 +45,6 @@ interface Migration<DestinationState : MinimumDestinationState> {
      */
     data class MigrationResult<DestinationState>(
         val updatedDestinationState: DestinationState,
-        val invalidateInitialState: Boolean
+        val invalidateInitialState: Boolean,
     )
 }

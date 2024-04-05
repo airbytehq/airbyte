@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 
 class RedshiftRawTableAirbyteMetaMigration(
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
 ) : Migration<RedshiftState> {
     private val logger: Logger =
         LoggerFactory.getLogger(RedshiftRawTableAirbyteMetaMigration::class.java)
@@ -29,27 +29,27 @@ class RedshiftRawTableAirbyteMetaMigration(
     override fun migrateIfNecessary(
         destinationHandler: DestinationHandler<RedshiftState>,
         stream: StreamConfig,
-        state: DestinationInitialStatus<RedshiftState>
+        state: DestinationInitialStatus<RedshiftState>,
     ): Migration.MigrationResult<RedshiftState> {
         if (!state.initialRawTableStatus.rawTableExists) {
             // The raw table doesn't exist. No migration necessary. Update the state.
             logger.info(
-                "Skipping RawTableAirbyteMetaMigration for ${stream.id.originalNamespace}.${stream.id.originalName} "+
-                        "because the raw table doesn't exist"
+                "Skipping RawTableAirbyteMetaMigration for ${stream.id.originalNamespace}.${stream.id.originalName} " +
+                    "because the raw table doesn't exist",
             )
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-                false
+                false,
             )
         }
 
         val existingRawTable =
             JdbcDestinationHandler.findExistingTable(
-                    database,
-                    databaseName,
-                    stream.id.rawNamespace,
-                    stream.id.rawName
-                )
+                database,
+                databaseName,
+                stream.id.rawNamespace,
+                stream.id.rawName,
+            )
                 // The table should exist because we checked for it above
                 .get()
         if (existingRawTable.columns[JavaBaseConstants.COLUMN_NAME_AB_META] != null) {
@@ -57,15 +57,15 @@ class RedshiftRawTableAirbyteMetaMigration(
             // the state.
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
-                false
+                false,
             )
         }
 
         logger.info(
-            "Executing RawTableAirbyteMetaMigration for ${stream.id.originalNamespace}.${stream.id.originalName} for real"
+            "Executing RawTableAirbyteMetaMigration for ${stream.id.originalNamespace}.${stream.id.originalName} for real",
         )
         destinationHandler.execute(
-            getRawTableMetaColumnAddDdl(stream.id.rawNamespace!!, stream.id.rawName!!)
+            getRawTableMetaColumnAddDdl(stream.id.rawNamespace!!, stream.id.rawName!!),
         )
 
         // Update the state. We didn't modify the table in a relevant way, so don't invalidate the
@@ -74,7 +74,7 @@ class RedshiftRawTableAirbyteMetaMigration(
         // data i.e. `errors` instead of `changes` as is since this column is controlled by us.
         return Migration.MigrationResult(
             state.destinationState.copy(needsSoftReset = false, isAirbyteMetaPresentInRaw = true),
-            false
+            false,
         )
     }
 
@@ -82,7 +82,7 @@ class RedshiftRawTableAirbyteMetaMigration(
         return Sql.of(
             DSL.alterTable(name(namespace, name))
                 .addColumn(name(JavaBaseConstants.COLUMN_NAME_AB_META), SUPER_TYPE)
-                .getSQL(ParamType.INLINED)
+                .getSQL(ParamType.INLINED),
         )
     }
 }

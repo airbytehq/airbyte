@@ -67,12 +67,12 @@ class S3StorageOperationsTest {
         Mockito.`when`(results.objectSummaries)
             .thenReturn(listOf(objectSummary1, objectSummary2, objectSummary3))
         Mockito.`when`(
-                s3Client.listObjects(
-                    ArgumentMatchers.any(
-                        ListObjectsRequest::class.java,
-                    ),
+            s3Client.listObjects(
+                ArgumentMatchers.any(
+                    ListObjectsRequest::class.java,
                 ),
-            )
+            ),
+        )
             .thenReturn(results)
 
         val s3Config =
@@ -121,8 +121,8 @@ class S3StorageOperationsTest {
             "\${NAMESPACE}_\${STREAM_NAME}_\${YEAR}-\${MONTH}-\${DAY}-\${HOUR}-\${MINUTE}-\${SECOND}-\${MILLISECOND}-\${EPOCH}-\${UUID}"
         assertTrue(
             Pattern.compile(
-                    s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, customFormat)
-                )
+                s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, customFormat),
+            )
                 .matcher(
                     s3StorageOperations.getBucketObjectPath(
                         NAMESPACE,

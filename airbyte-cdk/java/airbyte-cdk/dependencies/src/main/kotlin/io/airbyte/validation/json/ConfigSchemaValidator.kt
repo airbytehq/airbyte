@@ -10,7 +10,8 @@ interface ConfigSchemaValidator<T : Enum<T>> {
 
     fun test(configType: T, objectJson: JsonNode): Boolean
 
-    @Throws(JsonValidationException::class) fun ensure(configType: T, objectJson: JsonNode)
+    @Throws(JsonValidationException::class)
+    fun ensure(configType: T, objectJson: JsonNode)
 
     fun ensureAsRuntime(configType: T, objectJson: JsonNode)
 }

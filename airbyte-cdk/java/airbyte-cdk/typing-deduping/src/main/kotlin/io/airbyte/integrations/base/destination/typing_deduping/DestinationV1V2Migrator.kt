@@ -15,9 +15,5 @@ interface DestinationV1V2Migrator {
      * @param streamConfig the stream to assess migration needs
      */
     @Throws(TableNotMigratedException::class, UnexpectedSchemaException::class, Exception::class)
-    fun migrateIfNecessary(
-        sqlGenerator: SqlGenerator,
-        destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
-    )
+    fun migrateIfNecessary(sqlGenerator: SqlGenerator, destinationHandler: DestinationHandler<*>, streamConfig: StreamConfig)
 }

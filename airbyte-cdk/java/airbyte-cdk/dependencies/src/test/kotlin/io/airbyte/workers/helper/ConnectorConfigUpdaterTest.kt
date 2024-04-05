@@ -27,10 +27,10 @@ internal class ConnectorConfigUpdaterTest {
             .thenReturn(SourceRead().sourceId(SOURCE_ID).name(SOURCE_NAME))
 
         Mockito.`when`(
-                mDestinationApi.getDestination(
-                    DestinationIdRequestBody().destinationId(DESTINATION_ID)
-                )
-            )
+            mDestinationApi.getDestination(
+                DestinationIdRequestBody().destinationId(DESTINATION_ID),
+            ),
+        )
             .thenReturn(DestinationRead().destinationId(DESTINATION_ID).name(DESTINATION_NAME))
 
         connectorConfigUpdater = ConnectorConfigUpdater(mSourceApi, mDestinationApi)

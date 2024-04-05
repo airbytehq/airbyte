@@ -10,7 +10,7 @@ class JdbcPrivilegeDto(
     val grantee: String?,
     val tableName: String?,
     val schemaName: String?,
-    val privilege: String?
+    val privilege: String?,
 ) {
     class JdbcPrivilegeDtoBuilder {
         private var grantee: String? = null
@@ -51,10 +51,12 @@ class JdbcPrivilegeDto(
             return false
         }
         val that = o as JdbcPrivilegeDto
-        return (Objects.equal(grantee, that.grantee) &&
-            Objects.equal(tableName, that.tableName) &&
-            Objects.equal(schemaName, that.schemaName) &&
-            Objects.equal(privilege, that.privilege))
+        return (
+            Objects.equal(grantee, that.grantee) &&
+                Objects.equal(tableName, that.tableName) &&
+                Objects.equal(schemaName, that.schemaName) &&
+                Objects.equal(privilege, that.privilege)
+            )
     }
 
     override fun hashCode(): Int {

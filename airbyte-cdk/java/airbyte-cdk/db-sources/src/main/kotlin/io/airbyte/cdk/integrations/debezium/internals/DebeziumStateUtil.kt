@@ -57,15 +57,12 @@ interface DebeziumStateUtil {
      * @return An [OffsetStorageReaderImpl] instance that can be used to load the offset state from
      * the offset file storage.
      */
-    fun getOffsetStorageReader(
-        fileOffsetBackingStore: FileOffsetBackingStore?,
-        properties: Properties
-    ): OffsetStorageReaderImpl? {
+    fun getOffsetStorageReader(fileOffsetBackingStore: FileOffsetBackingStore?, properties: Properties): OffsetStorageReaderImpl? {
         return OffsetStorageReaderImpl(
             fileOffsetBackingStore,
             properties.getProperty(CONNECTOR_NAME_PROPERTY),
             keyConverter,
-            valueConverter
+            valueConverter,
         )
     }
 

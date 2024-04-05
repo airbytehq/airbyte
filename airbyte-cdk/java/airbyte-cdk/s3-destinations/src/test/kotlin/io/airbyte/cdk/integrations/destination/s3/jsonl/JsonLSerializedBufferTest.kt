@@ -71,19 +71,15 @@ class JsonLSerializedBufferTest {
     }
 
     @Throws(Exception::class)
-    private fun runTest(
-        buffer: BufferStorage,
-        withCompression: Boolean,
-        minExpectedByte: Long,
-        maxExpectedByte: Long,
-        expectedData: String
-    ) {
+    private fun runTest(buffer: BufferStorage, withCompression: Boolean, minExpectedByte: Long, maxExpectedByte: Long, expectedData: String) {
         val outputFile = buffer.file
-        (JsonLSerializedBuffer.createBufferFunction(null) { buffer }
+        (
+            JsonLSerializedBuffer.createBufferFunction(null) { buffer }
                 .apply(
                     streamPair,
                     catalog,
-                ) as JsonLSerializedBuffer)
+                ) as JsonLSerializedBuffer
+            )
             .use { writer ->
                 writer.withCompression(withCompression)
                 writer.accept(message)
@@ -94,7 +90,7 @@ class JsonLSerializedBufferTest {
                 // deterministic
                 assertTrue(
                     writer.byteCount in minExpectedByte..maxExpectedByte,
-                    "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}"
+                    "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}",
                 )
                 val inputStream: InputStream =
                     if (withCompression) {

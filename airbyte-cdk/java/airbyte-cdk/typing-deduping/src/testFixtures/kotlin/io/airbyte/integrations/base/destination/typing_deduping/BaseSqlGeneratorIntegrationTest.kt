@@ -74,18 +74,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Subclasses should override this method if they need to make changes to the stream ID. For
      * example, you could upcase the final table name here.
      */
-    protected fun buildStreamId(
-        namespace: String,
-        finalTableName: String,
-        rawTableName: String
-    ): StreamId {
+    protected fun buildStreamId(namespace: String, finalTableName: String, rawTableName: String): StreamId {
         return StreamId(
             namespace,
             finalTableName,
             namespace,
             rawTableName,
             namespace,
-            finalTableName
+            finalTableName,
         )
     }
 
@@ -93,13 +89,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Do any setup work to create a namespace for this test run. For example, this might create a
      * BigQuery dataset, or a Snowflake schema.
      */
-    @Throws(Exception::class) protected abstract fun createNamespace(namespace: String?)
+    @Throws(Exception::class)
+    protected abstract fun createNamespace(namespace: String?)
 
     /** Create a raw table using the StreamId's rawTableId. */
-    @Throws(Exception::class) protected abstract fun createRawTable(streamId: StreamId)
+    @Throws(Exception::class)
+    protected abstract fun createRawTable(streamId: StreamId)
 
     /** Creates a raw table in the v1 format */
-    @Throws(Exception::class) protected abstract fun createV1RawTable(v1RawTable: StreamId)
+    @Throws(Exception::class)
+    protected abstract fun createV1RawTable(v1RawTable: StreamId)
 
     @Throws(Exception::class)
     protected abstract fun insertRawTableRecords(streamId: StreamId, records: List<JsonNode>)
@@ -108,12 +107,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     protected abstract fun insertV1RawTableRecords(streamId: StreamId, records: List<JsonNode>)
 
     @Throws(Exception::class)
-    protected abstract fun insertFinalTableRecords(
-        includeCdcDeletedAt: Boolean,
-        streamId: StreamId,
-        suffix: String?,
-        records: List<JsonNode>
-    )
+    protected abstract fun insertFinalTableRecords(includeCdcDeletedAt: Boolean, streamId: StreamId, suffix: String?, records: List<JsonNode>)
 
     /**
      * The two dump methods are defined identically as in [BaseTypingDedupingTest], but with
@@ -128,16 +122,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     protected abstract fun dumpRawTableRecords(streamId: StreamId): List<JsonNode>
 
     @Throws(Exception::class)
-    protected abstract fun dumpFinalTableRecords(
-        streamId: StreamId,
-        suffix: String?
-    ): List<JsonNode>
+    protected abstract fun dumpFinalTableRecords(streamId: StreamId, suffix: String?): List<JsonNode>
 
     /**
      * Clean up all resources in the namespace. For example, this might delete the BigQuery dataset
      * created in [.createNamespace].
      */
-    @Throws(Exception::class) protected abstract fun teardownNamespace(namespace: String?)
+    @Throws(Exception::class)
+    protected abstract fun teardownNamespace(namespace: String?)
 
     protected val rawMetadataColumnNames: Map<String, String>
         /** Identical to [BaseTypingDedupingTest.getRawMetadataColumnNames]. */
@@ -154,7 +146,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      *
      * Note that subclasses must also annotate their implementation with @Test.
      */
-    @Test @Throws(Exception::class) abstract fun testCreateTableIncremental()
+    @Test
+    @Throws(Exception::class)
+    abstract fun testCreateTableIncremental()
 
     @BeforeEach
     @Throws(Exception::class)
@@ -198,7 +192,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 finalMetadataColumnNames,
                 id1 to AirbyteProtocolType.INTEGER,
                 id2 to AirbyteProtocolType.INTEGER,
-                cursor to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
+                cursor to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
             )
 
         namespace = Strings.addRandomSuffix("sql_generator_test", "_", 10)
@@ -216,7 +210,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.of(cursor),
-                COLUMNS
+                COLUMNS,
             )
         incrementalAppendStream =
             StreamConfig(
@@ -225,7 +219,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND,
                 primaryKey,
                 Optional.of(cursor),
-                COLUMNS
+                COLUMNS,
             )
 
         cdcIncrementalDedupStream =
@@ -235,7 +229,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.of(cursor),
-                cdcColumns
+                cdcColumns,
             )
         cdcIncrementalAppendStream =
             StreamConfig(
@@ -244,7 +238,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND,
                 primaryKey,
                 Optional.of(cursor),
-                cdcColumns
+                cdcColumns,
             )
 
         LOGGER.info("Running with namespace {}", namespace)
@@ -258,18 +252,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    private fun getDestinationInitialState(
-        streamConfig: StreamConfig
-    ): DestinationInitialStatus<DestinationState> {
+    private fun getDestinationInitialState(streamConfig: StreamConfig): DestinationInitialStatus<DestinationState> {
         val initialState = destinationHandler!!.gatherInitialState(java.util.List.of(streamConfig))
         Assertions.assertEquals(
             1,
             initialState.size,
-            "gatherInitialState returned the wrong number of futures"
+            "gatherInitialState returned the wrong number of futures",
         )
         Assertions.assertTrue(
             initialState.first()!!.isFinalTablePresent,
-            "Destination handler could not find existing table"
+            "Destination handler could not find existing table",
         )
         return initialState.first()
     }
@@ -283,7 +275,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val destinationInitialStatus = getDestinationInitialState(incrementalDedupStream)
         Assertions.assertFalse(
             destinationInitialStatus!!.isSchemaMismatch,
-            "Unchanged schema was incorrectly detected as a schema change."
+            "Unchanged schema was incorrectly detected as a schema change.",
         )
     }
 
@@ -299,7 +291,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val destinationInitialStatus = getDestinationInitialState(incrementalDedupStream)
         Assertions.assertTrue(
             destinationInitialStatus!!.isSchemaMismatch,
-            "Adding a new column was not detected as a schema change."
+            "Adding a new column was not detected as a schema change.",
         )
     }
 
@@ -313,7 +305,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val destinationInitialStatus = getDestinationInitialState(incrementalDedupStream)
         Assertions.assertTrue(
             destinationInitialStatus!!.isSchemaMismatch,
-            "Removing a column was not detected as a schema change."
+            "Removing a column was not detected as a schema change.",
         )
     }
 
@@ -329,7 +321,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val destinationInitialStatus = getDestinationInitialState(incrementalDedupStream)
         Assertions.assertTrue(
             destinationInitialStatus!!.isSchemaMismatch,
-            "Altering a column was not detected as a schema change."
+            "Altering a column was not detected as a schema change.",
         )
     }
 
@@ -345,7 +337,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND_DEDUP,
                 incrementalDedupStream!!.primaryKey,
                 incrementalDedupStream!!.cursor,
-                incrementalDedupStream!!.columns
+                incrementalDedupStream!!.columns,
             )
 
         createRawTable(streamId)
@@ -361,9 +353,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_data": {"id1": 1, "id2": 100}
             }
             
-            """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
 
         executeTypeAndDedupe(generator!!, destinationHandler!!, stream, Optional.empty(), "")
@@ -373,9 +365,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         verifyRecordCounts(1, rawRecords, 1, finalRecords)
     }
 
-    private fun getOnly(
-        initialStates: List<DestinationInitialStatus<DestinationState>>
-    ): DestinationInitialStatus<DestinationState> {
+    private fun getOnly(initialStates: List<DestinationInitialStatus<DestinationState>>): DestinationInitialStatus<DestinationState> {
         Assertions.assertEquals(1, initialStates!!.size)
         return initialStates.first()
     }
@@ -400,22 +390,22 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             .columns!!
             .put(
                 generator!!.buildColumnId("IamACaseSensitiveColumnName"),
-                AirbyteProtocolType.STRING
+                AirbyteProtocolType.STRING,
             )
         createRawTable(streamId)
         createFinalTable(incrementalDedupStream, "")
         insertRawTableRecords(
             streamId,
-            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl")
+            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"),
         )
 
         var initialState =
             getOnly(
-                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!))
+                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!)),
             )
         Assertions.assertTrue(
             initialState!!.isFinalTableEmpty,
-            "Final table should be empty before T+D"
+            "Final table should be empty before T+D",
         )
 
         executeTypeAndDedupe(
@@ -423,22 +413,22 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             incrementalDedupStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         verifyRecords(
             "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
             dumpRawTableRecords(streamId),
             "sqlgenerator/alltypes_expectedrecords_final.jsonl",
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
         initialState =
             getOnly(
-                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!))
+                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!)),
             )
         Assertions.assertFalse(
             initialState!!.isFinalTableEmpty,
-            "Final table should not be empty after T+D"
+            "Final table should not be empty after T+D",
         )
     }
 
@@ -451,17 +441,17 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/alltypes_unsafe_inputrecords.jsonl"
-            )
+                "sqlgenerator/alltypes_unsafe_inputrecords.jsonl",
+            ),
         )
 
         var initialState =
             getOnly(
-                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!))
+                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!)),
             )
         Assertions.assertTrue(
             initialState!!.isFinalTableEmpty,
-            "Final table should be empty before T+D"
+            "Final table should be empty before T+D",
         )
 
         // Instead of using the full T+D transaction, explicitly run with useSafeCasting=false.
@@ -471,11 +461,11 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         initialState =
             getOnly(
-                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!))
+                destinationHandler!!.gatherInitialState(java.util.List.of(incrementalDedupStream!!)),
             )
         Assertions.assertFalse(
             initialState!!.isFinalTableEmpty,
-            "Final table should not be empty after T+D"
+            "Final table should not be empty after T+D",
         )
     }
 
@@ -497,14 +487,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // When the raw table doesn't exist, there are no unprocessed records and no timestamp
         Assertions.assertEquals(
             InitialRawTableStatus(false, false, Optional.empty()),
-            getInitialRawTableState(incrementalAppendStream)
+            getInitialRawTableState(incrementalAppendStream),
         )
 
         // When the raw table is empty, there are still no unprocessed records and no timestamp
         createRawTable(streamId)
         Assertions.assertEquals(
             InitialRawTableStatus(true, false, Optional.empty()),
-            getInitialRawTableState(incrementalAppendStream)
+            getInitialRawTableState(incrementalAppendStream),
         )
 
         // If we insert some raw records with null loaded_at, we should get the min extracted_at
@@ -519,7 +509,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   "_airbyte_data": {}
                 }
                 
-                """.trimIndent()
+                    """.trimIndent(),
                 ),
                 Jsons.deserialize(
                     """
@@ -529,20 +519,20 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   "_airbyte_data": {}
                 }
                 
-                """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
         var tableState = getInitialRawTableState(incrementalAppendStream)
         Assertions.assertTrue(
             tableState.hasUnprocessedRecords,
-            "When all raw records have null loaded_at, we should recognize that there are unprocessed records"
+            "When all raw records have null loaded_at, we should recognize that there are unprocessed records",
         )
         Assertions.assertTrue(
             tableState.maxProcessedTimestamp.get().isBefore(Instant.parse("2023-01-01T00:00:00Z")),
-            "When all raw records have null loaded_at, the min timestamp should be earlier than all of their extracted_at "+
-                    "values (2023-01-01). Was actually " +
-                tableState.maxProcessedTimestamp.get()
+            "When all raw records have null loaded_at, the min timestamp should be earlier than all of their extracted_at " +
+                "values (2023-01-01). Was actually " +
+                tableState.maxProcessedTimestamp.get(),
         )
 
         // Execute T+D to set loaded_at on the records
@@ -552,14 +542,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             incrementalAppendStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         Assertions.assertEquals(
             getInitialRawTableState(incrementalAppendStream),
             InitialRawTableStatus(true, false, Optional.of(Instant.parse("2023-01-02T00:00:00Z"))),
-            "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, "+
-                    "and the min timestamp should be equal to the latest extracted_at"
+            "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, " +
+                "and the min timestamp should be equal to the latest extracted_at",
         )
 
         // If we insert another raw record with older extracted_at than the typed records, we should
@@ -581,9 +571,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_data": {}
             }
             
-            """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
         tableState = getInitialRawTableState(incrementalAppendStream)
         // this is a pretty confusing pair of assertions. To explain them in more detail: There are
@@ -599,19 +589,19 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // record.
         Assertions.assertTrue(
             tableState.hasUnprocessedRecords,
-            "When some raw records have null loaded_at, we should recognize that there are unprocessed records"
+            "When some raw records have null loaded_at, we should recognize that there are unprocessed records",
         )
         Assertions.assertTrue(
             tableState.maxProcessedTimestamp.get().isBefore(Instant.parse("2023-01-01T12:00:00Z")),
-            "When some raw records have null loaded_at, the min timestamp should be earlier than the oldest unloaded record "+
-                    "(2023-01-01 12:00Z). Was actually " +
-                tableState
+            "When some raw records have null loaded_at, the min timestamp should be earlier than the oldest unloaded record " +
+                "(2023-01-01 12:00Z). Was actually " +
+                tableState,
         )
         Assertions.assertFalse(
             tableState.maxProcessedTimestamp.get().isBefore(Instant.parse("2023-01-01T00:00:00Z")),
-            "When some raw records have null loaded_at, the min timestamp should be later than the newest loaded "+
-                    "record older than the oldest unloaded record (2023-01-01 00:00Z). Was actually " +
-                tableState
+            "When some raw records have null loaded_at, the min timestamp should be later than the newest loaded " +
+                "record older than the oldest unloaded record (2023-01-01 00:00Z). Was actually " +
+                tableState,
         )
     }
 
@@ -628,13 +618,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             .columns!!
             .put(
                 generator!!.buildColumnId("IamACaseSensitiveColumnName"),
-                AirbyteProtocolType.STRING
+                AirbyteProtocolType.STRING,
             )
         createRawTable(streamId)
         createFinalTable(incrementalDedupStream, "")
         insertRawTableRecords(
             streamId,
-            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl")
+            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"),
         )
 
         val tableState = getInitialRawTableState(incrementalDedupStream)
@@ -642,15 +632,15 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             Executable {
                 Assertions.assertTrue(
                     tableState.hasUnprocessedRecords,
-                    "After writing some raw records, we should recognize that there are unprocessed records"
+                    "After writing some raw records, we should recognize that there are unprocessed records",
                 )
             },
             Executable {
                 Assertions.assertTrue(
                     tableState.maxProcessedTimestamp.isPresent(),
-                    "After writing some raw records, the min timestamp should be present."
+                    "After writing some raw records, the min timestamp should be present.",
                 )
-            }
+            },
         )
 
         executeTypeAndDedupe(
@@ -658,14 +648,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             incrementalDedupStream,
             tableState.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         verifyRecords(
             "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
             dumpRawTableRecords(streamId),
             "sqlgenerator/alltypes_expectedrecords_final.jsonl",
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -681,7 +671,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             .columns!!
             .put(
                 generator!!.buildColumnId("IamACaseSensitiveColumnName"),
-                AirbyteProtocolType.STRING
+                AirbyteProtocolType.STRING,
             )
         createRawTable(streamId)
         val tableState = getInitialRawTableState(incrementalDedupStream)
@@ -689,22 +679,22 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             Executable {
                 Assertions.assertFalse(
                     tableState.hasUnprocessedRecords,
-                    "With an empty raw table, we should recognize that there are no unprocessed records"
+                    "With an empty raw table, we should recognize that there are no unprocessed records",
                 )
             },
             Executable {
                 Assertions.assertEquals(
                     Optional.empty<Instant>(),
                     tableState.maxProcessedTimestamp,
-                    "With an empty raw table, the min timestamp should be empty"
+                    "With an empty raw table, the min timestamp should be empty",
                 )
-            }
+            },
         )
 
         createFinalTable(incrementalDedupStream, "")
         insertRawTableRecords(
             streamId,
-            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl")
+            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"),
         )
 
         executeTypeAndDedupe(
@@ -712,14 +702,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             incrementalDedupStream,
             tableState.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         verifyRecords(
             "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
             dumpRawTableRecords(streamId),
             "sqlgenerator/alltypes_expectedrecords_final.jsonl",
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -748,7 +738,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   }
                 }
                 
-                """.trimIndent()
+                    """.trimIndent(),
                 ),
                 Jsons.deserialize(
                     """
@@ -760,9 +750,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   }
                 }
                 
-                """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -770,7 +760,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             incrementalAppendStream,
             Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
-            ""
+            "",
         )
 
         val rawRecords = dumpRawTableRecords(streamId)
@@ -783,16 +773,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                         .stream()
                         .filter { record: JsonNode -> record["_airbyte_loaded_at"] == null }
                         .count(),
-                    "Raw table should only have non-null loaded_at on the newer record"
+                    "Raw table should only have non-null loaded_at on the newer record",
                 )
             },
             Executable {
                 Assertions.assertEquals(
                     1,
                     finalRecords.size,
-                    "T+D should only execute on the newer record"
+                    "T+D should only execute on the newer record",
                 )
-            }
+            },
         )
     }
 
@@ -809,21 +799,21 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/json_types_in_string_inputrecords.jsonl"
-            )
+                "sqlgenerator/json_types_in_string_inputrecords.jsonl",
+            ),
         )
         executeTypeAndDedupe(
             generator!!,
             destinationHandler!!,
             incrementalDedupStream,
             Optional.empty(),
-            "_foo"
+            "_foo",
         )
         verifyRecords(
             "sqlgenerator/json_types_in_string_expectedrecords_raw.jsonl",
             dumpRawTableRecords(streamId),
             "sqlgenerator/json_types_in_string_expectedrecords_final.jsonl",
-            dumpFinalTableRecords(streamId, "_foo")
+            dumpFinalTableRecords(streamId, "_foo"),
         )
     }
 
@@ -835,8 +825,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/timestampformats_inputrecords.jsonl"
-            )
+                "sqlgenerator/timestampformats_inputrecords.jsonl",
+            ),
         )
 
         executeTypeAndDedupe(
@@ -844,14 +834,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             incrementalAppendStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         DIFFER!!.diffFinalTableRecords(
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/timestampformats_expectedrecords_final.jsonl"
+                "sqlgenerator/timestampformats_expectedrecords_final.jsonl",
             ),
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -863,8 +853,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/incrementaldedup_inputrecords.jsonl"
-            )
+                "sqlgenerator/incrementaldedup_inputrecords.jsonl",
+            ),
         )
 
         executeTypeAndDedupe(
@@ -872,14 +862,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             incrementalDedupStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         verifyRecords(
             "sqlgenerator/incrementaldedup_expectedrecords_raw.jsonl",
             dumpRawTableRecords(streamId),
             "sqlgenerator/incrementaldedup_expectedrecords_final.jsonl",
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -897,7 +887,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey!!,
                 Optional.empty(),
-                COLUMNS!!
+                COLUMNS!!,
             )
         createRawTable(streamId)
         createFinalTable(streamConfig, "")
@@ -916,7 +906,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   }
                 }
                 
-                """.trimIndent()
+                    """.trimIndent(),
                 ),
                 Jsons.deserialize(
                     """
@@ -930,9 +920,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   }
                 }
                 
-                """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
 
         executeTypeAndDedupe(generator!!, destinationHandler!!, streamConfig, Optional.empty(), "")
@@ -942,7 +932,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         verifyRecordCounts(2, actualRawRecords, 1, actualFinalRecords)
         Assertions.assertEquals(
             "bar",
-            actualFinalRecords[0][generator!!.buildColumnId("string")!!.name].asText()
+            actualFinalRecords[0][generator!!.buildColumnId("string")!!.name].asText(),
         )
     }
 
@@ -954,8 +944,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/incrementaldedup_inputrecords.jsonl"
-            )
+                "sqlgenerator/incrementaldedup_inputrecords.jsonl",
+            ),
         )
 
         executeTypeAndDedupe(
@@ -963,7 +953,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             incrementalAppendStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         verifyRecordCounts(3, dumpRawTableRecords(streamId), 3, dumpFinalTableRecords(streamId, ""))
@@ -987,8 +977,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
           "_airbyte_meta": {}
         }
         
-        """.trimIndent()
-                )
+                    """.trimIndent(),
+                ),
             )
         insertFinalTableRecords(false, streamId, "_tmp", records)
 
@@ -1019,9 +1009,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               }
             }
             
-            """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
 
         executeTypeAndDedupe(
@@ -1029,7 +1019,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             cdcIncrementalDedupStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         verifyRecordCounts(1, dumpRawTableRecords(streamId), 0, dumpFinalTableRecords(streamId, ""))
@@ -1060,9 +1050,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               }
             }
             
-            """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
 
         // Execute T+D twice
@@ -1071,14 +1061,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             cdcIncrementalAppendStream,
             Optional.empty(),
-            ""
+            "",
         )
         executeTypeAndDedupe(
             generator!!,
             destinationHandler!!,
             cdcIncrementalAppendStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         verifyRecordCounts(1, dumpRawTableRecords(streamId), 1, dumpFinalTableRecords(streamId, ""))
@@ -1092,16 +1082,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/cdcupdate_inputrecords_raw.jsonl"
-            )
+                "sqlgenerator/cdcupdate_inputrecords_raw.jsonl",
+            ),
         )
         insertFinalTableRecords(
             true,
             streamId,
             "",
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/cdcupdate_inputrecords_final.jsonl"
-            )
+                "sqlgenerator/cdcupdate_inputrecords_final.jsonl",
+            ),
         )
 
         executeTypeAndDedupe(
@@ -1109,14 +1099,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             cdcIncrementalDedupStream,
             Optional.empty(),
-            ""
+            "",
         )
 
         verifyRecordCounts(
             11,
             dumpRawTableRecords(streamId),
             6,
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -1140,8 +1130,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"
-            )
+                "sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl",
+            ),
         )
 
         val tableState = getInitialRawTableState(cdcIncrementalDedupStream)
@@ -1150,7 +1140,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             cdcIncrementalDedupStream,
             tableState.maxProcessedTimestamp,
-            ""
+            "",
         )
 
         verifyRecordCounts(2, dumpRawTableRecords(streamId), 0, dumpFinalTableRecords(streamId, ""))
@@ -1177,16 +1167,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/cdcordering_insertafterdelete_inputrecords_raw.jsonl"
-            )
+                "sqlgenerator/cdcordering_insertafterdelete_inputrecords_raw.jsonl",
+            ),
         )
         insertFinalTableRecords(
             true,
             streamId,
             "",
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"
-            )
+                "sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl",
+            ),
         )
 
         val tableState = getInitialRawTableState(cdcIncrementalAppendStream)
@@ -1195,7 +1185,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             destinationHandler!!,
             cdcIncrementalDedupStream,
             tableState.maxProcessedTimestamp,
-            ""
+            "",
         )
         verifyRecordCounts(2, dumpRawTableRecords(streamId), 1, dumpFinalTableRecords(streamId, ""))
     }
@@ -1225,9 +1215,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               }
             }
             
-            """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
         insertFinalTableRecords(
             true,
@@ -1245,9 +1235,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
             }
             
-            """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
 
         executeSoftReset(generator!!, destinationHandler!!, incrementalAppendStream!!)
@@ -1262,9 +1252,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     actualFinalRecords.stream().noneMatch { record: JsonNode ->
                         record.has("_ab_cdc_deleted_at")
                     },
-                    "_ab_cdc_deleted_at column was expected to be dropped. Actual final table had: $actualFinalRecords"
+                    "_ab_cdc_deleted_at column was expected to be dropped. Actual final table had: $actualFinalRecords",
                 )
-            }
+            },
         )
     }
 
@@ -1275,8 +1265,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/weirdcolumnnames_inputrecords_raw.jsonl"
-            )
+                "sqlgenerator/weirdcolumnnames_inputrecords_raw.jsonl",
+            ),
         )
         val stream =
             StreamConfig(
@@ -1299,8 +1289,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     generator!!.buildColumnId("includes.period") to AirbyteProtocolType.STRING,
                     generator!!.buildColumnId("includes$\$doubledollar") to
                         AirbyteProtocolType.STRING,
-                    generator!!.buildColumnId("endswithbackslash\\") to AirbyteProtocolType.STRING
-                )
+                    generator!!.buildColumnId("endswithbackslash\\") to AirbyteProtocolType.STRING,
+                ),
             )
 
         val createTable = generator!!.createTable(stream, "", false)
@@ -1311,7 +1301,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "sqlgenerator/weirdcolumnnames_expectedrecords_raw.jsonl",
             dumpRawTableRecords(streamId),
             "sqlgenerator/weirdcolumnnames_expectedrecords_final.jsonl",
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -1321,7 +1311,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @ParameterizedTest
     @ValueSource(
-        strings = ["$", "\${", "\${\${", "\${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"]
+        strings = ["$", "\${", "\${\${", "\${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"],
     )
     @Throws(Exception::class)
     fun noCrashOnSpecialCharacters(specialChars: String) {
@@ -1331,7 +1321,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             buildStreamId(
                 originalStreamId!!.finalNamespace!!,
                 originalStreamId.finalName!!,
-                "raw_table"
+                "raw_table",
             )
         val columnId = generator!!.buildColumnId(str)
         try {
@@ -1347,10 +1337,10 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                             "_airbyte_extracted_at",
                             "2023-01-01T00:00:00Z",
                             "_airbyte_data",
-                            java.util.Map.of(str, "bar")
-                        )
-                    )
-                )
+                            java.util.Map.of(str, "bar"),
+                        ),
+                    ),
+                ),
             )
             val stream =
                 StreamConfig(
@@ -1359,7 +1349,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     DestinationSyncMode.APPEND_DEDUP,
                     java.util.List.of(columnId),
                     Optional.of(columnId!!),
-                    linkedMapOf(columnId to AirbyteProtocolType.STRING)
+                    linkedMapOf(columnId to AirbyteProtocolType.STRING),
                 )
 
             val createTable = generator!!.createTable(stream, "", false)
@@ -1382,8 +1372,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/reservedkeywords_inputrecords_raw.jsonl"
-            )
+                "sqlgenerator/reservedkeywords_inputrecords_raw.jsonl",
+            ),
         )
         val stream =
             StreamConfig(
@@ -1394,8 +1384,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 Optional.empty(),
                 linkedMapOf(
                     generator!!.buildColumnId("current_date") to AirbyteProtocolType.STRING,
-                    generator!!.buildColumnId("join") to AirbyteProtocolType.STRING
-                )
+                    generator!!.buildColumnId("join") to AirbyteProtocolType.STRING,
+                ),
             )
 
         val createTable = generator!!.createTable(stream, "", false)
@@ -1404,9 +1394,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         DIFFER!!.diffFinalTableRecords(
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/reservedkeywords_expectedrecords_final.jsonl"
+                "sqlgenerator/reservedkeywords_expectedrecords_final.jsonl",
             ),
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -1429,9 +1419,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_data": {}
             }
             
-            """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
         val stream =
             StreamConfig(
@@ -1440,7 +1430,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 DestinationSyncMode.APPEND,
                 emptyList<ColumnId>(),
                 Optional.empty(),
-                LinkedHashMap()
+                LinkedHashMap(),
             )
 
         val createTable = generator!!.createTable(stream, "", false)
@@ -1451,7 +1441,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "sqlgenerator/nocolumns_expectedrecords_raw.jsonl",
             dumpRawTableRecords(streamId),
             "sqlgenerator/nocolumns_expectedrecords_final.jsonl",
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -1466,7 +1456,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             .columns!!
             .put(
                 generator!!.buildColumnId("IamACaseSensitiveColumnName"),
-                AirbyteProtocolType.STRING
+                AirbyteProtocolType.STRING,
             )
         val v1RawTableStreamId =
             StreamId(null, null, streamId!!.finalNamespace, "v1_" + streamId!!.rawName, null, null)
@@ -1474,14 +1464,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         insertV1RawTableRecords(
             v1RawTableStreamId,
             BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/all_types_v1_inputrecords.jsonl"
-            )
+                "sqlgenerator/all_types_v1_inputrecords.jsonl",
+            ),
         )
         val migration =
             generator!!.migrateFromV1toV2(
                 streamId,
                 v1RawTableStreamId.rawNamespace,
-                v1RawTableStreamId.rawName
+                v1RawTableStreamId.rawName,
             )
         destinationHandler!!.execute(migration)
         val v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId)
@@ -1498,7 +1488,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "sqlgenerator/alltypes_v1v2_expectedrecords_raw.jsonl",
             dumpRawTableRecords(streamId),
             "sqlgenerator/alltypes_v1v2_expectedrecords_final.jsonl",
-            dumpFinalTableRecords(streamId, "")
+            dumpFinalTableRecords(streamId, ""),
         )
     }
 
@@ -1519,7 +1509,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             generator!!.createTable(
                 incrementalDedupStream!!,
                 TypeAndDedupeTransaction.SOFT_RESET_SUFFIX,
-                false
+                false,
             )
         destinationHandler!!.execute(createOldTempTable)
 
@@ -1534,12 +1524,12 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 .collect(
                     Collectors.toMap(
                         Function { record: JsonNode -> record["_airbyte_raw_id"].asText() },
-                        Function.identity()
-                    )
+                        Function.identity(),
+                    ),
                 )
         Assertions.assertAll(
             Executable { Assertions.assertEquals(6, v1RawRecords.size) },
-            Executable { Assertions.assertEquals(6, v2RawRecords.size) }
+            Executable { Assertions.assertEquals(6, v2RawRecords.size) },
         )
         v1RawRecords.forEach(
             Consumer { v1Record: JsonNode ->
@@ -1548,16 +1538,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     Executable {
                         Assertions.assertEquals(
                             v1id,
-                            v2RecordMap[v1id]!!["_airbyte_raw_id"].asText()
+                            v2RecordMap[v1id]!!["_airbyte_raw_id"].asText(),
                         )
                     },
                     Executable {
                         Assertions.assertEquals(
                             v1Record["_airbyte_emitted_at"].asText(),
-                            v2RecordMap[v1id]!!["_airbyte_extracted_at"].asText()
+                            v2RecordMap[v1id]!!["_airbyte_extracted_at"].asText(),
                         )
                     },
-                    Executable { Assertions.assertNull(v2RecordMap[v1id]!!["_airbyte_loaded_at"]) }
+                    Executable { Assertions.assertNull(v2RecordMap[v1id]!!["_airbyte_loaded_at"]) },
                 )
                 var originalData = v1Record["_airbyte_data"]
                 if (originalData.isTextual) {
@@ -1571,9 +1561,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 // diffRawTableRecords makes some assumptions about the structure of the blob.
                 DIFFER!!.diffFinalTableRecords(
                     java.util.List.of(originalData),
-                    java.util.List.of(migratedData)
+                    java.util.List.of(migratedData),
                 )
-            }
+            },
         )
     }
 
@@ -1609,15 +1599,15 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // The initial state should not need a soft reset.
         Assertions.assertFalse(
             initialState!!.destinationState!!.needsSoftReset(),
-            "Empty state table should have needsSoftReset = false"
+            "Empty state table should have needsSoftReset = false",
         )
 
         // Commit a state that now requires a soft reset.
         destinationHandler.commitDestinationStates(
             java.util.Map.of(
                 incrementalDedupStream!!.id,
-                initialState.destinationState!!.withSoftReset(true)
-            )
+                initialState.destinationState!!.withSoftReset(true),
+            ),
         )
         val updatedState =
             destinationHandler!!
@@ -1626,15 +1616,15 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // When we re-fetch the state, it should now need a soft reset.
         Assertions.assertTrue(
             updatedState!!.destinationState!!.needsSoftReset(),
-            "After committing an explicit state, expected needsSoftReset = true"
+            "After committing an explicit state, expected needsSoftReset = true",
         )
 
         // Commit a state belonging to a different stream
         destinationHandler!!.commitDestinationStates(
             java.util.Map.of(
                 StreamId(null, null, null, null, null, "some_other_stream"),
-                initialState.destinationState.withSoftReset(true)
-            )
+                initialState.destinationState.withSoftReset(true),
+            ),
         )
 
         // Verify that we can still retrieve the state for the original stream
@@ -1645,7 +1635,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // When we re-fetch the state, it should now need a soft reset.
         Assertions.assertTrue(
             refetchedState!!.destinationState!!.needsSoftReset(),
-            "After committing an unrelated state, expected needsSoftReset = true"
+            "After committing an unrelated state, expected needsSoftReset = true",
         )
     }
 
@@ -1659,13 +1649,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         expectedRawRecordsFile: String,
         actualRawRecords: List<JsonNode>,
         expectedFinalRecordsFile: String,
-        actualFinalRecords: List<JsonNode>
+        actualFinalRecords: List<JsonNode>,
     ) {
         Assertions.assertAll(
             Executable {
                 DIFFER!!.diffRawTableRecords(
                     BaseTypingDedupingTest.Companion.readRecords(expectedRawRecordsFile),
-                    actualRawRecords
+                    actualRawRecords,
                 )
             },
             Executable {
@@ -1674,15 +1664,15 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     actualRawRecords
                         .stream()
                         .filter { record: JsonNode -> !record.hasNonNull("_airbyte_loaded_at") }
-                        .count()
+                        .count(),
                 )
             },
             Executable {
                 DIFFER!!.diffFinalTableRecords(
                     BaseTypingDedupingTest.Companion.readRecords(expectedFinalRecordsFile),
-                    actualFinalRecords
+                    actualFinalRecords,
                 )
-            }
+            },
         )
     }
 
@@ -1690,14 +1680,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         expectedRawRecords: Int,
         actualRawRecords: List<JsonNode>,
         expectedFinalRecords: Int,
-        actualFinalRecords: List<JsonNode>
+        actualFinalRecords: List<JsonNode>,
     ) {
         Assertions.assertAll(
             Executable {
                 Assertions.assertEquals(
                     expectedRawRecords,
                     actualRawRecords.size,
-                    "Raw record count was incorrect"
+                    "Raw record count was incorrect",
                 )
             },
             Executable {
@@ -1706,16 +1696,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     actualRawRecords
                         .stream()
                         .filter { record: JsonNode -> !record.hasNonNull("_airbyte_loaded_at") }
-                        .count()
+                        .count(),
                 )
             },
             Executable {
                 Assertions.assertEquals(
                     expectedFinalRecords,
                     actualFinalRecords.size,
-                    "Final record count was incorrect"
+                    "Final record count was incorrect",
                 )
-            }
+            },
         )
     }
 
@@ -1748,8 +1738,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "time_with_timezone",
                 "time_without_timezone",
                 "date",
-                "unknown"
+                "unknown",
             )
+
         @JvmField
         val FINAL_TABLE_COLUMN_NAMES_CDC: List<String> =
             Streams.concat(FINAL_TABLE_COLUMN_NAMES.stream(), Stream.of("_ab_cdc_deleted_at"))

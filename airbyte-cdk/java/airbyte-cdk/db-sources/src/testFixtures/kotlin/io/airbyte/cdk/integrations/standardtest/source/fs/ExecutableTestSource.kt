@@ -22,14 +22,14 @@ class ExecutableTestSource : SourceAcceptanceTest() {
         val specPath: Path,
         val configPath: Path,
         val catalogPath: Path,
-        val statePath: Path?
+        val statePath: Path?,
     )
 
     override val spec: ConnectorSpecification
         get() =
             Jsons.deserialize(
                 IOs.readFile(TEST_CONFIG!!.specPath),
-                ConnectorSpecification::class.java
+                ConnectorSpecification::class.java,
             )
 
     override val imageName: String
@@ -42,7 +42,7 @@ class ExecutableTestSource : SourceAcceptanceTest() {
         get() =
             Jsons.deserialize(
                 IOs.readFile(TEST_CONFIG!!.catalogPath),
-                ConfiguredAirbyteCatalog::class.java
+                ConfiguredAirbyteCatalog::class.java,
             )
 
     override val state: JsonNode?

@@ -147,15 +147,11 @@ interface StateManager {
         return updateAndEmit(pair, cursor, 0L)
     }
 
-    fun updateAndEmit(
-        pair: AirbyteStreamNameNamespacePair,
-        cursor: String?,
-        cursorRecordCount: Long
-    ): AirbyteStateMessage? {
+    fun updateAndEmit(pair: AirbyteStreamNameNamespacePair, cursor: String?, cursorRecordCount: Long): AirbyteStateMessage? {
         val cursorInfo = getCursorInfo(pair)
         Preconditions.checkState(
             cursorInfo.isPresent,
-            "Could not find cursor information for stream: $pair"
+            "Could not find cursor information for stream: $pair",
         )
         cursorInfo.get().setCursor(cursor)
         if (cursorRecordCount > 0L) {
@@ -165,7 +161,7 @@ interface StateManager {
             "Updating cursor value for {} to {} (count {})...",
             pair,
             cursor,
-            cursorRecordCount
+            cursorRecordCount,
         )
         return emit(Optional.ofNullable(pair))
     }

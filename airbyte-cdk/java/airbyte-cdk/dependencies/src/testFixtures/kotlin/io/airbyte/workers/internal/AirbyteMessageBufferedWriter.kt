@@ -7,9 +7,12 @@ import io.airbyte.protocol.models.AirbyteMessage
 import java.io.IOException
 
 interface AirbyteMessageBufferedWriter {
-    @Throws(IOException::class) fun write(message: AirbyteMessage)
+    @Throws(IOException::class)
+    fun write(message: AirbyteMessage)
 
-    @Throws(IOException::class) fun flush()
+    @Throws(IOException::class)
+    fun flush()
 
-    @Throws(IOException::class) fun close()
+    @Throws(IOException::class)
+    fun close()
 }

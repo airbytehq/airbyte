@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory
 
 abstract class BaseS3Destination
 protected constructor(
-    protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory()
+    protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory(),
 ) : BaseConnector(), Destination {
     private val nameTransformer: NamingConventionTransformer = S3NameTransformer()
 
@@ -35,12 +35,12 @@ protected constructor(
             S3BaseChecks.testSingleUpload(
                 s3Client,
                 destinationConfig.bucketName,
-                destinationConfig.bucketPath!!
+                destinationConfig.bucketPath!!,
             )
             S3BaseChecks.testMultipartUpload(
                 s3Client,
                 destinationConfig.bucketName,
-                destinationConfig.bucketPath
+                destinationConfig.bucketPath,
             )
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
@@ -50,7 +50,7 @@ protected constructor(
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
                     "Could not connect to the S3 bucket with the provided configuration. \n" +
-                        e.message
+                        e.message,
                 )
         }
     }
@@ -58,7 +58,7 @@ protected constructor(
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         val s3Config = configFactory.getS3DestinationConfig(config, storageProvider())
         return S3ConsumerFactory()
@@ -70,10 +70,10 @@ protected constructor(
                     s3Config,
                     Function<String, BufferStorage> { fileExtension: String ->
                         FileBuffer(fileExtension)
-                    }
+                    },
                 ),
                 s3Config,
-                catalog
+                catalog,
             )
     }
 

@@ -21,7 +21,7 @@ import java.util.stream.Collectors
  */
 class GlobalStateManager(
     airbyteStateMessage: AirbyteStateMessage,
-    catalog: ConfiguredAirbyteCatalog
+    catalog: ConfiguredAirbyteCatalog,
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
@@ -30,7 +30,7 @@ class GlobalStateManager(
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,
         StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION,
-        true
+        true,
     ) {
     /**
      * Legacy [CdcStateManager] used to manage state for connectors that support Change Data Capture
@@ -50,14 +50,14 @@ class GlobalStateManager(
             CdcStateManager(
                 extractCdcState(airbyteStateMessage),
                 extractStreams(airbyteStateMessage),
-                airbyteStateMessage
+                airbyteStateMessage,
             )
     }
 
     override val rawStateMessages: List<AirbyteStateMessage?>?
         get() {
             throw UnsupportedOperationException(
-                "Raw state retrieval not supported by global state manager."
+                "Raw state retrieval not supported by global state manager.",
             )
         }
 
@@ -75,7 +75,7 @@ class GlobalStateManager(
 
         return AirbyteStateMessage()
             .withType(
-                AirbyteStateMessage.AirbyteStateType.GLOBAL
+                AirbyteStateMessage.AirbyteStateType.GLOBAL,
             ) // Temporarily include legacy state for backwards compatibility with the platform
             .withData(Jsons.jsonNode(dbState))
             .withGlobal(globalState)
@@ -99,9 +99,7 @@ class GlobalStateManager(
         }
     }
 
-    private fun extractStreams(
-        airbyteStateMessage: AirbyteStateMessage?
-    ): Set<AirbyteStreamNameNamespacePair> {
+    private fun extractStreams(airbyteStateMessage: AirbyteStateMessage?): Set<AirbyteStreamNameNamespacePair> {
         if (airbyteStateMessage!!.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
             return airbyteStateMessage.global.streamStates
                 .stream()
@@ -109,21 +107,21 @@ class GlobalStateManager(
                     val cloned = Jsons.clone(streamState)
                     AirbyteStreamNameNamespacePair(
                         cloned.streamDescriptor.name,
-                        cloned.streamDescriptor.namespace
+                        cloned.streamDescriptor.namespace,
                     )
                 }
                 .collect(Collectors.toSet())
         } else {
             val legacyState = Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
-            return if (legacyState != null)
+            return if (legacyState != null) {
                 extractNamespacePairsFromDbStreamState(legacyState.streams)
-            else emptySet<AirbyteStreamNameNamespacePair>()
+            } else {
+                emptySet<AirbyteStreamNameNamespacePair>()
+            }
         }
     }
 
-    private fun extractNamespacePairsFromDbStreamState(
-        streams: List<DbStreamState>
-    ): Set<AirbyteStreamNameNamespacePair> {
+    private fun extractNamespacePairsFromDbStreamState(streams: List<DbStreamState>): Set<AirbyteStreamNameNamespacePair> {
         return streams
             .stream()
             .map { stream: DbStreamState ->
@@ -142,9 +140,7 @@ class GlobalStateManager(
          * the initial state.
          * @return A [Supplier] that will be used to fetch the streams present in the initial state.
          */
-        private fun getStreamsSupplier(
-            airbyteStateMessage: AirbyteStateMessage?
-        ): Supplier<Collection<AirbyteStreamState>> {
+        private fun getStreamsSupplier(airbyteStateMessage: AirbyteStateMessage?): Supplier<Collection<AirbyteStreamState>> {
             /*
              * If the incoming message has the state type set to GLOBAL, it is using the new format. Therefore,
              * we can look for streams in the "global" field of the message. Otherwise, the message is still
@@ -155,9 +151,9 @@ class GlobalStateManager(
                     return@Supplier airbyteStateMessage.global.streamStates
                 } else if (airbyteStateMessage.data != null) {
                     return@Supplier Jsons.`object`<DbState>(
-                            airbyteStateMessage.data,
-                            DbState::class.java
-                        )
+                        airbyteStateMessage.data,
+                        DbState::class.java,
+                    )
                         .streams
                         .stream()
                         .map<AirbyteStreamState?> { s: DbStreamState ->
@@ -166,7 +162,7 @@ class GlobalStateManager(
                                 .withStreamDescriptor(
                                     StreamDescriptor()
                                         .withNamespace(s.streamNamespace)
-                                        .withName(s.streamName)
+                                        .withName(s.streamName),
                                 )
                         }
                         .collect(Collectors.toList<AirbyteStreamState?>())

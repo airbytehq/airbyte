@@ -33,9 +33,9 @@ class PartialAirbyteMessageTest {
 
         val rec =
             Jsons.tryDeserialize(
-                    serializedRec,
-                    PartialAirbyteMessage::class.java,
-                )
+                serializedRec,
+                PartialAirbyteMessage::class.java,
+            )
                 .get()
         Assertions.assertEquals(AirbyteMessage.Type.RECORD, rec.type)
         Assertions.assertEquals("users", rec.record?.stream)
@@ -66,9 +66,9 @@ class PartialAirbyteMessageTest {
 
         val rec =
             Jsons.tryDeserialize(
-                    serializedState,
-                    PartialAirbyteMessage::class.java,
-                )
+                serializedState,
+                PartialAirbyteMessage::class.java,
+            )
                 .get()
         Assertions.assertEquals(AirbyteMessage.Type.STATE, rec.type)
 

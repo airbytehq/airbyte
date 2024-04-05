@@ -25,18 +25,14 @@ object S3BaseChecks {
      * parameter.
      */
     @JvmStatic
-    fun attemptS3WriteAndDelete(
-        storageOperations: S3StorageOperations,
-        s3Config: S3DestinationConfig,
-        bucketPath: String?
-    ) {
+    fun attemptS3WriteAndDelete(storageOperations: S3StorageOperations, s3Config: S3DestinationConfig, bucketPath: String?) {
         attemptS3WriteAndDelete(storageOperations, s3Config, bucketPath, s3Config.getS3Client())
     }
 
     @JvmStatic
     fun testSingleUpload(s3Client: AmazonS3, bucketName: String?, bucketPath: String) {
         LOGGER.info(
-            "Started testing if all required credentials assigned to user for single file uploading"
+            "Started testing if all required credentials assigned to user for single file uploading",
         )
         val prefix = if (bucketPath.endsWith("/")) bucketPath else "$bucketPath/"
         val testFile = prefix + "test_" + System.currentTimeMillis()
@@ -52,7 +48,7 @@ object S3BaseChecks {
     @Throws(IOException::class)
     fun testMultipartUpload(s3Client: AmazonS3, bucketName: String?, bucketPath: String) {
         LOGGER.info(
-            "Started testing if all required credentials assigned to user for multipart upload"
+            "Started testing if all required credentials assigned to user for multipart upload",
         )
         val prefix = if (bucketPath.endsWith("/")) bucketPath else "$bucketPath/"
         val testFile = prefix + "test_" + System.currentTimeMillis()
@@ -61,9 +57,9 @@ object S3BaseChecks {
         try {
             manager.multiPartOutputStreams[0].use { outputStream ->
                 CSVPrinter(
-                        PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-                        CSVFormat.DEFAULT
-                    )
+                    PrintWriter(outputStream, true, StandardCharsets.UTF_8),
+                    CSVFormat.DEFAULT,
+                )
                     .use { csvPrinter ->
                         val oneMegaByteString = "a".repeat(500000)
                         // write a file larger than the 5 MB, which is the default part size, to
@@ -101,12 +97,7 @@ object S3BaseChecks {
     }
 
     @VisibleForTesting
-    fun attemptS3WriteAndDelete(
-        storageOperations: S3StorageOperations,
-        s3Config: S3DestinationConfig,
-        bucketPath: String?,
-        s3: AmazonS3
-    ) {
+    fun attemptS3WriteAndDelete(storageOperations: S3StorageOperations, s3Config: S3DestinationConfig, bucketPath: String?, s3: AmazonS3) {
         val prefix =
             if (bucketPath.isNullOrEmpty()) {
                 ""
@@ -133,7 +124,7 @@ object S3BaseChecks {
         storageOperations: S3StorageOperations,
         s3Config: S3DestinationConfig,
         outputTableName: String,
-        s3: AmazonS3?
+        s3: AmazonS3?,
     ) {
         val s3Bucket = s3Config.bucketName
         val bucketPath = s3Config.bucketPath

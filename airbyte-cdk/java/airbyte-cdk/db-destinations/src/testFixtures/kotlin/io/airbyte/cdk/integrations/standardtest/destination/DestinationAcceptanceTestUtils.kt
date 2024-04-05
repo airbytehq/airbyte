@@ -11,8 +11,10 @@ object DestinationAcceptanceTestUtils {
     fun putStringIntoJson(stringValue: String?, fieldName: String?, node: ObjectNode) {
         if (
             stringValue != null &&
-                (stringValue.startsWith("[") && stringValue.endsWith("]") ||
-                    stringValue.startsWith("{") && stringValue.endsWith("}"))
+            (
+                stringValue.startsWith("[") && stringValue.endsWith("]") ||
+                    stringValue.startsWith("{") && stringValue.endsWith("}")
+                )
         ) {
             node.set<JsonNode>(fieldName, Jsons.deserialize(stringValue))
         } else {

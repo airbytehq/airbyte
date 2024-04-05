@@ -50,14 +50,15 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
                         .withField(columnName)
                         .withChange(AirbyteRecordMessageMetaChange.Change.NULLED)
                         .withReason(
-                            AirbyteRecordMessageMetaChange.Reason.SOURCE_SERIALIZATION_ERROR
-                        )
+                            AirbyteRecordMessageMetaChange.Reason.SOURCE_SERIALIZATION_ERROR,
+                        ),
                 )
             }
         }
 
         return AirbyteRecordData(jsonNode, AirbyteRecordMessageMeta().withChanges(metaChanges))
     }
+
     @Throws(SQLException::class)
     override fun rowToJson(queryContext: ResultSet): JsonNode {
         // the first call communicates with the database. after that the result is cached.
@@ -83,12 +84,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putArray(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected fun putArray(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         val arrayNode = ObjectMapper().createArrayNode()
         val arrayResultSet = resultSet.getArray(index).resultSet
         while (arrayResultSet.next()) {
@@ -98,12 +94,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected open fun putBoolean(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected open fun putBoolean(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(columnName, resultSet.getBoolean(index))
     }
 
@@ -113,12 +104,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
      * cast Integer.
      */
     @Throws(SQLException::class)
-    protected fun putShortInt(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected fun putShortInt(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         try {
             node.put(columnName, resultSet.getShort(index))
         } catch (e: SQLException) {
@@ -132,12 +118,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
      * we will try to cast Long.
      */
     @Throws(SQLException::class)
-    protected fun putInteger(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected fun putInteger(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         try {
             node.put(columnName, resultSet.getInt(index))
         } catch (e: SQLException) {
@@ -146,103 +127,63 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putBigInt(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected fun putBigInt(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(columnName, DataTypeUtils.returnNullIfInvalid { resultSet.getLong(index) })
     }
 
     @Throws(SQLException::class)
-    protected open fun putDouble(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected open fun putDouble(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getDouble(index) },
-                { d: Double? -> java.lang.Double.isFinite(d!!) }
-            )
+                { d: Double? -> java.lang.Double.isFinite(d!!) },
+            ),
         )
     }
 
     @Throws(SQLException::class)
-    protected fun putFloat(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected fun putFloat(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getFloat(index) },
-                { f: Float? -> java.lang.Float.isFinite(f!!) }
-            )
+                { f: Float? -> java.lang.Float.isFinite(f!!) },
+            ),
         )
     }
 
     @Throws(SQLException::class)
-    protected open fun putBigDecimal(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected open fun putBigDecimal(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(columnName, DataTypeUtils.returnNullIfInvalid { resultSet.getBigDecimal(index) })
     }
 
     @Throws(SQLException::class)
-    protected fun putString(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected fun putString(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(columnName, resultSet.getString(index))
     }
 
     @Throws(SQLException::class)
-    protected open fun putDate(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected open fun putDate(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(columnName, resultSet.getString(index))
     }
 
     @Throws(SQLException::class)
-    protected open fun putTime(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected open fun putTime(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(
             columnName,
-            DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime::class.java))
+            DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime::class.java)),
         )
     }
 
     @Throws(SQLException::class)
-    protected open fun putTimestamp(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected open fun putTimestamp(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         try {
             node.put(
                 columnName,
                 DateTimeConverter.convertToTimestamp(
-                    getObject(resultSet, index, LocalDateTime::class.java)
-                )
+                    getObject(resultSet, index, LocalDateTime::class.java),
+                ),
             )
         } catch (e: Exception) {
             // for backward compatibility
@@ -252,31 +193,17 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun putBinary(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected fun putBinary(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(columnName, resultSet.getBytes(index))
     }
 
     @Throws(SQLException::class)
-    protected fun putDefault(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected fun putDefault(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         node.put(columnName, resultSet.getString(index))
     }
 
     @Throws(SQLException::class)
-    protected fun setTime(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String?
-    ) {
+    protected fun setTime(preparedStatement: PreparedStatement, parameterIndex: Int, value: String?) {
         try {
             preparedStatement.setObject(parameterIndex, LocalTime.parse(value))
         } catch (e: DateTimeParseException) {
@@ -285,11 +212,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected open fun setTimestamp(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String?
-    ) {
+    protected open fun setTimestamp(preparedStatement: PreparedStatement, parameterIndex: Int, value: String?) {
         try {
             preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value))
         } catch (e: DateTimeParseException) {
@@ -298,11 +221,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected open fun setDate(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    protected open fun setDate(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         try {
             preparedStatement.setObject(parameterIndex, LocalDate.parse(value))
         } catch (e: DateTimeParseException) {
@@ -311,11 +230,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    private fun setDateAsTimestamp(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    private fun setDateAsTimestamp(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         try {
             val from = Timestamp.from(DataTypeUtils.dateFormat.parse(value).toInstant())
             preparedStatement.setDate(parameterIndex, Date(from.time))
@@ -325,11 +240,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun setBit(
-        preparedStatement: PreparedStatement?,
-        parameterIndex: Int,
-        value: String?
-    ) {
+    protected fun setBit(preparedStatement: PreparedStatement?, parameterIndex: Int, value: String?) {
         // todo (cgardens) - currently we do not support bit because it requires special handling in
         // the
         // prepared statement.
@@ -339,118 +250,68 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun setBoolean(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    protected fun setBoolean(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         preparedStatement.setBoolean(parameterIndex, value.toBoolean())
     }
 
     @Throws(SQLException::class)
-    protected fun setShortInt(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    protected fun setShortInt(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         preparedStatement.setShort(parameterIndex, value.toShort())
     }
 
     @Throws(SQLException::class)
-    protected fun setInteger(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    protected fun setInteger(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         preparedStatement.setInt(parameterIndex, value.toInt())
     }
 
     @Throws(SQLException::class)
-    protected fun setBigInteger(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    protected fun setBigInteger(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         preparedStatement.setLong(parameterIndex, BigDecimal(value).toBigInteger().toLong())
     }
 
     @Throws(SQLException::class)
-    protected fun setDouble(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    protected fun setDouble(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         preparedStatement.setDouble(parameterIndex, value.toDouble())
     }
 
     @Throws(SQLException::class)
-    protected fun setReal(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    protected fun setReal(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         preparedStatement.setFloat(parameterIndex, value.toFloat())
     }
 
     @Throws(SQLException::class)
-    protected fun setDecimal(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String
-    ) {
+    protected fun setDecimal(preparedStatement: PreparedStatement, parameterIndex: Int, value: String) {
         preparedStatement.setBigDecimal(parameterIndex, BigDecimal(value))
     }
 
     @Throws(SQLException::class)
-    protected fun setString(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String?
-    ) {
+    protected fun setString(preparedStatement: PreparedStatement, parameterIndex: Int, value: String?) {
         preparedStatement.setString(parameterIndex, value)
     }
 
     @Throws(SQLException::class)
-    protected fun setBinary(
-        preparedStatement: PreparedStatement,
-        parameterIndex: Int,
-        value: String?
-    ) {
+    protected fun setBinary(preparedStatement: PreparedStatement, parameterIndex: Int, value: String?) {
         preparedStatement.setBytes(parameterIndex, Base64.getDecoder().decode(value))
     }
 
     @Throws(SQLException::class)
-    protected fun <ObjectType> getObject(
-        resultSet: ResultSet,
-        index: Int,
-        clazz: Class<ObjectType>?
-    ): ObjectType {
+    protected fun <ObjectType> getObject(resultSet: ResultSet, index: Int, clazz: Class<ObjectType>?): ObjectType {
         return resultSet.getObject(index, clazz)
     }
 
     @Throws(SQLException::class)
-    protected open fun putTimeWithTimezone(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected open fun putTimeWithTimezone(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         val timetz = getObject(resultSet, index, OffsetTime::class.java)
         node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(timetz))
     }
 
     @Throws(SQLException::class)
-    protected open fun putTimestampWithTimezone(
-        node: ObjectNode,
-        columnName: String?,
-        resultSet: ResultSet,
-        index: Int
-    ) {
+    protected open fun putTimestampWithTimezone(node: ObjectNode, columnName: String?, resultSet: ResultSet, index: Int) {
         val timestamptz = getObject(resultSet, index, OffsetDateTime::class.java)
         val localDate = timestamptz.toLocalDate()
         node.put(
             columnName,
-            resolveEra(localDate, timestamptz.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER))
+            resolveEra(localDate, timestamptz.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER)),
         )
     }
 

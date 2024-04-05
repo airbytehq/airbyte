@@ -57,7 +57,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
      * @throws Exception
      * - might throw any exception during initialization.
      */
-    @Throws(Exception::class) protected abstract fun setupDatabase(): Database?
+    @Throws(Exception::class)
+    protected abstract fun setupDatabase(): Database?
 
     /** Put all required tests here using method [.addDataTypeTestData] */
     protected abstract fun initTests()
@@ -102,8 +103,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                     .collect(
                         Collectors.toMap(
                             Function { obj: AirbyteStream -> obj.name },
-                            Function { s: AirbyteStream? -> s }
-                        )
+                            Function { s: AirbyteStream? -> s },
+                        ),
                     )
 
             // testDataHolders should be initialized using the `addDataTypeTestData` function
@@ -113,14 +114,14 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                     val jsonSchemaTypeMap =
                         Jsons.deserialize(
                             airbyteStream!!.jsonSchema["properties"][testColumnName].toString(),
-                            MutableMap::class.java
+                            MutableMap::class.java,
                         ) as Map<String, Any>
                     Assertions.assertEquals(
                         testDataHolder.airbyteType.jsonSchemaTypeMap,
                         jsonSchemaTypeMap,
-                        "Expected column type for " + testDataHolder.nameWithTestPrefix
+                        "Expected column type for " + testDataHolder.nameWithTestPrefix,
                     )
-                }
+                },
             )
         }
     }
@@ -135,9 +136,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     fun testDataContent() {
         // Class used to make easier the error reporting
         class MissedRecords( // Stream that is missing any value
-            var streamName:
-                String?, // Which are the values that has not being gathered from the source
-            var missedValues: List<String?>?
+            var streamName: String?, // Which are the values that has not being gathered from the source
+            var missedValues: List<String?>?,
         )
 
         class UnexpectedRecord(val streamName: String, val unexpectedValue: String?)
@@ -167,7 +167,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                 } else {
                     LOGGER.warn("Missing expected values for type: " + testDataHolder.sourceType)
                 }
-            }
+            },
         )
 
         for (message in recordMessages) {
@@ -203,8 +203,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                         streamName,
                         test.sourceType,
                         test!!.declarationLocation,
-                        unexpectedValue
-                    )
+                        unexpectedValue,
+                    ),
                 )
             }
         }
@@ -219,8 +219,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                         streamName,
                         test.sourceType,
                         test!!.declarationLocation,
-                        missedValue
-                    )
+                        missedValue,
+                    ),
                 )
             }
         }
@@ -241,8 +241,13 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             }
 
             var value =
-                (if (jsonNode.isBinary) jsonNode.binaryValue().contentToString()
-                else jsonNode.asText())
+                (
+                    if (jsonNode.isBinary) {
+                        jsonNode.binaryValue().contentToString()
+                    } else {
+                        jsonNode.asText()
+                    }
+                    )
             value = (if (value != null && value == "null") null else value)
             return value
         }
@@ -274,7 +279,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                 LOGGER.info(
                     "Inserted {} rows in Ttable {}",
                     test.insertSqlQueries.size,
-                    test.nameWithTestPrefix
+                    test.nameWithTestPrefix,
                 )
                 null
             }
@@ -299,24 +304,24 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                                 .withDestinationSyncMode(DestinationSyncMode.APPEND)
                                 .withStream(
                                     CatalogHelpers.createAirbyteStream(
-                                            String.format("%s", test.nameWithTestPrefix),
-                                            String.format("%s", nameSpace),
-                                            Field.of(idColumnName, JsonSchemaType.INTEGER),
-                                            Field.of(testColumnName, test.airbyteType)
-                                        )
+                                        String.format("%s", test.nameWithTestPrefix),
+                                        String.format("%s", nameSpace),
+                                        Field.of(idColumnName, JsonSchemaType.INTEGER),
+                                        Field.of(testColumnName, test.airbyteType),
+                                    )
                                         .withSourceDefinedCursor(true)
                                         .withSourceDefinedPrimaryKey(
-                                            java.util.List.of(java.util.List.of(idColumnName))
+                                            java.util.List.of(java.util.List.of(idColumnName)),
                                         )
                                         .withSupportedSyncModes(
                                             Lists.newArrayList(
                                                 SyncMode.FULL_REFRESH,
-                                                SyncMode.INCREMENTAL
-                                            )
-                                        )
+                                                SyncMode.INCREMENTAL,
+                                            ),
+                                        ),
                                 )
                         }
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toList()),
                 )
 
     /**
@@ -332,7 +337,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             testDataHolders
                 .stream()
                 .filter { t: TestDataHolder -> t.sourceType == test.sourceType }
-                .count()
+                .count(),
         )
         test.nameSpace = nameSpace
         test.setIdColumnName(idColumnName)
@@ -355,7 +360,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             val table =
                 StringBuilder()
                     .append(
-                        "|**Data Type**|**Insert values**|**Expected values**|**Comment**|**Common test result**|\n"
+                        "|**Data Type**|**Insert values**|**Expected values**|**Comment**|**Common test result**|\n",
                     )
                     .append("|----|----|----|----|----|\n")
 
@@ -368,10 +373,10 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                             formatCollection(test.values),
                             formatCollection(test.expectedValues),
                             "",
-                            "Ok"
-                        )
+                            "Ok",
+                        ),
                     )
-                }
+                },
             )
             return table.toString()
         }
@@ -386,7 +391,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             ctx!!.fetch(
                 "CREATE TABLE " +
                     nameSpace +
-                    ".random_dummy_table(id INTEGER PRIMARY KEY, test_column VARCHAR(63));"
+                    ".random_dummy_table(id INTEGER PRIMARY KEY, test_column VARCHAR(63));",
             )
             ctx.fetch("INSERT INTO " + nameSpace + ".random_dummy_table VALUES (2, 'Random Data');")
             null
@@ -398,16 +403,16 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(
                 CatalogHelpers.createAirbyteStream(
-                        "random_dummy_table",
-                        nameSpace,
-                        Field.of("id", JsonSchemaType.INTEGER),
-                        Field.of("test_column", JsonSchemaType.STRING)
-                    )
+                    "random_dummy_table",
+                    nameSpace,
+                    Field.of("id", JsonSchemaType.INTEGER),
+                    Field.of("test_column", JsonSchemaType.STRING),
+                )
                     .withSourceDefinedCursor(true)
                     .withSupportedSyncModes(
-                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                     )
-                    .withSourceDefinedPrimaryKey(java.util.List.of(listOf("id")))
+                    .withSourceDefinedPrimaryKey(java.util.List.of(listOf("id"))),
             )
     }
 

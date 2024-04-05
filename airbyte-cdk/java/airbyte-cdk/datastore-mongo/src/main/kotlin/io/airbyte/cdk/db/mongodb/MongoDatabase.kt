@@ -84,22 +84,18 @@ class MongoDatabase(connectionString: String?, databaseName: String?) :
     val name: String
         get() = database!!.name
 
-    fun read(
-        collectionName: String?,
-        columnNames: List<String>,
-        filter: Optional<Bson?>
-    ): Stream<JsonNode> {
+    fun read(collectionName: String?, columnNames: List<String>, filter: Optional<Bson?>): Stream<JsonNode> {
         try {
             val collection = database!!.getCollection(collectionName)
             val cursor =
                 collection.find(filter.orElse(BsonDocument())).batchSize(BATCH_SIZE).cursor()
 
             return getStream(
-                    cursor,
-                    CheckedFunction { document: Document ->
-                        MongoUtils.toJsonNode(document, columnNames)
-                    }
-                )
+                cursor,
+                CheckedFunction { document: Document ->
+                    MongoUtils.toJsonNode(document, columnNames)
+                },
+            )
                 .onClose {
                     try {
                         cursor.close()
@@ -111,16 +107,13 @@ class MongoDatabase(connectionString: String?, databaseName: String?) :
             LOGGER.error(
                 "Exception attempting to read data from collection: {}, {}",
                 collectionName,
-                e.message
+                e.message,
             )
             throw RuntimeException(e)
         }
     }
 
-    private fun getStream(
-        cursor: MongoCursor<Document>,
-        mapper: CheckedFunction<Document, JsonNode, Exception>
-    ): Stream<JsonNode> {
+    private fun getStream(cursor: MongoCursor<Document>, mapper: CheckedFunction<Document, JsonNode, Exception>): Stream<JsonNode> {
         return StreamSupport.stream(
             object : AbstractSpliterator<JsonNode>(Long.MAX_VALUE, ORDERED) {
                 override fun tryAdvance(action: Consumer<in JsonNode>): Boolean {
@@ -133,7 +126,7 @@ class MongoDatabase(connectionString: String?, databaseName: String?) :
                     }
                 }
             },
-            false
+            false,
         )
     }
 

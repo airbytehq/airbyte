@@ -11,15 +11,11 @@ import org.joda.time.DateTime
 abstract class BlobStorageOperations protected constructor() {
     protected val blobDecorators: MutableList<BlobDecorator> = ArrayList()
 
-    abstract fun getBucketObjectPath(
-        namespace: String,
-        streamName: String,
-        writeDatetime: DateTime,
-        customFormat: String
-    ): String?
+    abstract fun getBucketObjectPath(namespace: String, streamName: String, writeDatetime: DateTime, customFormat: String): String?
 
     /** Ensure that the bucket specified in the config exists */
-    @Throws(Exception::class) abstract fun createBucketIfNotExists()
+    @Throws(Exception::class)
+    abstract fun createBucketIfNotExists()
 
     /**
      * Upload the data files into the storage area.
@@ -27,11 +23,7 @@ abstract class BlobStorageOperations protected constructor() {
      * @return the name of the file that was uploaded.
      */
     @Throws(Exception::class)
-    abstract fun uploadRecordsToBucket(
-        recordsData: SerializableBuffer,
-        namespace: String,
-        objectPath: String
-    ): String?
+    abstract fun uploadRecordsToBucket(recordsData: SerializableBuffer, namespace: String, objectPath: String): String?
 
     /** Remove files that were just stored in the bucket */
     @Throws(Exception::class)
@@ -45,12 +37,7 @@ abstract class BlobStorageOperations protected constructor() {
      * @param objectPath file path to where staging files are stored
      * @param pathFormat formatted string for the path
      */
-    abstract fun cleanUpBucketObject(
-        namespace: String,
-        streamName: String,
-        objectPath: String,
-        pathFormat: String
-    )
+    abstract fun cleanUpBucketObject(namespace: String, streamName: String, objectPath: String, pathFormat: String)
 
     abstract fun dropBucketObject(objectPath: String)
 

@@ -17,10 +17,7 @@ abstract class JdbcDestinationAcceptanceTest : DestinationAcceptanceTest() {
         return getJsonFromRecord(record, Function { x: Any? -> Optional.empty() })
     }
 
-    protected fun getJsonFromRecord(
-        record: Record,
-        valueParser: Function<Any?, Optional<String>>
-    ): JsonNode {
+    protected fun getJsonFromRecord(record: Record, valueParser: Function<Any?, Optional<String>>): JsonNode {
         val node = mapper.createObjectNode()
 
         Arrays.stream(record.fields()).forEach { field: Field<*> ->
@@ -34,12 +31,13 @@ abstract class JdbcDestinationAcceptanceTest : DestinationAcceptanceTest() {
                     "nvarchar",
                     "jsonb",
                     "json",
-                    "other" -> {
+                    "other",
+                    -> {
                         val stringValue = (value?.toString())
                         DestinationAcceptanceTestUtils.putStringIntoJson(
                             stringValue,
                             field.name,
-                            node
+                            node,
                         )
                     }
                     else -> node.put(field.name, (value?.toString()))

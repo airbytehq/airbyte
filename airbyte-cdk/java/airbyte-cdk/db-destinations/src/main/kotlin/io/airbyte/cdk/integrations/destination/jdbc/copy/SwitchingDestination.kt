@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory
 open class SwitchingDestination<T : Enum<T>>(
     enumClass: Class<T>,
     configToType: Function<JsonNode, T>,
-    typeToDestination: Map<T, Destination>
+    typeToDestination: Map<T, Destination>,
 ) : BaseConnector(), Destination {
     private val configToType: Function<JsonNode, T>
     private val typeToDestination: Map<T, Destination>
@@ -58,14 +58,14 @@ open class SwitchingDestination<T : Enum<T>>(
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         val destinationType = configToType.apply(config)
         LOGGER.info("Using destination type: " + destinationType!!.name)
         return typeToDestination[destinationType]!!.getConsumer(
             config,
             catalog,
-            outputRecordCollector
+            outputRecordCollector,
         )
     }
 
@@ -73,14 +73,14 @@ open class SwitchingDestination<T : Enum<T>>(
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer? {
         val destinationType = configToType.apply(config)
         LOGGER.info("Using destination type: " + destinationType!!.name)
         return typeToDestination[destinationType]!!.getSerializedMessageConsumer(
             config,
             catalog,
-            outputRecordCollector
+            outputRecordCollector,
         )
     }
 

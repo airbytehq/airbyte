@@ -15,7 +15,8 @@ import java.util.concurrent.locks.Lock
  * migration operations.
  */
 class NoopTyperDeduper : TyperDeduper {
-    @Throws(Exception::class) override fun prepareSchemasAndRunMigrations() {}
+    @Throws(Exception::class)
+    override fun prepareSchemasAndRunMigrations() {}
 
     override fun prepareFinalTables() {}
 

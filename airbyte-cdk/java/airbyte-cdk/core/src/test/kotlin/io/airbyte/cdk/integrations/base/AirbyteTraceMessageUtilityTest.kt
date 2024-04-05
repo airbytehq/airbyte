@@ -35,7 +35,7 @@ class AirbyteTraceMessageUtilityTest {
     fun testEmitSystemErrorTrace() {
         AirbyteTraceMessageUtility.emitSystemErrorTrace(
             Mockito.mock(RuntimeException::class.java),
-            "this is a system error"
+            "this is a system error",
         )
         val outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8))
         assertJsonNodeIsTraceMessage(outJson)
@@ -46,7 +46,7 @@ class AirbyteTraceMessageUtilityTest {
     fun testEmitConfigErrorTrace() {
         AirbyteTraceMessageUtility.emitConfigErrorTrace(
             Mockito.mock(RuntimeException::class.java),
-            "this is a config error"
+            "this is a config error",
         )
         val outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8))
         assertJsonNodeIsTraceMessage(outJson)
@@ -58,7 +58,7 @@ class AirbyteTraceMessageUtilityTest {
         AirbyteTraceMessageUtility.emitErrorTrace(
             Mockito.mock(RuntimeException::class.java),
             "this is an error",
-            AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR
+            AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR,
         )
         assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8)))
     }

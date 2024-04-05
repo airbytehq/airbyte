@@ -18,11 +18,7 @@ object WaitingUtils {
      * - supplier that returns whether the condition has been met.
      * @return true if condition was met before the timeout was reached, otherwise false.
      */
-    fun waitForCondition(
-        interval: Duration,
-        timeout: Duration,
-        condition: Supplier<Boolean>
-    ): Boolean {
+    fun waitForCondition(interval: Duration, timeout: Duration, condition: Supplier<Boolean>): Boolean {
         var timeWaited = Duration.ZERO
         while (true) {
             if (condition.get()) {

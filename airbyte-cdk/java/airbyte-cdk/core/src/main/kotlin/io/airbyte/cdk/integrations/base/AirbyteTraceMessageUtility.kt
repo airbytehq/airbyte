@@ -27,9 +27,9 @@ object AirbyteTraceMessageUtility {
                         AirbyteErrorTraceMessage()
                             .withFailureType(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
                             .withMessage(displayMessage)
-                            .withInternalMessage(internalMessage)
-                    )
-            )
+                            .withInternalMessage(internalMessage),
+                    ),
+            ),
         )
     }
 
@@ -39,7 +39,7 @@ object AirbyteTraceMessageUtility {
         type: AirbyteEstimateTraceMessage.Type?,
         rowEstimate: Long,
         streamName: String?,
-        streamNamespace: String?
+        streamNamespace: String?,
     ) {
         emitMessage(
             makeAirbyteMessageFromTraceMessage(
@@ -50,9 +50,9 @@ object AirbyteTraceMessageUtility {
                             .withType(type)
                             .withRowEstimate(rowEstimate)
                             .withName(streamName)
-                            .withNamespace(streamNamespace)
-                    )
-            )
+                            .withNamespace(streamNamespace),
+                    ),
+            ),
         )
     }
 
@@ -62,11 +62,7 @@ object AirbyteTraceMessageUtility {
     }
 
     @JvmStatic
-    fun emitErrorTrace(
-        e: Throwable,
-        displayMessage: String?,
-        failureType: AirbyteErrorTraceMessage.FailureType
-    ) {
+    fun emitErrorTrace(e: Throwable, displayMessage: String?, failureType: AirbyteErrorTraceMessage.FailureType) {
         emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType))
     }
 
@@ -94,7 +90,7 @@ object AirbyteTraceMessageUtility {
     private fun makeErrorTraceAirbyteMessage(
         e: Throwable,
         displayMessage: String?,
-        failureType: AirbyteErrorTraceMessage.FailureType
+        failureType: AirbyteErrorTraceMessage.FailureType,
     ): AirbyteMessage {
         return makeAirbyteMessageFromTraceMessage(
             makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
@@ -103,39 +99,31 @@ object AirbyteTraceMessageUtility {
                         .withFailureType(failureType)
                         .withMessage(displayMessage)
                         .withInternalMessage(e.toString())
-                        .withStackTrace(ExceptionUtils.getStackTrace(e))
-                )
+                        .withStackTrace(ExceptionUtils.getStackTrace(e)),
+                ),
         )
     }
 
-    private fun makeAnalyticsTraceAirbyteMessage(
-        airbyteAnalyticsTraceMessage: AirbyteAnalyticsTraceMessage
-    ): AirbyteMessage {
+    private fun makeAnalyticsTraceAirbyteMessage(airbyteAnalyticsTraceMessage: AirbyteAnalyticsTraceMessage): AirbyteMessage {
         return AirbyteMessage()
             .withType(AirbyteMessage.Type.TRACE)
             .withTrace(
                 AirbyteTraceMessage()
                     .withAnalytics(airbyteAnalyticsTraceMessage)
                     .withType(AirbyteTraceMessage.Type.ANALYTICS)
-                    .withEmittedAt(Instant.now().toEpochMilli().toDouble())
+                    .withEmittedAt(Instant.now().toEpochMilli().toDouble()),
             )
     }
 
-    private fun makeStreamStatusTraceAirbyteMessage(
-        airbyteStreamStatusHolder: AirbyteStreamStatusHolder
-    ): AirbyteMessage {
+    private fun makeStreamStatusTraceAirbyteMessage(airbyteStreamStatusHolder: AirbyteStreamStatusHolder): AirbyteMessage {
         return makeAirbyteMessageFromTraceMessage(airbyteStreamStatusHolder.toTraceMessage())
     }
 
-    private fun makeAirbyteMessageFromTraceMessage(
-        airbyteTraceMessage: AirbyteTraceMessage
-    ): AirbyteMessage {
+    private fun makeAirbyteMessageFromTraceMessage(airbyteTraceMessage: AirbyteTraceMessage): AirbyteMessage {
         return AirbyteMessage().withType(AirbyteMessage.Type.TRACE).withTrace(airbyteTraceMessage)
     }
 
-    private fun makeAirbyteTraceMessage(
-        traceMessageType: AirbyteTraceMessage.Type
-    ): AirbyteTraceMessage {
+    private fun makeAirbyteTraceMessage(traceMessageType: AirbyteTraceMessage.Type): AirbyteTraceMessage {
         return AirbyteTraceMessage()
             .withType(traceMessageType)
             .withEmittedAt(System.currentTimeMillis().toDouble())

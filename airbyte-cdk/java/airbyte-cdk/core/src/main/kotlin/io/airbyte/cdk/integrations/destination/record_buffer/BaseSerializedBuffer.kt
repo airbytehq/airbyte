@@ -34,7 +34,8 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
      * Initializes the writer objects such that it can now write to the downstream @param
      * outputStream
      */
-    @Throws(Exception::class) protected abstract fun initWriter(outputStream: OutputStream)
+    @Throws(Exception::class)
+    protected abstract fun initWriter(outputStream: OutputStream)
 
     /**
      * Transform the @param record into a serialized form of the data and writes it to the
@@ -54,20 +55,18 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
      * @throws IOException
      */
     @Throws(IOException::class)
-    protected abstract fun writeRecord(
-        recordString: String,
-        airbyteMetaString: String,
-        emittedAt: Long
-    )
+    protected abstract fun writeRecord(recordString: String, airbyteMetaString: String, emittedAt: Long)
 
     /**
      * Stops the writer from receiving new data and prepares it for being finalized and converted
      * into an InputStream to read from instead. This is used when flushing the buffer into some
      * other destination.
      */
-    @Throws(IOException::class) protected abstract fun flushWriter()
+    @Throws(IOException::class)
+    protected abstract fun flushWriter()
 
-    @Throws(IOException::class) protected abstract fun closeWriter()
+    @Throws(IOException::class)
+    protected abstract fun closeWriter()
 
     fun withCompression(useCompression: Boolean): SerializableBuffer {
         if (!isStarted) {
@@ -155,7 +154,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
             LOGGER.info(
                 "Finished writing data to {} ({})",
                 filename,
-                FileUtils.byteCountToDisplaySize(byteCounter.count)
+                FileUtils.byteCountToDisplaySize(byteCounter.count),
             )
         }
     }

@@ -101,11 +101,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * Because state messages are a watermark, all preceding records need to be flushed before the
      * state message can be processed.
      */
-    fun trackState(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Long,
-        defaultNamespace: String,
-    ) {
+    fun trackState(message: PartialAirbyteMessage, sizeInBytes: Long, defaultNamespace: String) {
         if (preState) {
             convertToGlobalIfNeeded(message)
             preState = false
@@ -135,10 +131,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * @param stateId reference to a state.
      * @param count to decrement.
      */
-    fun decrement(
-        stateId: Long,
-        count: Long,
-    ) {
+    fun decrement(stateId: Long, count: Long) {
         synchronized(lock) {
             logger.trace { "decrementing state id: $stateId, count: $count" }
             stateIdToCounter[getStateAfterAlias(stateId)]!!.addAndGet(-count)
@@ -154,8 +147,10 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         var bytesFlushed: Long = 0L
         logger.info { "Flushing states" }
         synchronized(lock) {
-            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in
-                descToStateIdQ.entries) {
+            for (
+            entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in
+            descToStateIdQ.entries
+            ) {
                 // Remove all states with 0 counters.
                 // Per-stream synchronized is required to make sure the state (at the head of the
                 // queue)
@@ -210,13 +205,13 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         freeBytes(bytesFlushed)
     }
 
-    private fun getStateIdAndIncrement(
-        streamDescriptor: StreamDescriptor,
-        increment: Long,
-    ): Long {
+    private fun getStateIdAndIncrement(streamDescriptor: StreamDescriptor, increment: Long): Long {
         val resolvedDescriptor: StreamDescriptor =
-            if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) streamDescriptor
-            else SENTINEL_GLOBAL_DESC
+            if (stateType == AirbyteStateMessage.AirbyteStateType.STREAM) {
+                streamDescriptor
+            } else {
+                SENTINEL_GLOBAL_DESC
+            }
         // As concurrent collections do not guarantee data consistency when iterating, use `get`
         // instead of
         // `containsKey`.
@@ -314,9 +309,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         }
     }
 
-    private fun extractStateType(
-        message: PartialAirbyteMessage,
-    ): AirbyteStateMessage.AirbyteStateType {
+    private fun extractStateType(message: PartialAirbyteMessage): AirbyteStateMessage.AirbyteStateType {
         return if (message.state?.type == null) {
             // Treated the same as GLOBAL.
             AirbyteStateMessage.AirbyteStateType.LEGACY
@@ -330,11 +323,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * id to the newly arrived state message. We also increment the state id in preparation for the
      * next state message.
      */
-    private fun closeState(
-        message: PartialAirbyteMessage,
-        sizeInBytes: Long,
-        defaultNamespace: String,
-    ) {
+    private fun closeState(message: PartialAirbyteMessage, sizeInBytes: Long, defaultNamespace: String) {
         val resolvedDescriptor: StreamDescriptor =
             extractStream(message, defaultNamespace)
                 .orElse(
@@ -387,7 +376,9 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
 
     val memoryUsageMessage: String
         get() =
-            "State Manager memory usage: Allocated: ${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, percentage Used ${memoryUsed.get().toDouble() / memoryAllocated.get()}"
+            "State Manager memory usage: Allocated: ${FileUtils.byteCountToDisplaySize(
+                memoryAllocated.get(),
+            )}, Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, percentage Used ${memoryUsed.get().toDouble() / memoryAllocated.get()}"
 
     private fun getStateAfterAlias(stateId: Long): Long {
         return if (aliasIds.contains(stateId)) {
@@ -448,13 +439,10 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
          * from state messages, we check if the namespace is null, if yes then replace it with
          * defaultNamespace to keep it consistent with the record messages.
          */
-        private fun extractStream(
-            message: PartialAirbyteMessage,
-            defaultNamespace: String,
-        ): Optional<StreamDescriptor> {
+        private fun extractStream(message: PartialAirbyteMessage, defaultNamespace: String): Optional<StreamDescriptor> {
             if (
                 message.state?.type != null &&
-                    message.state?.type == AirbyteStateMessage.AirbyteStateType.STREAM
+                message.state?.type == AirbyteStateMessage.AirbyteStateType.STREAM
             ) {
                 val streamDescriptor: StreamDescriptor? = message.state?.stream?.streamDescriptor
                 if (Strings.isNullOrEmpty(streamDescriptor?.namespace)) {

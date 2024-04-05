@@ -94,12 +94,7 @@ interface SqlOperations {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun insertRecords(
-        database: JdbcDatabase,
-        records: List<PartialAirbyteMessage>,
-        schemaName: String?,
-        tableName: String?
-    )
+    fun insertRecords(database: JdbcDatabase, records: List<PartialAirbyteMessage>, schemaName: String?, tableName: String?)
 
     /**
      * Query to insert all records from source table to destination table. Both tables must be in
@@ -113,12 +108,7 @@ interface SqlOperations {
      * @param destinationTableName Name of destination table
      * @return SQL Query string
      */
-    fun insertTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        sourceTableName: String?,
-        destinationTableName: String?
-    ): String?
+    fun insertTableQuery(database: JdbcDatabase?, schemaName: String?, sourceTableName: String?, destinationTableName: String?): String?
 
     /**
      * Given an arbitrary number of queries, execute a transaction.
@@ -127,7 +117,8 @@ interface SqlOperations {
      * @param queries Queries to execute
      * @throws Exception exception
      */
-    @Throws(Exception::class) fun executeTransaction(database: JdbcDatabase, queries: List<String>)
+    @Throws(Exception::class)
+    fun executeTransaction(database: JdbcDatabase, queries: List<String>)
 
     /** Check if the data record is valid and ok to be written to destination */
     fun isValidData(data: JsonNode?): Boolean

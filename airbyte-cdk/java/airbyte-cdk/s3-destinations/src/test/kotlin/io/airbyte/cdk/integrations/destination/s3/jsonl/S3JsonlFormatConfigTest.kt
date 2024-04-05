@@ -30,9 +30,13 @@ class S3JsonlFormatConfigTest {
     @Test
     @Throws(IllegalAccessException::class)
     fun testHandlePartSizeConfig() {
-        val config = ConfigTestUtils.getBaseConfig(deserialize("""{
+        val config = ConfigTestUtils.getBaseConfig(
+            deserialize(
+                """{
   "format_type": "JSONL"
-}"""))
+}""",
+            ),
+        )
 
         val s3DestinationConfig = getS3DestinationConfig(config!!)
         ConfigTestUtils.assertBaseConfig(s3DestinationConfig)
@@ -48,16 +52,20 @@ class S3JsonlFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 
     @Test
     @Throws(IllegalAccessException::class)
     fun testHandleAbsenceOfPartSizeConfig() {
-        val config = ConfigTestUtils.getBaseConfig(deserialize("""{
+        val config = ConfigTestUtils.getBaseConfig(
+            deserialize(
+                """{
   "format_type": "JSONL"
-}"""))
+}""",
+            ),
+        )
 
         val s3DestinationConfig = getS3DestinationConfig(config!!)
         ConfigTestUtils.assertBaseConfig(s3DestinationConfig)
@@ -69,7 +77,7 @@ class S3JsonlFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 }

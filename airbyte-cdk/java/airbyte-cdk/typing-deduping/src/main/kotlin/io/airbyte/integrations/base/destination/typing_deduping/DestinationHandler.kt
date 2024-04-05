@@ -4,7 +4,8 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 interface DestinationHandler<DestinationState> {
-    @Throws(Exception::class) fun execute(sql: Sql)
+    @Throws(Exception::class)
+    fun execute(sql: Sql)
 
     /**
      * Fetch the current state of the destination for the given streams. This method MUST create the
@@ -13,9 +14,7 @@ interface DestinationHandler<DestinationState> {
      * user is overriding it).
      */
     @Throws(Exception::class)
-    fun gatherInitialState(
-        streamConfigs: List<StreamConfig>
-    ): List<DestinationInitialStatus<DestinationState>>
+    fun gatherInitialState(streamConfigs: List<StreamConfig>): List<DestinationInitialStatus<DestinationState>>
 
     @Throws(Exception::class)
     fun commitDestinationStates(destinationStates: Map<StreamId, DestinationState>)

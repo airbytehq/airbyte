@@ -19,9 +19,5 @@ interface StreamAwareDataTransformer {
      * @param meta
      * @return
      */
-    fun transform(
-        streamDescriptor: StreamDescriptor?,
-        data: JsonNode?,
-        meta: AirbyteRecordMessageMeta?,
-    ): Pair<JsonNode?, AirbyteRecordMessageMeta?>
+    fun transform(streamDescriptor: StreamDescriptor?, data: JsonNode?, meta: AirbyteRecordMessageMeta?): Pair<JsonNode?, AirbyteRecordMessageMeta?>
 }

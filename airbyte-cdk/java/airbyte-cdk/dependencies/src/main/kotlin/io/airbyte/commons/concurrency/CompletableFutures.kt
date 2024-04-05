@@ -18,9 +18,7 @@ object CompletableFutures {
      * @param <Result> type of result
      * @return a future that completes when all the input futures have completed </Result>
      */
-    fun <Result> allOf(
-        futures: List<CompletionStage<Result>>
-    ): CompletionStage<List<Either<out Exception, Result>>> {
+    fun <Result> allOf(futures: List<CompletionStage<Result>>): CompletionStage<List<Either<out Exception, Result>>> {
         val result = CompletableFuture<List<Either<out Exception, Result>>>()
         val size = futures.size
         val counter = AtomicInteger()
@@ -43,7 +41,7 @@ object CompletableFutures {
                             // this should never happen
                             throw RuntimeException(
                                 "Unexpected exception in a future completion.",
-                                exception
+                                exception,
                             )
                         }
                     }

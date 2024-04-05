@@ -29,7 +29,7 @@ class BigQueryDatabase
 constructor(
     projectId: String?,
     jsonCreds: String?,
-    sourceOperations: BigQuerySourceOperations? = BigQuerySourceOperations()
+    sourceOperations: BigQuerySourceOperations? = BigQuerySourceOperations(),
 ) : SqlDatabase() {
     var bigQuery: BigQuery
     private var sourceOperations: BigQuerySourceOperations? = null
@@ -42,15 +42,18 @@ constructor(
             if (jsonCreds != null && !jsonCreds.isEmpty()) {
                 credentials =
                     ServiceAccountCredentials.fromStream(
-                        ByteArrayInputStream(jsonCreds.toByteArray(Charsets.UTF_8))
+                        ByteArrayInputStream(jsonCreds.toByteArray(Charsets.UTF_8)),
                     )
             }
             bigQuery =
                 bigQueryBuilder
                     .setProjectId(projectId)
                     .setCredentials(
-                        if (!Objects.isNull(credentials)) credentials
-                        else ServiceAccountCredentials.getApplicationDefault()
+                        if (!Objects.isNull(credentials)) {
+                            credentials
+                        } else {
+                            ServiceAccountCredentials.getApplicationDefault()
+                        },
                     )
                     .setHeaderProvider {
                         ImmutableMap.of("user-agent", getUserAgentHeader(connectorVersion))
@@ -60,7 +63,7 @@ constructor(
                             .setMaxAttempts(10)
                             .setRetryDelayMultiplier(1.5)
                             .setTotalTimeout(Duration.ofMinutes(60))
-                            .build()
+                            .build(),
                     )
                     .build()
                     .service
@@ -85,7 +88,7 @@ constructor(
         val result = executeQuery(bigQuery, getQueryConfig(sql, emptyList()))
         if (result.getLeft() == null) {
             throw SQLException(
-                "BigQuery request is failed with error: " + result.getRight() + ". SQL: " + sql
+                "BigQuery request is failed with error: " + result.getRight() + ". SQL: " + sql,
             )
         }
         LOGGER.info("BigQuery successfully finished execution SQL: $sql")
@@ -99,8 +102,9 @@ constructor(
     @Throws(Exception::class)
     override fun unsafeQuery(sql: String?, vararg params: String?): Stream<JsonNode> {
         val parameterValueList =
-            if (params == null) emptyList()
-            else
+            if (params == null) {
+                emptyList()
+            } else {
                 Arrays.stream(params)
                     .map { param: String? ->
                         QueryParameterValue.newBuilder()
@@ -109,6 +113,7 @@ constructor(
                             .build()
                     }
                     .collect(Collectors.toList())
+            }
 
         return query(sql, parameterValueList)
     }
@@ -121,17 +126,18 @@ constructor(
         if (result.getLeft() != null) {
             val fieldList = result.getLeft()!!.getQueryResults().schema.fields
             return Streams.stream(result.getLeft()!!.getQueryResults().iterateAll()).map {
-                fieldValues: FieldValueList ->
+                    fieldValues: FieldValueList ->
                 sourceOperations!!.rowToJson(BigQueryResultSet(fieldValues, fieldList))
             }
-        } else
+        } else {
             throw Exception(
                 "Failed to execute query " +
                     sql +
                     (if (params != null && !params.isEmpty()) " with params $params" else "") +
                     ". Error: " +
-                    result.getRight()
+                    result.getRight(),
             )
+        }
     }
 
     fun getQueryConfig(sql: String?, params: List<QueryParameterValue>?): QueryJobConfiguration {
@@ -141,10 +147,7 @@ constructor(
             .build()
     }
 
-    fun executeQuery(
-        bigquery: BigQuery,
-        queryConfig: QueryJobConfiguration?
-    ): ImmutablePair<Job?, String?> {
+    fun executeQuery(bigquery: BigQuery, queryConfig: QueryJobConfiguration?): ImmutablePair<Job?, String?> {
         val jobId = JobId.of(UUID.randomUUID().toString())
         val queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build())
         return executeQuery(queryJob)
@@ -169,9 +172,9 @@ constructor(
                         .forEach(
                             Consumer { table: Table ->
                                 tableList.add(bigQuery!!.getTable(table.tableId))
-                            }
+                            },
                         )
-                }
+                },
             )
         return tableList
     }

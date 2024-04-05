@@ -9,10 +9,11 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 
 fun interface BufferCreateFunction :
     CheckedBiFunction<
-        AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> {
+        AirbyteStreamNameNamespacePair,
+        ConfiguredAirbyteCatalog,
+        SerializableBuffer,
+        Exception,
+        > {
     @Throws(Exception::class)
-    override fun apply(
-        stream: AirbyteStreamNameNamespacePair,
-        configuredCatalog: ConfiguredAirbyteCatalog
-    ): SerializableBuffer?
+    override fun apply(stream: AirbyteStreamNameNamespacePair, configuredCatalog: ConfiguredAirbyteCatalog): SerializableBuffer?
 }

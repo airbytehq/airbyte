@@ -42,10 +42,7 @@ object Exceptions {
         castCheckedToRuntime(voidCallable) { cause: Exception? -> RuntimeException(cause) }
     }
 
-    private fun castCheckedToRuntime(
-        voidCallable: Procedure,
-        exceptionFactory: Function<Exception, java.lang.RuntimeException>
-    ) {
+    private fun castCheckedToRuntime(voidCallable: Procedure, exceptionFactory: Function<Exception, java.lang.RuntimeException>) {
         try {
             voidCallable.call()
         } catch (e: java.lang.RuntimeException) {
@@ -72,6 +69,7 @@ object Exceptions {
     }
 
     fun interface Procedure {
-        @Throws(Exception::class) fun call()
+        @Throws(Exception::class)
+        fun call()
     }
 }

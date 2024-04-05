@@ -26,20 +26,14 @@ class GcsAvroTestDataComparator : AdvancedTestDataComparator() {
         return ZonedDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC)
     }
 
-    override fun compareDateTimeValues(
-        airbyteMessageValue: String,
-        destinationValue: String
-    ): Boolean {
+    override fun compareDateTimeValues(airbyteMessageValue: String, destinationValue: String): Boolean {
         val format = DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT)
         val dateTime =
             LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC)
         return super.compareDateTimeValues(airbyteMessageValue, format.format(dateTime))
     }
 
-    override fun compareTimeWithoutTimeZone(
-        airbyteMessageValue: String,
-        destinationValue: String
-    ): Boolean {
+    override fun compareTimeWithoutTimeZone(airbyteMessageValue: String, destinationValue: String): Boolean {
         val destinationDate =
             LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC)
         val expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME)

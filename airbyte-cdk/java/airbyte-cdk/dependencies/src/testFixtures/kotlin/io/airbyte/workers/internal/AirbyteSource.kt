@@ -23,7 +23,8 @@ interface AirbyteSource : AutoCloseable {
      * @throws Exception
      * - throws if there is any failure in startup.
      */
-    @Throws(Exception::class) fun start(sourceConfig: WorkerSourceConfig, jobRoot: Path)
+    @Throws(Exception::class)
+    fun start(sourceConfig: WorkerSourceConfig, jobRoot: Path)
 
     /**
      * Means no more data will be emitted by the Source. This may be because all data has already
@@ -57,7 +58,8 @@ interface AirbyteSource : AutoCloseable {
      * @throws Exception
      * - throws if there is any failure in shutdown.
      */
-    @Throws(Exception::class) override fun close()
+    @Throws(Exception::class)
+    override fun close()
 
     /**
      * Attempt to shut down the Source's container quickly.
@@ -65,5 +67,6 @@ interface AirbyteSource : AutoCloseable {
      * @throws Exception
      * - throws if there is any failure in shutdown.
      */
-    @Throws(Exception::class) fun cancel()
+    @Throws(Exception::class)
+    fun cancel()
 }

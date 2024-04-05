@@ -7,19 +7,21 @@ import java.util.stream.Collectors
 
 object InvalidCursorInfoUtil {
     fun getInvalidCursorConfigMessage(tablesWithInvalidCursor: List<InvalidCursorInfo>): String {
-        return ("The following tables have invalid columns selected as cursor, "+
+        return (
+            "The following tables have invalid columns selected as cursor, " +
                 "please select a column with a well-defined ordering with no null values as a cursor. " +
-            tablesWithInvalidCursor
-                .stream()
-                .map { obj: InvalidCursorInfo -> obj.toString() }
-                .collect(Collectors.joining(",")))
+                tablesWithInvalidCursor
+                    .stream()
+                    .map { obj: InvalidCursorInfo -> obj.toString() }
+                    .collect(Collectors.joining(","))
+            )
     }
 
     class InvalidCursorInfo(
         tableName: String?,
         cursorColumnName: String,
         cursorSqlType: String,
-        cause: String
+        cause: String,
     ) {
         override fun toString(): String {
             return "{" +

@@ -12,7 +12,8 @@ enum class SnapshotMetadata {
     TRUE,
     LAST,
     FALSE,
-    NULL;
+    NULL,
+    ;
 
     companion object {
         private val ENTRIES_OF_SNAPSHOT_EVENTS: Set<SnapshotMetadata?> =

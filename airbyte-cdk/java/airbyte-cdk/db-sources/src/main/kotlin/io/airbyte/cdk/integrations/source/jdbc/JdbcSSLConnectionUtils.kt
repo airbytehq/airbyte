@@ -33,7 +33,8 @@ class JdbcSSLConnectionUtils {
         PREFERRED("preferred", "prefer"),
         REQUIRED("required", "require"),
         VERIFY_CA("verify_ca", "verify-ca"),
-        VERIFY_IDENTITY("verify_identity", "verify-full");
+        VERIFY_IDENTITY("verify_identity", "verify-full"),
+        ;
 
         val spec: List<String> = Arrays.asList(*spec)
 
@@ -93,7 +94,7 @@ class JdbcSSLConnectionUtils {
                     if (Objects.nonNull(caCertKeyStorePair)) {
                         LOGGER.debug(
                             "uri for ca cert keystore: {}",
-                            caCertKeyStorePair!!.left.toString()
+                            caCertKeyStorePair!!.left.toString(),
                         )
                         try {
                             additionalParameters.putAll(
@@ -103,8 +104,8 @@ class JdbcSSLConnectionUtils {
                                     TRUST_KEY_STORE_PASS,
                                     caCertKeyStorePair.right,
                                     TRUST_KEY_STORE_TYPE,
-                                    KEY_STORE_TYPE_PKCS12
-                                )
+                                    KEY_STORE_TYPE_PKCS12,
+                                ),
                             )
                         } catch (e: MalformedURLException) {
                             throw RuntimeException("Unable to get a URL for trust key store")
@@ -119,7 +120,7 @@ class JdbcSSLConnectionUtils {
                         LOGGER.debug(
                             "uri for client cert keystore: {} / {}",
                             clientCertKeyStorePair!!.left.toString(),
-                            clientCertKeyStorePair.right
+                            clientCertKeyStorePair.right,
                         )
                         try {
                             additionalParameters.putAll(
@@ -129,8 +130,8 @@ class JdbcSSLConnectionUtils {
                                     CLIENT_KEY_STORE_PASS,
                                     clientCertKeyStorePair.right,
                                     CLIENT_KEY_STORE_TYPE,
-                                    KEY_STORE_TYPE_PKCS12
-                                )
+                                    KEY_STORE_TYPE_PKCS12,
+                                ),
                             )
                         } catch (e: MalformedURLException) {
                             throw RuntimeException("Unable to get a URL for client key store")
@@ -157,7 +158,7 @@ class JdbcSSLConnectionUtils {
                     val encryption = config[JdbcUtils.SSL_MODE_KEY]
                     if (
                         encryption.has(PARAM_CA_CERTIFICATE) &&
-                            !encryption[PARAM_CA_CERTIFICATE].asText().isEmpty()
+                        !encryption[PARAM_CA_CERTIFICATE].asText().isEmpty()
                     ) {
                         val clientKeyPassword = getOrGeneratePassword(encryption)
                         try {
@@ -166,28 +167,28 @@ class JdbcSSLConnectionUtils {
                                     encryption[PARAM_CA_CERTIFICATE].asText(),
                                     clientKeyPassword,
                                     null,
-                                    null
+                                    null,
                                 )
                             caCertKeyStorePair = ImmutablePair(caCertKeyStoreUri, clientKeyPassword)
                         } catch (e: CertificateException) {
                             throw RuntimeException(
                                 "Failed to create keystore for CA certificate",
-                                e
+                                e,
                             )
                         } catch (e: IOException) {
                             throw RuntimeException(
                                 "Failed to create keystore for CA certificate",
-                                e
+                                e,
                             )
                         } catch (e: KeyStoreException) {
                             throw RuntimeException(
                                 "Failed to create keystore for CA certificate",
-                                e
+                                e,
                             )
                         } catch (e: NoSuchAlgorithmException) {
                             throw RuntimeException(
                                 "Failed to create keystore for CA certificate",
-                                e
+                                e,
                             )
                         }
                     }
@@ -200,7 +201,7 @@ class JdbcSSLConnectionUtils {
             val clientKeyPassword =
                 if (
                     sslModeConfig.has(PARAM_CLIENT_KEY_PASSWORD) &&
-                        !sslModeConfig[PARAM_CLIENT_KEY_PASSWORD].asText().isEmpty()
+                    !sslModeConfig[PARAM_CLIENT_KEY_PASSWORD].asText().isEmpty()
                 ) {
                     sslModeConfig[PARAM_CLIENT_KEY_PASSWORD].asText()
                 } else {
@@ -216,9 +217,9 @@ class JdbcSSLConnectionUtils {
                     val encryption = config[JdbcUtils.SSL_MODE_KEY]
                     if (
                         encryption.has(PARAM_CLIENT_CERTIFICATE) &&
-                            !encryption[PARAM_CLIENT_CERTIFICATE].asText().isEmpty() &&
-                            encryption.has(PARAM_CLIENT_KEY) &&
-                            !encryption[PARAM_CLIENT_KEY].asText().isEmpty()
+                        !encryption[PARAM_CLIENT_CERTIFICATE].asText().isEmpty() &&
+                        encryption.has(PARAM_CLIENT_KEY) &&
+                        !encryption[PARAM_CLIENT_KEY].asText().isEmpty()
                     ) {
                         val clientKeyPassword = getOrGeneratePassword(encryption)
                         try {
@@ -227,39 +228,39 @@ class JdbcSSLConnectionUtils {
                                     encryption[PARAM_CLIENT_CERTIFICATE].asText(),
                                     encryption[PARAM_CLIENT_KEY].asText(),
                                     clientKeyPassword,
-                                    null
+                                    null,
                                 )
                             clientCertKeyStorePair =
                                 ImmutablePair(clientCertKeyStoreUri, clientKeyPassword)
                         } catch (e: CertificateException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: IOException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: KeyStoreException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: NoSuchAlgorithmException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: InvalidKeySpecException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         } catch (e: InterruptedException) {
                             throw RuntimeException(
                                 "Failed to create keystore for Client certificate",
-                                e
+                                e,
                             )
                         }
                     }

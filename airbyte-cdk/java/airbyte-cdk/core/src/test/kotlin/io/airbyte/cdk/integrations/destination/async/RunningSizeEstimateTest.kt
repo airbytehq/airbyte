@@ -38,8 +38,8 @@ class RunningSizeEstimateTest {
                 RunningFlushWorkers::class.java,
             )
         Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        )
             .thenReturn(
                 emptyList(),
             )
@@ -56,8 +56,8 @@ class RunningSizeEstimateTest {
                 RunningFlushWorkers::class.java,
             )
         Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        )
             .thenReturn(
                 listOf(
                     Optional.of(SIZE_20MB),
@@ -76,8 +76,8 @@ class RunningSizeEstimateTest {
                 RunningFlushWorkers::class.java,
             )
         Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        )
             .thenReturn(
                 listOf(
                     Optional.empty(),
@@ -96,8 +96,8 @@ class RunningSizeEstimateTest {
                 RunningFlushWorkers::class.java,
             )
         Mockito.`when`(
-                runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
-            )
+            runningFlushWorkers.getSizesOfRunningWorkerBatches(org.mockito.kotlin.any()),
+        )
             .thenReturn(
                 listOf(
                     Optional.empty(),

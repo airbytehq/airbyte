@@ -154,10 +154,7 @@ internal constructor(
      * @return is size triggered and a debug string
      */
     @VisibleForTesting
-    fun isSizeTriggered(
-        stream: StreamDescriptor,
-        queueSizeThresholdBytes: Long,
-    ): Pair<Boolean, String> {
+    fun isSizeTriggered(stream: StreamDescriptor, queueSizeThresholdBytes: Long): Pair<Boolean, String> {
         val currentQueueSize = bufferDequeue.getQueueSizeBytes(stream).orElseThrow()
         val sizeOfRunningWorkersEstimate = estimateSizeOfRunningWorkers(stream, currentQueueSize)
         val queueSizeAfterRunningWorkers = currentQueueSize - sizeOfRunningWorkersEstimate
@@ -184,10 +181,7 @@ internal constructor(
      * @return estimate of records remaining to be process
      */
     @VisibleForTesting
-    fun estimateSizeOfRunningWorkers(
-        stream: StreamDescriptor,
-        currentQueueSize: Long,
-    ): Long {
+    fun estimateSizeOfRunningWorkers(stream: StreamDescriptor, currentQueueSize: Long): Long {
         val runningWorkerBatchesSizes =
             runningFlushWorkers.getSizesOfRunningWorkerBatches(
                 stream,
@@ -201,10 +195,12 @@ internal constructor(
         val workersWithoutBatchesCount =
             runningWorkerBatchesSizes.stream().filter { obj: Optional<Long> -> obj.isEmpty }.count()
         val workersWithoutBatchesSizeEstimate =
-            (min(
+            (
+                min(
                     flusher.optimalBatchSizeBytes.toDouble(),
                     currentQueueSize.toDouble(),
-                ) * workersWithoutBatchesCount)
+                ) * workersWithoutBatchesCount
+                )
                 .toLong()
         return (workersWithBatchesSize + workersWithoutBatchesSizeEstimate)
     }
@@ -263,9 +259,9 @@ internal constructor(
             .stream()
             .sorted(
                 Comparator.comparing(
-                        { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
-                        Comparator.reverseOrder(),
-                    ) // if no time is present, it suggests the queue has no records. set MAX time
+                    { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
+                    Comparator.reverseOrder(),
+                ) // if no time is present, it suggests the queue has no records. set MAX time
                     // as a sentinel value to
                     // represent no records.
                     .thenComparing { s: StreamDescriptor ->

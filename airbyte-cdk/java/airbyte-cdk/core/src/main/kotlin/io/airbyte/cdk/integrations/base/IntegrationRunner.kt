@@ -48,7 +48,7 @@ internal constructor(
     cliParser: IntegrationCliParser,
     outputRecordCollector: Consumer<AirbyteMessage>,
     destination: Destination?,
-    source: Source?
+    source: Source?,
 ) {
     private val cliParser: IntegrationCliParser
     private val outputRecordCollector: Consumer<AirbyteMessage>
@@ -58,31 +58,31 @@ internal constructor(
     private val featureFlags: FeatureFlags
 
     constructor(
-        destination: Destination?
+        destination: Destination?,
     ) : this(
         IntegrationCliParser(),
         Consumer<AirbyteMessage> { message: AirbyteMessage ->
             Destination.Companion.defaultOutputRecordCollector(message)
         },
         destination,
-        null
+        null,
     )
 
     constructor(
-        source: Source?
+        source: Source?,
     ) : this(
         IntegrationCliParser(),
         Consumer<AirbyteMessage> { message: AirbyteMessage ->
             Destination.Companion.defaultOutputRecordCollector(message)
         },
         null,
-        source
+        source,
     )
 
     init {
         Preconditions.checkState(
             (destination != null) xor (source != null),
-            "can only pass in a destination or a source"
+            "can only pass in a destination or a source",
         )
         this.cliParser = cliParser
         this.outputRecordCollector = outputRecordCollector
@@ -102,7 +102,7 @@ internal constructor(
         outputRecordCollector: Consumer<AirbyteMessage>,
         destination: Destination?,
         source: Source?,
-        jsonSchemaValidator: JsonSchemaValidator
+        jsonSchemaValidator: JsonSchemaValidator,
     ) : this(cliParser, outputRecordCollector, destination, source) {
         validator = jsonSchemaValidator
     }
@@ -130,7 +130,7 @@ internal constructor(
                     outputRecordCollector.accept(
                         AirbyteMessage()
                             .withType(AirbyteMessage.Type.SPEC)
-                            .withSpec(integration.spec())
+                            .withSpec(integration.spec()),
                     )
                 Command.CHECK -> {
                     val config = parseConfig(parsed!!.getConfigPath())
@@ -141,7 +141,7 @@ internal constructor(
                         validateConfig(
                             integration.spec()!!.connectionSpecification,
                             config,
-                            "CHECK"
+                            "CHECK",
                         )
                     } catch (e: Exception) {
                         // if validation fails don't throw an exception, return a failed connection
@@ -152,15 +152,15 @@ internal constructor(
                                 .withConnectionStatus(
                                     AirbyteConnectionStatus()
                                         .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                        .withMessage(e.message)
-                                )
+                                        .withMessage(e.message),
+                                ),
                         )
                     }
 
                     outputRecordCollector.accept(
                         AirbyteMessage()
                             .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                            .withConnectionStatus(integration.check(config))
+                            .withConnectionStatus(integration.check(config)),
                     )
                 }
                 Command.DISCOVER -> {
@@ -169,7 +169,7 @@ internal constructor(
                     outputRecordCollector.accept(
                         AirbyteMessage()
                             .withType(AirbyteMessage.Type.CATALOG)
-                            .withCatalog(source!!.discover(config))
+                            .withCatalog(source!!.discover(config)),
                     )
                 }
                 Command.READ -> {
@@ -198,7 +198,7 @@ internal constructor(
                     // save config to singleton
                     DestinationConfig.Companion.initialize(
                         config,
-                        (integration as Destination).isV2Destination
+                        (integration as Destination).isV2Destination,
                     )
                     val catalog =
                         parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)
@@ -241,8 +241,8 @@ internal constructor(
                         .withConnectionStatus(
                             AirbyteConnectionStatus()
                                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                .withMessage(displayMessage)
-                        )
+                                .withMessage(displayMessage),
+                        ),
                 )
                 return
             }
@@ -252,10 +252,7 @@ internal constructor(
         LOGGER.info("Completed integration: {}", integration.javaClass.name)
     }
 
-    private fun produceMessages(
-        messageIterator: AutoCloseableIterator<AirbyteMessage>,
-        recordCollector: Consumer<AirbyteMessage>
-    ) {
+    private fun produceMessages(messageIterator: AutoCloseableIterator<AirbyteMessage>, recordCollector: Consumer<AirbyteMessage>) {
         messageIterator!!.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
             LOGGER.debug("Producing messages for stream {}...", s)
         }
@@ -266,20 +263,16 @@ internal constructor(
     }
 
     @Throws(Exception::class)
-    private fun readConcurrent(
-        config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog,
-        stateOptional: Optional<JsonNode?>
-    ) {
+    private fun readConcurrent(config: JsonNode, catalog: ConfiguredAirbyteCatalog, stateOptional: Optional<JsonNode?>) {
         val streams = source!!.readStreams(config, catalog, stateOptional.orElse(null))
 
         try {
             ConcurrentStreamConsumer(
-                    { stream: AutoCloseableIterator<AirbyteMessage> ->
-                        this.consumeFromStream(stream)
-                    },
-                    streams!!.size
-                )
+                { stream: AutoCloseableIterator<AirbyteMessage> ->
+                    this.consumeFromStream(stream)
+                },
+                streams!!.size,
+            )
                 .use { streamConsumer ->
                     /*
                      * Break the streams into partitions equal to the number of concurrent streams supported by the
@@ -292,7 +285,7 @@ internal constructor(
                     partitions.forEach(
                         Consumer { partition: List<AutoCloseableIterator<AirbyteMessage>> ->
                             streamConsumer.accept(partition)
-                        }
+                        },
                     )
 
                     // Check for any exceptions that were raised during the concurrent execution
@@ -309,11 +302,7 @@ internal constructor(
     }
 
     @Throws(Exception::class)
-    private fun readSerial(
-        config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog,
-        stateOptional: Optional<JsonNode?>
-    ) {
+    private fun readSerial(config: JsonNode, catalog: ConfiguredAirbyteCatalog, stateOptional: Optional<JsonNode?>) {
         try {
             source!!.read(config, catalog, stateOptional.orElse(null)).use { messageIterator ->
                 produceMessages(messageIterator, outputRecordCollector)
@@ -332,8 +321,8 @@ internal constructor(
                     Optional.of(
                         Consumer { obj: AirbyteStreamStatusHolder ->
                             AirbyteTraceMessageUtility.emitStreamStatusTrace(obj)
-                        }
-                    )
+                        },
+                    ),
                 )
             produceMessages(stream, streamStatusTrackingRecordConsumer)
         } catch (e: Exception) {
@@ -359,9 +348,11 @@ internal constructor(
          */
         @VisibleForTesting
         val ORPHANED_THREAD_FILTER: Predicate<Thread> = Predicate { runningThread: Thread ->
-            (runningThread.name != Thread.currentThread().name &&
-                !runningThread.isDaemon &&
-                TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
+            (
+                runningThread.name != Thread.currentThread().name &&
+                    !runningThread.isDaemon &&
+                    TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name
+                )
         }
 
         const val INTERRUPT_THREAD_DELAY_MINUTES: Int = 1
@@ -374,10 +365,7 @@ internal constructor(
         private lateinit var validator: JsonSchemaValidator
 
         @Throws(Exception::class)
-        internal fun consumeWriteStream(
-            consumer: SerializedAirbyteMessageConsumer,
-            inputStream: InputStream = System.`in`
-        ) {
+        internal fun consumeWriteStream(consumer: SerializedAirbyteMessageConsumer, inputStream: InputStream = System.`in`) {
             LOGGER.info("Starting buffered read of input stream")
             consumer.start()
             inputStream.bufferedReader(StandardCharsets.UTF_8).use {
@@ -426,7 +414,7 @@ internal constructor(
             interruptTimeDelay: Int = INTERRUPT_THREAD_DELAY_MINUTES,
             interruptTimeUnit: TimeUnit = TimeUnit.MINUTES,
             exitTimeDelay: Int = EXIT_THREAD_DELAY_MINUTES,
-            exitTimeUnit: TimeUnit = TimeUnit.MINUTES
+            exitTimeUnit: TimeUnit = TimeUnit.MINUTES,
         ) {
             val currentThread = Thread.currentThread()
 
@@ -442,8 +430,8 @@ internal constructor(
                   Ideally, this situation should not happen...
                   Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
                   The main thread is: {}
-                  """.trimIndent(),
-                    dumpThread(currentThread)
+                    """.trimIndent(),
+                    dumpThread(currentThread),
                 )
                 val scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor(
@@ -452,7 +440,7 @@ internal constructor(
                             // does not block exiting if all other active
                             // threads are already stopped.
                             .daemon(true)
-                            .build()
+                            .build(),
                     )
                 for (runningThread in runningThreads) {
                     val str = "Active non-daemon thread: " + dumpThread(runningThread)
@@ -464,7 +452,7 @@ internal constructor(
                     scheduledExecutorService.schedule(
                         { runningThread.interrupt() },
                         interruptTimeDelay.toLong(),
-                        interruptTimeUnit
+                        interruptTimeUnit,
                     )
                 }
                 scheduledExecutorService.schedule(
@@ -475,13 +463,13 @@ internal constructor(
                             }
                         ) {
                             LOGGER.error(
-                                "Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n"
+                                "Failed to interrupt children non-daemon threads, forcefully exiting NOW...\n",
                             )
                             exitHook.run()
                         }
                     },
                     exitTimeDelay.toLong(),
-                    exitTimeUnit
+                    exitTimeUnit,
                 )
             }
         }
@@ -491,24 +479,20 @@ internal constructor(
                 "%s (%s)\n Thread stacktrace: %s",
                 thread.name,
                 thread.state,
-                Strings.join(java.util.List.of(*thread.stackTrace), "\n        at ")
+                Strings.join(java.util.List.of(*thread.stackTrace), "\n        at "),
             )
         }
 
         @Throws(Exception::class)
-        private fun validateConfig(
-            schemaJson: JsonNode,
-            objectJson: JsonNode,
-            operationType: String
-        ) {
+        private fun validateConfig(schemaJson: JsonNode, objectJson: JsonNode, operationType: String) {
             val validationResult = validator.validate(schemaJson, objectJson)
             if (validationResult.isNotEmpty()) {
                 throw Exception(
                     String.format(
                         "Verification error(s) occurred for %s. Errors: %s ",
                         operationType,
-                        validationResult
-                    )
+                        validationResult,
+                    ),
                 )
             }
         }

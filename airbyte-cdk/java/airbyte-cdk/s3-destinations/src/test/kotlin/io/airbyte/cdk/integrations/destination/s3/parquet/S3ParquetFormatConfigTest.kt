@@ -20,7 +20,7 @@ internal class S3ParquetFormatConfigTest {
                     "\t\"page_size_kb\": 1,\n" +
                     "\t\"dictionary_page_size_kb\": 1,\n" +
                     "\t\"dictionary_encoding\": false\n" +
-                    "}"
+                    "}",
             )
 
         val config = S3ParquetFormatConfig(formatConfig)

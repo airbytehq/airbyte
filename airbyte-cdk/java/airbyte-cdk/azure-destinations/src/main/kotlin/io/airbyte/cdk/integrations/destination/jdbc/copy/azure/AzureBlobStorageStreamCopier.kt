@@ -38,12 +38,12 @@ abstract class AzureBlobStorageStreamCopier(
     protected val db: JdbcDatabase,
     protected val azureBlobConfig: AzureBlobStorageConfig,
     private val nameTransformer: StandardNameTransformer,
-    private val sqlOperations: SqlOperations
+    private val sqlOperations: SqlOperations,
 ) : StreamCopier {
     protected var filenameGenerator: StagingFilenameGenerator =
         StagingFilenameGenerator(
             streamName,
-            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
+            GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong(),
         )
     protected val azureStagingFiles: MutableSet<String> = HashSet()
 
@@ -59,7 +59,7 @@ abstract class AzureBlobStorageStreamCopier(
             csvPrinters[azureFileName]!!.printRecord(
                 id,
                 Jsons.serialize(recordMessage!!.data),
-                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt))
+                Timestamp.from(Instant.ofEpochMilli(recordMessage.emittedAt)),
             )
         }
     }
@@ -79,7 +79,7 @@ abstract class AzureBlobStorageStreamCopier(
             val bufferedOutputStream =
                 BufferedOutputStream(
                     appendBlobClient.blobOutputStream,
-                    Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE)
+                    Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE),
                 )
             val writer = PrintWriter(bufferedOutputStream, true, StandardCharsets.UTF_8)
             try {
@@ -96,7 +96,7 @@ abstract class AzureBlobStorageStreamCopier(
             "/",
             stagingFolder,
             schemaName,
-            filenameGenerator.stagingFilename
+            filenameGenerator.stagingFilename,
         )
     }
 
@@ -121,7 +121,7 @@ abstract class AzureBlobStorageStreamCopier(
             "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
             streamName,
             schemaName,
-            tmpTableName
+            tmpTableName,
         )
         sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName)
     }
@@ -132,7 +132,7 @@ abstract class AzureBlobStorageStreamCopier(
             "Starting copy to tmp table: {} in destination for stream: {}, schema: {}.",
             tmpTableName,
             streamName,
-            schemaName
+            schemaName,
         )
         for (azureStagingFile in azureStagingFiles) {
             copyAzureBlobCsvFileIntoTable(
@@ -140,25 +140,27 @@ abstract class AzureBlobStorageStreamCopier(
                 getFullAzurePath(azureStagingFile),
                 schemaName,
                 tmpTableName,
-                azureBlobConfig
+                azureBlobConfig,
             )
         }
         LOGGER.info(
             "Copy to tmp table {} in destination for stream {} complete.",
             tmpTableName,
-            streamName
+            streamName,
         )
     }
 
     private fun getFullAzurePath(azureStagingFile: String?): String {
-        return ("azure://" +
-            azureBlobConfig.accountName +
-            "." +
-            azureBlobConfig.endpointDomainName +
-            "/" +
-            azureBlobConfig.containerName +
-            "/" +
-            azureStagingFile)
+        return (
+            "azure://" +
+                azureBlobConfig.accountName +
+                "." +
+                azureBlobConfig.endpointDomainName +
+                "/" +
+                azureBlobConfig.containerName +
+                "/" +
+                azureStagingFile
+            )
     }
 
     @Throws(Exception::class)
@@ -177,7 +179,7 @@ abstract class AzureBlobStorageStreamCopier(
             "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
             tmpTableName,
             destTableName,
-            schemaName
+            schemaName,
         )
         val queries = StringBuilder()
         if (destSyncMode == DestinationSyncMode.OVERWRITE) {
@@ -185,7 +187,7 @@ abstract class AzureBlobStorageStreamCopier(
             LOGGER.info(
                 "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.",
                 destTableName,
-                schemaName
+                schemaName,
             )
         }
         queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName))
@@ -225,7 +227,7 @@ abstract class AzureBlobStorageStreamCopier(
         snowflakeAzureExternalStageName: String?,
         schema: String?,
         tableName: String?,
-        config: AzureBlobStorageConfig?
+        config: AzureBlobStorageConfig?,
     )
 
     companion object {
@@ -259,9 +261,9 @@ abstract class AzureBlobStorageStreamCopier(
                 .forEach(
                     Consumer { blobItem: BlobItem ->
                         LOGGER.info(
-                            "Blob name: " + blobItem.name + "Snapshot: " + blobItem.snapshot
+                            "Blob name: " + blobItem.name + "Snapshot: " + blobItem.snapshot,
                         )
-                    }
+                    },
                 )
         }
 
@@ -279,9 +281,7 @@ abstract class AzureBlobStorageStreamCopier(
             LOGGER.info("blobCommittedBlockCount: $blobCommittedBlockCount")
         }
 
-        private fun getBlobContainerClient(
-            appendBlobClient: AppendBlobClient?
-        ): BlobContainerClient {
+        private fun getBlobContainerClient(appendBlobClient: AppendBlobClient?): BlobContainerClient {
             val containerClient = appendBlobClient!!.containerClient
             if (!containerClient.exists()) {
                 containerClient.create()

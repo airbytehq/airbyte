@@ -44,17 +44,12 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
             .forEach(
                 Consumer { field: Field ->
                     setJsonField(field, bigQueryResultSet.rowValues[field.name], jsonNode)
-                }
+                },
             )
         return jsonNode
     }
 
-    private fun fillObjectNode(
-        fieldName: String,
-        fieldType: StandardSQLTypeName,
-        fieldValue: FieldValue,
-        node: ContainerNode<*>
-    ) {
+    private fun fillObjectNode(fieldName: String, fieldType: StandardSQLTypeName, fieldValue: FieldValue, node: ContainerNode<*>) {
         when (fieldType) {
             StandardSQLTypeName.BOOL ->
                 putBooleanValueIntoJson(node, fieldValue.booleanValue, fieldName)
@@ -67,10 +62,11 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
                 putBigDecimalValueIntoJson(
                     node,
                     returnNullIfInvalid(DataTypeSupplier { fieldValue.numericValue }),
-                    fieldName
+                    fieldName,
                 )
             StandardSQLTypeName.STRING,
-            StandardSQLTypeName.TIME ->
+            StandardSQLTypeName.TIME,
+            ->
                 putStringValueIntoJson(node, fieldValue.stringValue, fieldName)
             StandardSQLTypeName.BYTES ->
                 putBytesValueIntoJson(node, fieldValue.bytesValue, fieldName)
@@ -78,19 +74,19 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
                 putStringValueIntoJson(
                     node,
                     toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)),
-                    fieldName
+                    fieldName,
                 )
             StandardSQLTypeName.DATETIME ->
                 putStringValueIntoJson(
                     node,
                     toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)),
-                    fieldName
+                    fieldName,
                 )
             StandardSQLTypeName.TIMESTAMP ->
                 putStringValueIntoJson(
                     node,
                     toISO8601String(fieldValue.timestampValue / 1000),
-                    fieldName
+                    fieldName,
                 )
             else -> putStringValueIntoJson(node, fieldValue.stringValue, fieldName)
         }
@@ -113,7 +109,7 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
                 fieldValue.repeatedValue.forEach(
                     Consumer { arrayFieldValue: FieldValue ->
                         fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode)
-                    }
+                    },
                 )
                 // Array of records
             } else {
@@ -160,13 +156,15 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
             StandardSQLTypeName.INT64 -> JsonSchemaType.INTEGER
             StandardSQLTypeName.FLOAT64,
             StandardSQLTypeName.NUMERIC,
-            StandardSQLTypeName.BIGNUMERIC -> JsonSchemaType.NUMBER
+            StandardSQLTypeName.BIGNUMERIC,
+            -> JsonSchemaType.NUMBER
             StandardSQLTypeName.STRING,
             StandardSQLTypeName.BYTES,
             StandardSQLTypeName.TIMESTAMP,
             StandardSQLTypeName.DATE,
             StandardSQLTypeName.TIME,
-            StandardSQLTypeName.DATETIME -> JsonSchemaType.STRING
+            StandardSQLTypeName.DATETIME,
+            -> JsonSchemaType.STRING
             StandardSQLTypeName.ARRAY -> JsonSchemaType.ARRAY
             StandardSQLTypeName.STRUCT -> JsonSchemaType.OBJECT
             else -> JsonSchemaType.STRING
@@ -187,7 +185,7 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
         } catch (e: ParseException) {
             throw RuntimeException(
                 "Fail to parse value " + paramValue + " to type " + paramType.name,
-                e
+                e,
             )
         }
     }

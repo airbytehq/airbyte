@@ -49,7 +49,7 @@ internal class JdbcSourceStressTest : JdbcStressTest() {
                     .put(JdbcUtils.DATABASE_KEY, schemaName)
                     .put(JdbcUtils.USERNAME_KEY, PSQL_DB!!.username)
                     .put(JdbcUtils.PASSWORD_KEY, PSQL_DB!!.password)
-                    .build()
+                    .build(),
             )
 
         val initScriptName = "init_$schemaName.sql"
@@ -76,7 +76,7 @@ internal class JdbcSourceStressTest : JdbcStressTest() {
         AbstractJdbcSource<JDBCType>(
             DRIVER_CLASS,
             Supplier { AdaptiveStreamingQueryConfig() },
-            JdbcUtils.defaultSourceOperations
+            JdbcUtils.defaultSourceOperations,
         ),
         Source {
         override fun toDatabaseConfig(config: JsonNode): JsonNode {
@@ -89,8 +89,8 @@ internal class JdbcSourceStressTest : JdbcStressTest() {
                             DatabaseDriver.POSTGRESQL.urlFormatString,
                             config[JdbcUtils.HOST_KEY].asText(),
                             config[JdbcUtils.PORT_KEY].asInt(),
-                            config[JdbcUtils.DATABASE_KEY].asText()
-                        )
+                            config[JdbcUtils.DATABASE_KEY].asText(),
+                        ),
                     )
 
             if (config.has(JdbcUtils.PASSWORD_KEY)) {

@@ -22,7 +22,7 @@ object PostgresUtils {
                 },
                 { resultSet: ResultSet? ->
                     JdbcUtils.defaultSourceOperations.rowToJson(resultSet!!)
-                }
+                },
             )
 
         Preconditions.checkState(jsonNodes.size == 1)

@@ -37,39 +37,33 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
          * @return DataSourceBuilder class used to create dynamic fields for DataSource
          */
         @JvmStatic
-        fun getConnectionTimeout(
-            connectionProperties: Map<String, String>,
-            driverClassName: String?
-        ): Duration {
+        fun getConnectionTimeout(connectionProperties: Map<String, String>, driverClassName: String?): Duration {
             val parsedConnectionTimeout =
                 when (DatabaseDriver.Companion.findByDriverClassName(driverClassName)) {
                     DatabaseDriver.POSTGRESQL ->
                         maybeParseDuration(
-                                connectionProperties[POSTGRES_CONNECT_TIMEOUT_KEY],
-                                ChronoUnit.SECONDS
-                            )
+                            connectionProperties[POSTGRES_CONNECT_TIMEOUT_KEY],
+                            ChronoUnit.SECONDS,
+                        )
                             .or { Optional.of<Duration>(POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION) }
                     DatabaseDriver.MYSQL ->
                         maybeParseDuration(
                             connectionProperties["connectTimeout"],
-                            ChronoUnit.MILLIS
+                            ChronoUnit.MILLIS,
                         )
                     DatabaseDriver.MSSQLSERVER ->
                         maybeParseDuration(connectionProperties["loginTimeout"], ChronoUnit.SECONDS)
                     else ->
                         maybeParseDuration(
-                                connectionProperties[CONNECT_TIMEOUT_KEY],
-                                ChronoUnit.SECONDS
-                            ) // Enforce minimum timeout duration for unspecified data sources.
+                            connectionProperties[CONNECT_TIMEOUT_KEY],
+                            ChronoUnit.SECONDS,
+                        ) // Enforce minimum timeout duration for unspecified data sources.
                             .filter { d: Duration -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0 }
                 }
             return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT)
         }
 
-        private fun maybeParseDuration(
-            stringValue: String?,
-            unit: TemporalUnit
-        ): Optional<Duration> {
+        private fun maybeParseDuration(stringValue: String?, unit: TemporalUnit): Optional<Duration> {
             if (stringValue == null) {
                 return Optional.empty()
             }

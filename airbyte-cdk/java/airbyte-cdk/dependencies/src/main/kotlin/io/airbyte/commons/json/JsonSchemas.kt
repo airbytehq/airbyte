@@ -75,7 +75,7 @@ object JsonSchemas {
                 IOs.writeFile(
                     configRoot,
                     filename,
-                    MoreResources.readResource(String.format("%s/%s", resourceDir, filename))
+                    MoreResources.readResource(String.format("%s/%s", resourceDir, filename)),
                 )
             }
 
@@ -94,10 +94,7 @@ object JsonSchemas {
      * @param consumer
      * - accepts the current node and the path to that node.
      */
-    fun traverseJsonSchema(
-        jsonSchema: JsonNode,
-        consumer: BiConsumer<JsonNode, List<FieldNameOrList>>
-    ) {
+    fun traverseJsonSchema(jsonSchema: JsonNode, consumer: BiConsumer<JsonNode, List<FieldNameOrList>>) {
         traverseJsonSchemaInternal(jsonSchema, ArrayList(), consumer)
     }
 
@@ -115,16 +112,14 @@ object JsonSchemas {
      * Collection } because there is no order or uniqueness guarantee so neither List nor Set make
      * sense. </T>
      */
-    fun <T> traverseJsonSchemaWithCollector(
-        jsonSchema: JsonNode,
-        mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, T>
-    ): List<T?> {
+    fun <T> traverseJsonSchemaWithCollector(jsonSchema: JsonNode, mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, T>): List<T?> {
         // for the sake of code reuse, use the filtered collector method but makes sure the filter
         // always
         // returns true.
         return traverseJsonSchemaWithFilteredCollector(jsonSchema) {
-            node: JsonNode?,
-            path: List<FieldNameOrList>? ->
+                node: JsonNode?,
+                path: List<FieldNameOrList>?,
+            ->
             Optional.ofNullable(mapper.apply(node, path))
         }
     }
@@ -145,7 +140,7 @@ object JsonSchemas {
      */
     fun <T> traverseJsonSchemaWithFilteredCollector(
         jsonSchema: JsonNode,
-        mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, Optional<T>>
+        mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, Optional<T>>,
     ): List<T> {
         val collector: MutableList<T> = ArrayList()
         traverseJsonSchema(jsonSchema) { node: JsonNode?, path: List<FieldNameOrList>? ->
@@ -166,20 +161,19 @@ object JsonSchemas {
      * @return
      * - collection of all paths that were collected during the traversal.
      */
-    fun collectPathsThatMeetCondition(
-        obj: JsonNode,
-        predicate: Predicate<JsonNode?>
-    ): List<List<FieldNameOrList>> {
+    fun collectPathsThatMeetCondition(obj: JsonNode, predicate: Predicate<JsonNode?>): List<List<FieldNameOrList>> {
         return traverseJsonSchemaWithFilteredCollector(obj) {
-            node: JsonNode?,
-            path: List<FieldNameOrList>? ->
+                node: JsonNode?,
+                path: List<FieldNameOrList>?,
+            ->
             if (predicate.test(node)) {
                 return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>?>(
-                    path!!
+                    path!!,
                 )
             } else {
                 return@traverseJsonSchemaWithFilteredCollector Optional.empty<
-                    List<FieldNameOrList>>()
+                    List<FieldNameOrList>,
+                    >()
             }
         }
     }
@@ -198,13 +192,13 @@ object JsonSchemas {
     private fun traverseJsonSchemaInternal(
         jsonSchemaNode: JsonNode,
         path: List<FieldNameOrList>,
-        consumer: BiConsumer<JsonNode, List<FieldNameOrList>>
+        consumer: BiConsumer<JsonNode, List<FieldNameOrList>>,
     ) {
         require(jsonSchemaNode.isObject) {
             String.format(
                 "json schema nodes should always be object nodes. path: %s actual: %s",
                 path,
-                jsonSchemaNode
+                jsonSchemaNode,
             )
         }
         consumer.accept(jsonSchemaNode, path)
@@ -223,11 +217,11 @@ object JsonSchemas {
                         traverseJsonSchemaInternal(
                             jsonSchemaNode[JSON_SCHEMA_ITEMS_KEY],
                             newPath,
-                            consumer
+                            consumer,
                         )
                     } else {
                         log.warn(
-                            "The array is missing an items field. The traversal is silently stopped. Current schema: $jsonSchemaNode"
+                            "The array is missing an items field. The traversal is silently stopped. Current schema: $jsonSchemaNode",
                         )
                     }
                 }
@@ -248,7 +242,7 @@ object JsonSchemas {
                         }
                     } else {
                         log.warn(
-                            "The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: $jsonSchemaNode"
+                            "The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: $jsonSchemaNode",
                         )
                     }
                 }

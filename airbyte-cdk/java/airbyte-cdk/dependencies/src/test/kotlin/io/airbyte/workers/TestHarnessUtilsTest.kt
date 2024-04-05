@@ -46,7 +46,7 @@ internal class TestHarnessUtilsTest {
                 SHUTDOWN_TIME_DURATION,
                 CHECK_HEARTBEAT_DURATION,
                 SHUTDOWN_TIME_DURATION,
-                forceShutdown
+                forceShutdown,
             )
         }
 
@@ -57,9 +57,9 @@ internal class TestHarnessUtilsTest {
             Mockito.`when`(process.isAlive).thenReturn(true)
             val recordedBeats = AtomicInteger(0)
             Mockito.doAnswer { ignored: InvocationOnMock? ->
-                    recordedBeats.incrementAndGet()
-                    true
-                }
+                recordedBeats.incrementAndGet()
+                true
+            }
                 .`when`<HeartbeatMonitor?>(heartbeatMonitor)
                 .isBeating
 
@@ -109,7 +109,7 @@ internal class TestHarnessUtilsTest {
         val syncInput = syncPair.value
         val mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput)
         Assertions.assertNotNull(
-            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", null)]
+            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", null)],
         )
     }
 
@@ -119,10 +119,10 @@ internal class TestHarnessUtilsTest {
         val syncInput = syncPair.value
         val mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput)
         Assertions.assertNotNull(
-            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", "namespace")]
+            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", "namespace")],
         )
         Assertions.assertNotNull(
-            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", "namespace2")]
+            mapOutput[AirbyteStreamNameNamespacePair("user_preferences", "namespace2")],
         )
     }
 
@@ -154,7 +154,7 @@ internal class TestHarnessUtilsTest {
             gracefulShutdownDuration: Duration,
             checkHeartbeatDuration: Duration,
             forcedShutdownDuration: Duration,
-            forceShutdown: BiConsumer<Process, Duration>
+            forceShutdown: BiConsumer<Process, Duration>,
         ) {
             while (process.isAlive && heartbeatMonitor.isBeating) {
                 try {
@@ -169,7 +169,7 @@ internal class TestHarnessUtilsTest {
                     process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS)
                 } catch (e: InterruptedException) {
                     LOGGER.error(
-                        "Exception during grace period for process to finish. This can happen when cancelling jobs."
+                        "Exception during grace period for process to finish. This can happen when cancelling jobs.",
                     )
                 }
             }
