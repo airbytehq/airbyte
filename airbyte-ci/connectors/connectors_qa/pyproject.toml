@@ -23,7 +23,7 @@ connectors-qa = "connectors_qa.cli:connectors_qa"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.2.1"
-pytest = "^8.0.0"
+pytest = "^8"
 pytest-mock = "^3.12.0"
 mypy = "^1.8.0"
 types-toml = "^0.10.8.7"
@@ -40,6 +40,6 @@ type_check = "mypy src --disallow-untyped-defs"
 lint = "ruff check src"
 
 [tool.airbyte_ci]
-extra_poetry_groups = ["dev"]
+optional_poetry_groups = ["dev"]
 poe_tasks = ["type_check", "lint", "test"]
 required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD",]

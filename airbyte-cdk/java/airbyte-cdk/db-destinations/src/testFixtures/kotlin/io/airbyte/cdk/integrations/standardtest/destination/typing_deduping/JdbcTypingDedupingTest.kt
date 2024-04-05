@@ -11,6 +11,7 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.commons.text.Names
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
 import javax.sql.DataSource
@@ -23,7 +24,7 @@ import org.jooq.impl.DSL
  * anything. At some point we might (?) want to do a refactor to combine them.
  */
 abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
-    private var database: JdbcDatabase? = null
+    protected var database: JdbcDatabase? = null
     private var dataSource: DataSource? = null
 
     protected abstract val baseConfig: ObjectNode
@@ -35,7 +36,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
 
     protected abstract fun getDataSource(config: JsonNode?): DataSource?
 
-    protected val sourceOperations: JdbcCompatibleSourceOperations<*>
+    protected open val sourceOperations: JdbcCompatibleSourceOperations<*>
         /**
          * Subclasses may need to return a custom source operations if the default one does not
          * handle vendor-specific types correctly. For example, you most likely need to override
@@ -43,7 +44,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
          */
         get() = JdbcUtils.defaultSourceOperations
 
-    protected val rawSchema: String
+    protected open val rawSchema: String
         /**
          * Subclasses using a config with a nonstandard raw table schema should override this
          * method.
@@ -75,15 +76,13 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     @Throws(Exception::class)
-    override fun dumpRawTableRecords(
-        streamNamespace: String?,
-        streamName: String?
-    ): List<JsonNode> {
+    override fun dumpRawTableRecords(streamNamespace: String?, streamName: String): List<JsonNode> {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
-        val tableName = concatenateRawTableName(streamNamespace, streamName!!)
+        val tableName =
+            concatenateRawTableName(streamNamespace, Names.toAlphanumericAndUnderscore(streamName))
         val schema = rawSchema
         return database!!.queryJsons(DSL.selectFrom(DSL.name(schema, tableName)).sql)
     }
@@ -91,24 +90,27 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
     @Throws(Exception::class)
     override fun dumpFinalTableRecords(
         streamNamespace: String?,
-        streamName: String?
+        streamName: String
     ): List<JsonNode> {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
-        return database!!.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, streamName)).sql)
+        return database!!.queryJsons(
+            DSL.selectFrom(DSL.name(streamNamespace, Names.toAlphanumericAndUnderscore(streamName)))
+                .sql
+        )
     }
 
     @Throws(Exception::class)
-    override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String?) {
+    override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String) {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
         database!!.execute(
             DSL.dropTableIfExists(
-                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName!!))
+                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName))
                 )
                 .sql
         )

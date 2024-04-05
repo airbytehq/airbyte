@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import java.io.File
@@ -17,22 +17,13 @@ import java.sql.SQLException
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
-import java.util.function.Consumer
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
 abstract class JdbcSqlOperations : SqlOperations {
-    // this adapter modifies record message before inserting them to the destination
-    protected val dataAdapter: Optional<DataAdapter>
     protected val schemaSet: MutableSet<String?> = HashSet()
 
-    protected constructor() {
-        this.dataAdapter = Optional.empty()
-    }
-
-    protected constructor(dataAdapter: DataAdapter) {
-        this.dataAdapter = Optional.of(dataAdapter)
-    }
+    protected constructor() {}
 
     @Throws(Exception::class)
     override fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String?) {
@@ -91,11 +82,14 @@ abstract class JdbcSqlOperations : SqlOperations {
      * For example, Postgres does not support index definitions within a CREATE TABLE statement, so
      * we need to run CREATE INDEX statements after creating the table.
      */
-    protected fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
+    protected open fun postCreateTableQueries(
+        schemaName: String?,
+        tableName: String?
+    ): List<String> {
         return listOf()
     }
 
-    protected fun createTableQueryV1(schemaName: String?, tableName: String?): String {
+    protected open fun createTableQueryV1(schemaName: String?, tableName: String?): String {
         return String.format(
             """
         CREATE TABLE IF NOT EXISTS %s.%s (
@@ -113,7 +107,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         )
     }
 
-    protected fun createTableQueryV2(schemaName: String?, tableName: String?): String {
+    protected open fun createTableQueryV2(schemaName: String?, tableName: String?): String {
         // Note that Meta is the last column in order, there was a time when tables didn't have
         // meta,
         // we issued Alter to add that column so it should be the last column.
@@ -146,11 +140,8 @@ abstract class JdbcSqlOperations : SqlOperations {
             CSVPrinter(writer, CSVFormat.DEFAULT).use { csvPrinter ->
                 for (record in records) {
                     val uuid = UUID.randomUUID().toString()
-                    // TODO we only need to do this is formatData is overridden. If not, we can just
-                    // do jsonData =
-                    // record.getSerialized()
-                    val jsonData =
-                        Jsons.serialize(formatData(Jsons.deserializeExact(record.serialized)))
+
+                    val jsonData = record.serialized
                     val airbyteMeta = Jsons.serialize(record.record!!.meta)
                     val extractedAt =
                         Timestamp.from(Instant.ofEpochMilli(record.record!!.emittedAt))
@@ -233,15 +224,6 @@ abstract class JdbcSqlOperations : SqlOperations {
         schemaName: String?,
         tableName: String?
     ) {
-        dataAdapter.ifPresent { adapter: DataAdapter ->
-            records!!.forEach(
-                Consumer { airbyteRecordMessage: PartialAirbyteMessage? ->
-                    val data = Jsons.deserializeExact(airbyteRecordMessage!!.serialized)
-                    adapter.adapt(data)
-                    airbyteRecordMessage.serialized = Jsons.serialize(data)
-                }
-            )
-        }
         if (isDestinationV2) {
             insertRecordsInternalV2(database, records, schemaName, tableName)
         } else {

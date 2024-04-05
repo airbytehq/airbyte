@@ -67,6 +67,7 @@ import java.util.stream.Stream
 import kotlin.Comparator
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
+import kotlin.test.assertNotNull
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
@@ -78,18 +79,18 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class DestinationAcceptanceTest {
-    protected lateinit var TEST_SCHEMAS: HashSet<String>
+    protected var TEST_SCHEMAS: HashSet<String> = HashSet()
 
     private lateinit var testEnv: TestDestinationEnv
 
-    private var jobRoot: Path? = null
-    private var processFactory: ProcessFactory? = null
-    private var mConnectorConfigUpdater: ConnectorConfigUpdater? = null
+    private lateinit var jobRoot: Path
+    private lateinit var processFactory: ProcessFactory
+    private lateinit var mConnectorConfigUpdater: ConnectorConfigUpdater
 
     protected var localRoot: Path? = null
     open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
 
-    open fun getTestDataComparator(): TestDataComparator {
+    protected open fun getTestDataComparator(): TestDataComparator {
         return BasicTestDataComparator { this.resolveIdentifier(it) }
     }
 
@@ -101,7 +102,7 @@ abstract class DestinationAcceptanceTest {
          */
         get
 
-    protected fun supportsInDestinationNormalization(): Boolean {
+    protected open fun supportsInDestinationNormalization(): Boolean {
         return false
     }
 
@@ -131,14 +132,12 @@ abstract class DestinationAcceptanceTest {
         }
     }
 
-    protected val normalizationImageName: String?
-        get() {
-            val metadata = readMetadata()["data"] ?: return null
-            val normalizationConfig = metadata["normalizationConfig"] ?: return null
-            val normalizationRepository =
-                normalizationConfig["normalizationRepository"] ?: return null
-            return normalizationRepository.asText() + ":" + NORMALIZATION_VERSION
-        }
+    protected fun getNormalizationImageName(): String? {
+        val metadata = readMetadata()["data"] ?: return null
+        val normalizationConfig = metadata["normalizationConfig"] ?: return null
+        val normalizationRepository = normalizationConfig["normalizationRepository"] ?: return null
+        return normalizationRepository.asText() + ":" + NORMALIZATION_VERSION
+    }
 
     /**
      * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -179,8 +178,8 @@ abstract class DestinationAcceptanceTest {
     @Throws(Exception::class)
     protected abstract fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode>
 
@@ -209,7 +208,7 @@ abstract class DestinationAcceptanceTest {
     /**
      * Override to return true if a destination implements namespaces and should be tested as such.
      */
-    protected fun implementsNamespaces(): Boolean {
+    protected open fun implementsNamespaces(): Boolean {
         return false
     }
 
@@ -231,14 +230,14 @@ abstract class DestinationAcceptanceTest {
         }
     }
 
-    protected fun normalizationFromDefinition(): Boolean {
+    protected open fun normalizationFromDefinition(): Boolean {
         val metadata = readMetadata()["data"] ?: return false
         val normalizationConfig = metadata["normalizationConfig"] ?: return false
         return normalizationConfig.has("normalizationRepository") &&
             normalizationConfig.has("normalizationTag")
     }
 
-    protected fun dbtFromDefinition(): Boolean {
+    protected open fun dbtFromDefinition(): Boolean {
         val metadata = readMetadata()["data"] ?: return false
         val supportsDbt = metadata["supportsDbt"]
         return supportsDbt != null && supportsDbt.asBoolean(false)
@@ -247,14 +246,13 @@ abstract class DestinationAcceptanceTest {
     protected val destinationDefinitionKey: String
         get() = imageNameWithoutTag
 
-    protected val normalizationIntegrationType: String?
-        get() {
-            val metadata = readMetadata()["data"] ?: return null
-            val normalizationConfig = metadata["normalizationConfig"] ?: return null
-            val normalizationIntegrationType =
-                normalizationConfig["normalizationIntegrationType"] ?: return null
-            return normalizationIntegrationType.asText()
-        }
+    protected open fun getNormalizationIntegrationType(): String? {
+        val metadata = readMetadata()["data"] ?: return null
+        val normalizationConfig = metadata["normalizationConfig"] ?: return null
+        val normalizationIntegrationType =
+            normalizationConfig["normalizationIntegrationType"] ?: return null
+        return normalizationIntegrationType.asText()
+    }
 
     /**
      * Detects if a destination implements append dedup mode from the spec.json that should include
@@ -310,7 +308,7 @@ abstract class DestinationAcceptanceTest {
      * - can throw any exception, test framework will handle.
      */
     @Throws(Exception::class)
-    protected fun retrieveNormalizedRecords(
+    protected open fun retrieveNormalizedRecords(
         testEnv: TestDestinationEnv?,
         streamName: String?,
         namespace: String?
@@ -422,7 +420,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
-    fun testSync(messagesFilename: String?, catalogFilename: String?) {
+    fun testSync(messagesFilename: String, catalogFilename: String) {
         val catalog =
             Jsons.deserialize(
                 MoreResources.readResource(catalogFilename),
@@ -451,7 +449,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
-    fun testSyncWithLargeRecordBatch(messagesFilename: String?, catalogFilename: String?) {
+    fun testSyncWithLargeRecordBatch(messagesFilename: String, catalogFilename: String) {
         val catalog =
             Jsons.deserialize(
                 MoreResources.readResource(catalogFilename),
@@ -667,8 +665,8 @@ abstract class DestinationAcceptanceTest {
             try {
                 DefaultNormalizationRunner(
                     processFactory,
-                    normalizationImageName,
-                    normalizationIntegrationType
+                    getNormalizationImageName(),
+                    getNormalizationIntegrationType()
                 )
                 normalizationRunnerFactorySupportsDestinationImage = true
             } catch (e: IllegalStateException) {
@@ -804,7 +802,7 @@ abstract class DestinationAcceptanceTest {
             )
         }
 
-        var messages: List<AirbyteMessage> =
+        var messages =
             MoreResources.readResource(
                     DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
                         ProtocolVersion.V0
@@ -812,6 +810,7 @@ abstract class DestinationAcceptanceTest {
                 )
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+                .toMutableList()
 
         val config = getConfig()
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
@@ -834,6 +833,7 @@ abstract class DestinationAcceptanceTest {
                 )
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+                .toMutableList()
         messages.addLast(
             Jsons.deserialize(
                 "{\"type\": \"RECORD\", \"record\": {\"stream\": \"exchange_rate\", \"emitted_at\": 1602637989500, \"data\": { \"id\": 2, \"currency\": \"EUR\", \"date\": \"2020-09-02T00:00:00Z\", \"NZD\": 1.14, \"USD\": 10.16}}}\n",
@@ -867,7 +867,7 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataArgumentsProvider::class)
     @Throws(Exception::class)
-    fun testSyncWithNormalization(messagesFilename: String?, catalogFilename: String?) {
+    open fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
         if (!normalizationFromDefinition()) {
             return
         }
@@ -900,7 +900,7 @@ abstract class DestinationAcceptanceTest {
      */
     @Test
     @Throws(Exception::class)
-    fun testIncrementalDedupeSync() {
+    open fun testIncrementalDedupeSync() {
         if (!implementsAppendDedup()) {
             LOGGER.info(
                 "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'"
@@ -1038,13 +1038,13 @@ abstract class DestinationAcceptanceTest {
         }
     }
 
-    protected val maxRecordValueLimit: Int
+    protected open val maxRecordValueLimit: Int
         /** @return the max limit length allowed for values in the destination. */
         get() = 1000000000
 
     @Test
     @Throws(Exception::class)
-    fun testCustomDbtTransformations() {
+    open fun testCustomDbtTransformations() {
         if (!dbtFromDefinition()) {
             return
         }
@@ -1069,8 +1069,8 @@ abstract class DestinationAcceptanceTest {
                 processFactory,
                 DefaultNormalizationRunner(
                     processFactory,
-                    normalizationImageName,
-                    normalizationIntegrationType
+                    getNormalizationImageName(),
+                    getNormalizationIntegrationType()
                 )
             )
         runner.start()
@@ -1086,7 +1086,7 @@ abstract class DestinationAcceptanceTest {
                 // TODO once we're on DBT 1.x, switch this back to using the main branch
                 .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
                 .withGitRepoBranch("pre_dbt_upgrade")
-                .withDockerImage(normalizationImageName)
+                .withDockerImage(getNormalizationImageName())
         //
         // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
         //
@@ -1158,8 +1158,8 @@ abstract class DestinationAcceptanceTest {
                 processFactory,
                 DefaultNormalizationRunner(
                     processFactory,
-                    normalizationImageName,
-                    normalizationIntegrationType
+                    getNormalizationImageName(),
+                    getNormalizationIntegrationType()
                 )
             )
         runner.start()
@@ -1371,7 +1371,7 @@ abstract class DestinationAcceptanceTest {
                 imageName
             )
 
-        Assertions.assertNotNull(entrypoint)
+        assertNotNull(entrypoint)
         Assertions.assertFalse(entrypoint.isBlank())
     }
 
@@ -1454,7 +1454,7 @@ abstract class DestinationAcceptanceTest {
             false
         )
         val destinationOutput =
-            retrieveRecords(testEnv, stream.name, getDefaultSchema(config), stream.jsonSchema)
+            retrieveRecords(testEnv, stream.name, getDefaultSchema(config)!!, stream.jsonSchema)
         // Remove state message
         secondSyncMessagesWithNewFields.removeIf {
             airbyteMessage: io.airbyte.protocol.models.v0.AirbyteMessage ->
@@ -1606,13 +1606,11 @@ abstract class DestinationAcceptanceTest {
         val actualStateMessage =
             destinationOutput
                 .stream()
-                .filter { m: io.airbyte.protocol.models.v0.AirbyteMessage? ->
-                    m!!.type == io.airbyte.protocol.models.v0.AirbyteMessage.Type.STATE
-                }
+                .filter { it.type == Type.STATE }
                 .findFirst()
-                .map { msg: io.airbyte.protocol.models.v0.AirbyteMessage? ->
+                .map { msg: AirbyteMessage ->
                     // Modify state message to remove destination stats.
-                    val clone = msg!!.state
+                    val clone = msg.state
                     clone.destinationStats = null
                     msg.state = clone
                     msg
@@ -1628,10 +1626,10 @@ abstract class DestinationAcceptanceTest {
     @Throws(Exception::class)
     private fun runSync(
         config: JsonNode,
-        messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
-        catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        messages: List<AirbyteMessage>,
+        catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean
-    ): List<io.airbyte.protocol.models.v0.AirbyteMessage?> {
+    ): List<AirbyteMessage> {
         val destinationConfig =
             WorkerDestinationConfig()
                 .withConnectionId(UUID.randomUUID())
@@ -1664,11 +1662,10 @@ abstract class DestinationAcceptanceTest {
         )
         destination.notifyEndOfInput()
 
-        val destinationOutput: MutableList<io.airbyte.protocol.models.v0.AirbyteMessage?> =
-            ArrayList()
-        while (!destination.isFinished) {
-            destination.attemptRead().ifPresent { m: io.airbyte.protocol.models.AirbyteMessage ->
-                destinationOutput.add(convertProtocolObject(m, AirbyteMessage::class.java))
+        val destinationOutput: MutableList<AirbyteMessage> = ArrayList()
+        while (!destination.isFinished()) {
+            destination.attemptRead().ifPresent {
+                destinationOutput.add(convertProtocolObject(it, AirbyteMessage::class.java))
             }
         }
 
@@ -1681,8 +1678,8 @@ abstract class DestinationAcceptanceTest {
         val runner: NormalizationRunner =
             DefaultNormalizationRunner(
                 processFactory,
-                normalizationImageName,
-                normalizationIntegrationType
+                getNormalizationImageName(),
+                getNormalizationIntegrationType()
             )
         runner.start()
         val normalizationRoot = Files.createDirectories(jobRoot!!.resolve("normalize"))
@@ -1955,7 +1952,7 @@ abstract class DestinationAcceptanceTest {
         return false
     }
 
-    protected fun supportIncrementalSchemaChanges(): Boolean {
+    protected open fun supportIncrementalSchemaChanges(): Boolean {
         return false
     }
 
@@ -1982,9 +1979,9 @@ abstract class DestinationAcceptanceTest {
     @ParameterizedTest
     @ArgumentsSource(DataTypeTestArgumentProvider::class)
     @Throws(Exception::class)
-    fun testDataTypeTestWithNormalization(
-        messagesFilename: String?,
-        catalogFilename: String?,
+    open fun testDataTypeTestWithNormalization(
+        messagesFilename: String,
+        catalogFilename: String,
         testCompatibility: DataTypeTestArgumentProvider.TestCompatibility
     ) {
         if (!checkTestCompatibility(testCompatibility)) {
@@ -2320,7 +2317,7 @@ abstract class DestinationAcceptanceTest {
             get() = SpecialNumericTypes()
 
         @Throws(IOException::class)
-        private fun readCatalogFromFile(catalogFilename: String?): AirbyteCatalog {
+        private fun readCatalogFromFile(catalogFilename: String): AirbyteCatalog {
             return Jsons.deserialize(
                 MoreResources.readResource(catalogFilename),
                 AirbyteCatalog::class.java
@@ -2329,7 +2326,7 @@ abstract class DestinationAcceptanceTest {
 
         @Throws(IOException::class)
         private fun readMessagesFromFile(
-            messagesFilename: String?
+            messagesFilename: String
         ): List<io.airbyte.protocol.models.v0.AirbyteMessage> {
             return MoreResources.readResource(messagesFilename).lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)

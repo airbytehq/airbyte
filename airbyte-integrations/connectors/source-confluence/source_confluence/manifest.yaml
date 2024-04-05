@@ -75,8 +75,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          expand: >-
-            ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
+          expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
     primary_key: "id"
     $parameters:
       name: "blog_posts"
@@ -101,8 +100,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          expand: >-
-            ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
+          expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
     primary_key: "id"
     $parameters:
       name: "pages"
@@ -115,7 +113,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          expand: '["permissions","icon","description.plain","description.view"]'
+          expand: "permissions,icon,description.plain,description.view"
     primary_key: "id"
     $parameters:
       name: "space"

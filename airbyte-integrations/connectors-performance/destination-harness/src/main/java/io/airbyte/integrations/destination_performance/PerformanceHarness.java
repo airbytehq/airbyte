@@ -145,7 +145,7 @@ public class PerformanceHarness {
           log.info("End of datasource after {} lines", counter);
           break;
         }
-        final List row;
+        final List<String> row;
         try {
           row = Arrays.asList(pattern.split(line));
         } catch (final NullPointerException npe) {
@@ -226,7 +226,7 @@ public class PerformanceHarness {
         allowedHosts, false, new EnvVariableFeatureFlags());
   }
 
-  private String buildRecordString(final List<String> columns, final List row) {
+  private String buildRecordString(final List<String> columns, final List<String> row) {
     final StringBuilder sb = new StringBuilder();
     sb.append("{");
     final Iterator<String> rowIterator = row.iterator();

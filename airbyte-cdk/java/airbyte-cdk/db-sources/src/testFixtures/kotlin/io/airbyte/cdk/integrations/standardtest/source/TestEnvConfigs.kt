@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.integrations.standardtest.source
 
-import com.google.common.base.Preconditions
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.map.MoreMaps
 import io.airbyte.commons.version.AirbyteVersion
@@ -30,12 +29,12 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         KUBERNETES
     }
 
-    private val getEnv = Function { key: String -> envMap[key] }
+    private val getEnv = Function { key: String -> envMap.getValue(key) }
     private val getAllEnvKeys = Supplier { envMap.keys }
 
     constructor() : this(System.getenv())
 
-    val airbyteRole: String?
+    val airbyteRole: String
         // CORE
         get() = getEnv(AIRBYTE_ROLE)
 
@@ -59,7 +58,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                 WorkerEnvironment.valueOf(s.uppercase(Locale.getDefault()))
             }
 
-    val jobDefaultEnvMap: Map<String, String?>
+    val jobDefaultEnvMap: Map<String, String>
         /**
          * There are two types of environment variables available to the job container:
          *
@@ -86,11 +85,10 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            Function { obj: Map.Entry<String, Function<TestEnvConfigs, String?>> ->
+                            Function { obj: Map.Entry<String, Function<TestEnvConfigs, String>> ->
                                 obj.key
                             },
-                            Function { entry: Map.Entry<String, Function<TestEnvConfigs, String?>>
-                                ->
+                            Function { entry: Map.Entry<String, Function<TestEnvConfigs, String>> ->
                                 Exceptions.swallowWithDefault(
                                     { Objects.requireNonNullElse(entry.value.apply(this), "") },
                                     ""
@@ -124,15 +122,15 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         }
     }
 
-    fun getEnv(name: String): String? {
+    fun getEnv(name: String): String {
         return getEnv.apply(name)
     }
 
-    fun getEnsureEnv(name: String): String? {
+    fun getEnsureEnv(name: String): String {
         val value = getEnv(name)
-        Preconditions.checkArgument(value != null, "'%s' environment variable cannot be null", name)
+        checkNotNull(value != null) { "$name environment variable cannot be null" }
 
-        return value
+        return value!!
     }
 
     companion object {
@@ -145,7 +143,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         const val DEPLOYMENT_MODE: String = "DEPLOYMENT_MODE"
         const val JOB_DEFAULT_ENV_PREFIX: String = "JOB_DEFAULT_ENV_"
 
-        val JOB_SHARED_ENVS: Map<String, Function<TestEnvConfigs, String?>> =
+        val JOB_SHARED_ENVS: Map<String, Function<TestEnvConfigs, String>> =
             java.util.Map.of(
                 AIRBYTE_VERSION,
                 Function { instance: TestEnvConfigs -> instance.airbyteVersion.serialize() },

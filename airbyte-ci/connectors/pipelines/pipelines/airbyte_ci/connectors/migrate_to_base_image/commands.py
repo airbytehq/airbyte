@@ -15,7 +15,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     cls=DaggerPipelineCommand,
     short_help="Make the selected connectors use our base image: remove dockerfile, update metadata.yaml and update documentation.",
 )
-@click.option("pull-request-number", type=str, required=False, default=None)
+@click.option("--pull-request-number", type=str, required=False, default=None)
 @click.pass_context
 async def migrate_to_base_image(
     ctx: click.Context,
@@ -30,7 +30,7 @@ async def migrate_to_base_image(
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",
+            pipeline_name=f"Upgrade connector {connector.technical_name} to use our base image",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
