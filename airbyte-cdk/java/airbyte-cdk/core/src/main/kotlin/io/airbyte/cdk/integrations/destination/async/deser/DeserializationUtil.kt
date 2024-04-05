@@ -3,7 +3,7 @@
  */
 package io.airbyte.cdk.integrations.destination.async.deser
 
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 
