@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Ticket Activities",
+  "type": ["null", "object"],
+  "properties": {
+    "actor": {
+      "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        },
+      "description": "The full user record of the user responsible for the ticket activity. See Users"
+    },
+    "actor_id": {
+      "type": ["null", "integer"],
+      "description": "The id of the user responsible for the ticket activity. An actor_id of -1 is a Zendesk system user, such as an automations action."
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "When the record was created"
+    },
+    "description": {
+      "type": ["null", "string"],
+      "description": "Description of the activity"
+    },
+    "id": {
+      "type": ["null", "integer"],
+      "description": "Automatically assigned on creation"
+    },
+    "object": {
+      "type": ["null", "object"],
+      "description": "The content of the activity. Can be a ticket, comment, or change."
+    },
+    "target": {
+      "type": ["null", "object"],
+      "description": "The target of the activity, a ticket."
+    },
+    "title": {
+      "type": ["null", "string"],
+      "description": "Description of the activity"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "When the record was last updated"
+    },
+    "url": {
+      "type": ["null", "string"],
+      "description": "The API url of the activity"
+    },
+    "user": {
+      "type": ["null", "object"],
+      "description": "The full user record of the agent making the request. See Users"
+    },
+    "user_id": {
+      "type": ["null", "integer"],
+      "description": "The id of the agent making the request"
+    },
+    "verb": {
+      "type": ["null", "string"],
+      "description": "The type of activity. Can be \"tickets.assignment\", \"tickets.comment\", or \"tickets.priority_increase\""
+    }
+  }
+}
