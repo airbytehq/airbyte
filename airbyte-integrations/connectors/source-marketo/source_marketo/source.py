@@ -13,7 +13,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -134,7 +134,7 @@ class IncrementalMarketoStream(MarketoStream):
 
         end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
         while start_date < end_date:
-            # the amount of days for each data-chunk begining from start_date
+            # the amount of days for each data-chunk beginning from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
 
             date_slice = {"startAt": to_datetime_str(start_date), "endAt": to_datetime_str(end_date_slice)}
@@ -586,10 +586,13 @@ class MarketoAuthenticator(Oauth2Authenticator):
             raise Exception(f"Error while refreshing access token: {e}") from e
 
 
-class SourceMarketo(AbstractSource):
+class SourceMarketo(YamlDeclarativeSource):
     """
-    Source Marketo fetch data of personalized multi-channel programs and campaigns to prospects and customers.
+    Source Marketo fetch data of personalized multichannel programs and campaigns to prospects and customers.
     """
+
+    def __init__(self) -> None:
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
