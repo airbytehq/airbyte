@@ -601,6 +601,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/march_2024",
         "release_notes/february_2024",
         "release_notes/january_2024",
         "release_notes/december_2023",

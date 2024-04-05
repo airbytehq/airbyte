@@ -7,8 +7,7 @@ products: cloud, oss-enterprise
 A workspace in Airbyte allows you to collaborate with other users and manage connections together. On Airbyte Cloud it will allow you to share billing details for a workspace.
 
 :::info
-Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.
-:::
+Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize billing across workspaces:::
 
 ## Add users to your workspace
 
@@ -62,7 +61,7 @@ To delete a workspace:
 
 3. In the **Delete your workspace** section, click **Delete**.
 
-## Single workspace vs. multiple workspaces
+## Multiple workspaces
  
 You can use one or multiple workspaces with Airbyte Cloud, which gives you flexibility in managing user access and billing.
  
