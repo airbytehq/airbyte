@@ -109,6 +109,7 @@ object AutoCloseableIterators {
      * @param <T> type
      * @return new autocloseable iterator with the close function appended </T>
      */
+    @JvmStatic
     fun <T> appendOnClose(
         autoCloseableIterator: AutoCloseableIterator<T>,
         voidCallable: VoidCallable
@@ -254,6 +255,7 @@ object AutoCloseableIterators {
         return CompositeIterator(iterators, airbyteStreamStatusConsumer)
     }
 
+    @JvmStatic
     fun <T> concatWithEagerClose(iterators: List<AutoCloseableIterator<T>>): CompositeIterator<T> {
         return concatWithEagerClose(iterators, null)
     }
