@@ -58,9 +58,9 @@ internal class DefaultJdbcSourceAcceptanceTest :
     }
 
     fun getConfigWithConnectionProperties(
-        psqlDb: PostgreSQLContainer<*>?,
-        dbName: String?,
-        additionalParameters: String?
+        psqlDb: PostgreSQLContainer<*>,
+        dbName: String,
+        additionalParameters: String
     ): JsonNode {
         return Jsons.jsonNode(
             ImmutableMap.builder<Any, Any?>()
@@ -68,7 +68,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
                 .put(JdbcUtils.PORT_KEY, resolvePort(psqlDb))
                 .put(JdbcUtils.DATABASE_KEY, dbName)
                 .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-                .put(JdbcUtils.USERNAME_KEY, psqlDb!!.username)
+                .put(JdbcUtils.USERNAME_KEY, psqlDb.username)
                 .put(JdbcUtils.PASSWORD_KEY, psqlDb.password)
                 .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParameters)
                 .build()

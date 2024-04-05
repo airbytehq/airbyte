@@ -314,6 +314,7 @@ class SimpleRetriever(Retriever):
         # Fixing paginator types has a long tail of dependencies
         self._paginator.reset()
 
+        most_recent_record_from_slice = None
         record_generator = partial(
             self._parse_records,
             stream_state=self.state or {},
@@ -325,10 +326,14 @@ class SimpleRetriever(Retriever):
             if self.cursor and current_record:
                 self.cursor.observe(_slice, current_record)
 
+            # Latest record read, not necessarily within slice boundaries.
+            # TODO Remove once all custom components implement `observe` method.
+            # https://github.com/airbytehq/airbyte-internal-issues/issues/6955
+            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, current_record, _slice)
             yield stream_data
 
         if self.cursor:
-            self.cursor.close_slice(_slice)
+            self.cursor.close_slice(_slice, most_recent_record_from_slice)
         return
 
     def _get_most_recent_record(

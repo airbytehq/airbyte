@@ -223,7 +223,8 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.13  | 2024-02-29 | [35529](https://github.com/airbytehq/airbyte/pull/35529)   | Refactor state iterator messages.                                                                                                                    |
+| 3.3.14  | 2024-04-24 | [36742](https://github.com/airbytehq/airbyte/pull/36742)   | To use new kotlin CDK                                                                                                                           |
+| 3.3.13  | 2024-02-29 | [35529](https://github.com/airbytehq/airbyte/pull/35529)   | Refactor state iterator messages.                                                                                                               |
 | 3.3.12  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675)   | Fix invalid cdc error message.                                                                                                                  |
 | 3.3.11  | 2024-02-23 | [35527](https://github.com/airbytehq/airbyte/pull/35527)   | Adopt 0.23.1 and shutdown timeouts.                                                                                                             |
 | 3.3.10  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569)   | Fix logging bug.                                                                                                                                |

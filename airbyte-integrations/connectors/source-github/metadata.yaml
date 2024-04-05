@@ -16,7 +16,7 @@ data:
   githubIssueLabel: source-github
   icon: github.svg
   license: MIT
-  maxSecondsBetweenMessages: 5400
+  maxSecondsBetweenMessages: 3600
   name: GitHub
   remoteRegistries:
     pypi:
