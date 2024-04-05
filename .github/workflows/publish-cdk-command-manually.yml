@@ -275,7 +275,7 @@ jobs:
   update-connector-builder:
     needs:
       - bump-version
-      - publish-docker-image
+      - bump-manifest-source
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
