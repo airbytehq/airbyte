@@ -1,8 +1,12 @@
 # Declarative-Manifest source connector
 
-
 This is the repository for the Declarative-Manifest source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/low-code).
+The declarative manifest source connector is a special connector that can create an arbitrary source
+connector from a declarative manifest file. This allows users to create a source connector without writing any code.
+
+**Note**: This connector is managed by the Airbyte Python CDK release process. It can be run as a standalone connector
+in Docker and PyAirbyte, but is not yet meant to be run in the platform as a standalone connector. This source is
+an interface to the low-code CDK and as such, should not be modified without a corresponding CDK change.
 
 ## Local development
 
@@ -14,15 +18,15 @@ For information about how to use this connector within Airbyte, see [the documen
 ### Installing the connector
 From this connector directory, run:
 ```bash
-poetry install --with dev
+poetry install
 ```
 
 
 ### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/low-code)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_declarative_manifest/spec.yaml` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
+The credentials for source-declarative-manifest are a little different. Your `config` will need to contain the
+injected declarative manifest, as indicated in the `spec`. It will also need to contain the fields that the spec
+coming out of the manifest requires. An example is available in `integration_tests/pokeapi_config.json`. To use
+this example in the following instructions, copy this file to `secrets/config.json`.
 
 
 ### Locally running the connector
@@ -63,29 +67,18 @@ You can run our full test suite locally using [`airbyte-ci`](https://github.com/
 ```bash
 airbyte-ci connectors --name=source-declarative-manifest test
 ```
+This source does not currently pass the full test suite.
 
-### Customizing acceptance Tests
-Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
-If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ### Dependency Management
-All of your dependencies should be managed via Poetry. 
-To add a new dependency, run:
-```bash
-poetry add <package-name>
-```
+The manifest declarative source is built to be an interface to the low-code CDK source. This means that
+this source should not have any production dependencies other than the Airbyte Python CDK. If for some reason
+you feel that a new dependency is needed, you likely want to add it to the CDK instead. It is expected
+that a given version of the source-declarative-manifest connector corresponds to the same version in
+its CDK dependency.
 
-Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
 ## Publishing a new version of the connector
-You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-declarative-manifest test`
-2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
-    - bump the `dockerImageTag` value in in `metadata.yaml`
-    - bump the `version` value in `pyproject.toml`
-3. Make sure the `metadata.yaml` content is up to date.
-4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/low-code.md`).
-5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
-6. Pat yourself on the back for being an awesome contributor.
-7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
-8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
+New versions of this connector should only be published (automatically) via the manual Airbyte CDK release process.
+If you want to make a change to this connector that is not a result of a CDK change and a corresponding
+CDK dependency bump, please reach out to the Connector Extensibility team for guidance.
