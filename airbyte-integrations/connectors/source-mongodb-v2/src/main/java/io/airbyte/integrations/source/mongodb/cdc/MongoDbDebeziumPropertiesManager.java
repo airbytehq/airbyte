@@ -31,6 +31,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   static final String COLLECTION_INCLUDE_LIST_KEY = "collection.include.list";
   static final String DATABASE_INCLUDE_LIST_KEY = "database.include.list";
+
+  static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
+  static final String MONGODB_POST_IMAGE_VALUE = "post_image";
   static final String CAPTURE_TARGET_KEY = "capture.target";
   static final String DOUBLE_QUOTES_PATTERN = "\"";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
@@ -65,6 +68,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
       properties.setProperty(MONGODB_AUTHSOURCE_KEY, config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText());
     }
     properties.setProperty(MONGODB_SSL_ENABLED_KEY, MONGODB_SSL_ENABLED_VALUE);
+    properties.setProperty(MONGODB_POST_IMAGE_KEY, MONGODB_POST_IMAGE_VALUE);
     return properties;
   }
 
