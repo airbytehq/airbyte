@@ -87,7 +87,7 @@ definitions:
       cursor_field: "updatedAt"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime: "{{ config['start_date'] }}"
-      end_datetime: "{{ config.get('end_date', now_utc()) }}"
+      end_datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
       cursor_granularity: "P1D"
       step: "P{{ config.get('window_in_days', 30) }}D"
       start_time_option:
@@ -153,7 +153,7 @@ definitions:
             value: "{{ format_datetime(record['createdAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
           - type: AddedFieldDefinition
             path: ["updatedAt"]
-            value: "{{ format_datetime(record['createdAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
+            value: "{{ format_datetime(record['updatedAt'].replace('Z',''), '%Y-%m-%dT%H:%M:%SZ') }}"
     $parameters:
       path: "rest/asset/v1/programs.json"
 
