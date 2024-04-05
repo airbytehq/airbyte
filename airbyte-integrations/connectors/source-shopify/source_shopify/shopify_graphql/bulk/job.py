@@ -286,14 +286,22 @@ class ShopifyBulkManager:
     def should_reduce_slice_size(self) -> bool:
         return not self.job_should_expand_slice_size and self.job_should_reduce_slice_size
 
+    def _calculate_expand_factor(self, coef: float = 0.5) -> float:
+        """
+        The expand factor is calculated using EMA (Expotentional Moving Average):
+            coef - the expantion coefficient
+            previous_expand_factor - previous factor value
+
+        Formula: expand_factor = coef * previous_expand_factor + (1 - coef)
+        """
+
+        return coef * self.slice_size_expand_factor + (1 - coef)
+
     def _expand_slice_size(self) -> None:
         self.job_should_expand_slice_size = True
         self.job_should_reduce_slice_size = False
         # adjust the expand factor
-        # `0.5` is the coef. to guarantee the positive increse, which should be noticible
-        self.slice_size_expand_factor = (
-            0.5 + (self.job_elapsed_time_threshold_sec - self.current_job_elapsed_time) / self.job_elapsed_time_threshold_sec
-        )
+        self.slice_size_expand_factor = self._calculate_expand_factor()
 
     def _reduce_slice_size(self) -> None:
         self.job_should_expand_slice_size = False

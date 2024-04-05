@@ -305,7 +305,7 @@ def test_stream_slices(
     [
         # this case we have slice size of P1D,
         # expand is expected
-        (CustomerAddress, 1, 10, 3, 5, 2.2),
+        (CustomerAddress, 1, 10, 3, 5, 2.5),
         # in this case we have slice size of P10D (assuming it was increased already), 
         # reduction is expected
         (CustomerAddress, 10, 10, 150, 5, 5.0),

@@ -732,7 +732,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         The slice size will go up, once the job time is generally less than `job_manager.job_elapsed_time_threshold_sec` value.
         Once the time of the current job is bigger than the threshold - the slice would be reduced, otherwise - incresed.
         """
-        self.slice_interval_in_days = self.slice_interval_in_days + self.job_manager.slice_size_expand_factor
+        self.slice_interval_in_days += self.job_manager.slice_size_expand_factor
 
     def slice_size_reduce(self) -> None:
         """
