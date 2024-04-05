@@ -53,7 +53,10 @@ definitions:
           error_message: Authentication has failed, please update your credentials.
         - http_codes: [429]
           action: RETRY
-          error_message: Failed to perform a request due to rate limits. Retrying.
+          error_message: Failed to perform a request due to rate limits.
+        - http_codes: [503]
+          action: RETRY
+          error_message: Failed to perform a request due to internal server error.
 
   selector:
     type: RecordSelector
@@ -93,10 +96,13 @@ definitions:
               error_message: Authentication has failed, please update your credentials.
             - http_codes: [429]
               action: RETRY
-              error_message: Failed to perform a request due to rate limits. Retrying.
+              error_message: Failed to perform a request due to rate limits.
             - http_codes: [403, 400]
               action: FAIL
               error_message: Got an exception while trying to set up the connection. Most probably, there are no users in the given Slack instance or your token is incorrect.
+            - http_codes: [503]
+              action: RETRY
+              error_message: Failed to perform a request due to internal server error.
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
@@ -202,7 +208,6 @@ definitions:
                 name: channels
                 path: conversations.list
                 field_path: channels
-                use_lookback_window: true
             parent_key: id
             partition_field: channel
             request_option:
@@ -215,6 +220,7 @@ definitions:
         - "%s"
       step: P100D
       cursor_granularity: P10D
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
       datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
