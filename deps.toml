@@ -18,7 +18,7 @@ reactor = "3.5.2"
 segment = "2.1.1"
 slf4j = "2.0.9"
 temporal = "1.17.0"
-debezium = "2.4.0.Final"
+debezium = "2.5.1.Final"
 mockito-version = "5.11.0"
 
 [libraries]
