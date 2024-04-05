@@ -10,7 +10,7 @@ import freezegun
 import pytest
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, ConcurrentCursor, CursorField
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, CursorValueType
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
@@ -56,6 +56,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
             None,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             _NO_LOOKBACK_WINDOW,
         )
 
@@ -70,6 +71,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             None,
             None,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             _NO_LOOKBACK_WINDOW,
         )
 
@@ -175,6 +177,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
             start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             _NO_LOOKBACK_WINDOW,
         )
 
@@ -202,6 +205,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
             start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             _NO_LOOKBACK_WINDOW,
         )
 
@@ -229,6 +233,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
             start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             _NO_LOOKBACK_WINDOW,
         )
 
@@ -257,6 +262,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
             start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             _NO_LOOKBACK_WINDOW,
         )
 
@@ -285,6 +291,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
             start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             _NO_LOOKBACK_WINDOW,
             small_slice_range,
         )
@@ -295,6 +302,37 @@ class ConcurrentCursorStateTest(TestCase):
             (datetime.fromtimestamp(20, timezone.utc), datetime.fromtimestamp(30, timezone.utc)),
             (datetime.fromtimestamp(30, timezone.utc), datetime.fromtimestamp(40, timezone.utc)),
             (datetime.fromtimestamp(40, timezone.utc), datetime.fromtimestamp(50, timezone.utc)),
+        ]
+
+    @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
+    def test_given_difference_between_slices_match_slice_range_when_generate_slices_then_create_one_slice(self):
+        start = datetime.fromtimestamp(0, timezone.utc)
+        small_slice_range = timedelta(seconds=10)
+        cursor = ConcurrentCursor(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
+            {
+                "state_type": ConcurrencyCompatibleStateType.date_range.value,
+                "slices": [
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 0, EpochValueConcurrentStreamStateConverter.END_KEY: 30},
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 40, EpochValueConcurrentStreamStateConverter.END_KEY: 50},
+                ]
+            },
+            self._message_repository,
+            self._state_manager,
+            EpochValueConcurrentStreamStateConverter(is_sequential_state=False),
+            CursorField(_A_CURSOR_FIELD_KEY),
+            _SLICE_BOUNDARY_FIELDS,
+            start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
+            _NO_LOOKBACK_WINDOW,
+            small_slice_range,
+        )
+
+        slices = list(cursor.generate_slices())
+
+        assert slices == [
+            (datetime.fromtimestamp(30, timezone.utc), datetime.fromtimestamp(40, timezone.utc)),
         ]
 
     @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
@@ -316,6 +354,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
             None,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             _NO_LOOKBACK_WINDOW,
         )
 
@@ -347,6 +386,7 @@ class ConcurrentCursorStateTest(TestCase):
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
             start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
             lookback_window,
         )
 

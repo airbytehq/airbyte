@@ -145,8 +145,3 @@ class AbstractStreamStateConverter(ABC):
     @abstractmethod
     def zero_value(self) -> Any:
         ...
-
-    @property
-    @abstractmethod
-    def max_end(self) -> Any:
-        ...

@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from datetime import datetime, timedelta, timezone
-from typing import Any, MutableMapping, Optional, Tuple
+from typing import Any, Callable, MutableMapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -31,9 +31,9 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
     def zero_value(self) -> datetime:
         return self.parse_timestamp(self._zero_value)
 
-    @property
-    def max_end(self) -> datetime:
-        return datetime.now(timezone.utc)
+    @classmethod
+    def get_end_provider(cls) -> Callable[[], datetime]:
+        return lambda: datetime.now(timezone.utc)
 
     @abstractmethod
     def increment(self, timestamp: datetime) -> datetime:

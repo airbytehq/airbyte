@@ -256,6 +256,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             cursor_field,
             self._get_slice_boundary_fields(stream, state_manager),
             datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc),
+            stream.state_converter.get_end_provider(),
             timedelta(seconds=LOOKBACK_SECONDS),
             isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30),
         )
