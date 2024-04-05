@@ -1,5 +1,7 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/paypal-transactions",
+  "supportsDBT": false,
+  "documentationUrl": "https://docs.daspire.com/setup-guide/sources/paypal",
+  "supportsNormalization": false,
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Paypal Transaction Search",
@@ -13,7 +15,7 @@
         "description": "The Client ID of your Paypal developer application.",
         "airbyte_secret": true
       },
-      "client_secret": {
+      "secret": {
         "type": "string",
         "title": "Client secret",
         "description": "The Client Secret of your Paypal developer application.",
@@ -28,7 +30,7 @@
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "Start Date for data extraction in <a href=\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\">ISO format</a>. Date must be in range from 3 years till 12 hrs before present time.",
+        "description": "Start Date for data extraction in <a href=\\\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\\\">ISO format</a>. Date must be in range from 3 years till 12 hrs before present time.",
         "examples": ["2021-06-11T23:59:59-00:00"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}$"
       },
@@ -39,5 +41,8 @@
         "default": false
       }
     }
-  }
+  },
+  "supported_destination_sync_modes": [
+
+  ]
 }
