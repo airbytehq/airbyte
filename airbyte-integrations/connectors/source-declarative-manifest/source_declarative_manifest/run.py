@@ -12,30 +12,14 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Type
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 
 def handle_command(args: List[str]) -> None:
+    """Overrides the spec command to return the generalized spec for the declarative manifest source.
+
+    This is different from a typical low-code, but built and published separately source built as a ManifestDeclarativeSource,
+    because that will have a spec method that returns the spec for that specific source. Other than spec,
+    the generalized connector behaves the same as any other, since the manifest is provided in the config.
+    """
     if args[0] == "spec":
         json_spec = pkgutil.get_data("source_declarative_manifest", "spec.json")
         spec_obj = json.loads(json_spec)
@@ -49,6 +33,12 @@ def handle_command(args: List[str]) -> None:
 
 
 def create_manifest(args: List[str]) -> ManifestDeclarativeSource:
+    """Creates the source with the injected config.
+
+    This essentially does what other low-code sources do at build time, but at runtime,
+    with a user-provided manifest in the config. This better reflects what happens in the
+    connector builder.
+    """
     parsed_args = AirbyteEntrypoint.parse_args(args)
     config = BaseConnector.read_config(parsed_args.config)
     if "__injected_declarative_manifest" not in config:
