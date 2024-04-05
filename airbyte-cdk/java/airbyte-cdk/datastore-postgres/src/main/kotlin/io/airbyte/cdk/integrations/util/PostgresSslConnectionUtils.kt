@@ -8,11 +8,8 @@ import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 import org.apache.commons.lang3.RandomStringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 object PostgresSslConnectionUtils {
-    private val LOGGER: Logger = LoggerFactory.getLogger(PostgresSslConnectionUtils::class.java)
     private const val CA_CERTIFICATE = "ca.crt"
     private const val CLIENT_CERTIFICATE = "client.crt"
     private const val CLIENT_KEY = "client.key"
@@ -34,6 +31,7 @@ object PostgresSslConnectionUtils {
     const val ENCRYPT_FILE_NAME: String = "encrypt"
     const val FACTORY_VALUE: String = "org.postgresql.ssl.DefaultJavaSSLFactory"
 
+    @JvmStatic
     fun obtainConnectionOptions(encryption: JsonNode): Map<String, String> {
         val additionalParameters: MutableMap<String, String> = HashMap()
         if (!encryption.isNull) {

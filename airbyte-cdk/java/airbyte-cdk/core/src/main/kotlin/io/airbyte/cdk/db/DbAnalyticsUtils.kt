@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 object DbAnalyticsUtils {
     const val CDC_CURSOR_INVALID_KEY: String = "db-sources-cdc-cursor-invalid"
 
+    @JvmStatic
     fun cdcCursorInvalidMessage(): AirbyteAnalyticsTraceMessage {
         return AirbyteAnalyticsTraceMessage().withType(CDC_CURSOR_INVALID_KEY).withValue("1")
     }

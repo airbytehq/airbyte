@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.async.function
 
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.stream.Stream
