@@ -1,2 +1,0 @@
-# Hide diffs in auto-generated files
-docs/generated/**/* linguist-generated=true
