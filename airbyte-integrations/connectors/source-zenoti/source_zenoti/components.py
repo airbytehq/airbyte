@@ -184,14 +184,17 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
                 stream_slice=parent_slice,
                 stream_state=stream_state,
             )
-
-            for parent_record in parent_records_gen:
-                substream_slice_value = parent_record.get(self.parent_field)
-                if substream_slice_value:
-                    yield StreamSlice(
-                        partition={
-                            self.substream_slice_field: substream_slice_value,
-                        },
-                        cursor_slice={},
-                    )
+            parent_stream_values = set(
+                filter(
+                    lambda value: value,
+                    [parent_row.get(self.parent_field) for parent_row in parent_records_gen]
+                )
+            )
+            for substream_slice_value in parent_stream_values:
+                yield StreamSlice(
+                    partition={
+                        self.substream_slice_field: substream_slice_value,
+                    },
+                    cursor_slice={},
+                )
             self._state[self.parent_stream_name] = self.parent_stream.retriever.state
