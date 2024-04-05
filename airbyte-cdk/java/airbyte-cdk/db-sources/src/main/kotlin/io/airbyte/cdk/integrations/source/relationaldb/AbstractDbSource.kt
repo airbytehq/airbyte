@@ -575,6 +575,7 @@ protected constructor(driverClassName: String) :
      * @param airbyteStream name of an individual stream in which a stream represents a source (e.g.
      * API endpoint or database table)
      * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync
+     * @param stateManager tracking the state from previous sync; used for resumable full refresh.
      * @param namespace Namespace of the database (e.g. public)
      * @param selectedDatabaseFields List of all interested database column names
      * @param table information in tabular format
@@ -818,7 +819,7 @@ protected constructor(driverClassName: String) :
         @JvmStatic
         protected val LOGGER: Logger = LoggerFactory.getLogger(AbstractDbSource::class.java)
 
-        fun getMessageIterator(
+        private fun getMessageIterator(
             recordIterator: AutoCloseableIterator<AirbyteRecordData>,
             streamName: String,
             namespace: String,

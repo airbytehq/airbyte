@@ -133,21 +133,18 @@ abstract class AbstractJdbcSource<Datatype>(
             return initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
         }
 
-        // Old non resumable refresh
-        val queryStream =
-            queryTableFullRefresh(
-                database,
-                selectedDatabaseFields,
-                table.nameSpace,
-                table.name,
-                syncMode,
-                cursorField
-            )
-        return getMessageIterator(
-            queryStream,
-            airbyteStream.stream.name,
+        // If flag is off, fall back to legacy non-resumable refresh
+        return super.getFullRefreshStream(
+            database,
+            airbyteStream,
+            catalog,
+            stateManager,
             namespace,
-            emittedAt.toEpochMilli()
+            selectedDatabaseFields,
+            table,
+            emittedAt,
+            syncMode,
+            cursorField,
         )
     }
 
