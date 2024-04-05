@@ -13,6 +13,9 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ### Generate new oauth token
 
+Tenant id should be provided by user, reason:
+https://learn.microsoft.com/en-us/answers/questions/1531138/which-tenant-id-do-i-have-to-use-to-get-tokens-and
+
 1. GET https://login.microsoftonline.com/<tenant_id>/oauth2/v2.0/authorize
     ?response_type=code
     &client_id=<client_id>
