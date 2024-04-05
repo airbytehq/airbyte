@@ -225,6 +225,7 @@ object AutoCloseableIterators {
     }
 
     @SafeVarargs
+    @JvmStatic
     fun <T> concatWithEagerClose(
         airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?,
         vararg iterators: AutoCloseableIterator<T>

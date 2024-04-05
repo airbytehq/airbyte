@@ -190,7 +190,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    fun testSpec() {
+    open fun testSpec() {
         val actual = source()!!.spec()
         val resourceString = MoreResources.readResource("spec.json")
         val expected = Jsons.deserialize(resourceString, ConnectorSpecification::class.java)
@@ -1342,7 +1342,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             .collect(Collectors.toList())
     }
 
-    protected fun createState(states: List<DbStreamState>): List<AirbyteStateMessage> {
+    protected open fun createState(states: List<DbStreamState>): List<AirbyteStateMessage> {
         return states
             .stream()
             .map { s: DbStreamState ->
