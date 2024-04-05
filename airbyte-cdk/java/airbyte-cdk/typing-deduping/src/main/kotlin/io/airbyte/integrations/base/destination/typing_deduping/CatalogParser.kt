@@ -173,7 +173,7 @@ constructor(
                         // appending numbers.
                         // Assume that we're being truncated, and that the column ID's name is the
                         // maximum length.
-                        columnId = superResolveColumnCollisions(columnId, columns, columnId.name.length)
+                        columnId = superResolveColumnCollisions(originalColumnId, columns, originalColumnId.name.length)
                         break
                     }
 
