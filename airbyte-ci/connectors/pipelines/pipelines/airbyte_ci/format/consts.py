@@ -61,6 +61,7 @@ WARM_UP_INCLUSIONS = {
     Formatter.JAVA: [
         "spotless-maven-pom.xml",
         "tools/gradle/codestyle/java-google-style.xml",
+        ".editorconfig",
     ],
     Formatter.PYTHON: ["pyproject.toml", "poetry.lock"],
     Formatter.LICENSE: [LICENSE_FILE_NAME],
