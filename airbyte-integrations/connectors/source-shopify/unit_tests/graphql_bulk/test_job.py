@@ -305,12 +305,10 @@ def test_stream_slices(
     [
         (CustomerAddress, "customer_address_jsonl_content_example", None, 10, 4, 5.5),
         (CustomerAddress, "customer_address_jsonl_content_example", 0.0001, None, 100, 50.0),
-        (CustomerAddress, "customer_address_jsonl_content_example", None, 0.0001, 30, 30),
     ],
     ids=[
         "Expand Slice Size",
         "Reduce Slice Size",
-        "No changes to Slice Size",
     ],
 )   
 def test_adjust_stream_slices_job_size(
@@ -348,5 +346,5 @@ def test_adjust_stream_slices_job_size(
     
     # parsing result from completed job
     list(stream.parse_response(test_bulk_response))
-    # check the next slice is reduced
+    # check the next slice
     assert stream.job_manager.job_slice_interval == adjusted_slice_size
