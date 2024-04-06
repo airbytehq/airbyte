@@ -146,8 +146,8 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         return m.stream()
     }
 
-    protected fun filterLog(message: AirbyteMessage?): Boolean {
-        val isLog = message!!.type == AirbyteMessage.Type.LOG
+    protected fun filterLog(message: AirbyteMessage): Boolean {
+        val isLog = message.type == AirbyteMessage.Type.LOG
         if (isLog) {
             containerLogMdcBuilder.build().use { mdcScope -> internalLog(message.log) }
         }

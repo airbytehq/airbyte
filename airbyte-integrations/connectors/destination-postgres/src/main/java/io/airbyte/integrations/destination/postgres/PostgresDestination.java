@@ -8,7 +8,6 @@ import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.DISABL
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
-import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -24,6 +23,7 @@ import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransf
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
@@ -92,7 +92,7 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
         if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
           additionalParameters.put("sslmode", DISABLE);
         } else {
-          additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
+          additionalParameters.putAll(PostgresSslConnectionUtils.obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
         }
       } else {
         additionalParameters.put(JdbcUtils.SSL_KEY, "true");

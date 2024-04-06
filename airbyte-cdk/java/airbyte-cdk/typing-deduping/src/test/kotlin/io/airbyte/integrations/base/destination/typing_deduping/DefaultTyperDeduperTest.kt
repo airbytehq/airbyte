@@ -137,10 +137,11 @@ class DefaultTyperDeduperTest {
             }
         )
 
-        updatedStates = HashMap()
+        val updatedStates: MutableMap<StreamId, MockState> = HashMap()
         updatedStates[OVERWRITE_STREAM_CONFIG.id] = MockState(false, false, true)
         updatedStates[APPEND_STREAM_CONFIG.id] = MockState(false, false, true)
         updatedStates[DEDUPE_STREAM_CONFIG.id] = MockState(false, false, true)
+        this.updatedStates = updatedStates
 
         migrator = NoOpDestinationV1V2Migrator()
 
@@ -579,7 +580,7 @@ class DefaultTyperDeduperTest {
     @Test
     @Throws(Exception::class)
     fun multipleSoftResets() {
-        typerDeduper =
+        val typerDeduper =
             DefaultTyperDeduper(
                 sqlGenerator!!,
                 destinationHandler,
@@ -588,6 +589,7 @@ class DefaultTyperDeduperTest {
                 java.util.List.of(MIGRATION_REQUIRING_SOFT_RESET)
             )
 
+        this.typerDeduper = typerDeduper
         // Notably: isSchemaMismatch = true,
         // and the MockStates have needsSoftReset = false and isMigrated = false.
         Mockito.`when`(destinationHandler!!.gatherInitialState(ArgumentMatchers.anyList()))
@@ -698,7 +700,7 @@ class DefaultTyperDeduperTest {
     @Test
     @Throws(Exception::class)
     fun migrationsMixedResults() {
-        typerDeduper =
+        val typerDeduper =
             DefaultTyperDeduper(
                 sqlGenerator!!,
                 destinationHandler,
@@ -709,6 +711,7 @@ class DefaultTyperDeduperTest {
                     MIGRATION_NOT_REQUIRING_SOFT_RESET
                 )
             )
+        this.typerDeduper = typerDeduper
 
         Mockito.`when`(destinationHandler!!.gatherInitialState(ArgumentMatchers.anyList()))
             .thenReturn(

@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import com.mysql.cj.MysqlType;
@@ -123,7 +120,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       final String tableName = pair.getName();
       final String schemaName = pair.getNamespace();
       LOGGER.info("Preparing query for table: {}", tableName);
-      final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
+      final String fullTableName = RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
@@ -132,7 +129,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
       if (pkLoadStatus == null) {
         LOGGER.info("pkLoadStatus is null");
-        final String quotedCursorField = enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
+        final String quotedCursorField = RelationalDbQueryUtils.enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
         final String sql;
         // We cannot load in chunks for a composite key load, since each field might not have distinct
         // values.
@@ -148,7 +145,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         return preparedStatement;
       } else {
         LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
-        final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
+        final String quotedCursorField = RelationalDbQueryUtils.enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
         final String sql;
         // We cannot load in chunks for a composite key load, since each field might not have distinct
         // values. Furthermore, we have to issue a >=
