@@ -592,11 +592,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     parent_stream_class: Optional[Union[ShopifyStream, IncrementalShopifyStream]] = None
 
-    # 0.1 ~= P2H, default value, lower boundary for slice size
-    slice_interval_in_days_min: float = 0.1
-    # P365D, upper boundary for slice size
-    slice_interval_in_days_max: float = 365.0
-
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
         # init BULK Query instance, pass `shop_id` from config
@@ -605,10 +600,15 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(self._session, f"{self.url_base}/{self.path()}")
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
-        # accept the slice_size from the input configuration
-        self.bulk_window_in_days: Optional[int] = config.get("bulk_window_in_days")
-        # dynamically adjusted slice size
-        self.slice_interval_in_days = self.bulk_window_in_days if self.bulk_window_in_days else self.slice_interval_in_days_min
+
+    @property
+    def slice_interval_in_days(self) -> Union[float, int]:
+        # use the adjusted slice
+        if self.job_manager.job_slice_interval:
+            return self.job_manager.job_slice_interval
+        else:
+            # accept the slice_size overide from the input configuration, or provide the min value
+            return self.config.get("bulk_window_in_days", self.job_manager.job_slice_interval_in_days_min)
 
     @cached_property
     def parent_stream(self) -> object:
@@ -726,38 +726,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for the streams that don't support filtering
             yield {"query": self.query.get()}
 
-    def slice_size_expand(self) -> None:
-        """
-        To expand the Slice Size, the value is calculated based on the `coef.` to control the spikes.
-        The slice size will go up, once the job time is generally less than `job_manager.job_elapsed_time_threshold_sec` value.
-        Once the time of the current job is bigger than the threshold - the slice would be reduced, otherwise - incresed.
-        """
-        self.slice_interval_in_days += self.job_manager.slice_size_expand_factor
-
-    def slice_size_reduce(self) -> None:
-        """
-        For the Slice Reduction, it's recommended to cut the half of the slice, once the reduction is needed,
-        because there is no guarantee we will have a visible boost when any additional `coef.` is applied.
-        """
-        self.slice_interval_in_days = self.slice_interval_in_days / self.job_manager.slice_size_reduce_factor
-
-    def slice_size_boundaries_check(self) -> None:
-        # min check
-        if self.slice_interval_in_days < self.slice_interval_in_days_min:
-            self.slice_interval_in_days = self.slice_interval_in_days_min
-        # max check
-        if self.slice_interval_in_days > self.slice_interval_in_days_max:
-            self.slice_interval_in_days = self.slice_interval_in_days_max
-
-    def adjust_slice_size(self) -> None:
-        if self.job_manager.should_expand_slice_size():
-            self.slice_size_expand()
-        elif self.job_manager.should_reduce_slice_size():
-            self.slice_size_reduce()
-
-        # preserve non-negative values only
-        self.slice_size_boundaries_check()
-
     def process_bulk_results(
         self,
         response: requests.Response,
@@ -773,9 +741,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.record_producer.read_file(filename)
             )
             yield from self.filter_records_newer_than_state(stream_state, records)
-
-        # adjust the slice interval
-        self.adjust_slice_size()
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs

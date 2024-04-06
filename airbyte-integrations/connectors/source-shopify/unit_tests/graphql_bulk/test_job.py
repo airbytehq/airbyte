@@ -294,49 +294,59 @@ def test_stream_slices(
         auth_config["start_date"] = "2020-01-01"
 
     stream = stream(auth_config)
-    stream.slice_interval_in_days = 1000
+    stream.job_manager.job_slice_interval = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
     test_query_from_slice = test_result[0].get("query")
     assert expected in test_query_from_slice
 
-
+    
 @pytest.mark.parametrize(
-    "stream, init_slice_size, job_elapsed_time_threshold_sec, current_job_elapsed_time, job_last_elapsed_time, expected_slice_size",
+    "stream, json_content_example, fake_threshold, last_job_elapsed_time, previous_slice_size, adjusted_slice_size",
     [
-        # this case we have slice size of P1D,
-        # expand is expected
-        (CustomerAddress, 1, 10, 3, 5, 2.5),
-        # in this case we have slice size of P10D (assuming it was increased already), 
-        # reduction is expected
-        (CustomerAddress, 10, 10, 150, 5, 5.0),
-        # in this case we have the slice size of P10D, and the current job took less than the threshold, 
-        # we expect the slice size will remain the same size of P10D
-        (CustomerAddress, 10, 10, 9, 5, 10),
+        (CustomerAddress, "customer_address_jsonl_content_example", None, 10, 4, 5.5),
+        (CustomerAddress, "customer_address_jsonl_content_example", 0.0001, None, 100, 50.0),
+        (CustomerAddress, "customer_address_jsonl_content_example", None, 0.0001, 30, 30),
     ],
     ids=[
-        "Increased Slice Size",
-        "Decreased Slice Size",
-        "Remains unchanged",
+        "Expand Slice Size",
+        "Reduce Slice Size",
+        "No changes to Slice Size",
     ],
-)
-def test_bulk_stream_adjust_slice_size(
+)   
+def test_adjust_stream_slices_job_size(
+    request,
+    requests_mock,
+    bulk_job_completed_response,
     stream,
-    init_slice_size,
-    job_elapsed_time_threshold_sec,
-    current_job_elapsed_time,
-    job_last_elapsed_time,
-    expected_slice_size,
+    json_content_example,
+    fake_threshold,
+    last_job_elapsed_time,
+    previous_slice_size,
+    adjusted_slice_size,
     auth_config,
 ) -> None:
+    
     stream = stream(auth_config)
-    # patching the components
-    stream.slice_interval_in_days = init_slice_size
-    stream.job_manager.job_last_elapsed_time_sec = job_last_elapsed_time
-    stream.job_manager.job_elapsed_time_threshold_sec = job_elapsed_time_threshold_sec
-    stream.job_manager.current_job_elapsed_time = current_job_elapsed_time
-    # calling job_manager method first
-    stream.job_manager.adjust_slice_size()
-    # calling the main method
-    stream.adjust_slice_size()
-    # check the adjusted slice value
-    assert stream.slice_interval_in_days == expected_slice_size
+    # get the mocked job_result_url
+    test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
+    # mocking the result url with jsonl content
+    requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
+    # getting mock response
+    test_bulk_response: requests.Response = requests.post(stream.job_manager.base_url)
+    # mocking nested api call to get data from result url
+    requests_mock.get(test_result_url, text=request.getfixturevalue(json_content_example))
+
+    # for the sake of simplicity we fake some parts to simulate the `current_job_time_elapsed`
+    # fake current slice interval value
+    stream.job_manager.job_slice_interval = previous_slice_size
+    # fake the threshold
+    if fake_threshold:
+        stream.job_manager.job_elapsed_time_threshold_sec = fake_threshold
+    # fake `last job elapsed time` 
+    if last_job_elapsed_time:
+        stream.job_manager.job_last_elapsed_time_sec = last_job_elapsed_time
+    
+    # parsing result from completed job
+    list(stream.parse_response(test_bulk_response))
+    # check the next slice is reduced
+    assert stream.job_manager.job_slice_interval == adjusted_slice_size

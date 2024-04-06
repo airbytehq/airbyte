@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from time import sleep, time
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, ClassVar, Iterable, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -35,44 +35,48 @@ class ShopifyBulkManager:
     base_url: str
 
     # default logger
-    logger: AirbyteLogger = field(init=False, default=logging.getLogger("airbyte"))
+    logger: ClassVar[AirbyteLogger] = logging.getLogger("airbyte")
 
     # 10Mb chunk size to save the file
-    retrieve_chunk_size: int = 1024 * 1024 * 10
+    retrieve_chunk_size: ClassVar[int] = 1024 * 1024 * 10
     # time between job status checks
-    job_check_interval_sec: int = 5
+    job_check_interval_sec: ClassVar[int] = 5
 
     # PLATFORM HEARTBEAT NOTES:
     # 30 sec / attempt * 19 attempts = 570 sec of wait time in total,
     # which is < 10 min of retrying, before Heartbeat will kill the source as non-responsive
 
     # sleep time per creation attempt
-    concurrent_interval_sec = 30
+    concurrent_interval_sec: ClassVar[int] = 30
     # max attempts for job creation
-    concurrent_max_retry: int = 19
-
+    concurrent_max_retry: ClassVar[int] = 19
+    # Each job ideally should be executed within the specified time (in sec),
+    # to maximize the performance for multi-connection syncs and control the bulk job size within +- 7 mins (420 sec),
+    # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
+    job_elapsed_time_threshold_sec: ClassVar[float] = 420.0
+    # 0.1 ~= P2H, default value, lower boundary for slice size
+    job_slice_interval_in_days_min: ClassVar[float] = 0.1
+    # P365D, upper boundary for slice size
+    job_slice_interval_in_days_max: ClassVar[float] = 365.0
+    # running job logger constrain
+    log_running_job_msg_frequency: ClassVar[int] = 3
     # attempt limit indicator
     concurrent_max_attempt_reached: bool = field(init=False, default=False)
     # attempt counter
     concurrent_attempt: int = field(init=False, default=0)
-
     # currents: job_id, job_state
     job_id: Optional[str] = field(init=False, default=None)
     job_state: ShopifyBulkStatus = field(init=False, default=None)
-    # Each job ideally should be executed within the specified time (in sec),
-    # to maximize the performance for multi-connection syncs and control the bulk job size within +- 7 mins (420 sec),
-    # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
-    job_elapsed_time_threshold_sec: float = field(init=False, default=420.0)
     # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
     job_last_elapsed_time_sec: float = field(init=False, default=2.0)
-    current_job_elapsed_time: float = field(init=False, default=0.0)
-    job_should_expand_slice_size: bool = field(init=False, default=False)
+    # dynamically adjusted slice interval
+    job_slice_interval: float = field(init=False, default=0.0)
+    # expand slice factor
     slice_size_expand_factor: int = field(init=False, default=2)
-    job_should_reduce_slice_size: bool = field(init=False, default=False)
+    # reduce slice factor
     slice_size_reduce_factor: int = field(init=False, default=2)
     # running job log counter
     log_running_job_msg_count: int = field(init=False, default=0)
-    log_running_job_msg_frequency: int = field(init=False, default=3)
 
     @property
     def tools(self) -> BulkTools:
@@ -280,13 +284,7 @@ class ShopifyBulkManager:
             # we should retry such at least once
             return self.job_retry_request(request)
 
-    def should_expand_slice_size(self) -> bool:
-        return self.job_should_expand_slice_size and not self.job_should_reduce_slice_size
-
-    def should_reduce_slice_size(self) -> bool:
-        return not self.job_should_expand_slice_size and self.job_should_reduce_slice_size
-
-    def _calculate_expand_factor(self, coef: float = 0.5) -> float:
+    def _calculate_slice_expand_factor(self, coef: float = 0.5) -> float:
         """
         The expand factor is calculated using EMA (Expotentional Moving Average):
             coef - the expantion coefficient
@@ -297,27 +295,28 @@ class ShopifyBulkManager:
 
         return coef * self.slice_size_expand_factor + (1 - coef)
 
-    def _expand_slice_size(self) -> None:
-        self.job_should_expand_slice_size = True
-        self.job_should_reduce_slice_size = False
-        # adjust the expand factor
-        self.slice_size_expand_factor = self._calculate_expand_factor()
+    def _calculate_slice_reduce_factor(self) -> float:
+        """
+        The reduce factor is 2, by default.
+        """
 
-    def _reduce_slice_size(self) -> None:
-        self.job_should_expand_slice_size = False
-        self.job_should_reduce_slice_size = True
+        return self.slice_size_reduce_factor
 
-    def adjust_slice_size(self) -> None:
-        if self.current_job_elapsed_time > self.job_elapsed_time_threshold_sec:
-            self._reduce_slice_size()
-        elif self.current_job_elapsed_time < 1 or self.current_job_elapsed_time < self.job_last_elapsed_time_sec:
-            self._expand_slice_size()
-        elif self.current_job_elapsed_time > self.job_last_elapsed_time_sec < self.job_elapsed_time_threshold_sec:
-            # continue with adjusted slice size
+    def _adjust_slice_size(self, current_job_elapsed_time: float) -> None:
+        if current_job_elapsed_time > self.job_elapsed_time_threshold_sec:
+            # print(current_job_elapsed_time, self.job_elapsed_time_threshold_sec)
+            self.job_slice_interval /= self._calculate_slice_reduce_factor()
+        elif current_job_elapsed_time < 1 or current_job_elapsed_time < self.job_last_elapsed_time_sec:
+            self.job_slice_interval += self._calculate_slice_expand_factor()
+        elif current_job_elapsed_time > self.job_last_elapsed_time_sec < self.job_elapsed_time_threshold_sec:
             pass
 
         # set the last job time
-        self.job_last_elapsed_time_sec = self.current_job_elapsed_time
+        self.job_last_elapsed_time_sec = current_job_elapsed_time
+        # check the slice interval are acceptable
+        self.job_slice_interval = max(
+            self.job_slice_interval_in_days_min, min(self.job_slice_interval, self.job_slice_interval_in_days_max)
+        )
 
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def job_check(self, created_job_response: requests.Response) -> Optional[str]:
@@ -339,9 +338,9 @@ class ShopifyBulkManager:
         ) as bulk_job_error:
             raise bulk_job_error
         finally:
-            self.current_job_elapsed_time = round((time() - job_started), 3)
-            self.logger.info(f"The BULK Job: `{self.job_id}` time elapsed: {self.current_job_elapsed_time} sec.")
+            current_job_elapsed_time = round((time() - job_started), 3)
+            self.logger.info(f"The BULK Job: `{self.job_id}` time elapsed: {current_job_elapsed_time} sec.")
             # check whether or not we should expand or reduce the size of the slice
-            self.adjust_slice_size()
+            self._adjust_slice_size(current_job_elapsed_time)
             # reset the state for COMPLETED job
             self.__reset_state()
