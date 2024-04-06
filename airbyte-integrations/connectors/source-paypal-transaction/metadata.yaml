@@ -11,12 +11,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
-  dockerImageTag: 2.4.0
+  dockerImageTag: 2.5.1
   dockerRepository: airbyte/source-paypal-transaction
   documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   githubIssueLabel: source-paypal-transaction
   icon: paypal.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Paypal Transaction
   remoteRegistries:
     pypi:
@@ -41,5 +42,6 @@ data:
       - list_payments
   supportLevel: certified
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

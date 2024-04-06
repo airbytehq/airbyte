@@ -18,7 +18,6 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
-import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -39,8 +38,9 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   static private final Logger LOGGER = LoggerFactory.getLogger(AbstractSshMssqlSourceAcceptanceTest.class);
 
-  private static final String STREAM_NAME = "dbo.id_and_name";
-  private static final String STREAM_NAME2 = "dbo.starships";
+  private static final String SCHEMA_NAME = "dbo";
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME2 = "starships";
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -97,7 +97,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2017, ContainerModifier.NETWORK);
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
     LOGGER.info("starting bastion");
     bastion.initAndStartBastion(testdb.getContainer().getNetwork());
     LOGGER.info("bastion started");
@@ -127,7 +127,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
+                STREAM_NAME, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
@@ -137,7 +137,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
+                STREAM_NAME2, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(

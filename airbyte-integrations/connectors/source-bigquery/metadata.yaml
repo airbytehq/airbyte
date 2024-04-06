@@ -21,5 +21,4 @@ data:
   supportLevel: community
   tags:
     - language:java
-    - language:python
 metadataSpecVersion: "1.0"

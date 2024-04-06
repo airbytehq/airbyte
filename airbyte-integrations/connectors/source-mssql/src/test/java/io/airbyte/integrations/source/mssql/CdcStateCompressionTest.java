@@ -36,12 +36,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CdcStateCompressionTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CdcStateCompressionTest.class);
 
   static private final String CDC_ROLE_NAME = "cdc_selector";
 
@@ -49,11 +56,25 @@ public class CdcStateCompressionTest {
 
   static private final String TEST_SCHEMA = "test_schema";
 
-  static private final int TEST_TABLES = 10;
+  static private final int TEST_TABLES = 4;
 
+  // SQLServer tables can't have more than 1024 columns.
   static private final int ADDED_COLUMNS = 1000;
 
   private MsSQLTestDatabase testdb;
+  private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+  private static final String ALTER_TABLE_ADD_COLUMN_SQL;
+  static {
+    StringBuilder sb = new StringBuilder();
+    sb.append("ALTER TABLE ").append(TEST_SCHEMA).append(".%s ADD");
+    for (int j = 0; j < ADDED_COLUMNS; j++) {
+      sb.append((j > 0) ? ", " : " ")
+          // Sqlserver column names can't be longer than 128 characters
+          .append("rather_long_column_name_________________________________________________________________________________________").append(j)
+          .append(" INT NULL");
+    }
+    ALTER_TABLE_ADD_COLUMN_SQL = sb.toString();
+  }
 
   @BeforeEach
   public void setup() throws Exception {
@@ -64,20 +85,32 @@ public class CdcStateCompressionTest {
     // Create a test schema and a bunch of test tables with CDC enabled.
     // Insert one row in each table so that they're not empty.
     testdb.with("CREATE SCHEMA %s;", TEST_SCHEMA);
-    for (int i = 0; i < TEST_TABLES; i++) {
-      String tableName = "test_table_%d".formatted(i);
-      String cdcInstanceName = "capture_instance_%d_%d".formatted(i, 1);
-      testdb
-          .with("CREATE TABLE %s.%s (id INT IDENTITY(1,1) PRIMARY KEY);", TEST_SCHEMA, tableName)
-          .withCdcForTable(TEST_SCHEMA, tableName, CDC_ROLE_NAME, cdcInstanceName)
-          .with("INSERT INTO %s.%s DEFAULT VALUES", TEST_SCHEMA, tableName);
-    }
+    List<Callable<MsSQLTestDatabase>> createAndPopulateTableTasks = new ArrayList<>();
+    List<Callable<MsSQLTestDatabase>> waitForCdcRecordTasks = new ArrayList<>();
+    List<Callable<MsSQLTestDatabase>> alterTabletasks = new ArrayList<>();
+    List<Callable<MsSQLTestDatabase>> enableTableCdctasks = new ArrayList<>();
+    List<Callable<MsSQLTestDatabase>> disableTableCdctasks = new ArrayList<>();
 
     for (int i = 0; i < TEST_TABLES; i++) {
       String tableName = "test_table_%d".formatted(i);
-      String cdcInstanceName = "capture_instance_%d_%d".formatted(i, 1);
-      testdb.waitForCdcRecords(TEST_SCHEMA, tableName, cdcInstanceName, 1);
+      String initialCdcInstanceName = "capture_instance_%d_%d".formatted(i, 1);
+      String finalCdcInstanceName = "capture_instance_%d_%d".formatted(i, 2);
+      createAndPopulateTableTasks.add(() -> testdb
+          .with("CREATE TABLE %s.%s (id INT IDENTITY(1,1) PRIMARY KEY);", TEST_SCHEMA, tableName)
+          .withCdcForTable(TEST_SCHEMA, tableName, CDC_ROLE_NAME, initialCdcInstanceName)
+          .with("INSERT INTO %s.%s DEFAULT VALUES", TEST_SCHEMA, tableName));
+      waitForCdcRecordTasks.add(() -> testdb.waitForCdcRecords(TEST_SCHEMA, tableName, initialCdcInstanceName, 1));
+
+      // Increase schema history size to trigger state compression.
+      // We do this by adding lots of columns with long names,
+      // then migrating to a new CDC capture instance for each table.
+      // This is admittedly somewhat awkward and perhaps could be improved.
+      alterTabletasks.add(() -> testdb.with(ALTER_TABLE_ADD_COLUMN_SQL.formatted(tableName)));
+      enableTableCdctasks.add(() -> testdb.withCdcForTable(TEST_SCHEMA, tableName, CDC_ROLE_NAME, finalCdcInstanceName));
+      disableTableCdctasks.add(() -> testdb.withCdcDisabledForTable(TEST_SCHEMA, tableName, initialCdcInstanceName));
     }
+    executor.invokeAll(createAndPopulateTableTasks);
+    executor.invokeAll(waitForCdcRecordTasks);
 
     // Create a test user to be used by the source, with proper permissions.
     testdb
@@ -91,28 +124,9 @@ public class CdcStateCompressionTest {
         .with("GRANT VIEW SERVER STATE TO %s", testUserName())
         .with("USE [%s]", testdb.getDatabaseName())
         .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName());
-
-    // Increase schema history size to trigger state compression.
-    // We do this by adding lots of columns with long names,
-    // then migrating to a new CDC capture instance for each table.
-    // This is admittedly somewhat awkward and perhaps could be improved.
-
-    for (int i = 0; i < TEST_TABLES; i++) {
-      String tableName = "test_table_%d".formatted(i);
-      String cdcInstanceName = "capture_instance_%d_%d".formatted(i, 2);
-      String oldCdcInstanceName = "capture_instance_%d_%d".formatted(i, 1);
-      final var sb = new StringBuilder();
-      sb.append("ALTER TABLE ").append(TEST_SCHEMA).append(".").append(tableName).append(" ADD");
-      for (int j = 0; j < ADDED_COLUMNS; j++) {
-        sb.append((j > 0) ? ", " : " ")
-            .append("rather_long_column_name_________________________________________________________________________________________").append(j)
-            .append(" INT NULL");
-      }
-      testdb
-          .with(sb.toString())
-          .withCdcForTable(TEST_SCHEMA, tableName, CDC_ROLE_NAME, cdcInstanceName)
-          .withCdcDisabledForTable(TEST_SCHEMA, tableName, oldCdcInstanceName);
-    }
+    executor.invokeAll(alterTabletasks);
+    executor.invokeAll(enableTableCdctasks);
+    executor.invokeAll(disableTableCdctasks);
   }
 
   private AirbyteCatalog getCatalog() {
@@ -151,7 +165,7 @@ public class CdcStateCompressionTest {
         .with("is_test", true)
         .with("replication_method", Map.of(
             "method", "CDC",
-            "initial_waiting_seconds", 60))
+            "initial_waiting_seconds", 20))
         .build();
   }
 
@@ -182,11 +196,19 @@ public class CdcStateCompressionTest {
       assertEquals("1", record.getData().get("id").toString());
     }
 
+    LOGGER.info("inserting new data into test tables");
+    List<Callable<MsSQLTestDatabase>> waitForCdcTasks = new ArrayList<>();
     // Insert a bunch of records (1 per table, again).
     for (int i = 0; i < TEST_TABLES; i++) {
-      testdb.with("INSERT %s.test_table_%d DEFAULT VALUES;", TEST_SCHEMA, i);
+      String tableName = "test_table_%d".formatted(i);
+      String cdcInstanceName = "capture_instance_%d_%d".formatted(i, 2);
+      testdb.with("INSERT %s.%s DEFAULT VALUES;", TEST_SCHEMA, tableName);
+      waitForCdcTasks.add(() -> testdb.waitForCdcRecords(TEST_SCHEMA, tableName, cdcInstanceName, 1));
     }
+    LOGGER.info("waiting for CDC records");
+    executor.invokeAll(waitForCdcTasks);
 
+    LOGGER.info("starting second sync");
     // Second sync.
     final var secondBatchStateForRead = Jsons.jsonNode(Collections.singletonList(Iterables.getLast(extractStateMessages(dataFromFirstBatch))));
     final var secondBatchIterator = source().read(config(), getConfiguredCatalog(), secondBatchStateForRead);

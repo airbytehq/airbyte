@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-notion
   icon: notion.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Notion
   remoteRegistries:
     pypi:
@@ -45,4 +46,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

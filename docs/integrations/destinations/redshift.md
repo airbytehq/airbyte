@@ -29,7 +29,8 @@ For INSERT strategy:
 2. COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is
    the recommended loading approach described by Redshift
    [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html).
-   Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest file.
+   Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest
+   file.
 
 Airbyte automatically picks an approach depending on the given configuration - if S3 configuration
 is present, Airbyte will use the COPY strategy and vice versa.
@@ -50,13 +51,6 @@ For COPY strategy:
     to objects in the staging bucket.
 - **Secret Access Key**
   - Corresponding key to the above key id.
-- **Part Size**
-  - Affects the size limit of an individual Redshift table. Optional. Increase this if syncing
-    tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each
-    part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This
-    is 10MB by default, resulting in a default table limit of 100GB. Note, a larger part size will
-    result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get
-    the memory requirement. Modify this with care.
 - **S3 Filename pattern**
   - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders
     combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
@@ -76,9 +70,9 @@ Optional parameters:
     (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command
     completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
-NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel supports the SQL
-connection only. S3 is secured through public HTTPS access only. Subsequent typing and deduping queries on final table
-are executed over using provided SSH Tunnel configuration.
+NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel
+supports the SQL connection only. S3 is secured through public HTTPS access only. Subsequent typing
+and deduping queries on final table are executed over using provided SSH Tunnel configuration.
 
 ## Step 1: Set up Redshift
 
@@ -97,14 +91,16 @@ are executed over using provided SSH Tunnel configuration.
    staging S3 bucket \(for the COPY strategy\).
 
 ### Permissions in Redshift
-Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g. `my_schema`
-and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this raw data schema
-is `airbyte_internal` but this can be overridden in the Redshift Destination's advanced settings.
-Airbyte also needs to query Redshift's
+
+Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g.
+`my_schema` and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this
+raw data schema is `airbyte_internal` but this can be overridden in the Redshift Destination's
+advanced settings. Airbyte also needs to query Redshift's
 [SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for
 metadata about the tables airbyte manages.
 
 To ensure the `airbyte_user` has the correction permissions to:
+
 - create schemas in your database
 - grant usage to any existing schemas you want Airbyte to use
 - grant select to the `svv_table_info` table
@@ -192,9 +188,18 @@ characters.
 ### Data Size Limitations
 
 Redshift specifies a maximum limit of 16MB (and 65535 bytes for any VARCHAR fields within the JSON
-record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift
-destination fails to load such data and currently ignores that record. See docs for
-[SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and
+record) to store the raw JSON record data. Thus, when a row is too big to fit, the destination
+connector will do one of the following.
+
+1. Null the value if the varchar size > 65535, The corresponding key information is added to
+   `_airbyte_meta`.
+2. Null the whole record while trying to preserve the Primary Keys and cursor field declared as part
+   of your stream configuration, if the total record size is > 16MB.
+   - For DEDUPE sync mode, if we do not find Primary key(s), we fail the sync.
+   - For OVERWRITE and APPEND mode, syncs will succeed with empty records emitted, if we fail to
+     find Primary key(s).
+
+See AWS docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and
 [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
 
 ### Encryption
@@ -209,15 +214,15 @@ Each stream will be output into its own raw table in Redshift. Each table will c
   Redshift is `VARCHAR`.
 - `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
-- `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table.
-    The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
+- `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table. The
+  column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is
   `SUPER`.
 
 ## Data type map
 
 | Airbyte type                        | Redshift type                          |
-|:------------------------------------|:---------------------------------------|
+| :---------------------------------- | :------------------------------------- |
 | STRING                              | VARCHAR                                |
 | STRING (BASE64)                     | VARCHAR                                |
 | STRING (BIG_NUMBER)                 | VARCHAR                                |
@@ -236,7 +241,15 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
-|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.2   | 2024-04-05 | [\#36365](https://github.com/airbytehq/airbyte/pull/36365) | Remove unused config option                                                                                                                                                                                      |
+| 2.4.1   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846)  | Remove duplicate S3 Region                                                                                                                                                                                       |
+| 2.4.0   | 2024-03-21 | [\#36589](https://github.com/airbytehq/airbyte/pull/36589) | Adapt to Kotlin cdk 0.28.19                                                                                                                                                                                      |
+| 2.3.2   | 2024-03-21 | [\#36374](https://github.com/airbytehq/airbyte/pull/36374) | Supress Jooq DataAccessException error message in logs                                                                                                                                                           |
+| 2.3.1   | 2024-03-18 | [\#36255](https://github.com/airbytehq/airbyte/pull/36255) | Mark as Certified-GA                                                                                                                                                                                             |
+| 2.3.0   | 2024-03-18 | [\#36203](https://github.com/airbytehq/airbyte/pull/36203) | CDK 0.25.0; Record nulling for VARCHAR > 64K & record > 16MB (super limit)                                                                                                                                       |
+| 2.2.0   | 2024-03-14 | [\#35981](https://github.com/airbytehq/airbyte/pull/35981) | CDK 0.24.0; `_airbyte_meta` in Raw table for tracking upstream data modifications.                                                                                                                               |
+| 2.1.10  | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.23.18; Null safety check in state parsing                                                                                                                                                            |
 | 2.1.9   | 2024-03-04 | [\#35316](https://github.com/airbytehq/airbyte/pull/35316) | Update to CDK 0.23.11; Adopt migration framework                                                                                                                                                                 |
 | 2.1.8   | 2024-02-09 | [\#35354](https://github.com/airbytehq/airbyte/pull/35354) | Update to CDK 0.23.0; Gather required initial state upfront, remove dependency on svv_table_info for table empty check                                                                                           |
 | 2.1.7   | 2024-02-09 | [\#34562](https://github.com/airbytehq/airbyte/pull/34562) | Switch back to jooq-based sql execution for standard insert                                                                                                                                                      |
@@ -292,7 +305,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
 | 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |
 | 0.3.53  | 2023-01-03 | [\#17273](https://github.com/airbytehq/airbyte/pull/17273) | Flatten JSON arrays to fix maximum size check for SUPER field                                                                                                                                                    |
-| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                       |
+| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                      |
 | 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling                                                                                                                                                                                |
 | 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                                                                   |
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |

@@ -8,7 +8,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from functools import cached_property, lru_cache, reduce
+from functools import cached_property, lru_cache
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
@@ -17,7 +17,6 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -1963,66 +1962,53 @@ class ContactsPropertyHistory(PropertyHistory):
         return "/contacts/v1/lists/all/contacts/all"
 
 
-class CompaniesPropertyHistory(PropertyHistory):
+class PropertyHistoryV3(PropertyHistory):
     @cached_property
     def _property_wrapper(self) -> IURLPropertyRepresentation:
         properties = list(self.properties.keys())
         return APIPropertiesWithHistory(properties=properties)
 
-    @property
-    def scopes(self) -> set:
-        return {"crm.objects.companies.read"}
-
-    @property
-    def properties_scopes(self) -> set:
-        return {"crm.schemas.companies.read"}
-
-    @property
-    def page_field(self) -> str:
-        return "offset"
-
-    @property
-    def limit_field(self) -> str:
-        return "limit"
-
-    @property
-    def page_filter(self) -> str:
-        return "offset"
-
-    @property
-    def more_key(self) -> str:
-        return "has-more"
-
-    @property
-    def entity(self) -> str:
-        return "companies"
-
-    @property
-    def entity_primary_key(self) -> list:
-        return "companyId"
-
-    @property
-    def primary_key(self) -> list:
-        return ["companyId", "property", "timestamp"]
-
-    @property
-    def additional_keys(self) -> list:
-        return ["portalId", "isDeleted"]
-
-    @property
-    def last_modified_date_field_name(self) -> str:
-        return "hs_lastmodifieddate"
-
-    @property
-    def data_field(self) -> str:
-        return "companies"
-
-    @property
-    def url(self) -> str:
-        return "/companies/v2/companies/paged"
+    limit = 50
+    more_key = page_filter = page_field = None
+    limit_field = "limit"
+    data_field = "results"
+    additional_keys = ["archived"]
+    last_modified_date_field_name = "hs_lastmodifieddate"
 
     def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
         pass
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in records:
+            properties_with_history = record.get("propertiesWithHistory")
+            primary_key = record.get("id")
+            additional_keys = {additional_key: record.get(additional_key) for additional_key in self.additional_keys}
+
+            for property_name, value_dict in properties_with_history.items():
+                if property_name == self.last_modified_date_field_name:
+                    # Skipping the lastmodifieddate since it only returns the value
+                    # when one field of a record was changed no matter which
+                    # field was changed. It therefore creates overhead, since for
+                    # every changed property there will be the date it was changed in itself
+                    # and a change in the lastmodifieddate field.
+                    continue
+                for version in value_dict:
+                    version["property"] = property_name
+                    version[self.entity_primary_key] = primary_key
+                    yield version | additional_keys
+
+
+class CompaniesPropertyHistory(PropertyHistoryV3):
+
+    scopes = {"crm.objects.companies.read"}
+    properties_scopes = {"crm.schemas.companies.read"}
+    entity = "companies"
+    entity_primary_key = "companyId"
+    primary_key = ["companyId", "property", "timestamp"]
+
+    @property
+    def url(self) -> str:
+        return "/crm/v3/objects/companies"
 
     def path(
         self,
@@ -2035,66 +2021,16 @@ class CompaniesPropertyHistory(PropertyHistory):
         return f"{self.url}?{properties.as_url_param()}"
 
 
-class DealsPropertyHistory(PropertyHistory):
-    @cached_property
-    def _property_wrapper(self) -> IURLPropertyRepresentation:
-        properties = list(self.properties.keys())
-        return APIPropertiesWithHistory(properties=properties)
-
-    @property
-    def scopes(self) -> set:
-        return {"crm.objects.deals.read"}
-
-    @property
-    def properties_scopes(self):
-        return {"crm.schemas.deals.read"}
-
-    @property
-    def page_field(self) -> str:
-        return "offset"
-
-    @property
-    def limit_field(self) -> str:
-        return "limit"
-
-    @property
-    def page_filter(self) -> str:
-        return "offset"
-
-    @property
-    def more_key(self) -> str:
-        return "hasMore"
-
-    @property
-    def entity(self) -> set:
-        return "deals"
-
-    @property
-    def entity_primary_key(self) -> list:
-        return "dealId"
-
-    @property
-    def primary_key(self) -> list:
-        return ["dealId", "property", "timestamp"]
-
-    @property
-    def additional_keys(self) -> list:
-        return ["portalId", "isDeleted"]
-
-    @property
-    def last_modified_date_field_name(self) -> str:
-        return "hs_lastmodifieddate"
-
-    @property
-    def data_field(self) -> str:
-        return "deals"
+class DealsPropertyHistory(PropertyHistoryV3):
+    scopes = {"crm.objects.deals.read"}
+    properties_scopes = {"crm.schemas.deals.read"}
+    entity = "deals"
+    entity_primary_key = "dealId"
+    primary_key = ["dealId", "property", "timestamp"]
 
     @property
     def url(self) -> str:
-        return "/deals/v1/deal/paged"
-
-    def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
-        pass
+        return "/crm/v3/objects/deals"
 
     def path(
         self,

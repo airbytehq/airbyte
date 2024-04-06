@@ -25,4 +25,5 @@ data:
   supportLevel: archived
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"
