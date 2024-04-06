@@ -94,7 +94,7 @@ spec:
           - "-21.249107858038816"
       lon:
         type: string
-        pattern: "^[-]?\\d{1,2}(\\.\\d+)?$"
+        pattern: "^[-]?\\d{1,3}(\\.\\d+)?$"
         description: "Longitude, decimal (-180; 180). If you need the geocoder to automatic convert city names and zip-codes to geo coordinates and the other way around, please use our Geocoding API"
         examples:
           - "4.835659"
