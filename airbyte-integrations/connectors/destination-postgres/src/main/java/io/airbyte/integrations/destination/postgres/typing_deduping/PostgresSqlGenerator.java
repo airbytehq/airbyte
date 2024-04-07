@@ -71,11 +71,11 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     // To keep it consistent when querying raw table in T+D query, convert it to lowercase.
     // TODO: This logic should be unified across Raw and final table operations in a single class
     // operating on a StreamId.
-    final String streamName = namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase();
+    final String streamName = getNamingTransformer().convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase();
     return new StreamId(
-        namingTransformer.getNamespace(namespace),
-        namingTransformer.convertStreamName(name),
-        namingTransformer.getNamespace(rawNamespaceOverride).toLowerCase(),
+        getNamingTransformer().getNamespace(namespace),
+        getNamingTransformer().convertStreamName(name),
+        getNamingTransformer().getNamespace(rawNamespaceOverride).toLowerCase(),
         streamName.length() > 63 ? streamName.substring(0, 63) : streamName,
         namespace,
         name);
@@ -117,14 +117,14 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final List<Sql> statements = new ArrayList<>();
-    final Name finalTableName = name(stream.id().finalNamespace(), stream.id().finalName() + suffix);
+    final Name finalTableName = name(stream.getId().getFinalNamespace(), stream.getId().getFinalName() + suffix);
 
     statements.add(super.createTable(stream, suffix, force));
 
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // An index for our ROW_NUMBER() PARTITION BY pk ORDER BY cursor, extracted_at function
-      final List<Name> pkNames = stream.primaryKey().stream()
-          .map(pk -> quotedName(pk.name()))
+      final List<Name> pkNames = stream.getPrimaryKey().stream()
+          .map(pk -> quotedName(pk.getName()))
           .toList();
       statements.add(Sql.of(getDslContext().createIndex().on(
           finalTableName,
@@ -132,7 +132,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
               pkNames.stream(),
               // if cursor is present, then a stream containing its name
               // but if no cursor, then empty stream
-              stream.cursor().stream().map(cursor -> quotedName(cursor.name())),
+              stream.getCursor().stream().map(cursor -> quotedName(cursor.getName())),
               Stream.of(name(COLUMN_NAME_AB_EXTRACTED_AT))).flatMap(Function.identity()).toList())
           .getSQL()));
     }
@@ -151,12 +151,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && !stream.primaryKey().isEmpty()) {
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && !stream.getPrimaryKey().isEmpty()) {
       return List.of(
           getDslContext().createIndex().on(
-              name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
-              stream.primaryKey().stream()
-                  .map(pk -> quotedName(pk.name()))
+              name(stream.getId().getFinalNamespace(), stream.getId().getFinalName() + suffix),
+              stream.getPrimaryKey().stream()
+                  .map(pk -> quotedName(pk.getName()))
                   .toList())
               .getSQL());
     } else {
@@ -172,7 +172,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .map(column -> castedField(
             extractColumnAsJson(column.getKey()),
             column.getValue(),
-            column.getKey().name(),
+            column.getKey().getName(),
             useExpensiveSaferCasting))
         .collect(Collectors.toList());
   }
@@ -269,11 +269,11 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     return switch (type) {
       case Struct ignored -> field(CASE_STATEMENT_SQL_TEMPLATE,
                                         extract.isNotNull().and(jsonTypeof(extract).notIn("object", "null")),
-                                        nulledChangeObject(column.originalName()),
+                                        nulledChangeObject(column.getOriginalName()),
                                    cast(val((Object) null), JSONB_TYPE));
       case Array ignored -> field(CASE_STATEMENT_SQL_TEMPLATE,
                                        extract.isNotNull().and(jsonTypeof(extract).notIn("array", "null")),
-                                       nulledChangeObject(column.originalName()),
+                                       nulledChangeObject(column.getOriginalName()),
                                        cast(val((Object) null), JSONB_TYPE));
       // Unknown types require no casting, so there's never an error.
       // Similarly, everything can cast to string without error.
@@ -284,7 +284,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
                             extract.isNotNull()
                                 .and(jsonTypeof(extract).ne("null"))
                                 .and(castedField(extract, type, true).isNull()),
-                            nulledChangeObject(column.originalName()),
+                            nulledChangeObject(column.getOriginalName()),
                             cast(val((Object) null), JSONB_TYPE));
     };
   }
@@ -292,7 +292,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn)).ne("null"));
+        .and(jsonTypeof(extractColumnAsJson(getCdcDeletedAtColumn())).ne("null"));
   }
 
   @Override
@@ -300,12 +300,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     // literally identical to redshift's getRowNumber implementation, changes here probably should
     // be reflected there
     final List<Field<?>> primaryKeyFields =
-        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
+        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.getName()))).collect(Collectors.toList())
             : new ArrayList<>();
     final List<Field<?>> orderedFields = new ArrayList<>();
     // We can still use Jooq's field to get the quoted name with raw sql templating.
     // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
-    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.name())))));
+    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.getName())))));
     orderedFields.add(field("{0} desc", quotedName(COLUMN_NAME_AB_EXTRACTED_AT)));
     return rowNumber()
         .over()
@@ -317,7 +317,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
    * Extract a raw field, leaving it as jsonb
    */
   private Field<Object> extractColumnAsJson(final ColumnId column) {
-    return field("{0} -> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
+    return field("{0} -> {1}", name(COLUMN_NAME_DATA), val(column.getOriginalName()));
   }
 
   private Field<String> jsonTypeof(final Field<?> field) {
