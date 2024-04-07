@@ -17,7 +17,8 @@ function getFilenamesInDir(prefix, dir, excludes) {
         !(
           fileName.endsWith(".inapp.md") ||
           fileName.endsWith("-migrations.md") ||
-          fileName.endsWith(".js")
+          fileName.endsWith(".js") ||
+          fileName === "low-code.md"
         )
     )
     .map((fileName) => fileName.replace(".md", ""))
@@ -478,11 +479,6 @@ module.exports = {
       ],
     },
     {
-      type: "doc",
-      label: "Using PyAirbyte",
-      id: "using-airbyte/pyairbyte/getting-started",
-    },
-    {
       type: "category",
       label: "Workspace Management",
       items: [
@@ -568,6 +564,11 @@ module.exports = {
     {
       type: "doc",
       id: "terraform-documentation",
+    },
+    {
+      type: "doc",
+      label: "Using PyAirbyte",
+      id: "using-airbyte/pyairbyte/getting-started",
     },
     understandingAirbyte,
     contributeToAirbyte,

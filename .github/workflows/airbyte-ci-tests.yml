@@ -30,8 +30,8 @@ jobs:
         with:
           # Note: expressions within a filter are OR'ed
           filters: |
+            # This list is duplicated in `pipelines/airbyte_ci/test/__init__.py`
             internal_poetry_packages:
-            - airbyte-lib/**
             - airbyte-ci/connectors/pipelines/**
             - airbyte-ci/connectors/base_images/**
             - airbyte-ci/connectors/common_utils/**
