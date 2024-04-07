@@ -21,14 +21,19 @@ ENV_GCP_GSM_CREDENTIALS = "GCP_GSM_CREDENTIALS"
 def get_secrets_manager(
     connector_name: str | None = None,
     gcp_gsm_credentials: dict | str | None = None,
+    *,
+    disable_masking: bool = True,
 ) -> SecretsManager:
     """Get a SecretsManager instance.
 
     Args:
         connector_name: The name of the connector, or "all" to load secrets for all connectors.
         gcp_gsm_credentials: The credentials for Google Secret Manager. Can be a dict, a JSON
-        string, or None. If None, the value of the GCP_GSM_CREDENTIALS environment variable will be
-        used.
+            string, or None. If None, the value of the GCP_GSM_CREDENTIALS environment variable will be
+            used.
+        disable_masking: Whether to disable masking of secrets. When running outside of a CI environment,
+            you should set this to True. Otherwise, you may inadvertently log secrets. (The CI masking
+            implementation prints to STDOUT.)
     """
     if gcp_gsm_credentials is None:
         gcp_gsm_credentials = os.getenv(ENV_GCP_GSM_CREDENTIALS)
@@ -42,12 +47,15 @@ def get_secrets_manager(
     return SecretsManager(
         connector_name=connector_name,
         gsm_credentials=gcp_gsm_credentials,
+        disable_masking=disable_masking,
     )
 
 
 def get_connector_secrets(
     connector_name: str | None = None,
     gcp_gsm_credentials: dict | str | None = None,
+    *,
+    disable_masking: bool = False,
 ) -> tuple[list[RemoteSecret], SecretsManager]:
     """Get the secrets for a connector.
 
@@ -80,5 +88,6 @@ def get_connector_secrets(
     secrets_manager = get_secrets_manager(
         connector_name=connector_name,
         gcp_gsm_credentials=gcp_gsm_credentials,
+        disable_masking=disable_masking,
     )
     return secrets_manager.read_from_gsm(), secrets_manager

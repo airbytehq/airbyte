@@ -60,10 +60,17 @@ class SecretsManager:
     else:
         base_folder = Path("/actions-runner/_work/airbyte/airbyte")
 
-    def __init__(self, connector_name: str, gsm_credentials: Mapping[str, Any]):
+    def __init__(
+        self,
+        connector_name: str,
+        gsm_credentials: Mapping[str, Any],
+        *,
+        disable_masking: bool = False,
+    ):
         self.gsm_credentials = gsm_credentials
         self.connector_name = connector_name
         self._api = None
+        self.disable_masking = disable_masking
 
     @property
     def api(self) -> GoogleApi:
@@ -146,7 +153,28 @@ class SecretsManager:
         return secrets
 
     def mask_secrets_from_action_log(self, key, value):
+        """Mask secrets from action log.
+
+        There are two implementations of this method:
+        1. The first implementation is used in the GitHub Actions using the `::add-mask::` CI
+           instruction. This implementation will only work in CI environments and so it is
+           automatically disabled if the `CI` environment variable is not set.
+        2. The second implementation is used in Dagger, when the `VERSION` env var is set to
+           `dagger_ci`. This implementation will write the secrets masks to a file for use by
+           Dagger.
+
+        It is important to only utilize this method in the supported environments, as it may
+        inadvertently log secrets. The `disable_masking` parameter can be used to disable this
+        method entirely.
+        """
         # recursive masking of json based on leaf key
+        if self.disable_masking:
+            # No-op if masking is disabled
+            return
+        if "CI" not in os.environ and os.getenv("VERSION") != "dagger_ci":
+            # No-op if not running in CI
+            return
+
         if not value:
             return
         elif isinstance(value, dict):
@@ -165,7 +193,7 @@ class SecretsManager:
                             line = str(line).strip()
                             # don't output } and such
                             if len(line) > 1:
-                                if not os.getenv("VERSION") in ["dev", "dagger_ci"]:
+                                if os.getenv("VERSION") not in ["dev", "dagger_ci"]:
                                     # has to be at the beginning of line for Github to notice it
                                     print(f"::add-mask::{line}")
                                 if os.getenv("VERSION") == "dagger_ci":
