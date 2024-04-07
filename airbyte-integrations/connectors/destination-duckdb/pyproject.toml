@@ -20,3 +20,6 @@ mypy = "^1.5.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+destination-duckdb = "destination_duckdb.run:run"
