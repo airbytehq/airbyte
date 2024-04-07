@@ -4,6 +4,7 @@
 
 
 from abc import ABC
+import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -127,8 +128,12 @@ class ObjectAttributes(AttioStream):
 
             item["config_currency_display_type"] = item["config"]["currency"].get("display_type")
             item["config_currency_default_currency_code"] = item["config"]["currency"].get("default_currency_code")
-            item["config_record_reference_allowed_object_ids"] = item["config"]["record_reference"].get("allowed_object_ids")
+
+            config_record_reference_allowed_object_ids = item["config"]["record_reference"].get("allowed_object_ids")
+            item["config_record_reference_allowed_object_ids"] = config_record_reference_allowed_object_ids
             del item["config"]
+
+            item["relationship"] = item["relationship"]["id"]
 
         return items
 
@@ -158,8 +163,15 @@ class ObjectAttributes(AttioStream):
                 "is_default_value_enabled": {"type": "boolean"},
                 "is_archived": {"type": "boolean"},
                 "default_value": {"type": ["string", "null"]},  # JSON serialized
-                "relationship": {"type": ["string", "null"]},  # JSON serialized
-                "config_record_reference_allowed_object_ids": {"type": "string"},  # JSON serialized
+                "relationship": {
+                    "type": ["object", "null"],
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "object_id": {"type": "string"},
+                        "attribute_id": {"type": "string"},
+                    },
+                },
+                "config_record_reference_allowed_object_ids": {"type": ["array", "null"], "items": {"type": "string"}},
                 "config_currency_display_type": {"type": ["string", "null"]},
                 "config_currency_default_currency_code": {"type": ["string", "null"]},
                 "created_at": {"type": "string"},  # ISO 8601 timestamp
@@ -397,25 +409,25 @@ class Records(AttioStream):
         for attr in attributes:
             slug = attr["api_slug"]
             if attr["type"] == "text" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "string"}
+                properties[slug] = {"type": ["string", "null"]}
             elif attr["type"] == "number" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "number"}
+                properties[slug] = {"type": ["number", "null"]}
             elif attr["type"] == "checkbox" and not attr["is_multiselect"]:
                 properties[slug] = {"type": "boolean"}
             elif attr["type"] == "currency" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "number"}
+                properties[slug] = {"type": ["number", "null"]}
             elif attr["type"] == "date" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "string", "format": "date"}
+                properties[slug] = {"type": ["string", "null"], "format": "date"}
             elif attr["type"] == "timestamp" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
+                properties[slug] = {"type": ["string", "null"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
             elif attr["type"] == "rating" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "integer"}
+                properties[slug] = {"type": ["integer", "null"]}
             elif attr["type"] == "status" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "string"}
+                properties[slug] = {"type": ["string", "null"]}
             elif attr["type"] == "select" and attr["is_multiselect"]:
                 properties[slug] = {"type": "array", "items": {"type": "string"}}
             elif attr["type"] == "select" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "string"}
+                properties[slug] = {"type": ["string", "null"]}
             elif attr["type"] == "record-reference" and not attr["is_multiselect"]:
                 # If we only have a single allow object, return just the ID.
                 # This makes joining and reading data much easier for the user.
@@ -430,11 +442,11 @@ class Records(AttioStream):
 
                 if num_allowed_objects == 1:
                     properties[slug] = {
-                        "type": "string",
+                        "type": ["string", "null"],
                     }
                 else:
                     properties[slug] = {
-                        "type": "object",
+                        "type": ["object", "null"],
                         "properties": {
                             "target_object": {"type": "string"},
                             "target_record_id": {"type": "string"},
@@ -472,43 +484,43 @@ class Records(AttioStream):
                 }
             elif attr["type"] == "actor-reference" and not attr["is_multiselect"]:
                 properties[slug] = {
-                    "type": "object",
+                    "type": ["object", "null"],
                     "properties": {
                         "referenced_actor_id": {"type": "string"},
                         "referenced_actor_type": {"type": "string"},
                     },
                 }
             elif attr["type"] == "location" and not attr["is_multiselect"]:
-                properties[slug + "_line_1"] = {"type": "string"}
-                properties[slug + "_line_2"] = {"type": "string"}
-                properties[slug + "_line_3"] = {"type": "string"}
-                properties[slug + "_line_4"] = {"type": "string"}
-                properties[slug + "_locality"] = {"type": "string"}
-                properties[slug + "_region"] = {"type": "string"}
-                properties[slug + "_postcode"] = {"type": "string"}
-                properties[slug + "_country_code"] = {"type": "string"}
-                properties[slug + "_latitude"] = {"type": "string"}
-                properties[slug + "_longitude"] = {"type": "string"}
+                properties[slug + "_line_1"] = {"type": ["string", "null"]}
+                properties[slug + "_line_2"] = {"type": ["string", "null"]}
+                properties[slug + "_line_3"] = {"type": ["string", "null"]}
+                properties[slug + "_line_4"] = {"type": ["string", "null"]}
+                properties[slug + "_locality"] = {"type": ["string", "null"]}
+                properties[slug + "_region"] = {"type": ["string", "null"]}
+                properties[slug + "_postcode"] = {"type": ["string", "null"]}
+                properties[slug + "_country_code"] = {"type": ["string", "null"]}
+                properties[slug + "_latitude"] = {"type": ["string", "null"]}
+                properties[slug + "_longitude"] = {"type": ["string", "null"]}
             elif attr["type"] == "domain" and attr["is_multiselect"]:
                 properties[slug] = {"type": "array", "items": {"type": "string"}}
             elif attr["type"] == "email-address" and attr["is_multiselect"]:
                 properties[slug] = {"type": "array", "items": {"type": "string"}}
             elif attr["type"] == "email-address" and not attr["is_multiselect"]:
-                properties[slug] = {"type": "string"}
+                properties[slug] = {"type": ["string", "null"]}
             elif attr["type"] == "phone-number" and attr["is_multiselect"]:
                 properties[slug] = {"type": "array", "items": {"type": "string"}}
             elif attr["type"] == "personal-name" and not attr["is_multiselect"]:
-                properties[slug + "_first_name"] = {"type": "string"}
-                properties[slug + "_last_name"] = {"type": "string"}
-                properties[slug + "_full_name"] = {"type": "string"}
+                properties[slug + "_first_name"] = {"type": ["string", "null"]}
+                properties[slug + "_last_name"] = {"type": ["string", "null"]}
+                properties[slug + "_full_name"] = {"type": ["string", "null"]}
             elif attr["type"] == "interaction" and not attr["is_multiselect"]:
                 properties[slug] = {
-                    "type": "object",
+                    "type": ["object", "null"],
                     "properties": {
                         "interaction_type": {"type": "string"},
                         "interacted_at": {"type": "string", "airbyte_type": "timestamp_with_timezone", "format": "date-time"},
-                        "owner_actor_type": {"type": "string"},
-                        "owner_actor_id": {"type": "string"},
+                        "owner_actor_type": {"type": ["string", "null"]},
+                        "owner_actor_id": {"type": ["string", "null"]},
                     },
                 }
         return {

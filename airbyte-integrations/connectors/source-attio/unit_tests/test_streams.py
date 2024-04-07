@@ -650,9 +650,9 @@ def test_records_get_json_schema(requests_mock, make_attribute_response):
 
         if t == "personal-name":
             # We break the names down into their sub fields
-            assert properties[slug + "_first_name"] == {"type": "string"}
-            assert properties[slug + "_last_name"] == {"type": "string"}
-            assert properties[slug + "_full_name"] == {"type": "string"}
+            assert properties[slug + "_first_name"] == {"type": ["string", "null"]}
+            assert properties[slug + "_last_name"] == {"type": ["string", "null"]}
+            assert properties[slug + "_full_name"] == {"type": ["string", "null"]}
             continue
     
         if t == "location":
@@ -661,41 +661,41 @@ def test_records_get_json_schema(requests_mock, make_attribute_response):
             
             # Assert there is one JSON schema property per column on the value  
             # The name of each property should be the attribute's api_slug + field e.g. "my_location_line_1"
-            assert properties[f"{slug}_line_1"] == {"type": "string"}
-            assert properties[f"{slug}_line_2"] == {"type": "string"}
-            assert properties[f"{slug}_line_3"] == {"type": "string"}
-            assert properties[f"{slug}_line_4"] == {"type": "string"}
-            assert properties[f"{slug}_locality"] == {"type": "string"}
-            assert properties[f"{slug}_region"] == {"type": "string"}
-            assert properties[f"{slug}_postcode"] == {"type": "string"}
-            assert properties[f"{slug}_country_code"] == {"type": "string"}
-            assert properties[f"{slug}_longitude"] == {"type": "string"}
-            assert properties[f"{slug}_latitude"] == {"type": "string"}
+            assert properties[f"{slug}_line_1"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_line_2"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_line_3"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_line_4"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_locality"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_region"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_postcode"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_country_code"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_longitude"] == {"type": ["string", "null"]}
+            assert properties[f"{slug}_latitude"] == {"type": ["string", "null"]}
             continue
         
         schema = properties[attribute["api_slug"]]
 
         match (t, is_multi):
             case ("text", _):
-                assert schema == {"type": "string"}
+                assert schema == {"type": ["string", "null"]}
             case ("number", _):
-                assert schema == {"type": "number"}
+                assert schema == {"type": ["number", "null"]}
             case ("checkbox", _):
                 assert schema == {"type": "boolean"}
             case ("currency", _):
-                assert schema == {"type": "number"}
+                assert schema == {"type": ["number", "null"]}
             case ("date", _):
-                assert schema == {"type": "string", "format": "date"}
+                assert schema == {"type": ["string", "null"], "format": "date"}
             case ("timestamp", _):
-                assert schema == {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
+                assert schema == {"type": ["string", "null"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
             case ("rating", _):
-                assert schema == {"type": "integer"}
+                assert schema == {"type": ["integer", "null"]}
             case ("status", _):
-                assert schema == {"type": "string"}  # ID
+                assert schema == {"type": ["string", "null"]}  # ID
             case ("select", True):
                 assert schema == {"type": "array", "items": {"type": "string"}}
             case ("select", False):
-                assert schema == {"type": "string"}
+                assert schema == {"type": ["string", "null"]}
             case ("record-reference", True):
                 assert schema == {
                     "type": "array",
@@ -709,7 +709,7 @@ def test_records_get_json_schema(requests_mock, make_attribute_response):
                 }
             case ("record-reference", False):
                 assert schema == {
-                    "type": "object",
+                    "type": ["object", "null"],
                     "properties": {
                         "target_object": {"type": "string"},
                         "target_record_id": {"type": "string"},
@@ -728,7 +728,7 @@ def test_records_get_json_schema(requests_mock, make_attribute_response):
                 }
             case ("actor-reference", False):
                 assert schema == {
-                    "type": "object",
+                    "type": ["object", "null"],
                     "properties": {
                         "referenced_actor_id": {"type": "string"},
                         "referenced_actor_type": {"type": "string"},
@@ -741,7 +741,7 @@ def test_records_get_json_schema(requests_mock, make_attribute_response):
             case ("email-address", True):
                 assert schema == {"type": "array", "items": {"type": "string"}}
             case ("email-address", False):
-                assert schema == {"type": "string"}
+                assert schema == {"type": ["string", "null"]}
             case ("phone-number", True):
                 assert schema == {"type": "array", "items": {"type": "string"}}
             case ("phone-number", False):
