@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.0"
+version = "0.2.0"
 name = "source-primetric"
 description = "Source implementation for primetric."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -22,6 +22,6 @@ airbyte-cdk = "^0"
 source-primetric = "source_primetric.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-pytest-mock = "^3.6.1"
-pytest = "^6.1"
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"

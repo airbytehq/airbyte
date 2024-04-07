@@ -9,13 +9,6 @@ streams:
     name: Assignments
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -51,13 +44,6 @@ streams:
     name: Employees
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -93,13 +79,6 @@ streams:
     name: Hashtags
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -135,13 +114,6 @@ streams:
     name: OrganizationClients
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -177,13 +149,6 @@ streams:
     name: OrganizationCompanyGroups
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -219,13 +184,6 @@ streams:
     name: OrganizationDepartments
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -261,13 +219,6 @@ streams:
     name: OrganizationIdentityProviders
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -296,13 +247,6 @@ streams:
     name: OrganizationPositions
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -338,13 +282,6 @@ streams:
     name: OrganizationRagScopes
     primary_key:
       - text
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -380,13 +317,6 @@ streams:
     name: OrganizationRoles
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -422,13 +352,6 @@ streams:
     name: OrganizationSeniorities
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -464,13 +387,6 @@ streams:
     name: OrganizationTags
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -506,13 +422,6 @@ streams:
     name: OrganizationTeams
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -548,13 +457,6 @@ streams:
     name: OrganizationTimeoffTypes
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -590,13 +492,6 @@ streams:
     name: People
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -632,13 +527,6 @@ streams:
     name: Projects
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -674,13 +562,6 @@ streams:
     name: ProjectsVacancies
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -716,13 +597,6 @@ streams:
     name: RagRatings
     primary_key:
       - project_id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -751,13 +625,6 @@ streams:
     name: Skills
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -793,13 +660,6 @@ streams:
     name: Timeoffs
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -835,13 +695,6 @@ streams:
     name: Worklogs
     primary_key:
       - uuid
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
