@@ -197,7 +197,15 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         """
         Retrieves and caches SharePoint drives, including the user's drive based on authentication type.
         """
-        drives = execute_query_with_retry(self.one_drive_client.drives.get())
+        drives = None
+        sites = execute_query_with_retry(self.one_drive_client.sites.get_all_sites().execute_query())
+        for site in sites:
+            site_drives = execute_query_with_retry(self.one_drive_client.sites[site.id].drives.get().execute_query())
+            if drives is None:
+                drives = site_drives
+            else:
+                for site_drive in site_drives:
+                    drives.add_child(site_drive)
 
         if self.config.credentials.auth_type == "Client":
             my_drive = execute_query_with_retry(self.one_drive_client.me.drive.get())
