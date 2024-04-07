@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.79.1
+Dummy patch to test new publishing flow fixes
+
 ## 0.79.0
 Update release process of airbyte-cdk and source-declarative manifest
 
