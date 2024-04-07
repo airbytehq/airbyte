@@ -19,7 +19,7 @@ import java.util.stream.Stream
  * Callers are encouraged to use the static factory methods instead of the public constructor.
  */
 @JvmRecord
-data class Sql(@JvmField val transactions: List<List<String>>) {
+data class Sql(val transactions: List<List<String>>) {
     /**
      * @param begin The SQL statement to start a transaction, typically "BEGIN"
      * @param commit The SQL statement to commit a transaction, typically "COMMIT"
@@ -74,6 +74,7 @@ data class Sql(@JvmField val transactions: List<List<String>>) {
         }
 
         /** Execute each statement as its own transaction. */
+        @JvmStatic
         fun separately(statements: List<String>): Sql {
             return create(
                 statements
@@ -97,12 +98,14 @@ data class Sql(@JvmField val transactions: List<List<String>>) {
             return transactionally(statement)
         }
 
+        @JvmStatic
         fun concat(vararg sqls: Sql): Sql {
             return create(
                 Stream.of(*sqls).flatMap { sql: Sql -> sql.transactions.stream() }.toList()
             )
         }
 
+        @JvmStatic
         fun concat(sqls: List<Sql>): Sql {
             return create(sqls.stream().flatMap { sql: Sql -> sql.transactions.stream() }.toList())
         }
@@ -111,6 +114,7 @@ data class Sql(@JvmField val transactions: List<List<String>>) {
          * Utility method to create a Sql object without empty statements/transactions, and
          * appending semicolons when needed.
          */
+        @JvmStatic
         fun create(transactions: List<List<String>>): Sql {
             return Sql(
                 transactions

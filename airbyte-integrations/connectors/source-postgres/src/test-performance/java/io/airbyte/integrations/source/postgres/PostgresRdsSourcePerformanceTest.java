@@ -34,7 +34,7 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
         .put("method", "Standard")
         .build());
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
+    setConfig(Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
         .put(JdbcUtils.PORT_KEY, plainConfig.get(JdbcUtils.PORT_KEY))
         .put(JdbcUtils.DATABASE_KEY, dbName)
@@ -43,7 +43,7 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
         .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
         .put(JdbcUtils.SSL_KEY, true)
         .put("replication_method", replicationMethod)
-        .build());
+        .build()));
   }
 
   /**
