@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 722ba4bf-06ec-45a4-8dd5-72e4a5cf3903
-  dockerImageTag: 1.0.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-my-hours
   githubIssueLabel: source-my-hours
   icon: my-hours.svg
@@ -27,11 +27,6 @@ data:
   name: My Hours
   releaseDate: 2021-12-21
   releaseStage: alpha
-  releases:
-    breakingChanges:
-      1.0.0:
-        upgradeDeadline: "2024-04-01"
-        message: "The verison migrates the My Hours connector to the low-code framework for greater maintainability."
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/my-hours
   tags:
