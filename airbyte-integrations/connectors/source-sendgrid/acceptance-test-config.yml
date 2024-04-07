@@ -18,7 +18,7 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/old_config.json"
+      - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
           disable_for_version: "0.3.0"
   basic_read:

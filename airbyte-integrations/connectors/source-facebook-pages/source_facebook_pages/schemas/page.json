@@ -197,9 +197,6 @@
     "instagram_business_account": {
       "$ref": "iguser.json"
     },
-    "instant_articles_review_status": {
-      "type": ["string", "null"]
-    },
     "is_always_open": {
       "type": ["boolean", "null"]
     },
@@ -230,14 +227,8 @@
     "is_unclaimed": {
       "type": ["boolean", "null"]
     },
-    "is_verified": {
-      "type": ["boolean", "null"]
-    },
     "is_webhooks_subscribed": {
       "type": ["boolean", "null"]
-    },
-    "keywords": {
-      "type": ["string", "null"]
     },
     "leadgen_tos_acceptance_time": {
       "type": ["string", "null"],
@@ -258,9 +249,6 @@
     "members": {
       "type": ["string", "null"]
     },
-    "merchant_id": {
-      "type": ["string", "null"]
-    },
     "merchant_review_status": {
       "type": ["string", "null"]
     },
@@ -273,9 +261,6 @@
         "type": ["string", "null"]
       }
     },
-    "messenger_ads_default_page_welcome_message": {
-      "$ref": "messengerdestinationpagewelcomemessage.json"
-    },
     "messenger_ads_default_quick_replies": {
       "type": ["array", "null"],
       "items": {
@@ -284,9 +269,6 @@
     },
     "messenger_ads_quick_replies_type": {
       "type": ["string", "null"]
-    },
-    "mini_shop_storefront": {
-      "$ref": "shop.json"
     },
     "mission": {
       "type": ["string", "null"]
@@ -426,9 +408,6 @@
     "supports_donate_button_in_live_video": {
       "type": ["boolean", "null"]
     },
-    "supports_instant_articles": {
-      "type": ["boolean", "null"]
-    },
     "talking_about_count": {
       "type": ["integer", "null"]
     },
@@ -464,39 +443,6 @@
     },
     "written_by": {
       "type": ["string", "null"]
-    },
-    "admin_notes": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "pageadminnote.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
     },
     "ads_posts": {
       "type": ["object", "null"],
@@ -795,105 +741,6 @@
         }
       }
     },
-    "claimed_urls": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "url.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "commerce_eligibility": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "pagecommerceeligibility.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "commerce_merchant_settings": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "commercemerchantsettings.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "commerce_orders": {
       "type": ["object", "null"],
       "properties": {
@@ -927,72 +774,6 @@
         }
       }
     },
-    "commerce_payouts": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "commercepayout.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "commerce_transactions": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "commerceordertransactiondetail.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "conversations": {
       "type": ["object", "null"],
       "properties": {
@@ -1000,39 +781,6 @@
           "type": ["array", "null"],
           "items": {
             "$ref": "unifiedthread.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "copyright_whitelisted_partners": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "profile.json"
           }
         },
         "paging": {
@@ -1422,72 +1170,6 @@
         }
       }
     },
-    "instant_articles": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "instantarticle.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "instant_articles_insights": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "instantarticleinsightsqueryresult.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "leadgen_forms": {
       "type": ["object", "null"],
       "properties": {
@@ -1693,39 +1375,6 @@
           "type": ["array", "null"],
           "items": {
             "$ref": "messengerprofile.json"
-          }
-        },
-        "paging": {
-          "type": ["object", "null"],
-          "properties": {
-            "previous": {
-              "type": ["string", "null"]
-            },
-            "next": {
-              "type": ["string", "null"]
-            },
-            "cursors": {
-              "type": "object",
-              "properties": {
-                "before": {
-                  "type": ["string", "null"]
-                },
-                "after": {
-                  "type": ["string", "null"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "nativeoffers": {
-      "type": ["object", "null"],
-      "properties": {
-        "data": {
-          "type": ["array", "null"],
-          "items": {
-            "$ref": "nativeoffer.json"
           }
         },
         "paging": {

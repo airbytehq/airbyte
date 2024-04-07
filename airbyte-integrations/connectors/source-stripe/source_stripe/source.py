@@ -20,7 +20,7 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, ConcurrentCursor, CursorField, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -524,7 +524,13 @@ class SourceStripe(ConcurrentSourceAdapter):
 
     def _to_concurrent(self, stream: Stream, fallback_start, state_manager: ConnectorStateManager) -> Stream:
         if stream.name in self._streams_configured_as_full_refresh:
-            return StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
+            return StreamFacade.create_from_stream(
+                stream,
+                self,
+                entrypoint_logger,
+                self._create_empty_state(),
+                FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository),
+            )
 
         state = state_manager.get_stream_state(stream.name, stream.namespace)
         slice_boundary_fields = self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream))

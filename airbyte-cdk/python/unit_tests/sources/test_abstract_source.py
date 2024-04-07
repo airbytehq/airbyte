@@ -187,6 +187,10 @@ class MockStream(Stream):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return "pk"
 
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return ["updated_at"]
+
 
 class MockStreamWithState(MockStream):
     cursor_field = "cursor"
@@ -261,8 +265,11 @@ def test_read_nonexistent_stream_raises_exception(mocker):
 
     src = MockSource(streams=[s1])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
-    with pytest.raises(KeyError):
+    with pytest.raises(AirbyteTracedException) as exc_info:
         list(src.read(logger, {}, catalog))
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "not found in the source" in exc_info.value.internal_message
 
 
 def test_read_nonexistent_stream_without_raises_exception(mocker):

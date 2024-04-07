@@ -10,7 +10,7 @@ hikaricp = "5.0.1"
 jmh = "1.36"
 jooq = "3.13.4"
 junit-bom = "5.10.1"
-kotlin = "1.9.0"
+kotlin = "1.9.23"
 log4j = "2.21.1"
 lombok = "1.18.30"
 postgresql = "42.6.0"
@@ -75,7 +75,7 @@ junit-jupiter-system-stubs = { module = "uk.org.webcompere:system-stubs-jupiter"
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "5.1.0" }
 kotlinx-cli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version = "0.3.5" }
 kotlinx-cli-jvm = { module = "org.jetbrains.kotlinx:kotlinx-cli-jvm", version = "0.3.5" }
-launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "6.0.1" }
+launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "7.2.6" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-slf4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }

@@ -14,7 +14,7 @@ black = "~22.3.0"
 [tool.black]
 line-length = 140
 target-version = ["py37"]
-extend-exclude = "(build|integration_tests|unit_tests|generated|airbyte-lib)"
+extend-exclude = "(build|integration_tests|unit_tests|generated)"
 
 [tool.coverage.report]
 fail_under = 0
@@ -50,6 +50,7 @@ extend-ignore = [
   "E231",  # Bad trailing comma (conflicts with Black)
   "E501",  # line too long (conflicts with Black)
   "W503",  # line break before binary operator (conflicts with Black)
+  "F811", # TODO: ella fix after pflake8 version update
 ]
 
 [tool.isort]
@@ -63,7 +64,6 @@ force_grid_wrap = 0
 use_parentheses = true
 skip_glob = [
   "**/connector_builder/generated/**",
-  "airbyte-lib" # Handled by Ruff, with some conflicting rules
   # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
   # correctly handles first-party imports in subdirectories.
 ]

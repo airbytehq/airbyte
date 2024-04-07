@@ -16,7 +16,6 @@ This page will walk through the process of developing with the Java CDK.
       * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
       * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
       * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-   * [Common Debugging Tips](#common-debugging-tips)
    * [Changelog](#changelog)
       * [Java CDK](#java-cdk)
 
@@ -24,9 +23,9 @@ This page will walk through the process of developing with the Java CDK.
 
 ### What is included in the Java CDK?
 
-The java CDK is comprised of separate modules:
+The java CDK is comprised of separate modules, among which:
 
-- `core` - Shared classes for building connectors of all types.
+- `dependencies` and `core` - Shared classes for building connectors of all types.
 - `db-sources` - Shared classes for building DB sources.
 - `db-destinations` - Shared classes for building DB destinations.
 
@@ -34,7 +33,6 @@ Each CDK submodule may contain these elements:
 
 - `src/main` - (Required.) The classes that will ship with the connector, providing capabilities to the connectors.
 - `src/test` - (Required.) These are unit tests that run as part of every build of the CDK. They help ensure that CDK `main` code is in a healthy state.
-- `src/test-integration` - (Optional.) Integration tests which provide a more extensive test of the code in `src/main`. These are not by the `build` command but are executed as part of the `integrationTest` or `integrationTestJava` Gradle tasks.
 - `src/testFixtures` - (Optional.) These shared classes are exported for connectors for use in the connectors' own test implementations. Connectors will have access to these classes within their unit and integration tests, but the classes will not be shipped with connectors when they are published.
 
 ### How is the CDK published?
@@ -83,8 +81,8 @@ Note:
 - By running the publish with `dry-run=true`, you can confirm the process is working as expected, without actually publishing the changes.
 - In dry-run mode, you can also view and download the jars that are generated. To do so, navigate to the job status in GitHub Actions and navigate to the 'artifacts' section.
 - You can also invoke manually in the GitHub Web UI. To do so: go to `Actions` tab, select the `Publish Java CDK` workflow, and click `Run workflow`.
-- You can view and administer published CDK versions here: https://admin.cloudrepo.io/repository/airbyte-public-jars/io/airbyte/airbyte-cdk
-- The public endpoint for published CDK versions is here: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/airbyte-cdk/
+- You can view and administer published CDK versions here: https://admin.cloudrepo.io/repository/airbyte-public-jars/io/airbyte/cdk
+- The public endpoint for published CDK versions is here: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/
 
 ## Developing Connectors with the Java CDK
 
@@ -94,7 +92,6 @@ You can reference the CDK in your connector's `build.gradle` file:
 
 ```groovy
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
@@ -105,7 +102,6 @@ airbyteJavaConnector {
                                    // local cdk project.
 }
 
-airbyteJavaConnector.addCdkDependencies()
 ```
 
 Replace `0.1.0` with the CDK version you are working with. If you're actively developing the CDK and want to use the latest version locally, use the `useLocalCdk` flag to use the live CDK code during builds and tests.
@@ -128,10 +124,7 @@ After the above, you can build and test your connector as usual. Gradle will aut
 Once you are done developing and testing your CDK changes:
 
 1. Publish the CDK using the instructions here in this readme.
-2. After publishing the CDK, update the `useLocalCdk` setting by running `./gradlew :airbyte-integrations:connectors:<connector-name>:disableLocalCdkRefs`. to automatically revert `useLocalCdk` to `false`.
-3. You can optionally run `./gradlew :airbyte-integrations:connectors:<connector-name>:assertNotUsingLocalCdk` to ensure that the project is not using a local CDK reference.
-
-_Note: You can also use `./gradlew assertNotUsingLocalCdk` or `./gradlew disableLocalCdkRefs` to run these tasks on **all** connectors simultaneously._
+2. After publishing the CDK, update the `useLocalCdk` setting to `false`.
 
 ### Troubleshooting CDK Dependency Caches
 
@@ -145,27 +138,71 @@ You can always pin your connector to a prior stable version of the CDK, which ma
 
 Maven and Gradle will automatically reference the correct (pinned) version of the CDK for your connector, and you can use your local IDE to browse the prior version of the codebase that corresponds to that version.
 
-## Common Debugging Tips
-
-MavenLocal debugging steps:
-
-1. Confirm local publish status by running:
-   `ls -la ~/.m2/repository/io/airbyte/airbyte-cdk/*`
-2. Confirm jar contents by running:
-   `jar tf ~/.m2/repository/io/airbyte/airbyte-cdk/0.0.2-SNAPSHOT/airbyte-cdk-0.0.2-SNAPSHOT.jar`
-3. Remove CDK artifacts from MavenLocal by running:
-   `rm -rf ~/.m2/repository/io/airbyte/airbyte-cdk/*`
-4. Rebuid CDK artifacts by running:
-   `./gradlew :airbyte-cdk:java:airbyte-cdk:build`
-   or
-   `./gradlew :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal`
-
 ## Changelog
 
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.29.6  | 2024-04-05 | [\#36577](https://github.com/airbytehq/airbyte/pull/36577) | Do not send system_error trace message for config exceptions.                                                                                                  |
+| 0.29.5  | 2024-04-05 | [\#36620](https://github.com/airbytehq/airbyte/pull/36620) | Missed changes - open for extension for destination-postgres                                                                                                   |
+| 0.29.3  | 2024-04-04 | [\#36759](https://github.com/airbytehq/airbyte/pull/36759) | Minor fixes.                                                                                                                                                   |
+| 0.29.3  | 2024-04-04 | [\#36706](https://github.com/airbytehq/airbyte/pull/36706) | Enabling spotbugs for s3-destination.                                                                                                                          |
+| 0.29.3  | 2024-04-03 | [\#36705](https://github.com/airbytehq/airbyte/pull/36705) | Enabling spotbugs for db-sources.                                                                                                                              |
+| 0.29.3  | 2024-04-03 | [\#36704](https://github.com/airbytehq/airbyte/pull/36704) | Enabling spotbugs for datastore-postgres.                                                                                                                      |
+| 0.29.3  | 2024-04-03 | [\#36703](https://github.com/airbytehq/airbyte/pull/36703) | Enabling spotbugs for gcs-destination.                                                                                                                         |
+| 0.29.3  | 2024-04-03 | [\#36702](https://github.com/airbytehq/airbyte/pull/36702) | Enabling spotbugs for db-destinations.                                                                                                                         |
+| 0.29.3  | 2024-04-03 | [\#36701](https://github.com/airbytehq/airbyte/pull/36701) | Enabling spotbugs for typing_and_deduping.                                                                                                                     |
+| 0.29.3  | 2024-04-03 | [\#36612](https://github.com/airbytehq/airbyte/pull/36612) | Enabling spotbugs for dependencies.                                                                                                                            |
+| 0.29.5  | 2024-04-05 | [\#36577](https://github.com/airbytehq/airbyte/pull/36577) | Do not send system_error trace message for config exceptions.                                                                                                  |
+| 0.29.3  | 2024-04-04 | [\#36759](https://github.com/airbytehq/airbyte/pull/36759) | Minor fixes.                                                                                                                                                   |
+| 0.29.3  | 2024-04-04 | [\#36706](https://github.com/airbytehq/airbyte/pull/36706) | Enabling spotbugs for s3-destination.                                                                                                                          |
+| 0.29.3  | 2024-04-03 | [\#36705](https://github.com/airbytehq/airbyte/pull/36705) | Enabling spotbugs for db-sources.                                                                                                                              |
+| 0.29.3  | 2024-04-03 | [\#36704](https://github.com/airbytehq/airbyte/pull/36704) | Enabling spotbugs for datastore-postgres.                                                                                                                      |
+| 0.29.3  | 2024-04-03 | [\#36703](https://github.com/airbytehq/airbyte/pull/36703) | Enabling spotbugs for gcs-destination.                                                                                                                         |
+| 0.29.3  | 2024-04-03 | [\#36702](https://github.com/airbytehq/airbyte/pull/36702) | Enabling spotbugs for db-destinations.                                                                                                                         |
+| 0.29.3  | 2024-04-03 | [\#36701](https://github.com/airbytehq/airbyte/pull/36701) | Enabling spotbugs for typing_and_deduping.                                                                                                                     |
+| 0.29.3  | 2024-04-03 | [\#36612](https://github.com/airbytehq/airbyte/pull/36612) | Enabling spotbugs for dependencies.                                                                                                                            |
+| 0.29.2  | 2024-04-04 | [\#36845](https://github.com/airbytehq/airbyte/pull/36772) | Changes to make source-mongo compileable                                                                                                                       |
+| 0.29.1  | 2024-04-03 | [\#36772](https://github.com/airbytehq/airbyte/pull/36772) | Changes to make source-mssql compileable                                                                                                                       |
+| 0.29.0  | 2024-04-02 | [\#36759](https://github.com/airbytehq/airbyte/pull/36759) | Build artifact publication changes and fixes.                                                                                                                  |
+| 0.28.21 | 2024-04-02 | [\#36673](https://github.com/airbytehq/airbyte/pull/36673) | Change the destination message parsing to use standard java/kotlin classes. Adds logging to catch empty lines.                                                 |
+| 0.28.20 | 2024-04-01 | [\#36584](https://github.com/airbytehq/airbyte/pull/36584) | Changes to make source-postgres compileable                                                                                                                    |
+| 0.28.19 | 2024-03-29 | [\#36619](https://github.com/airbytehq/airbyte/pull/36619) | Changes to make destination-postgres compileable                                                                                                               |
+| 0.28.19 | 2024-03-29 | [\#36588](https://github.com/airbytehq/airbyte/pull/36588) | Changes to make destination-redshift compileable                                                                                                               |
+| 0.28.19 | 2024-03-29 | [\#36610](https://github.com/airbytehq/airbyte/pull/36610) | remove airbyte-api generation, pull depdendency jars instead                                                                                                   |
+| 0.28.19 | 2024-03-29 | [\#36611](https://github.com/airbytehq/airbyte/pull/36611) | disable spotbugs for CDK tes and testFixtures tasks                                                                                                            |
+| 0.28.18 | 2024-03-28 | [\#36606](https://github.com/airbytehq/airbyte/pull/36574) | disable spotbugs for CDK tes and testFixtures tasks                                                                                                            |
+| 0.28.18 | 2024-03-28 | [\#36574](https://github.com/airbytehq/airbyte/pull/36574) | Fix ContainerFactory                                                                                                                                           |
+| 0.28.18 | 2024-03-27 | [\#36570](https://github.com/airbytehq/airbyte/pull/36570) | Convert missing s3-destinations tests to Kotlin                                                                                                                |
+| 0.28.18 | 2024-03-27 | [\#36446](https://github.com/airbytehq/airbyte/pull/36446) | Convert dependencies submodule to Kotlin                                                                                                                       |
+| 0.28.18 | 2024-03-27 | [\#36445](https://github.com/airbytehq/airbyte/pull/36445) | Convert functional out Checked interfaces to kotlin                                                                                                            |
+| 0.28.18 | 2024-03-27 | [\#36444](https://github.com/airbytehq/airbyte/pull/36444) | Use apache-commons classes in our Checked functional interfaces                                                                                                |
+| 0.28.18 | 2024-03-27 | [\#36467](https://github.com/airbytehq/airbyte/pull/36467) | Convert #36465 to Kotlin                                                                                                                                       |
+| 0.28.18 | 2024-03-27 | [\#36473](https://github.com/airbytehq/airbyte/pull/36473) | Convert convert #36396 to Kotlin                                                                                                                               |
+| 0.28.18 | 2024-03-27 | [\#36439](https://github.com/airbytehq/airbyte/pull/36439) | Convert db-destinations submodule to Kotlin                                                                                                                    |
+| 0.28.18 | 2024-03-27 | [\#36438](https://github.com/airbytehq/airbyte/pull/36438) | Convert db-sources submodule to Kotlin                                                                                                                         |
+| 0.28.18 | 2024-03-26 | [\#36437](https://github.com/airbytehq/airbyte/pull/36437) | Convert gsc submodule to Kotlin                                                                                                                                |
+| 0.28.18 | 2024-03-26 | [\#36421](https://github.com/airbytehq/airbyte/pull/36421) | Convert typing-deduping submodule to Kotlin                                                                                                                    |
+| 0.28.18 | 2024-03-26 | [\#36420](https://github.com/airbytehq/airbyte/pull/36420) | Convert s3-destinations submodule to Kotlin                                                                                                                    |
+| 0.28.18 | 2024-03-26 | [\#36419](https://github.com/airbytehq/airbyte/pull/36419) | Convert azure submodule to Kotlin                                                                                                                              |
+| 0.28.18 | 2024-03-26 | [\#36413](https://github.com/airbytehq/airbyte/pull/36413) | Convert postgres submodule to Kotlin                                                                                                                           |
+| 0.28.18 | 2024-03-26 | [\#36412](https://github.com/airbytehq/airbyte/pull/36412) | Convert mongodb submodule to Kotlin                                                                                                                            |
+| 0.28.18 | 2024-03-26 | [\#36411](https://github.com/airbytehq/airbyte/pull/36411) | Convert datastore-bigquery submodule to Kotlin                                                                                                                 |
+| 0.28.18 | 2024-03-26 | [\#36205](https://github.com/airbytehq/airbyte/pull/36205) | Convert core/main to Kotlin                                                                                                                                    |
+| 0.28.18 | 2024-03-26 | [\#36204](https://github.com/airbytehq/airbyte/pull/36204) | Convert core/test to Kotlin                                                                                                                                    |
+| 0.28.18 | 2024-03-26 | [\#36190](https://github.com/airbytehq/airbyte/pull/36190) | Convert core/testFixtures to Kotlin                                                                                                                            |
+| 0.28.0  | 2024-03-26 | [\#36514](https://github.com/airbytehq/airbyte/pull/36514) | Bump CDK version to 0.28.0                                                                                                                                     |
+| 0.27.7  | 2024-03-26 | [\#36466](https://github.com/airbytehq/airbyte/pull/36466) | Destinations: fix support for case-sensitive fields in destination state.                                                                                      |
+| 0.27.6  | 2024-03-26 | [\#36432](https://github.com/airbytehq/airbyte/pull/36432) | Sources support for AirbyteRecordMessageMeta during reading source data types.                                                                                 |
+| 0.27.5  | 2024-03-25 | [\#36461](https://github.com/airbytehq/airbyte/pull/36461) | Destinations: Handle case-sensitive columns in destination state handling.                                                                                     |
+| 0.27.4  | 2024-03-25 | [\#36333](https://github.com/airbytehq/airbyte/pull/36333) | Sunset DebeziumSourceDecoratingIterator.                                                                                                                       |
+| 0.27.1  | 2024-03-22 | [\#36296](https://github.com/airbytehq/airbyte/pull/36296) | Destinations: (async framework) Do not log invalid message data.                                                                                               |
+| 0.27.0  | 2024-03-21 | [\#36364](https://github.com/airbytehq/airbyte/pull/36364) | Sources: Increase debezium initial record wait time to 40 minute.                                                                                              |
+| 0.26.1  | 2024-03-19 | [\#35599](https://github.com/airbytehq/airbyte/pull/35599) | Sunset SourceDecoratingIterator.                                                                                                                               |
+| 0.26.0  | 2024-03-19 | [\#36263](https://github.com/airbytehq/airbyte/pull/36263) | Improve conversion of debezium Date type for some edge case in mssql.                                                                                          |
+| 0.25.0  | 2024-03-18 | [\#36203](https://github.com/airbytehq/airbyte/pull/36203) | Wiring of Transformer to StagingConsumerFactory and JdbcBufferedConsumerFactory; import changes for Kotlin conversion; State message logs to debug             |
+| 0.24.1  | 2024-03-13 | [\#36022](https://github.com/airbytehq/airbyte/pull/36022) | Move log4j2-test.xml to test fixtures, away from runtime classpath.                                                                                            |
 | 0.24.0  | 2024-03-13 | [\#35944](https://github.com/airbytehq/airbyte/pull/35944) | Add `_airbyte_meta` in raw table and test fixture updates                                                                                                      |
 | 0.23.20 | 2024-03-12 | [\#36011](https://github.com/airbytehq/airbyte/pull/36011) | Debezium configuration for conversion of null value on a column with default value.                                                                            |
 | 0.23.19 | 2024-03-11 | [\#35904](https://github.com/airbytehq/airbyte/pull/35904) | Add retries to the debezium engine.                                                                                                                            |
