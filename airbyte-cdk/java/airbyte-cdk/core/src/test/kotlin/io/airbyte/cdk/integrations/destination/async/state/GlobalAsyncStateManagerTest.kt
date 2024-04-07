@@ -2,15 +2,13 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.integrations.destnation.async.state
+package io.airbyte.cdk.integrations.destination.async.state
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteStateMessage
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteStreamState
-import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteStateMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteStreamState
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -19,176 +17,180 @@ import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.stream.Collectors
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class GlobalAsyncStateManagerTest {
-    private val TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES =
-        (100 * 1024 * 1024 // 10MB
-            )
-            .toLong()
-    private val DEFAULT_NAMESPACE = "foo_namespace"
-    private val STATE_MSG_SIZE: Long = 1000
+    companion object {
+        private const val TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES =
+            (100 * 1024 * 1024 // 10MB
+                )
+                .toLong()
+        private const val DEFAULT_NAMESPACE = "foo_namespace"
+        private const val STATE_MSG_SIZE: Long = 1000
+        private const val NAMESPACE = "namespace"
+        private const val STREAM_NAME = "id_and_name"
+        private const val STREAM_NAME2 = STREAM_NAME + 2
+        private const val STREAM_NAME3 = STREAM_NAME + 3
+        private val STREAM1_DESC: StreamDescriptor =
+            StreamDescriptor().withName(STREAM_NAME).withNamespace(NAMESPACE)
+        private val STREAM2_DESC: StreamDescriptor =
+            StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE)
+        private val STREAM3_DESC: StreamDescriptor =
+            StreamDescriptor().withName(STREAM_NAME3).withNamespace(NAMESPACE)
 
-    private val NAMESPACE = "namespace"
-    private val STREAM_NAME = "id_and_name"
-    private val STREAM_NAME2 = STREAM_NAME + 2
-    private val STREAM_NAME3 = STREAM_NAME + 3
-    private val STREAM1_DESC: StreamDescriptor =
-        StreamDescriptor().withName(STREAM_NAME).withNamespace(NAMESPACE)
-    private val STREAM2_DESC: StreamDescriptor =
-        StreamDescriptor().withName(STREAM_NAME2).withNamespace(NAMESPACE)
-    private val STREAM3_DESC: StreamDescriptor =
-        StreamDescriptor().withName(STREAM_NAME3).withNamespace(NAMESPACE)
+        private val GLOBAL_STATE_MESSAGE1: PartialAirbyteMessage =
+            PartialAirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    PartialAirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
+                )
+                .withSerialized(
+                    serializedState(
+                        STREAM1_DESC,
+                        AirbyteStateMessage.AirbyteStateType.GLOBAL,
+                        Jsons.jsonNode(mapOf("cursor" to 1)),
+                    ),
+                )
+        private val GLOBAL_STATE_MESSAGE2: PartialAirbyteMessage =
+            PartialAirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    PartialAirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
+                )
+                .withSerialized(
+                    serializedState(
+                        STREAM2_DESC,
+                        AirbyteStateMessage.AirbyteStateType.GLOBAL,
+                        Jsons.jsonNode(mapOf("cursor" to 2)),
+                    ),
+                )
 
-    private val GLOBAL_STATE_MESSAGE1: PartialAirbyteMessage =
-        PartialAirbyteMessage()
-            .withType(AirbyteMessage.Type.STATE)
-            .withState(
-                PartialAirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
-            )
-            .withSerialized(
-                serializedState(
-                    STREAM1_DESC,
-                    AirbyteStateMessage.AirbyteStateType.GLOBAL,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 1)),
-                ),
-            )
-    private val GLOBAL_STATE_MESSAGE2: PartialAirbyteMessage =
-        PartialAirbyteMessage()
-            .withType(AirbyteMessage.Type.STATE)
-            .withState(
-                PartialAirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
-            )
-            .withSerialized(
-                serializedState(
-                    STREAM2_DESC,
-                    AirbyteStateMessage.AirbyteStateType.GLOBAL,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 2)),
-                ),
-            )
+        private val GLOBAL_STATE_MESSAGE3: PartialAirbyteMessage =
+            PartialAirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    PartialAirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
+                )
+                .withSerialized(
+                    serializedState(
+                        STREAM3_DESC,
+                        AirbyteStateMessage.AirbyteStateType.GLOBAL,
+                        Jsons.jsonNode(mapOf("cursor" to 2)),
+                    ),
+                )
+        private val STREAM1_STATE_MESSAGE1: PartialAirbyteMessage =
+            PartialAirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    PartialAirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
+                )
+                .withSerialized(
+                    serializedState(
+                        STREAM1_DESC,
+                        AirbyteStateMessage.AirbyteStateType.STREAM,
+                        Jsons.jsonNode(mapOf("cursor" to 1)),
+                    ),
+                )
+        private val STREAM1_STATE_MESSAGE2: PartialAirbyteMessage =
+            PartialAirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    PartialAirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
+                )
+                .withSerialized(
+                    serializedState(
+                        STREAM1_DESC,
+                        AirbyteStateMessage.AirbyteStateType.STREAM,
+                        Jsons.jsonNode(mapOf("cursor" to 2)),
+                    ),
+                )
 
-    private val GLOBAL_STATE_MESSAGE3: PartialAirbyteMessage =
-        PartialAirbyteMessage()
-            .withType(AirbyteMessage.Type.STATE)
-            .withState(
-                PartialAirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
-            )
-            .withSerialized(
-                serializedState(
-                    STREAM3_DESC,
-                    AirbyteStateMessage.AirbyteStateType.GLOBAL,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 2)),
-                ),
-            )
-    private val STREAM1_STATE_MESSAGE1: PartialAirbyteMessage =
-        PartialAirbyteMessage()
-            .withType(AirbyteMessage.Type.STATE)
-            .withState(
-                PartialAirbyteStateMessage()
-                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
-            )
-            .withSerialized(
-                serializedState(
-                    STREAM1_DESC,
-                    AirbyteStateMessage.AirbyteStateType.STREAM,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 1)),
-                ),
-            )
-    private val STREAM1_STATE_MESSAGE2: PartialAirbyteMessage =
-        PartialAirbyteMessage()
-            .withType(AirbyteMessage.Type.STATE)
-            .withState(
-                PartialAirbyteStateMessage()
-                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
-            )
-            .withSerialized(
-                serializedState(
-                    STREAM1_DESC,
-                    AirbyteStateMessage.AirbyteStateType.STREAM,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 2)),
-                ),
-            )
+        private val STREAM1_STATE_MESSAGE3: PartialAirbyteMessage =
+            PartialAirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    PartialAirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
+                )
+                .withSerialized(
+                    serializedState(
+                        STREAM1_DESC,
+                        AirbyteStateMessage.AirbyteStateType.STREAM,
+                        Jsons.jsonNode(mapOf("cursor" to 3)),
+                    ),
+                )
+        private val STREAM2_STATE_MESSAGE: PartialAirbyteMessage =
+            PartialAirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    PartialAirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM2_DESC)),
+                )
+                .withSerialized(
+                    serializedState(
+                        STREAM2_DESC,
+                        AirbyteStateMessage.AirbyteStateType.STREAM,
+                        Jsons.jsonNode(mapOf("cursor" to 4)),
+                    ),
+                )
 
-    private val STREAM1_STATE_MESSAGE3: PartialAirbyteMessage =
-        PartialAirbyteMessage()
-            .withType(AirbyteMessage.Type.STATE)
-            .withState(
-                PartialAirbyteStateMessage()
-                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)),
-            )
-            .withSerialized(
-                serializedState(
-                    STREAM1_DESC,
-                    AirbyteStateMessage.AirbyteStateType.STREAM,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 3)),
-                ),
-            )
-    private val STREAM2_STATE_MESSAGE: PartialAirbyteMessage =
-        PartialAirbyteMessage()
-            .withType(AirbyteMessage.Type.STATE)
-            .withState(
-                PartialAirbyteStateMessage()
-                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(PartialAirbyteStreamState().withStreamDescriptor(STREAM2_DESC)),
-            )
-            .withSerialized(
-                serializedState(
-                    STREAM2_DESC,
-                    AirbyteStateMessage.AirbyteStateType.STREAM,
-                    Jsons.jsonNode(ImmutableMap.of("cursor", 4)),
-                ),
-            )
-
-    private fun serializedState(
-        streamDescriptor: StreamDescriptor?,
-        type: AirbyteStateMessage.AirbyteStateType?,
-        state: JsonNode?,
-    ): String {
-        return when (type) {
-            AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
-                Jsons.serialize(
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.STATE)
-                        .withState(
-                            AirbyteStateMessage()
-                                .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-                                .withGlobal(
-                                    AirbyteGlobalState()
-                                        .withSharedState(state)
-                                        .withStreamStates(
-                                            listOf(
-                                                AirbyteStreamState()
-                                                    .withStreamState(Jsons.emptyObject())
-                                                    .withStreamDescriptor(streamDescriptor),
+        private fun serializedState(
+            streamDescriptor: StreamDescriptor?,
+            type: AirbyteStateMessage.AirbyteStateType?,
+            state: JsonNode?,
+        ): String {
+            return when (type) {
+                AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
+                    Jsons.serialize(
+                        AirbyteMessage()
+                            .withType(AirbyteMessage.Type.STATE)
+                            .withState(
+                                AirbyteStateMessage()
+                                    .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                                    .withGlobal(
+                                        AirbyteGlobalState()
+                                            .withSharedState(state)
+                                            .withStreamStates(
+                                                listOf(
+                                                    AirbyteStreamState()
+                                                        .withStreamState(Jsons.emptyObject())
+                                                        .withStreamDescriptor(streamDescriptor),
+                                                ),
                                             ),
-                                        ),
-                                ),
-                        ),
-                )
+                                    ),
+                            ),
+                    )
+                }
+                AirbyteStateMessage.AirbyteStateType.STREAM -> {
+                    Jsons.serialize(
+                        AirbyteMessage()
+                            .withType(AirbyteMessage.Type.STATE)
+                            .withState(
+                                AirbyteStateMessage()
+                                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                                    .withStream(
+                                        AirbyteStreamState()
+                                            .withStreamState(state)
+                                            .withStreamDescriptor(streamDescriptor),
+                                    ),
+                            ),
+                    )
+                }
+                else -> throw RuntimeException("LEGACY STATE NOT SUPPORTED")
             }
-            AirbyteStateMessage.AirbyteStateType.STREAM -> {
-                Jsons.serialize(
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.STATE)
-                        .withState(
-                            AirbyteStateMessage()
-                                .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                                .withStream(
-                                    AirbyteStreamState()
-                                        .withStreamState(state)
-                                        .withStreamDescriptor(streamDescriptor),
-                                ),
-                        ),
-                )
-            }
-            else -> throw RuntimeException("LEGACY STATE NOT SUPPORTED")
         }
     }
 
@@ -555,7 +557,7 @@ class GlobalAsyncStateManagerTest {
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             val preConvertId1: Long = simulateIncomingRecords(STREAM2_DESC, 10, stateManager)
-            Assertions.assertNotEquals(preConvertId0, preConvertId1)
+            assertNotEquals(preConvertId0, preConvertId1)
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(preConvertId0, 10)
             stateManager.decrement(preConvertId1, 10)

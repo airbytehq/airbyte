@@ -79,21 +79,20 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
         validateNumberOfReceivedMsgs(checkStatusMap)
     }
 
-    protected fun validateNumberOfReceivedMsgs(checkStatusMap: Map<String?, Int?>?) {
+    protected fun validateNumberOfReceivedMsgs(checkStatusMap: Map<String, Int>) {
         // Iterate through all streams map and check for streams where
         val failedStreamsMap =
-            checkStatusMap!!
-                .entries
+            checkStatusMap.entries
                 .stream()
-                .filter { el: Map.Entry<String?, Int?> -> el.value != 0 }
+                .filter { el: Map.Entry<String, Int> -> el.value != 0 }
                 .collect(
                     Collectors.toMap(
-                        Function { obj: Map.Entry<String?, Int?> -> obj.key },
-                        Function { obj: Map.Entry<String?, Int?> -> obj.value }
+                        Function { obj: Map.Entry<String, Int> -> obj.key },
+                        Function { obj: Map.Entry<String, Int> -> obj.value }
                     )
                 )
 
-        if (!failedStreamsMap.isEmpty()) {
+        if (failedStreamsMap.isNotEmpty()) {
             Assertions.fail<Any>("Non all messages were delivered. $failedStreamsMap")
         }
         c.info("Finished all checks, no issues found for {} of streams", checkStatusMap.size)
@@ -102,8 +101,8 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
     protected fun prepareMapWithExpectedRecords(
         streamNumber: Int,
         expectedRecordsNumberInEachStream: Int
-    ): MutableMap<String?, Int> {
-        val resultMap: MutableMap<String?, Int> = HashMap() // streamName&expected records in stream
+    ): MutableMap<String, Int> {
+        val resultMap: MutableMap<String, Int> = HashMap() // streamName&expected records in stream
 
         for (currentStream in 0 until streamNumber) {
             val streamName = String.format(testStreamNameTemplate, currentStream)
