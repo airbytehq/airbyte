@@ -41,7 +41,7 @@ data:
       packageName: airbyte-source-monday
   registries:
     cloud:
-      dockerImageTag: 2.0.4  # pinned until https://airbyte.pagerduty.com/incidents/Q1C9A1VU1A3NLH is resolved
+      dockerImageTag: 2.0.4 # pinned until https://airbyte.pagerduty.com/incidents/Q1C9A1VU1A3NLH is resolved
       enabled: true
     oss:
       enabled: true
