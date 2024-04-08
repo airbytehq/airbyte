@@ -15,7 +15,7 @@ Postgres, while an excellent relational database, is not a data warehouse.
    are likely to cause collisions when used as a destination receiving data from highly-nested and
    flattened sources, e.g. `{63 byte name}_a` and `{63 byte name}_b` will both be truncated to
    `{63 byte name}` which causes postgres to throw an error that a duplicate column name was
-   specified. This limit is applicable to table names too. 
+   specified. This limit is applicable to table names too.
 
 :::
 
@@ -105,8 +105,8 @@ From
 
 Airbyte Postgres destination will create raw tables and schemas using the Unquoted identifiers by
 replacing any special characters with an underscore. All final tables and their corresponding
-columns are created using Quoted identifiers preserving the case sensitivity. Special characters in final 
-tables are replaced with underscores. 
+columns are created using Quoted identifiers preserving the case sensitivity. Special characters in final
+tables are replaced with underscores.
 
 :::
 
@@ -236,6 +236,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.7   | 2024-04-08 | [\#36768](https://github.com/airbytehq/airbyte/pull/36768) | Adopt CDK 0.29.7 to improve destination state handling                                                   |
 | 2.0.6   | 2024-04-05 | [\#36620](https://github.com/airbytehq/airbyte/pull/36620) | Adopt CDK 0.29.3 to use Kotlin CDK                                                                       |
 | 2.0.5   | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.27.3; Bugfix for case-senstive table names in v1-v2 migration, `_airbyte_meta` in raw tables |
 | 2.0.4   | 2024-03-07 | [\#35899](https://github.com/airbytehq/airbyte/pull/35899) | Adopt CDK 0.23.18; Null safety check in state parsing                                                    |
