@@ -282,7 +282,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
 
     assert !offset.isEmpty();
     assert Objects.nonNull(schemaHistory);
-    assert Objects.nonNull(schemaHistory.schema());
+    assert Objects.nonNull(schemaHistory.getSchema());
 
     final JsonNode asJson = serialize(offset, schemaHistory);
     LOGGER.info("Initial Debezium state constructed: {}", asJson);
@@ -296,7 +296,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
   public static JsonNode serialize(final Map<String, String> offset, final SchemaHistory dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MysqlCdcStateConstants.MYSQL_CDC_OFFSET, offset);
-    state.put(MysqlCdcStateConstants.MYSQL_DB_HISTORY, dbHistory.schema());
+    state.put(MysqlCdcStateConstants.MYSQL_DB_HISTORY, dbHistory.getSchema());
     state.put(MysqlCdcStateConstants.IS_COMPRESSED, dbHistory.isCompressed());
 
     return Jsons.jsonNode(state);

@@ -93,6 +93,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination<RedshiftS
     // connectTimeout is different from Hikari pool's connectionTimout, driver defaults to 10seconds so
     // increase it to match hikari's default
     connectionOptions.put("connectTimeout", "120");
+    // See RedshiftProperty.LOG_SERVER_ERROR_DETAIL, defaults to true
+    connectionOptions.put("logservererrordetail", "false");
     // HikariPool properties
     // https://github.com/brettwooldridge/HikariCP?tab=readme-ov-file#frequently-used
     // TODO: Change data source factory to configure these properties
