@@ -245,9 +245,11 @@ abstract class JdbcDestinationHandler<DestinationState>(
                             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)),
                             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_STATE)),
                             field(quotedName(DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT)),
-                        ).from(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
+                        )
+                        .from(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
                         .sql,
-                ).map { recordJson: JsonNode ->
+                )
+                .map { recordJson: JsonNode ->
                     // Forcibly downcase all key names.
                     // This is to handle any destinations that upcase the column names.
                     // For example - Snowflake with QUOTED_IDENTIFIERS_IGNORE_CASE=TRUE.
@@ -265,7 +267,8 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     record.setAll<JsonNode>(newFields)
 
                     record
-                }.sortedBy {
+                }
+                .sortedBy {
                     // Sort by updated_at, so that if there are duplicate state,
                     // the most recent state is the one that gets used.
                     // That shouldn't typically happen, but let's be defensive.
@@ -275,16 +278,17 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     } else {
                         OffsetDateTime.MIN
                     }
-                }.associate {
-                    val stateTextNode: JsonNode? =
-                        it.get(DESTINATION_STATE_TABLE_COLUMN_STATE)
+                }
+                .associate {
+                    val stateTextNode: JsonNode? = it.get(DESTINATION_STATE_TABLE_COLUMN_STATE)
                     val stateNode =
                         if (stateTextNode != null) Jsons.deserialize(stateTextNode.asText())
                         else Jsons.emptyObject()
-                    val airbyteStreamNameNamespacePair = AirbyteStreamNameNamespacePair(
-                        it.get(DESTINATION_STATE_TABLE_COLUMN_NAME)?.asText(),
-                        it.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)?.asText(),
-                    )
+                    val airbyteStreamNameNamespacePair =
+                        AirbyteStreamNameNamespacePair(
+                            it.get(DESTINATION_STATE_TABLE_COLUMN_NAME)?.asText(),
+                            it.get(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)?.asText(),
+                        )
 
                     airbyteStreamNameNamespacePair to toDestinationState(stateNode)
                 }
@@ -378,10 +382,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
             existingTable.columns.entries
                 .stream()
                 .filter { column: Map.Entry<String?, ColumnDefinition> ->
-                    JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
-                        .noneMatch { airbyteColumnName: String ->
-                            airbyteColumnName == column.key
-                        }
+                    JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().noneMatch {
+                        airbyteColumnName: String ->
+                        airbyteColumnName == column.key
+                    }
                 }
                 .collect(
                     { LinkedHashMap() },
@@ -390,9 +394,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         column: Map.Entry<String?, ColumnDefinition> ->
                         map[column.key] = column.value.type
                     },
-                    {
-                        obj: LinkedHashMap<String?, String>,
-                        m: LinkedHashMap<String?, String>? ->
+                    { obj: LinkedHashMap<String?, String>, m: LinkedHashMap<String?, String>? ->
                         obj.putAll(m!!)
                     }
                 )
@@ -410,9 +412,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             // Delete all state records where the stream name+namespace match one of our states
             val deleteStates =
                 dslContext
-                    .deleteFrom(
-                        table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
-                    )
+                    .deleteFrom(table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME)))
                     .where(
                         destinationStates.keys
                             .stream()
@@ -420,9 +420,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                                 field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME))
                                     .eq(streamId.originalName)
                                     .and(
-                                        field(
-                                            quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE)
-                                        )
+                                        field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE))
                                             .eq(streamId.originalNamespace)
                                     )
                             }
@@ -435,14 +433,9 @@ abstract class JdbcDestinationHandler<DestinationState>(
             // Reinsert all of our states
             var insertStatesStep =
                 dslContext
-                    .insertInto(
-                        table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME))
-                    )
+                    .insertInto(table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME)))
                     .columns(
-                        field(
-                            quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME),
-                            String::class.java
-                        ),
+                        field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME), String::class.java),
                         field(
                             quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE),
                             String::class.java
