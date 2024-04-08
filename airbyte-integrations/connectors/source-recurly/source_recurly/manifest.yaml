@@ -1,0 +1,1232 @@
+version: 0.79.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: accounts
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/accounts'
+    account_coupon_redemptions:
+      type: DeclarativeStream
+      name: account_coupon_redemptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /accounts/{{ stream_partition['account_id'] }}/coupon_redemptions
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: account_id
+                stream:
+                  $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/account_coupon_redemptions'
+    account_notes:
+      type: DeclarativeStream
+      name: account_notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /accounts/{{ stream_partition['account_id'] }}/notes
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: created_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: account_id
+                stream:
+                  $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/account_notes'
+    add_ons:
+      type: DeclarativeStream
+      name: add_ons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /add_ons
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/add_ons'
+    billing_infos:
+      type: DeclarativeStream
+      name: billing_infos
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /accounts/{{ stream_partition['account_id'] }}/billing_infos
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: account_id
+                stream:
+                  $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/billing_infos'
+    coupons:
+      type: DeclarativeStream
+      name: coupons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: coupons
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/coupons'
+    credit_payments:
+      type: DeclarativeStream
+      name: credit_payments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: credit_payments
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/credit_payments'
+    export_dates:
+      type: DeclarativeStream
+      name: export_dates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: export_dates
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - dates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/export_dates'
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: invoices
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/invoices'
+    line_items:
+      type: DeclarativeStream
+      name: line_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: line_items
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/line_items'
+    measured_units:
+      type: DeclarativeStream
+      name: measured_units
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: measured_units
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/measured_units'
+    plans:
+      type: DeclarativeStream
+      name: plans
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: plans
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/plans'
+    shipping_addresses:
+      type: DeclarativeStream
+      name: shipping_addresses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /accounts/{{ stream_partition['account_id'] }}/shipping_addresses
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: account_id
+                stream:
+                  $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/shipping_addresses'
+    shipping_methods:
+      type: DeclarativeStream
+      name: shipping_methods
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: shipping_methods
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/shipping_methods'
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: subscriptions
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/subscriptions'
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: transactions
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/transactions'
+    unique_coupons:
+      type: DeclarativeStream
+      name: unique_coupons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /coupons/{{ stream_partition['coupon_id'] }}/unique_coupon_codes
+          http_method: GET
+          request_parameters:
+            order: asc
+            sort: updated_at
+          request_headers:
+            User-Agent: USER_AGENT
+            Accept: application/vnd.recurly.v2021-02-25
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: next
+            stop_condition: '{{ response.has_more is false }}'
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: coupon_id
+                stream:
+                  $ref: '#/definitions/streams/coupons'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%s'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''begin_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: begin_time
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end_time
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''end_time''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/unique_coupons'
+  base_requester:
+    type: HttpRequester
+    url_base: https://v3.recurly.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: '{{ config[''api_key''] }}'
+      password: '{{ config[''api_key''] }}'
+
+streams:
+  - $ref: '#/definitions/streams/accounts'
+  - $ref: '#/definitions/streams/account_coupon_redemptions'
+  - $ref: '#/definitions/streams/account_notes'
+  - $ref: '#/definitions/streams/add_ons'
+  - $ref: '#/definitions/streams/billing_infos'
+  - $ref: '#/definitions/streams/coupons'
+  - $ref: '#/definitions/streams/credit_payments'
+  - $ref: '#/definitions/streams/export_dates'
+  - $ref: '#/definitions/streams/invoices'
+  - $ref: '#/definitions/streams/line_items'
+  - $ref: '#/definitions/streams/measured_units'
+  - $ref: '#/definitions/streams/plans'
+  - $ref: '#/definitions/streams/shipping_addresses'
+  - $ref: '#/definitions/streams/shipping_methods'
+  - $ref: '#/definitions/streams/subscriptions'
+  - $ref: '#/definitions/streams/transactions'
+  - $ref: '#/definitions/streams/unique_coupons'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        description: >-
+          Recurly API Key. See the  <a
+          href="https://docs.airbyte.com/integrations/sources/recurly">docs</a>
+          for more information on how to generate this key.
+        order: 0
+      begin_time:
+        type: string
+        description: >-
+          ISO8601 timestamp from which the replication from Recurly API will
+          start from.
+        examples:
+          - '2021-12-01T00:00:00'
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        order: 1
+      end_time:
+        type: string
+        description: >-
+          ISO8601 timestamp to which the replication from Recurly API will stop.
+          Records after that date won't be imported.
+        examples:
+          - '2021-12-01T00:00:00'
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        order: 2
+    additionalProperties: true
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  account_coupon_redemptions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  account_notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  add_ons:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  billing_infos:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  coupons:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  credit_payments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  export_dates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  line_items:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  measured_units:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  plans:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  shipping_addresses:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  shipping_methods:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  transactions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  unique_coupons:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

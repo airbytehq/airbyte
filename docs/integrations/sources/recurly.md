@@ -64,6 +64,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                                  |
 |:--------|:-----------| :--------------------------------------------------------| :--------------------------------------------------------------------------------------- |
+| 1.1.0   | 2024-04-08 | [x](https://github.com/airbytehq/airbyte/pull/x) | Migrate to Low Code CDK                             |
 | 1.0.1   | 2024-03-05 | [35828](https://github.com/airbytehq/airbyte/pull/35828) | Bump version to unarchive supportLevel in Cloud productionDB                             |
 | 1.0.0   | 2024-03-01 | [35763](https://github.com/airbytehq/airbyte/pull/35763) | Re-introduce updated connector to catalog from archival repo                             |
 | 0.5.0   | 2024-02-22 | [34622](https://github.com/airbytehq/airbyte/pull/34622) | Republish connector using base image/Poetry, update schemas                              |
