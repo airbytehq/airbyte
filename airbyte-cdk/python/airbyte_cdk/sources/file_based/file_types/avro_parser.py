@@ -126,7 +126,7 @@ class AvroParser(FileTypeParser):
                 return {"type": "string", "pattern": f"^-?\\d{{{1,max_whole_number_range}}}(?:\\.\\d{1,decimal_range})?$"}
             elif "logicalType" in avro_field:
                 if avro_field["logicalType"] not in AVRO_LOGICAL_TYPE_TO_JSON:
-                    raise ValueError(f"{avro_field['logical_type']} is not a valid Avro logical type")
+                    raise ValueError(f"{avro_field['logicalType']} is not a valid Avro logical type")
                 return AVRO_LOGICAL_TYPE_TO_JSON[avro_field["logicalType"]]
             else:
                 raise ValueError(f"Unsupported avro type: {avro_field}")
