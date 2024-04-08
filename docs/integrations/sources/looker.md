@@ -78,6 +78,7 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.3.0 | 2022-04-08 | [](https://github.com/airbytehq/airbyte/pull/) | Migrate to LowCode |
 | 0.2.8 | 2022-12-07 | [20182](https://github.com/airbytehq/airbyte/pull/20182) | Fix schema transformation issue |
 | 0.2.7 | 2022-01-24 | [9609](https://github.com/airbytehq/airbyte/pull/9609) | Migrate to native CDK and fixing of intergration tests. |
 | 0.2.6 | 2021-12-07 | [8578](https://github.com/airbytehq/airbyte/pull/8578) | Update titles and descriptions. |

@@ -1,0 +1,1289 @@
+version: 0.79.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - color_collections
+
+definitions:
+  streams:
+    looks:
+      type: DeclarativeStream
+      name: looks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: looks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/looks'
+    roles:
+      type: DeclarativeStream
+      name: roles
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/roles'
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/users'
+    groups:
+      type: DeclarativeStream
+      name: groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/groups'
+    spaces:
+      type: DeclarativeStream
+      name: spaces
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: spaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/spaces'
+    folders:
+      type: DeclarativeStream
+      name: folders
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: folders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/folders'
+    projects:
+      type: DeclarativeStream
+      name: projects
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/projects'
+    versions:
+      type: DeclarativeStream
+      name: versions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: versions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/versions'
+    homepages:
+      type: DeclarativeStream
+      name: homepages
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: homepages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/homepages'
+    run_looks:
+      type: DeclarativeStream
+      name: run_looks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: looks/{{ stream_partition['id'] }}/run/json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream:
+                  $ref: '#/definitions/streams/search_looks'
+                parent_key: model, id
+                partition_field: id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/run_looks'
+    dashboards:
+      type: DeclarativeStream
+      name: dashboards
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: dashboards
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/dashboards'
+    datagroups:
+      type: DeclarativeStream
+      name: datagroups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: datagroups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/datagroups'
+    model_sets:
+      type: DeclarativeStream
+      name: model_sets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: model_sets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/model_sets'
+    workspaces:
+      type: DeclarativeStream
+      name: workspaces
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/workspaces'
+    connections:
+      type: DeclarativeStream
+      name: connections
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: connections
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/connections'
+    permissions:
+      type: DeclarativeStream
+      name: permissions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: permissions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/permissions'
+    role_groups:
+      type: DeclarativeStream
+      name: role_groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: role_groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/role_groups'
+    git_branches:
+      type: DeclarativeStream
+      name: git_branches
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: git_branches
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/git_branches'
+    integrations:
+      type: DeclarativeStream
+      name: integrations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: integrations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/integrations'
+    search_looks:
+      type: DeclarativeStream
+      name: search_looks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: search_looks
+          http_method: GET
+          request_parameters:
+            id: '{{ config[''run_look_ids''] }}'
+            limit: '10000'
+            fields: id,title,model(id)
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/search_looks'
+    lookml_models:
+      type: DeclarativeStream
+      name: lookml_models
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: lookml_models
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/lookml_models'
+    project_files:
+      type: DeclarativeStream
+      name: project_files
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: project_files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/project_files'
+    query_history:
+      type: DeclarativeStream
+      name: query_history
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: queries/run/json
+          http_method: POST
+          request_body_json:
+            view: history
+            limit: '10000'
+            model: i__looker
+            sorts: '["history.created_time", "query.id",]'
+            fields: >-
+              ["query.id", "history.created_date", "history.created_time",
+              "query.client_id", "query.model", "query.view", "space.id",
+              "look.id", "dashboard.id", "user.id", "history.query_run_count",
+              "history.total_runtime",]
+            filters: >-
+              {"query.model": "-EMPTY", "history.runtime": "NOT NULL",
+              "user.is_looker": "No",}
+            client_id: '"AiRbYtE2{{ stream_state[''history_created_time''].timestamp }}0"'
+            filter_expression: >-
+              ${{history.created_time}} > {date_time({dt.year}, {dt.month},
+              {dt.day}, {dt.hour}, {dt.minute}, {dt.second})}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - query_id
+        - history_created_time
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/query_history'
+    user_sessions:
+      type: DeclarativeStream
+      name: user_sessions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: user_sessions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/user_sessions'
+    homepage_items:
+      type: DeclarativeStream
+      name: homepage_items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: homepage_items
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/homepage_items'
+    legacy_features:
+      type: DeclarativeStream
+      name: legacy_features
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: legacy_features
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/legacy_features'
+    permission_sets:
+      type: DeclarativeStream
+      name: permission_sets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: permission_sets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/permission_sets'
+    scheduled_plans:
+      type: DeclarativeStream
+      name: scheduled_plans
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: scheduled_plans
+          http_method: GET
+          request_parameters:
+            all_users: 'true'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/scheduled_plans'
+    space_ancestors:
+      type: DeclarativeStream
+      name: space_ancestors
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: space_ancestors
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/space_ancestors'
+    user_attributes:
+      type: DeclarativeStream
+      name: user_attributes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: user_attributes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/user_attributes'
+    content_metadata:
+      type: DeclarativeStream
+      name: content_metadata
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: content_metadata
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/content_metadata'
+    folder_ancestors:
+      type: DeclarativeStream
+      name: folder_ancestors
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: folder_ancestors
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/folder_ancestors'
+    integration_hubs:
+      type: DeclarativeStream
+      name: integration_hubs
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: integration_hubs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/integration_hubs'
+    color_collections:
+      type: DeclarativeStream
+      name: color_collections
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: color_collections
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/color_collections'
+    dashboard_filters:
+      type: DeclarativeStream
+      name: dashboard_filters
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: dashboard_filters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/dashboard_filters'
+    dashboard_layouts:
+      type: DeclarativeStream
+      name: dashboard_layouts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: dashboard_layouts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/dashboard_layouts'
+    homepage_sections:
+      type: DeclarativeStream
+      name: homepage_sections
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: homepage_sections
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/homepage_sections'
+    lookml_dashboards:
+      type: DeclarativeStream
+      name: lookml_dashboards
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: lookml_dashboards
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/lookml_dashboards'
+    dashboard_elements:
+      type: DeclarativeStream
+      name: dashboard_elements
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: dashboard_elements
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/dashboard_elements'
+    user_login_lockouts:
+      type: DeclarativeStream
+      name: user_login_lockouts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: user_login_lockouts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/user_login_lockouts'
+    user_attribute_values:
+      type: DeclarativeStream
+      name: user_attribute_values
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: user_attribute_values
+          http_method: GET
+          request_parameters:
+            all_users: 'true'
+            include_unset: 'true'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/user_attribute_values'
+    content_metadata_access:
+      type: DeclarativeStream
+      name: content_metadata_access
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: content_metadata_access
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/content_metadata_access'
+    primary_homepage_sections:
+      type: DeclarativeStream
+      name: primary_homepage_sections
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: primary_homepage_sections
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/primary_homepage_sections'
+    dashboard_layout_components:
+      type: DeclarativeStream
+      name: dashboard_layout_components
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: dashboard_layout_components
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/dashboard_layout_components'
+    user_attribute_group_values:
+      type: DeclarativeStream
+      name: user_attribute_group_values
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: user_attribute_group_values
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/user_attribute_group_values'
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['domain'] }}/api/3.1/
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        path: login
+        url_base: https://{{ config['domain'] }}/api/3.1
+        http_method: POST
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Content-Type: application/x-www-form-urlencoded
+        request_body_json:
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+        request_parameters: {}
+      session_token_path:
+        - access_token
+      expiration_duration: PT{{ response['expires_in'] }}S
+      request_authentication:
+        type: ApiKey
+        inject_into:
+          type: RequestOption
+          field_name: Authorization
+          inject_into: header
+
+streams:
+  - $ref: '#/definitions/streams/color_collections'
+  - $ref: '#/definitions/streams/connections'
+  - $ref: '#/definitions/streams/content_metadata'
+  - $ref: '#/definitions/streams/content_metadata_access'
+  - $ref: '#/definitions/streams/dashboards'
+  - $ref: '#/definitions/streams/dashboard_elements'
+  - $ref: '#/definitions/streams/dashboard_filters'
+  - $ref: '#/definitions/streams/dashboard_layout_components'
+  - $ref: '#/definitions/streams/dashboard_layouts'
+  - $ref: '#/definitions/streams/datagroups'
+  - $ref: '#/definitions/streams/folders'
+  - $ref: '#/definitions/streams/folder_ancestors'
+  - $ref: '#/definitions/streams/git_branches'
+  - $ref: '#/definitions/streams/groups'
+  - $ref: '#/definitions/streams/homepage_items'
+  - $ref: '#/definitions/streams/homepage_sections'
+  - $ref: '#/definitions/streams/homepages'
+  - $ref: '#/definitions/streams/integration_hubs'
+  - $ref: '#/definitions/streams/integrations'
+  - $ref: '#/definitions/streams/legacy_features'
+  - $ref: '#/definitions/streams/lookml_dashboards'
+  - $ref: '#/definitions/streams/lookml_models'
+  - $ref: '#/definitions/streams/looks'
+  - $ref: '#/definitions/streams/model_sets'
+  - $ref: '#/definitions/streams/permission_sets'
+  - $ref: '#/definitions/streams/permissions'
+  - $ref: '#/definitions/streams/primary_homepage_sections'
+  - $ref: '#/definitions/streams/projects'
+  - $ref: '#/definitions/streams/project_files'
+  - $ref: '#/definitions/streams/query_history'
+  - $ref: '#/definitions/streams/roles'
+  - $ref: '#/definitions/streams/role_groups'
+  - $ref: '#/definitions/streams/run_looks'
+  - $ref: '#/definitions/streams/search_looks'
+  - $ref: '#/definitions/streams/scheduled_plans'
+  - $ref: '#/definitions/streams/spaces'
+  - $ref: '#/definitions/streams/space_ancestors'
+  - $ref: '#/definitions/streams/user_attributes'
+  - $ref: '#/definitions/streams/user_attribute_group_values'
+  - $ref: '#/definitions/streams/user_attribute_values'
+  - $ref: '#/definitions/streams/user_login_lockouts'
+  - $ref: '#/definitions/streams/user_sessions'
+  - $ref: '#/definitions/streams/users'
+  - $ref: '#/definitions/streams/versions'
+  - $ref: '#/definitions/streams/workspaces'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - client_id
+      - client_secret
+      - domain
+    properties:
+      domain:
+        type: string
+        order: 2
+        title: Domain
+        examples:
+          - domainname.looker.com
+          - looker.clientname.com
+          - 123.123.124.123:8000
+        description: >-
+          Domain for your Looker account, e.g.
+          airbyte.cloud.looker.com,looker.[clientname].com,IP address
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        description: >-
+          The Client ID is first part of an API3 key that is specific to each
+          Looker user. See the <a
+          href="https://docs.airbyte.com/integrations/sources/looker">docs</a>
+          for more information on how to generate this key.
+      run_look_ids:
+        type: array
+        items:
+          type: string
+          pattern: ^[0-9]*$
+        order: 3
+        title: Look IDs to Run
+        description: The IDs of any Looks to run
+      client_secret:
+        type: string
+        order: 1
+        title: Client Secret
+        description: The Client Secret is second part of an API3 key.
+        airbyte_secret: true
+
+schemas:
+  looks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  spaces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  folders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  versions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  homepages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  run_looks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  dashboards:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  datagroups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  model_sets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  connections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  permissions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  role_groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  git_branches:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  integrations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  search_looks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  lookml_models:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  project_files:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  query_history:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  user_sessions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  homepage_items:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  legacy_features:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  permission_sets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  scheduled_plans:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  space_ancestors:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  user_attributes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  content_metadata:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  folder_ancestors:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  integration_hubs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  color_collections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  dashboard_filters:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  dashboard_layouts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  homepage_sections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  lookml_dashboards:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  dashboard_elements:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  user_login_lockouts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  user_attribute_values:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  content_metadata_access:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  primary_homepage_sections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  dashboard_layout_components:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  user_attribute_group_values:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
