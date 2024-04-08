@@ -43,6 +43,11 @@ Connectors must have a language tag in their metadata. It must be set in the `ta
 *Applies to the following connector languages: python, low-code*
 
 Python connectors must have a CDK tag in their metadata. It must be set in the `tags` field in metadata.yaml. The values can be `cdk:low-code`, `cdk:python`, or `cdk:file`.
+### Breaking change deadline should be a week in the future
+*Applies to the following connector types: source, destination*
+*Applies to the following connector languages: java, low-code, python*
+
+If the connector version has a breaking change, the deadline field must be set to at least a week in the future.
 
 ## 📦 Packaging
 
