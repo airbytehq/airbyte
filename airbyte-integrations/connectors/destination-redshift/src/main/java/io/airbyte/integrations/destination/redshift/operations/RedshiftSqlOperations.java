@@ -161,10 +161,12 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           LOGGER.info("Executed batch size: {}, {}, {}", batch.size(), schemaName, tableName);
         }
       });
-    } catch (DataAccessException dae) {
-      // Suppressing exception to avoid printing sensitive customer record information.
-      LOGGER.error("Failed to insert records, SQLState class {}", dae.sqlStateClass());
-      throw new RuntimeException("Failed to insert records with DataAccessException");
+// DANGER ZONE: This PR exists only to remove this catch - which exists to hide any SQL logging, which might contain PII.  This branch wants to log failed SQL statements.
+//
+//    } catch (DataAccessException dae) {
+//      // Suppressing exception to avoid printing sensitive customer record information.
+//      LOGGER.error("Failed to insert records, SQLState class {}", dae.sqlStateClass());
+//      throw new RuntimeException("Failed to insert records with DataAccessException");
     } catch (final Exception e) {
       LOGGER.error("Error while inserting records", e);
       throw new RuntimeException(e);
