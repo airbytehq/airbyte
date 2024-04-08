@@ -17,7 +17,6 @@ class SourceKyve(AbstractSource):
         # check that pools and bundles are the same length
         pools = config.get("pool_ids").split(",")
         start_ids = config.get("start_ids").split(",")
-        data_item_size_limit = config.get("data_item_size_limit")
 
         if config.get("start_keys"):
             start_keys = config.get("start_keys").split(",")
@@ -31,9 +30,6 @@ class SourceKyve(AbstractSource):
 
         if not len(pools) == len(start_ids):
             return False, "Please add a start_id for every pool"
-
-        if data_item_size_limit < 10 and data_item_size_limit != 0:
-            return False, "Data item size limit needs to be greater than or equal to 10MB"
 
         for pool_id in pools:
             try:
@@ -52,6 +48,7 @@ class SourceKyve(AbstractSource):
 
         pools = config.get("pool_ids").split(",")
         start_ids = config.get("start_ids").split(",")
+        tendermint_normalization = config.get("enable_tendermint_normalization")
 
         for i, (pool_id, start_id) in enumerate(zip(pools, start_ids)):
             response = requests.get(f"{config['url_base']}/kyve/query/v1beta1/pool/{pool_id}")
@@ -62,15 +59,13 @@ class SourceKyve(AbstractSource):
             config_copy["start_keys"] = int(-1e18)
             config_copy["end_keys"] = int(1e18)
             config_copy["data_item_size_limit"] = 0
+            config_copy["tendermint_normalization"] = tendermint_normalization
 
             if config.get("start_keys"):
                 config_copy["start_keys"] = int(config.get("start_keys").split(",")[i])
 
             if config.get("end_keys"):
                 config_copy["end_keys"] = int(config.get("end_keys").split(",")[i])
-
-            if config.get("data_item_size_limit"):
-                config_copy["data_item_size_limit"] = int(config.get("data_item_size_limit"))
 
             streams.append(KYVEStream(config=config_copy, pool_data=pool_data))
 

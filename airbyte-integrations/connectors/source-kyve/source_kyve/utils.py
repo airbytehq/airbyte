@@ -16,7 +16,6 @@ def query_endpoint(endpoint):
         print(f"Failed to query {endpoint}: {e}")
         return None
 
-
 def query_endpoint_in_gateway_endpoints(gateway_endpoints, storage_id, logger):
     # Try to query each endpoint in the given order and break loop if query was successful
     # If no endpoint is successful, skip the bundle
@@ -26,20 +25,3 @@ def query_endpoint_in_gateway_endpoints(gateway_endpoints, storage_id, logger):
             return response_from_storage_provider
     else:
         return None
-
-
-def split_string_in_chunks(string, chunk_amount):
-    chunk_length = math.floor(len(string) / chunk_amount)
-    return textwrap.wrap(string, chunk_length)
-
-
-def split_data_item_in_chunks(data_item, chunk_amount):
-    chunks = split_string_in_chunks(str(data_item["value"]), chunk_amount)
-
-    res = []
-    for index, chunk in enumerate(chunks):
-        chunked_data_item = {"key": data_item["key"], "value": chunk, "offset": data_item["offset"], "chunk_index": index}
-
-        res.append(chunked_data_item)
-
-    return res
