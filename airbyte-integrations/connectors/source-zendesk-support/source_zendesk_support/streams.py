@@ -285,7 +285,6 @@ class CursorPaginationZendeskSupportStream(IncrementalZendeskSupportStream):
             "page[size]": self.page_size,
         }
         if next_page_token:
-            params.pop("start_time", None)
             params.update(next_page_token)
         return params
 
