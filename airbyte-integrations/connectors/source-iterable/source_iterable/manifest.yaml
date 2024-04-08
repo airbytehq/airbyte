@@ -313,6 +313,7 @@ streams:
       cursor_granularity: PT1S
       cursor_datetime_formats:
         - "%Y-%m-%d %H:%M:%S %z"
+        - "%Y-%m-%dT%H:%M:%S%z"
   - name: events
     primary_key: []
     retriever:
