@@ -429,6 +429,7 @@ abstract class DestinationAcceptanceTest {
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         val messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
             MoreResources.readResource(messagesFilename)
+                .trim()
                 .lines()
                 .map {
                     Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
@@ -458,6 +459,7 @@ abstract class DestinationAcceptanceTest {
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         val messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
             MoreResources.readResource(messagesFilename)
+                .trim()
                 .lines()
                 .map {
                     Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
@@ -515,6 +517,7 @@ abstract class DestinationAcceptanceTest {
                         getProtocolVersion()
                     )
                 )
+                .trim()
                 .lines()
                 .map {
                     Jsons.deserialize<io.airbyte.protocol.models.v0.AirbyteMessage>(
@@ -712,6 +715,7 @@ abstract class DestinationAcceptanceTest {
                         getProtocolVersion()
                     )
                 )
+                .trim()
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
                 .toList()
@@ -1406,6 +1410,7 @@ abstract class DestinationAcceptanceTest {
                         getProtocolVersion()
                     )
                 )
+                .trim()
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
         val config = getConfig()
@@ -2328,7 +2333,7 @@ abstract class DestinationAcceptanceTest {
         private fun readMessagesFromFile(
             messagesFilename: String
         ): List<io.airbyte.protocol.models.v0.AirbyteMessage> {
-            return MoreResources.readResource(messagesFilename).lines().map {
+            return MoreResources.readResource(messagesFilename).trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
         }
