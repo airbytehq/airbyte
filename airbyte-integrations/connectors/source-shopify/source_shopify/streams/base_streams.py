@@ -598,17 +598,21 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(self._session, f"{self.url_base}/{self.path()}")
+        # overide the default job slice size, if provided (it's auto-adjusted, later on)
+        self.bulk_window_in_days = config.get("bulk_window_in_days")
+        if self.bulk_window_in_days:
+            self.job_manager.job_size = self.bulk_window_in_days
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
 
     @property
     def slice_interval_in_days(self) -> Union[float, int]:
-        # use the adjusted slice
-        if self.job_manager.job_slice_interval:
-            return self.job_manager.job_slice_interval
+        # use the adjusted slice size
+        if self.job_manager.job_size:
+            return self.job_manager.job_size
         else:
             # accept the slice_size overide from the input configuration, or provide the min value
-            return self.config.get("bulk_window_in_days", self.job_manager.job_slice_interval_in_days_min)
+            return self.config.get("bulk_window_in_days", self.job_manager.job_size_min)
 
     @cached_property
     def parent_stream(self) -> object:

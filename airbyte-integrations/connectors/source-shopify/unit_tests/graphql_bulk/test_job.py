@@ -294,7 +294,7 @@ def test_stream_slices(
         auth_config["start_date"] = "2020-01-01"
 
     stream = stream(auth_config)
-    stream.job_manager.job_slice_interval = 1000
+    stream.job_manager.job_size = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
     test_query_from_slice = test_result[0].get("query")
     assert expected in test_query_from_slice
@@ -336,15 +336,15 @@ def test_adjust_stream_slices_job_size(
 
     # for the sake of simplicity we fake some parts to simulate the `current_job_time_elapsed`
     # fake current slice interval value
-    stream.job_manager.job_slice_interval = previous_slice_size
+    stream.job_manager.job_size = previous_slice_size
     # fake the threshold
     if fake_threshold:
         stream.job_manager.job_elapsed_time_threshold_sec = fake_threshold
     # fake `last job elapsed time` 
     if last_job_elapsed_time:
-        stream.job_manager.job_last_elapsed_time_sec = last_job_elapsed_time
+        stream.job_manager.job_last_elapsed_time = last_job_elapsed_time
     
     # parsing result from completed job
     list(stream.parse_response(test_bulk_response))
     # check the next slice
-    assert stream.job_manager.job_slice_interval == adjusted_slice_size
+    assert stream.job_manager.job_size == adjusted_slice_size
