@@ -14,5 +14,5 @@ class ExceptionWithDisplayMessage(Exception):
         super().__init__(**kwargs)
         self.display_message = display_message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'ExceptionWithDisplayMessage: "{self.display_message}"'
