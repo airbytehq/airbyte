@@ -106,6 +106,7 @@ object DataTypeUtils {
         return dateFormat.format(date)
     }
 
+    @JvmStatic
     fun toISOTimeString(dateTime: LocalDateTime): String {
         return DateTimeFormatter.ISO_TIME.format(dateTime.toLocalTime())
     }

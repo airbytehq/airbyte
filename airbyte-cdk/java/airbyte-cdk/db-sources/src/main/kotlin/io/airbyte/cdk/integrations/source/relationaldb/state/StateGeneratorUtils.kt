@@ -197,6 +197,7 @@ object StateGeneratorUtils {
      * @param airbyteStateMessage A [AirbyteStateType.LEGACY] state message.
      * @return A [AirbyteStateType.GLOBAL] state message.
      */
+    @JvmStatic
     fun convertLegacyStateToGlobalState(
         airbyteStateMessage: AirbyteStateMessage
     ): AirbyteStateMessage {
@@ -265,6 +266,7 @@ object StateGeneratorUtils {
      * @Param supportedStateType the [AirbyteStateType] supported by this connector.
      * @return The deserialized object representation of the state.
      */
+    @JvmStatic
     fun deserializeInitialState(
         initialStateJson: JsonNode?,
         supportedStateType: AirbyteStateMessage.AirbyteStateType
