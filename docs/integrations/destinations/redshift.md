@@ -69,11 +69,6 @@ Optional parameters:
     `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns
     (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command
     completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
-- **File Buffer Count**
-  - Number of file buffers allocated for writing data. Increasing this number is beneficial for
-    connections using Change Data Capture (CDC) and up to the number of streams within a connection.
-    Increasing the number of file buffers past the maximum number of streams has deteriorating
-    effects.
 
 NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel
 supports the SQL connection only. S3 is secured through public HTTPS access only. Subsequent typing
@@ -247,6 +242,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.2   | 2024-04-05 | [\#36365](https://github.com/airbytehq/airbyte/pull/36365) | Remove unused config option                                                                                                                                                                                      |
 | 2.4.1   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846)  | Remove duplicate S3 Region                                                                                                                                                                                       |
 | 2.4.0   | 2024-03-21 | [\#36589](https://github.com/airbytehq/airbyte/pull/36589) | Adapt to Kotlin cdk 0.28.19                                                                                                                                                                                      |
 | 2.3.2   | 2024-03-21 | [\#36374](https://github.com/airbytehq/airbyte/pull/36374) | Supress Jooq DataAccessException error message in logs                                                                                                                                                           |
