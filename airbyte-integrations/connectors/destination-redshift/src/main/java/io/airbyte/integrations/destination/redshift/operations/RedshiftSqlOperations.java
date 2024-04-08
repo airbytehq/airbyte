@@ -115,7 +115,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         // > how many records can be inserted at once
         // > TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
         // > default
-        for (final List<PartialAirbyteMessage> batch : Iterables.partition(records, 10_000)) {
+        for (final List<PartialAirbyteMessage> batch : Iterables.partition(records, 10)) {
           LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
           final DSLContext create = using(
               connection,
