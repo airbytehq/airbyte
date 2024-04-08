@@ -29,6 +29,7 @@ object SqlOperationsUtils {
      * @param records records to write
      * @throws SQLException exception
      */
+    @JvmStatic
     @Throws(SQLException::class)
     fun insertRawRecordsInSingleQuery(
         insertQueryComponent: String?,
