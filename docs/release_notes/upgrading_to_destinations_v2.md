@@ -232,6 +232,12 @@ SELECT "my column" from my_table;
 SELECT "MY COLUMN" from my_table;
 ```
 
+### Postgres
+
+#### Preserving mixed case column names in Final Tables
+
+Postgres will implicitly lower case column names with mixed case characters when using unquoted identifiers. Based on feedback, we chose to replace any special 
+characters like spaces with underscores and use quoted identifiers to preserve mixed case column names. 
 
 ## Updating Downstream Transformations
 

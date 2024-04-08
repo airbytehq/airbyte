@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
@@ -12,11 +13,12 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import org.jooq.SQLDialect;
 
-public class PostgresDestinationHandler extends JdbcDestinationHandler {
+public class PostgresDestinationHandler extends JdbcDestinationHandler<PostgresState> {
 
-  public PostgresDestinationHandler(String databaseName, JdbcDatabase jdbcDatabase) {
-    super(databaseName, jdbcDatabase);
+  public PostgresDestinationHandler(String databaseName, JdbcDatabase jdbcDatabase, String rawTableSchema) {
+    super(databaseName, jdbcDatabase, rawTableSchema, SQLDialect.POSTGRES);
   }
 
   @Override
@@ -31,6 +33,13 @@ public class PostgresDestinationHandler extends JdbcDestinationHandler {
       case Union.TYPE -> toJdbcTypeName(((Union) airbyteType).chooseType());
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + airbyteType);
     };
+  }
+
+  @Override
+  protected PostgresState toDestinationState(JsonNode json) {
+    return new PostgresState(
+        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean(),
+        json.hasNonNull("isAirbyteMetaPresentInRaw") && json.get("isAirbyteMetaPresentInRaw").asBoolean());
   }
 
   private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {

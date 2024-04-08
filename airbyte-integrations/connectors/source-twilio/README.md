@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-twilio spec
 poetry run source-twilio check --config secrets/config.json
 poetry run source-twilio discover --config secrets/config.json
-poetry run source-twilio read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-twilio read --config secrets/config.json --catalog integration_tests/constant_records_catalog.json
 ```
 
 ### Running unit tests

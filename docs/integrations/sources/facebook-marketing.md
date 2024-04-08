@@ -190,7 +190,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
-| :--------------: | :----------: |
+|:----------------:|:------------:|
 |      string      |    string    |
 |      number      |    number    |
 |      array       |    array     |
@@ -200,6 +200,10 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.1   | 2024-03-18 | [36025](https://github.com/airbytehq/airbyte/pull/36025) | Fix start_date selection behaviour                                                                                                                                                                                                                                                                |
+| 2.1.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978) | Upgrade CDK to start emitting record counts with state and full refresh state                                                                                                                                                                                                                     |
+| 2.0.1   | 2024-03-08 | [35913](https://github.com/airbytehq/airbyte/pull/35913) | Fix lookback window                                                                                                                                                                                                                                                                               |
+| 2.0.0   | 2024-03-01 | [35746](https://github.com/airbytehq/airbyte/pull/35746) | Update API to `v19.0`                                                                                                                                                                                                                                                                             |
 | 1.4.2   | 2024-02-22 | [35539](https://github.com/airbytehq/airbyte/pull/35539) | Add missing config migration from `include_deleted` field                                                                                                                                                                                                                                         |
 | 1.4.1   | 2024-02-21 | [35467](https://github.com/airbytehq/airbyte/pull/35467) | Fix error with incorrect state transforming in the 1.4.0 version                                                                                                                                                                                                                                  |
 | 1.4.0   | 2024-02-20 | [32449](https://github.com/airbytehq/airbyte/pull/32449) | Replace "Include Deleted Campaigns, Ads, and AdSets" option in configuration with specific statuses selection per stream                                                                                                                                                                          |

@@ -46,5 +46,15 @@ export const toc = [
     value: def.title,
     id: `/macros/${def.title}`,
     level: 3
+  })),
+    {
+    "value": "Interpolation filters:",
+    "id": "filters",
+    "level": 2
+  },
+  ...schema.interpolation.filters.map((def) => ({
+    value: def.title,
+    id: `/filters/${def.title}`,
+    level: 3
   }))
 ];

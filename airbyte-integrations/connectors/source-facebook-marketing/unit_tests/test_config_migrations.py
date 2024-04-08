@@ -112,7 +112,6 @@ class TestMigrateIncludeDeletedToStatusFilters:
     )
     def test_migrate_config(self, old_config_path, new_config_path, include_deleted):
         migration_instance = MigrateIncludeDeletedToStatusFilters()
-        original_config = load_config(old_config_path)
         # migrate the test_config
         migration_instance.migrate([CMD, "--config", old_config_path], SOURCE)
         # load the updated config

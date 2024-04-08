@@ -1,5 +1,110 @@
 # Changelog
 
+## 0.79.1
+Dummy patch to test new publishing flow fixes
+
+## 0.79.0
+Update release process of airbyte-cdk and source-declarative manifest
+
+## 0.78.9
+Fix CDK version mismatch introduced in 0.78.8
+
+## 0.78.8
+Update error messaging/type for missing streams. Note: version mismatch, please use 0.78.9 instead
+
+## 0.78.6
+low-code: add backward compatibility for old close slice behavior 
+
+## 0.78.5
+low-code: fix stop_condition instantiation in the cursor pagination
+
+## 0.78.4
+low-code: Add last_record and last_page_size interpolation variables to pagination
+
+## 0.78.3
+Fix dependencies for file-based extras
+
+## 0.78.2
+low-code: fix retrieving partition key for legacy state migration 
+
+## 0.78.1
+connector-builder: return full url-encoded URL instead of separating parameters
+
+## 0.78.0
+low-code: Allow state migration with CustomPartitionRouter
+
+## 0.77.2
+Emit state recordCount as float instead of integer
+
+## 0.77.1
+Fix empty , ,  extras packages
+
+## 0.77.0
+low-code: Add string interpolation filter
+
+## 0.76.0
+Migrate Python CDK to Poetry
+
+## 0.75.0
+low-code: Add StateMigration component
+
+## 0.74.0
+Request option params are allowed to be an array
+
+## 0.73.0
+set minimum python version to 3.9
+
+## 0.72.2
+Connector Builder: have schema fields be nullable by default except from PK and cursor field
+
+## 0.72.1
+low code: add refresh_token_error handler to DeclarativeOauth2Authenticator
+
+## 0.72.0
+low-code: Allow defining custom schema loaders
+
+## 0.71.0
+Declarative datetime-based cursors now only derive state values from records that were read
+
+## 0.70.2
+low-code: remove superfluous sleep
+
+## 0.70.1
+File-based CDK: Fix tab delimiter configuration in CSV file type
+
+## 0.70.0
+testing
+
+## 0.69.2
+low-code: improve error message when a custom component cannot be found
+
+## 0.69.1
+Update mock server test entrypoint wrapper to use per-stream state
+
+## 0.69.0
+Include recordCount in stream state messages and final state message for full refresh syncs
+
+## 0.68.4
+low-code: update cartesian stream slice to emit typed StreamSlice
+
+## 0.68.3
+Low-code: adding a default value if a stream slice is None during read_records
+
+## 0.68.2
+low-code: remove parent cursor compoent from incremental substreams' state message
+
+## 0.68.1
+no-op republish of 0.68.0
+
+## 0.68.0
+low-code: Allow page size to be defined with string interpolation
+
+## 0.67.3
+CDK: upgrade pyarrow
+
+## 0.67.2
+File CDK: Update parquet parser to handle values that resolve to None
+
 ## 0.67.1
 Fix handling of tab-separated CSVs
 

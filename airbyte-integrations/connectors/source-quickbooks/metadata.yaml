@@ -32,7 +32,7 @@ data:
         upgradeDeadline: 2023-10-04
   documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
   ab_internal:
     sl: 100

@@ -21,6 +21,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/plaid
   tags:
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

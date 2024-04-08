@@ -70,7 +70,7 @@ This mode is also excluded from the Cloud variant of this connector.
 
 The OSS and Cloud variants have the same version number. The Cloud variant was initially released at version `1.0.0`.
 
-| Version | Date       | Pull request                                                       | Notes                                                                                                 |
+| Version | Date       | Pull request                                                       | Subject                                                                                               |
 |---------|------------| ------------------------------------------------------------------ |-------------------------------------------------------------------------------------------------------|
 | 2.2.1   | 2024-02-13 | [35231](https://github.com/airbytehq/airbyte/pull/35231)           | Adopt JDK 0.20.4.                                                                                     |
 | 2.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485)           | Remove LEGACY state                                                                                   |

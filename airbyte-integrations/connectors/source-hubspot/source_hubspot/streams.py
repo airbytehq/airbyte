@@ -8,7 +8,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from functools import cached_property, lru_cache, reduce
+from functools import cached_property, lru_cache
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
@@ -17,7 +17,6 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -25,6 +24,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
@@ -378,7 +378,14 @@ class Stream(HttpStream, ABC):
             return APIv2Property(properties)
         return APIv3Property(properties)
 
-    def __init__(self, api: API, start_date: Union[str, pendulum.datetime], credentials: Mapping[str, Any] = None, **kwargs):
+    def __init__(
+        self,
+        api: API,
+        start_date: Union[str, pendulum.datetime],
+        credentials: Mapping[str, Any] = None,
+        acceptance_test_config: Mapping[str, Any] = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._api: API = api
         self._credentials = credentials
@@ -392,6 +399,12 @@ class Stream(HttpStream, ABC):
         creds_title = self._credentials["credentials_title"]
         if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
+
+        # Additional configuration is necessary for testing certain streams due to their specific restrictions.
+        if acceptance_test_config is None:
+            acceptance_test_config = {}
+        self._is_test = self.name in acceptance_test_config
+        self._acceptance_test_config = acceptance_test_config.get(self.name, {})
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == HTTPStatus.UNAUTHORIZED:
@@ -1642,6 +1655,7 @@ class Engagements(EngagementsABC, IncrementalStream):
             "api": self._api,
             "start_date": since_date,
             "credentials": self._credentials,
+            "acceptance_test_config": {casing.camel_to_snake(EngagementsRecent.__name__): self._acceptance_test_config},
         }
 
         try:
@@ -1963,66 +1977,53 @@ class ContactsPropertyHistory(PropertyHistory):
         return "/contacts/v1/lists/all/contacts/all"
 
 
-class CompaniesPropertyHistory(PropertyHistory):
+class PropertyHistoryV3(PropertyHistory):
     @cached_property
     def _property_wrapper(self) -> IURLPropertyRepresentation:
         properties = list(self.properties.keys())
         return APIPropertiesWithHistory(properties=properties)
 
-    @property
-    def scopes(self) -> set:
-        return {"crm.objects.companies.read"}
-
-    @property
-    def properties_scopes(self) -> set:
-        return {"crm.schemas.companies.read"}
-
-    @property
-    def page_field(self) -> str:
-        return "offset"
-
-    @property
-    def limit_field(self) -> str:
-        return "limit"
-
-    @property
-    def page_filter(self) -> str:
-        return "offset"
-
-    @property
-    def more_key(self) -> str:
-        return "has-more"
-
-    @property
-    def entity(self) -> str:
-        return "companies"
-
-    @property
-    def entity_primary_key(self) -> list:
-        return "companyId"
-
-    @property
-    def primary_key(self) -> list:
-        return ["companyId", "property", "timestamp"]
-
-    @property
-    def additional_keys(self) -> list:
-        return ["portalId", "isDeleted"]
-
-    @property
-    def last_modified_date_field_name(self) -> str:
-        return "hs_lastmodifieddate"
-
-    @property
-    def data_field(self) -> str:
-        return "companies"
-
-    @property
-    def url(self) -> str:
-        return "/companies/v2/companies/paged"
+    limit = 50
+    more_key = page_filter = page_field = None
+    limit_field = "limit"
+    data_field = "results"
+    additional_keys = ["archived"]
+    last_modified_date_field_name = "hs_lastmodifieddate"
 
     def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
         pass
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in records:
+            properties_with_history = record.get("propertiesWithHistory")
+            primary_key = record.get("id")
+            additional_keys = {additional_key: record.get(additional_key) for additional_key in self.additional_keys}
+
+            for property_name, value_dict in properties_with_history.items():
+                if property_name == self.last_modified_date_field_name:
+                    # Skipping the lastmodifieddate since it only returns the value
+                    # when one field of a record was changed no matter which
+                    # field was changed. It therefore creates overhead, since for
+                    # every changed property there will be the date it was changed in itself
+                    # and a change in the lastmodifieddate field.
+                    continue
+                for version in value_dict:
+                    version["property"] = property_name
+                    version[self.entity_primary_key] = primary_key
+                    yield version | additional_keys
+
+
+class CompaniesPropertyHistory(PropertyHistoryV3):
+
+    scopes = {"crm.objects.companies.read"}
+    properties_scopes = {"crm.schemas.companies.read"}
+    entity = "companies"
+    entity_primary_key = "companyId"
+    primary_key = ["companyId", "property", "timestamp"]
+
+    @property
+    def url(self) -> str:
+        return "/crm/v3/objects/companies"
 
     def path(
         self,
@@ -2035,66 +2036,16 @@ class CompaniesPropertyHistory(PropertyHistory):
         return f"{self.url}?{properties.as_url_param()}"
 
 
-class DealsPropertyHistory(PropertyHistory):
-    @cached_property
-    def _property_wrapper(self) -> IURLPropertyRepresentation:
-        properties = list(self.properties.keys())
-        return APIPropertiesWithHistory(properties=properties)
-
-    @property
-    def scopes(self) -> set:
-        return {"crm.objects.deals.read"}
-
-    @property
-    def properties_scopes(self):
-        return {"crm.schemas.deals.read"}
-
-    @property
-    def page_field(self) -> str:
-        return "offset"
-
-    @property
-    def limit_field(self) -> str:
-        return "limit"
-
-    @property
-    def page_filter(self) -> str:
-        return "offset"
-
-    @property
-    def more_key(self) -> str:
-        return "hasMore"
-
-    @property
-    def entity(self) -> set:
-        return "deals"
-
-    @property
-    def entity_primary_key(self) -> list:
-        return "dealId"
-
-    @property
-    def primary_key(self) -> list:
-        return ["dealId", "property", "timestamp"]
-
-    @property
-    def additional_keys(self) -> list:
-        return ["portalId", "isDeleted"]
-
-    @property
-    def last_modified_date_field_name(self) -> str:
-        return "hs_lastmodifieddate"
-
-    @property
-    def data_field(self) -> str:
-        return "deals"
+class DealsPropertyHistory(PropertyHistoryV3):
+    scopes = {"crm.objects.deals.read"}
+    properties_scopes = {"crm.schemas.deals.read"}
+    entity = "deals"
+    entity_primary_key = "dealId"
+    primary_key = ["dealId", "property", "timestamp"]
 
     @property
     def url(self) -> str:
-        return "/deals/v1/deal/paged"
-
-    def update_request_properties(self, params: Mapping[str, Any], properties: IURLPropertyRepresentation) -> None:
-        pass
+        return "/crm/v3/objects/deals"
 
     def path(
         self,
@@ -2407,6 +2358,12 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
 
             object_id = parent_slice["parent"][self.object_id_field]
+
+            # We require this workaround to shorten the duration of the acceptance test run.
+            # The web analytics stream alone takes over 3 hours to complete.
+            # Consequently, we aim to run the test against a limited number of object IDs.
+            if self._is_test and object_id not in self._acceptance_test_config.get("object_ids", []):
+                continue
 
             # Take the initial datetime either form config or from state depending whichever value is higher
             # In case when state is detected add a 1 millisecond to avoid duplicates from previous sync

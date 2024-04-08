@@ -182,7 +182,7 @@ def test_add_file(
         uri: RemoteFile(uri=uri, last_modified=datetime.strptime(timestamp, DATE_TIME_FORMAT)) for uri, timestamp in expected_pending_files
     }
     assert (
-        mock_message_repository.emit_message.call_args_list[0].args[0].state.data["test"]["_ab_source_file_last_modified"]
+        mock_message_repository.emit_message.call_args_list[0].args[0].state.stream.stream_state._ab_source_file_last_modified
         == expected_cursor_value
     )
 
@@ -233,7 +233,7 @@ def test_add_file_invalid(
     }
     assert mock_message_repository.emit_message.call_args_list[0].args[0].log.level.value == "WARN"
     assert (
-        mock_message_repository.emit_message.call_args_list[1].args[0].state.data["test"]["_ab_source_file_last_modified"]
+        mock_message_repository.emit_message.call_args_list[1].args[0].state.stream.stream_state._ab_source_file_last_modified
         == expected_cursor_value
     )
 

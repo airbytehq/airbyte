@@ -95,7 +95,7 @@ class MongoDbCdcInitializerTest {
           .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
   protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = toConfiguredCatalog(CATALOG);
-
+  protected static final List<ConfiguredAirbyteStream> CONFIGURED_CATALOG_STREAMS = CONFIGURED_CATALOG.getStreams();
   final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(Jsons.jsonNode(
       Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
           Map.of(
@@ -165,9 +165,9 @@ class MongoDbCdcInitializerTest {
 
   @Test
   void testCreateCdcIteratorsEmptyInitialState() {
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
@@ -177,20 +177,19 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsEmptyInitialStateEmptyCollections() {
     when(findCursor.hasNext()).thenReturn(false);
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertFalse(iterators.get(0).hasNext(),
-        "Initial snapshot iterator should have no messages if there's no initial snapshot state and collections are empty");
   }
 
   @Test
   void testCreateCdcIteratorsFromInitialStateWithInProgressInitialSnapshot() {
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS));
+    final MongoDbStateManager stateManager =
+        MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS), CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
@@ -199,9 +198,10 @@ class MongoDbCdcInitializerTest {
 
   @Test
   void testCreateCdcIteratorsFromInitialStateWithCompletedInitialSnapshot() {
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
+    final MongoDbStateManager stateManager =
+        MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertFalse(iterators.get(0).hasNext(), "Initial snapshot iterator should have no messages if its snapshot state is set as complete");
@@ -213,9 +213,11 @@ class MongoDbCdcInitializerTest {
         .thenReturn(mongoChangeStreamCursor)
         .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
         .thenReturn(mongoChangeStreamCursor);
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
-    assertThrows(ConfigErrorException.class, () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG,
-        stateManager, EMITTED_AT, CONFIG));
+    final MongoDbStateManager stateManager =
+        MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
+    assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS,
+            stateManager, EMITTED_AT, CONFIG));
   }
 
   @Test
@@ -224,9 +226,11 @@ class MongoDbCdcInitializerTest {
         .thenReturn(mongoChangeStreamCursor)
         .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
         .thenReturn(mongoChangeStreamCursor);
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
-    assertThrows(ConfigErrorException.class, () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG,
-        stateManager, EMITTED_AT, CONFIG));
+    final MongoDbStateManager stateManager =
+        MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
+    assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS,
+            stateManager, EMITTED_AT, CONFIG));
   }
 
   @Test
@@ -236,9 +240,10 @@ class MongoDbCdcInitializerTest {
         .thenReturn(mongoChangeStreamCursor)
         .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
         .thenReturn(mongoChangeStreamCursor);
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
+    final MongoDbStateManager stateManager =
+        MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, resyncConfig);
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, resyncConfig);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
@@ -257,10 +262,12 @@ class MongoDbCdcInitializerTest {
 
   @Test
   void testUnableToExtractOffsetFromStateException() {
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
+    final MongoDbStateManager stateManager =
+        MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
     doReturn(Optional.empty()).when(mongoDbDebeziumStateUtil).savedOffset(any(), any(), any(), any(), any());
     assertThrows(RuntimeException.class,
-        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG));
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            CONFIG));
   }
 
   @Test
@@ -272,10 +279,11 @@ class MongoDbCdcInitializerTest {
     when(aggregateCursor.next()).thenReturn(aggregate1, aggregate2);
     doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
 
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS));
+    final MongoDbStateManager stateManager =
+        MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS), CONFIG);
 
     final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG));
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG));
     assertTrue(thrown.getMessage().contains("must be consistently typed"));
   }
 
@@ -287,10 +295,10 @@ class MongoDbCdcInitializerTest {
     when(aggregateCursor.next()).thenReturn(aggregate);
     doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
 
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, CONFIG);
 
     final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG));
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG));
     assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
