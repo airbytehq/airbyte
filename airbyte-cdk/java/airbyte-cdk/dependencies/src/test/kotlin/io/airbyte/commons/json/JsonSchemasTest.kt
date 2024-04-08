@@ -115,10 +115,10 @@ internal class JsonSchemasTest {
     @ValueSource(strings = ["anyOf", "oneOf", "allOf"])
     @ParameterizedTest
     @Throws(IOException::class)
-    fun testTraverseComposite(compositeKeyword: String?) {
+    fun testTraverseComposite(compositeKeyword: String) {
         val jsonSchemaString =
             MoreResources.readResource("json_schemas/composite_json_schema.json")
-                .replace("<composite-placeholder>".toRegex(), compositeKeyword!!)
+                .replace("<composite-placeholder>".toRegex(), compositeKeyword)
         val jsonWithAllTypes = Jsons.deserialize(jsonSchemaString)
         val mock: BiConsumer<JsonNode, List<JsonSchemas.FieldNameOrList>> = mock()
 

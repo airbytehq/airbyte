@@ -7,7 +7,7 @@ import json
 
 import pytest
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from source_declarative_manifest.main import create_manifest
+from source_declarative_manifest.run import create_manifest, handle_command
 
 CONFIG = {
     "__injected_declarative_manifest": {
@@ -59,9 +59,8 @@ def config_file_without_injection(tmp_path):
     return config_file
 
 
-def test_on_spec_command_then_raise_value_error():
-    with pytest.raises(ValueError):
-        create_manifest(["spec"])
+def test_spec_does_not_raise_value_error():
+    handle_command(["spec"])
 
 
 def test_given_no_injected_declarative_manifest_then_raise_value_error(config_file_without_injection):

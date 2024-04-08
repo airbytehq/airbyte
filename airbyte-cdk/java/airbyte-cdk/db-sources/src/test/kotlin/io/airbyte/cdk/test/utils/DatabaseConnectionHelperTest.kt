@@ -36,17 +36,16 @@ internal class DatabaseConnectionHelperTest {
     companion object {
         private const val DATABASE_NAME = "airbyte_test_database"
 
-        protected var container: PostgreSQLContainer<*>? = null
+        protected var container: PostgreSQLContainer<*> =
+            PostgreSQLContainer("postgres:13-alpine")
+                .withDatabaseName(DATABASE_NAME)
+                .withUsername("docker")
+                .withPassword("docker")
 
         @BeforeAll
         @JvmStatic
         fun dbSetup() {
-            container =
-                PostgreSQLContainer("postgres:13-alpine")
-                    .withDatabaseName(DATABASE_NAME)
-                    .withUsername("docker")
-                    .withPassword("docker")
-            container!!.start()
+            container.start()
         }
 
         @AfterAll
