@@ -7,7 +7,7 @@ import java.sql.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
+open class AdaptiveStreamingQueryConfig : JdbcStreamingQueryConfig {
     private val fetchSizeEstimator: FetchSizeEstimator = TwoStageSizeEstimator.Companion.instance
     private var currentFetchSize: Int
 

@@ -57,15 +57,15 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
   @Test
   public void testMixedCasedSchema() throws Exception {
-    streamName = "MixedCaseSchema" + streamName;
+    setStreamName("MixedCaseSchema" + getStreamName());
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
@@ -79,23 +79,23 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
   @Test
   public void testMixedCaseRawTableV1V2Migration() throws Exception {
-    streamName = "Mixed Case Table" + streamName;
+    setStreamName("Mixed Case Table" + getStreamName());
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     // First sync
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
     runSync(catalog, messages1, "airbyte/destination-postgres:0.6.3");
     // Special case to retrieve raw records pre DV2 using the same logic as actual code.
-    final List<JsonNode> rawActualRecords = database.queryJsons(
-        DSL.selectFrom(DSL.name(streamNamespace, "_airbyte_raw_" + Names.toAlphanumericAndUnderscore(streamName).toLowerCase())).getSQL());
+    final List<JsonNode> rawActualRecords = getDatabase().queryJsons(
+        DSL.selectFrom(DSL.name(getStreamNamespace(), "_airbyte_raw_" + Names.toAlphanumericAndUnderscore(getStreamName()).toLowerCase())).getSQL());
     // Just verify the size of raw pre DV2, postgres was lower casing the MixedCaseSchema so above
     // retrieval should give 5 records from sync1
     assertEquals(5, rawActualRecords.size());
@@ -113,9 +113,9 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     // First sync without _airbyte_meta
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
@@ -138,9 +138,9 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     // First sync without _airbyte_meta
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
@@ -166,9 +166,9 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
 
     final AirbyteMessage message = new AirbyteMessage();
     final String largeString = generateBigString();
@@ -179,8 +179,8 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
         "name", largeString);
     message.setType(Type.RECORD);
     message.setRecord(new AirbyteRecordMessage()
-        .withNamespace(streamNamespace)
-        .withStream(streamName)
+        .withNamespace(getStreamNamespace())
+        .withStream(getStreamName())
         .withData(Jsons.jsonNode(data))
         .withEmittedAt(1000L));
     final List<AirbyteMessage> messages1 = new ArrayList<>();
@@ -189,7 +189,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
     // Only assert on the large varchar string landing in final table.
     // Rest of the fields' correctness is tested by other means in other tests.
-    final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
+    final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(getStreamNamespace(), getStreamName());
     assertEquals(1, actualFinalRecords.size());
     assertEquals(largeString, actualFinalRecords.get(0).get("name").asText());
 
