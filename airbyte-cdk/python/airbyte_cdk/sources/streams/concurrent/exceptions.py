@@ -15,4 +15,4 @@ class ExceptionWithDisplayMessage(Exception):
         self.display_message = display_message
 
     def __str__(self):
-        return f"ExceptionWithDisplayMessage: \"{self.display_message}\""
+        return f'ExceptionWithDisplayMessage: "{self.display_message}"'
