@@ -97,6 +97,7 @@ class DebeziumRecordIterator<T>(
                 }
 
                 val heartbeatPos = getHeartbeatPosition(next)
+                LOGGER.info("Heartbeat {} {}", next, heartbeatPos);
                 // wrap up sync if heartbeat position crossed the target OR heartbeat position
                 // hasn't changed for
                 // too long
