@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-surveymonkey
   icon: surveymonkey.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: SurveyMonkey
   remoteRegistries:
     pypi:

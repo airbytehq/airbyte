@@ -33,6 +33,7 @@ data:
   githubIssueLabel: source-monday
   icon: monday.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Monday
   remoteRegistries:
     pypi:
