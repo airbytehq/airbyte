@@ -2,11 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 from pydantic import BaseModel, Field
 
 
-class SnowflakeCortexIndexingModel(BaseModel):
+class SnowflakeCortexConfig(BaseModel):
     account: str = Field(
         ...,
         title="Account",
@@ -50,12 +49,9 @@ class SnowflakeCortexIndexingModel(BaseModel):
     )
 
     class Config:
-        title = "Indexing"
+        title = "authentication"
         schema_extra = {
-            "description": "Snowflake cortex comprises database functions tailored for ML and LLM related tasks",
-            "group": "indexing",
+            "description": "Configuration to connect to the Snowflake instance",
+            "group": "Authentication",
         }
 
-
-class ConfigModel(VectorDBConfigModel):
-    indexing: SnowflakeCortexIndexingModel

@@ -9,9 +9,16 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from destination_snowflake_cortex.config import ConfigModel
+from destination_snowflake_cortex.config import SnowflakeCortexConfig
+from destination_snowflake_cortex.client import SnowflakeCortexClient
+
 
 class DestinationSnowflakeCortex(Destination):
+    client: SnowflakeCortexClient
+
+    def _init_client(self, config: SnowflakeCortexConfig):
+        self.client = SnowflakeCortexClient(config=config)
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -46,17 +53,19 @@ class DestinationSnowflakeCortex(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        try:
-            # TODO
-
+        try: 
+            self._init_client(config)
+            self.client.check()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+
+
         
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/destinations/snowflake-cortex",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
-            connectionSpecification=ConfigModel.schema(),  # type: ignore[attr-defined]
+            connectionSpecification=SnowflakeCortexConfig.schema(),  # type: ignore[attr-defined]
         )
