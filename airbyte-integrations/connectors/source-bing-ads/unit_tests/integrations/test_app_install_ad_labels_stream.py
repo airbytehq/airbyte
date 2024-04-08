@@ -38,7 +38,7 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
         self.auth_client(http_mocker)
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, "app_install_ad_labels_with_cursor_value")
         assert len(output.records) == 4
-        assert output.most_recent_state.get(self.stream_name, {}).get(self.account_id, {}) == {self.cursor_field: "2024-01-04T12:12:12.028+00:00"}
+        assert dict(output.most_recent_state.stream_state).get(self.account_id, {}) == {self.cursor_field: "2024-01-04T12:12:12.028+00:00"}
 
     @HttpMocker()
     @freeze_time("2024-02-26")  # mock current time as stream data available for 30 days only
@@ -52,7 +52,7 @@ class TestAppInstallAdLabelsStream(TestBulkStream):
             "app_install_ad_labels_with_state",
             state
         )
-        assert output.most_recent_state.get(self.stream_name, {}).get(self.account_id, {}) == {self.cursor_field: "2024-01-29T12:55:12.028+00:00"}
+        assert dict(output.most_recent_state.stream_state).get(self.account_id, {}) == {self.cursor_field: "2024-01-29T12:55:12.028+00:00"}
 
         previous_state = state[0].stream.stream_state.dict()
         # gets DownloadParams object

@@ -6,121 +6,102 @@ FIRST_STATE = {"180535609": {"TimePeriod": "2023-11-12T00:00:00+00:00"}}
 SECOND_STATE = {"180535609": {"TimePeriod": "2023-11-13T00:00:00+00:00"}}
 
 
-class TestAgeGenderAudienceReportHourlyStream(TestSuiteReportStream):
+class HourlyReportsTest(TestSuiteReportStream):
+    first_read_state = FIRST_STATE
+    second_read_state = SECOND_STATE
+
+
+class TestAgeGenderAudienceReportHourlyStream(HourlyReportsTest):
     stream_name = "age_gender_audience_report_hourly"
     report_file = "age_gender_audience_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "age_gender_audience_report_hourly_incremental"
-    first_read_state = {"age_gender_audience_report_hourly": FIRST_STATE}
-    second_read_state = {"age_gender_audience_report_hourly": SECOND_STATE}
 
 
-class TestAccountImpressionPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestAccountImpressionPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "account_impression_performance_report_hourly"
     report_file = "account_impression_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "account_impression_performance_report_hourly_incremental"
-    first_read_state = {"account_impression_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"account_impression_performance_report_hourly": SECOND_STATE}
 
 
-class TestKeywordPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestKeywordPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "keyword_performance_report_hourly"
     report_file = "keyword_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "keyword_performance_report_hourly_incremental"
-    first_read_state = {"keyword_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"keyword_performance_report_hourly": SECOND_STATE}
 
 
-class TestAdPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestAdPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "ad_performance_report_hourly"
     report_file = "ad_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "ad_performance_report_hourly_incremental"
-    first_read_state = {"ad_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"ad_performance_report_hourly": SECOND_STATE}
 
 
-class TestAdGroupImpressionPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestAdGroupImpressionPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "ad_group_impression_performance_report_hourly"
     report_file = "ad_group_impression_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "ad_group_impression_performance_report_hourly_incremental"
-    first_read_state = {"ad_group_impression_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"ad_group_impression_performance_report_hourly": SECOND_STATE}
 
 
-class TestCampaignPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestCampaignPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "campaign_performance_report_hourly"
     report_file = "campaign_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "campaign_performance_report_hourly_incremental"
-    first_read_state = {"campaign_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"campaign_performance_report_hourly": SECOND_STATE}
 
 
-class TestCampaignImpressionPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestCampaignImpressionPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "campaign_impression_performance_report_hourly"
     report_file = "campaign_impression_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "campaign_impression_performance_report_hourly_incremental"
-    first_read_state = {"campaign_impression_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"campaign_impression_performance_report_hourly": SECOND_STATE}
 
 
-class TestGeographicPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestGeographicPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "geographic_performance_report_hourly"
     report_file = "geographic_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "geographic_performance_report_hourly_incremental"
-    first_read_state = {"geographic_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"geographic_performance_report_hourly": SECOND_STATE}
 
 
-class TestSearchQueryPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestSearchQueryPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "search_query_performance_report_hourly"
     report_file = "search_query_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "search_query_performance_report_hourly_incremental"
-    first_read_state = {"search_query_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"search_query_performance_report_hourly": SECOND_STATE}
 
 
-class TestUserLocationPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestUserLocationPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "user_location_performance_report_hourly"
     report_file = "user_location_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "user_location_performance_report_hourly_incremental"
-    first_read_state = {"user_location_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"user_location_performance_report_hourly": SECOND_STATE}
 
 
-class TestAdGroupPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestAdGroupPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "ad_group_performance_report_hourly"
     report_file = "ad_group_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "ad_group_performance_report_hourly_incremental"
-    first_read_state = {"ad_group_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"ad_group_performance_report_hourly": SECOND_STATE}
 
 
-class TestAccountPerformanceReportHourlyStream(TestSuiteReportStream):
+class TestAccountPerformanceReportHourlyStream(HourlyReportsTest):
     stream_name = "account_performance_report_hourly"
     report_file = "account_performance_report_hourly"
     records_number = 24
     state_file = "hourly_reports_state"
     incremental_report_file = "account_performance_report_hourly_incremental"
-    first_read_state = {"account_performance_report_hourly": FIRST_STATE}
-    second_read_state = {"account_performance_report_hourly": SECOND_STATE}
