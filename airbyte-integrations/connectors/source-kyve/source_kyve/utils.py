@@ -17,6 +17,17 @@ def query_endpoint(endpoint):
         return None
 
 
+def query_endpoint_in_gateway_endpoints(gateway_endpoints, storage_id, logger):
+    # Try to query each endpoint in the given order and break loop if query was successful
+    # If no endpoint is successful, skip the bundle
+    for endpoint in gateway_endpoints:
+        response_from_storage_provider = query_endpoint(f"{endpoint}{storage_id}")
+        if response_from_storage_provider is not None:
+            return response_from_storage_provider
+    else:
+        return None
+
+
 def split_string_in_chunks(string, chunk_amount):
     chunk_length = math.floor(len(string) / chunk_amount)
     return textwrap.wrap(string, chunk_length)
