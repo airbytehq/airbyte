@@ -476,23 +476,6 @@ class SourceMarketo(YamlDeclarativeSource):
     def __init__(self) -> None:
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector by granting the credentials.
-        """
-
-        try:
-            url = f"{config['domain_url']}/rest/v1/leads/describe"
-
-            authenticator = MarketoAuthenticator(config)
-
-            session = requests.get(url, headers=authenticator.get_auth_header())
-            session.raise_for_status()
-
-            return True, None
-        except requests.exceptions.RequestException as e:
-            return False, repr(e)
-
     def _get_declarative_streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return super().streams(config)
 

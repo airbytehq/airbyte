@@ -1,4 +1,4 @@
-version: 0.78.9
+version: 0.79.1
 type: DeclarativeSource
 
 definitions:
@@ -49,6 +49,10 @@ definitions:
       type: RequestOption
       field_name: "batchSize"
       inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: "offset"
+      inject_into: request_parameter
 
   # Retrievers
   base_retriever:
@@ -88,7 +92,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime: "{{ config['start_date'] }}"
       end_datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
-      cursor_granularity: "P1D"
+      cursor_granularity: "PT1S"
       step: "P{{ config.get('window_in_days', 30) }}D"
       start_time_option:
         type: RequestOption
@@ -169,8 +173,7 @@ streams:
   # Incremental streams
   - "#/definitions/programs_stream"
 
-# TODO: should it be here?
 check:
   type: CheckStream
   stream_names:
-    - activity_types_stream
+    - programs
