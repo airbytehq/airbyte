@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, MutableMapping, Tuple
+from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Tuple
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -88,7 +88,7 @@ class AbstractStreamStateConverter(ABC):
         self,
         cursor_field: "CursorField",  # to deprecate as it is only needed for sequential state
         stream_state: MutableMapping[str, Any],
-        start: Any,
+        start: Optional[Any],
     ) -> Tuple[Any, MutableMapping[str, Any]]:
         """
         Convert the state message to the format required by the ConcurrentCursor.

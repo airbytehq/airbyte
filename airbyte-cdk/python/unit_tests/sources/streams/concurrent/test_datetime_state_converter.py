@@ -186,13 +186,13 @@ def test_get_sync_start(converter, start, state, expected_start):
         ),
         pytest.param(
             EpochValueConcurrentStreamStateConverter(),
-            datetime.fromtimestamp(1617030403, timezone.utc),
+            datetime.fromtimestamp(1577836800, timezone.utc),
             {"created": 1617030403},
             {
                 "state_type": "date-range",
                 "slices": [
                     {
-                        "start": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
+                        "start": datetime(2020, 1, 1, tzinfo=timezone.utc),
                         "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
                     }
                 ],
@@ -208,7 +208,7 @@ def test_get_sync_start(converter, start, state, expected_start):
                 "state_type": "date-range",
                 "slices": [
                     {
-                        "start": datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
+                        "start": datetime(2020, 1, 1, tzinfo=timezone.utc),
                         "end": datetime(2021, 8, 22, 5, 3, 27, tzinfo=timezone.utc),
                     }
                 ],

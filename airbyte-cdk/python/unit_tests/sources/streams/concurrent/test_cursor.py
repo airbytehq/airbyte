@@ -396,3 +396,33 @@ class ConcurrentCursorStateTest(TestCase):
             (datetime.fromtimestamp(20, timezone.utc), datetime.fromtimestamp(30, timezone.utc)),
             (datetime.fromtimestamp(30, timezone.utc), datetime.fromtimestamp(50, timezone.utc)),
         ]
+
+    @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
+    def test_given_start_is_before_first_slice_lower_boundary_when_generate_slices_then_generate_slice_before(self):
+        start = datetime.fromtimestamp(0, timezone.utc)
+        lookback_window = timedelta(seconds=10)
+        cursor = ConcurrentCursor(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
+            {
+                "state_type": ConcurrencyCompatibleStateType.date_range.value,
+                "slices": [
+                    {EpochValueConcurrentStreamStateConverter.START_KEY: 10, EpochValueConcurrentStreamStateConverter.END_KEY: 20},
+                ]
+            },
+            self._message_repository,
+            self._state_manager,
+            EpochValueConcurrentStreamStateConverter(is_sequential_state=False),
+            CursorField(_A_CURSOR_FIELD_KEY),
+            _SLICE_BOUNDARY_FIELDS,
+            start,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
+            _NO_LOOKBACK_WINDOW,
+        )
+
+        slices = list(cursor.generate_slices())
+
+        assert slices == [
+            (datetime.fromtimestamp(0, timezone.utc), datetime.fromtimestamp(10, timezone.utc)),
+            (datetime.fromtimestamp(20, timezone.utc), datetime.fromtimestamp(50, timezone.utc)),
+        ]

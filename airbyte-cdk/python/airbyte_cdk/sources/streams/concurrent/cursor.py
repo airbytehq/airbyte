@@ -262,6 +262,9 @@ class ConcurrentCursor(Cursor):
         """
         self._merge_partitions()
 
+        if self._start is not None and self._is_start_before_first_slice():
+            yield from self._split_per_slice_range(self._start, self.state["slices"][0][self._connector_state_converter.START_KEY])
+
         if len(self.state["slices"]) == 1:
             yield from self._split_per_slice_range(
                 self._calculate_lower_boundary_of_last_slice(self.state["slices"][0][self._connector_state_converter.END_KEY]),
@@ -279,6 +282,9 @@ class ConcurrentCursor(Cursor):
             )
         else:
             raise ValueError("Expected at least one slice")
+
+    def _is_start_before_first_slice(self) -> bool:
+        return self._start is not None and self._start < self.state["slices"][0][self._connector_state_converter.START_KEY]
 
     def _calculate_lower_boundary_of_last_slice(self, lower_boundary: CursorValueType) -> CursorValueType:
         if self._lookback_window:

@@ -57,7 +57,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         return bool(self.increment(end_time) >= start_time)
 
     def convert_from_sequential_state(
-        self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: datetime
+        self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: Optional[datetime]
     ) -> Tuple[datetime, MutableMapping[str, Any]]:
         """
         Convert the state message to the format required by the ConcurrentCursor.
@@ -78,7 +78,7 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
         # Create a slice to represent the records synced during prior syncs.
         # The start and end are the same to avoid confusion as to whether the records for this slice
         # were actually synced
-        slices = [{self.START_KEY: sync_start, self.END_KEY: sync_start}]
+        slices = [{self.START_KEY: start if start is not None else sync_start, self.END_KEY: sync_start}]
 
         return sync_start, {
             "state_type": ConcurrencyCompatibleStateType.date_range.value,
