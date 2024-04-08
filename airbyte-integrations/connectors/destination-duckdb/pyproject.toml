@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "destination-duckdb"
-version = "0.3.2"
+version = "0.3.3"
 description = "Destination implementation for Duckdb."
 authors = ["Simon Späti, Airbyte"]
 license = "MIT"
@@ -20,3 +20,6 @@ mypy = "^1.5.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+destination-duckdb = "destination_duckdb.run:run"
