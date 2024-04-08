@@ -230,23 +230,23 @@ abstract class DestinationAcceptanceTest {
         }
     }
 
-    protected fun normalizationFromDefinition(): Boolean {
+    protected open fun normalizationFromDefinition(): Boolean {
         val metadata = readMetadata()["data"] ?: return false
         val normalizationConfig = metadata["normalizationConfig"] ?: return false
         return normalizationConfig.has("normalizationRepository") &&
             normalizationConfig.has("normalizationTag")
     }
 
-    protected fun dbtFromDefinition(): Boolean {
+    protected open fun dbtFromDefinition(): Boolean {
         val metadata = readMetadata()["data"] ?: return false
         val supportsDbt = metadata["supportsDbt"]
         return supportsDbt != null && supportsDbt.asBoolean(false)
     }
 
-    protected val destinationDefinitionKey: String
+    protected open val destinationDefinitionKey: String
         get() = imageNameWithoutTag
 
-    protected fun getNormalizationIntegrationType(): String? {
+    protected open fun getNormalizationIntegrationType(): String? {
         val metadata = readMetadata()["data"] ?: return null
         val normalizationConfig = metadata["normalizationConfig"] ?: return null
         val normalizationIntegrationType =
