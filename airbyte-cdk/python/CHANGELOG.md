@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.79.2
+Concurrent CDK: Print error messages properly so that they can be categorized
+
 ## 0.79.1
 Dummy patch to test new publishing flow fixes
 
