@@ -103,6 +103,56 @@ definitions:
       cursor_granularity: P0D
       cursor_datetime_formats:
         - '%Y-%m-%dT%H:%M:%S'
+  guests_stream:
+    name: guests
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: size
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        $ref: "#/definitions/requester"
+        path: guests
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - guests
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/centers_stream"
+              parent_key: id
+              request_option:
+                type: RequestOption
+                field_name: center_id
+                inject_into: request_parameter
+              partition_field: center_id
+    primary_key:
+      - id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - id
+            type: AddedFieldDefinition
+            value: "{{ record['id'] | lower }}"
+
   invoices_stream:
     name: invoices
     type: DeclarativeStream
@@ -148,6 +198,7 @@ check:
   stream_names:
     - centers
     - appointments
+    - guests
     - invoices
 
 spec:
@@ -187,10 +238,12 @@ type: DeclarativeSource
 streams:
   - "#/definitions/centers_stream"
   - "#/definitions/appointments_stream"
+  - "#/definitions/guests_stream"
   - "#/definitions/invoices_stream"
 
 metadata:
   autoImportSchema:
     centers: true
     appointments: true
+    guests: true
     invoices: true
