@@ -208,7 +208,6 @@ class TestPostsCommentsStreamIncremental(TestCase):
         http_mocker.get(
             PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"]) \
                 .with_page_after("after-cursor") \
-                .with_start_time(datetime_to_string(state_start_date)) \
                 .with_page_size(100) \
                 .build(),
             PostsCommentsResponseBuilder.posts_comments_response().with_record(post_comments_last_record_builder).build()

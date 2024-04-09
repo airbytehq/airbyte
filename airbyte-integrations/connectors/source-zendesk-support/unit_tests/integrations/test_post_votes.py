@@ -208,7 +208,6 @@ class TestPostsVotesStreamIncremental(TestCase):
         http_mocker.get(
             PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]) \
                 .with_page_after("after-cursor") \
-                .with_start_time(datetime_to_string(state_start_date)) \
                 .with_page_size(100) \
                 .build(),
             PostsVotesResponseBuilder.posts_votes_response().with_record(post_comments_last_record_builder).build()
