@@ -24,15 +24,14 @@ def get_event_rows(events, height, offset, type):
     if events is not None:
         for index, event in enumerate(events):
             # Convert event to JSON-serializable format
-            event_json = json.loads(json.dumps(event))
-            event_rows.append(json.loads(json.dumps(
+            event_rows.append(
                 {
                     "height": height,
-                    "value": event_json,
+                    "value": event,
                     "type": type,
                     "array_index": index,
                     "offset": offset
                 }
-            )))
+            )
 
     return event_rows

@@ -125,13 +125,9 @@ class KYVEStream(HttpStream, IncrementalMixin):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        try:
-            # set the state to store the latest bundle_id
-            bundles = response.json().get("finalized_bundles")
-            if not len(bundles):
-                self._reached_end = True
-        except IndexError:
-            bundles = []
+        bundles = response.json().get("finalized_bundles")
+        if not len(bundles):
+            self._reached_end = True
 
         for bundle in bundles:
             if int(bundle.get("id")) >= self._cursor_value or self._cursor_value == 0:
@@ -191,7 +187,6 @@ class KYVEStream(HttpStream, IncrementalMixin):
                     if self._tendermint_normalization:
                         preprocessed_data_item = preprocess_tendermint_data_item(data_item)
                         for row in preprocessed_data_item:
-                            preprocessed_bundle.append(row)
                             preprocessed_bundle.append(row)
 
                 # Skip bundle if start_key not reached
