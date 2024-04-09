@@ -208,10 +208,15 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
           token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }} # This token is what allows us to commit directly to master
       - name: Bump CDK dependency of source-declarative-manifest
+        timeout-minutes: 10
         run: |
           cd airbyte-integrations/connectors/source-declarative-manifest
-          # --no-cache is used to ensure the latest version is fetched. Let's see if we need to add a wait...
-          poetry add airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}} --no-cache
+          while true; do
+            # --no-cache to force looking for the new version
+            poetry add airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}} --no-cache && break
+            # Loop to wait for the new version to be available to poetry
+            sleep 10
+          done
       - name: Bump version of source-declarative-manifest
         uses: ./.github/actions/run-airbyte-ci
         with:
