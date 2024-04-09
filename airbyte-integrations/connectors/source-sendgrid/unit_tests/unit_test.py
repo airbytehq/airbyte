@@ -17,17 +17,21 @@ from requests import codes
 from source_sendgrid.source import SourceSendgrid
 from source_sendgrid.streams import (
     Blocks,
+    Bounces,
     Campaigns,
     Contacts,
     GlobalSuppressions,
+    InvalidEmails,
     Lists,
     Segments,
     SendgridStream,
     SendgridStreamIncrementalMixin,
     SendgridStreamOffsetPagination,
+    SpamReports,
     SuppressionGroupMembers,
     SuppressionGroups,
     Templates,
+    UnsubscribeGroups,
 )
 
 FAKE_NOW = pendulum.DateTime(2022, 1, 1, tzinfo=pendulum.timezone("utc"))
@@ -36,9 +40,10 @@ FAKE_NOW_ISO_STRING = FAKE_NOW.to_iso8601_string()
 
 @pytest.fixture(name="sendgrid_stream")
 def sendgrid_stream_fixture(mocker) -> SendgridStream:
-    # Wipe the internal list of abstract methods to allow instantiating the abstract class without implementing its abstract methods
+    # Wipe the internal list of abstract methods to allow instantiating
+    # the abstract class without implementing its abstract methods
     mocker.patch("source_sendgrid.streams.SendgridStream.__abstractmethods__", set())
-    # Mypy yells at us because we're init'ing an abstract class
+    # Mypy yells at us because we're initializing an abstract class
     return SendgridStream()  # type: ignore
 
 
@@ -68,16 +73,16 @@ def test_streams():
     assert len(streams) == 15
 
 
-@patch.multiple(SendgridStreamOffsetPagination, __abstractmethods__=set())
+@patch.multiple(SendgridStreamOffsetPagination, __abstractmethods__=set(), data_field="result")
 def test_pagination(mocker):
     stream = SendgridStreamOffsetPagination()
     state = {}
     response = requests.Response()
-    mocker.patch.object(response, "json", return_value={None: 1})
+    mocker.patch.object(response, "json", return_value={"result": range(100)})
     mocker.patch.object(response, "request", return_value=MagicMock())
     next_page_token = stream.next_page_token(response)
     request_params = stream.request_params(stream_state=state, next_page_token=next_page_token)
-    assert request_params == {"limit": 50}
+    assert request_params == {"limit": 50, "offset": 50}
 
 
 @patch.multiple(SendgridStreamIncrementalMixin, __abstractmethods__=set())
@@ -130,6 +135,10 @@ def test_read_records(
         [SuppressionGroupMembers, "asm/suppressions"],
         [SuppressionGroups, "asm/groups"],
         [GlobalSuppressions, "suppression/unsubscribes"],
+        [Bounces, "suppression/bounces"],
+        [InvalidEmails, "suppression/invalid_emails"],
+        [SpamReports, "suppression/spam_reports"],
+        [UnsubscribeGroups, "asm/groups"],
     ),
 )
 def test_path(stream_class, expected):
@@ -144,7 +153,7 @@ def test_path(stream_class, expected):
         (SuppressionGroupMembers, 401, False),
     ),
 )
-def test_should_retry_on_permission_error(requests_mock, stream_class, status, expected):
+def test_should_retry_on_permission_error(stream_class, status, expected):
     stream = stream_class(Mock())
     response_mock = MagicMock()
     response_mock.status_code = status
@@ -153,21 +162,42 @@ def test_should_retry_on_permission_error(requests_mock, stream_class, status, e
 
 def test_compressed_contact_response(requests_mock):
     stream = Contacts()
-    with open(os.path.dirname(__file__)+"/compressed_response", "rb") as compressed_response:
+    with open(os.path.dirname(__file__) + "/compressed_response", "rb") as file_response:
         url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
         requests_mock.register_uri("POST", url, [{"json": {"id": "random_id"}, "status_code": 202}])
         url = "https://api.sendgrid.com/v3/marketing/contacts/exports/random_id"
         resp_bodies = [
             {"json": {"status": "pending", "id": "random_id", "urls": []}, "status_code": 202},
-            {"json": {"status": "ready", "urls": ["https://sample_url/sample_csv.csv.gzip"]}, "status_code": 202}
+            {"json": {"status": "ready", "urls": ["https://sample_url/sample_csv.csv.gzip"]}, "status_code": 202},
         ]
         requests_mock.register_uri("GET", url, resp_bodies)
-        requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip",
-                                   [{"body": compressed_response, "status_code": 202}])
+        requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip", [{"body": file_response, "status_code": 202}])
         recs = list(stream.read_records(sync_mode=SyncMode.full_refresh))
-        decompressed_response = pd.read_csv(os.path.dirname(__file__)+"/decompressed_response.csv", dtype=str)
-        expected_records = [{k.lower(): v for k, v in x.items()} for x in
-                            decompressed_response.replace({nan: None}).to_dict(orient="records")]
+        decompressed_response = pd.read_csv(os.path.dirname(__file__) + "/decompressed_response.csv", dtype=str)
+        expected_records = [
+            {k.lower(): v for k, v in x.items()} for x in decompressed_response.replace({nan: None}).to_dict(orient="records")
+        ]
+
+        assert recs == expected_records
+
+
+def test_uncompressed_contact_response(requests_mock):
+    stream = Contacts()
+    with open(os.path.dirname(__file__) + "/decompressed_response.csv", "rb") as file_response:
+        url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
+        requests_mock.register_uri("POST", url, [{"json": {"id": "random_id"}, "status_code": 202}])
+        url = "https://api.sendgrid.com/v3/marketing/contacts/exports/random_id"
+        resp_bodies = [
+            {"json": {"status": "pending", "id": "random_id", "urls": []}, "status_code": 202},
+            {"json": {"status": "ready", "urls": ["https://sample_url/sample_csv.csv.gzip"]}, "status_code": 202},
+        ]
+        requests_mock.register_uri("GET", url, resp_bodies)
+        requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip", [{"body": file_response, "status_code": 202}])
+        recs = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        decompressed_response = pd.read_csv(os.path.dirname(__file__) + "/decompressed_response.csv", dtype=str)
+        expected_records = [
+            {k.lower(): v for k, v in x.items()} for x in decompressed_response.replace({nan: None}).to_dict(orient="records")
+        ]
 
         assert recs == expected_records
 
@@ -176,8 +206,9 @@ def test_bad_job_response(requests_mock):
     stream = Contacts()
     url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
 
-    requests_mock.register_uri("POST", url, [{"json": {"errors": [{"field": "field_name","message": "error message"}]},
-                                              "status_code": codes.BAD_REQUEST}])
+    requests_mock.register_uri(
+        "POST", url, [{"json": {"errors": [{"field": "field_name", "message": "error message"}]}, "status_code": codes.BAD_REQUEST}]
+    )
     with pytest.raises(Exception):
         list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
@@ -189,3 +220,17 @@ def test_read_chunks_pd():
     list(stream.read_with_chunks(path="file_not_exist.csv", file_encoding="utf-8"))
     with pytest.raises(FileNotFoundError):
         list(stream.read_with_chunks(path="file_not_exist.csv", file_encoding="utf-8"))
+
+
+@pytest.mark.parametrize(
+    "current_stream_state, latest_record, expected_state",
+    (
+        ({}, {"created": "7270247822"}, {"created": "7270247822"}),
+        ({"created": "7270247899"}, {"created": "7270247822"}, {"created": "7270247899"}),
+        ({"created": "7270247822"}, {"created": "7270247899"}, {"created": "7270247899"}),
+    ),
+)
+def test_get_updated_state(current_stream_state, latest_record, expected_state):
+    stream = Blocks(Mock())
+    assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+

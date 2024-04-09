@@ -12,7 +12,7 @@ These instructions have been tested on MacOS, Windows 10 and Ubuntu 22.04.
 
 ```bash
 # clone Airbyte from GitHub
-git clone https://github.com/airbytehq/airbyte.git
+git clone --depth=1 https://github.com/airbytehq/airbyte.git
 
 # switch into Airbyte directory
 cd airbyte
@@ -21,8 +21,8 @@ cd airbyte
 ./run-ab-platform.sh
 ```
 
-- In your browser, just visit [http://localhost:8000](http://localhost:8000)
-- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy Airbyte to your servers, be sure to change these:
+- In your browser, visit [http://localhost:8000](http://localhost:8000)
+- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy Airbyte to your servers, be sure to change these in your `.env` file:
 
 ```yaml
 # Proxy Configuration
@@ -56,7 +56,7 @@ Make sure to select the options:
 **3. You're done!**
 
 ```bash
-git clone https://github.com/airbytehq/airbyte.git
+git clone --depth=1 https://github.com/airbytehq/airbyte.git
 cd airbyte
 bash run-ab-platform.sh
 ```
@@ -66,5 +66,11 @@ bash run-ab-platform.sh
 - Start moving some data!
 
 ## Troubleshooting
+If you have any questions about the local setup and deployment process, head over to our [Getting Started FAQ](https://github.com/airbytehq/airbyte/discussions/categories/questions) on our Airbyte Forum that answers the following questions and more:
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [troubleshooting](../troubleshooting.md) section in our docs for common problems.
+- How long does it take to set up Airbyte?
+- Where can I see my data once I've run a sync?
+- Can I set a start time for my sync?
+
+If you encounter any issues, check out [Getting Support](/community/getting-support) documentation
+for options how to get in touch with the community or us.

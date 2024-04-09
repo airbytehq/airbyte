@@ -1,9 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-03/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "Customer collection GET schema",
   "description": "A schema for fetching a collection of customer, aka. Debtor.",
   "type": "object",
-  "restdocs": "http://restdocs.e-conomic.com/#get-customers",
   "properties": {
     "address": {
       "type": "string",
@@ -17,6 +16,9 @@
       "sortable": true,
       "filterable": true,
       "description": "The outstanding amount for this customer."
+    },
+    "dueAmount": {
+      "type": ["null", "number"]
     },
     "barred": {
       "type": "boolean",

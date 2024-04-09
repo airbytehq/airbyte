@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "CONTACT_ID": {
@@ -112,6 +113,12 @@
       "type": ["integer", "null"]
     },
     "TITLE": {
+      "type": ["string", "null"]
+    },
+    "VISIBLE_TEAM_ID": {
+      "type": ["integer", "null"]
+    },
+    "VISIBLE_TO": {
       "type": ["string", "null"]
     },
     "EMAIL_OPTED_OUT": {

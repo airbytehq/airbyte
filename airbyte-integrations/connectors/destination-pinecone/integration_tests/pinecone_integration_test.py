@@ -6,10 +6,10 @@ import json
 import logging
 
 import pinecone
+from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
+from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_pinecone.destination import DestinationPinecone
-from destination_pinecone.embedder import OPEN_AI_VECTOR_SIZE
-from integration_tests.base_integration_test import BaseIntegrationTest
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
 

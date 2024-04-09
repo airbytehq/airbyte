@@ -16,11 +16,16 @@ from .report_streams import (
     SponsoredDisplayReportStream,
     SponsoredProductsReportStream,
 )
-from .sponsored_brands import SponsoredBrandsAdGroups, SponsoredBrandsCampaigns, SponsoredBrandsKeywords
+from .sponsored_brands import (
+    SponsoredBrandsAdGroups,
+    SponsoredBrandsCampaigns,
+    SponsoredBrandsKeywords
+)
 from .sponsored_display import (
     SponsoredDisplayAdGroups,
     SponsoredDisplayBudgetRules,
     SponsoredDisplayCampaigns,
+    SponsoredDisplayCreatives,
     SponsoredDisplayProductAds,
     SponsoredDisplayTargetings,
 )
@@ -45,6 +50,7 @@ __all__ = [
     "SponsoredDisplayTargetings",
     "SponsoredDisplayBudgetRules",
     "SponsoredProductAdGroups",
+    "SponsoredDisplayCreatives",
     "SponsoredProductAdGroupBidRecommendations",
     "SponsoredProductAdGroupSuggestedKeywords",
     "SponsoredProductAds",

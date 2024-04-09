@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -72,13 +72,19 @@
       "type": ["null", "string"]
     },
     "address": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "billing_address": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "shipping_address": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "tags": {
       "type": ["null", "array"]

@@ -1,27 +1,34 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - "*.salesforce.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.1.4
+  dockerImageTag: 2.4.0
   dockerRepository: airbyte/source-salesforce
+  documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   githubIssueLabel: source-salesforce
   icon: salesforce.svg
   license: ELv2
   name: Salesforce
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-salesforce
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 400
-  supportLevel: certified
+    - cdk:python
 metadataSpecVersion: "1.0"

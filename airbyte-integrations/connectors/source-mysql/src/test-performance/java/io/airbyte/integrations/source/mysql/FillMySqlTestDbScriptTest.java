@@ -6,13 +6,14 @@ package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
@@ -60,7 +61,8 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.MYSQL,
-            Map.of("zeroDateTimeBehavior", "convertToNull")));
+            Map.of("zeroDateTimeBehavior", "convertToNull"),
+            JdbcConnector.CONNECT_TIMEOUT_DEFAULT));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"

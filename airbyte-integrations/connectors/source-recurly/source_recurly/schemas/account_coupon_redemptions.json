@@ -6,35 +6,18 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"]
+    },
     "account": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": ["null", "string"],
-          "maxLength": 13
-        },
-        "code": {
-          "type": ["null", "string"],
-          "maxLength": 50
-        }
-      }
+      "$ref": "account_details.json"
     },
     "subscription_id": {
       "type": ["null", "string"],
       "maxLength": 13
     },
     "coupon": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": ["null", "string"],
-          "maxLength": 13
-        },
-        "code": {
-          "type": ["null", "string"],
-          "maxLength": 256
-        }
-      }
+      "$ref": "coupons.json"
     },
     "state": {
       "type": ["null", "string"],

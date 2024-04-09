@@ -23,13 +23,9 @@ NONCONFORMING_RECORD = {
 SCHEMA = {
     "type": "object",
     "properties": {
-        "col1": {
-            "type": "string"
-        },
-        "col2": {
-            "type": "integer"
-        },
-    }
+        "col1": {"type": "string"},
+        "col2": {"type": "integer"},
+    },
 }
 
 
@@ -42,13 +38,10 @@ SCHEMA = {
         pytest.param(NONCONFORMING_RECORD, SCHEMA, ValidationPolicy.skip_record, False, id="nonconforming_skip_record"),
         pytest.param(CONFORMING_RECORD, SCHEMA, ValidationPolicy.wait_for_discover, True, id="record-conforms_wait_for_discover"),
         pytest.param(NONCONFORMING_RECORD, SCHEMA, ValidationPolicy.wait_for_discover, False, id="nonconforming_wait_for_discover"),
-    ]
+    ],
 )
 def test_record_passes_validation_policy(
-    record: Mapping[str, Any],
-    schema: Mapping[str, Any],
-    validation_policy: ValidationPolicy,
-    expected_result: bool
+    record: Mapping[str, Any], schema: Mapping[str, Any], validation_policy: ValidationPolicy, expected_result: bool
 ) -> None:
     if validation_policy == ValidationPolicy.wait_for_discover and expected_result is False:
         with pytest.raises(StopSyncPerValidationPolicy):

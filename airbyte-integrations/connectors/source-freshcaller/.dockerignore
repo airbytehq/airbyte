@@ -1,6 +1,5 @@
 *
 !Dockerfile
-!Dockerfile.test
 !main.py
 !source_freshcaller
 !setup.py

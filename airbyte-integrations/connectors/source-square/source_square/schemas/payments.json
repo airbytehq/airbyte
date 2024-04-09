@@ -21,6 +21,9 @@
         }
       }
     },
+    "customer_id": {
+      "type": ["null", "string"]
+    },
     "status": {
       "type": ["null", "string"]
     },

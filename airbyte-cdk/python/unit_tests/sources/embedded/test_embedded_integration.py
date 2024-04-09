@@ -35,13 +35,15 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
         self.source_class = MagicMock()
         self.source = MagicMock()
         self.source_class.return_value = self.source
-        self.source.spec.return_value = ConnectorSpecification(connectionSpecification={
-            "properties": {
-                "test": {
-                    "type": "string",
+        self.source.spec.return_value = ConnectorSpecification(
+            connectionSpecification={
+                "properties": {
+                    "test": {
+                        "type": "string",
+                    }
                 }
             }
-        })
+        )
         self.config = {"test": "abc"}
         self.integration = TestIntegration(self.source, self.config)
         self.stream1 = AirbyteStream(

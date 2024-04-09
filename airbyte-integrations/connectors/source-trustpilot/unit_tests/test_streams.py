@@ -37,18 +37,18 @@ def test_next_page_token(patch_base_class):
 def test_parse_response(patch_base_class):
     stream = TrustpilotStream()
     response = MagicMock()
-    response.json = lambda: json.loads(b"""{
+    response.json = lambda: json.loads(
+        b"""{
     "links": {
         "rel": "next-page",
         "href": "http://..."
     },
     "id": "12351241"
-}""")
+}"""
+    )
     inputs = {"response": response}
 
-    expected_parsed_object = {
-        "id": "12351241"
-    }
+    expected_parsed_object = {"id": "12351241"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 

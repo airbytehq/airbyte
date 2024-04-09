@@ -4,16 +4,6 @@ acceptance_tests:
       - config_path: secrets/config.json
         expect_records:
           path: integration_tests/expected_records.jsonl
-        ignored_fields:
-          actions:
-            - name: updated_at
-              bypass_reason: auto-updated by provider
-          people:
-            - name: locale_utc_offset
-              bypass_reason: volatile data
-          users:
-            - name: locale_utc_offset
-              bypass_reason: volatile data
         fail_on_extra_columns: false
         empty_streams:
           - name: call_data_records

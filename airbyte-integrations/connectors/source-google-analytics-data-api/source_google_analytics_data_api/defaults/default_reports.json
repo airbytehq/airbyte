@@ -74,5 +74,616 @@
       "screenPageViewsPerSession",
       "bounceRate"
     ]
+  },
+  {
+    "name": "user_acquisition_first_user_medium_report",
+    "dimensions": ["date", "firstUserMedium"],
+    "metrics": [
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "totalUsers",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "user_acquisition_first_user_source_report",
+    "dimensions": ["date", "firstUserSource"],
+    "metrics": [
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "totalUsers",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "user_acquisition_first_user_source_medium_report",
+    "dimensions": ["date", "firstUserSource", "firstUserMedium"],
+    "metrics": [
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "totalUsers",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "user_acquisition_first_user_source_platform_report",
+    "dimensions": ["date", "firstUserSourcePlatform"],
+    "metrics": [
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "totalUsers",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "user_acquisition_first_user_campaign_report",
+    "dimensions": ["date", "firstUserCampaignName"],
+    "metrics": [
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "totalUsers",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "user_acquisition_first_user_google_ads_ad_network_type_report",
+    "dimensions": ["date", "firstUserGoogleAdsAdNetworkType"],
+    "metrics": [
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "totalUsers",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "user_acquisition_first_user_google_ads_ad_group_name_report",
+    "dimensions": ["date", "firstUserGoogleAdsAdGroupName"],
+    "metrics": [
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "totalUsers",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "traffic_acquisition_session_source_medium_report",
+    "dimensions": ["date", "sessionSource", "sessionMedium"],
+    "metrics": [
+      "totalUsers",
+      "sessions",
+      "engagedSessions",
+      "eventsPerSession",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "traffic_acquisition_session_medium_report",
+    "dimensions": ["date", "sessionMedium"],
+    "metrics": [
+      "totalUsers",
+      "sessions",
+      "engagedSessions",
+      "eventsPerSession",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "traffic_acquisition_session_source_report",
+    "dimensions": ["date", "sessionSource"],
+    "metrics": [
+      "totalUsers",
+      "sessions",
+      "engagedSessions",
+      "eventsPerSession",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "traffic_acquisition_session_campaign_report",
+    "dimensions": ["date", "sessionCampaignName"],
+    "metrics": [
+      "totalUsers",
+      "sessions",
+      "engagedSessions",
+      "eventsPerSession",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "traffic_acquisition_session_default_channel_grouping_report",
+    "dimensions": ["date", "sessionDefaultChannelGrouping"],
+    "metrics": [
+      "totalUsers",
+      "sessions",
+      "engagedSessions",
+      "eventsPerSession",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "traffic_acquisition_session_source_platform_report",
+    "dimensions": ["date", "sessionSourcePlatform"],
+    "metrics": [
+      "totalUsers",
+      "sessions",
+      "engagedSessions",
+      "eventsPerSession",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "events_report",
+    "dimensions": ["date", "eventName"],
+    "metrics": ["eventCount", "totalUsers", "eventCountPerUser", "totalRevenue"]
+  },
+  {
+    "name": "weekly_events_report",
+    "dimensions": ["yearWeek", "eventName"],
+    "metrics": ["eventCount", "totalUsers", "eventCountPerUser", "totalRevenue"]
+  },
+  {
+    "name": "conversions_report",
+    "dimensions": ["date", "eventName"],
+    "metrics": ["conversions", "totalUsers", "totalRevenue"]
+  },
+  {
+    "name": "pages_title_and_screen_class_report",
+    "dimensions": ["date", "unifiedScreenClass"],
+    "metrics": [
+      "screenPageViews",
+      "totalUsers",
+      "newUsers",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "pages_path_report",
+    "dimensions": ["date", "pagePath"],
+    "metrics": [
+      "screenPageViews",
+      "totalUsers",
+      "newUsers",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "pages_title_and_screen_name_report",
+    "dimensions": ["date", "unifiedScreenName"],
+    "metrics": [
+      "screenPageViews",
+      "totalUsers",
+      "newUsers",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "content_group_report",
+    "dimensions": ["date", "contentGroup"],
+    "metrics": [
+      "screenPageViews",
+      "totalUsers",
+      "newUsers",
+      "eventCount",
+      "conversions",
+      "totalRevenue",
+      "userEngagementDuration"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_name_report",
+    "dimensions": ["date", "itemName"],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_id_report",
+    "dimensions": ["date", "itemId"],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_category_report_combined",
+    "dimensions": [
+      "date",
+      "itemCategory",
+      "itemCategory2",
+      "itemCategory3",
+      "itemCategory4",
+      "itemCategory5"
+    ],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_category_report",
+    "dimensions": ["date", "itemCategory"],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_category_2_report",
+    "dimensions": ["date", "itemCategory2"],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_category_3_report",
+    "dimensions": ["date", "itemCategory3"],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_category_4_report",
+    "dimensions": ["date", "itemCategory4"],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_category_5_report",
+    "dimensions": ["date", "itemCategory5"],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "ecommerce_purchases_item_brand_report",
+    "dimensions": ["date", "itemBrand"],
+    "metrics": [
+      "cartToViewRate",
+      "purchaseToViewRate",
+      "itemsPurchased",
+      "itemRevenue",
+      "itemsAddedToCart",
+      "itemsViewed"
+    ]
+  },
+  {
+    "name": "publisher_ads_ad_unit_report",
+    "dimensions": ["date", "adUnitName"],
+    "metrics": [
+      "publisherAdImpressions",
+      "adUnitExposure",
+      "publisherAdClicks",
+      "totalAdRevenue"
+    ]
+  },
+  {
+    "name": "publisher_ads_page_path_report",
+    "dimensions": ["date", "pagePath"],
+    "metrics": [
+      "publisherAdImpressions",
+      "adUnitExposure",
+      "publisherAdClicks",
+      "totalAdRevenue"
+    ]
+  },
+  {
+    "name": "publisher_ads_ad_format_report",
+    "dimensions": ["date", "adFormat"],
+    "metrics": [
+      "publisherAdImpressions",
+      "adUnitExposure",
+      "publisherAdClicks",
+      "totalAdRevenue"
+    ]
+  },
+  {
+    "name": "publisher_ads_ad_source_report",
+    "dimensions": ["date", "adSourceName"],
+    "metrics": [
+      "publisherAdImpressions",
+      "adUnitExposure",
+      "publisherAdClicks",
+      "totalAdRevenue"
+    ]
+  },
+  {
+    "name": "demographic_country_report",
+    "dimensions": ["date", "country"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "demographic_region_report",
+    "dimensions": ["date", "region"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "demographic_city_report",
+    "dimensions": ["date", "city"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "demographic_language_report",
+    "dimensions": ["date", "language"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "demographic_age_report",
+    "dimensions": ["date", "userAgeBracket"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "demographic_gender_report",
+    "dimensions": ["date", "userGender"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "demographic_interest_report",
+    "dimensions": ["date", "brandingInterest"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_browser_report",
+    "dimensions": ["date", "browser"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_device_category_report",
+    "dimensions": ["date", "deviceCategory"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_device_model_report",
+    "dimensions": ["date", "deviceModel"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_screen_resolution_report",
+    "dimensions": ["date", "screenResolution"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_app_version_report",
+    "dimensions": ["date", "appVersion"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_platform_report",
+    "dimensions": ["date", "platform"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_platform_device_category_report",
+    "dimensions": ["date", "platform", "deviceCategory"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_operating_system_report",
+    "dimensions": ["date", "operatingSystem"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
+  },
+  {
+    "name": "tech_os_with_version_report",
+    "dimensions": ["date", "operatingSystemWithVersion"],
+    "metrics": [
+      "totalUsers",
+      "newUsers",
+      "engagedSessions",
+      "engagementRate",
+      "eventCount",
+      "conversions",
+      "totalRevenue"
+    ]
   }
 ]

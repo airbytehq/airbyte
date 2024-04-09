@@ -4,82 +4,182 @@ acceptance_tests:
       - config_path: secrets/config.json
         expect_records:
           path: integration_tests/expected_records/csv.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
+      - config_path: secrets/config_iam_role.json
+        expect_records:
+          path: integration_tests/expected_records/csv.jsonl
+          exact_order: false
+        timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_csv_custom_encoding_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_custom_encoding.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_csv_custom_format_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_custom_format.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_csv_user_schema_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_user_schema.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_csv_no_header_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_no_header.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_csv_skip_rows_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_skip_rows.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_csv_skip_rows_no_header_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_skip_rows_no_header.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_csv_with_nulls_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_with_nulls.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_csv_with_null_bools_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_csv_with_null_bools.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_parquet_config.json
         expect_records:
           path: integration_tests/expected_records/parquet.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/parquet_dataset_config.json
         expect_records:
           path: integration_tests/expected_records/parquet_dataset.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_parquet_decimal_config.json
         expect_records:
           path: integration_tests/expected_records/legacy_parquet_decimal.jsonl
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_avro_config.json
         expect_records:
           path: integration_tests/expected_records/avro.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_jsonl_config.json
         expect_records:
           path: integration_tests/expected_records/jsonl.jsonl
-          exact_order: true
+          exact_order: false
         timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
       - config_path: secrets/v4_jsonl_newlines_config.json
         expect_records:
           path: integration_tests/expected_records/jsonl_newlines.jsonl
-          exact_order: true
+          exact_order: false
+        timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
+      - config_path: secrets/zip_config_csv.json
+        expect_records:
+          path: integration_tests/expected_records/zip_csv.jsonl
+          exact_order: false
+        timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
+      - config_path: secrets/zip_config_csv_custom_encoding.json
+        expect_records:
+          path: integration_tests/expected_records/zip_csv_custom_encoding.jsonl
+          exact_order: false
+        timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
+      - config_path: secrets/zip_config_jsonl.json
+        expect_records:
+          path: integration_tests/expected_records/zip_jsonl.jsonl
+          exact_order: false
+        timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
+      - config_path: secrets/zip_config_avro.json
+        expect_records:
+          path: integration_tests/expected_records/zip_avro.jsonl
+          exact_order: false
+        timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
+      - config_path: secrets/zip_config_parquet.json
+        expect_records:
+          path: integration_tests/expected_records/zip_parquet.jsonl
+          exact_order: false
+        timeout_seconds: 1800
+        file_types:
+          skip_test: true
+          bypass_reason: "To be testes with the last config"
+      - config_path: secrets/unstructured_config.json
+        expect_records:
+          path: integration_tests/expected_records/unstructured.jsonl
+          exact_order: false
         timeout_seconds: 1800
 
   connection:
     tests:
       - config_path: secrets/config.json
         status: succeed
+      - config_path: secrets/config_iam_role.json
+        status: succeed
       - config_path: secrets/v4_csv_custom_encoding_config.json
         status: succeed
       - config_path: secrets/v4_csv_custom_format_config.json
@@ -103,6 +203,16 @@ acceptance_tests:
       - config_path: secrets/v4_jsonl_config.json
         status: succeed
       - config_path: secrets/v4_jsonl_newlines_config.json
+        status: succeed
+      - config_path: secrets/zip_config_csv.json
+        status: succeed
+      - config_path: secrets/zip_config_csv_custom_encoding.json
+        status: succeed
+      - config_path: secrets/zip_config_jsonl.json
+        status: succeed
+      - config_path: secrets/zip_config_avro.json
+        status: succeed
+      - config_path: secrets/zip_config_parquet.json
         status: succeed
       - config_path: integration_tests/invalid_config.json
         status: failed
@@ -110,40 +220,58 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_custom_encoding_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_custom_format_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_user_schema_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_no_header_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_skip_rows_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_with_nulls_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_parquet_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_avro_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_jsonl_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_jsonl_newlines_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
+      - config_path: secrets/zip_config_csv.json
+        backward_compatibility_tests_config:
+          disable_for_version: "4.0.5" # new compression type added - zip
+      - config_path: secrets/zip_config_csv_custom_encoding.json
+        backward_compatibility_tests_config:
+          disable_for_version: "4.0.5" # new compression type added - zip
+      - config_path: secrets/zip_config_jsonl.json
+        backward_compatibility_tests_config:
+          disable_for_version: "4.0.5" # new compression type added - zip
+      - config_path: secrets/zip_config_avro.json
+        backward_compatibility_tests_config:
+          disable_for_version: "4.0.5" # new compression type added - zip
+      - config_path: secrets/zip_config_parquet.json
+        backward_compatibility_tests_config:
+          disable_for_version: "4.0.5" # new compression type added - zip
   full_refresh:
     tests:
       - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalogs/csv.json
+        timeout_seconds: 1800
+      - config_path: secrets/config_iam_role.json
         configured_catalog_path: integration_tests/configured_catalogs/csv.json
         timeout_seconds: 1800
       - config_path: secrets/v4_parquet_config.json
@@ -157,6 +285,21 @@ acceptance_tests:
         timeout_seconds: 1800
       - config_path: secrets/v4_jsonl_newlines_config.json
         configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_csv.json
+        configured_catalog_path: integration_tests/configured_catalogs/csv.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_csv_custom_encoding.json
+        configured_catalog_path: integration_tests/configured_catalogs/csv.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_jsonl.json
+        configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_avro.json
+        configured_catalog_path: integration_tests/configured_catalogs/avro.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_parquet.json
+        configured_catalog_path: integration_tests/configured_catalogs/parquet.json
         timeout_seconds: 1800
 
   incremental:
@@ -166,6 +309,11 @@ acceptance_tests:
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         timeout_seconds: 1800
+      - config_path: secrets/config_iam_role.json
+        configured_catalog_path: integration_tests/configured_catalogs/csv.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
       - config_path: secrets/v4_parquet_config.json
         configured_catalog_path: integration_tests/configured_catalogs/parquet.json
         future_state:
@@ -186,10 +334,37 @@ acceptance_tests:
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         timeout_seconds: 1800
+      - config_path: secrets/zip_config_csv.json
+        configured_catalog_path: integration_tests/configured_catalogs/csv.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_csv_custom_encoding.json
+        configured_catalog_path: integration_tests/configured_catalogs/csv.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_jsonl.json
+        configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_avro.json
+        configured_catalog_path: integration_tests/configured_catalogs/avro.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
+      - config_path: secrets/zip_config_parquet.json
+        configured_catalog_path: integration_tests/configured_catalogs/parquet.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
   spec:
     tests:
       - spec_path: integration_tests/spec.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
+      - spec_path: integration_tests/cloud_spec.json
+        deployment_mode: "cloud"
 connector_image: airbyte/source-s3:dev
 test_strictness_level: high

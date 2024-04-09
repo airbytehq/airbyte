@@ -3,13 +3,10 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
+    // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+    gradlePluginPortal()
 }
 
-dependencies {
-    implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
-}
-
-tasks.withType(Jar) {
+tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }

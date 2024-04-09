@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - ${region}.babelforce.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-babelforce
   registries:
     oss:
       enabled: true
@@ -20,7 +24,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/babelforce
   tags:
-    - language:lowcode
+    - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

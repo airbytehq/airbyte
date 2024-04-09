@@ -1,5 +1,6 @@
 ---
 description: Using the Kestra Plugin to Orchestrate Airbyte
+products: oss-*
 ---
 
 # Using the Kestra Plugin

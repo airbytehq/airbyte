@@ -1,35 +1,39 @@
 # connector_ops
 
-A collection of tools and checks run by Github Actions
+A collection of utilities for working with Airbyte connectors.
 
-## Running Locally
+# Setup
 
-From this directory, create a virtual environment:
+## Installation
 
-```
-python3 -m venv .venv
-```
+`connector_ops` tools use [Poetry](https://github.com/python-poetry/poetry) to manage dependencies,
+and targets Python 3.10 and higher.
 
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
+Assuming you're in Airbyte repo root:
 
 ```bash
-source .venv/bin/activate
-pip install -e . # assuming you are in the ./airbyte-ci/connectors/connector_ops directory
+cd airbyte-ci/connectors/connector_ops
+poetry install
 ```
 
-pip will make binaries for all the commands in setup.py, so you can run `allowed-hosts-checks` directly from the virtual-env
+## Usage
 
-## Testing Locally
+`connector_ops` provides a set of tools that verify connector characteristics. They're intended to
+be used in CI. They will detect the list of connectors that are modified compared to `master` branch
+of the repository, and only run checks on them. You can run them locally, too, with
+`poetry run TOOL_NAME`.
 
-To install requirements to run unit tests, use:
+- `check-test-strictness-level` verifies that connectors define strictness level as `high` in `acceptance-test-config.yml`.
+- `write-review-requirements-file` writes required reviewers github action file.
+- `print-mandatory-reviewers`
+- `allowed-hosts-checks` verifies that connectors have `allowedHosts` filled out in their `metadata.yaml` files.
 
-```
-pip install -e ".[tests]"
-```
+## Contributing to `connector_ops`
 
-Unit tests are currently configured to be run from the base `airbyte` directory. You can run the tests from that directory with the following command:
+### Running tests
 
-```
-pytest -s airbyte-ci/connector_ops/connectors/tests
+To run tests locally:
+
+```bash
+poetry run pytest
 ```

@@ -8,13 +8,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-delighted
   documentationUrl: https://docs.airbyte.com/integrations/sources/delighted
   githubIssueLabel: source-delighted
   icon: delighted.svg
   license: MIT
   name: Delighted
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-delighted
   registries:
     cloud:
       enabled: true
@@ -23,6 +27,6 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

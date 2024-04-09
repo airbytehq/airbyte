@@ -1,0 +1,22 @@
+{
+  "reports": [
+    {
+      "date": "string",
+      "brandName": "string",
+      "marketplace": "string",
+      "campaignId": "string",
+      "productAsin": "string",
+      "productConversionType": "string",
+      "advertiserName": "string",
+      "adGroupId": "string",
+      "creativeId": "string",
+      "productName": "string",
+      "productCategory": "string",
+      "productSubcategory": "string",
+      "productGroup": "string",
+      "publisher": "string"
+    }
+  ],
+  "size": 0,
+  "cursorId": ""
+}

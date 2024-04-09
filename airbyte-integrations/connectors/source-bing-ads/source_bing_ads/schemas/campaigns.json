@@ -2,6 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "CustomerId": {
+      "type": ["null", "integer"]
+    },
     "AudienceAdsBidAdjustment": {
       "type": ["null", "number"]
     },
@@ -15,7 +21,7 @@
           "type": ["null", "object"],
           "properties": {
             "Amount": {
-              "type": ["null", "string"]
+              "type": ["null", "number"]
             }
           }
         }

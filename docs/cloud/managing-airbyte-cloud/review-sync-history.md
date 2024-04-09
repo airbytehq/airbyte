@@ -1,35 +1,26 @@
+---
+products: all
+---
+
 # Review the sync history
 
 The job history displays information about synced data, such as the amount of data moved, the number of records read and committed, and the total sync time. Reviewing this summary can help you monitor the sync performance and identify any potential issues.  
- 
-To review the sync history:
-1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections**.   
 
-2. Click a connection in the list to view its sync history. Sync History displays the sync status or [reset](https://docs.airbyte.com/operator-guides/reset/) status. The sync status is defined as: 
+![Job History](./assets/connection-job-history.png)
+
+To review the sync history, click a connection in the list to view its sync history. Sync History displays the sync status or [reset](/operator-guides/reset.md) status. The sync status is defined as: 
 
 | Status              | Description                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------|
 | Succeeded           | 100% of the data has been extracted and loaded to the destination             |
-| Partially Succeeded | a subset of the data has been loaded to the destination
-| Failed              | none of the data has been loaded to the destination                |
-| Cancelled           | the sync was cancelled manually before finishing              |
-| Running             | the sync is currently running                |
-
-:::note 
-
-In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. The latest rules can be read about [here](../../understanding-airbyte/jobs.md#retry-rules).
-
-:::
-
-3. To view the full sync log, click the three grey dots next to any sync job. Select "View logs" to open the logs in the browser. 
-
-4. To find a link to the job, click the three grey dots next to any sync job. Select "Copy link to job" to copy the link to your clipboard.
-
-5. To download a copy of the logs locally, click the three grey dots next to any sync job. Select "Donwload logs".
+| Partially Succeeded | A subset of the data has been loaded to the destination
+| Failed              | None of the data has been loaded to the destination                |
+| Cancelled           | The sync was cancelled manually before finishing              |
+| Running             | The sync is currently running                |
  
 ## Sync summary
 
-Each sync shows the time the sync was initiated and additional metadata.
+Each sync shows the time the sync was initiated and additional metadata. This information can help in understanding sync performance over time. 
 
 | Data                                     | Description                                                                          |
 |------------------------------------------|--------------------------------------------------------------------------------------|
@@ -38,3 +29,11 @@ Each sync shows the time the sync was initiated and additional metadata.
 | x loaded records                         | Number of records the destination confirmed it received.                             |
 | xh xm xs                                 | Total time (hours, minutes, seconds) for the sync to complete                        |
 
+
+:::note 
+
+In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. The latest rules can be read about [here](../../understanding-airbyte/jobs.md#retry-rules).
+
+:::
+
+On this page, you can also view the complete logs and find any relevant errors, find a link to the job to share with Support, or download a copy of the logs locally.

@@ -4,7 +4,7 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "Date": { "type": ["null", "string"] },
+    "Date": { "type": ["null", "string"], "format": "date" },
     "FNSKU": { "type": ["null", "string"] },
     "ASIN": { "type": ["null", "string"] },
     "MSKU": { "type": ["null", "string"] },
@@ -24,6 +24,7 @@
     "Other Events": { "type": ["null", "string"] },
     "Ending Warehouse Balance": { "type": ["null", "string"] },
     "Unknown Events": { "type": ["null", "string"] },
-    "Location": { "type": ["null", "string"] }
+    "Location": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

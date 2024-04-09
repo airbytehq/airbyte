@@ -8,6 +8,12 @@
     "kind": {
       "type": ["null", "string"]
     },
+    "show_priority_icon": {
+      "type": ["null", "boolean"]
+    },
+    "show_priority_icon_in_all_panels": {
+      "type": ["null", "boolean"]
+    },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"

@@ -5,36 +5,34 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_trello/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: 0.2.0
+      - spec_path: "source_trello/spec.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.2.0
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: 0.2.0
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.2.0
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-        extra_fields: no
-        exact_order: no
-        extra_records: yes
-      fail_on_extra_columns: false
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
+        fail_on_extra_columns: false
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

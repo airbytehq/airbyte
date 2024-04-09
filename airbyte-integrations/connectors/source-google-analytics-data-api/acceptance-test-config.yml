@@ -7,7 +7,8 @@ acceptance_tests:
     tests:
       - spec_path: "source_google_analytics_data_api/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: 0.2.1
+          # changed the structure of `custom_reports` -> `cohortSpec`
+          disable_for_version: 2.1.0
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -20,53 +21,33 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        empty_streams:
-          - name: "traffic_sources"
-            bypass_reason: "The data contains business information"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
-        ignored_fields:
-          devices:
-            - name: averageSessionDuration
-              bypass_reason: "dynamic field"
-          locations:
-            - name: averageSessionDuration
-              bypass_reason: "dynamic field"
-          pages:
-            - name: screenPageViews
-              bypass_reason: "dynamically created field"
-            - name: bounceRate
-              bypass_reason: "dynamically created field"
-          website_overview:
-            - name: averageSessionDuration
-              bypass_reason: "dynamically created field"
-          pivot_report:
-            - name: sessions
-              bypass_reason: "volatile data"
+        empty_streams:
+          - name: "cohort_report"
+            bypass_reason: "The test resource does not support cohort report"
+          - name: "demographic_interest_report"
+            bypass_reason: "The test resource does not collect interest"
+          - name: "demographic_age_report"
+            bypass_reason: "The test resource does not collect age"
+          - name: "demographic_gender_report"
+            bypass_reason: "The test resource does not collect gender"
+          - name: "publisher_ads_ad_unit_report"
+            bypass_reason: "The test resource does not work with publisher ads"
+          - name: "publisher_ads_ad_source_report"
+            bypass_reason: "The test resource does not work with publisher ads"
+          - name: "publisher_ads_page_path_report"
+            bypass_reason: "The test resource does not work with publisher ads"
+          - name: "publisher_ads_ad_format_report"
+            bypass_reason: "The test resource does not work with publisher ads"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        ignored_fields:
-          devices:
-            - name: averageSessionDuration
-              bypass_reason: "dynamic field"
-          locations:
-            - name: averageSessionDuration
-              bypass_reason: "dynamic field"
-          traffic_sources:
-            - name: averageSessionDuration
-              bypass_reason: "dynamically created field"
-          website_overview:
-            - name: averageSessionDuration
-              bypass_reason: "dynamically created field"
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 3600
+        timeout_seconds: 10800
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

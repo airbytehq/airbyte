@@ -6,6 +6,30 @@
     "source": {
       "type": ["null", "string"]
     },
+    "forwarded_to": {
+      "type": ["null", "string"]
+    },
+    "is_forwarded": {
+      "type": ["null", "boolean"]
+    },
+    "note_html": {
+      "type": ["null", "string"]
+    },
+    "parent_meeting_id": {
+      "type": ["null", "string"]
+    },
+    "recording_duration": {
+      "type": ["null", "string"]
+    },
+    "sequence_id": {
+      "type": ["null", "string"]
+    },
+    "sequence_name": {
+      "type": ["null", "string"]
+    },
+    "sequence_subscription_id": {
+      "type": ["null", "string"]
+    },
     "remote_phone_formatted": {
       "type": ["null", "string"]
     },

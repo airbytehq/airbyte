@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "updatedByUserId": {
+      "type": ["null", "number"]
+    },
+    "timestamp": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "property": {
+      "type": ["null", "string"]
+    },
+    "companyId": {
+      "type": ["null", "string"]
+    },
+    "sourceType": {
+      "type": ["null", "string"]
+    },
+    "sourceId": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

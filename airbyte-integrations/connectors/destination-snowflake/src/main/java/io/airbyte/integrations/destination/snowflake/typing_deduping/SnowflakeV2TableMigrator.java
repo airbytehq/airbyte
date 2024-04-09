@@ -4,22 +4,25 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 import static io.airbyte.integrations.destination.snowflake.SnowflakeInternalStagingDestination.RAW_SCHEMA_OVERRIDE;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction;
 import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableDefinition> {
+public class SnowflakeV2TableMigrator implements V2TableMigrator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeV2TableMigrator.class);
 
@@ -47,8 +50,8 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
         streamConfig.id().originalName(),
         rawNamespace);
     final boolean syncModeRequiresMigration = streamConfig.destinationSyncMode() != DestinationSyncMode.OVERWRITE;
-    final boolean existingTableCaseSensitiveExists = findExistingTable_caseSensitive(caseSensitiveStreamId).isPresent();
-    final boolean existingTableUppercaseDoesNotExist = !handler.findExistingTable(streamConfig.id()).isPresent();
+    final boolean existingTableCaseSensitiveExists = findExistingTable(caseSensitiveStreamId).isPresent();
+    final boolean existingTableUppercaseDoesNotExist = findExistingTable(streamConfig.id()).isEmpty();
     LOGGER.info(
         "Checking whether upcasing migration is necessary for {}.{}. Sync mode requires migration: {}; existing case-sensitive table exists: {}; existing uppercased table does not exist: {}",
         streamConfig.id().originalNamespace(),
@@ -61,7 +64,7 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
           "Executing upcasing migration for {}.{}",
           streamConfig.id().originalNamespace(),
           streamConfig.id().originalName());
-      handler.execute(generator.softReset(streamConfig));
+      TypeAndDedupeTransaction.executeSoftReset(generator, handler, streamConfig);
     }
   }
 
@@ -86,33 +89,15 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
     return identifier.replace("\"", "\"\"");
   }
 
-  // And this was taken from
-  // https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-snowflake/src/main/java/io/airbyte/integrations/destination/snowflake/typing_deduping/SnowflakeDestinationHandler.java
-  public Optional<SnowflakeTableDefinition> findExistingTable_caseSensitive(final StreamId id) throws SQLException {
+  private Optional<TableDefinition> findExistingTable(final StreamId id) throws SQLException {
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
     // VARIANT as VARCHAR
-    final LinkedHashMap<String, String> columns = database.queryJsons(
-        """
-        SELECT column_name, data_type
-        FROM information_schema.columns
-        WHERE table_catalog = ?
-          AND table_schema = ?
-          AND table_name = ?
-        ORDER BY ordinal_position;
-        """,
-        databaseName.toUpperCase(),
-        id.finalNamespace(),
-        id.finalName()).stream()
-        .collect(LinkedHashMap::new,
-            (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
-            LinkedHashMap::putAll);
-    // TODO query for indexes/partitioning/etc
-
-    if (columns.isEmpty()) {
-      return Optional.empty();
-    } else {
-      return Optional.of(new SnowflakeTableDefinition(columns));
+    LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> existingTableMap =
+        SnowflakeDestinationHandler.findExistingTables(database, databaseName, List.of(id));
+    if (existingTableMap.containsKey(id.finalNamespace()) && existingTableMap.get(id.finalNamespace()).containsKey(id.finalName())) {
+      return Optional.of(existingTableMap.get(id.finalNamespace()).get(id.finalName()));
     }
+    return Optional.empty();
   }
 
 }

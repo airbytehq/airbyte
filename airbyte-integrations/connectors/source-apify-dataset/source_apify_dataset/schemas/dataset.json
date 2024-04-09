@@ -18,6 +18,7 @@
     },
     "stats": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "readCount": {
           "type": ["null", "number"]
@@ -31,7 +32,7 @@
       }
     },
     "schema": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "object"]
     },
     "modifiedAt": {
       "type": ["null", "string"]
@@ -49,6 +50,9 @@
       "type": ["null", "string"]
     },
     "actRunId": {
+      "type": ["null", "string"]
+    },
+    "title": {
       "type": ["null", "string"]
     },
     "fields": {

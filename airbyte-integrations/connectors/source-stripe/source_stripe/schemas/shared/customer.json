@@ -833,11 +833,17 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "tax_info": {
       "type": ["null", "string"]
     },
     "test_clock": {
       "type": ["null", "string"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

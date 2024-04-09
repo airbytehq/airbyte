@@ -8,30 +8,37 @@ import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.TableId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.BaseGcsDestination;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer;
+import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.BaseConnector;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
@@ -41,14 +48,6 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
-import io.airbyte.integrations.destination.gcs.GcsDestination;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
-import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
-import io.airbyte.integrations.destination.gcs.util.GcsUtils;
-import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -56,17 +55,19 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiFunction;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.apache.avro.Schema;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -155,7 +156,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .map(i -> REQUIRED_PERMISSIONS.get(Math.toIntExact(i.getIndex())))
           .toList());
 
-      final GcsDestination gcsDestination = new GcsDestination();
+      final BaseGcsDestination gcsDestination = new BaseGcsDestination() {};
       final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
       return gcsDestination.check(gcsJsonNodeConfig);
     } catch (final Exception e) {
@@ -190,16 +191,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
-    if (!BigQueryUtils.isUsingJsonCredentials(config)) {
+    final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    // Follows this order of resolution:
+    // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
+    if (serviceAccountKey == null) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
       return GoogleCredentials.getApplicationDefault();
     }
 
     // The JSON credential can either be a raw JSON object, or a serialized JSON object.
-    final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
-        ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-        : config.get(BigQueryConsts.CONFIG_CREDS).asText();
+    final String credentialsString = serviceAccountKey.isObject()
+        ? Jsons.serialize(serviceAccountKey)
+        : serviceAccountKey.asText();
     return GoogleCredentials.fromStream(
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
@@ -215,83 +219,115 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    throw new UnsupportedOperationException("Should use getSerializedMessageConsumer");
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
-    // logic in the rest of the connector.
-    // (record messages still need to handle null namespaces though, which currently happens in e.g.
-    // BigQueryRecordConsumer#acceptTracked)
-    // This probably should be shared logic amongst destinations eventually.
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
-        stream.getStream().withNamespace(BigQueryUtils.getDatasetId(config));
+    final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
+    final String defaultNamespace = BigQueryUtils.getDatasetId(config);
+    setDefaultStreamNamespace(catalog, defaultNamespace);
+    final boolean disableTypeDedupe = BigQueryUtils.getDisableTypeDedupFlag(config);
+    final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
+    final Optional<String> rawNamespaceOverride = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET);
+    final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation, rawNamespaceOverride);
+    final BigQuery bigquery = getBigQuery(config);
+    final TyperDeduper typerDeduper =
+        buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
+
+    AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
+    final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    if (serviceAccountKey != null) {
+      // If the service account key is a non-null string, we will try to
+      // deserialize it. Otherwise, we will let the Google library find it in
+      // the environment during the client initialization.
+      if (serviceAccountKey.isTextual()) {
+        // There are cases where we fail to deserialize the service account key. In these cases, we
+        // shouldn't do anything.
+        // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
+        // go.
+        Jsons.tryDeserialize(serviceAccountKey.asText())
+            .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
+      } else {
+        AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
       }
     }
 
-    final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final CatalogParser catalogParser;
-    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()) {
-      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get());
-    } else {
-      catalogParser = new CatalogParser(sqlGenerator);
-    }
-    final ParsedCatalog parsedCatalog;
-
-    final BigQuery bigquery = getBigQuery(config);
-    final TyperDeduper typerDeduper;
-    parsedCatalog = catalogParser.parseCatalog(catalog);
-    final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
-    final BigQueryV2TableMigrator v2RawTableMigrator = new BigQueryV2TableMigrator(bigquery);
-    typerDeduper = new DefaultTyperDeduper<>(
-        sqlGenerator,
-        new BigQueryDestinationHandler(bigquery, datasetLocation),
-        parsedCatalog,
-        migrator,
-        v2RawTableMigrator);
-
-    final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
           "Please use the GCS upload mode if you are syncing a large amount of data.");
       return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
-    } else {
-      return getGcsRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
     }
+
+    final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
+    final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsCsvDestinationConfig(config);
+    final UUID stagingId = UUID.randomUUID();
+    final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
+    final boolean keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config);
+    final GcsStorageOperations gcsOperations = new GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig);
+    final BigQueryStagingOperations bigQueryGcsOperations = new BigQueryGcsOperations(
+        bigquery,
+        gcsNameTransformer,
+        gcsConfig,
+        gcsOperations,
+        stagingId,
+        syncDatetime,
+        keepStagingFiles);
+
+    return new BigQueryStagingConsumerFactory().createAsync(
+        config,
+        catalog,
+        outputRecordCollector,
+        bigQueryGcsOperations,
+        getCsvRecordFormatterCreator(namingResolver),
+        namingResolver::getTmpTableName,
+        typerDeduper,
+        parsedCatalog,
+        BigQueryUtils.getDatasetId(config));
   }
 
-  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
-                                                                                            final BigQuery bigquery,
-                                                                                            final JsonNode config,
-                                                                                            final ConfiguredAirbyteCatalog catalog,
-                                                                                            final ParsedCatalog parsedCatalog)
+  protected Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> getUploaderMap(
+                                                                                                                final BigQuery bigquery,
+                                                                                                                final JsonNode config,
+                                                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                                                final ParsedCatalog parsedCatalog)
       throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
-    for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
-      final AirbyteStream stream = configStream.getStream();
-      final StreamConfig parsedStream;
+    return () -> {
+      final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
+      for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
+        final AirbyteStream stream = configStream.getStream();
+        final StreamConfig parsedStream;
 
-      final String streamName = stream.getName();
-      final String targetTableName;
-      parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
-      targetTableName = parsedStream.id().rawName();
+        final String targetTableName;
 
-      final UploaderConfig uploaderConfig = UploaderConfig
-          .builder()
-          .bigQuery(bigquery)
-          .configStream(configStream)
-          .parsedStream(parsedStream)
-          .config(config)
-          .formatterMap(getFormatterMap(stream.getJsonSchema()))
-          .tmpTableName(namingResolver.getTmpTableName(streamName))
-          .targetTableName(targetTableName)
-          // This refers to whether this is BQ denormalized or not
-          .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
-          .build();
+        parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+        targetTableName = parsedStream.id().rawName();
 
-      putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
-    }
-    return uploaderMap;
+        final UploaderConfig uploaderConfig = UploaderConfig
+            .builder()
+            .bigQuery(bigquery)
+            .configStream(configStream)
+            .parsedStream(parsedStream)
+            .config(config)
+            .formatterMap(getFormatterMap(stream.getJsonSchema()))
+            .targetTableName(targetTableName)
+            // This refers to whether this is BQ denormalized or not
+            .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
+            .build();
+
+        try {
+          putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
+        } catch (final IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return uploaderMap;
+    };
   }
 
   protected void putStreamIntoUploaderMap(final AirbyteStream stream,
@@ -315,127 +351,128 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(final JsonNode jsonSchema) {
-    return Map.of(UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, namingResolver),
-        UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, namingResolver),
-        UploaderType.AVRO, new GcsAvroBigQueryRecordFormatter(jsonSchema, namingResolver));
+    return Map.of(
+        UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, namingResolver),
+        UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, namingResolver));
   }
 
-  private AirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
-                                                           final JsonNode config,
-                                                           final ConfiguredAirbyteCatalog catalog,
-                                                           final ParsedCatalog parsedCatalog,
-                                                           final Consumer<AirbyteMessage> outputRecordCollector,
-                                                           final TyperDeduper typerDeduper)
+  private SerializedAirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
+                                                                     final JsonNode config,
+                                                                     final ConfiguredAirbyteCatalog catalog,
+                                                                     final ParsedCatalog parsedCatalog,
+                                                                     final Consumer<AirbyteMessage> outputRecordCollector,
+                                                                     final TyperDeduper typerDeduper)
       throws Exception {
-    typerDeduper.prepareTables();
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
+    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
         bigquery,
         config,
         catalog,
         parsedCatalog);
 
-    return new BigQueryRecordConsumer(
+    final String bqNamespace = BigQueryUtils.getDatasetId(config);
+
+    return new BigQueryRecordStandardConsumer(
+        outputRecordCollector,
+        () -> {
+          typerDeduper.prepareSchemasAndRunMigrations();
+
+          // Set up our raw tables
+          writeConfigs.get().forEach((streamId, uploader) -> {
+            final StreamConfig stream = parsedCatalog.getStream(streamId);
+            if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+              // For streams in overwrite mode, truncate the raw table.
+              // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
+              // 1s1t mode.
+              final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+              LOGGER.info("Deleting Raw table {}", rawTableId);
+              if (!bigquery.delete(rawTableId)) {
+                LOGGER.info("Raw table {} not found, continuing with creation", rawTableId);
+              }
+              LOGGER.info("Creating table {}", rawTableId);
+              BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+            } else {
+              uploader.createRawTable();
+            }
+          });
+
+          typerDeduper.prepareFinalTables();
+        },
+        (hasFailed, streamSyncSummaries) -> {
+          try {
+            Thread.sleep(30 * 1000);
+            typerDeduper.typeAndDedupe(streamSyncSummaries);
+            typerDeduper.commitFinalTables();
+            typerDeduper.cleanup();
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          }
+        },
         bigquery,
-        writeConfigs,
-        outputRecordCollector,
-        BigQueryUtils.getDatasetId(config),
-        typerDeduper,
-        parsedCatalog);
-  }
-
-  public AirbyteMessageConsumer getGcsRecordConsumer(final BigQuery bigQuery,
-                                                     final JsonNode config,
-                                                     final ConfiguredAirbyteCatalog catalog,
-                                                     final ParsedCatalog parsedCatalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector,
-                                                     final TyperDeduper typerDeduper)
-      throws Exception {
-    final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
-    final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
-    final UUID stagingId = UUID.randomUUID();
-    final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
-    final boolean keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config);
-    final GcsStorageOperations gcsOperations = new GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig);
-    final BigQueryStagingOperations bigQueryGcsOperations = new BigQueryGcsOperations(
-        bigQuery,
-        gcsNameTransformer,
-        gcsConfig,
-        gcsOperations,
-        stagingId,
-        syncDatetime,
-        keepStagingFiles);
-    final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) gcsConfig.getFormatConfig();
-    final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator = getRecordFormatterCreator(namingResolver);
-    final int numberOfFileBuffers = getNumberOfFileBuffers(config);
-
-    if (numberOfFileBuffers > FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER) {
-      LOGGER.warn("""
-                  Increasing the number of file buffers past {} can lead to increased performance but
-                  leads to increased memory usage. If the number of file buffers exceeds the number
-                  of streams {} this will create more buffers than necessary, leading to nonexistent gains
-                  """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
-    }
-
-    final BufferCreateFunction onCreateBuffer =
-        BigQueryAvroSerializedBuffer.createBufferFunction(
-            avroFormatConfig,
-            recordFormatterCreator,
-            getAvroSchemaCreator(),
-            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX, numberOfFileBuffers));
-
-    LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
-
-    return new BigQueryStagingConsumerFactory().create(
-        config,
         catalog,
-        outputRecordCollector,
-        bigQueryGcsOperations,
-        onCreateBuffer,
-        recordFormatterCreator,
-        namingResolver::getTmpTableName,
-        typerDeduper,
-        parsedCatalog,
-        BigQueryUtils.getDatasetId(config));
+        bqNamespace,
+        writeConfigs);
   }
 
-  protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {
-    return (formatter, pair) -> GcsUtils.getDefaultAvroSchema(pair.getName(), pair.getNamespace(), true, true);
+  protected Function<JsonNode, BigQueryRecordFormatter> getCsvRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
+    return streamSchema -> new GcsCsvBigQueryRecordFormatter(streamSchema, namingResolver);
   }
 
-  protected Function<JsonNode, BigQueryRecordFormatter> getRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
-    return streamSchema -> new GcsAvroBigQueryRecordFormatter(streamSchema, namingResolver);
-  }
-
-  /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
-   * file buffers and sets the minimum number to the default
-   * <p>
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
-   * not been thoroughly load tested across all instance sizes
-   *
-   * @param config user configurations
-   * @return number of file buffers if configured otherwise default
-   */
-  @VisibleForTesting
-  public int getNumberOfFileBuffers(final JsonNode config) {
-    // This null check is probably redundant, but I don't want to gamble on that right now
-    if (config.hasNonNull(BigQueryConsts.LOADING_METHOD)) {
-      final JsonNode loadingMethodConfig = config.get(BigQueryConsts.LOADING_METHOD);
-      final int numOfFileBuffers;
-      if (loadingMethodConfig.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-        numOfFileBuffers = Math.min(loadingMethodConfig.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-      } else {
-        numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
+  private void setDefaultStreamNamespace(final ConfiguredAirbyteCatalog catalog, final String namespace) {
+    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
+    // logic in the rest of the connector.
+    // (record messages still need to handle null namespaces though, which currently happens in e.g.
+    // AsyncStreamConsumer#accept)
+    // This probably should be shared logic amongst destinations eventually.
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
+        stream.getStream().withNamespace(namespace);
       }
-      // Only allows for values 10 <= numOfFileBuffers <= 50
-      return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+    }
+  }
+
+  private ParsedCatalog parseCatalog(final JsonNode config,
+                                     final ConfiguredAirbyteCatalog catalog,
+                                     final String datasetLocation,
+                                     final Optional<String> rawNamespaceOverride) {
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
+    final CatalogParser catalogParser = rawNamespaceOverride.map(s -> new CatalogParser(sqlGenerator, s))
+        .orElseGet(() -> new CatalogParser(sqlGenerator));
+
+    return catalogParser.parseCatalog(catalog);
+  }
+
+  private TyperDeduper buildTyperDeduper(final BigQuerySqlGenerator sqlGenerator,
+                                         final ParsedCatalog parsedCatalog,
+                                         final BigQuery bigquery,
+                                         final String datasetLocation,
+                                         final boolean disableTypeDedupe) {
+    final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
+    final BigQueryV2TableMigrator v2RawTableMigrator = new BigQueryV2TableMigrator(bigquery);
+    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(
+        bigquery,
+        datasetLocation);
+
+    if (disableTypeDedupe) {
+      return new NoOpTyperDeduperWithV1V2Migrations<>(
+          sqlGenerator, destinationHandler, parsedCatalog, migrator, v2RawTableMigrator, List.of());
     }
 
-    // Return the default if we fail to parse the config
-    return FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
+    return new DefaultTyperDeduper<>(
+        sqlGenerator,
+        destinationHandler,
+        parsedCatalog,
+        migrator,
+        v2RawTableMigrator,
+        List.of());
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
   }
 
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(BigQueryException.class);
     final Destination destination = new BigQueryDestination();
     new IntegrationRunner(destination).run(args);
   }

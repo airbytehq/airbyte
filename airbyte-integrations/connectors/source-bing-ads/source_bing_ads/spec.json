@@ -4,12 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Bing Ads Spec",
     "type": "object",
-    "required": [
-      "developer_token",
-      "client_id",
-      "refresh_token",
-      "reports_start_date"
-    ],
+    "required": ["developer_token", "client_id", "refresh_token"],
     "additionalProperties": true,
     "properties": {
       "auth_method": {
@@ -53,22 +48,144 @@
         "airbyte_secret": true,
         "order": 4
       },
+      "account_names": {
+        "title": "Account Names Predicates",
+        "description": "Predicates that will be used to sync data by specific accounts.",
+        "type": "array",
+        "order": 5,
+        "items": {
+          "description": "Account Names Predicates Config.",
+          "type": "object",
+          "properties": {
+            "operator": {
+              "title": "Operator",
+              "description": "An Operator that will be used to filter accounts. The Contains predicate has features for matching words, matching inflectional forms of words, searching using wildcard characters, and searching using proximity. The Equals is used to return all rows where account name is equal(=) to the string that you provided",
+              "type": "string",
+              "enum": ["Contains", "Equals"]
+            },
+            "name": {
+              "title": "Account Name",
+              "description": "Account Name is a string value for comparing with the specified predicate.",
+              "type": "string"
+            }
+          },
+          "required": ["operator", "name"]
+        }
+      },
       "reports_start_date": {
         "type": "string",
         "title": "Reports replication start date",
         "format": "date",
-        "default": "2020-01-01",
-        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
-        "order": 5
+        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format. If not set, data from previous and current calendar year will be replicated.",
+        "order": 6
       },
       "lookback_window": {
         "title": "Lookback window",
-        "description": "Also known as attribution or conversion window. How far into the past to look for records (in days). If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. Used only for performance report streams in incremental mode.",
+        "description": "Also known as attribution or conversion window. How far into the past to look for records (in days). If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. Used only for performance report streams in incremental mode without specified Reports Start Date.",
         "type": "integer",
         "default": 0,
         "minimum": 0,
         "maximum": 90,
-        "order": 6
+        "order": 7
+      },
+      "custom_reports": {
+        "title": "Custom Reports",
+        "description": "You can add your Custom Bing Ads report by creating one.",
+        "order": 8,
+        "type": "array",
+        "items": {
+          "title": "Custom Report Config",
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Report Name",
+              "description": "The name of the custom report, this name would be used as stream name",
+              "type": "string",
+              "examples": [
+                "Account Performance",
+                "AdDynamicTextPerformanceReport",
+                "custom report"
+              ]
+            },
+            "reporting_object": {
+              "title": "Reporting Data Object",
+              "description": "The name of the the object derives from the ReportRequest object. You can find it in Bing Ads Api docs - Reporting API - Reporting Data Objects.",
+              "type": "string",
+              "enum": [
+                "AccountPerformanceReportRequest",
+                "AdDynamicTextPerformanceReportRequest",
+                "AdExtensionByAdReportRequest",
+                "AdExtensionByKeywordReportRequest",
+                "AdExtensionDetailReportRequest",
+                "AdGroupPerformanceReportRequest",
+                "AdPerformanceReportRequest",
+                "AgeGenderAudienceReportRequest",
+                "AudiencePerformanceReportRequest",
+                "CallDetailReportRequest",
+                "CampaignPerformanceReportRequest",
+                "ConversionPerformanceReportRequest",
+                "DestinationUrlPerformanceReportRequest",
+                "DSAAutoTargetPerformanceReportRequest",
+                "DSACategoryPerformanceReportRequest",
+                "DSASearchQueryPerformanceReportRequest",
+                "GeographicPerformanceReportRequest",
+                "GoalsAndFunnelsReportRequest",
+                "HotelDimensionPerformanceReportRequest",
+                "HotelGroupPerformanceReportRequest",
+                "KeywordPerformanceReportRequest",
+                "NegativeKeywordConflictReportRequest",
+                "ProductDimensionPerformanceReportRequest",
+                "ProductMatchCountReportRequest",
+                "ProductNegativeKeywordConflictReportRequest",
+                "ProductPartitionPerformanceReportRequest",
+                "ProductPartitionUnitPerformanceReportRequest",
+                "ProductSearchQueryPerformanceReportRequest",
+                "ProfessionalDemographicsAudienceReportRequest",
+                "PublisherUsagePerformanceReportRequest",
+                "SearchCampaignChangeHistoryReportRequest",
+                "SearchQueryPerformanceReportRequest",
+                "ShareOfVoiceReportRequest",
+                "UserLocationPerformanceReportRequest"
+              ]
+            },
+            "report_columns": {
+              "title": "Columns",
+              "description": "A list of available report object columns. You can find it in description of reporting object that you want to add to custom report.",
+              "type": "array",
+              "items": {
+                "description": "Name of report column.",
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "report_aggregation": {
+              "title": "Aggregation",
+              "description": "A list of available aggregations.",
+              "type": "string",
+              "items": {
+                "title": "ValidEnums",
+                "description": "An enumeration of aggregations.",
+                "enum": [
+                  "Hourly",
+                  "Daily",
+                  "Weekly",
+                  "Monthly",
+                  "DayOfWeek",
+                  "HourOfDay",
+                  "WeeklyStartingMonday",
+                  "Summary"
+                ]
+              },
+              "default": ["Hourly"]
+            }
+          },
+          "required": [
+            "name",
+            "reporting_object",
+            "report_columns",
+            "report_aggregation"
+          ]
+        }
       }
     }
   },

@@ -415,51 +415,53 @@ class SearchAnalyticsPageReport(SearchAnalytics):
 
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
-    dimension_to_property_schema_map = {
+    # `date` is a cursor field therefore should be mandatory
+    DEFAULT_DIMENSIONS = ["date"]
+    DIMENSION_TO_PROPERTY_SCHEMA_MAP = {
         "country": [{"country": {"type": ["null", "string"]}}],
-        "date": [],
+        "date": [{"date": {"type": ["null", "string"], "format": "date"}}],
         "device": [{"device": {"type": ["null", "string"]}}],
         "page": [{"page": {"type": ["null", "string"]}}],
         "query": [{"query": {"type": ["null", "string"]}}],
-        "search_type": [{"search_type": {"type": ["null", "string"]}}],
     }
 
     primary_key = None
 
     def __init__(self, dimensions: List[str], *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
-        self.dimensions = dimensions
-        # assign the dimensions as PK for the custom report stream
-        self.primary_key = dimensions
+        self.dimensions = dimensions + [dimension for dimension in self.DEFAULT_DIMENSIONS if dimension not in dimensions]
+        # Assign the dimensions as PK for the custom report stream.
+        # Site URL and Search Type are included in the API call thus affect the resulting data.
+        # `site_url` is a required URL param for making API calls;
+        # `search_type` remains a query param for historical reasons, we do not want to remove it to not break existing connections.
+        self.primary_key = self.dimensions + ["site_url", "search_type"]
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        try:
-            return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
-        except FileNotFoundError:
-            schema: Mapping[str, Any] = {
-                "$schema": "https://json-schema.org/draft-07/schema#",
-                "type": ["null", "object"],
-                "additionalProperties": True,
-                "properties": {
-                    "clicks": {"type": ["null", "integer"]},
-                    "ctr": {"type": ["null", "number"], "multipleOf": 1e-25},
-                    "date": {"type": ["null", "string"], "format": "date"},
-                    "impressions": {"type": ["null", "integer"]},
-                    "position": {"type": ["null", "number"], "multipleOf": 1e-25},
-                    "search_type": {"type": ["null", "string"]},
-                    "site_url": {"type": ["null", "string"]},
-                },
-            }
+        schema: Mapping[str, Any] = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                # metrics
+                "clicks": {"type": ["null", "integer"]},
+                "ctr": {"type": ["null", "number"], "multipleOf": 1e-25},
+                "impressions": {"type": ["null", "integer"]},
+                "position": {"type": ["null", "number"], "multipleOf": 1e-25},
+                # default fields
+                "search_type": {"type": ["null", "string"]},
+                "site_url": {"type": ["null", "string"]},
+            },
+        }
 
-            dimension_properties = self.dimension_to_property_schema()
-            schema["properties"].update(dimension_properties)
-
-            return schema
+        # dimensions
+        dimension_properties = self.dimension_to_property_schema()
+        schema["properties"].update(dimension_properties)
+        return schema
 
     def dimension_to_property_schema(self) -> dict:
         properties = {}
         for dimension in sorted(self.dimensions):
-            fields = self.dimension_to_property_schema_map[dimension]
+            fields = self.DIMENSION_TO_PROPERTY_SCHEMA_MAP[dimension]
             for field in fields:
                 properties = {**properties, **field}
         return properties

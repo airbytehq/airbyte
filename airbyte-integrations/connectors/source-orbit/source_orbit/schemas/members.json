@@ -1,24 +1,26 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "fake": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "attributes": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "activities_count": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "activities_score": {
-          "type": "integer"
+          "type": ["null", "number"]
         },
         "avatar_url": {
           "type": ["null", "string"]
@@ -71,13 +73,13 @@
         "tag_list": {
           "type": ["null", "array"],
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "tags": {
           "type": ["null", "array"],
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "teammate": {
@@ -99,10 +101,10 @@
           "type": ["null", "string"]
         },
         "created": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "orbit_level": {
           "type": ["null", "integer"]
@@ -140,16 +142,21 @@
         "topics": {
           "type": ["null", "array"],
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "languages": {
           "type": ["null", "array"],
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     }
   }
 }

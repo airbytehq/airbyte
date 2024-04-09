@@ -1,6 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-const { parseMarkdownContentTitle, parseFrontMatter } = require('@docusaurus/utils');
+const {
+  parseMarkdownContentTitle,
+  parseFrontMatter,
+} = require("@docusaurus/utils");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -11,36 +14,56 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .readdirSync(dir)
     .filter(
       (fileName) =>
-        !(fileName.endsWith(".inapp.md") || fileName.endsWith("postgres.md") || fileName.endsWith("-migrations.md"))
+        !(
+          fileName.endsWith(".inapp.md") ||
+          fileName.endsWith("-migrations.md") ||
+          fileName.endsWith(".js")
+        )
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
+      // Get the first header of the markdown document
+      const { contentTitle } = parseMarkdownContentTitle(
+        parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`)))
+          .content
+      );
+      if (!contentTitle) {
+        throw new Error(
+          `Could not parse title from ${path.join(
+            prefix,
+            filename
+          )}. Make sure there's no content above the first heading!`
+        );
+      }
+
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
       const migrationDocPath = path.join(dir, `${filename}-migrations.md`);
-      if(fs.existsSync(migrationDocPath)) {
-        // Get the first header of the markdown document
-        const { contentTitle } = parseMarkdownContentTitle(parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`))).content);
-        if (!contentTitle) {
-          throw new Error(`Could not parse title from ${path.join(prefix, filename)}. Make sure there's no content above the first heading!`);
-        }
-
+      if (fs.existsSync(migrationDocPath)) {
         return {
           type: "category",
           label: contentTitle,
           link: { type: "doc", id: path.join(prefix, filename) },
           items: [
-            { type: "doc", id: path.join(prefix, `${filename}-migrations`), label: "Migration Guide" }
-          ]
+            {
+              type: "doc",
+              id: path.join(prefix, `${filename}-migrations`),
+              label: "Migration Guide",
+            },
+          ],
         };
       }
 
-      return { type: "doc", id: path.join(prefix, filename) };
+      return { type: "doc", id: path.join(prefix, filename), label: contentTitle };
     });
 }
 
 function getSourceConnectors() {
-  return getFilenamesInDir("integrations/sources/", sourcesDocs, ["readme"]);
+  return getFilenamesInDir("integrations/sources/", sourcesDocs, [
+    "readme",
+    "postgres",
+    "mysql"
+  ]);
 }
 
 function getDestinationConnectors() {
@@ -66,6 +89,22 @@ const sourcePostgres = {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/sources/postgres/postgres-troubleshooting",
+    },
+  ],
+};
+
+const sourceMysql = {
+  type: "category",
+  label: "MySQL",
+  link: {
+    type: "doc",
+    id: "integrations/sources/mysql",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/mysql/mysql-troubleshooting",
     },
   ],
 };
@@ -186,7 +225,6 @@ const buildAConnector = {
       },
       items: [
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
-        "connector-development/testing-connectors/testing-a-local-catalog-in-development",
       ],
     },
     {
@@ -210,9 +248,7 @@ const buildAConnector = {
           ],
         },
         "connector-development/tutorials/building-a-python-source",
-        "connector-development/tutorials/building-a-python-destination",
         "connector-development/tutorials/building-a-java-destination",
-        "connector-development/tutorials/profile-java-connector-memory",
       ],
     },
     "connector-development/connector-specification-reference",
@@ -235,15 +271,17 @@ const connectorCatalog = {
       type: "category",
       label: "Sources",
       link: {
-        type: "generated-index",
+        type: "doc",
+        id: "integrations/sources/README",
       },
-      items: [sourcePostgres, getSourceConnectors()],
+      items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
     {
       type: "category",
       label: "Destinations",
       link: {
-        type: "generated-index",
+        type: "doc",
+        id: "integrations/destinations/README",
       },
       items: getDestinationConnectors(),
     },
@@ -271,56 +309,12 @@ const contributeToAirbyte = {
       label: "Resources",
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/code-style",
+        "contributing-to-airbyte/resources/code-formatting",
+        "contributing-to-airbyte/resources/qa-checks",
         "contributing-to-airbyte/resources/developing-locally",
         "contributing-to-airbyte/resources/developing-on-docker",
-        "contributing-to-airbyte/resources/gradle",
-        "contributing-to-airbyte/resources/python-gradle-setup",
       ],
     },
-  ],
-};
-
-const airbyteCloud = [
-  {
-    type: "doc",
-    label: "Getting Started",
-    id: "cloud/getting-started-with-airbyte-cloud",
-  },
-  "cloud/core-concepts",
-  {
-    type: "category",
-    label: "Using Airbyte Cloud",
-    link: {
-      type: "generated-index",
-    },
-    items: [
-      "cloud/managing-airbyte-cloud/configuring-connections",
-      "cloud/managing-airbyte-cloud/review-connection-status",
-      "cloud/managing-airbyte-cloud/review-sync-history",
-      "cloud/managing-airbyte-cloud/manage-schema-changes",
-      "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
-      "cloud/managing-airbyte-cloud/manage-data-residency",
-      "cloud/managing-airbyte-cloud/dbt-cloud-integration",
-      "cloud/managing-airbyte-cloud/manage-credits",
-      "cloud/managing-airbyte-cloud/manage-connection-state",
-      "cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
-      "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
-    ],
-  },
-];
-
-const ossGettingStarted = {
-  type: "category",
-  label: "Getting Started",
-  link: {
-    type: "generated-index",
-  },
-  items: [
-    "quickstart/deploy-airbyte",
-    "quickstart/add-a-source",
-    "quickstart/add-a-destination",
-    "quickstart/set-up-a-connection",
   ],
 };
 
@@ -341,7 +335,11 @@ const deployAirbyte = {
       label: "On AWS EC2",
       id: "deploying-airbyte/on-aws-ec2",
     },
-
+    {
+      type: "doc",
+      label: "On AWS ECS",
+      id: "deploying-airbyte/on-aws-ecs",
+    },
     {
       type: "doc",
       label: "On Azure",
@@ -380,113 +378,186 @@ const deployAirbyte = {
   ],
 };
 
-const operatorGuide = {
-  type: "category",
-  label: "Manage Airbyte",
-  link: {
-    type: "generated-index",
-  },
-  items: [
-    "operator-guides/upgrading-airbyte",
-    "operator-guides/reset",
-    "operator-guides/configuring-airbyte-db",
-    "operator-guides/configuring-connector-resources",
-    "operator-guides/browsing-output-logs",
-    "operator-guides/using-the-airflow-airbyte-operator",
-    "operator-guides/using-prefect-task",
-    "operator-guides/using-dagster-integration",
-    "operator-guides/using-kestra-plugin",
-    "operator-guides/locating-files-local-destination",
-    "operator-guides/collecting-metrics",
-    {
-      type: "category",
-      label: "Transformations and Normalization",
-      items: [
-        "operator-guides/transformation-and-normalization/transformations-with-sql",
-        "operator-guides/transformation-and-normalization/transformations-with-dbt",
-        "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-      ],
-    },
-    "operator-guides/configuring-airbyte",
-    "operator-guides/using-custom-connectors",
-    "operator-guides/scaling-airbyte",
-    "operator-guides/configuring-sync-notifications",
-  ],
-};
-
 const understandingAirbyte = {
   type: "category",
   label: "Understand Airbyte",
   items: [
-    "understanding-airbyte/beginners-guide-to-catalog",
+    "understanding-airbyte/high-level-view",
     "understanding-airbyte/airbyte-protocol",
     "understanding-airbyte/airbyte-protocol-docker",
-    "understanding-airbyte/basic-normalization",
-    "understanding-airbyte/typing-deduping",
-    {
-      type: "category",
-      label: "Connections and Sync Modes",
-      items: [
-        {
-          type: "doc",
-          label: "Connections Overview",
-          id: "understanding-airbyte/connections/README",
-        },
-        "understanding-airbyte/connections/full-refresh-overwrite",
-        "understanding-airbyte/connections/full-refresh-append",
-        "understanding-airbyte/connections/incremental-append",
-        "understanding-airbyte/connections/incremental-append-deduped",
-      ],
-    },
-    "understanding-airbyte/operations",
-    "understanding-airbyte/high-level-view",
     "understanding-airbyte/jobs",
-    "understanding-airbyte/tech-stack",
-    "understanding-airbyte/cdc",
-    "understanding-airbyte/namespaces",
-    "understanding-airbyte/supported-data-types",
-    "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/database-data-catalog",
+    "understanding-airbyte/beginners-guide-to-catalog",
+    "understanding-airbyte/supported-data-types",
+    "understanding-airbyte/operations",
+    "understanding-airbyte/cdc",
+    "understanding-airbyte/json-avro-conversion",
+    "understanding-airbyte/schemaless-sources-and-destinations",
+    "understanding-airbyte/tech-stack",
   ],
 };
 
-const security = {
-  type: "doc",
-  id: "operator-guides/security",
-};
-
-const support = {
-  type: "doc",
-  id: "operator-guides/contact-support",
-};
-
 module.exports = {
-  mySidebar: [
-    {
-      type: "doc",
-      label: "Start here",
-      id: "readme",
-    },
+  docs: [
     sectionHeader("Airbyte Connectors"),
     connectorCatalog,
     buildAConnector,
-    sectionHeader("Airbyte Cloud"),
-    ...airbyteCloud,
-    sectionHeader("Airbyte Open Source (OSS)"),
-    ossGettingStarted,
-    deployAirbyte,
-    operatorGuide,
+    "integrations/connector-support-levels",
+    sectionHeader("Using Airbyte"),
     {
-      type: "doc",
-      id: "troubleshooting",
+      type: "category",
+      label: "Getting Started",
+      link: {
+        type: "doc",
+        id: "using-airbyte/getting-started/readme",
+      },
+      items: [
+        "using-airbyte/core-concepts/readme",
+        "using-airbyte/getting-started/add-a-source",
+        "using-airbyte/getting-started/add-a-destination",
+        "using-airbyte/getting-started/set-up-a-connection",
+      ],
     },
     {
-      type: "doc",
-      id: "airbyte-enterprise",
+      type: "category",
+      label: "Configuring Connections",
+      link: {
+        type: "doc",
+        id: "cloud/managing-airbyte-cloud/configuring-connections"
+      },
+      items: [
+        "using-airbyte/core-concepts/sync-schedules",
+        "using-airbyte/core-concepts/namespaces",
+        {
+          type: "category",
+          label: "Sync Modes",
+          link: {
+            type: "doc",
+            id: "using-airbyte/core-concepts/sync-modes/README"
+          },
+          items: [
+            "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
+            "using-airbyte/core-concepts/sync-modes/incremental-append",
+            "using-airbyte/core-concepts/sync-modes/full-refresh-append",
+            "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
+          ],
+        },
+        {
+          type: "category",
+          label: "Typing and Deduping",
+          link: {
+            type: "doc",
+            id: "using-airbyte/core-concepts/typing-deduping"
+          },
+          items: [
+            "using-airbyte/core-concepts/basic-normalization"
+          ],
+        },
+        "cloud/managing-airbyte-cloud/manage-schema-changes",
+        {
+          type: "category",
+          label: "Transformations",
+          items: [
+            "cloud/managing-airbyte-cloud/dbt-cloud-integration",
+            "operator-guides/transformation-and-normalization/transformations-with-sql",
+            "operator-guides/transformation-and-normalization/transformations-with-dbt",
+            "operator-guides/transformation-and-normalization/transformations-with-airbyte",
+          ]
+        },
+      ]
+    },
+    {
+      type: "category",
+      label: "Managing Syncs",
+      items: [
+        "cloud/managing-airbyte-cloud/review-connection-status",
+        "cloud/managing-airbyte-cloud/review-sync-history",
+        "operator-guides/browsing-output-logs",
+        "operator-guides/reset",
+        "cloud/managing-airbyte-cloud/manage-connection-state",
+      ],
+    },
+    {
+      type: "category",
+      label: "Workspace Management",
+      items: [
+        "cloud/managing-airbyte-cloud/manage-data-residency",
+        "using-airbyte/workspaces",
+        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
+        "cloud/managing-airbyte-cloud/manage-credits",
+        "operator-guides/using-custom-connectors",
+        
+      ]
+    },
+    sectionHeader("Managing Airbyte"),
+    deployAirbyte,
+    {
+      type: "category",
+      label: "Self-Managed Enterprise",
+      link: {
+        type: "doc",
+        id: "enterprise-setup/README",
+      },
+      items: [
+        "enterprise-setup/implementation-guide",
+        "enterprise-setup/api-access-config",
+        "enterprise-setup/upgrading-from-community",
+      ]
+    },
+    "operator-guides/upgrading-airbyte",
+    {
+      type: "category",
+      label: "Configuring Airbyte",
+      link: {
+        type: "doc",
+        id: "operator-guides/configuring-airbyte",
+      },
+      items: [
+        "operator-guides/configuring-airbyte-db",
+        "operator-guides/configuring-connector-resources",
+        "operator-guides/telemetry",
+      ]
+    },
+    {
+      type: "category",
+      label: "Access Management",
+      items: [
+        {
+          type: "category",
+          label: "Single Sign-On (SSO)",
+          link: {
+            type: "doc",
+            id: "access-management/sso"
+          },
+          items: [
+            { type: "autogenerated", dirName: "access-management/sso-providers" },
+          ]
+        },
+      ]
+    },
+    {
+      type: "category",
+      label: "Airbyte at Scale",
+      items: [
+        "operator-guides/collecting-metrics",
+        "operator-guides/scaling-airbyte",
+        "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
+      ]
+    },
+    "operating-airbyte/security",
+    {
+      type: "category",
+      label: "Integrating with Airbyte",
+      items: [
+        "operator-guides/using-the-airflow-airbyte-operator",
+        "operator-guides/using-prefect-task",
+        "operator-guides/using-dagster-integration",
+        "operator-guides/using-kestra-plugin",
+      ],
     },
     sectionHeader("Developer Guides"),
-     {
-      type: 'doc',
+    {
+      type: "doc",
       id: "api-documentation",
     },
     {
@@ -495,45 +566,33 @@ module.exports = {
     },
     {
       type: "doc",
-      id: "cli-documentation",
+      label: "Using PyAirbyte",
+      id: "using-airbyte/pyairbyte/getting-started",
     },
     understandingAirbyte,
     contributeToAirbyte,
-    sectionHeader("Resources"),
-    support,
-    security,
     {
       type: "category",
-      label: "Project Overview",
+      label: "Licenses",
+      link: {
+        type: "doc",
+        id: "developer-guides/licenses/README",
+      },
       items: [
-        {
-          type: "link",
-          label: "Roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
-        "project-overview/product-release-stages",
-        "project-overview/slack-code-of-conduct",
-        "project-overview/code-of-conduct",
-        {
-          type: "link",
-          label: "Airbyte Repository",
-          href: "https://github.com/airbytehq/airbyte",
-        },
-        {
-          type: "category",
-          label: "Licenses",
-          link: {
-            type: "doc",
-            id: "project-overview/licenses/README",
-          },
-          items: [
-            "project-overview/licenses/license-faq",
-            "project-overview/licenses/elv2-license",
-            "project-overview/licenses/mit-license",
-            "project-overview/licenses/examples",
-          ],
-        },
+        "developer-guides/licenses/license-faq",
+        "developer-guides/licenses/elv2-license",
+        "developer-guides/licenses/mit-license",
+        "developer-guides/licenses/examples",
       ],
+    },
+    sectionHeader("Community"),
+    "community/getting-support",
+    "community/code-of-conduct",
+    sectionHeader("Product Updates"),
+    {
+      type: "link",
+      label: "Roadmap",
+      href: "https://go.airbyte.com/roadmap",
     },
     {
       type: "category",
@@ -542,7 +601,13 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/february_2024",
+        "release_notes/january_2024",
+        "release_notes/december_2023",
+        "release_notes/november_2023",
+        "release_notes/october_2023",
         "release_notes/upgrading_to_destinations_v2",
+        "release_notes/september_2023",
         "release_notes/july_2023",
         "release_notes/june_2023",
         "release_notes/may_2023",
