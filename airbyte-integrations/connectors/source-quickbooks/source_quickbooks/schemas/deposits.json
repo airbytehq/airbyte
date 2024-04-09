@@ -65,6 +65,7 @@
             "type": ["null", "number"]
           },
           "DepositLineDetail": {
+            "additionalProperties": true,
             "properties": {
               "Entity": {
                 "properties": {

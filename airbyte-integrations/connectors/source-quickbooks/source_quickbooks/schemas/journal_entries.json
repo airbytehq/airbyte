@@ -74,6 +74,7 @@
                 "type": ["null", "string"]
               },
               "Entity": {
+                "additionalProperties": true,
                 "properties": {
                   "Type": {
                     "type": ["null", "string"]
