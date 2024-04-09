@@ -254,6 +254,12 @@ class Salesforce:
             self.logger.info("using SANDBOX of Salesforce")
         self.start_date = start_date
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.session.close()
+
     def _get_standard_headers(self) -> Mapping[str, str]:
         return {"Authorization": "Bearer {}".format(self.access_token)}
 
