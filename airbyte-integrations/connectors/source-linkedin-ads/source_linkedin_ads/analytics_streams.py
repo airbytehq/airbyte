@@ -130,7 +130,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     primary_key = ["pivotValues", "end_date"]
     cursor_field = "end_date"
     records_limit = 15000
-    FIELDS_CHUNK_SIZE = 19
+    FIELDS_CHUNK_SIZE = 18
 
     def get_json_schema(self) -> Mapping[str, Any]:
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
@@ -288,6 +288,8 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         for chunk in chunks:
             if "dateRange" not in chunk:
                 chunk.append("dateRange")
+            if "pivotValues" not in chunk:
+                chunk.append("pivotValues")
         yield from chunks
 
     def read_records(
@@ -296,7 +298,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         merged_records = defaultdict(dict)
         for field_slice in stream_slice:
             for rec in super().read_records(stream_slice=field_slice, **kwargs):
-                merged_records[f"{rec[self.cursor_field]}-{rec.get('pivotValues')}"].update(rec)
+                merged_records[f"{rec[self.cursor_field]}-{rec['pivotValues']}"].update(rec)
         yield from merged_records.values()
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
