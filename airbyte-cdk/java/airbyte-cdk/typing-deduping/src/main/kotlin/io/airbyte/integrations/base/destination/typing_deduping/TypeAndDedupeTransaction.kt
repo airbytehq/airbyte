@@ -31,7 +31,7 @@ object TypeAndDedupeTransaction {
         destinationHandler: DestinationHandler<*>,
         streamConfig: StreamConfig?,
         minExtractedAt: Optional<Instant>,
-        suffix: String?
+        suffix: String
     ) {
         try {
             LOGGER.info(
