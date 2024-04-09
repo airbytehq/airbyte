@@ -246,7 +246,7 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": ":warning: A new version of Python CDK has been released but Connector Builder hasn't been automatically updated",
+                "text": ":warning: A new version of Python CDK has been released but `source-declarative-manifest` and Connector Builder haven't been automatically updated",
                 "blocks": [
                     {
                         "type": "section",
@@ -259,7 +259,7 @@ jobs:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": ":warning: Could not automatically create a PR for Connector Builder>\n"
+                            "text": ":warning: Could not bump version of `source-declarative-manifest`.>\n"
                         }
                     },
                     {
