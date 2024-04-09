@@ -47,7 +47,7 @@ definitions:
         inject_into: request_parameter
       pagination_strategy:
         type: CursorPagination
-        page_size: 1
+        page_size: 10
         cursor_value: '{{ response.get("next_page", {}) }}'
         stop_condition: '{{ not response.get("next_page", {}) }}'
       page_token_option:
@@ -60,7 +60,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
-  # Semi-incremental streams for endpoints that doesn't support filtering or sorting but include updated and created fields
+  # Semi-incremental streams for endpoints that doesn't support filtering or sorting but include updated or created fields
   semi_incremental_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -68,7 +68,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
         record_filter:
-          condition: "{{ record[parameters['cursor_field']] > stream_state.get(parameters['cursor_field'], '') }}"
+          condition: "{{ record[parameters['cursor_field']] >= stream_state.get(parameters['cursor_field'], config.get('start_date')) }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
@@ -76,7 +76,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
       start_datetime:
-        datetime: "{{ config.get('start_date') or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ config.get('start_date') }}"
 
   cursor_incremental_sync:
     type: DatetimeBasedCursor
@@ -96,6 +96,20 @@ definitions:
     $ref: "#/definitions/base_stream"
     incremental_sync:
       $ref: "#/definitions/cursor_incremental_sync"
+
+  page_size_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      field_name: "page[size]"
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 10
+      cursor_value: "{{ response['links']['next'] }}"
+      stop_condition: "{{ not response['meta']['has_more'] }}"
+    page_token_option:
+      type: RequestPath
 
   # Full-refresh streams
   account_attributes_stream:
@@ -177,10 +191,19 @@ definitions:
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by: "updated_at"
+          sort_order: "asc"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [ "articles" ]
     $parameters:
       name: "articles"
       path: "help_center/incremental/articles"
-      data_path: "articles"
       cursor_field: "updated_at"
       cursor_filter: "start_time"
       primary_key: "id"
@@ -221,7 +244,7 @@ definitions:
   group_memberships_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -253,6 +276,11 @@ definitions:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by: "created_at"
+          sort_order: "asc"
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -276,43 +304,90 @@ definitions:
       primary_key: "id"
 
   organization_fields_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     $parameters:
       name: "organization_fields"
       path: "organization_fields"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   organization_memberships_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     $parameters:
       name: "organization_memberships"
       path: "organization_memberships"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   organizations_stream:
     $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ not response.get("next_page", {}) }}'
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "organizations"
-      path: "organizations"
+      path: "incremental/organizations"
       cursor_field: "updated_at"
       cursor_filter: "start_time"
       primary_key: "id"
 
   posts_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by: "updated_at"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 4
+          cursor_value: "{{ response['links']['next'] }}"
+          stop_condition: "{{ not response['meta']['has_more'] }}"
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "posts"
       path: "community/posts"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
+      data_path: "posts"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   satisfaction_ratings_stream:
     $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "created_at"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 10
+          cursor_value: "{{ response['links']['next'] }}"
+          stop_condition: "{{ not response['meta']['has_more'] }}"
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "satisfaction_ratings"
       path: "satisfaction_ratings"
@@ -330,12 +405,35 @@ definitions:
       primary_key: "id"
 
   ticket_audits_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by: "created_at"
+          sort_order: "desc"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: "limit"
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 10
+          cursor_value: "{{ response.get('before_url') }}"
+          stop_condition: "{{ 'before_url' not in response }}"
+        page_token_option:
+          type: RequestPath
+    incremental_sync:
+      $ref: "#/definitions/semi_incremental_stream/incremental_sync"
+      is_data_feed: true
     $parameters:
       name: "ticket_audits"
       path: "ticket_audits"
+      data_path: "audits"
       cursor_field: "created_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
   ticket_comments_stream:
@@ -348,113 +446,161 @@ definitions:
       primary_key: "id"
 
   ticket_fields_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 4
+          cursor_value: "{{ response['links']['next'] }}"
+          stop_condition: "{{ not response['meta']['has_more'] }}"
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "ticket_fields"
       path: "ticket_fields"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   ticket_forms_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     $parameters:
       name: "ticket_forms"
       path: "ticket_forms"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   ticket_metric_events_stream:
     $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/page_size_paginator"
     $parameters:
       name: "ticket_metric_events"
-      path: "ticket_metric_events"
-      cursor_field: "created_at"
+      path: "incremental/ticket_metric_events"
+      cursor_field: "time"
       cursor_filter: "start_time"
       primary_key: "id"
 
   ticket_metrics_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['links']['next'] }}"
+          stop_condition: "{{ not response['meta']['has_more'] }}"
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "ticket_metrics"
-      path: "tickets/{{ stream_slice.id }}/metrics"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
+      path: "ticket_metrics"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   ticket_skips_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_order: "desc"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1
+          cursor_value: "{{ response['links']['next'] }}"
+          stop_condition: "{{ not response['meta']['has_more'] }}"
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "ticket_skips"
-      path: "tickets/{{ stream_slice.id }}/skips"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
+      path: "skips.json"
+      data_path: "skips"
+      cursor_field: "updated_at"
       primary_key: "id"
 
   tickets_stream:
     $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      name: "tickets"
-      path: "tickets"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
-      primary_key: "id"
-
-  topics_stream:
-    $ref: "#/definitions/base_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
-      requester:
-        $ref: "#/definitions/retriever/requester"
-        request_parameters:
-          sort: "updated_at"
-          sort_by: "updated_at"
-          sort_order: "asc"
-    $parameters:
-      name: "topics"
-      path: "community/topics"
-      cursor_field: "created_at"
-      cursor_filter: "start_time"
-      primary_key: "id"
-
-  users_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      requester:
-        $ref: "#/definitions/retriever/requester"
-        request_parameters:
-          page_size: "5"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("after_url") }}'
           stop_condition: '{{ response.get("end_of_stream") }}'
+          page_size: 100
+        page_size_option:
+          type: RequestOption
+          field_name: "per_page"
+          inject_into: request_parameter
         page_token_option:
           type: RequestPath
-    incremental_sync:
-      class_name: source_zendesk_support.components.ZendeskSupportAuditLogsIncrementalSync
-      type: CustomIncrementalSync
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-        - "%s"
-      datetime_format: "%s"
-      cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
-      start_datetime:
-        datetime: "{{ timestamp(config.get('start_date')) | int or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: "start_time"
-        type: RequestOption
+    $parameters:
+      name: "tickets"
+      path: "incremental/tickets/cursor.json"
+      cursor_field: "updated_at"
+      cursor_filter: "start_time"
+      primary_key: "id"
 
+  topics_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        $ref: "#/definitions/page_size_paginator"
+    $parameters:
+      name: "topics"
+      path: "community/topics"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  users_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("after_url") }}'
+          stop_condition: '{{ response.get("end_of_stream") }}'
+          page_size: 100
+        page_size_option:
+          type: RequestOption
+          field_name: "per_page"
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestPath
     $parameters:
       name: "users"
       path: "incremental/users/cursor.json"
-      cursor_field: "created_at"
-      cursor_filter: "filter[created_at][]"
+      cursor_field: "updated_at"
+      cursor_filter: "start_time"
       primary_key: "id"
 
   # Incremental substreams
@@ -526,7 +672,7 @@ definitions:
             parent_key: id
             partition_field: id
     $parameters:
-      name: "posts"
+      name: "post_comments"
       path: "community/posts/{{ stream_slice.id }}/comments"
       data_path: "comments"
       cursor_field: "updated_at"
@@ -594,6 +740,7 @@ streams:
   - $ref: '#/definitions/organization_fields_stream'
   - $ref: '#/definitions/organization_memberships_stream'
   - $ref: '#/definitions/organizations_stream'
+  - $ref: '#/definitions/posts_stream'
   - $ref: '#/definitions/satisfaction_ratings_stream'
   - $ref: '#/definitions/ticket_activities_stream'
   - $ref: '#/definitions/ticket_audits_stream'

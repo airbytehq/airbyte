@@ -10,8 +10,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 @dataclass
 class ZendeskSupportAuditLogsIncrementalSync(DatetimeBasedCursor):
     """
-    This class is created for Tickets stream. When paginator hit the page limit it will return latest record cursor as next_page_token
-    Request parameters will be updated with the next_page_token to continue iterating over results
+    This class is created for the Audit Logs stream. List with time range is used for record filtering.
     """
     def get_request_params(
         self,
@@ -20,12 +19,12 @@ class ZendeskSupportAuditLogsIncrementalSync(DatetimeBasedCursor):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        # _get_request_options is modified to return updated cursor filter if exist
         option_type = RequestOptionType.request_parameter
         options: MutableMapping[str, Any] = {}
         if not stream_slice:
             return options
 
+        # set list with time range
         if self.start_time_option and self.start_time_option.inject_into == option_type:
             start_time = stream_slice.get(self._partition_field_start.eval(self.config))
             options[self.start_time_option.field_name.eval(config=self.config)] = [start_time]  # type: ignore # field_name is always casted to an interpolated string
