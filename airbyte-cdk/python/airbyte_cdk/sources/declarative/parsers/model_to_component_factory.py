@@ -10,7 +10,7 @@ import re
 from typing import Any, Callable, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import Level
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
@@ -66,6 +66,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
 )
@@ -188,6 +189,7 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
+            JwtAuthenticatorModel: self.create_jwt_authenticator,
             LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
             ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
@@ -806,6 +808,24 @@ class ModelToComponentFactory:
     @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
         return JsonFileSchemaLoader(file_path=model.file_path or "", config=config, parameters=model.parameters or {})
+
+    @staticmethod
+    def create_jwt_authenticator(model: JwtAuthenticatorModel, config: Config, **kwargs: Any) -> JwtAuthenticator:
+        return JwtAuthenticator(
+            config=config,
+            parameters=model.parameters or {},
+            algorithm=model.algorithm,
+            secret_key=model.secret_key,
+            kid=model.jwt_headers.kid,
+            typ=model.jwt_headers.typ,
+            iss=model.jwt_payload.iss,
+            sub=model.jwt_payload.sub,
+            aud=model.jwt_payload.aud,
+            iat=model.jwt_payload.iat,
+            exp=model.jwt_payload.exp,
+            nbf=model.jwt_payload.nbf,
+            jti=model.jwt_payload.jti,
+        )
 
     @staticmethod
     def create_list_partition_router(model: ListPartitionRouterModel, config: Config, **kwargs: Any) -> ListPartitionRouter:
