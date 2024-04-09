@@ -1,10 +1,10 @@
 data:
   allowedHosts:
     hosts:
-      -holidayapi.com
+      - holidayapi.com
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
       enabled: false
   connectorSubtype: api
@@ -21,5 +21,8 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api
   tags:
-    - language:lowcode
+    - language:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
 metadataSpecVersion: "1.0"
