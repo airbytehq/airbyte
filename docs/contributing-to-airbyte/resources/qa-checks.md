@@ -49,11 +49,10 @@ Python connectors must have a CDK tag in their metadata. It must be set in the `
 
 If the connector version has a breaking change, the deadline field must be set to at least a week in the future.
 
-### Python certified connectors must have value for maximum requests rate limit reset time set in metadata
+### Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata
 *Applies to the following connector types: source*
-*Applies to the following connector languages: python, low-code*
 
-Python [certified](https://docs.airbyte.com/integrations/connector-support-levels/#certified) connectors must have value for maximum requests rate limit reset time 'maxSecondsBetweenMessages' set in their metadata.yaml files. This value represents time in seconds.
+Certified source connectors must have a value filled out for `maxSecondsBetweenMessages` in metadata. This value represents the maximum number of seconds we could expect between messages for API connectors. And it's used by platform to tune connectors heartbeat timeout. The value must be set in the 'data' field in connector's `metadata.yaml` file.
 ## 📦 Packaging
 
 ### Connectors must use Poetry for dependency management
