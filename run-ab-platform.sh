@@ -136,6 +136,7 @@ EOL
     if [[ $state = "success" ]]; then {
       telemetrySuccess=true
     }
+    fi
   fi
 }
 
