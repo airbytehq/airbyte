@@ -54,7 +54,7 @@ definitions:
         - http_codes: [429]
           action: RETRY
           error_message: Failed to perform a request due to rate limits.
-        - http_codes: [503]
+        - http_codes: [500, 503]
           action: RETRY
           error_message: Failed to perform a request due to internal server error.
 
@@ -100,7 +100,7 @@ definitions:
             - http_codes: [403, 400]
               action: FAIL
               error_message: Got an exception while trying to set up the connection. Most probably, there are no users in the given Slack instance or your token is incorrect.
-            - http_codes: [503]
+            - http_codes: [500, 503]
               action: RETRY
               error_message: Failed to perform a request due to internal server error.
       record_selector:
