@@ -76,6 +76,7 @@
   dockerRepository: airbyte/destination-clickhouse
   dockerImageTag: 0.1.12
   documentationUrl: https://docs.daspire.com/setup-guide/destinations/clickhouse
+  icon: clickhouse.svg
   releaseStage: alpha
   public: true
 - name: Databricks Lakehouse
