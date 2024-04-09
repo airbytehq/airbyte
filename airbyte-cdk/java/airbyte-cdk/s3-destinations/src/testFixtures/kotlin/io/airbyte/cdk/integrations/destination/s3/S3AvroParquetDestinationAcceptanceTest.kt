@@ -108,6 +108,7 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
     @Throws(IOException::class)
     private fun readMessagesFromFile(messagesFilename: String): List<AirbyteMessage> {
         return MoreResources.readResource(messagesFilename)
+            .trim()
             .lines()
             .map { record -> Jsons.deserialize(record, AirbyteMessage::class.java) }
             .toList()

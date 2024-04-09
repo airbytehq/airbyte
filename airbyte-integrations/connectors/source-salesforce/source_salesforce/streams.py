@@ -296,6 +296,7 @@ class RestSalesforceStream(SalesforceStream):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.constant, backoff_params={"interval": 5})
     def _fetch_next_page_for_chunk(
         self,
         stream_slice: Mapping[str, Any] = None,
