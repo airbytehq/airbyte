@@ -230,5 +230,3 @@ class IncrementalTest(TestCase):
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert most_recent_state.stream_state == AirbyteStateBlob(migrated_at=state_cursor_value, prior_state={_CURSOR_FIELD: state_cursor_value})
         assert len(output.records) == 0
-
-
