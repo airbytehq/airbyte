@@ -18,6 +18,11 @@ def _extract_value(mapping: Mapping[str, Any], path: List[str]) -> Any:
 
 
 class GapType(Protocol):
+    """
+    This is the representation of gaps between two cursor values. Examples:
+    * if cursor values are datetimes, GapType is timedelta
+    * if cursor values are integer, GapType will also be integer
+    """
     pass
 
 
@@ -292,7 +297,7 @@ class ConcurrentCursor(Cursor):
         return lower_boundary
 
     def _split_per_slice_range(self, lower: CursorValueType, upper: CursorValueType) -> Iterable[Tuple[CursorValueType, CursorValueType]]:
-        if lower == upper:
+        if lower >= upper:
             return
 
         if self._start and upper < self._start:

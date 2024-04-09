@@ -86,6 +86,10 @@ class ThreadPoolManager:
         :return:
         """
         if self._most_recently_seen_exception:
+            self._logger.exception(
+                "An unknown exception has occurred while reading concurrently",
+                exc_info=self._most_recently_seen_exception,
+            )
             self._stop_and_raise_exception(self._most_recently_seen_exception)
 
         exceptions_from_futures = [f for f in [future.exception() for future in self._futures] if f is not None]
