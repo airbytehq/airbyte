@@ -41,6 +41,16 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         for (i in 1..columnCount) {
             val columnName = queryContext.metaData.getColumnName(i)
             try {
+                // attempt to access the column. this allows us to know if it is null before we do
+                // type-specific
+                // parsing. if it is null, we can move on. while awkward, this seems to be the agreed
+                // upon way of
+                // checking for null values with jdbc.
+                queryContext.getObject(i)
+                if (queryContext.wasNull()) {
+                    continue
+                }
+
                 // convert to java types that will convert into reasonable json.
                 copyToJsonField(queryContext, i, jsonNode)
             } catch (e: java.lang.Exception) {
