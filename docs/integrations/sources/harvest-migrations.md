@@ -14,6 +14,7 @@ This update results in a change the following streams, requiring reset:
 - `uninvoiced`
 - `estimate_messages`
 - `invoice_payments`
+- `invoice_messages`
 - `project_assignments`
 
 We're continuously striving to enhance the quality and reliability of our connectors at Airbyte. As part of our commitment to delivering exceptional service, we are transitioning Source Harvest from the Python Connector Development Kit (CDK) to our new low-code framework improving maintainability and reliability of the connector. However, due to differences between the Python and low-code CDKs, this migration constitutes a breaking change.
