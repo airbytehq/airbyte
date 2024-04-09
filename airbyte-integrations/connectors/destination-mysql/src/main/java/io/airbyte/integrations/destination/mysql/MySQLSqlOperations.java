@@ -4,13 +4,11 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

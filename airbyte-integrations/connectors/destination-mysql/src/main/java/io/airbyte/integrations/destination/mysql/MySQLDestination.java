@@ -158,13 +158,19 @@ public class MySQLDestination extends AbstractJdbcDestination<MinimumDestination
 
   @NotNull
   @Override
-  protected JdbcDestinationHandler<MinimumDestinationState> getDestinationHandler(@NotNull String databaseName, @NotNull JdbcDatabase database, @NotNull String rawTableSchema) {
+  protected JdbcDestinationHandler<MinimumDestinationState> getDestinationHandler(@NotNull String databaseName,
+                                                                                  @NotNull JdbcDatabase database,
+                                                                                  @NotNull String rawTableSchema) {
     throw new UnsupportedOperationException("Mysql does not yet support DV2");
   }
 
   @NotNull
   @Override
-  protected List<Migration<MinimumDestinationState>> getMigrations(@NotNull JdbcDatabase database, @NotNull String databaseName, @NotNull SqlGenerator sqlGenerator, @NotNull DestinationHandler<MinimumDestinationState> destinationHandler) {
+  protected List<Migration<MinimumDestinationState>> getMigrations(@NotNull JdbcDatabase database,
+                                                                   @NotNull String databaseName,
+                                                                   @NotNull SqlGenerator sqlGenerator,
+                                                                   @NotNull DestinationHandler<MinimumDestinationState> destinationHandler) {
     return Collections.emptyList();
   }
+
 }
