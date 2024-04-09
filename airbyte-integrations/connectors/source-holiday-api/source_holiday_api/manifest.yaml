@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "0.44.0"
 
 definitions:
   selector:
@@ -37,6 +37,10 @@ definitions:
       primary_key: "uuid"
       path: "holidays"
       extractor_path: "holidays"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/holidays_schema"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -52,6 +56,10 @@ definitions:
       name: "countries"
       path: "countries"
       extractor_path: "countries"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/countries_schema"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -67,7 +75,188 @@ definitions:
       name: "languages"
       path: "languages"
       extractor_path: "languages"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/languages_schema"
 
+  holidays_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Holidays schema
+    additionalProperties: true
+    type: object
+    properties:
+      name:
+        type:
+        - 'null'
+        - string
+      date:
+        type:
+        - 'null'
+        - string
+      observed:
+        type:
+        - 'null'
+        - string
+      public:
+        type:
+        - 'null'
+        - boolean
+      country:
+        type:
+        - 'null'
+        - string
+      uuid:
+        type:
+        - 'null'
+        - string
+      weekday:
+        type:
+        - 'null'
+        - object
+        properties:
+          date:
+            type:
+            - 'null'
+            - object
+            properties:
+              name:
+                type:
+                - 'null'
+                - string
+              numeric:
+                type:
+                - 'null'
+                - string
+          observed:
+            type:
+            - 'null'
+            - object
+            properties:
+              name:
+                type:
+                - 'null'
+                - string
+              numeric:
+                type:
+                - 'null'
+                - string
+
+  countries_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Countries Schema
+    type:
+    - 'null'
+    - object
+    properties:
+      code:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
+      codes:
+        type:
+        - 'null'
+        - object
+        properties:
+          alpha-2:
+            type:
+            - 'null'
+            - string
+          alpha-3:
+            type:
+            - 'null'
+            - string
+          numeric:
+            type:
+            - 'null'
+            - string
+      languages:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      currencies:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            alpha:
+              type:
+              - 'null'
+              - string
+      flag:
+        type:
+        - 'null'
+        - string
+      subdivisions:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            code:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            languages:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+      weekend:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            numeric:
+              type:
+              - 'null'
+              - number
+
+  languages_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Languages schema
+    type:
+    - 'null'
+    - object
+    properties:
+      code:
+        type:
+        - 'null'
+        - string
+      name:
+        type:
+        - 'null'
+        - string
 
 streams:
   - "#/definitions/holidays_stream"
@@ -80,4 +269,3 @@ check:
     - "holidays"
     - "countries"
     - "languages"
-
