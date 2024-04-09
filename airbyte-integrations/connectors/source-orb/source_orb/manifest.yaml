@@ -43,7 +43,7 @@ definitions:
     cursor_field: created_at
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%f%z"
+      - "%Y-%m-%d %H:%M:%S.%f+00:00"
     datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
     start_datetime:
       type: MinMaxDatetime
@@ -55,7 +55,7 @@ definitions:
       inject_into: request_parameter
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config['end_date'] }}"
+      datetime: "{{ config['end_date'] if config['end_date'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_time_option:
       type: RequestOption
@@ -140,8 +140,6 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: invoices
-        request_parameters:
-          status[]: '["void", "paid", "issued", "synced"]'
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
@@ -161,6 +159,18 @@ definitions:
         type: RequestOption
         field_name: invoice_date[gte]
         inject_into: request_parameter
+    partition_router:
+      - type: ListPartitionRouter
+        values:
+          - void
+          - paid
+          - issued
+          - synced
+        cursor_field: status
+        request_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: status[]
   credits_ledger_entries_stream:
     type: DeclarativeStream
     name: credits_ledger_entries
@@ -220,8 +230,6 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - event_id
-      - type: CustomTransformation
-        class_name: source_orb.components.EventPropertiesTransformation
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
   subscription_usage_stream:
