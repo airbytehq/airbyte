@@ -542,10 +542,10 @@ class SatisfactionRatings(CursorPaginationZendeskSupportStream):
         params = {
             "start_time": self.get_stream_state_value(stream_state),
             "page[size]": self.page_size,
+            "sort_by": "created_at",
         }
         if next_page_token:
             params.update(next_page_token)
-        params.update({"sort_by": "created_at"})
         return params
 
 
