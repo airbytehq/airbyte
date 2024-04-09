@@ -96,6 +96,32 @@ EOL
   fi
 }
 
+# TelemetryDockerUp checks if the webapp container is in a running state.  If it is it will send a successful event.
+# if after 10 minutes it hasn't succeeded, a failed event will be sent (or if the user terminates early, a failed event would
+# also be sent).
+#
+# Note this only checks if the webapp container is running, that doesn't actually mean the entire stack is up.
+# Some further refinement on this metric may be necessary.
+TelemetryDockerUp()
+{
+  if ! $telemetryEnabled; then
+    return
+  fi
+
+  # for up to 600 seconds (10 minutes), check to see if the webapp services is in a running state
+  end=$((SECONDS+600))
+  while [ $SECONDS -lt $end ]; do
+    webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep webapp | cut -d ":" -f2 | xargs)
+    if [ "$webappState" = "running" ]; then
+      TelemetrySend "success" "install"
+      break
+    fi
+    sleep 1
+  done
+
+  TelemetrySend "failed" "install" "webapp was not running within 600 seconds"
+}
+
 readonly telemetryKey="kpYsVGLgxEqD5OuSZAQ9zWmdgBlyiaej"
 readonly telemetryURL="https://api.segment.io/v1/track"
 TelemetrySend()
@@ -141,8 +167,6 @@ EOL
 }
 
 TelemetryConfig
-trap 'TelemetrySend "failed" "install" "sigint"' SIGINT
-trap 'TelemetrySend "failed" "install" "sigterm"' SIGTERM
 
 ############################################################
 # Download                                                 #
@@ -193,8 +217,9 @@ this_file_directory=$(dirname $0)
 # Run this from the / directory because we assume relative paths
 cd ${this_file_directory}
 
+args=$@
 # Parse the arguments for specific flags before parsing for actions.
-for argument in "$@"; do
+for argument in $args; do
   case $argument in
     -h | --help)
       Help
@@ -207,18 +232,25 @@ for argument in "$@"; do
       telemetryEnabled=false
       ;;
   esac
-  shift
 done
 
-for argument in "$@"; do
+for argument in $args; do
   case $argument in
     -d | --download)
+      TelemetrySend "start" "download"
+      trap 'TelemetrySend "failed" "download" "sigint"' SIGINT
+      trap 'TelemetrySend "failed" "download" "sigterm"' SIGTERM
       Download
+      TelemetrySend "success" "download"
       exit
       ;;
     -r | --refresh)
+      TelemetrySend "start" "refresh"
+      trap 'TelemetrySend "failed" "refresh" "sigint"' SIGINT
+      trap 'TelemetrySend "failed" "refresh" "sigterm"' SIGTERM
       DeleteLocalAssets
       Download
+      TelemetrySend "success" "refresh"
       exit
       ;;
     -x | --debug)
@@ -240,10 +272,11 @@ for argument in "$@"; do
       exit
       ;;
   esac
-  shift
 done
 
 TelemetrySend "start" "install"
+trap 'TelemetrySend "failed" "install" "sigint"' SIGINT
+trap 'TelemetrySend "failed" "install" "sigterm"' SIGTERM
 
 ########## Pointless Banner for street cred ##########
 # Make sure the console is huuuge
@@ -280,9 +313,13 @@ done
 
 
 ########## Start Docker ##########
-
 echo
 echo -e "$blue_text""Starting Docker Compose""$default_text"
+if [ -z "$dockerDetachedMode" ]; then
+  # if running in docker-detach mode, kick off a background task as `docker compose up` will be a blocking
+  # call and we'll have no way to determine when we've successfully started.
+  TelemetryDockerUp &
+fi
 
 docker compose up $dockerDetachedMode
 
