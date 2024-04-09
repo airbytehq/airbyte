@@ -4,22 +4,25 @@
 
 import json
 import uuid
-from typing import List, Tuple
+from datetime import datetime
+from typing import Dict, List, Tuple
 
 import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
-from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
+from connector_ops.utils import ConnectorLanguage  # type: ignore
+from dagger import Container, ExecError, File, ImageLayerCompression, Platform, QueryError
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry, PythonRegistryPublishContext
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.pip import is_package_published
 from pipelines.models.steps import Step, StepResult, StepStatus
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 
 class InvalidSpecOutputError(Exception):
@@ -74,6 +77,56 @@ class CheckPythonRegistryPackageDoesNotExist(Step):
                 status=StepStatus.SUCCESS,
                 stdout=f"{self.context.package_metadata.name} does not exist in version {self.context.package_metadata.version}.",
             )
+
+
+class ConnectorDependenciesMetadata(BaseModel):
+    connector_technical_name: str
+    connector_repository: str
+    connector_version: str
+    connector_definition_id: str
+    dependencies: Dict[str, str]
+    generation_time: datetime = datetime.utcnow()
+
+
+class UploadDependenciesToMetadataService(Step):
+    context: PublishConnectorContext
+    title = "Upload connector dependencies list to GCS."
+    key_prefix = "connector_dependencies"
+
+    async def _run(self, built_containers_per_platform: Dict[Platform, Container]) -> StepResult:
+        assert self.context.connector.language in [
+            ConnectorLanguage.PYTHON,
+            ConnectorLanguage.LOW_CODE,
+        ], "This step can only run for Python connectors."
+        built_container = built_containers_per_platform[LOCAL_BUILD_PLATFORM]
+        pip_freeze_output = await built_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
+        dependencies = {line.split("==")[0]: line.split("==")[1] for line in pip_freeze_output.splitlines() if "==" in line}
+        connector_technical_name = self.context.connector.technical_name
+        connector_version = self.context.metadata["dockerImageTag"]
+        dependencies_metadata = ConnectorDependenciesMetadata(
+            connector_technical_name=connector_technical_name,
+            connector_repository=self.context.metadata["dockerRepository"],
+            connector_version=connector_version,
+            connector_definition_id=self.context.metadata["definitionId"],
+            dependencies=dependencies,
+        ).json()
+        file = (
+            (await self.context.get_connector_dir())
+            .with_new_file("dependencies.json", contents=dependencies_metadata)
+            .file("dependencies.json")
+        )
+        key = f"{self.key_prefix}/{connector_technical_name}/{connector_version}/dependencies.json"
+        exit_code, stdout, stderr = await upload_to_gcs(
+            self.context.dagger_client,
+            file,
+            key,
+            self.context.metadata_bucket_name,
+            self.context.metadata_service_gcs_credentials_secret,
+            flags=['--cache-control="no-cache"'],
+        )
+        if exit_code != 0:
+            return StepResult(step=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Uploaded connector dependencies to metadata service bucket.")
 
 
 class PushConnectorImageToRegistry(Step):
@@ -282,7 +335,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
-
             python_registry_steps, terminate_early = await _run_python_registry_publish_pipeline(context)
             results.extend(python_registry_steps)
             if terminate_early:
@@ -312,6 +364,10 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             # Exit early if the connector image failed to build
             if build_connector_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
+
+            if context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+                upload_dependencies_step = await UploadDependenciesToMetadataService(context).run(build_connector_results.output)
+                results.append(upload_dependencies_step)
 
             built_connector_platform_variants = list(build_connector_results.output.values())
             push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)

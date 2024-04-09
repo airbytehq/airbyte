@@ -19,6 +19,7 @@ data:
   githubIssueLabel: source-google-analytics-v4
   icon: google-analytics.svg
   license: Elv2
+  maxSecondsBetweenMessages: 86400
   name: Google Analytics (Universal Analytics)
   remoteRegistries:
     pypi:

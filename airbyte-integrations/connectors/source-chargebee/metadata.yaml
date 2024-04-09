@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-chargebee
   icon: chargebee.svg
   license: MIT
+  maxSecondsBetweenMessages: 300
   name: Chargebee
   remoteRegistries:
     pypi:
