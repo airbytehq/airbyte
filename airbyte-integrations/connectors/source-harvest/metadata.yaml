@@ -48,7 +48,7 @@ data:
                 "estimate_messages",
                 "invoice_payments",
                 "invoice_messages",
-                "project_assignments"
+                "project_assignments",
               ]
   releaseStage: generally_available
   supportLevel: certified
