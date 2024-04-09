@@ -1,0 +1,82 @@
+version: 0.61.2
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - users
+streams:
+  - type: DeclarativeStream
+    name: users
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties: {}
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.appstoreconnect.apple.com
+        path: v1/users
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: JwtAuthenticator
+          secret_key: "{{ config['secret_key'] }}"
+          algorithm: ES256
+          jwt_headers:
+            kid:  "{{ config['kid'] }}"
+            alg: ES256
+            typ: "JWT"
+          jwt_payload:
+            iss: "{{ config['iss'] }}"
+            aud: "appstoreconnect-v1"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("links", {}).get("next", {}) }}'
+          stop_condition: '{{ not response.get("links", {}).get("next", {}) }}'
+      partition_router: []
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - iss
+      - kid
+      - secret_key
+    properties:
+      iss:
+        title: iss
+        type: string
+        order: 0
+      kid:
+        title: kid
+        description: Key ID
+        type: string
+        order: 1
+      secret_key:
+        title: secret_key
+        airbyte_secret: true
+        type: string
+        order: 2
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    users: true
