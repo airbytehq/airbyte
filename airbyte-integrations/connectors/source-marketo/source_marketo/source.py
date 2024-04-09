@@ -12,6 +12,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -486,14 +487,16 @@ class SourceMarketo(YamlDeclarativeSource):
         streams.append(Leads(config))
         activity_types_stream = [stream for stream in streams if stream.name == "activity_types"][0]
 
-        # create dynamically activities by activity type id
-        for activity in activity_types_stream.read_records(sync_mode=None):
-            stream_name = f"activities_{clean_string(activity['name'])}"
+        # dynamically create activities by activity type id
+        try:
+            for activity in activity_types_stream.read_records(sync_mode=None):
+                stream_name = f"activities_{clean_string(activity['name'])}"
+                stream_class = type(stream_name, (Activities,), {"activity": activity})
 
-            stream_class = type(stream_name, (Activities,), {"activity": activity})
-
-            # instantiate a stream with config
-            stream_instance = stream_class(config)
-            streams.append(stream_instance)
+                # instantiate a stream with config
+                stream_instance = stream_class(config)
+                streams.append(stream_instance)
+        except ReadException as e:
+            self.logger.warning(f"An error occurred while creating activity streams: {repr(e)}")
 
         return streams

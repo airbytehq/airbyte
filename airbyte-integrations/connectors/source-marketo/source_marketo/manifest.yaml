@@ -16,6 +16,13 @@ definitions:
     url_base: "{{ config['domain_url'].rstrip('/') }}/"
     authenticator: "#/definitions/authenticator"
     http_method: GET
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [400, 403]
+          error_message: Unable to connect to Marketo API with the provided credentials
 
   # Selector
   selector:

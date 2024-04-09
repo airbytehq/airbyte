@@ -18,6 +18,8 @@ from source_marketo.source import Activities, IncrementalMarketoStream, Leads, M
 
 from .conftest import START_DATE, get_stream_by_name
 
+logger = logging.getLogger("airbyte")
+
 
 def test_create_export_job(mocker, send_email_stream, caplog):
     mocker.patch("time.sleep")
@@ -256,28 +258,31 @@ def test_source_streams(config, activity, requests_mock):
 
 
 @pytest.mark.parametrize(
-    "status_code, response, is_connection_successful, error_msg",
+    "status_code, connection_successful, error_msg",
     (
-        (200, "", True, None),
+        (200, True, None),
         (
             400,
-            "Bad request",
             False,
-            "HTTPError('400 Client Error: None for url: https://602-euo-598.mktorest.com/rest/v1/leads/describe')",
+            "Unable to connect to stream programs - Unable to connect to Marketo API with the provided credentials",
         ),
         (
             403,
-            "Forbidden",
             False,
-            "HTTPError('403 Client Error: None for url: https://602-euo-598.mktorest.com/rest/v1/leads/describe')",
+            "Unable to connect to stream programs - Unable to connect to Marketo API with the provided credentials",
         ),
     ),
 )
-def test_check_connection(config, requests_mock, status_code, response, is_connection_successful, error_msg):
-    requests_mock.register_uri("GET", "https://602-euo-598.mktorest.com/rest/v1/leads/describe", status_code=status_code)
+def test_check_connection(config, requests_mock, status_code, connection_successful, error_msg):
+    requests_mock.get("/rest/v1/activities/types.json", status_code=status_code)
+    requests_mock.get(
+        "/rest/asset/v1/programs.json",
+        json={"result": [{"createdAt": f"2021-09-01T16:02:30Z+0000", "updatedAt": f"2021-09-01T16:02:30Z+0000"}]},
+        status_code=status_code,
+    )
     source = SourceMarketo()
-    success, error = source.check_connection(logger=None, config=config)
-    assert success is is_connection_successful
+    success, error = source.check_connection(logger=logger, config=config)
+    assert success is connection_successful
     assert error == error_msg
 
 
