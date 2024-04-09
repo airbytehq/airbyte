@@ -31,6 +31,7 @@ Help()
    echo -e "   -h --help        Print this Help."
    echo -e "   -x --debug       Verbose mode."
    echo -e "   -b --background  Run docker compose up in detached mode."
+   echo -e "      --dnt         Disable telemetry collection"
    echo -e ""
 }
 
@@ -39,12 +40,107 @@ Help()
 docker_compose_debug_yaml="docker-compose.debug.yaml"
                   dot_env=".env"
               dot_env_dev=".env.dev"
-                     flags="flags.yml"
-             temporal_yaml="temporal/dynamicconfig/development.yaml"
+                    flags="flags.yml"
+            temporal_yaml="temporal/dynamicconfig/development.yaml"
 # any string is an array to POSIX shell. Space seperates values
 all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags $temporal_yaml"
 
 base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
+
+telemetrySuccess=false
+telemetrySessionULID=""
+telemetryUserULID=""
+telemetryEnabled=true
+# telemetry requires curl to be installed
+if ! command -v curl > /dev/null; then
+  telemetryEnabled=false
+fi
+
+# TelemetryConfig configures the telemetry variables and will disable telemetry if it cannot be configured.
+TelemetryConfig()
+{
+  # only attempt to do anything if telemetry is not disabled
+  if $telemetryEnabled; then
+    telemetrySessionULID=$(curl -s https://ulid.truestamp.com/ | grep ulid | cut -d ":" -f2 | xargs)
+
+    if [[ telemetrySessionULID = "" ]]; then
+      # if we still don't have a ulid, give up on telemetry data
+      telemetryEnabled=false
+      return
+    fi
+
+    # if we have an analytics file, use it
+    if test -f ~/.airbyte/analytics.yml; then
+      telemetryUserULID=$(cat ~/.airbyte/analytics.yml | grep "anonymous_user_id" | cut -d ":" -f2 | xargs)
+    fi
+    # if the telemtery ulid is still undefined, attempt to create it and write the analytics file
+    if [[ $telemetryUserULID = "" ]]; then
+      # TODO: create our own ulid endpoint?
+      telemetryUserULID=$(curl -s https://ulid.truestamp.com/ | grep ulid | cut -d ":" -f2 | xargs)
+      if [[ $telemetryUserULID = "" ]]; then
+        # if we still don't have a ulid, give up on telemetry data
+        telemetryEnabled=false
+      else
+        # we created a new ulid, write it out
+        echo "Thanks you for using Airbyte!"
+        echo "Anonymous usage reporting is currently enabled. For more information, please see https://docs.airbyte.com/telemetry"
+        mkdir -p ~/.airbyte
+        cat > ~/.airbyte/analytics.yml <<EOL
+# This file is used by Airbyte to track anonymous usage statistics.
+# For more information or to opt out, please see
+# - https://docs.airbyte.com/operator-guides/telemetry
+anonymous_user_id: $telemetryUserULID
+EOL
+      fi
+    fi
+  fi
+}
+
+readonly telemetryKey="kpYsVGLgxEqD5OuSZAQ9zWmdgBlyiaej"
+readonly telemetryURL="https://api.segment.io/v1/track"
+TelemetrySend()
+{
+  if $telemetrySuccess; then
+    # due to how traps work, we don't want to send a failure for exiting docker after we sent a success
+    return
+  fi
+
+  if $telemetryEnabled; then
+    # start, failed, success
+    local state=$1
+    # install, uninstall
+    local event=$2
+    # optional error
+    local err=${3:-""}
+
+    local now=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+    local body=$(cat << EOL
+{
+  "anonymousId":"$telemetryUserULID",
+  "event":"$event",
+  "properties": {
+    "deployment_mode":"run_ab",
+    "session_id":"$telemetrySessionULID",
+    "state":"$state",
+    "os":"$OSTYPE",
+    "testing":"true",
+    "error":"$err"
+  },
+  "timestamp":"$now",
+  "writeKey":"$telemetryKey"
+}
+EOL
+)
+    curl -s -o /dev/null -H "Content-Type: application/json" -X POST -d "$body" $telemetryURL
+    if [[ $state = "success" ]]; then {
+      telemetrySuccess=true
+    }
+  fi
+}
+
+TelemetryConfig
+trap 'TelemetrySend "failed" "install" "sigint"' SIGINT
+trap 'TelemetrySend "failed" "install" "sigterm"' SIGTERM
 
 ############################################################
 # Download                                                 #
@@ -95,8 +191,24 @@ this_file_directory=$(dirname $0)
 # Run this from the / directory because we assume relative paths
 cd ${this_file_directory}
 
+# Parse the arguments for specific flags before parsing for actions.
+for argument in "$@"; do
+  case $argument in
+    -h | --help)
+      Help
+      exit
+      ;;
+    -b | --background)
+      dockerDetachedMode="-d"
+      ;;
+    --dnt)
+      telemetryEnabled=false
+      ;;
+  esac
+  shift
+done
 
-for argument in $@; do
+for argument in "$@"; do
   case $argument in
     -d | --download)
       Download
@@ -107,15 +219,17 @@ for argument in $@; do
       Download
       exit
       ;;
-    -h | --help)
-      Help
-      exit
-      ;;
     -x | --debug)
       set -o xtrace  # -x display every line before execution; enables PS4
       ;;
+    -h | --help)
+     # noop, this was checked in the previous for loop
+      ;;
     -b | --background)
-      dockerDetachedMode="-d"
+      # noop, this was checked in the previous for loop
+      ;;
+    --dnt)
+      # noop, this was checked in the previous for loop
       ;;
     *)
       echo "$argument is not a known command."
@@ -127,6 +241,7 @@ for argument in $@; do
   shift
 done
 
+TelemetrySend "start" "install"
 
 ########## Pointless Banner for street cred ##########
 # Make sure the console is huuuge
@@ -148,12 +263,13 @@ fi
 ########## Dependency Check ##########
 if ! docker compose version >/dev/null 2>/dev/null; then
   echo -e "$red_text""docker compose v2 not found! please install docker compose!""$default_text"
+  TelemetrySend "failed" "install" "docker compose not installed"
   exit 1
 fi
 
 Download
 
-########## Source Envionmental Variables ##########
+########## Source Environmental Variables ##########
 
 for file in $dot_env $dot_env_dev; do
   echo -e "$blue_text""Loading Shell Variables from $file...""$default_text"
@@ -172,6 +288,9 @@ docker compose up $dockerDetachedMode
 if test $? -ne 0; then
   echo -e "$red_text""Docker compose failed.  If you are seeing container conflicts""$default_text"
   echo -e "$red_text""please consider removing old containers""$default_text"
+  TelemetrySend "failed" "install" "docker compose failed"
+else
+  TelemetrySend "success" "install"
 fi
 
 ########## Ending Docker ##########
