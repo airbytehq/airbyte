@@ -90,7 +90,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected abstract fun dumpRawTableRecords(
         streamNamespace: String?,
-        streamName: String?
+        streamName: String
     ): List<JsonNode>
 
     /**
@@ -136,7 +136,7 @@ abstract class BaseTypingDedupingTest {
      * airbyte.<streamNamespace>_<streamName>; DROP SCHEMA IF EXISTS <streamNamespace>`.
      */
     @Throws(Exception::class)
-    protected abstract fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String?)
+    protected abstract fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String)
 
     protected abstract val sqlGenerator: SqlGenerator
         get

@@ -26,7 +26,7 @@ class DebeziumRecordIteratorTest {
                     }
 
                     override fun extractPositionFromHeartbeatOffset(
-                        sourceOffset: Map<String?, *>?
+                        sourceOffset: Map<String?, *>
                     ): Long {
                         return sourceOffset!!["lsn"] as Long
                     }

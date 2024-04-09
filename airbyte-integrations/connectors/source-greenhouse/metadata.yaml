@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-greenhouse
   icon: greenhouse.svg
   license: MIT
+  maxSecondsBetweenMessages: 10
   name: Greenhouse
   remoteRegistries:
     pypi:

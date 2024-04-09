@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-notion
   icon: notion.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Notion
   remoteRegistries:
     pypi:
