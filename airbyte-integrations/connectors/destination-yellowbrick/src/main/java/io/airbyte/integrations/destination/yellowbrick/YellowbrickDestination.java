@@ -17,13 +17,16 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.*;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickDataTransformer;
 import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickDestinationHandler;
 import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickSqlGenerator;
 import io.airbyte.integrations.destination.yellowbrick.typing_deduping.YellowbrickState;
@@ -111,6 +114,11 @@ public class YellowbrickDestination extends AbstractJdbcDestination<YellowbrickS
   protected JdbcSqlGenerator getSqlGenerator() {
     return new YellowbrickSqlGenerator(new YellowbrickSQLNameTransformer());
   }
+
+ @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    return new YellowbrickDataTransformer();
+  } 
 
   @Override
   public boolean isV2Destination() {
