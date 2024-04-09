@@ -275,16 +275,13 @@ definitions:
           project_id: "{{ config['credentials']['project_id'] }}"
       record_selector:
         type: RecordSelector
-#        extractor:
-#          type: DpathExtractor
-#          field_path:
-#            - data
         extractor:
           class_name: "source_mixpanel.components.FunnelsDpathExtractor"
           field_path:
             - data
       partition_router:
-        - type: SubstreamPartitionRouter
+        - type: CustomPartitionRouter
+          class_name: "source_mixpanel.components.FunnelsSubstreamPartitionRouter"
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: funnel_id
@@ -303,11 +300,16 @@ definitions:
           - path:
               - funnel_id
             value: "{{ stream_partition.get('funnel_id') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - name
+            value: "{{ stream_partition.get('funnel_name') }}"
 
 
 streams:
   - "#/definitions/cohorts_stream"        # +
-  - "#/definitions/engage_stream"         # PAGINATION?
+  - "#/definitions/engage_stream"         # PAGINATION? SCHEMA
   - "#/definitions/revenue_stream"        # +
   - "#/definitions/annotations_stream"    # +
   - "#/definitions/cohort_members_stream" # +
