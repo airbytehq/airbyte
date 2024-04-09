@@ -752,15 +752,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
     def cursor_field(self) -> Union[str, List[str]]:
         return "endDate"
 
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        return super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-
     def parse_response(
         self,
         response: requests.Response,
