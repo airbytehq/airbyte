@@ -285,6 +285,7 @@ class CursorPaginationZendeskSupportStream(IncrementalZendeskSupportStream):
             "page[size]": self.page_size,
         }
         if next_page_token:
+            params.pop("start_time", None)
             params.update(next_page_token)
         return params
 
@@ -538,8 +539,13 @@ class SatisfactionRatings(CursorPaginationZendeskSupportStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params.update({"sort_by": "asc"})
+        params = {
+            "start_time": self.get_stream_state_value(stream_state),
+            "page[size]": self.page_size,
+        }
+        if next_page_token:
+            params.update(next_page_token)
+        params.update({"sort_by": "created_at"})
         return params
 
 
