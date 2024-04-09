@@ -17,6 +17,7 @@ class CheckConnectorUsesPoetry(PackagingCheck):
     name = "Connectors must use Poetry for dependency management"
     description = "Connectors must use [Poetry](https://python-poetry.org/) for dependency management. This is to ensure that all connectors use a dependency management tool which locks dependencies and ensures reproducible installs."
     requires_metadata = False
+    runs_on_released_connectors = False
     applies_to_connector_languages = [
         ConnectorLanguage.PYTHON,
         ConnectorLanguage.LOW_CODE,

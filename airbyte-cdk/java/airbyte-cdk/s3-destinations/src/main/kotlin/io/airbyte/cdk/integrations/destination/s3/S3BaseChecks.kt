@@ -91,6 +91,7 @@ object S3BaseChecks {
      *
      * @param endpoint URL string representing an accessible S3 bucket
      */
+    @JvmStatic
     fun testCustomEndpointSecured(endpoint: String?): Boolean {
         // if user does not use a custom endpoint, do not fail
         return if (endpoint == null || endpoint.length == 0) {
