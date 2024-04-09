@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "goal": {
+      "type": ["string", "null"]
+    },
+    "billingType": {
+      "type": ["string", "null"]
+    },
+    "attributionClickUrl": {
+      "type": ["string", "null"]
+    },
+    "attributionStartUrl": {
+      "type": ["string", "null"]
+    },
+    "attributionViewUrl": {
+      "type": ["string", "null"]
+    },
+    "scheduleStart": {
+      "type": ["string", "null"]
+    },
+    "scheduleEnd": {
+      "type": ["string", "null"]
+    },
+    "enabled": {
+      "type": ["boolean", "null"]
+    },
+    "createdAt": {
+      "type": ["string", "null"]
+    },
+    "updatedAt": {
+      "type": ["string", "null"]
+    },
+    "biddingStrategy": {
+      "type": ["string", "null"]
+    }
+  }
+}
