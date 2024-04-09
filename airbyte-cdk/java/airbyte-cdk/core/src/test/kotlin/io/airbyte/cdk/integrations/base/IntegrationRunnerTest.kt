@@ -30,7 +30,6 @@ import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -129,7 +128,7 @@ internal class IntegrationRunnerTest {
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
                     .withConnectionStatus(output)
             )
-        Mockito.verify(jsonSchemaValidator).validate(ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
     @Test
@@ -160,7 +159,7 @@ internal class IntegrationRunnerTest {
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
                     .withConnectionStatus(output)
             )
-        Mockito.verify(jsonSchemaValidator).validate(ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
     @Test
@@ -183,7 +182,7 @@ internal class IntegrationRunnerTest {
         Mockito.verify(source).discover(CONFIG)
         Mockito.verify(stdoutConsumer)
             .accept(AirbyteMessage().withType(AirbyteMessage.Type.CATALOG).withCatalog(output))
-        Mockito.verify(jsonSchemaValidator).validate(ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
     @Test
@@ -220,7 +219,7 @@ internal class IntegrationRunnerTest {
         Mockito.verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE)
         Mockito.verify(stdoutConsumer).accept(message1)
         Mockito.verify(stdoutConsumer).accept(message2)
-        Mockito.verify(jsonSchemaValidator).validate(ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
     @Test
@@ -276,7 +275,7 @@ internal class IntegrationRunnerTest {
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
                     .withConnectionStatus(output)
             )
-        Mockito.verify(jsonSchemaValidator).validate(ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
     @Test
@@ -310,7 +309,7 @@ internal class IntegrationRunnerTest {
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
                     .withConnectionStatus(output)
             )
-        Mockito.verify(jsonSchemaValidator).validate(ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
     @Test
@@ -342,7 +341,7 @@ internal class IntegrationRunnerTest {
 
         Mockito.verify(destination)
             .getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)
-        Mockito.verify(jsonSchemaValidator).validate(ArgumentMatchers.any(), ArgumentMatchers.any())
+        Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
     @Test

@@ -5,8 +5,8 @@
 package io.airbyte.cdk.integrations.destination.async.buffers
 
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteRecordMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
