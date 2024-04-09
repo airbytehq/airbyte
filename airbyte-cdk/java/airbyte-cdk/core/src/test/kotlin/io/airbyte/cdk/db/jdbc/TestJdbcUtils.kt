@@ -33,7 +33,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.MountableFile
 
 internal class TestJdbcUtils {
-    private var dbName: String? = null
+    private var dbName: String = "dummy"
     private lateinit var dataSource: DataSource
     @BeforeEach
     @Throws(Exception::class)
@@ -216,11 +216,11 @@ internal class TestJdbcUtils {
         val config =
             Jsons.jsonNode(
                 ImmutableMap.builder<Any, Any?>()
-                    .put("host", PSQL_DB!!.host)
-                    .put("port", PSQL_DB!!.firstMappedPort)
+                    .put("host", PSQL_DB.host)
+                    .put("port", PSQL_DB.firstMappedPort)
                     .put("database", dbName)
-                    .put("username", PSQL_DB!!.username)
-                    .put("password", PSQL_DB!!.password)
+                    .put("username", PSQL_DB.username)
+                    .put("password", PSQL_DB.password)
                     .put(
                         "ssl_mode",
                         ImmutableMap.builder<Any, Any>()
@@ -242,11 +242,11 @@ internal class TestJdbcUtils {
         val config =
             Jsons.jsonNode(
                 ImmutableMap.builder<Any, Any?>()
-                    .put("host", PSQL_DB!!.host)
-                    .put("port", PSQL_DB!!.firstMappedPort)
+                    .put("host", PSQL_DB.host)
+                    .put("port", PSQL_DB.firstMappedPort)
                     .put("database", dbName)
-                    .put("username", PSQL_DB!!.username)
-                    .put("password", PSQL_DB!!.password)
+                    .put("username", PSQL_DB.username)
+                    .put("password", PSQL_DB.password)
                     .put(
                         "ssl_mode",
                         ImmutableMap.builder<Any, Any>().put("mode", "disable").build()

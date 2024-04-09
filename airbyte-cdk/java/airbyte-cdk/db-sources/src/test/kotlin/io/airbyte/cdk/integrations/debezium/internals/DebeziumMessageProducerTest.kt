@@ -19,11 +19,11 @@ import org.mockito.kotlin.mock
 class DebeziumMessageProducerTest {
     private var producer: DebeziumMessageProducer<*>? = null
 
-    lateinit var cdcStateHandler: CdcStateHandler
-    lateinit var targetPosition: CdcTargetPosition<Any>
-    lateinit var eventConverter: DebeziumEventConverter
-    lateinit var offsetManager: AirbyteFileOffsetBackingStore
-    lateinit var schemaHistoryManager: AirbyteSchemaHistoryStorage
+    var cdcStateHandler: CdcStateHandler = mock()
+    var targetPosition: CdcTargetPosition<Any> = mock()
+    var eventConverter: DebeziumEventConverter = mock()
+    var offsetManager: AirbyteFileOffsetBackingStore = mock()
+    var schemaHistoryManager: AirbyteSchemaHistoryStorage = mock()
 
     @BeforeEach
     fun setUp() {

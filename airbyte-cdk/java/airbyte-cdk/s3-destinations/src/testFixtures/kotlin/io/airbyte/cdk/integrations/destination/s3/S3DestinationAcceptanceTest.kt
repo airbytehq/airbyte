@@ -23,6 +23,7 @@ import java.util.stream.Collectors
 import org.apache.commons.lang3.RandomStringUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.mockito.Mockito.mock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -40,9 +41,9 @@ abstract class S3DestinationAcceptanceTest
 protected constructor(protected val outputFormat: S3Format) : DestinationAcceptanceTest() {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
-    protected lateinit var s3DestinationConfig: S3DestinationConfig
+    protected var s3DestinationConfig: S3DestinationConfig = mock()
     protected var s3Client: AmazonS3? = null
-    protected lateinit var s3nameTransformer: NamingConventionTransformer
+    protected var s3nameTransformer: NamingConventionTransformer = mock()
     protected var s3StorageOperations: S3StorageOperations? = null
 
     protected val baseConfigJson: JsonNode
@@ -68,23 +69,23 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
 
     /** Helper method to retrieve all synced objects inside the configured bucket path. */
     protected fun getAllSyncedObjects(
-        streamName: String?,
-        namespace: String?
+        streamName: String,
+        namespace: String
     ): List<S3ObjectSummary> {
-        val namespaceStr = s3nameTransformer!!.getNamespace(namespace!!)
-        val streamNameStr = s3nameTransformer!!.getIdentifier(streamName!!)
+        val namespaceStr = s3nameTransformer.getNamespace(namespace)
+        val streamNameStr = s3nameTransformer.getIdentifier(streamName)
         val outputPrefix =
             s3StorageOperations!!.getBucketObjectPath(
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                s3DestinationConfig!!.pathFormat!!
+                s3DestinationConfig.pathFormat!!
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
         val objectSummaries =
             s3Client!!
-                .listObjects(s3DestinationConfig!!.bucketName, parentFolder)
+                .listObjects(s3DestinationConfig.bucketName, parentFolder)
                 .objectSummaries
                 .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
@@ -141,7 +142,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
         val keysToDelete: MutableList<DeleteObjectsRequest.KeyVersion> = LinkedList()
         val objects =
             s3Client!!
-                .listObjects(s3DestinationConfig!!.bucketName, s3DestinationConfig!!.bucketPath)
+                .listObjects(s3DestinationConfig.bucketName, s3DestinationConfig.bucketPath)
                 .objectSummaries
         for (`object` in objects) {
             keysToDelete.add(DeleteObjectsRequest.KeyVersion(`object`.key))
@@ -150,12 +151,12 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
         if (keysToDelete.size > 0) {
             LOGGER.info(
                 "Tearing down test bucket path: {}/{}",
-                s3DestinationConfig!!.bucketName,
-                s3DestinationConfig!!.bucketPath
+                s3DestinationConfig.bucketName,
+                s3DestinationConfig.bucketPath
             )
             val result =
                 s3Client!!.deleteObjects(
-                    DeleteObjectsRequest(s3DestinationConfig!!.bucketName).withKeys(keysToDelete)
+                    DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete)
                 )
             LOGGER.info("Deleted {} file(s).", result.deletedObjects.size)
         }
