@@ -123,6 +123,7 @@ TelemetrySend()
     "session_id":"$telemetrySessionULID",
     "state":"$state",
     "os":"$OSTYPE",
+    "script_version":"$VERSION",
     "testing":"true",
     "error":"$err"
   },
