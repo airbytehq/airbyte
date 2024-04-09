@@ -111,5 +111,3 @@
 - from:
     - /telemetry
   to: /operator-guides/telemetry
-
-
