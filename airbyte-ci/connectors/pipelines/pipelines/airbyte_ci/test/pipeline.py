@@ -191,7 +191,11 @@ def prepare_container_for_poe_tasks(
     container = container.with_workdir(f"/airbyte/{poetry_package_path}")
 
     # Install the poetry package
-    container = container.with_exec(["poetry", "install"] + [f"--with={group}" for group in airbyte_ci_package_config.extra_poetry_groups])
+    container = container.with_exec(
+        ["poetry", "install"]
+        + [f"--with={group}" for group in airbyte_ci_package_config.optional_poetry_groups]
+        + [f"--extras={extra}" for extra in airbyte_ci_package_config.poetry_extras]
+    )
     return container
 
 

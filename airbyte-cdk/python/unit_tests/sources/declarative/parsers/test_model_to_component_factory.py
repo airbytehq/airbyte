@@ -243,8 +243,8 @@ spec:
 
     assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
     assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
-    assert stream.retriever.paginator.pagination_strategy.cursor_value.string == "{{ response._metadata.next }}"
-    assert stream.retriever.paginator.pagination_strategy.cursor_value.default == "{{ response._metadata.next }}"
+    assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
+    assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
 
     assert isinstance(stream.retriever.requester, HttpRequester)
@@ -1128,7 +1128,7 @@ def test_create_default_paginator():
 
     assert isinstance(paginator.pagination_strategy, CursorPaginationStrategy)
     assert paginator.pagination_strategy.page_size == 50
-    assert paginator.pagination_strategy.cursor_value.string == "{{ response._metadata.next }}"
+    assert paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
 
     assert isinstance(paginator.page_size_option, RequestOption)
     assert paginator.page_size_option.inject_into == RequestOptionType.request_parameter
@@ -1725,10 +1725,10 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
 
     if incremental and partition_router:
         assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
-        if type(partition_router) == list and len(partition_router) > 1:
-            assert type(stream.retriever.stream_slicer._partition_router) == CartesianProductStreamSlicer
+        if isinstance(partition_router, list) and len(partition_router) > 1:
+            assert isinstance(stream.retriever.stream_slicer._partition_router, CartesianProductStreamSlicer)
             assert len(stream.retriever.stream_slicer._partition_router.stream_slicers) == len(partition_router)
-    elif partition_router and type(partition_router) == list and len(partition_router) > 1:
+    elif partition_router and isinstance(partition_router, list) and len(partition_router) > 1:
         assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
         assert len(stream.retriever.stream_slicer.stream_slicerS) == len(partition_router)
 
