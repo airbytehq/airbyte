@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateManager {
 
-  private final CdcState cdcState;
+  protected final CdcState cdcState;
 
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
   // a result, we need to keep track of streams that
@@ -90,11 +90,12 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
     AirbyteStreamNameNamespacePair pair =
         new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
-
-    // Full refresh - do not reset status; platform will handle this.
-    var pkStatus = getPrimaryKeyLoadStatus(pair);
+    streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
-    streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkStatus))));
+    streamsThatHaveCompletedSnapshot.forEach(stream -> {
+      final DbStreamState state = getFinalState(stream);
+      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
+    });
 
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
@@ -115,7 +116,7 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
     return pairToPrimaryKeyInfo.get(pair);
   }
 
-  private AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
+  protected AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     assert Objects.nonNull(pair);
     assert Objects.nonNull(pair.getName());
     assert Objects.nonNull(pair.getNamespace());

@@ -13,10 +13,8 @@ import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.assert
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.logStreamSyncStatus;
-import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
-import static io.airbyte.integrations.source.mysql.cdc.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.convertNameNamespacePairFromV0;
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.getMySqlInitialLoadHandler;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.getMySqlFullRefreshInitialLoadHandler;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.initPairToPrimaryKeyInfoMap;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.streamsForInitialPrimaryKeyLoad;
 import static java.util.stream.Collectors.toList;
@@ -45,7 +43,6 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
-import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
@@ -55,16 +52,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mysql.cdc.CdcConfigurationHelper;
-import io.airbyte.integrations.source.mysql.cdc.MySqlCdcConnectorMetadataInjector;
-import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
-import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil;
-import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadHandler;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations.CdcMetadataInjector;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStreamStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.CursorBasedStreams;
@@ -193,13 +182,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public InitialLoadHandler<MysqlType> getInitialLoadHandler(final JdbcDatabase database,
-                                                  final ConfiguredAirbyteStream stream,
-                                                  final ConfiguredAirbyteCatalog catalog,
-                                                  final TableInfo<CommonField<MysqlType>> table,
-                                                  final StateManager stateManager) {
+                                                             final ConfiguredAirbyteStream stream,
+                                                             final ConfiguredAirbyteCatalog catalog,
+                                                             final TableInfo<CommonField<MysqlType>> table,
+                                                             final StateManager stateManager) {
 
-
-    return getMySqlInitialLoadHandler(database, catalog, table, stateManager, Instant.now(), getQuoteString(), SyncMode.FULL_REFRESH).get();
+    return getMySqlFullRefreshInitialLoadHandler(database, catalog, table, stateManager, Instant.now(), getQuoteString()).get();
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
