@@ -400,7 +400,6 @@ class ConcurrentCursorStateTest(TestCase):
     @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(50, timezone.utc))
     def test_given_start_is_before_first_slice_lower_boundary_when_generate_slices_then_generate_slice_before(self):
         start = datetime.fromtimestamp(0, timezone.utc)
-        lookback_window = timedelta(seconds=10)
         cursor = ConcurrentCursor(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
