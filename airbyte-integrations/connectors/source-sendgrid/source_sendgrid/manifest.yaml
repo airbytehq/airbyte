@@ -342,7 +342,8 @@ streams:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: suppression_groups
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -766,7 +767,8 @@ streams:
           stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
   - type: DeclarativeStream
     name: templates
-    primary_key: []
+    primary_key:
+      - id
     schema_loader:
       type: InlineSchemaLoader
       schema:
