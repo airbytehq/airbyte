@@ -3,59 +3,113 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "type": { "type": "string" },
-    "id": { "type": "string" },
-    "updated": { "type": ["null", "string"], "format": "date-time" },
+    "type": {
+      "description": "Type of the list",
+      "type": "string"
+    },
+    "id": {
+      "description": "ID of the list",
+      "type": "string"
+    },
+    "updated": {
+      "description": "Date and time when the list was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "attributes": {
+      "description": "Attributes of the list",
       "type": ["null", "object"],
       "properties": {
-        "name": { "type": "string" },
-        "created": { "type": ["null", "string"], "format": "date-time" },
-        "updated": { "type": ["null", "string"], "format": "date-time" },
-        "opt_in_process": { "type": ["null", "string"] }
+        "name": {
+          "description": "Name of the list",
+          "type": "string"
+        },
+        "created": {
+          "description": "Date and time when the list was created",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated": {
+          "description": "Date and time when the list was last updated",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "opt_in_process": {
+          "description": "The process for opting in to the list",
+          "type": ["null", "string"]
+        }
       }
     },
     "links": {
+      "description": "Links related to the list",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "self": { "type": "string" }
+        "self": {
+          "description": "Self link for the list",
+          "type": "string"
+        }
       }
     },
     "relationships": {
+      "description": "Relationships associated with the list",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "profiles": {
+          "description": "Profiles associated with the list",
           "type": ["null", "object"],
           "properties": {
             "links": {
+              "description": "Links related to profiles",
               "type": ["null", "object"],
               "properties": {
-                "self": { "type": "string" },
-                "related": { "type": "string" }
+                "self": {
+                  "description": "Self link for profiles",
+                  "type": "string"
+                },
+                "related": {
+                  "description": "Related link for profiles",
+                  "type": "string"
+                }
               }
             }
           }
         },
         "tags": {
+          "description": "Tags associated with the list",
           "type": ["null", "object"],
           "properties": {
             "data": {
+              "description": "Data items for tags",
               "type": "array",
               "items": {
+                "description": "Individual tag data",
                 "type": ["null", "object"],
                 "properties": {
-                  "type": { "type": "string" },
-                  "id": { "type": "string" }
+                  "type": {
+                    "description": "Type of the tag",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "ID of the tag",
+                    "type": "string"
+                  }
                 }
               }
             },
             "links": {
+              "description": "Links related to tags",
               "type": ["null", "object"],
               "properties": {
-                "self": { "type": "string" },
-                "related": { "type": "string" }
+                "self": {
+                  "description": "Self link for tags",
+                  "type": "string"
+                },
+                "related": {
+                  "description": "Related link for tags",
+                  "type": "string"
+                }
               }
             }
           }

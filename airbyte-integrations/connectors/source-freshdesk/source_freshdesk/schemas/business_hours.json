@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "A brief description of the business hours.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the business hours data.",
       "type": ["null", "integer"]
     },
     "is_default": {
+      "description": "Flag indicating if these are default business hours.",
       "type": ["null", "boolean"]
     },
     "name": {
+      "description": "Name or title given to the business hours configuration.",
       "type": ["null", "string"]
     },
     "time_zone": {
+      "description": "The time zone in which the business hours are defined.",
       "type": ["null", "string"]
     },
     "working_hours": {
@@ -24,9 +29,11 @@
           "type": ["null", "object"],
           "properties": {
             "start_time": {
+              "description": "The opening time on Mondays.",
               "type": ["null", "string"]
             },
             "end_time": {
+              "description": "The closing time on Mondays.",
               "type": ["null", "string"]
             }
           }
@@ -35,9 +42,11 @@
           "type": ["null", "object"],
           "properties": {
             "start_time": {
+              "description": "The opening time on Tuesdays.",
               "type": ["null", "string"]
             },
             "end_time": {
+              "description": "The closing time on Tuesdays.",
               "type": ["null", "string"]
             }
           }
@@ -46,9 +55,11 @@
           "type": ["null", "object"],
           "properties": {
             "start_time": {
+              "description": "The opening time on Wednesdays.",
               "type": ["null", "string"]
             },
             "end_time": {
+              "description": "The closing time on Wednesdays.",
               "type": ["null", "string"]
             }
           }
@@ -57,9 +68,11 @@
           "type": ["null", "object"],
           "properties": {
             "start_time": {
+              "description": "The opening time on Thursdays.",
               "type": ["null", "string"]
             },
             "end_time": {
+              "description": "The closing time on Thursdays.",
               "type": ["null", "string"]
             }
           }
@@ -68,9 +81,11 @@
           "type": ["null", "object"],
           "properties": {
             "start_time": {
+              "description": "The opening time on Fridays.",
               "type": ["null", "string"]
             },
             "end_time": {
+              "description": "The closing time on Fridays.",
               "type": ["null", "string"]
             }
           }
@@ -79,9 +94,11 @@
           "type": ["null", "object"],
           "properties": {
             "start_time": {
+              "description": "The opening time on Saturdays.",
               "type": ["null", "string"]
             },
             "end_time": {
+              "description": "The closing time on Saturdays.",
               "type": ["null", "string"]
             }
           }
@@ -90,9 +107,11 @@
           "type": ["null", "object"],
           "properties": {
             "start_time": {
+              "description": "The opening time on Sundays.",
               "type": ["null", "string"]
             },
             "end_time": {
+              "description": "The closing time on Sundays.",
               "type": ["null", "string"]
             }
           }
@@ -100,9 +119,11 @@
       }
     },
     "created_at": {
+      "description": "The timestamp when the business hours data was created.",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "The timestamp when the business hours data was last updated.",
       "type": ["string", "null"]
     }
   }

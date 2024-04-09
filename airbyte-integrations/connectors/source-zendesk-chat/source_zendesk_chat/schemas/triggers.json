@@ -3,20 +3,25 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "A brief overview of the trigger rule",
       "type": ["null", "string"]
     },
     "enabled": {
+      "description": "Whether the trigger is currently enabled or not",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "The unique identifier of the trigger",
       "type": ["integer"]
     },
     "name": {
+      "description": "The name of the trigger for easy identification",
       "type": ["null", "string"]
     },
     "definition": {
       "properties": {
         "actions": {
+          "description": "The actions triggered by the defined conditions",
           "type": ["null", "string", "array"]
         },
         "condition": {

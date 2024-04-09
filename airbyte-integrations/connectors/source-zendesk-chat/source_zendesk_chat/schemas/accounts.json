@@ -3,146 +3,190 @@
   "type": "object",
   "properties": {
     "account_key": {
+      "description": "Unique identifier for the account",
       "type": ["null", "string"]
     },
     "billing": {
       "properties": {
         "additional_info": {
+          "description": "Additional information for billing purposes",
           "type": ["null", "string"]
         },
         "address1": {
+          "description": "First line of the billing address",
           "type": ["null", "string"]
         },
         "address2": {
+          "description": "Second line of the billing address",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "City of the billing address",
           "type": ["null", "string"]
         },
         "company": {
+          "description": "Name of the company associated with the account",
           "type": ["null", "string"]
         },
         "country_code": {
+          "description": "Country code of the billing address",
           "type": ["null", "string"]
         },
         "cycle": {
+          "description": "Billing cycle information",
           "type": ["null", "integer"]
         },
         "email": {
+          "description": "Email address associated with the billing contact",
           "type": ["null", "string"]
         },
         "first_name": {
+          "description": "First name of the billing contact",
           "type": ["null", "string"]
         },
         "last_name": {
+          "description": "Last name of the billing contact",
           "type": ["null", "string"]
         },
         "phone": {
+          "description": "Phone number of the billing contact",
           "type": ["null", "string"]
         },
         "postal_code": {
+          "description": "Postal code of the billing address",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "State or region of the billing address",
           "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
     },
     "create_date": {
+      "description": "Date and time when the account was created",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "plan": {
       "properties": {
         "agent_leaderboard": {
+          "description": "Option to enable agent leaderboard feature",
           "type": ["null", "boolean"]
         },
         "agent_reports": {
+          "description": "Option to enable agent performance reports",
           "type": ["null", "boolean"]
         },
         "analytics": {
+          "description": "Option to enable analytics tracking",
           "type": ["null", "boolean"]
         },
         "chat_reports": {
+          "description": "Option to enable chat history reports",
           "type": ["null", "boolean"]
         },
         "daily_reports": {
+          "description": "Option to receive daily performance reports",
           "type": ["null", "boolean"]
         },
         "email_reports": {
+          "description": "Option to receive email performance reports",
           "type": ["null", "boolean"]
         },
         "file_upload": {
+          "description": "Option to enable file upload functionality",
           "type": ["null", "boolean"]
         },
         "goals": {
+          "description": "Option to set and track performance goals",
           "type": ["null", "integer"]
         },
         "high_load": {
+          "description": "Option to handle high load scenarios",
           "type": ["null", "boolean"]
         },
         "integrations": {
+          "description": "Option to integrate with third-party services",
           "type": ["null", "boolean"]
         },
         "ip_restriction": {
+          "description": "Option to restrict access based on IP addresses",
           "type": ["null", "boolean"]
         },
         "long_desc": {
+          "description": "Long description of the plan",
           "type": ["null", "string"]
         },
         "max_advanced_triggers": {
+          "description": "Maximum number of advanced trigger rules allowed",
           "type": ["null", "string"]
         },
         "max_agents": {
+          "description": "Maximum number of agents allowed",
           "type": ["null", "integer"]
         },
         "max_basic_triggers": {
+          "description": "Maximum number of basic trigger rules allowed",
           "type": ["null", "string"]
         },
         "max_concurrent_chats": {
+          "description": "Maximum number of concurrent chats allowed",
           "type": ["null", "string"]
         },
         "max_departments": {
+          "description": "Maximum number of departments allowed",
           "type": ["null", "string"]
         },
         "max_history_search_days": {
+          "description": "Maximum number of days to search chat history",
           "type": ["null", "string"]
         },
         "monitoring": {
+          "description": "Option to enable chat monitoring features",
           "type": ["null", "boolean"]
         },
         "name": {
+          "description": "Name or title of the plan",
           "type": ["null", "string"]
         },
         "operating_hours": {
+          "description": "Option to set operating hours for chat support",
           "type": ["null", "boolean"]
         },
         "price": {
+          "description": "Price of the plan",
           "type": ["null", "number"]
         },
         "rest_api": {
+          "description": "Option to enable REST API access",
           "type": ["null", "boolean"]
         },
         "short_desc": {
+          "description": "Short description of the plan",
           "type": ["null", "string"]
         },
         "sla": {
+          "description": "Option to enable service level agreement features",
           "type": ["null", "boolean"]
         },
         "support": {
+          "description": "Option to include customer support services",
           "type": ["null", "boolean"]
         },
         "unbranding": {
+          "description": "Option to remove branding from the chat interface",
           "type": ["null", "boolean"]
         },
         "widget_customization": {
+          "description": "Option to customize the chat widget appearance",
           "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
     },
     "status": {
+      "description": "Current status of the account",
       "type": ["null", "string"]
     }
   }

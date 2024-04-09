@@ -3,63 +3,83 @@
   "type": "object",
   "properties": {
     "active": {
+      "description": "Indicates whether the contact is currently active",
       "type": ["boolean", "null"]
     },
     "address": {
+      "description": "The physical address of the contact",
       "type": ["string", "null"]
     },
     "company_id": {
+      "description": "The ID of the company the contact is associated with",
       "type": ["integer", "null"]
     },
     "description": {
+      "description": "A short description or summary about the contact",
       "type": ["string", "null"]
     },
     "email": {
+      "description": "The email address of the contact",
       "type": ["string", "null"]
     },
     "id": {
+      "description": "Unique identifier for the contact",
       "type": ["integer", "null"]
     },
     "job_title": {
+      "description": "The job title or role of the contact",
       "type": ["string", "null"]
     },
     "language": {
+      "description": "The preferred language of communication for the contact",
       "type": ["string", "null"]
     },
     "mobile": {
+      "description": "The mobile phone number of the contact",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The full name of the contact",
       "type": ["string", "null"]
     },
     "phone": {
+      "description": "The phone number of the contact",
       "type": ["string", "null"]
     },
     "time_zone": {
+      "description": "The time zone applicable to the contact",
       "type": ["string", "null"]
     },
     "twitter_id": {
+      "description": "Twitter handle or ID associated with the contact",
       "type": ["string", "null"]
     },
     "custom_fields": {
+      "description": "Additional custom fields specific to the contact",
       "type": ["object", "null"]
     },
     "facebook_id": {
+      "description": "Facebook ID linked to the contact",
       "type": ["integer", "null"]
     },
     "created_at": {
+      "description": "The timestamp when the contact was created",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "The timestamp when the contact was last updated",
       "type": ["string", "null"]
     },
     "csat_rating": {
+      "description": "Customer Satisfaction (CSAT) rating of the contact",
       "type": ["integer", "null"]
     },
     "preferred_source": {
+      "description": "The preferred source through which the contact interacts",
       "type": ["string", "null"]
     },
     "unique_external_id": {
+      "description": "External unique identifier, if applicable",
       "type": ["string", "null"]
     }
   }

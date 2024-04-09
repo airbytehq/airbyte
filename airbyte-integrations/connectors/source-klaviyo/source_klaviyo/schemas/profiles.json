@@ -3,111 +3,253 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "type": { "type": ["null", "string"] },
-    "id": { "type": "string" },
-    "updated": { "type": ["null", "string"], "format": "date-time" },
+    "type": {
+      "description": "The type of the profile data.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the profile.",
+      "type": "string"
+    },
+    "updated": {
+      "description": "The date and time when the profile data was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "attributes": {
+      "description": "Represents the attributes associated with the profile data.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "email": { "type": ["null", "string"] },
-        "phone_number": { "type": ["null", "string"] },
-        "anonymous_id": { "type": ["null", "string"] },
-        "external_id": { "type": ["null", "string"] },
-        "first_name": { "type": ["null", "string"] },
-        "last_name": { "type": ["null", "string"] },
-        "organization": { "type": ["null", "string"] },
-        "title": { "type": ["null", "string"] },
-        "image": { "type": ["null", "string"] },
-        "created": { "type": ["null", "string"], "format": "date-time" },
-        "updated": { "type": ["null", "string"], "format": "date-time" },
+        "email": {
+          "description": "The email address associated with the profile.",
+          "type": ["null", "string"]
+        },
+        "phone_number": {
+          "description": "The phone number associated with the profile.",
+          "type": ["null", "string"]
+        },
+        "anonymous_id": {
+          "description": "The unique anonymous identifier associated with the profile.",
+          "type": ["null", "string"]
+        },
+        "external_id": {
+          "description": "The external identifier associated with the profile.",
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "description": "The first name of the profile owner.",
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "description": "The last name of the profile owner.",
+          "type": ["null", "string"]
+        },
+        "organization": {
+          "description": "The organization associated with the profile owner.",
+          "type": ["null", "string"]
+        },
+        "title": {
+          "description": "The title of the profile owner.",
+          "type": ["null", "string"]
+        },
+        "image": {
+          "description": "The image associated with the profile.",
+          "type": ["null", "string"]
+        },
+        "created": {
+          "description": "The date and time when the profile was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated": {
+          "description": "The date and time when the profile was last updated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "last_event_date": {
+          "description": "The date and time of the last event associated with the profile.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "location": {
+          "description": "Represents the location details of the profile owner.",
           "type": ["null", "object"],
           "properties": {
-            "address1": { "type": ["null", "string"] },
-            "address2": { "type": ["null", "string"] },
-            "city": { "type": ["null", "string"] },
-            "country": { "type": ["null", "string"] },
+            "address1": {
+              "description": "The first line of the address.",
+              "type": ["null", "string"]
+            },
+            "address2": {
+              "description": "The second line of the address.",
+              "type": ["null", "string"]
+            },
+            "city": {
+              "description": "The city of the address.",
+              "type": ["null", "string"]
+            },
+            "country": {
+              "description": "The country of the address.",
+              "type": ["null", "string"]
+            },
             "latitude": {
+              "description": "The latitude coordinate of the location.",
               "oneOf": [
-                { "type": "null" },
-                { "type": "number" },
-                { "type": "string" }
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "longitude": {
+              "description": "The longitude coordinate of the location.",
               "oneOf": [
-                { "type": "null" },
-                { "type": "number" },
-                { "type": "string" }
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
-            "region": { "type": ["null", "string"] },
-            "zip": { "type": ["null", "string"] },
-            "timezone": { "type": ["null", "string"] },
-            "ip": { "type": ["null", "string"] }
+            "region": {
+              "description": "The region or state of the address.",
+              "type": ["null", "string"]
+            },
+            "zip": {
+              "description": "The postal code or zip code of the address.",
+              "type": ["null", "string"]
+            },
+            "timezone": {
+              "description": "The timezone of the address.",
+              "type": ["null", "string"]
+            },
+            "ip": {
+              "description": "The IP address associated with the profile location.",
+              "type": ["null", "string"]
+            }
           }
         },
         "properties": {
+          "description": "Additional properties associated with the profile.",
           "type": ["null", "object"],
           "additionalProperties": true
         },
-        "subscriptions": { "$ref": "subscriptions.json" },
+        "subscriptions": {
+          "description": "The subscriptions associated with the profile.",
+          "$ref": "subscriptions.json"
+        },
         "predictive_analytics": {
+          "description": "Represents predictive analytics data for the profile.",
           "type": ["null", "object"],
           "properties": {
-            "historic_clv": { "type": ["null", "number"] },
-            "predicted_clv": { "type": ["null", "number"] },
-            "total_clv": { "type": ["null", "number"] },
-            "historic_number_of_orders": { "type": ["null", "integer"] },
-            "predicted_number_of_orders": { "type": ["null", "number"] },
-            "average_days_between_orders": { "type": ["null", "number"] },
-            "average_order_value": { "type": ["null", "number"] },
-            "churn_probability": { "type": ["null", "number"] },
-            "expected_date_of_next_order": { "type": ["null", "string"] }
+            "historic_clv": {
+              "description": "The historic customer lifetime value.",
+              "type": ["null", "number"]
+            },
+            "predicted_clv": {
+              "description": "The predicted customer lifetime value.",
+              "type": ["null", "number"]
+            },
+            "total_clv": {
+              "description": "The total customer lifetime value.",
+              "type": ["null", "number"]
+            },
+            "historic_number_of_orders": {
+              "description": "The historic number of orders.",
+              "type": ["null", "integer"]
+            },
+            "predicted_number_of_orders": {
+              "description": "The predicted number of future orders.",
+              "type": ["null", "number"]
+            },
+            "average_days_between_orders": {
+              "description": "The average number of days between orders.",
+              "type": ["null", "number"]
+            },
+            "average_order_value": {
+              "description": "The average order value.",
+              "type": ["null", "number"]
+            },
+            "churn_probability": {
+              "description": "The probability of customer churn.",
+              "type": ["null", "number"]
+            },
+            "expected_date_of_next_order": {
+              "description": "The expected date of the next order.",
+              "type": ["null", "string"]
+            }
           }
         }
       }
     },
     "links": {
+      "description": "Links associated with the profile.",
       "type": ["null", "object"],
       "properties": {
-        "self": { "type": ["null", "string"] }
+        "self": {
+          "description": "The self-link for the profile.",
+          "type": ["null", "string"]
+        }
       }
     },
     "relationships": {
+      "description": "Relationships of the profile with other entities.",
       "type": ["null", "object"],
       "properties": {
         "lists": {
+          "description": "Lists associated with the profile.",
           "type": ["null", "object"],
           "properties": {
             "links": {
+              "description": "Links related to the lists.",
               "type": ["null", "object"],
               "properties": {
-                "self": { "type": ["null", "string"] },
-                "related": { "type": ["null", "string"] }
+                "self": {
+                  "description": "Self-link for the lists.",
+                  "type": ["null", "string"]
+                },
+                "related": {
+                  "description": "Related link to the lists.",
+                  "type": ["null", "string"]
+                }
               }
             }
           }
         },
         "segments": {
+          "description": "Segments associated with the profile.",
           "type": ["null", "object"],
           "properties": {
             "links": {
+              "description": "Links related to the segments.",
               "type": ["null", "object"],
               "properties": {
-                "self": { "type": ["null", "string"] },
-                "related": { "type": ["null", "string"] }
+                "self": {
+                  "description": "Self-link for the segments.",
+                  "type": ["null", "string"]
+                },
+                "related": {
+                  "description": "Related link to the segments.",
+                  "type": ["null", "string"]
+                }
               }
             }
           }
         }
       }
     },
-    "segments": { "type": ["null", "object"] }
+    "segments": {
+      "description": "Segments associated with the profile.",
+      "type": ["null", "object"]
+    }
   }
 }

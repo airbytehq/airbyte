@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "The description of the department.",
       "type": ["null", "string"]
     },
     "enabled": {
+      "description": "Flag indicating if the department is enabled or disabled.",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "Unique identifier for the department.",
       "type": ["integer"]
     },
     "members": {
+      "description": "List of members belonging to the department.",
       "items": {
+        "description": "Details of a member in the department.",
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "name": {
+      "description": "The name of the department.",
       "type": ["null", "string"]
     },
     "settings": {
+      "description": "Additional settings specific to the department.",
       "type": ["null", "object"],
       "additionalProperties": true
     }

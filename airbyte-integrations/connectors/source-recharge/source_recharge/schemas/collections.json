@@ -3,16 +3,20 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the collection.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the collection.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The datetime when the collection was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The datetime when the collection was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }

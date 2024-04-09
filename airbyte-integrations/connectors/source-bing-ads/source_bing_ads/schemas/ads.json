@@ -3,33 +3,43 @@
   "type": "object",
   "properties": {
     "AdGroupId": {
+      "description": "The unique identifier for the ad group to which the ad belongs",
       "type": ["null", "integer"]
     },
     "AccountId": {
+      "description": "The unique identifier for the account associated with the ad",
       "type": ["null", "integer"]
     },
     "CustomerId": {
+      "description": "The unique identifier for the customer associated with the ad",
       "type": ["null", "integer"]
     },
     "AdFormatPreference": {
+      "description": "Preference for the ad format",
       "type": ["null", "string"]
     },
     "DevicePreference": {
+      "description": "Preference for the device on which the ad should be displayed",
       "type": ["null", "integer"]
     },
     "EditorialStatus": {
+      "description": "The editorial review status of the ad",
       "type": ["null", "string"]
     },
     "BusinessName": {
+      "description": "The name of the business or entity associated with the ad",
       "type": ["null", "string"]
     },
     "CallToAction": {
+      "description": "The call-to-action message for the ad",
       "type": ["null", "string"]
     },
     "CallToActionLanguage": {
+      "description": "The language used for the call-to-action message",
       "type": ["null", "string"]
     },
     "Headline": {
+      "description": "The headline of the ad",
       "type": ["null", "string"]
     },
     "Images": {
@@ -44,26 +54,33 @@
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
+                    "description": "The unique identifier for the asset",
                     "type": ["null", "integer"]
                   },
                   "Name": {
+                    "description": "The name of the asset",
                     "type": ["null", "string"]
                   },
                   "Type": {
+                    "description": "The type of the asset",
                     "type": ["null", "string"]
                   },
                   "Text": {
+                    "description": "The text content of the asset",
                     "type": ["null", "string"]
                   }
                 }
               },
               "AssetPerformanceLabel": {
+                "description": "Label indicating the performance of the asset",
                 "type": ["null", "string"]
               },
               "EditorialStatus": {
+                "description": "The editorial review status of the asset",
                 "type": ["null", "string"]
               },
               "PinnedField": {
+                "description": "Indicates if the field is pinned",
                 "type": ["null", "string"]
               }
             }
@@ -83,26 +100,33 @@
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
+                    "description": "The unique identifier for the asset",
                     "type": ["null", "integer"]
                   },
                   "Name": {
+                    "description": "The name of the asset",
                     "type": ["null", "string"]
                   },
                   "Type": {
+                    "description": "The type of the asset",
                     "type": ["null", "string"]
                   },
                   "Text": {
+                    "description": "The text content of the asset",
                     "type": ["null", "string"]
                   }
                 }
               },
               "AssetPerformanceLabel": {
+                "description": "Label indicating the performance of the asset",
                 "type": ["null", "string"]
               },
               "EditorialStatus": {
+                "description": "The editorial review status of the asset",
                 "type": ["null", "string"]
               },
               "PinnedField": {
+                "description": "Indicates if the field is pinned",
                 "type": ["null", "string"]
               }
             }
@@ -122,26 +146,33 @@
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
+                    "description": "The unique identifier for the asset",
                     "type": ["null", "integer"]
                   },
                   "Name": {
+                    "description": "The name of the asset",
                     "type": ["null", "string"]
                   },
                   "Type": {
+                    "description": "The type of the asset",
                     "type": ["null", "string"]
                   },
                   "Text": {
+                    "description": "The text content of the asset",
                     "type": ["null", "string"]
                   }
                 }
               },
               "AssetPerformanceLabel": {
+                "description": "Label indicating the performance of the asset",
                 "type": ["null", "string"]
               },
               "EditorialStatus": {
+                "description": "The editorial review status of the asset",
                 "type": ["null", "string"]
               },
               "PinnedField": {
+                "description": "Indicates if the field is pinned",
                 "type": ["null", "string"]
               }
             }
@@ -156,46 +187,59 @@
           "type": ["null", "object"],
           "properties": {
             "Id": {
+              "description": "The unique identifier for the asset",
               "type": ["null", "integer"]
             },
             "Name": {
+              "description": "The name of the asset",
               "type": ["null", "integer"]
             },
             "Type": {
+              "description": "The type of the asset",
               "type": ["null", "integer"]
             }
           }
         },
         "AssetPerformanceLabel": {
+          "description": "Label indicating the performance of the asset",
           "type": ["null", "string"]
         },
         "EditorialStatus": {
+          "description": "The editorial review status of the asset",
           "type": ["null", "string"]
         },
         "PinnedField": {
+          "description": "Indicates if the field is pinned",
           "type": ["null", "string"]
         }
       }
     },
     "LongHeadlineString": {
+      "description": "The long headline content as a string",
       "type": ["null", "string"]
     },
     "Text": {
+      "description": "The text content of the ad",
       "type": ["null", "string"]
     },
     "TextPart2": {
+      "description": "The second part of the text content for the ad",
       "type": ["null", "string"]
     },
     "TitlePart1": {
+      "description": "The first part of the ad title",
       "type": ["null", "string"]
     },
     "TitlePart2": {
+      "description": "The second part of the ad title",
       "type": ["null", "string"]
     },
     "TitlePart3": {
+      "description": "The third part of the ad title",
       "type": ["null", "string"]
     },
     "FinalAppUrls": {
+      "description": "Final URLs for mobile app links",
       "type": "null"
     },
     "FinalMobileUrls": {
@@ -204,12 +248,14 @@
         "string": {
           "type": ["null", "array"],
           "items": {
+            "description": "Final mobile URL",
             "type": ["null", "string"]
           }
         }
       }
     },
     "FinalUrlSuffix": {
+      "description": "Suffix to append to the final URL",
       "type": ["null", "string"]
     },
     "FinalUrls": {
@@ -218,6 +264,7 @@
         "string": {
           "type": ["null", "array"],
           "items": {
+            "description": "Final URL",
             "type": ["null", "string"]
           }
         }
@@ -229,24 +276,30 @@
         "type": ["null", "object"],
         "properties": {
           "key": {
+            "description": "Key for the compatibility map",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "Value for the compatibility map",
             "type": ["null", "string"]
           }
         }
       }
     },
     "Id": {
+      "description": "The unique identifier for the ad",
       "type": ["null", "integer"]
     },
     "Status": {
+      "description": "The status of the ad",
       "type": ["null", "string"]
     },
     "TrackingUrlTemplate": {
+      "description": "Template for tracking URLs",
       "type": ["null", "string"]
     },
     "Type": {
+      "description": "The type of ad",
       "type": ["null", "string"]
     },
     "UrlCustomParameters": {
@@ -258,9 +311,11 @@
             "type": ["null", "object"],
             "properties": {
               "key": {
+                "description": "Parameter key",
                 "type": ["null", "string"]
               },
               "value": {
+                "description": "Parameter value",
                 "type": ["null", "string"]
               }
             }
@@ -280,26 +335,33 @@
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
+                    "description": "The unique identifier for the asset",
                     "type": ["null", "integer"]
                   },
                   "Name": {
+                    "description": "The name of the asset",
                     "type": ["null", "string"]
                   },
                   "Type": {
+                    "description": "The type of the asset",
                     "type": ["null", "string"]
                   },
                   "Text": {
+                    "description": "The text content of the asset",
                     "type": ["null", "string"]
                   }
                 }
               },
               "AssetPerformanceLabel": {
+                "description": "Label indicating the performance of the asset",
                 "type": ["null", "string"]
               },
               "EditorialStatus": {
+                "description": "The editorial review status of the asset",
                 "type": ["null", "string"]
               },
               "PinnedField": {
+                "description": "Indicates if the field is pinned",
                 "type": ["null", "string"]
               }
             }
@@ -308,6 +370,7 @@
       }
     },
     "Domain": {
+      "description": "The domain associated with the ad",
       "type": ["null", "string"]
     },
     "Headlines": {
@@ -322,26 +385,33 @@
                 "type": ["null", "object"],
                 "properties": {
                   "Id": {
+                    "description": "The unique identifier for the asset",
                     "type": ["null", "integer"]
                   },
                   "Name": {
+                    "description": "The name of the asset",
                     "type": ["null", "string"]
                   },
                   "Type": {
+                    "description": "The type of the asset",
                     "type": ["null", "string"]
                   },
                   "Text": {
+                    "description": "The text content of the asset",
                     "type": ["null", "string"]
                   }
                 }
               },
               "AssetPerformanceLabel": {
+                "description": "Label indicating the performance of the asset",
                 "type": ["null", "string"]
               },
               "EditorialStatus": {
+                "description": "The editorial review status of the asset",
                 "type": ["null", "string"]
               },
               "PinnedField": {
+                "description": "Indicates if the field is pinned",
                 "type": ["null", "string"]
               }
             }
@@ -350,9 +420,11 @@
       }
     },
     "Path1": {
+      "description": "The first part of the display URL path",
       "type": ["null", "string"]
     },
     "Path2": {
+      "description": "The second part of the display URL path",
       "type": ["null", "string"]
     }
   }

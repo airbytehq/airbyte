@@ -6,50 +6,64 @@
   "additionalProperties": true,
   "properties": {
     "AmazonOrderId": {
+      "description": "ID of the Amazon order",
       "type": ["null", "string"]
     },
     "ASIN": {
+      "description": "Amazon Standard Identification Number of the product",
       "type": ["null", "string"]
     },
     "OrderItemId": {
+      "description": "ID of the order item",
       "type": ["null", "string"]
     },
     "SellerSKU": {
+      "description": "SKU of the seller",
       "type": ["null", "string"]
     },
     "Title": {
+      "description": "Title of the product",
       "type": ["null", "string"]
     },
     "QuantityOrdered": {
+      "description": "Quantity of the item ordered",
       "type": ["null", "integer"]
     },
     "ProductInfo": {
+      "description": "Information about the product",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "NumberOfItems": {
+          "description": "Number of items in the product",
           "type": ["null", "string"]
         }
       }
     },
     "QuantityShipped": {
+      "description": "Quantity of the item shipped",
       "type": ["null", "integer"]
     },
     "PointsGranted": {
+      "description": "Points granted for the purchase",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "PointsNumber": {
+          "description": "Number of points granted",
           "type": ["null", "integer"]
         },
         "PointsMonetaryValue": {
+          "description": "Monetary value equivalent of the points granted",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "CurrencyCode": {
+              "description": "Currency code of the monetary value",
               "type": ["null", "string"]
             },
             "Amount": {
+              "description": "Amount of monetary value of points",
               "type": ["null", "string"]
             }
           }
@@ -57,233 +71,294 @@
       }
     },
     "ItemPrice": {
+      "description": "Price of the item",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the item price",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of the item price",
           "type": ["null", "string"]
         }
       }
     },
     "PromotionIds": {
+      "description": "IDs of promotions applied",
       "type": ["null", "array"],
       "items": {
+        "description": "ID of a promotion",
         "type": ["null", "string"]
       }
     },
     "ItemTax": {
+      "description": "Tax applied on the item",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the item tax",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of item tax",
           "type": ["null", "string"]
         }
       }
     },
     "ShippingPrice": {
+      "description": "Price of shipping",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the shipping price",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of shipping price",
           "type": ["null", "string"]
         }
       }
     },
     "ShippingTax": {
+      "description": "Tax applied on shipping",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the shipping tax",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of shipping tax",
           "type": ["null", "string"]
         }
       }
     },
     "ShippingDiscount": {
+      "description": "Discount applied on shipping",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the shipping discount",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of shipping discount",
           "type": ["null", "string"]
         }
       }
     },
     "ShippingDiscountTax": {
+      "description": "Tax applied on the shipping discount",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the shipping discount tax",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of shipping discount tax",
           "type": ["null", "string"]
         }
       }
     },
     "PromotionDiscount": {
+      "description": "Discount applied due to promotion",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the promotion discount",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of promotion discount",
           "type": ["null", "string"]
         }
       }
     },
     "PromotionDiscountTax": {
+      "description": "Tax applied on the promotion discount",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the promotion discount tax",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of promotion discount tax",
           "type": ["null", "string"]
         }
       }
     },
     "ScheduledDeliveryEndDate": {
+      "description": "End date for scheduled delivery",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "ScheduledDeliveryStartDate": {
+      "description": "Start date for scheduled delivery",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "CODFee": {
+      "description": "Cash on delivery fee",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the COD fee",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of COD fee",
           "type": ["null", "string"]
         }
       }
     },
     "IsGift": {
+      "description": "Flag indicating if the order is a gift",
       "type": ["null", "string"]
     },
     "ConditionNote": {
+      "description": "Additional notes on the condition of the product",
       "type": ["null", "string"]
     },
     "ConditionId": {
+      "description": "Condition ID of the product",
       "type": ["null", "string"]
     },
     "ConditionSubtypeId": {
+      "description": "Subtype ID of the product condition",
       "type": ["null", "string"]
     },
     "CODFeeDiscount": {
+      "description": "Discount on cash on delivery fee",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "CurrencyCode": {
+          "description": "Currency code of the COD fee discount",
           "type": ["null", "string"]
         },
         "Amount": {
+          "description": "Amount of COD fee discount",
           "type": ["null", "string"]
         }
       }
     },
     "TaxCollection": {
+      "description": "Information about tax collection",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "Model": {
+          "description": "Tax collection model",
           "type": ["null", "string"]
         },
         "ResponsibleParty": {
+          "description": "Party responsible for tax collection",
           "type": ["null", "string"]
         }
       }
     },
     "IsTransparency": {
+      "description": "Flag indicating if transparency is applied",
       "type": ["null", "boolean"]
     },
     "IossNumber": {
+      "description": "Import One Stop Shop number",
       "type": ["null", "string"]
     },
     "SerialNumberRequired": {
+      "description": "Flag indicating if serial number is required",
       "type": ["null", "boolean"]
     },
     "StoreChainStoreId": {
+      "description": "ID of the store chain",
       "type": ["null", "string"]
     },
     "DeemedResellerCategory": {
+      "description": "Category indicating if the seller is considered a reseller",
       "type": ["null", "string"]
     },
     "PriceDesignation": {
+      "description": "Designation of the price",
       "type": ["null", "string"]
     },
     "BuyerInfo": {
+      "description": "Information about the buyer",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "BuyerCustomizedInfo": {
+          "description": "Customized information provided by the buyer",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "CustomizedURL": {
+              "description": "URL for customizations",
               "type": ["null", "string"]
             }
           }
         },
         "GiftMessageText": {
+          "description": "Message provided as a gift",
           "type": ["null", "string"]
         },
         "GiftWrapPrice": {
+          "description": "Price of gift wrapping",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "CurrencyCode": {
+              "description": "Currency code of the gift wrapping price",
               "type": ["null", "string"]
             },
             "Amount": {
+              "description": "Amount of gift wrapping price",
               "type": ["null", "string"]
             }
           }
         },
         "GiftWrapLevel": {
+          "description": "Level of gift wrapping",
           "type": ["null", "string"]
         }
       }
     },
     "BuyerRequestedCancel": {
+      "description": "Information about buyer's request for cancellation",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "IsBuyerRequestedCancel": {
+          "description": "Flag indicating if cancellation was requested by the buyer",
           "type": ["null", "string"]
         },
         "BuyerCancelReason": {
+          "description": "Reason for buyer's cancellation request",
           "type": ["null", "string"]
         }
       }
     },
     "SerialNumbers": {
+      "description": "List of serial numbers",
       "type": ["null", "array"],
       "items": {
+        "description": "Serial number of an item",
         "type": ["null", "string"]
       }
     },
     "LastUpdateDate": {
+      "description": "Date and time of the last update",
       "type": ["null", "string"],
       "format": "date-time"
     }

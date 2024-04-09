@@ -2,40 +2,97 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": { "type": ["null", "string"] },
-    "name": { "type": ["null", "string"] },
-    "board_kind": { "type": ["null", "string"] },
-    "type": { "type": ["null", "string"] },
+    "id": {
+      "description": "The unique identifier of the board.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name or title of the board.",
+      "type": ["null", "string"]
+    },
+    "board_kind": {
+      "description": "The type or category of the board.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "The type or category of the board.",
+      "type": ["null", "string"]
+    },
     "columns": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "archived": { "type": ["null", "boolean"] },
-          "description": { "type": ["null", "string"] },
-          "id": { "type": ["null", "string"] },
-          "settings_str": { "type": ["null", "string"] },
-          "title": { "type": ["null", "string"] },
-          "type": { "type": ["null", "string"] },
-          "width": { "type": ["null", "integer"] }
+          "archived": {
+            "description": "Indicates if the column is archived.",
+            "type": ["null", "boolean"]
+          },
+          "description": {
+            "description": "The description or details of the column.",
+            "type": ["null", "string"]
+          },
+          "id": {
+            "description": "The unique identifier of the column.",
+            "type": ["null", "string"]
+          },
+          "settings_str": {
+            "description": "String representation of the column settings.",
+            "type": ["null", "string"]
+          },
+          "title": {
+            "description": "The title or name of the column.",
+            "type": ["null", "string"]
+          },
+          "type": {
+            "description": "The type of data represented in the column.",
+            "type": ["null", "string"]
+          },
+          "width": {
+            "description": "The width configuration of the column.",
+            "type": ["null", "integer"]
+          }
         }
       }
     },
-    "communication": { "type": ["null", "string"] },
-    "description": { "type": ["null", "string"] },
+    "communication": {
+      "description": "Communication related data for the board.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The description or details of the board.",
+      "type": ["null", "string"]
+    },
     "groups": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "archived": { "type": ["null", "boolean"] },
-          "color": { "type": ["null", "string"] },
-          "deleted": { "type": ["null", "boolean"] },
-          "id": { "type": ["null", "string"] },
-          "position": { "type": ["null", "string"] },
-          "title": { "type": ["null", "string"] }
+          "archived": {
+            "description": "Indicates if the group is archived.",
+            "type": ["null", "boolean"]
+          },
+          "color": {
+            "description": "The color associated with the group.",
+            "type": ["null", "string"]
+          },
+          "deleted": {
+            "description": "Indicates if the group is deleted.",
+            "type": ["null", "boolean"]
+          },
+          "id": {
+            "description": "The unique identifier of the group.",
+            "type": ["null", "string"]
+          },
+          "position": {
+            "description": "The position or order of the group.",
+            "type": ["null", "string"]
+          },
+          "title": {
+            "description": "The title or name of the group.",
+            "type": ["null", "string"]
+          }
         }
       }
     },
@@ -45,25 +102,40 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "string"] }
+          "id": {
+            "description": "The ID of an owner of the board.",
+            "type": ["null", "string"]
+          }
         }
       }
     },
     "creator": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "string"] }
+        "id": {
+          "description": "The ID of the creator of the board.",
+          "type": ["null", "string"]
+        }
       }
     },
-    "permissions": { "type": ["null", "string"] },
-    "state": { "type": ["null", "string"] },
+    "permissions": {
+      "description": "Permissions associated with the board.",
+      "type": ["null", "string"]
+    },
+    "state": {
+      "description": "The state or status of the board.",
+      "type": ["null", "string"]
+    },
     "subscribers": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "string"] }
+          "id": {
+            "description": "The ID of a subscriber to the board.",
+            "type": ["null", "string"]
+          }
         }
       }
     },
@@ -73,25 +145,41 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "string"] }
+          "id": {
+            "description": "The unique identifier of a tag associated with the board.",
+            "type": ["null", "string"]
+          }
         }
       }
     },
     "top_group": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "string"] }
+        "id": {
+          "description": "The ID of the top group associated with the board.",
+          "type": ["null", "string"]
+        }
       }
     },
-    "updated_at": { "type": ["null", "string"], "format": "date-time" },
-    "updated_at_int": { "type": ["null", "integer"] },
+    "updated_at": {
+      "description": "The date and time when the board was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at_int": {
+      "description": "The timestamp when the board was last updated.",
+      "type": ["null", "integer"]
+    },
     "updates": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "string"] }
+          "id": {
+            "description": "The unique identifier of an update related to the board.",
+            "type": ["null", "string"]
+          }
         }
       }
     },
@@ -101,21 +189,48 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "string"] },
-          "name": { "type": ["null", "string"] },
-          "settings_str": { "type": ["null", "string"] },
-          "type": { "type": ["null", "string"] },
-          "view_specific_data_str": { "type": ["null", "string"] }
+          "id": {
+            "description": "The unique identifier of a view associated with the board.",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "The name or title of the view.",
+            "type": ["null", "string"]
+          },
+          "settings_str": {
+            "description": "String representation of the view settings.",
+            "type": ["null", "string"]
+          },
+          "type": {
+            "description": "The type of the view.",
+            "type": ["null", "string"]
+          },
+          "view_specific_data_str": {
+            "description": "String representation of view specific data.",
+            "type": ["null", "string"]
+          }
         }
       }
     },
     "workspace": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "string"] },
-        "name": { "type": ["null", "string"] },
-        "kind": { "type": ["null", "string"] },
-        "description": { "type": ["null", "string"] }
+        "id": {
+          "description": "The unique identifier of the workspace.",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name or title of the workspace.",
+          "type": ["null", "string"]
+        },
+        "kind": {
+          "description": "The kind or type of the workspace.",
+          "type": ["null", "string"]
+        },
+        "description": {
+          "description": "The description or details of the workspace.",
+          "type": ["null", "string"]
+        }
       }
     }
   }

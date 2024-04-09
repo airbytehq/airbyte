@@ -3,18 +3,18 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer",
       "description": "The ID of the screen.",
+      "type": "integer",
       "readOnly": true
     },
     "name": {
-      "type": "string",
       "description": "The name of the screen.",
+      "type": "string",
       "readOnly": true
     },
     "description": {
-      "type": "string",
       "description": "The description of the screen.",
+      "type": "string",
       "readOnly": true
     },
     "scope": {
@@ -22,8 +22,8 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string",
           "description": "The type of scope.",
+          "type": "string",
           "readOnly": true,
           "enum": ["PROJECT", "TEMPLATE"]
         },
@@ -33,33 +33,33 @@
           "type": "object",
           "properties": {
             "self": {
-              "type": "string",
               "description": "The URL of the project details.",
+              "type": "string",
               "readOnly": true
             },
             "id": {
-              "type": "string",
-              "description": "The ID of the project."
+              "description": "The ID of the project.",
+              "type": "string"
             },
             "key": {
-              "type": "string",
               "description": "The key of the project.",
+              "type": "string",
               "readOnly": true
             },
             "name": {
-              "type": "string",
               "description": "The name of the project.",
+              "type": "string",
               "readOnly": true
             },
             "projectTypeKey": {
+              "description": "The project type of the project.",
               "type": "string",
-              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
               "readOnly": true,
               "enum": ["software", "service_desk", "business"]
             },
             "simplified": {
-              "type": "boolean",
               "description": "Whether or not the project is simplified.",
+              "type": "boolean",
               "readOnly": true
             },
             "avatarUrls": {
@@ -68,20 +68,20 @@
               "type": "object",
               "properties": {
                 "16x16": {
-                  "type": "string",
-                  "description": "The URL of the item's 16x16 pixel avatar."
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": "string"
                 },
                 "24x24": {
-                  "type": "string",
-                  "description": "The URL of the item's 24x24 pixel avatar."
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": "string"
                 },
                 "32x32": {
-                  "type": "string",
-                  "description": "The URL of the item's 32x32 pixel avatar."
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": "string"
                 },
                 "48x48": {
-                  "type": "string",
-                  "description": "The URL of the item's 48x48 pixel avatar."
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": "string"
                 }
               }
             },
@@ -91,23 +91,23 @@
               "type": "object",
               "properties": {
                 "self": {
-                  "type": "string",
                   "description": "The URL of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "id": {
-                  "type": "string",
                   "description": "The ID of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "description": {
-                  "type": "string",
                   "description": "The name of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "name": {
-                  "type": "string",
                   "description": "The description of the project category.",
+                  "type": "string",
                   "readOnly": true
                 }
               }

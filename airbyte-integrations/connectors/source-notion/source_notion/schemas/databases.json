@@ -4,68 +4,86 @@
   "additionalProperties": true,
   "properties": {
     "object": {
+      "description": "The type of object represented by the database.",
       "enum": ["database"]
     },
     "id": {
+      "description": "Unique identifier of the database.",
       "type": "string"
     },
     "created_time": {
+      "description": "The timestamp when the database was created.",
       "type": "string",
       "format": "date-time"
     },
     "last_edited_time": {
+      "description": "The timestamp when the database was last edited.",
       "type": "string",
       "format": "date-time"
     },
     "title": {
+      "description": "Title or name of the database.",
       "type": "array",
       "items": {
         "$ref": "rich_text.json"
       }
     },
     "description": {
+      "description": "Description text associated with the database.",
       "type": "array",
       "items": {
         "$ref": "rich_text.json"
       }
     },
     "last_edited_by": {
+      "description": "The user who last edited the database.",
       "$ref": "user.json"
     },
     "created_by": {
+      "description": "The user who created the database.",
       "$ref": "user.json"
     },
     "archived": {
+      "description": "Indicates if the data is archived or not.",
       "type": "boolean"
     },
     "icon": {
+      "description": "URL or reference to the icon of the database.",
       "$ref": "icon.json"
     },
     "cover": {
+      "description": "URL or reference to the cover image of the database.",
       "$ref": "file.json"
     },
     "parent": {
+      "description": "Indicates the parent database if it exists.",
       "$ref": "parent.json"
     },
     "url": {
+      "description": "URL or reference to access the database.",
       "type": "string"
     },
     "is_inline": {
+      "description": "Indicates if the database is displayed inline.",
       "type": ["null", "boolean"]
     },
     "public_url": {
+      "description": "Public URL to access the database.",
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "List of key-value pairs defining additional properties of the database.",
       "type": "array",
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
           "name": {
+            "description": "The name of the property.",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "The value of the property.",
             "type": "object",
             "additionalProperties": true,
             "anyOf": [

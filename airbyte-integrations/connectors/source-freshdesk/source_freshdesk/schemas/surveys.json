@@ -3,38 +3,48 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the survey.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title or name of the survey.",
       "type": ["null", "string"]
     },
     "active": {
+      "description": "Indicates whether the survey is currently active or not.",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The date and time when the survey was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the survey was last updated.",
       "type": ["null", "string"]
     },
     "questions": {
+      "description": "Array of questions included in the survey.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "Unique identifier for the question.",
             "type": ["null", "string"]
           },
           "label": {
+            "description": "Text label or prompt for the question.",
             "type": ["null", "string"]
           },
           "accepted_ratings": {
+            "description": "Array of accepted ratings for the question.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "integer"]
             }
           },
           "default": {
+            "description": "Default value for the question if not answered.",
             "type": ["null", "boolean"]
           }
         }

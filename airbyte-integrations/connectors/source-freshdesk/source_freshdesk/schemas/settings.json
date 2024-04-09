@@ -3,15 +3,18 @@
   "type": "object",
   "properties": {
     "primary_language": {
+      "description": "Primary language setting for the portal",
       "type": ["null", "string"]
     },
     "supported_languages": {
+      "description": "List of all supported languages for the portal",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "portal_languages": {
+      "description": "List of languages supported by the portal",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

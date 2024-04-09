@@ -3,40 +3,50 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the sprint.",
       "type": "integer"
     },
     "self": {
+      "description": "The URL link to fetch more details about the sprint.",
       "type": "string"
     },
     "state": {
+      "description": "The current state/status of the sprint.",
       "type": "string"
     },
     "name": {
+      "description": "The name or title of the sprint.",
       "type": "string"
     },
     "startDate": {
+      "description": "The date and time when the sprint is scheduled to start.",
       "type": "string",
       "format": "date-time"
     },
     "endDate": {
+      "description": "The date and time when the sprint is expected to end.",
       "type": "string",
       "format": "date-time"
     },
     "completeDate": {
+      "description": "The date and time when the sprint was completed.",
       "type": "string",
       "format": "date-time"
     },
     "originBoardId": {
+      "description": "The original board ID the sprint belongs to.",
       "type": "integer"
     },
     "boardId": {
-      "type": "integer",
-      "description": "Used to determine which board the sprint is a part of. (Not always the same as originBoardId)"
+      "description": "Used to determine which board the sprint is a part of. (Not always the same as originBoardId)",
+      "type": "integer"
     },
     "goal": {
+      "description": "The goal or objective of the sprint.",
       "type": "string"
     },
     "createdDate": {
+      "description": "The date and time when the sprint was created.",
       "type": ["null", "string"],
       "format": "date-time"
     }

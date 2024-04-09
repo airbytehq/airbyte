@@ -260,12 +260,15 @@
   "additionalProperties": true,
   "properties": {
     "repository": {
+      "description": "The repository associated with the issue",
       "type": "string"
     },
     "issue_number": {
+      "description": "The number of the issue",
       "type": "integer"
     },
     "labeled": {
+      "description": "Event representing a label being added to the issue",
       "$ref": "#/definitions/base_event",
       "label": {
         "type": ["null", "object"],
@@ -280,6 +283,7 @@
       }
     },
     "unlabeled": {
+      "description": "Event representing a label being removed from the issue",
       "$ref": "#/definitions/base_event",
       "label": {
         "type": "object",
@@ -294,6 +298,7 @@
       }
     },
     "milestoned": {
+      "description": "Event representing the assignment of a milestone to the issue",
       "$ref": "#/definitions/base_event",
       "milestone": {
         "type": "object",
@@ -305,6 +310,7 @@
       }
     },
     "demilestoned": {
+      "description": "Event representing the removal of a milestone",
       "$ref": "#/definitions/base_event",
       "milestone": {
         "type": "object",
@@ -316,6 +322,7 @@
       }
     },
     "renamed": {
+      "description": "Event representing the renaming of an entity",
       "$ref": "#/definitions/base_event",
       "rename": {
         "type": "object",
@@ -330,6 +337,7 @@
       }
     },
     "review_requested": {
+      "description": "Event representing a review request being made",
       "$ref": "#/definitions/base_event",
       "review_requester": {
         "type": "object",
@@ -583,6 +591,7 @@
       }
     },
     "review_request_removed": {
+      "description": "Event representing a review request being removed",
       "$ref": "#/definitions/base_event",
       "review_requester": {
         "type": "object",
@@ -836,6 +845,7 @@
       }
     },
     "review_dismissed": {
+      "description": "Event representing a review being dismissed",
       "$ref": "#/definitions/base_event",
       "dismissed_review": {
         "type": "object",
@@ -856,26 +866,41 @@
       }
     },
     "locked": {
+      "description": "Event representing the issue being locked",
       "$ref": "#/definitions/base_event",
       "lock_reason": {
         "type": ["string", "null"]
       }
     },
     "added_to_project": {
+      "description": "Event representing an issue being added to a project board",
       "$ref": "#/definitions/base_event",
       "project_card": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer" },
-          "url": { "type": "string" },
-          "project_id": { "type": "integer" },
-          "project_url": { "type": "string" },
-          "column_name": { "type": "string" },
-          "previous_column_name": { "type": "string" }
+          "id": {
+            "type": "integer"
+          },
+          "url": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "integer"
+          },
+          "project_url": {
+            "type": "string"
+          },
+          "column_name": {
+            "type": "string"
+          },
+          "previous_column_name": {
+            "type": "string"
+          }
         }
       }
     },
     "moved_columns_in_project": {
+      "description": "Event representing the movement of columns in a project board",
       "$ref": "#/definitions/base_event",
       "project_card": {
         "type": "object",
@@ -904,6 +929,7 @@
       }
     },
     "removed_from_project": {
+      "description": "Event representing the removal of the issue from a project board",
       "$ref": "#/definitions/base_event",
       "project_card": {
         "type": "object",
@@ -932,124 +958,239 @@
       }
     },
     "converted_note_to_issue": {
+      "description": "Event representing a note being converted to an issue",
       "$ref": "#/definitions/base_event",
       "project_card": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer" },
-          "url": { "type": "string" },
-          "project_id": { "type": "integer" },
-          "project_url": { "type": "string" },
-          "column_name": { "type": "string" },
-          "previous_column_name": { "type": "string" }
+          "id": {
+            "type": "integer"
+          },
+          "url": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "integer"
+          },
+          "project_url": {
+            "type": "string"
+          },
+          "column_name": {
+            "type": "string"
+          },
+          "previous_column_name": {
+            "type": "string"
+          }
         }
       }
     },
     "comment": {
+      "description": "Event representing a comment being added to the issue",
       "$ref": "events/comment.json"
     },
     "cross-referenced": {
+      "description": "Event representing a cross reference being made",
       "$ref": "events/cross_referenced.json"
     },
     "committed": {
+      "description": "Event representing a commit being made",
       "$ref": "events/committed.json"
     },
     "closed": {
+      "description": "Event representing the issue being closed",
       "$ref": "#/definitions/base_event"
     },
     "head_ref_deleted": {
+      "description": "Event representing the deletion of a branch",
       "$ref": "#/definitions/base_event"
     },
     "head_ref_restored": {
+      "description": "Event representing the restoration of a branch",
       "$ref": "#/definitions/base_event"
     },
     "reopened": {
+      "description": "Event representing the reopening of the issue",
       "$ref": "#/definitions/base_event"
     },
     "reviewed": {
+      "description": "Event representing a review being completed",
       "$ref": "events/reviewed.json"
     },
     "commented": {
+      "description": "Event representing a comment being added to the issue",
       "$ref": "events/comment.json"
     },
     "commit_commented": {
+      "description": "Event representing a comment being added to a commit",
       "$ref": "events/commented.json"
     },
     "assigned": {
+      "description": "Event representing an issue being assigned to a user",
       "$ref": "#/definitions/base_event",
       "assignee": {
+        "description": "The user who has been assigned to the issue",
         "title": "Simple User",
-        "description": "A GitHub user.",
         "type": "object",
         "properties": {
-          "name": { "type": ["string", "null"] },
-          "email": { "type": ["string", "null"] },
-          "login": { "type": "string" },
-          "id": { "type": "integer" },
-          "node_id": { "type": "string" },
-          "avatar_url": { "type": "string" },
-          "gravatar_id": { "type": ["string", "null"] },
-          "url": { "type": "string" },
-          "html_url": { "type": "string" },
-          "followers_url": { "type": "string" },
-          "following_url": { "type": "string" },
-          "gists_url": { "type": "string" },
-          "starred_url": { "type": "string" },
-          "subscriptions_url": { "type": "string" },
-          "organizations_url": { "type": "string" },
-          "repos_url": { "type": "string" },
-          "events_url": { "type": "string" },
-          "received_events_url": { "type": "string" },
-          "type": { "type": "string" },
-          "site_admin": { "type": "boolean" },
-          "starred_at": { "type": "string", "format": "date-time" }
+          "name": {
+            "type": ["string", "null"]
+          },
+          "email": {
+            "type": ["string", "null"]
+          },
+          "login": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "type": "string"
+          },
+          "gravatar_id": {
+            "type": ["string", "null"]
+          },
+          "url": {
+            "type": "string"
+          },
+          "html_url": {
+            "type": "string"
+          },
+          "followers_url": {
+            "type": "string"
+          },
+          "following_url": {
+            "type": "string"
+          },
+          "gists_url": {
+            "type": "string"
+          },
+          "starred_url": {
+            "type": "string"
+          },
+          "subscriptions_url": {
+            "type": "string"
+          },
+          "organizations_url": {
+            "type": "string"
+          },
+          "repos_url": {
+            "type": "string"
+          },
+          "events_url": {
+            "type": "string"
+          },
+          "received_events_url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "site_admin": {
+            "type": "boolean"
+          },
+          "starred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
     },
     "unassigned": {
+      "description": "Event representing the unassignment of a user from the issue",
       "$ref": "#/definitions/base_event",
       "assignee": {
+        "description": "The user who was previously assigned to the issue",
         "title": "Simple User",
-        "description": "A GitHub user.",
         "type": "object",
         "properties": {
-          "name": { "type": ["string", "null"] },
-          "email": { "type": ["string", "null"] },
-          "login": { "type": "string" },
-          "id": { "type": "integer" },
-          "node_id": { "type": "string" },
-          "avatar_url": { "type": "string" },
-          "gravatar_id": { "type": ["string", "null"] },
-          "url": { "type": "string" },
-          "html_url": { "type": "string" },
-          "followers_url": { "type": "string" },
-          "following_url": { "type": "string" },
-          "gists_url": { "type": "string" },
-          "starred_url": { "type": "string" },
-          "subscriptions_url": { "type": "string" },
-          "organizations_url": { "type": "string" },
-          "repos_url": { "type": "string" },
-          "events_url": { "type": "string" },
-          "received_events_url": { "type": "string" },
-          "type": { "type": "string" },
-          "site_admin": { "type": "boolean" },
-          "starred_at": { "type": "string", "format": "date-time" }
+          "name": {
+            "type": ["string", "null"]
+          },
+          "email": {
+            "type": ["string", "null"]
+          },
+          "login": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "type": "string"
+          },
+          "gravatar_id": {
+            "type": ["string", "null"]
+          },
+          "url": {
+            "type": "string"
+          },
+          "html_url": {
+            "type": "string"
+          },
+          "followers_url": {
+            "type": "string"
+          },
+          "following_url": {
+            "type": "string"
+          },
+          "gists_url": {
+            "type": "string"
+          },
+          "starred_url": {
+            "type": "string"
+          },
+          "subscriptions_url": {
+            "type": "string"
+          },
+          "organizations_url": {
+            "type": "string"
+          },
+          "repos_url": {
+            "type": "string"
+          },
+          "events_url": {
+            "type": "string"
+          },
+          "received_events_url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "site_admin": {
+            "type": "boolean"
+          },
+          "starred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
     },
     "state_change": {
+      "description": "Event representing a change in state",
       "$ref": "#/definitions/base_event",
       "state_reason": {
         "type": ["string", "null"]
       }
     },
     "connected": {
+      "description": "Event representing a connection being established",
       "$ref": "#/definitions/base_event"
     },
     "auto_squash_enabled": {
+      "description": "Event representing auto-squash being enabled on a commit",
       "$ref": "#/definitions/base_event"
     },
     "merged": {
+      "description": "Event representing the merging of the issue",
       "$ref": "#/definitions/base_event"
     }
   }

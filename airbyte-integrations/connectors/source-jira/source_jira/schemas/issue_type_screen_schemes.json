@@ -3,16 +3,16 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
-      "description": "The ID of the issue type screen scheme."
+      "description": "The ID of the issue type screen scheme.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the issue type screen scheme."
+      "description": "The name of the issue type screen scheme.",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "The description of the issue type screen scheme."
+      "description": "The description of the issue type screen scheme.",
+      "type": "string"
     }
   },
   "additionalProperties": true,

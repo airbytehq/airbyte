@@ -3,27 +3,35 @@
   "type": "object",
   "properties": {
     "created": {
+      "description": "Timestamp of when the visitor record was created",
       "type": ["null", "integer"]
     },
     "banned": {
+      "description": "Indicates whether the visitor is banned or not",
       "type": ["boolean", "null"]
     },
     "email": {
+      "description": "Email address of the visitor",
       "type": ["null", "string"]
     },
     "external_id": {
+      "description": "External identifier for the visitor",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the visitor",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the visitor",
       "type": ["null", "string"]
     },
     "notes": {
+      "description": "Additional notes or comments related to the visitor",
       "type": ["null", "string"]
     },
     "phone": {
+      "description": "Phone number of the visitor",
       "type": ["null", "string"]
     }
   }

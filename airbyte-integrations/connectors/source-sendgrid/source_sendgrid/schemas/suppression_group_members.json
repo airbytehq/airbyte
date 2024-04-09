@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "email": {
+      "description": "The email address belonging to the suppression group member.",
       "type": "string"
     },
     "group_id": {
+      "description": "The unique identifier for the suppression group to which this member belongs.",
       "type": "integer"
     },
     "group_name": {
+      "description": "The name of the suppression group to which this member belongs.",
       "type": "string"
     },
     "created_at": {
+      "description": "The timestamp when this suppression group member was created.",
       "type": "integer"
     }
   }

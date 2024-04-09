@@ -3,67 +3,88 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the product.",
       "type": ["null", "integer"]
     },
     "charge_interval_frequency": {
+      "description": "Frequency at which the product can be charged or renewed.",
       "type": ["null", "integer"]
     },
     "collection_id": {
+      "description": "Identifier for the collection to which the product belongs.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Date and time when the product was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "cutoff_day_of_month": {
+      "description": "Specific day of the month when charging period ends.",
       "type": ["null", "integer"]
     },
     "cutoff_day_of_week": {
+      "description": "Specific day of the week when charging period ends.",
       "type": ["null", "integer"]
     },
     "discount_amount": {
+      "description": "Amount of discount applied to the product.",
       "type": ["null", "number"]
     },
     "discount_type": {
+      "description": "Type of discount applied (e.g., percentage or fixed amount).",
       "type": ["null", "string"]
     },
     "expire_after_specific_number_of_charges": {
+      "description": "Number of charges after which the product expires.",
       "type": ["null", "integer"]
     },
     "handle": {
+      "description": "Unique identifier used by the system for the product.",
       "type": ["null", "string"]
     },
     "images": {
+      "description": "Images associated with the product.",
       "type": ["null", "object"]
     },
     "modifiable_properties": {
+      "description": "Properties of the product that can be modified by the user.",
       "type": ["null", "array"]
     },
     "order_day_of_month": {
+      "description": "Specific day of the month for placing orders.",
       "type": ["null", "integer"]
     },
     "order_day_of_week": {
+      "description": "Specific day of the week for placing orders.",
       "type": ["null", "integer"]
     },
     "order_interval_frequency_options": {
+      "description": "Options for order frequency intervals.",
       "type": ["null", "array"]
     },
     "order_interval_unit": {
+      "description": "Unit of interval for ordering (e.g., days, weeks).",
       "type": ["null", "string"]
     },
     "shopify_product_id": {
+      "description": "Identifier of the product in the Shopify platform.",
       "type": ["null", "integer"]
     },
     "storefront_purchase_options": {
+      "description": "Purchase options available on the storefront.",
       "type": ["null", "string"]
     },
     "subscription_defaults": {
+      "description": "Default settings for subscription management.",
       "type": ["null", "object"]
     },
     "title": {
+      "description": "Title or name of the product.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Date and time when the product was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }

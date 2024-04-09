@@ -3,6 +3,7 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the task",
       "type": ["null", "string"]
     },
     "properties": {
@@ -36,6 +37,7 @@
           "type": ["null", "number"]
         },
         "hs_createdate": {
+          "description": "The date and time when the task was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -52,6 +54,7 @@
           "type": ["null", "boolean"]
         },
         "hs_lastmodifieddate": {
+          "description": "The date and time when the task was last modified",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -95,6 +98,7 @@
           "type": ["null", "string"]
         },
         "hs_task_completion_date": {
+          "description": "The date and time when the task was completed",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -108,10 +112,12 @@
           "type": ["null", "boolean"]
         },
         "hs_task_last_contact_outreach": {
+          "description": "The date and time of the last contact outreach related to the task",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_task_last_sales_activity_timestamp": {
+          "description": "The date and time of the last sales activity related to the task",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -155,6 +161,7 @@
           "type": ["null", "string"]
         },
         "hs_timestamp": {
+          "description": "The timestamp associated with the task",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -177,6 +184,7 @@
           "type": ["null", "string"]
         },
         "hubspot_owner_assigneddate": {
+          "description": "The date and time when the task was assigned to an owner",
           "type": ["null", "string"],
           "format": "date-time"
         },
@@ -225,6 +233,7 @@
       "type": ["null", "number"]
     },
     "properties_hs_createdate": {
+      "description": "The date and time when the task was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -241,6 +250,7 @@
       "type": ["null", "boolean"]
     },
     "properties_hs_lastmodifieddate": {
+      "description": "The date and time when the task was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -284,6 +294,7 @@
       "type": ["null", "string"]
     },
     "properties_hs_task_completion_date": {
+      "description": "The date and time when the task was completed",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -297,10 +308,12 @@
       "type": ["null", "boolean"]
     },
     "properties_hs_task_last_contact_outreach": {
+      "description": "The date and time of the last contact outreach related to the task",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_task_last_sales_activity_timestamp": {
+      "description": "The date and time of the last sales activity related to the task",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -344,6 +357,7 @@
       "type": ["null", "string"]
     },
     "properties_hs_timestamp": {
+      "description": "The timestamp associated with the task",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -366,6 +380,7 @@
       "type": ["null", "string"]
     },
     "properties_hubspot_owner_assigneddate": {
+      "description": "The date and time when the task was assigned to an owner",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -385,35 +400,42 @@
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The date and time when the task was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the task was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates if the task has been archived",
       "type": ["null", "boolean"]
     },
     "contacts": {
+      "description": "List of contacts associated with the task",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "deals": {
+      "description": "List of deals associated with the task",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "companies": {
+      "description": "List of companies associated with the task",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "tickets": {
+      "description": "List of tickets associated with the task",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

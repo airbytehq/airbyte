@@ -3,54 +3,68 @@
   "type": "object",
   "properties": {
     "agent_ids": {
+      "description": "Array of agent IDs involved in the chat.",
       "items": {
         "type": ["string"]
       },
       "type": ["null", "array"]
     },
     "agent_names": {
+      "description": "Array of agent names involved in the chat.",
       "items": {
         "type": ["string"]
       },
       "type": ["null", "array"]
     },
     "comment": {
+      "description": "Comments related to the chat.",
       "type": ["null", "string"]
     },
     "conversions": {
+      "description": "List of conversions during the chat session.",
       "items": {
         "properties": {
           "id": {
+            "description": "ID of the conversion.",
             "type": ["string"]
           },
           "goal_name": {
+            "description": "Name of the goal achieved during the conversion.",
             "type": ["null", "string"]
           },
           "goal_id": {
+            "description": "ID of the goal achieved during the conversion.",
             "type": ["null", "integer"]
           },
           "attribution": {
+            "description": "Information about attribution for the conversion.",
             "properties": {
               "chat_timestamp": {
+                "description": "Timestamp of the chat related to the conversion.",
                 "format": "date-time",
                 "type": ["null", "string"]
               },
               "department_name": {
+                "description": "Name of the department related to the conversion.",
                 "type": ["null", "string"]
               },
               "agent_name": {
+                "description": "Name of the agent attributed to the conversion.",
                 "type": ["null", "string"]
               },
               "department_id": {
+                "description": "ID of the department related to the conversion.",
                 "type": ["null", "integer"]
               },
               "agent_id": {
+                "description": "ID of the agent attributed to the conversion.",
                 "type": ["null", "integer"]
               }
             },
             "type": ["null", "object"]
           },
           "timestamp": {
+            "description": "Timestamp of the conversion.",
             "format": "date-time",
             "type": ["null", "string"]
           }
@@ -61,14 +75,18 @@
       "type": ["null", "array"]
     },
     "count": {
+      "description": "Counts related to agent interaction and visitors in the chat.",
       "properties": {
         "total": {
+          "description": "Total count related to the chat.",
           "type": ["null", "integer"]
         },
         "agent": {
+          "description": "Count of agents involved in the chat.",
           "type": ["null", "integer"]
         },
         "visitor": {
+          "description": "Count of visitors in the chat.",
           "type": ["null", "integer"]
         }
       },
@@ -76,56 +94,73 @@
       "additionalProperties": true
     },
     "department_id": {
+      "description": "ID of the department associated with the chat.",
       "type": ["null", "integer"]
     },
     "department_name": {
+      "description": "Name of the department associated with the chat.",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "Duration of the chat session.",
       "type": ["null", "integer"]
     },
     "history": {
+      "description": "History of chat messages and actions.",
       "items": {
         "properties": {
           "name": {
+            "description": "Name associated with the message/action.",
             "type": ["null", "string"]
           },
           "channel": {
+            "description": "Channel where the message/action occurred.",
             "type": ["null", "string"]
           },
           "conversion": {
+            "description": "Details of conversion related to the message/action.",
             "properties": {
               "id": {
+                "description": "ID of the conversion.",
                 "type": ["string"]
               },
               "goal_name": {
+                "description": "Name of the goal achieved during the conversion.",
                 "type": ["null", "string"]
               },
               "goal_id": {
+                "description": "ID of the goal achieved during the conversion.",
                 "type": ["null", "integer"]
               },
               "attribution": {
+                "description": "Information about attribution for the conversion.",
                 "properties": {
                   "chat_timestamp": {
+                    "description": "Timestamp of the chat related to the conversion.",
                     "format": "date-time",
                     "type": ["null", "string"]
                   },
                   "department_name": {
+                    "description": "Name of the department related to the conversion.",
                     "type": ["null", "string"]
                   },
                   "agent_name": {
+                    "description": "Name of the agent attributed to the conversion.",
                     "type": ["null", "string"]
                   },
                   "department_id": {
+                    "description": "ID of the department related to the conversion.",
                     "type": ["null", "integer"]
                   },
                   "agent_id": {
+                    "description": "ID of the agent attributed to the conversion.",
                     "type": ["null", "integer"]
                   }
                 },
                 "type": ["null", "object"]
               },
               "timestamp": {
+                "description": "Timestamp of the conversion.",
                 "format": "date-time",
                 "type": ["null", "string"]
               }
@@ -134,46 +169,60 @@
             "additionalProperties": true
           },
           "timestamp": {
+            "description": "Timestamp of the message/action.",
             "format": "date-time",
             "type": ["null", "string"]
           },
           "msg": {
+            "description": "Message content.",
             "type": ["null", "string"]
           },
           "nick": {
+            "description": "Nickname associated with the message/action.",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "Type of message/action.",
             "type": ["null", "string"]
           },
           "options": {
+            "description": "Options available for the message/action.",
             "type": ["null", "string"]
           },
           "department_id": {
+            "description": "ID of the department associated with the message/action.",
             "type": ["null", "integer", "string"]
           },
           "prev_department_id": {
+            "description": "Previous department ID.",
             "type": ["null", "integer", "string"]
           },
           "department_name": {
+            "description": "Name of the department associated with the message/action.",
             "type": ["null", "string"]
           },
           "msg_id": {
+            "description": "ID of the message.",
             "type": ["null", "string", "integer"]
           },
           "tags": {
+            "description": "Tags associated with the message/action.",
             "type": ["null", "array"]
           },
           "new_tags": {
+            "description": "New tags assigned.",
             "type": ["null", "array"]
           },
           "rating": {
+            "description": "Rating associated with the message/action.",
             "type": ["null", "string"]
           },
           "new_rating": {
+            "description": "New rating assigned.",
             "type": ["null", "string"]
           },
           "skills_name": {
+            "description": "Skills name associated.",
             "type": ["null", "array"]
           }
         },
@@ -183,23 +232,30 @@
       "type": ["null", "array"]
     },
     "id": {
+      "description": "ID of the chat.",
       "type": ["null", "string"]
     },
     "missed": {
+      "description": "Flag indicating if the chat was missed.",
       "type": ["null", "boolean"]
     },
     "rating": {
+      "description": "Rating associated with the chat.",
       "type": ["null", "string"]
     },
     "response_time": {
+      "description": "Response time details for the chat.",
       "properties": {
         "first": {
+          "description": "First response time for the chat.",
           "type": ["null", "integer"]
         },
         "max": {
+          "description": "Maximum response time for the chat.",
           "type": ["null", "integer"]
         },
         "avg": {
+          "description": "Average response time for the chat.",
           "type": ["null", "number"]
         }
       },
@@ -207,88 +263,114 @@
       "additionalProperties": true
     },
     "session": {
+      "description": "Details of the chat session.",
       "properties": {
         "end_date": {
+          "description": "End date of the chat session.",
           "format": "date-time",
           "type": ["null", "string"]
         },
         "country_code": {
+          "description": "Country code of the visitor.",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "City of the visitor.",
           "type": ["null", "string"]
         },
         "browser": {
+          "description": "Browser used in the chat session.",
           "type": ["null", "string"]
         },
         "ip": {
+          "description": "IP address of the visitor.",
           "type": ["null", "string"]
         },
         "country_name": {
+          "description": "Country name of the visitor.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the chat session.",
           "type": ["null", "string"]
         },
         "region": {
+          "description": "Region of the visitor.",
           "type": ["null", "string"]
         },
         "platform": {
+          "description": "Platform used in the chat session.",
           "type": ["null", "string"]
         },
         "user_agent": {
+          "description": "User agent information.",
           "type": ["null", "string"]
         },
         "start_date": {
+          "description": "Start date of the chat session.",
           "format": "date-time",
           "type": ["null", "string"]
         }
       }
     },
     "started_by": {
+      "description": "Agent who started the chat.",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "Tags associated with the chat.",
       "items": {
         "type": ["string"]
       },
       "type": ["null", "array"]
     },
     "timestamp": {
+      "description": "Timestamp of the chat.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "update_timestamp": {
+      "description": "Timestamp of the chat update.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "triggered": {
+      "description": "Flag indicating if the chat was triggered.",
       "type": ["null", "boolean"]
     },
     "triggered_response": {
+      "description": "Triggered response related to the chat.",
       "type": ["null", "boolean"]
     },
     "type": {
+      "description": "Type of the chat.",
       "type": ["null", "string"]
     },
     "unread": {
+      "description": "Flag indicating if the chat is unread.",
       "type": ["null", "boolean"]
     },
     "visitor": {
+      "description": "Visitor details associated with the chat.",
       "properties": {
         "name": {
+          "description": "Name of the visitor.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "ID of the visitor.",
           "type": ["string"]
         },
         "email": {
+          "description": "Email of the visitor.",
           "type": ["null", "string"]
         },
         "notes": {
+          "description": "Notes related to the visitor.",
           "type": ["null", "string"]
         },
         "phone": {
+          "description": "Phone number of the visitor.",
           "type": ["null", "string"]
         }
       },
@@ -296,18 +378,23 @@
       "additionalProperties": true
     },
     "webpath": {
+      "description": "Path details related to the chat session.",
       "items": {
         "properties": {
           "to": {
+            "description": "Ending point on the webpath.",
             "type": ["null", "string"]
           },
           "title": {
+            "description": "Title of the webpath event.",
             "type": ["null", "string"]
           },
           "from": {
+            "description": "Starting point on the webpath.",
             "type": ["null", "string"]
           },
           "timestamp": {
+            "description": "Timestamp of the webpath event.",
             "format": "date-time",
             "type": ["null", "string"]
           }
@@ -318,69 +405,91 @@
       "type": ["null", "array"]
     },
     "message": {
+      "description": "Message content related to the chat.",
       "type": ["null", "string"]
     },
     "deleted": {
+      "description": "Flag indicating if the chat has been deleted.",
       "type": ["null", "boolean"]
     },
     "zendesk_ticket_id": {
+      "description": "Zendesk ticket ID associated with the chat.",
       "type": ["null", "integer"]
     },
     "engagements": {
+      "description": "Details of engagements during the chat session.",
       "items": {
         "properties": {
           "id": {
+            "description": "ID of the engagement.",
             "type": ["null", "string"]
           },
           "started_by": {
+            "description": "Agent who started the engagement.",
             "type": ["null", "string"]
           },
           "agent_id": {
+            "description": "ID of the agent involved in the engagement.",
             "type": ["null", "string"]
           },
           "agent_name": {
+            "description": "Name of the agent involved in the engagement.",
             "type": ["null", "string"]
           },
           "agent_full_name": {
+            "description": "Full name of the agent involved in the engagement.",
             "type": ["null", "string"]
           },
           "department_id": {
+            "description": "ID of the department associated with the engagement.",
             "type": ["null", "integer"]
           },
           "assigned": {
+            "description": "Flag indicating if the engagement was assigned.",
             "type": ["null", "boolean"]
           },
           "accepted": {
+            "description": "Flag indicating if the engagement was accepted.",
             "type": ["null", "boolean"]
           },
           "rating": {
+            "description": "Rating of the engagement.",
             "type": ["null", "string"]
           },
           "comment": {
+            "description": "Comments related to the engagement.",
             "type": ["null", "string"]
           },
           "skills_requested": {
+            "description": "Skills requested for the engagement.",
             "type": ["null", "array"]
           },
           "skills_fulfilled": {
+            "description": "Skills fulfilled during the engagement.",
             "type": ["null", "boolean"]
           },
           "timestamp": {
+            "description": "Timestamp of the engagement.",
             "format": "date-time",
             "type": ["null", "string"]
           },
           "duration": {
+            "description": "Duration of the engagement.",
             "type": ["null", "number"]
           },
           "response_time": {
+            "description": "Response time details.",
             "properties": {
               "first": {
+                "description": "First response time.",
                 "type": ["null", "integer"]
               },
               "max": {
+                "description": "Maximum response time.",
                 "type": ["null", "integer"]
               },
               "avg": {
+                "description": "Average response time.",
                 "type": ["null", "number"]
               }
             },
@@ -388,14 +497,18 @@
             "additionalProperties": true
           },
           "count": {
+            "description": "Counts related to agent interaction and visitors in the engagement.",
             "properties": {
               "total": {
+                "description": "Total count related to the engagement.",
                 "type": ["null", "integer"]
               },
               "agent": {
+                "description": "Count of agents involved in the engagement.",
                 "type": ["null", "integer"]
               },
               "visitor": {
+                "description": "Count of visitors in the engagement.",
                 "type": ["null", "integer"]
               }
             },

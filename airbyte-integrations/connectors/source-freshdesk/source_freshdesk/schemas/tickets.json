@@ -3,108 +3,143 @@
   "type": "object",
   "properties": {
     "cc_emails": {
+      "description": "Email addresses that are cc'd on the ticket",
       "type": ["array", "null"]
     },
     "fwd_emails": {
+      "description": "Email addresses to which the ticket has been forwarded",
       "type": ["array", "null"]
     },
     "reply_cc_emails": {
+      "description": "Email addresses that are cc'd on ticket replies",
       "type": ["array", "null"]
     },
     "ticket_cc_emails": {
+      "description": "Email addresses that are cc'd on all ticket communications",
       "type": ["array", "null"]
     },
     "fr_escalated": {
+      "description": "Flag indicating if the ticket has been escalated for the first response",
       "type": ["null", "boolean"]
     },
     "spam": {
+      "description": "Flag indicating if the ticket is marked as spam",
       "type": ["null", "boolean"]
     },
     "email_config_id": {
+      "description": "The ID of the email configuration associated with the ticket",
       "type": ["integer", "null"]
     },
     "group_id": {
+      "description": "The ID of the group handling the ticket",
       "type": ["integer", "null"]
     },
     "priority": {
+      "description": "The priority level of the ticket",
       "type": ["integer", "null"]
     },
     "requester_id": {
+      "description": "The ID of the user who requested the ticket",
       "type": ["integer", "null"]
     },
     "responder_id": {
+      "description": "The ID of the user responding to the ticket",
       "type": ["integer", "null"]
     },
     "source": {
+      "description": "The source of the ticket creation",
       "type": ["integer", "null"]
     },
     "company_id": {
+      "description": "The ID of the company associated with the ticket",
       "type": ["integer", "null"]
     },
     "status": {
+      "description": "The current status of the ticket",
       "type": ["integer", "null"]
     },
     "subject": {
+      "description": "The subject or title of the ticket",
       "type": ["string", "null"]
     },
     "association_type": {
+      "description": "The type of association of the ticket",
       "type": ["integer", "null"]
     },
     "to_emails": {
+      "description": "Email addresses to which the ticket is addressed",
       "type": ["array", "null"],
       "items": {
+        "description": "Individual email addresses",
         "type": ["string", "null"]
       }
     },
     "product_id": {
+      "description": "The ID of the product associated with the ticket",
       "type": ["integer", "null"]
     },
     "id": {
+      "description": "The unique identifier of the ticket",
       "type": ["integer", "null"]
     },
     "type": {
+      "description": "The type or category of the ticket",
       "type": ["string", "null"]
     },
     "due_by": {
+      "description": "The due date for the ticket",
       "type": ["string", "null"]
     },
     "fr_due_by": {
+      "description": "The first response due date for the ticket",
       "type": ["string", "null"]
     },
     "is_escalated": {
+      "description": "Flag indicating if the ticket has been escalated",
       "type": ["boolean", "null"]
     },
     "custom_fields": {
+      "description": "Custom fields related to the ticket",
       "type": ["object", "null"]
     },
     "created_at": {
+      "description": "The date and time when the ticket was created",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "The date and time when the ticket was last updated",
       "type": ["string", "null"]
     },
     "associated_tickets_count": {
+      "description": "The number of tickets associated with this ticket",
       "type": ["integer", "null"]
     },
     "tags": {
+      "description": "Tags assigned to the ticket",
       "type": ["array", "null"]
     },
     "nr_due_by": {
+      "description": "The next response due date for the ticket",
       "type": ["string", "null"]
     },
     "nr_escalated": {
+      "description": "Flag indicating if the ticket has been escalated for the next response",
       "type": ["boolean", "null"]
     },
     "description": {
+      "description": "The detailed description of the ticket",
       "type": ["string", "null"]
     },
     "description_text": {
+      "description": "The text version of the ticket description",
       "type": ["string", "null"]
     },
     "requester": {
+      "description": "Details of the user who requested the ticket",
       "type": ["object", "null"]
     },
     "stats": {
+      "description": "Statistics related to the ticket",
       "type": ["object", "null"]
     }
   }

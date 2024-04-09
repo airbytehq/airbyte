@@ -3,6 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the release.",
       "type": ["null", "integer"]
     },
     "authors": {
@@ -12,49 +13,62 @@
         "additionalProperties": true,
         "properties": {
           "name": {
+            "description": "Name of the author.",
             "type": ["null", "string"]
           },
           "email": {
+            "description": "Email address of the author.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "commitCount": {
+      "description": "Total count of commits in the release.",
       "type": ["null", "integer"]
     },
     "data": {
+      "description": "Additional data related to the release.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "dateCreated": {
+      "description": "The date and time when the release was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "dateReleased": {
+      "description": "The date and time when the release was released.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deployCount": {
+      "description": "Total count of deployments for the release.",
       "type": ["null", "integer"]
     },
     "firstEvent": {
+      "description": "First event related to the release.",
       "type": ["null", "string"]
     },
     "lastCommit": {
+      "description": "Details about the last commit in the release.",
       "type": ["null", "object"]
     },
     "lastDeploy": {
+      "description": "Details about the last deployment of the release.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "lastEvent": {
+      "description": "Last event related to the release.",
       "type": ["null", "string"]
     },
     "newGroups": {
+      "description": "New groups associated with the release.",
       "type": ["null", "integer"]
     },
     "owner": {
+      "description": "Owner of the release.",
       "type": ["null", "string"]
     },
     "projects": {
@@ -63,47 +77,90 @@
         "type": ["null", "object"],
         "properties": {
           "name": {
+            "description": "Name of the project.",
             "type": ["null", "string"]
           },
           "slug": {
+            "description": "Unique identifier (slug) of the project.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "ref": {
+      "description": "Reference associated with the release.",
       "type": ["null", "string"]
     },
     "shortVersion": {
+      "description": "Short version identifier of the release.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "URL associated with the release.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "Version information of the release.",
       "type": ["null", "string"]
     },
     "currentProjectMeta": {
+      "description": "Meta information about the current project.",
       "type": ["null", "object"]
     },
-    "status": { "type": ["null", "string"] },
-    "userAgent": { "type": ["null", "string"] },
+    "status": {
+      "description": "Status of the release.",
+      "type": ["null", "string"]
+    },
+    "userAgent": {
+      "description": "User agent information for the release.",
+      "type": ["null", "string"]
+    },
     "versionInfo": {
       "type": ["null", "object"],
       "properties": {
-        "buildHash": { "type": ["null", "string"] },
-        "description": { "type": ["null", "string"] },
-        "package": { "type": ["null", "string"] },
+        "buildHash": {
+          "description": "Hash value of the build.",
+          "type": ["null", "string"]
+        },
+        "description": {
+          "description": "Description of the build version.",
+          "type": ["null", "string"]
+        },
+        "package": {
+          "description": "Package details of the build version.",
+          "type": ["null", "string"]
+        },
         "version": {
           "type": ["null", "object"],
           "properties": {
-            "buildCode": { "type": ["null", "string"] },
-            "components": { "type": ["null", "integer"] },
-            "major": { "type": ["null", "integer"] },
-            "minor": { "type": ["null", "integer"] },
-            "patch": { "type": ["null", "integer"] },
-            "pre": { "type": ["null", "string"] },
-            "raw": { "type": ["null", "string"] }
+            "buildCode": {
+              "description": "Build code of the version.",
+              "type": ["null", "string"]
+            },
+            "components": {
+              "description": "Components of the version.",
+              "type": ["null", "integer"]
+            },
+            "major": {
+              "description": "Major version number.",
+              "type": ["null", "integer"]
+            },
+            "minor": {
+              "description": "Minor version number.",
+              "type": ["null", "integer"]
+            },
+            "patch": {
+              "description": "Patch version number.",
+              "type": ["null", "integer"]
+            },
+            "pre": {
+              "description": "Pre-release version information.",
+              "type": ["null", "string"]
+            },
+            "raw": {
+              "description": "Raw version string.",
+              "type": ["null", "string"]
+            }
           }
         }
       }

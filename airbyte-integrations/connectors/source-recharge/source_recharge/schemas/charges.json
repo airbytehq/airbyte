@@ -3,255 +3,335 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the charge",
       "type": ["null", "integer"]
     },
     "address_id": {
+      "description": "Unique identifier for the address associated with the charge",
       "type": ["null", "integer"]
     },
     "analytics_data": {
+      "description": "Data related to analytics for the charge",
       "type": ["null", "object"]
     },
     "billing_address": {
+      "description": "Details of the billing address for the charge",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier of the billing address",
           "type": ["null", "integer"]
         },
         "address1": {
+          "description": "First line of the billing address",
           "type": ["null", "string"]
         },
         "address2": {
+          "description": "Second line of the billing address",
           "type": ["null", "string"]
         },
         "cart_note": {
+          "description": "Note related to billing address for cart",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "City of the billing address",
           "type": ["null", "string"]
         },
         "company": {
+          "description": "Company name associated with the billing address",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "Country of the billing address",
           "type": ["null", "string"]
         },
         "customer_id": {
+          "description": "Unique identifier of the customer associated with the billing address",
           "type": ["null", "integer"]
         },
         "created_at": {
+          "description": "Date and time when billing address was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "discount_id": {
+          "description": "Unique identifier of discount applied to the billing address",
           "type": ["null", "integer"]
         },
         "first_name": {
+          "description": "First name on the billing address",
           "type": ["null", "string"]
         },
         "last_name": {
+          "description": "Last name on the billing address",
           "type": ["null", "string"]
         },
         "note_attributes": {
+          "description": "Additional notes or attributes related to the billing address",
           "type": ["null", "array"]
         },
         "phone": {
+          "description": "Phone number associated with the billing address",
           "type": ["null", "string"]
         },
         "province": {
+          "description": "Province or state of the billing address",
           "type": ["null", "string"]
         },
         "shipping_lines_override": {
+          "description": "Override for shipping lines associated with the billing address",
           "type": ["null", "array"]
         },
         "updated_at": {
+          "description": "Date and time when billing address was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "zip": {
+          "description": "Zip or postal code of the billing address",
           "type": ["null", "string"]
         }
       }
     },
     "client_details": {
+      "description": "Details of the client associated with the charge",
       "type": ["null", "object"]
     },
     "created_at": {
+      "description": "Date and time when the charge was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "customer_hash": {
+      "description": "Unique hash representing the customer",
       "type": ["null", "string"]
     },
     "customer_id": {
+      "description": "Unique identifier of the customer",
       "type": ["null", "integer"]
     },
     "discount_codes": {
+      "description": "Codes of discounts applied to the charge",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual discount code item",
         "type": ["null", "object"]
       }
     },
     "email": {
+      "description": "Email address associated with the charge",
       "type": ["null", "string"]
     },
     "error": {
+      "description": "Error message related to the charge",
       "type": ["null", "string"]
     },
     "error_type": {
+      "description": "Type of error occurred during the charge",
       "type": ["null", "string"]
     },
     "first_name": {
+      "description": "First name associated with the charge",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name associated with the charge",
       "type": ["null", "string"]
     },
     "last_charge_attempt_date": {
+      "description": "Date and time of the last charge attempt",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "line_items": {
+      "description": "Items included in the charge",
       "type": ["null", "array"]
     },
     "has_uncommited_changes": {
+      "description": "Flag indicating if there are uncommitted changes",
       "type": ["null", "boolean"]
     },
     "note": {
+      "description": "Note related to the charge",
       "type": ["null", "string"]
     },
     "note_attributes": {
+      "description": "Additional notes or attributes related to the charge",
       "type": ["null", "array"]
     },
     "number_times_tried": {
+      "description": "Number of times the charge has been attempted",
       "type": ["null", "integer"]
     },
     "processed_at": {
+      "description": "Date and time when the charge was processed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "processor_name": {
+      "description": "Name of the processor handling the charge",
       "type": ["null", "string"]
     },
     "retry_date": {
+      "description": "Date and time set for retrying the charge",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "scheduled_at": {
+      "description": "Date and time scheduled for the charge",
       "type": ["null", "string"]
     },
     "shipments_count": {
+      "description": "Count of shipments associated with the charge",
       "type": ["null", "integer"]
     },
     "shipping_address": {
+      "description": "Details of the shipping address for the charge",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier of the shipping address",
           "type": ["null", "integer"]
         },
         "address1": {
+          "description": "First line of the shipping address",
           "type": ["null", "string"]
         },
         "address2": {
+          "description": "Second line of the shipping address",
           "type": ["null", "string"]
         },
         "cart_note": {
+          "description": "Note related to shipping address for cart",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "City of the shipping address",
           "type": ["null", "string"]
         },
         "company": {
+          "description": "Company name associated with the shipping address",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "Country of the shipping address",
           "type": ["null", "string"]
         },
         "customer_id": {
+          "description": "Unique identifier of the customer associated with the shipping address",
           "type": ["null", "integer"]
         },
         "created_at": {
+          "description": "Date and time when shipping address was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "discount_id": {
+          "description": "Unique identifier of discount applied to the shipping address",
           "type": ["null", "integer"]
         },
         "first_name": {
+          "description": "First name on the shipping address",
           "type": ["null", "string"]
         },
         "last_name": {
+          "description": "Last name on the shipping address",
           "type": ["null", "string"]
         },
         "note_attributes": {
+          "description": "Additional notes or attributes related to the shipping address",
           "type": ["null", "array"]
         },
         "phone": {
+          "description": "Phone number associated with the shipping address",
           "type": ["null", "string"]
         },
         "province": {
+          "description": "Province or state of the shipping address",
           "type": ["null", "string"]
         },
         "shipping_lines_override": {
+          "description": "Override for shipping lines associated with the shipping address",
           "type": ["null", "array"]
         },
         "updated_at": {
+          "description": "Date and time when shipping address was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "zip": {
+          "description": "Zip or postal code of the shipping address",
           "type": ["null", "string"]
         }
       }
     },
     "shipping_lines": {
+      "description": "Lines for shipping associated with the charge",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual shipping line item",
         "type": "object"
       }
     },
     "shopify_order_id": {
+      "description": "Unique identifier of the Shopify order",
       "type": ["null", "string"]
     },
     "shopify_variant_id_not_found": {
+      "description": "Flag indicating if the Shopify variant ID was not found",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the charge",
       "type": ["null", "string"]
     },
     "subtotal_price": {
+      "description": "Subtotal price of the charge",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "Tags associated with the charge",
       "type": ["null", "string"]
     },
     "tax_lines": {
+      "description": "Tax lines associated with the charge",
       "type": ["null", "string"]
     },
     "total_discounts": {
+      "description": "Total discounts applied to the charge",
       "type": ["null", "string"]
     },
     "total_line_items_price": {
+      "description": "Total price of all line items in the charge",
       "type": ["null", "string"]
     },
     "total_price": {
+      "description": "Total price of the charge",
       "type": ["null", "string"]
     },
     "total_refunds": {
+      "description": "Total amount of refunds for the charge",
       "type": ["null", "string"]
     },
     "total_tax": {
+      "description": "Total tax amount for the charge",
       "type": ["null", "string"]
     },
     "total_weight": {
+      "description": "Total weight of the charge",
       "type": ["null", "integer"]
     },
     "transaction_id": {
+      "description": "Unique identifier of the transaction",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of the charge",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Date and time when the charge was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

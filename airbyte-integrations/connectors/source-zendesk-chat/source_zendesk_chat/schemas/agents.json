@@ -3,61 +3,78 @@
   "type": "object",
   "properties": {
     "create_date": {
+      "description": "Date and time when the agent account was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "departments": {
+      "description": "List of departments the agent is associated with.",
       "items": {
         "type": ["integer"]
       },
       "type": ["null", "array"]
     },
     "display_name": {
+      "description": "Display name of the agent.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "Email address of the agent.",
       "type": ["null", "string"]
     },
     "enabled": {
+      "description": "Flag indicating if the agent account is enabled.",
       "type": ["null", "boolean"]
     },
     "enabled_departments": {
+      "description": "List of departments where the agent is enabled.",
       "type": ["null", "array"]
     },
     "first_name": {
+      "description": "First name of the agent.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the agent.",
       "type": ["integer"]
     },
     "last_login": {
+      "description": "Date and time of the agent's last login.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name of the agent.",
       "type": ["null", "string"]
     },
     "login_count": {
+      "description": "Total count of logins by the agent.",
       "type": ["null", "integer"]
     },
     "role_id": {
+      "description": "Identifier for the role assigned to the agent.",
       "type": ["null", "integer"]
     },
     "roles": {
+      "description": "Roles assigned to the agent.",
       "properties": {
         "administrator": {
+          "description": "Flag indicating if the agent has administrator role.",
           "type": ["boolean"]
         },
         "owner": {
+          "description": "Flag indicating if the agent has owner role.",
           "type": ["boolean"]
         }
       },
       "type": ["null", "object"]
     },
     "scope": {
+      "description": "Scope of access for the agent.",
       "type": ["null", "string"]
     },
     "skills": {
+      "description": "List of skills possessed by the agent.",
       "items": {
         "type": "integer"
       },

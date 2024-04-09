@@ -3,69 +3,90 @@
   "type": "object",
   "properties": {
     "available": {
+      "description": "Indicates the availability status of the agent.",
       "type": ["boolean", "null"]
     },
     "occasional": {
+      "description": "Indicates if the agent is an occasional contributor.",
       "type": ["boolean", "null"]
     },
     "id": {
+      "description": "Unique identifier for the agent.",
       "type": ["integer", "null"]
     },
     "signature": {
+      "description": "Email signature used by the agent.",
       "type": ["string", "null"]
     },
     "ticket_scope": {
+      "description": "Scope or access level of the agent for tickets.",
       "type": ["integer", "null"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the agent account was created.",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "Timestamp indicating when the agent information was last updated.",
       "type": ["string", "null"]
     },
     "last_active_at": {
+      "description": "Timestamp indicating when the agent was last active.",
       "type": ["string", "null"]
     },
     "available_since": {
+      "description": "Timestamp indicating when the agent became available.",
       "type": ["string", "null"]
     },
     "type": {
+      "description": "Type or role of the agent within the support system.",
       "type": ["string", "null"]
     },
     "contact": {
       "type": ["null", "object"],
       "properties": {
         "active": {
+          "description": "Indicates if the contact is currently active.",
           "type": ["boolean", "null"]
         },
         "email": {
+          "description": "Email address of the contact.",
           "type": ["string", "null"]
         },
         "job_title": {
+          "description": "Title or role of the contact within the organization.",
           "type": ["string", "null"]
         },
         "language": {
+          "description": "Language preference of the contact.",
           "type": ["string", "null"]
         },
         "last_login_at": {
+          "description": "Timestamp of the contact's last login.",
           "type": ["string", "null"]
         },
         "mobile": {
+          "description": "Mobile phone number of the contact.",
           "type": ["string", "null"]
         },
         "name": {
+          "description": "Name of the contact.",
           "type": ["string", "null"]
         },
         "phone": {
+          "description": "Phone number of the contact.",
           "type": ["string", "null"]
         },
         "time_zone": {
+          "description": "Time zone setting for the contact.",
           "type": ["string", "null"]
         },
         "created_at": {
+          "description": "Timestamp indicating when the contact was created.",
           "type": ["string", "null"]
         },
         "updated_at": {
+          "description": "Timestamp indicating when the contact was last updated.",
           "type": ["string", "null"]
         }
       }

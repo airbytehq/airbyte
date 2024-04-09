@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "A brief description of the solution category.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the solution category.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the solution category.",
       "type": ["null", "string"]
     },
     "visible_in_portals": {
+      "description": "Indicates the portals where the solution category is visible.",
       "type": ["null", "array"],
       "items": {
+        "description": "Portal ID where the category is visible.",
         "type": ["null", "integer"]
       }
     },
     "created_at": {
+      "description": "The date and time when the solution category was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the solution category was last updated.",
       "type": ["null", "string"]
     }
   }

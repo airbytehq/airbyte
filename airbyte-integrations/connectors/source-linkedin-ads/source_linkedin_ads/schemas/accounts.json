@@ -5,61 +5,78 @@
   "additionalProperties": true,
   "properties": {
     "test": {
+      "description": "Flag indicating if the account is in a test mode.",
       "type": ["null", "boolean"]
     },
     "notifiedOnCreativeRejection": {
+      "description": "Flag for notifications on creative rejection.",
       "type": ["null", "boolean"]
     },
     "notifiedOnNewFeaturesEnabled": {
+      "description": "Flag for notifications on new features being enabled.",
       "type": ["null", "boolean"]
     },
     "notifiedOnEndOfCampaign": {
+      "description": "Flag for notifications on the end of campaign.",
       "type": ["null", "boolean"]
     },
     "servingStatuses": {
+      "description": "The serving statuses associated with the account.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "notifiedOnCampaignOptimization": {
+      "description": "Flag for notifications on campaign optimization.",
       "type": ["null", "boolean"]
     },
     "type": {
+      "description": "The type or category of the account.",
       "type": ["null", "string"]
     },
     "version": {
+      "description": "The version information related to the account.",
       "type": ["null", "object"],
       "properties": {
         "versionTag": {
+          "description": "The version tag associated with the account.",
           "type": ["null", "string"]
         }
       }
     },
     "reference": {
+      "description": "A reference identifier for the account.",
       "type": ["null", "string"]
     },
     "notifiedOnCreativeApproval": {
+      "description": "Flag for notifications on creative approval.",
       "type": ["null", "boolean"]
     },
     "created": {
+      "description": "The timestamp indicating when the account was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModified": {
+      "description": "The timestamp of the last modification made to the account.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "The name of the account.",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency used for financial transactions in the account.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the account.",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The status of the account.",
       "type": ["null", "string"]
     }
   }

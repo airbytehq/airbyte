@@ -3,38 +3,48 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the task assignment",
       "type": ["null", "integer"]
     },
     "billable": {
+      "description": "Indicates if the task assignment is billable or not",
       "type": ["null", "boolean"]
     },
     "is_active": {
+      "description": "Indicates if the task assignment is currently active",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The date and time when the task assignment was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the task assignment was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "hourly_rate": {
+      "description": "The hourly rate for this task assignment",
       "type": ["null", "number"]
     },
     "budget": {
+      "description": "The budget allocated for this task assignment",
       "type": ["null", "string"]
     },
     "project": {
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the project",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the project",
           "type": ["null", "string"]
         },
         "code": {
+          "description": "The code assigned to the project",
           "type": ["null", "string"]
         }
       }
@@ -43,9 +53,11 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "Unique identifier for the task",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the task",
           "type": ["null", "string"]
         }
       }

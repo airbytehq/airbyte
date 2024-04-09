@@ -2,56 +2,73 @@
   "type": "object",
   "properties": {
     "page_id": {
+      "description": "The unique identifier for the user's Instagram page.",
       "type": ["null", "string"]
     },
     "business_account_id": {
+      "description": "The unique identifier for the user's business account.",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "The date and time the insights data was fetched.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "follower_count": {
+      "description": "The total number of followers for the user's account.",
       "type": ["null", "integer"]
     },
     "get_directions_clicks": {
+      "description": "The number of clicks to get directions to the user's business location.",
       "type": ["null", "integer"]
     },
     "impressions": {
+      "description": "The total number of times the user's content has been displayed.",
       "type": ["null", "integer"]
     },
     "phone_call_clicks": {
+      "description": "The number of clicks to call the user's business phone number.",
       "type": ["null", "integer"]
     },
     "profile_views": {
+      "description": "The total number of views on the user's profile.",
       "type": ["null", "integer"]
     },
     "reach": {
+      "description": "The total number of unique accounts that have seen the user's content.",
       "type": ["null", "integer"]
     },
     "text_message_clicks": {
+      "description": "The number of clicks to send text messages to the user.",
       "type": ["null", "integer"]
     },
     "website_clicks": {
+      "description": "The number of clicks on the website link in the user's profile.",
       "type": ["null", "integer"]
     },
     "impressions_week": {
+      "description": "The total number of impressions in the last week.",
       "type": ["null", "integer"]
     },
     "reach_week": {
+      "description": "The total reach in the last week.",
       "type": ["null", "integer"]
     },
     "impressions_days_28": {
+      "description": "The total number of impressions in the last 28 days.",
       "type": ["null", "integer"]
     },
     "reach_days_28": {
+      "description": "The total reach in the last 28 days.",
       "type": ["null", "integer"]
     },
     "online_followers": {
+      "description": "The number of followers who are currently online.",
       "type": ["null", "object"]
     },
     "email_contacts": {
+      "description": "The number of email contacts associated with the user's account.",
       "type": ["null", "integer"]
     }
   }

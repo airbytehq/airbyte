@@ -3,91 +3,119 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of this field.",
       "type": ["null", "integer"]
     },
     "default": {
+      "description": "The default value for this field if not specified.",
       "type": ["null", "boolean"]
     },
     "description": {
+      "description": "The description or additional information about this field.",
       "type": ["null", "string"]
     },
     "label": {
+      "description": "The label or name of this field.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The internal name or identifier of this field.",
       "type": ["null", "string"]
     },
     "position": {
+      "description": "The position or order of this field in the UI.",
       "type": ["null", "integer"]
     },
     "required_for_closure": {
+      "description": "Specifies whether this field is required for closing a ticket.",
       "type": ["null", "boolean"]
     },
     "type": {
+      "description": "The data type or format of this field.",
       "type": ["null", "string"]
     },
     "required_for_agents": {
+      "description": "Indicates whether this field is required for agents.",
       "type": ["null", "boolean"]
     },
     "required_for_customers": {
+      "description": "Denotes whether this field is required for customers.",
       "type": ["null", "boolean"]
     },
     "label_for_customers": {
+      "description": "The label of this field as displayed to customers.",
       "type": ["null", "string"]
     },
     "customers_can_edit": {
+      "description": "Specifies whether customers are allowed to edit this field.",
       "type": ["null", "boolean"]
     },
     "displayed_to_customers": {
+      "description": "Specifies whether this field is displayed to customers.",
       "type": ["null", "boolean"]
     },
     "portal_cc": {
+      "description": "Specifies whether portal CC is enabled for this field.",
       "type": ["null", "boolean"]
     },
     "portal_cc_to": {
+      "description": "The portal email address(es) to CC for this field.",
       "type": ["null", "string"]
     },
     "choices": {
+      "description": "Available choices/options for this field.",
       "type": ["null", "array", "object"]
     },
     "is_fsm": {
+      "description": "Denotes whether this field is related to Field Service Management (FSM).",
       "type": ["null", "boolean"]
     },
     "field_update_in_progress": {
+      "description": "Indicates if there is an ongoing update in progress for this field.",
       "type": ["null", "boolean"]
     },
     "dependent_fields": {
       "properties": {
         "id": {
+          "description": "The unique identifier of this dependent field.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of this dependent field.",
           "type": ["null", "string"]
         },
         "label": {
+          "description": "The label of this dependent field.",
           "type": ["null", "string"]
         },
         "label_for_customers": {
+          "description": "The label of this dependent field as displayed to customers.",
           "type": ["null", "string"]
         },
         "level": {
+          "description": "The level of this dependent field.",
           "type": ["null", "integer"]
         },
         "ticket_field_id": {
+          "description": "The identifier of the ticket field associated with this dependent field.",
           "type": ["null", "integer"]
         },
         "created_at": {
+          "description": "The date and time when this dependent field was created.",
           "type": ["null", "string"]
         },
         "updated_at": {
+          "description": "The date and time when this dependent field was last updated.",
           "type": ["null", "string"]
         }
       }
     },
     "created_at": {
+      "description": "The date and time when this field was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when this field was last updated.",
       "type": ["null", "string"]
     }
   }

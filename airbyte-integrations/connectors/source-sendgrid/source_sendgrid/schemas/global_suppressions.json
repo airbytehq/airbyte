@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "created": {
+      "description": "Date and time when the email address was added to the global suppressions list",
       "type": "integer"
     },
     "email": {
+      "description": "The email address that has been globally suppressed from receiving emails",
       "type": "string"
     }
   }

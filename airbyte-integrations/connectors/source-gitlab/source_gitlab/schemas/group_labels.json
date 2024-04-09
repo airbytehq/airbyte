@@ -3,36 +3,47 @@
   "type": "object",
   "properties": {
     "group_id": {
+      "description": "The unique identifier of the group to which the label belongs.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "The unique identifier of the group label.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the group label.",
       "type": ["null", "string"]
     },
     "color": {
+      "description": "The color associated with the group label for visual identification.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The short description of the group label.",
       "type": ["null", "string"]
     },
     "description_html": {
+      "description": "The HTML formatted description of the group label.",
       "type": ["null", "string"]
     },
     "text_color": {
+      "description": "The text color used for the group label.",
       "type": ["null", "string"]
     },
     "subscribed": {
+      "description": "Indicates if the user is subscribed to notifications for this group label.",
       "type": ["null", "boolean"]
     },
     "open_issues_count": {
+      "description": "The total number of open issues in the group label.",
       "type": ["null", "integer"]
     },
     "closed_issues_count": {
+      "description": "The total number of closed issues in the group label.",
       "type": ["null", "integer"]
     },
     "open_merge_requests_count": {
+      "description": "The total number of open merge requests in the group label.",
       "type": ["null", "integer"]
     }
   }

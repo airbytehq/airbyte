@@ -4,12 +4,15 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the discipline",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the discipline",
       "type": ["null", "string"]
     },
     "priority": {
+      "description": "Priority level of the discipline",
       "type": ["null", "integer"]
     }
   }

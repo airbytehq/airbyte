@@ -2,38 +2,49 @@
   "type": "object",
   "properties": {
     "shared": {
+      "description": "Flag indicating if the audience is shared with others",
       "type": ["null", "boolean"]
     },
     "is_creator": {
+      "description": "Flag indicating if the audience creator is the user",
       "type": ["null", "boolean"]
     },
     "audience_id": {
+      "description": "Unique identifier for the audience",
       "type": ["null", "string"]
     },
     "cover_num": {
+      "description": "Number of audience members covered",
       "type": ["null", "integer"]
     },
     "create_time": {
+      "description": "Timestamp indicating when the audience was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "is_valid": {
+      "description": "Flag indicating if the audience data is valid",
       "type": ["null", "boolean"]
     },
     "is_expiring": {
+      "description": "Flag indicating if the audience data is expiring soon",
       "type": ["null", "boolean"]
     },
     "expired_time": {
+      "description": "Timestamp indicating when the audience data expires",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "Name of the audience",
       "type": ["null", "string"]
     },
     "audience_type": {
+      "description": "Type of audience (e.g., demographic, interest-based)",
       "type": ["null", "string"]
     },
     "calculate_type": {
+      "description": "Method used to calculate audience data",
       "type": ["null", "string"]
     }
   }

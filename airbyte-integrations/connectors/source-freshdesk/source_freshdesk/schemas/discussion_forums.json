@@ -3,36 +3,46 @@
   "type": "object",
   "properties": {
     "company_ids": {
+      "description": "An array of unique identifiers for the companies associated with the discussion forum.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "description": {
+      "description": "A brief overview or summary of the discussion forum.",
       "type": ["null", "string"]
     },
     "forum_category_id": {
+      "description": "The unique identifier for the category of the discussion forum.",
       "type": ["null", "integer"]
     },
     "forum_type": {
+      "description": "The type or classification of the discussion forum, such as Q&A, Announcement, etc.",
       "type": ["null", "integer"]
     },
     "forum_visibility": {
+      "description": "The visibility settings of the discussion forum, such as public, private, or restricted.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "A unique identifier for the discussion forum.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or title of the discussion forum.",
       "type": ["null", "string"]
     },
     "position": {
+      "description": "The order or position of the discussion forum in a list or hierarchy.",
       "type": ["null", "integer"]
     },
     "posts_count": {
+      "description": "The total count of posts within the discussion forum.",
       "type": ["null", "integer"]
     },
     "topics_count": {
+      "description": "The total count of topics or threads within the discussion forum.",
       "type": ["null", "integer"]
     }
   }

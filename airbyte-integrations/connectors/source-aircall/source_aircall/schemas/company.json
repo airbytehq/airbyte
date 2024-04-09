@@ -5,12 +5,15 @@
   "type": "object",
   "properties": {
     "name": {
+      "description": "The name of the company.",
       "type": ["null", "string"]
     },
     "users_count": {
+      "description": "The count of users or employees within the company.",
       "type": ["null", "number"]
     },
     "numbers_count": {
+      "description": "The count of phone numbers associated with the company.",
       "type": ["null", "number"]
     }
   }

@@ -3,33 +3,43 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the satisfaction rating entry.",
       "type": ["null", "integer"]
     },
     "survey_id": {
+      "description": "The unique identifier of the survey associated with the satisfaction rating.",
       "type": ["null", "integer"]
     },
     "user_id": {
+      "description": "The unique identifier of the user who provided the satisfaction rating.",
       "type": ["null", "integer"]
     },
     "agent_id": {
+      "description": "The unique identifier of the agent who received the satisfaction rating.",
       "type": ["null", "integer"]
     },
     "feedback": {
+      "description": "The feedback provided by the user for the interaction with the agent.",
       "type": ["null", "string"]
     },
     "group_id": {
+      "description": "The unique identifier of the group to which the agent belongs.",
       "type": ["null", "integer"]
     },
     "ticket_id": {
+      "description": "The unique identifier of the ticket related to the satisfaction rating.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The timestamp when the satisfaction rating was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp when the satisfaction rating was last updated.",
       "type": ["null", "string"]
     },
     "ratings": {
+      "description": "The ratings provided by the user to indicate satisfaction level.",
       "type": ["null", "object"]
     }
   }

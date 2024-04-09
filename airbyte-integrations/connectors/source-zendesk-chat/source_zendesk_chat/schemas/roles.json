@@ -3,57 +3,75 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "Description of the role.",
       "type": ["null", "string"]
     },
     "enabled": {
+      "description": "Indicates if the role is currently enabled.",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "Unique identifier for the role.",
       "type": ["integer"]
     },
     "members_count": {
+      "description": "Number of members assigned to the role.",
       "type": ["integer"]
     },
     "name": {
+      "description": "Name of the role.",
       "type": ["null", "string"]
     },
     "permissions": {
+      "description": "Permissions assigned to the role.",
       "type": ["null", "object"],
       "properties": {
         "visitors_seen": {
+          "description": "Permission to see visitors.",
           "type": ["null", "string"]
         },
         "proactive_chatting": {
+          "description": "Permission for proactive chatting.",
           "type": ["null", "string"]
         },
         "edit_visitor_information": {
+          "description": "Permission to edit visitor information.",
           "type": ["null", "boolean"]
         },
         "edit_visitor_notes": {
+          "description": "Permission to edit visitor notes.",
           "type": ["null", "boolean"]
         },
         "view_past_chats": {
+          "description": "Permission to view past chats.",
           "type": ["null", "string"]
         },
         "edit_chat_tags": {
+          "description": "Permission to edit chat tags.",
           "type": ["null", "boolean"]
         },
         "manage_bans": {
+          "description": "Permission to manage bans.",
           "type": ["null", "string"]
         },
         "access_analytics": {
+          "description": "Permission to access analytics.",
           "type": ["null", "string"]
         },
         "view_monitor": {
+          "description": "Permission to view monitor.",
           "type": ["null", "string"]
         },
         "edit_department_agents": {
+          "description": "Permission to edit department agents.",
           "type": ["null", "string"]
         },
         "set_agent_chat_limit": {
+          "description": "Permission to set agent chat limit.",
           "type": ["null", "string"]
         },
         "manage_shortcuts": {
+          "description": "Permission to manage shortcuts.",
           "type": ["null", "string"]
         }
       }

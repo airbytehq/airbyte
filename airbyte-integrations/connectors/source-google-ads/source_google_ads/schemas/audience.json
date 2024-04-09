@@ -3,30 +3,39 @@
   "type": "object",
   "properties": {
     "customer.id": {
+      "description": "Unique identifier for the customer associated with the audience segment.",
       "type": ["null", "integer"]
     },
     "audience.description": {
+      "description": "Description of the audience segment, providing more details about the specific audience group.",
       "type": ["null", "string"]
     },
     "audience.dimensions": {
+      "description": "Dimensions or attributes associated with the audience segment.",
       "type": ["null", "array"],
       "items": {
+        "description": "An individual dimension or attribute within the audience segment.",
         "type": "string"
       }
     },
     "audience.exclusion_dimension": {
+      "description": "Dimension used to exclude specific criteria from targeting this audience.",
       "type": ["null", "string"]
     },
     "audience.id": {
+      "description": "Unique identifier for the audience segment.",
       "type": ["null", "integer"]
     },
     "audience.name": {
+      "description": "Name or title given to the audience segment.",
       "type": ["null", "string"]
     },
     "audience.resource_name": {
+      "description": "Resource name associated with the audience segment.",
       "type": ["null", "string"]
     },
     "audience.status": {
+      "description": "Status of the audience segment indicating if it is active or inactive.",
       "type": ["null", "string"]
     }
   }

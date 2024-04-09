@@ -3,39 +3,51 @@
   "type": "object",
   "properties": {
     "billable": {
+      "description": "Indicates if the time spent is billable or not.",
       "type": ["boolean", "null"]
     },
     "note": {
+      "description": "Additional notes or comments related to this time entry.",
       "type": ["string", "null"]
     },
     "id": {
+      "description": "The unique identifier of this time entry.",
       "type": ["integer", "null"]
     },
     "timer_running": {
+      "description": "Indicates if a timer is currently running for this time entry.",
       "type": ["boolean", "null"]
     },
     "agent_id": {
+      "description": "The unique identifier of the agent assigned to this time entry.",
       "type": ["integer", "null"]
     },
     "ticket_id": {
+      "description": "The unique identifier of the ticket associated with this time entry.",
       "type": ["integer", "null"]
     },
     "company_id": {
+      "description": "The unique identifier of the company associated with this time entry.",
       "type": ["integer", "null"]
     },
     "time_spent": {
+      "description": "The amount of time spent on the ticket in hours and minutes.",
       "type": ["string", "null"]
     },
     "executed_at": {
+      "description": "The date and time when this time entry was executed or completed.",
       "type": ["string", "null"]
     },
     "start_time": {
+      "description": "The start date and time of this time entry.",
       "type": ["string", "null"]
     },
     "created_at": {
+      "description": "The date and time when this time entry was created.",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "The date and time when this time entry was last updated.",
       "type": ["string", "null"]
     }
   }

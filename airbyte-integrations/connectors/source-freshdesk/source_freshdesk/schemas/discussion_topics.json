@@ -3,48 +3,63 @@
   "type": "object",
   "properties": {
     "forum_id": {
+      "description": "The unique identifier of the forum where the discussion topic is posted.",
       "type": ["null", "integer"]
     },
     "hits": {
+      "description": "The number of times the discussion topic has been viewed.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "The unique identifier of the discussion topic.",
       "type": ["null", "integer"]
     },
     "locked": {
+      "description": "Indicates if the discussion topic is locked and no further replies can be added.",
       "type": ["null", "boolean"]
     },
     "merged_topic_id": {
+      "description": "The ID of the topic to which this topic is merged if it's a merged topic.",
       "type": ["null", "integer"]
     },
     "message": {
+      "description": "The main content or message of the discussion topic.",
       "type": ["null", "string"]
     },
     "posts_count": {
+      "description": "The total number of posts or replies in the discussion topic.",
       "type": ["null", "integer"]
     },
     "replied_by": {
+      "description": "The user or agent who last replied to the discussion topic.",
       "type": ["null", "integer"]
     },
     "stamp_type": {
+      "description": "Type of stamp applied to the discussion topic.",
       "type": ["null", "integer"]
     },
     "sticky": {
+      "description": "Indicates if the discussion topic is pinned or sticky in the forum.",
       "type": ["null", "boolean"]
     },
     "title": {
+      "description": "The title or subject of the discussion topic.",
       "type": ["null", "string"]
     },
     "user_id": {
+      "description": "The unique identifier of the user who created the discussion topic.",
       "type": ["null", "integer"]
     },
     "user_votes": {
+      "description": "The number of votes or likes received by the discussion topic.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The timestamp when the discussion topic was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp when the discussion topic was last updated.",
       "type": ["null", "string"]
     }
   }

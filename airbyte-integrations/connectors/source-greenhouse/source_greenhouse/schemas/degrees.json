@@ -3,15 +3,19 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the greenhouse record",
       "type": "integer"
     },
     "name": {
+      "description": "Name of the degrees data",
       "type": "string"
     },
     "priority": {
+      "description": "Priority level of the degrees data for sorting",
       "type": "integer"
     },
     "external_id": {
+      "description": "Unique identifier for the greenhouse record in an external system",
       "type": ["null", "string"]
     }
   }

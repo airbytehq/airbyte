@@ -70,17 +70,21 @@
       "type": ["null", "integer"]
     },
     "referenced_workflows": {
+      "description": "List of workflows referenced by the workflow runs",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "path": {
+            "description": "Path of the referenced workflow file",
             "type": "string"
           },
           "sha": {
+            "description": "SHA hash of the referenced workflow",
             "type": "string"
           },
           "ref": {
+            "description": "Type of reference to the workflow",
             "type": "string"
           }
         }

@@ -3,57 +3,75 @@
   "type": "object",
   "properties": {
     "body": {
+      "description": "Content or message body of the conversation.",
       "type": ["string", "null"]
     },
     "body_text": {
+      "description": "Text-only version of the message body.",
       "type": ["string", "null"]
     },
     "id": {
+      "description": "Unique identifier for the conversation.",
       "type": ["integer", "null"]
     },
     "incoming": {
+      "description": "Flag indicating if the conversation is incoming.",
       "type": ["boolean", "null"]
     },
     "private": {
+      "description": "Flag indicating if the conversation is private.",
       "type": ["boolean", "null"]
     },
     "user_id": {
+      "description": "User ID associated with the conversation.",
       "type": ["integer", "null"]
     },
     "support_email": {
+      "description": "Support email address associated with the conversation.",
       "type": ["string", "null"]
     },
     "source": {
+      "description": "Source of the conversation.",
       "type": ["integer", "null"]
     },
     "category": {
+      "description": "Category to which the conversation belongs.",
       "type": ["integer", "null"]
     },
     "to_emails": {
+      "description": "List of recipient email addresses.",
       "type": ["array", "null"]
     },
     "from_email": {
+      "description": "Email address of the sender of the conversation.",
       "type": ["string", "null"]
     },
     "cc_emails": {
+      "description": "List of CC emails involved in the conversation.",
       "type": ["array", "null"]
     },
     "bcc_emails": {
+      "description": "List of BCC emails involved in the conversation.",
       "type": ["array", "null"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the conversation was created.",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "Timestamp indicating when the conversation was last updated.",
       "type": ["string", "null"]
     },
     "attachments": {
+      "description": "Attachments related to the conversation.",
       "type": ["array", "null"]
     },
     "ticket_id": {
+      "description": "ID of the ticket related to the conversation.",
       "type": ["integer", "null"]
     },
     "source_additional_info": {
+      "description": "Additional info related to the source of the conversation.",
       "type": ["object", "null"]
     }
   }

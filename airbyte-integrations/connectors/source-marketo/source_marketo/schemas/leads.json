@@ -3,277 +3,367 @@
   "additionalProperties": true,
   "properties": {
     "company": {
+      "description": "The name of the company associated with the lead.",
       "type": ["string", "null"]
     },
     "site": {
+      "description": "The website associated with the lead.",
       "type": ["string", "null"]
     },
     "billingStreet": {
+      "description": "The street address for billing.",
       "type": ["string", "null"]
     },
     "billingCity": {
+      "description": "The city for billing address.",
       "type": ["string", "null"]
     },
     "billingState": {
+      "description": "The state for billing address.",
       "type": ["string", "null"]
     },
     "billingCountry": {
+      "description": "The country for billing address.",
       "type": ["string", "null"]
     },
     "billingPostalCode": {
+      "description": "The postal code for billing address.",
       "type": ["string", "null"]
     },
     "website": {
+      "description": "The website associated with the lead.",
       "type": ["string", "null"]
     },
     "mainPhone": {
+      "description": "The main phone number of the lead.",
       "type": ["string", "null"]
     },
     "annualRevenue": {
+      "description": "The annual revenue of the company associated with the lead.",
       "type": ["number", "null"]
     },
     "numberOfEmployees": {
+      "description": "The number of employees in the company associated with the lead.",
       "type": ["integer", "null"]
     },
     "industry": {
+      "description": "The industry of the company associated with the lead.",
       "type": ["string", "null"]
     },
     "sicCode": {
+      "description": "The Standard Industrial Classification (SIC) code.",
       "type": ["string", "null"]
     },
     "mktoCompanyNotes": {
+      "description": "Notes specific to the company in Marketo.",
       "type": ["string", "null"]
     },
     "externalCompanyId": {
+      "description": "The external company ID associated with the lead.",
       "type": ["string", "null"]
     },
     "id": {
+      "description": "The unique identifier of the lead.",
       "type": ["integer", "null"]
     },
     "mktoName": {
+      "description": "The name of the lead in Marketo.",
       "type": ["string", "null"]
     },
     "personType": {
+      "description": "The type of person, e.g., individual or corporate entity.",
       "type": ["string", "null"]
     },
     "mktoIsPartner": {
+      "description": "Indicates if the lead is a partner in Marketo.",
       "type": ["boolean", "null"]
     },
     "isLead": {
+      "description": "Indicates if the record is a lead.",
       "type": ["boolean", "null"]
     },
     "mktoIsCustomer": {
+      "description": "Indicates if the lead is a customer in Marketo.",
       "type": ["boolean", "null"]
     },
     "isAnonymous": {
+      "description": "Indicates if the lead is anonymous.",
       "type": ["boolean", "null"]
     },
     "salutation": {
+      "description": "The salutation or form of address for the lead.",
       "type": ["string", "null"]
     },
     "firstName": {
+      "description": "The first name of the lead.",
       "type": ["string", "null"]
     },
     "middleName": {
+      "description": "The middle name of the lead.",
       "type": ["string", "null"]
     },
     "lastName": {
+      "description": "The last name of the lead.",
       "type": ["string", "null"]
     },
     "email": {
+      "description": "The email address of the lead.",
       "type": ["string", "null"]
     },
     "phone": {
+      "description": "The phone number of the lead.",
       "type": ["string", "null"]
     },
     "mobilePhone": {
+      "description": "The mobile phone number of the lead.",
       "type": ["string", "null"]
     },
     "fax": {
+      "description": "The fax number of the lead.",
       "type": ["string", "null"]
     },
     "title": {
+      "description": "The job title of the lead.",
       "type": ["string", "null"]
     },
     "contactCompany": {
+      "description": "The name of the contact person's company.",
       "type": ["string", "null"]
     },
     "dateOfBirth": {
+      "description": "The date of birth of the lead.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "address": {
+      "description": "The complete address of the lead.",
       "type": ["string", "null"]
     },
     "city": {
+      "description": "The city of the lead.",
       "type": ["string", "null"]
     },
     "state": {
+      "description": "The state of the lead.",
       "type": ["string", "null"]
     },
     "country": {
+      "description": "The country of the lead.",
       "type": ["string", "null"]
     },
     "postalCode": {
+      "description": "The postal code of the lead.",
       "type": ["string", "null"]
     },
     "personTimeZone": {
+      "description": "The time zone of the person.",
       "type": ["string", "null"]
     },
     "originalSourceType": {
+      "description": "The original source type of the lead data.",
       "type": ["string", "null"]
     },
     "originalSourceInfo": {
+      "description": "The original source information of the lead.",
       "type": ["string", "null"]
     },
     "registrationSourceType": {
+      "description": "The registration source type.",
       "type": ["string", "null"]
     },
     "registrationSourceInfo": {
+      "description": "The registration source information.",
       "type": ["string", "null"]
     },
     "originalSearchEngine": {
+      "description": "The original search engine used by the lead.",
       "type": ["string", "null"]
     },
     "originalSearchPhrase": {
+      "description": "The original search phrase used by the lead.",
       "type": ["string", "null"]
     },
     "originalReferrer": {
+      "description": "The original referrer of the lead.",
       "type": ["string", "null"]
     },
     "emailInvalid": {
+      "description": "Indicates if the email address is invalid.",
       "type": ["boolean", "null"]
     },
     "emailInvalidCause": {
+      "description": "The reason for email address being invalid.",
       "type": ["string", "null"]
     },
     "unsubscribed": {
+      "description": "Indicates if the lead is unsubscribed.",
       "type": ["boolean", "null"]
     },
     "unsubscribedReason": {
+      "description": "The reason for lead being unsubscribed.",
       "type": ["string", "null"]
     },
     "doNotCall": {
+      "description": "Indicates if the lead should not be contacted.",
       "type": ["boolean", "null"]
     },
     "mktoDoNotCallCause": {
+      "description": "The reason for the lead being in do not call list in Marketo.",
       "type": ["string", "null"]
     },
     "doNotCallReason": {
+      "description": "The reason for not contacting the lead.",
       "type": ["string", "null"]
     },
     "marketingSuspended": {
+      "description": "Indicates if marketing is suspended for the lead.",
       "type": ["boolean", "null"]
     },
     "marketingSuspendedCause": {
+      "description": "The reason for marketing suspension.",
       "type": ["string", "null"]
     },
     "blackListed": {
+      "description": "Indicates if the lead is blacklisted.",
       "type": ["boolean", "null"]
     },
     "blackListedCause": {
+      "description": "The reason for lead being blacklisted.",
       "type": ["string", "null"]
     },
     "mktoPersonNotes": {
+      "description": "Notes specific to the person (lead) in Marketo.",
       "type": ["string", "null"]
     },
     "anonymousIP": {
+      "description": "The anonymous IP address of the lead.",
       "type": ["string", "null"]
     },
     "inferredCompany": {
+      "description": "The inferred company based on lead data.",
       "type": ["string", "null"]
     },
     "inferredCountry": {
+      "description": "The inferred country based on lead data.",
       "type": ["string", "null"]
     },
     "inferredCity": {
+      "description": "The inferred city based on lead data.",
       "type": ["string", "null"]
     },
     "inferredStateRegion": {
+      "description": "The inferred state region based on lead data.",
       "type": ["string", "null"]
     },
     "inferredPostalCode": {
+      "description": "The inferred postal code based on lead data.",
       "type": ["string", "null"]
     },
     "inferredMetropolitanArea": {
+      "description": "The inferred metropolitan area based on lead data.",
       "type": ["string", "null"]
     },
     "inferredPhoneAreaCode": {
+      "description": "The inferred phone area code based on lead data.",
       "type": ["string", "null"]
     },
     "emailSuspended": {
+      "description": "Indicates if the email address is suspended.",
       "type": ["boolean", "null"]
     },
     "emailSuspendedCause": {
+      "description": "The reason for email address being suspended.",
       "type": ["string", "null"]
     },
     "emailSuspendedAt": {
+      "description": "The date and time when the email address was suspended.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "department": {
+      "description": "The department within the company.",
       "type": ["string", "null"]
     },
     "createdAt": {
+      "description": "The date and time when the lead was created.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the lead was last updated.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "cookies": {
+      "description": "Cookies associated with the lead.",
       "type": ["string", "null"]
     },
     "externalSalesPersonId": {
+      "description": "The external sales person ID associated with the lead.",
       "type": ["string", "null"]
     },
     "leadPerson": {
+      "description": "The lead person associated with the lead data.",
       "type": ["string", "null"]
     },
     "leadRole": {
+      "description": "The role of the lead within the company.",
       "type": ["string", "null"]
     },
     "leadSource": {
+      "description": "The source from which the lead was acquired.",
       "type": ["string", "null"]
     },
     "leadStatus": {
+      "description": "The status of the lead.",
       "type": ["string", "null"]
     },
     "leadScore": {
+      "description": "The score assigned to the lead.",
       "type": ["integer", "null"]
     },
     "urgency": {
+      "description": "The urgency level associated with the lead.",
       "type": ["number", "null"]
     },
     "priority": {
+      "description": "The priority level associated with the lead.",
       "type": ["integer", "null"]
     },
     "relativeScore": {
+      "description": "The relative score of the lead.",
       "type": ["integer", "null"]
     },
     "relativeUrgency": {
+      "description": "The relative urgency associated with the lead.",
       "type": ["integer", "null"]
     },
     "rating": {
+      "description": "The rating given to the lead.",
       "type": ["string", "null"]
     },
     "personPrimaryLeadInterest": {
+      "description": "The primary lead interest of the person.",
       "type": ["string", "null"]
     },
     "leadPartitionId": {
+      "description": "The unique identifier for partitioning leads.",
       "type": ["string", "null"]
     },
     "leadRevenueCycleModelId": {
+      "description": "The unique identifier of the revenue cycle model.",
       "type": ["string", "null"]
     },
     "leadRevenueStageId": {
+      "description": "The unique identifier of the revenue stage.",
       "type": ["string", "null"]
     },
     "acquisitionProgramId": {
+      "description": "The unique identifier of the program through which the lead was acquired.",
       "type": ["string", "null"]
     },
     "mktoAcquisitionDate": {
+      "description": "The acquisition date within Marketo.",
       "type": ["string", "null"],
       "format": "date-time"
     }

@@ -1,26 +1,33 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier for the Twilio account associated with this outgoing caller ID.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the outgoing caller ID was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the outgoing caller ID was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-defined friendly name for the outgoing caller ID.",
       "type": ["null", "string"]
     },
     "phone_number": {
+      "description": "The phone number associated with the outgoing caller ID.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier for the outgoing caller ID.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI for accessing detailed information about the outgoing caller ID.",
       "type": ["null", "string"]
     }
   },

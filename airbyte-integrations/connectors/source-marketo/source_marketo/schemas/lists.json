@@ -3,29 +3,37 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the list.",
       "type": ["integer", "null"]
     },
     "name": {
+      "description": "The name of the list.",
       "type": ["string", "null"]
     },
     "createdAt": {
+      "description": "The date and time this list was created.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time this list was last updated.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "description": {
+      "description": "A brief description of the list.",
       "type": ["string", "null"]
     },
     "programName": {
+      "description": "The name of the program associated with this list.",
       "type": ["string", "null"]
     },
     "workspaceName": {
+      "description": "The name of the workspace to which this list belongs.",
       "type": ["string", "null"]
     },
     "workspaceId": {
+      "description": "The unique identifier of the workspace to which this list belongs.",
       "type": ["integer", "null"]
     }
   }

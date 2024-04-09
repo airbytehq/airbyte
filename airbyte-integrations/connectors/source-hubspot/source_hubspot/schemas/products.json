@@ -3,17 +3,21 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier of the product.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The datetime when the product was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The datetime when the product was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates whether the product is archived or active.",
       "type": ["null", "boolean"]
     }
   }

@@ -4,86 +4,110 @@
   "additionalProperties": true,
   "properties": {
     "object": {
+      "description": "The object to which the comment is related.",
       "enum": ["comment"]
     },
     "id": {
+      "description": "The unique identifier of the comment.",
       "type": "string"
     },
     "parent": {
+      "description": "The parent of the comment.",
       "type": "object",
       "properties": {
         "type": {
+          "description": "The type of the parent object.",
           "enum": ["page_id"]
         },
         "page_id": {
+          "description": "The unique identifier of the parent page.",
           "type": "string"
         }
       }
     },
     "discussion_id": {
+      "description": "The unique identifier of the discussion where the comment belongs.",
       "type": "string"
     },
     "created_time": {
+      "description": "The timestamp when the comment was created.",
       "type": "string",
       "format": "date-time"
     },
     "last_edited_time": {
+      "description": "The timestamp when the comment was last edited.",
       "type": "string",
       "format": "date-time"
     },
     "page_last_edited_time": {
+      "description": "The timestamp when the page was last edited.",
       "type": "string",
       "format": "date-time"
     },
     "created_by": {
+      "description": "The user who created the comment.",
       "$ref": "user.json"
     },
     "rich_text": {
+      "description": "The rich text content of the comment.",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "type": {
+            "description": "The type of text.",
             "type": "string"
           },
           "text": {
+            "description": "Text properties.",
             "type": "object",
             "properties": {
               "content": {
+                "description": "The content of the text.",
                 "type": "string"
               },
               "link": {
+                "description": "The link associated with the text.",
                 "type": ["null", "object"]
               }
             }
           },
           "annotations": {
+            "description": "Annotations for text formatting.",
             "type": "object",
             "properties": {
               "bold": {
+                "description": "Indicates if the text is formatted as bold.",
                 "type": "boolean"
               },
               "italic": {
+                "description": "Indicates if the text is formatted as italic.",
                 "type": "boolean"
               },
               "strikethrough": {
+                "description": "Indicates if the text is formatted with strikethrough.",
                 "type": "boolean"
               },
               "underline": {
+                "description": "Indicates if the text is underlined.",
                 "type": "boolean"
               },
               "code": {
+                "description": "Indicates if the text is formatted as code.",
                 "type": "boolean"
               },
               "color": {
+                "description": "The color of the text.",
                 "type": "string"
               }
             }
           },
           "plain_text": {
+            "description": "The plain text content.",
             "type": "string"
           },
           "href": {
+            "description": "The hyperlink reference.",
             "type": ["null", "string"]
           }
         }

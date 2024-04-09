@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "The detailed description of the product.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the product.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the product.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the product was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the product was last updated.",
       "type": ["null", "string"]
     }
   }

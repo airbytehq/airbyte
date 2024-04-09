@@ -3,18 +3,23 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "The description of the discussion category.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the discussion category.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the discussion category.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the discussion category was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp when the discussion category was last updated.",
       "type": ["null", "string"]
     }
   }

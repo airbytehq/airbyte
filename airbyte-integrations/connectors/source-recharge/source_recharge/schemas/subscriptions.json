@@ -3,119 +3,155 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the subscription",
       "type": ["null", "integer"]
     },
     "address_id": {
+      "description": "Unique identifier for the address associated with the subscription",
       "type": ["null", "integer"]
     },
     "analytics_data": {
+      "description": "Data related to analytics tracking for the subscription",
       "type": ["null", "object"]
     },
     "cancellation_reason": {
+      "description": "Reason for canceling the subscription",
       "type": ["null", "string"]
     },
     "cancellation_reason_comments": {
+      "description": "Additional comments related to the cancellation reason",
       "type": ["null", "string"]
     },
     "cancelled_at": {
+      "description": "Date and time when the subscription was canceled",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "charge_interval_frequency": {
+      "description": "Frequency at which charges are applied for the subscription",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the subscription was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "commit_update": {
+      "description": "Indicates if there are pending updates to be committed for the subscription",
       "type": ["null", "boolean"]
     },
     "customer_id": {
+      "description": "Unique identifier for the customer associated with the subscription",
       "type": ["null", "integer"]
     },
     "email": {
+      "description": "Email address associated with the subscription",
       "type": ["null", "string"]
     },
     "expire_after_specific_number_of_charges": {
+      "description": "Number of charges after which the subscription expires",
       "type": ["null", "integer"]
     },
     "has_queued_charges": {
+      "description": "Indicates if there are queued charges for the subscription",
       "type": ["null", "integer"]
     },
     "is_prepaid": {
+      "description": "Indicates if the subscription is prepaid",
       "type": ["null", "boolean"]
     },
     "is_skippable": {
+      "description": "Indicates if the subscription can be skipped",
       "type": ["null", "boolean"]
     },
     "is_swappable": {
+      "description": "Indicates if the subscription can be swapped with another product",
       "type": ["null", "boolean"]
     },
     "max_retries_reached": {
+      "description": "Indicates if maximum retry attempts have been reached for charging the subscription",
       "type": ["null", "integer"]
     },
     "next_charge_scheduled_at": {
+      "description": "Date and time when the next charge is scheduled for the subscription",
       "type": ["null", "string"]
     },
     "order_day_of_month": {
+      "description": "Day of the month for the subscription order",
       "type": ["null", "integer"]
     },
     "order_day_of_week": {
+      "description": "Day of the week for the subscription order",
       "type": ["null", "integer"]
     },
     "order_interval_frequency": {
+      "description": "Frequency at which subscription orders are placed",
       "type": ["null", "string"]
     },
     "order_interval_unit": {
+      "description": "Unit of time used for the subscription order interval",
       "type": ["null", "string"]
     },
     "price": {
+      "description": "Price of the subscription",
       "type": ["null", "number"]
     },
     "product_title": {
+      "description": "Title of the product associated with the subscription",
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Additional properties related to the subscription",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "name": {
+            "description": "Name of the property",
             "type": "string"
           },
           "value": {
+            "description": "Value of the property",
             "type": ["null", "string"]
           }
         }
       }
     },
     "quantity": {
+      "description": "Quantity of the product in the subscription",
       "type": ["null", "integer"]
     },
     "recharge_product_id": {
+      "description": "ID of the product in the Recharge system",
       "type": ["null", "integer"]
     },
     "shopify_product_id": {
+      "description": "ID of the product in the Shopify system",
       "type": ["null", "integer"]
     },
     "shopify_variant_id": {
+      "description": "ID of the product variant in the Shopify system",
       "type": ["null", "integer"]
     },
     "sku": {
+      "description": "Stock Keeping Unit (SKU) of the product in the subscription",
       "type": ["null", "string"]
     },
     "sku_override": {
+      "description": "Override for the product's SKU",
       "type": ["null", "boolean"]
     },
     "status": {
+      "description": "Status of the subscription",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Date and time when the subscription was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "variant_title": {
+      "description": "Title of the product variant in the subscription",
       "type": ["null", "string"]
     }
   }

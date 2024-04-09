@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the user permission data",
       "type": ["null", "integer"]
     },
     "job_id": {
+      "description": "Identifier for the job associated with the user permission data",
       "type": ["null", "integer"]
     },
     "user_role_id": {
+      "description": "Identifier for the user role associated with the user permission data",
       "type": ["null", "integer"]
     }
   }

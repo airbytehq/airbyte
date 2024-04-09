@@ -3,27 +3,65 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "type": { "type": "string" },
-    "id": { "type": "string" },
-    "updated": { "type": ["null", "string"], "format": "date-time" },
+    "type": {
+      "description": "The type of the email template.",
+      "type": "string"
+    },
+    "id": {
+      "description": "The unique identifier of the email template.",
+      "type": "string"
+    },
+    "updated": {
+      "description": "The date and time when information about the email template was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "attributes": {
+      "description": "Attributes related to the email template",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "name": { "type": "string" },
-        "editor_type": { "type": ["null", "string"] },
-        "html": { "type": "string" },
-        "text": { "type": ["null", "string"] },
-        "created": { "type": ["null", "string"], "format": "date-time" },
-        "updated": { "type": ["null", "string"], "format": "date-time" },
-        "company_id": { "type": ["null", "string"] }
+        "name": {
+          "description": "The name of the email template.",
+          "type": "string"
+        },
+        "editor_type": {
+          "description": "The type of editor used to create the email template.",
+          "type": ["null", "string"]
+        },
+        "html": {
+          "description": "The HTML content of the email template.",
+          "type": "string"
+        },
+        "text": {
+          "description": "The plain text content of the email template.",
+          "type": ["null", "string"]
+        },
+        "created": {
+          "description": "The date and time when the email template was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated": {
+          "description": "The date and time when the email template was last updated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "company_id": {
+          "description": "The ID of the company related to the email template.",
+          "type": ["null", "string"]
+        }
       }
     },
     "links": {
+      "description": "Links related to the email template",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "self": { "type": "string" }
+        "self": {
+          "description": "The self-reference link for the email template.",
+          "type": "string"
+        }
       }
     }
   }

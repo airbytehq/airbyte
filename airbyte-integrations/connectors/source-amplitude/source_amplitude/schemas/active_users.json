@@ -3,10 +3,12 @@
   "type": "object",
   "properties": {
     "date": {
+      "description": "The date for which the active user data is reported",
       "type": ["null", "string"],
       "format": "date"
     },
     "statistics": {
+      "description": "The statistics related to the active users for the given date",
       "type": ["null", "object"]
     }
   }

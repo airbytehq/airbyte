@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "change_status.last_change_date_time": {
+      "description": "The date and time when the last change was made.",
       "type": ["null", "string"]
     },
     "change_status.resource_type": {
+      "description": "The type of the resource that was changed.",
       "type": ["null", "string"]
     },
     "change_status.resource_status": {
+      "description": "The status of the resource after the change.",
       "type": ["null", "string"]
     },
     "change_status.resource_name": {
+      "description": "The name of the resource that was changed.",
       "type": ["null", "string"]
     },
     "change_status.ad_group_criterion": {
+      "description": "The status of the ad group criterion that was changed.",
       "type": ["null", "string"]
     },
     "change_status.campaign_criterion": {
+      "description": "The status of the campaign criterion that was changed.",
       "type": ["null", "string"]
     }
   }

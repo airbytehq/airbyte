@@ -3,258 +3,338 @@
   "type": "object",
   "properties": {
     "customer.currency_code": {
+      "description": "The currency code of the customer",
       "type": ["null", "string"]
     },
     "customer.descriptive_name": {
+      "description": "The descriptive name of the customer",
       "type": ["null", "string"]
     },
     "customer.time_zone": {
+      "description": "The time zone of the customer",
       "type": ["null", "string"]
     },
     "metrics.active_view_cpm": {
+      "description": "The active view CPM metric",
       "type": ["null", "number"]
     },
     "metrics.active_view_ctr": {
+      "description": "The active view CTR metric",
       "type": ["null", "number"]
     },
     "metrics.active_view_impressions": {
+      "description": "The number of active view impressions",
       "type": ["null", "integer"]
     },
     "metrics.active_view_measurability": {
+      "description": "The measurability of active view impressions",
       "type": ["null", "number"]
     },
     "metrics.active_view_measurable_cost_micros": {
+      "description": "The cost of meausurable active view impressions in micros",
       "type": ["null", "integer"]
     },
     "metrics.active_view_measurable_impressions": {
+      "description": "The number of measurable active view impressions",
       "type": ["null", "integer"]
     },
     "metrics.active_view_viewability": {
+      "description": "The viewability of active view impressions",
       "type": ["null", "number"]
     },
     "ad_group.id": {
+      "description": "The ID of the ad group",
       "type": ["null", "integer"]
     },
     "ad_group.name": {
+      "description": "The name of the ad group",
       "type": ["null", "string"]
     },
     "ad_group.status": {
+      "description": "The status of the ad group",
       "type": ["null", "string"]
     },
     "segments.ad_network_type": {
+      "description": "The type of ad network",
       "type": ["null", "string"]
     },
     "metrics.all_conversions_from_interactions_rate": {
+      "description": "The rate of conversions from interactions",
       "type": ["null", "number"]
     },
     "metrics.all_conversions_value": {
+      "description": "The total value of all conversions",
       "type": ["null", "number"]
     },
     "metrics.all_conversions": {
+      "description": "The total number of conversions",
       "type": ["null", "number"]
     },
     "metrics.average_cost": {
+      "description": "The average cost per click",
       "type": ["null", "number"]
     },
     "metrics.average_cpc": {
+      "description": "The average cost per click",
       "type": ["null", "number"]
     },
     "metrics.average_cpe": {
+      "description": "The average cost per engagement",
       "type": ["null", "number"]
     },
     "metrics.average_cpm": {
+      "description": "The average cost per thousand impressions",
       "type": ["null", "number"]
     },
     "metrics.average_cpv": {
+      "description": "The average cost per view",
       "type": ["null", "number"]
     },
     "ad_group.base_ad_group": {
+      "description": "The base ad group associated with the keyword",
       "type": ["null", "string"]
     },
     "campaign.base_campaign": {
+      "description": "The base campaign associated with the ad group",
       "type": ["null", "string"]
     },
     "campaign.bidding_strategy": {
+      "description": "The bidding strategy of the campaign",
       "type": ["null", "string"]
     },
     "campaign.bidding_strategy_type": {
+      "description": "The type of bidding strategy used for the campaign",
       "type": ["null", "string"]
     },
     "campaign.id": {
+      "description": "The ID of the campaign",
       "type": ["null", "integer"]
     },
     "campaign.name": {
+      "description": "The name of the campaign",
       "type": ["null", "string"]
     },
     "campaign.status": {
+      "description": "The status of the campaign",
       "type": ["null", "string"]
     },
     "metrics.clicks": {
+      "description": "The total number of clicks",
       "type": ["null", "integer"]
     },
     "metrics.conversions_from_interactions_rate": {
+      "description": "The rate of conversions from interactions",
       "type": ["null", "number"]
     },
     "metrics.conversions_value": {
+      "description": "The total value of conversions",
       "type": ["null", "number"]
     },
     "metrics.conversions": {
+      "description": "The number of conversions",
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
+      "description": "The total cost in micros",
       "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
+      "description": "The cost per all conversions",
       "type": ["null", "number"]
     },
     "metrics.cost_per_conversion": {
+      "description": "The cost per conversion",
       "type": ["null", "number"]
     },
     "ad_group_criterion.effective_cpc_bid_micros": {
+      "description": "The effective CPC bid in micros for the criterion",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpc_bid_source": {
+      "description": "The source of the effective CPC bid",
       "type": ["null", "string"]
     },
     "ad_group_criterion.effective_cpm_bid_micros": {
+      "description": "The effective CPM bid in micros for the criterion",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpm_bid_source": {
+      "description": "The source of the effective CPM bid",
       "type": ["null", "string"]
     },
     "ad_group_criterion.effective_cpv_bid_micros": {
+      "description": "The effective CPV bid in micros for the criterion",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpv_bid_source": {
+      "description": "The source of the effective CPV bid",
       "type": ["null", "string"]
     },
     "ad_group_criterion.keyword.text": {
+      "description": "The text of the keyword",
       "type": ["null", "string"]
     },
     "metrics.cross_device_conversions": {
+      "description": "The number of cross-device conversions",
       "type": ["null", "number"]
     },
     "metrics.ctr": {
+      "description": "The click-through rate",
       "type": ["null", "number"]
     },
     "segments.day_of_week": {
+      "description": "The day of the week segment",
       "type": ["null", "string"]
     },
     "segments.device": {
+      "description": "The device segment",
       "type": ["null", "string"]
     },
     "metrics.engagement_rate": {
+      "description": "The engagement rate",
       "type": ["null", "number"]
     },
     "metrics.engagements": {
+      "description": "The total number of engagements",
       "type": ["null", "integer"]
     },
     "customer.id": {
+      "description": "The ID of the customer",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.final_mobile_urls": {
+      "description": "The final mobile URLs for the criterion",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "ad_group_criterion.final_urls": {
+      "description": "The final URLs for the criterion",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "metrics.gmail_forwards": {
+      "description": "The number of Gmail forwards",
       "type": ["null", "integer"]
     },
     "metrics.gmail_saves": {
+      "description": "The number of Gmail saves",
       "type": ["null", "integer"]
     },
     "metrics.gmail_secondary_clicks": {
+      "description": "The number of secondary clicks on Gmail ads",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.criterion_id": {
+      "description": "The ID of the criterion",
       "type": ["null", "integer"]
     },
     "metrics.impressions": {
+      "description": "The total number of impressions",
       "type": ["null", "integer"]
     },
     "metrics.interaction_rate": {
+      "description": "The interaction rate",
       "type": ["null", "number"]
     },
     "metrics.interaction_event_types": {
+      "description": "The types of interaction events",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "metrics.interactions": {
+      "description": "The total number of interactions",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.negative": {
+      "description": "Indicates if the criterion is a negative keyword",
       "type": ["null", "boolean"]
     },
     "ad_group.targeting_setting.target_restrictions": {
+      "description": "The target restrictions applied to the ad group",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "segments.month": {
+      "description": "The month segment",
       "type": ["null", "string"]
     },
     "segments.quarter": {
+      "description": "The quarter segment",
       "type": ["null", "string"]
     },
     "ad_group_criterion.status": {
+      "description": "The status of the criterion",
       "type": ["null", "string"]
     },
     "ad_group_criterion.tracking_url_template": {
+      "description": "The tracking URL template for the criterion",
       "type": ["null", "string"]
     },
     "ad_group_criterion.keyword.match_type": {
+      "description": "The match type of the keyword",
       "type": ["null", "string"]
     },
     "ad_group_criterion.url_custom_parameters": {
+      "description": "The custom parameters for the criterion",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "metrics.value_per_all_conversions": {
+      "description": "The value per all conversions",
       "type": ["null", "number"]
     },
     "metrics.value_per_conversion": {
+      "description": "The value per conversion",
       "type": ["null", "number"]
     },
     "metrics.video_quartile_p100_rate": {
+      "description": "The quartile p100 rate for video views",
       "type": ["null", "number"]
     },
     "metrics.video_quartile_p25_rate": {
+      "description": "The quartile p25 rate for video views",
       "type": ["null", "number"]
     },
     "metrics.video_quartile_p50_rate": {
+      "description": "The quartile p50 rate for video views",
       "type": ["null", "number"]
     },
     "metrics.video_quartile_p75_rate": {
+      "description": "The quartile p75 rate for video views",
       "type": ["null", "number"]
     },
     "metrics.video_view_rate": {
+      "description": "The video view rate",
       "type": ["null", "number"]
     },
     "metrics.video_views": {
+      "description": "The total number of video views",
       "type": ["null", "integer"]
     },
     "metrics.view_through_conversions": {
+      "description": "The number of view-through conversions",
       "type": ["null", "integer"]
     },
     "segments.week": {
+      "description": "The week segment",
       "type": ["null", "string"]
     },
     "segments.year": {
+      "description": "The year segment",
       "type": ["null", "integer"]
     },
     "segments.date": {
+      "description": "The date segment",
       "type": ["null", "string"],
       "format": "date"
     }

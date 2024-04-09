@@ -4,9 +4,11 @@
   "additionalProperties": true,
   "properties": {
     "channel_id": {
+      "description": "The unique identifier for the channel where the member is associated.",
       "type": "string"
     },
     "member_id": {
+      "description": "The unique identifier for the member within the channel.",
       "type": "string"
     }
   }

@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "A brief description of the scenario automation",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the scenario automation",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the scenario automation",
       "type": ["null", "string"]
     },
     "actions": {
@@ -17,21 +20,26 @@
         "type": ["null", "object"],
         "properties": {
           "name": {
+            "description": "The name of the action",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "The value associated with the action",
             "type": ["null", "string"]
           }
         }
       }
     },
     "private": {
+      "description": "Indicates whether the scenario automation is private or not",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The date and time when the scenario automation was created",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the scenario automation was last updated",
       "type": ["null", "string"]
     }
   }

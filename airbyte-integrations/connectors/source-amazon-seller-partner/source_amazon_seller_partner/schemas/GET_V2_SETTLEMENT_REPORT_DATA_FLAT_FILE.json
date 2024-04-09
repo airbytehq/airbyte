@@ -4,49 +4,162 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "settlement-id": { "type": ["null", "string"] },
+    "settlement-id": {
+      "description": "The unique identifier for a settlement.",
+      "type": ["null", "string"]
+    },
     "settlement-start-date": {
+      "description": "The start date of the settlement period.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "settlement-end-date": {
+      "description": "The end date of the settlement period.",
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "deposit-date": { "type": ["null", "string"], "format": "date-time" },
-    "total-amount": { "type": ["null", "string"] },
-    "currency": { "type": ["null", "string"] },
-    "transaction-type": { "type": ["null", "string"] },
-    "order-id": { "type": ["null", "string"] },
-    "merchant-order-id": { "type": ["null", "string"] },
-    "adjustment-id": { "type": ["null", "string"] },
-    "shipment-id": { "type": ["null", "string"] },
-    "marketplace-name": { "type": ["null", "string"] },
-    "shipment-fee-type": { "type": ["null", "string"] },
-    "shipment-fee-amount": { "type": ["null", "string"] },
-    "order-fee-type": { "type": ["null", "string"] },
-    "order-fee-amount": { "type": ["null", "string"] },
-    "fulfillment-id": { "type": ["null", "string"] },
-    "posted-date": { "type": ["null", "string"], "format": "date-time" },
-    "order-item-code": { "type": ["null", "string"] },
-    "merchant-order-item-id": { "type": ["null", "string"] },
-    "merchant-adjustment-item-id": { "type": ["null", "string"] },
-    "sku": { "type": ["null", "string"] },
-    "quantity-purchased": { "type": ["null", "string"] },
-    "price-type": { "type": ["null", "string"] },
-    "price-amount": { "type": ["null", "string"] },
-    "item-related-fee-type": { "type": ["null", "string"] },
-    "item-related-fee-amount": { "type": ["null", "string"] },
-    "misc-fee-amount": { "type": ["null", "string"] },
-    "other-fee-amount": { "type": ["null", "string"] },
-    "other-fee-reason-description": { "type": ["null", "string"] },
-    "promotion-id": { "type": ["null", "string"] },
-    "promotion-type": { "type": ["null", "string"] },
-    "promotion-amount": { "type": ["null", "string"] },
-    "direct-payment-type": { "type": ["null", "string"] },
-    "direct-payment-amount": { "type": ["null", "string"] },
-    "other-amount": { "type": ["null", "string"] },
-    "report_id": { "type": ["null", "string"] },
-    "dataEndTime": { "type": ["null", "string"], "format": "date" }
+    "deposit-date": {
+      "description": "The date and time when the payment was deposited into the seller's account.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "total-amount": {
+      "description": "The total amount in the settlement.",
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "description": "The currency in which the financial transactions are recorded.",
+      "type": ["null", "string"]
+    },
+    "transaction-type": {
+      "description": "The type of transaction (e.g., order, refund).",
+      "type": ["null", "string"]
+    },
+    "order-id": {
+      "description": "The unique identifier for an order.",
+      "type": ["null", "string"]
+    },
+    "merchant-order-id": {
+      "description": "The unique identifier for a merchant order.",
+      "type": ["null", "string"]
+    },
+    "adjustment-id": {
+      "description": "The unique identifier for an adjustment made to the settlement.",
+      "type": ["null", "string"]
+    },
+    "shipment-id": {
+      "description": "The unique identifier for a shipment.",
+      "type": ["null", "string"]
+    },
+    "marketplace-name": {
+      "description": "The name of the marketplace where the transaction occurred.",
+      "type": ["null", "string"]
+    },
+    "shipment-fee-type": {
+      "description": "The type of fee related to shipment.",
+      "type": ["null", "string"]
+    },
+    "shipment-fee-amount": {
+      "description": "The amount of fee related to shipment.",
+      "type": ["null", "string"]
+    },
+    "order-fee-type": {
+      "description": "The type of fee associated with an order.",
+      "type": ["null", "string"]
+    },
+    "order-fee-amount": {
+      "description": "The amount of fee associated with an order.",
+      "type": ["null", "string"]
+    },
+    "fulfillment-id": {
+      "description": "The unique identifier for the fulfillment of an order.",
+      "type": ["null", "string"]
+    },
+    "posted-date": {
+      "description": "The date and time when the transaction was posted.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "order-item-code": {
+      "description": "The code assigned to an order item.",
+      "type": ["null", "string"]
+    },
+    "merchant-order-item-id": {
+      "description": "The unique identifier for a specific item in a merchant order.",
+      "type": ["null", "string"]
+    },
+    "merchant-adjustment-item-id": {
+      "description": "The unique identifier for a merchant adjustment item.",
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "description": "The stock keeping unit for a product.",
+      "type": ["null", "string"]
+    },
+    "quantity-purchased": {
+      "description": "The quantity of a product purchased in the order.",
+      "type": ["null", "string"]
+    },
+    "price-type": {
+      "description": "The type of price for a product.",
+      "type": ["null", "string"]
+    },
+    "price-amount": {
+      "description": "The amount of price for a product.",
+      "type": ["null", "string"]
+    },
+    "item-related-fee-type": {
+      "description": "The type of fee related to a specific item in the order.",
+      "type": ["null", "string"]
+    },
+    "item-related-fee-amount": {
+      "description": "The amount of fee related to a specific item in the order.",
+      "type": ["null", "string"]
+    },
+    "misc-fee-amount": {
+      "description": "The amount of miscellaneous fee included in the settlement.",
+      "type": ["null", "string"]
+    },
+    "other-fee-amount": {
+      "description": "The amount of other fees included in the settlement.",
+      "type": ["null", "string"]
+    },
+    "other-fee-reason-description": {
+      "description": "The description of the reason for other fees.",
+      "type": ["null", "string"]
+    },
+    "promotion-id": {
+      "description": "The unique identifier for a promotion.",
+      "type": ["null", "string"]
+    },
+    "promotion-type": {
+      "description": "The type of promotion applied.",
+      "type": ["null", "string"]
+    },
+    "promotion-amount": {
+      "description": "The amount of promotion discount applied.",
+      "type": ["null", "string"]
+    },
+    "direct-payment-type": {
+      "description": "The type of direct payment made to the seller.",
+      "type": ["null", "string"]
+    },
+    "direct-payment-amount": {
+      "description": "The amount of direct payment made to the seller.",
+      "type": ["null", "string"]
+    },
+    "other-amount": {
+      "description": "The amount of other miscellaneous transactions.",
+      "type": ["null", "string"]
+    },
+    "report_id": {
+      "description": "The unique identifier for a settlement report.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data in the report.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

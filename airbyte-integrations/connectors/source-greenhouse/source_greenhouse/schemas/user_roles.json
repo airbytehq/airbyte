@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the user role.",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "The type or category of the user role.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the user role.",
       "type": ["null", "string"]
     }
   }

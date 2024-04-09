@@ -3,96 +3,126 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the customer.",
       "type": ["null", "integer"]
     },
     "accepts_marketing": {
+      "description": "Indicates whether the customer has agreed to receive marketing communications.",
       "type": ["null", "integer"]
     },
     "analytics_data": {
+      "description": "Data related to customer behavior and interactions within the system for analytics purposes.",
       "type": ["null", "object"]
     },
     "billing_address1": {
+      "description": "First line of the customer's billing address.",
       "type": ["null", "string"]
     },
     "billing_address2": {
+      "description": "Second line of the customer's billing address.",
       "type": ["null", "string"]
     },
     "billing_city": {
+      "description": "City of the customer's billing address.",
       "type": ["null", "string"]
     },
     "billing_company": {
+      "description": "Company name associated with the customer's billing address.",
       "type": ["null", "string"]
     },
     "billing_country": {
+      "description": "Country of the customer's billing address.",
       "type": ["null", "string"]
     },
     "billing_first_name": {
+      "description": "First name of the customer's billing contact.",
       "type": ["null", "string"]
     },
     "billing_last_name": {
+      "description": "Last name of the customer's billing contact.",
       "type": ["null", "string"]
     },
     "billing_phone": {
+      "description": "Phone number associated with the customer's billing address.",
       "type": ["null", "string"]
     },
     "billing_province": {
+      "description": "Province or state of the customer's billing address.",
       "type": ["null", "string"]
     },
     "billing_zip": {
+      "description": "Zip or postal code of the customer's billing address.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the customer record was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "email": {
+      "description": "Email address of the customer.",
       "type": ["null", "string"]
     },
     "first_charge_processed_at": {
+      "description": "Date and time when the customer's first charge was processed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "first_name": {
+      "description": "First name of the customer.",
       "type": ["null", "string"]
     },
     "has_card_error_in_dunning": {
+      "description": "Indicates if the customer has encountered card errors in dunning processes.",
       "type": ["null", "boolean"]
     },
     "has_valid_payment_method": {
+      "description": "Flag to denote if the customer has a valid payment method on file.",
       "type": ["null", "boolean"]
     },
     "hash": {
+      "description": "Unique hash value associated with the customer.",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "Last name of the customer.",
       "type": ["null", "string"]
     },
     "number_active_subscriptions": {
+      "description": "Number of active subscriptions the customer currently has.",
       "type": ["null", "integer"]
     },
     "number_subscriptions": {
+      "description": "Total number of subscriptions the customer has purchased.",
       "type": ["null", "integer"]
     },
     "processor_type": {
+      "description": "Type of payment processor used by the customer.",
       "type": ["null", "string"]
     },
     "reason_payment_method_not_valid": {
+      "description": "Reason provided when the payment method of the customer is considered invalid.",
       "type": ["null", "string"]
     },
     "shopify_customer_id": {
+      "description": "Customer ID associated with Shopify platform.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the customer account.",
       "type": ["null", "string"]
     },
     "stripe_customer_token": {
+      "description": "Token assigned to the customer within the Stripe payment system.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Date and time when the customer record was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "apply_credit_to_next_recurring_charge": {
+      "description": "Flag to apply any available credit towards the next recurring charge.",
       "type": ["null", "boolean"]
     }
   }

@@ -3,21 +3,26 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the activity type.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the activity type.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A description of the activity type.",
       "type": ["null", "string"]
     },
     "primaryAttribute": {
       "type": ["null", "object"],
       "properties": {
         "name": {
+          "description": "The name of the primary attribute.",
           "type": ["null", "string"]
         },
         "dataType": {
+          "description": "The data type of the primary attribute.",
           "type": ["null", "string"]
         }
       }
@@ -28,9 +33,11 @@
         "type": ["null", "object"],
         "properties": {
           "name": {
+            "description": "The name of the attribute.",
             "type": ["null", "string"]
           },
           "dataType": {
+            "description": "The data type of the attribute.",
             "type": ["null", "string"]
           }
         }

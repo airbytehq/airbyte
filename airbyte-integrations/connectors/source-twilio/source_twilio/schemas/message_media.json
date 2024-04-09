@@ -1,26 +1,33 @@
 {
   "properties": {
     "sid": {
+      "description": "The unique identifier of the message media.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier of the account associated with this message media.",
       "type": ["null", "string"]
     },
     "parent_sid": {
+      "description": "The unique identifier of the parent message associated with this media.",
       "type": ["null", "string"]
     },
     "content_type": {
+      "description": "The MIME type of the media content.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the message media was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the message media was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI that can be used to access this message media resource.",
       "type": ["null", "string"]
     }
   },

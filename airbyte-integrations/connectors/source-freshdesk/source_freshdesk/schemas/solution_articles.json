@@ -3,39 +3,50 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the solution article.",
       "type": ["null", "integer"]
     },
     "agent_id": {
+      "description": "The ID of the agent who created the solution article.",
       "type": ["null", "integer"]
     },
     "category_id": {
+      "description": "The ID of the category to which the solution article belongs.",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "The HTML formatted content of the solution article.",
       "type": ["null", "string"]
     },
     "description_text": {
+      "description": "The plain text version of the solution article content.",
       "type": ["null", "string"]
     },
     "folder_id": {
+      "description": "The ID of the folder where the solution article is stored.",
       "type": ["null", "integer"]
     },
     "hits": {
+      "description": "The number of times the solution article has been viewed.",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The status of the solution article (draft, published, etc.).",
       "type": ["null", "integer"]
     },
     "seo_data": {
       "type": ["null", "object"],
       "properties": {
         "meta_title": {
+          "description": "The meta title for the solution article.",
           "type": ["null", "string"]
         },
         "meta_description": {
+          "description": "The meta description for the solution article.",
           "type": ["null", "string"]
         },
         "meta_keywords": {
+          "description": "Keywords associated with the solution article.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
@@ -44,24 +55,30 @@
       }
     },
     "tags": {
+      "description": "Tags associated with the solution article.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "thumbs_down": {
+      "description": "The number of dislikes or negative reactions to the solution article.",
       "type": ["null", "integer"]
     },
     "thumbs_up": {
+      "description": "The number of likes or positive reactions to the solution article.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "The title of the solution article.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the solution article was created.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the solution article was last updated.",
       "type": ["null", "string"]
     }
   }

@@ -3,54 +3,71 @@
   "type": "object",
   "properties": {
     "name": {
+      "description": "Name or label for the email mailbox",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the email mailbox",
       "type": ["null", "integer"]
     },
     "support_email": {
+      "description": "Email address for support related to the mailbox",
       "type": ["null", "string"]
     },
     "group_id": {
+      "description": "ID of the group associated with the email mailbox",
       "type": ["null", "integer"]
     },
     "product_id": {
+      "description": "ID of the product/service associated with the mailbox",
       "type": ["null", "integer"]
     },
     "default_reply_email": {
+      "description": "Default email address set for replies from this mailbox",
       "type": ["null", "boolean"]
     },
     "mailbox_type": {
+      "description": "Type of mailbox (e.g., user, group)",
       "type": ["null", "string"]
     },
     "custom_mailbox": {
+      "description": "Flag indicating if the mailbox is a custom mailbox",
       "type": ["null", "string"]
     },
     "access_type": {
+      "description": "Type of access for the email mailbox (e.g., IMAP, POP3)",
       "type": ["null", "string"]
     },
     "incoming": {
+      "description": "Incoming email server settings (e.g., server address, port)",
       "type": ["null", "string"]
     },
     "mail_server": {
+      "description": "SMTP server for sending emails from this mailbox",
       "type": ["null", "string"]
     },
     "port": {
+      "description": "Port number for the incoming email server",
       "type": ["null", "integer"]
     },
     "use_ssl": {
+      "description": "Flag indicating if SSL should be used for email server connections",
       "type": ["null", "boolean"]
     },
     "delete_from_server": {
+      "description": "Flag indicating if emails are deleted from the server after retrieval",
       "type": ["null", "boolean"]
     },
     "authentication": {
+      "description": "Type of authentication required for the mailbox (e.g., basic, oauth)",
       "type": ["null", "string"]
     },
     "username": {
+      "description": "Username for authentication to the email mailbox",
       "type": ["null", "string"]
     },
     "password": {
+      "description": "Password for authentication to the email mailbox",
       "type": ["null", "string"]
     }
   }
