@@ -572,7 +572,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
     /** Some databases need special column names in the query. */
     @Throws(SQLException::class)
-    protected fun getWrappedColumnNames(
+    protected open fun getWrappedColumnNames(
         database: JdbcDatabase?,
         connection: Connection?,
         columnNames: List<String>,
@@ -725,6 +725,7 @@ abstract class AbstractJdbcSource<Datatype>(
          * @return a map by StreamName to associated list of primary keys
          */
         @VisibleForTesting
+        @JvmStatic
         fun aggregatePrimateKeys(
             entries: List<PrimaryKeyAttributesFromDb>
         ): Map<String, MutableList<String>> {
