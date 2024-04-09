@@ -111,7 +111,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           file_pattern: airbyte-cdk/python/pyproject.toml airbyte-cdk/python/CHANGELOG.md
-          commit_message: 🤖 ${{ github.event.inputs.release-type }} bump Python CDK to version $NEW_VERSION
+          commit_message: 🤖 ${{ github.event.inputs.release-type }} bump Python CDK to version ${{ steps.bumpversion.outputs.NEW_VERSION }}
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
       - name: Post failure to Slack channel dev-connectors-extensibility
@@ -229,7 +229,7 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # There is no pull request number as we do this manually, so will just reference when we started doing it manually for now
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '36501' 'Bump CDK version to ${{ steps.bumpversion.outputs.NEW_VERSION }}'"
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '36501' 'Bump CDK version to ${{needs.bump-version.outputs.new_cdk_version}}'"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
