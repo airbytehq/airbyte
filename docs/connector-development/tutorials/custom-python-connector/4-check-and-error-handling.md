@@ -6,7 +6,7 @@ Let's first implement the check operation.
 This operation verifies that the input configuration supplied by the user can be used to connect to the underlying data source.
 
 Use the following command to run the check operation:
-```
+```bash
 poetry run source-survey-monkey-demo check --config secrets/config.json
 ```
 
@@ -38,7 +38,7 @@ We'll do this by trying to read a single record from the stream, and fail the co
 Next, we'll improve the error handling.
 
 First, we'll disable the availability strategy. Availability strategies are a legacy concept used to filter out streams that might not be available given a user's permissions.
-```
+```python
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
         return None

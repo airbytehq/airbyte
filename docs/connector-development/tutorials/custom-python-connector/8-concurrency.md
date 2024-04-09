@@ -97,7 +97,7 @@ This can be solved by implementing the connector using constructs from the concu
 :::
 
 We'll now enable throttling to avoid going over the API rate limit. You can do this by configuring a moving window rate limit policy for the `SurveyMonkeyBaseStream` class:
-```
+```python
 class SurveyMonkeyBaseStream(HttpStream, ABC):
     def __init__(self, name: str, path: str, primary_key: Union[str, List[str]], data_field: Optional[str], cursor_field: Optional[str],
 **kwargs: Any) -> None:
@@ -171,7 +171,7 @@ def run():
 ```
 
 You can now run a read operation again. The connector will read multiple partitions concurrently instead of looping through all of them sequentially.
-```
+```bash
 poetry run source-survey-monkey-demo read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 

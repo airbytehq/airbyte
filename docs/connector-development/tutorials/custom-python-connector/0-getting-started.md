@@ -1,5 +1,5 @@
 # Getting started
-This tutorial will walk you through the creation of a custom Airbyte connector implemented with the Python CDK. This tutorial assumes you're already familiar with Airbyte concept and you've already built a connector using the [Connector Builder](../../connector-builder-ui/tutorial.mdx).
+This tutorial will walk you through the creation of a custom Airbyte connector implemented with the Python CDK. It assumes you're already familiar with Airbyte concepts and you've already built a connector using the [Connector Builder](../../connector-builder-ui/tutorial.mdx).
 
 The Python CDK should be used to implement connectors that require features that are not yet available in the Connector Builder or in the low-code framework. You can use the [Connector Builder compatibility guide](../../connector-builder-ui/connector-builder-compatibility.md) to know whether it is suitable for your needs.
 

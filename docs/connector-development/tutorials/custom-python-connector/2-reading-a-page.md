@@ -5,7 +5,7 @@ In this section, we'll read a single page of records from the surveys endpoint.
 We'll start by writing a failing integration test.
 
 Create a file `unit_tests/integration/test_surveys.py`
-```
+```bash
 mkdir unit_tests/integration
 touch unit_tests/integration/test_surveys.py
 code .
@@ -133,7 +133,7 @@ class FullRefreshTest(TestCase):
 Note that the test also required adding the "access_token" field to the config. We'll use this field to store the API key obtained in the first section of the tutorial.
 
 The test should fail because the expected request was not sent
-```
+```bash
 poetry run pytest unit_tests/integration
 ```
 
