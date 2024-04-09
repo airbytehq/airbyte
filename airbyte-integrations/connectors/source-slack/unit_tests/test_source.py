@@ -68,6 +68,5 @@ def test_threads_auth(token_config, oauth_config):
 
 def test_get_threads_stream(token_config):
     source = SourceSlack()
-    channel_messages = get_stream_by_name("channel_messages", token_config)
-    threads_stream = source.get_threads_stream(token_config, channel_messages)
+    threads_stream = source.get_threads_stream(token_config)
     assert threads_stream
