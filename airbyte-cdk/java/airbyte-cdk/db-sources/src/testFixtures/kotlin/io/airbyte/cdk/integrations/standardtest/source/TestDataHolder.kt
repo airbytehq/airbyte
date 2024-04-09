@@ -211,6 +211,7 @@ internal constructor(
          *
          * @return builder for setup comprehensive test
          */
+        @JvmStatic
         fun builder(): TestDataHolderBuilder {
             return TestDataHolderBuilder()
         }

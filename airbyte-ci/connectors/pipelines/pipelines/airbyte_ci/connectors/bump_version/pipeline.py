@@ -82,7 +82,7 @@ class AddChangelogEntry(Step):
 
 class BumpDockerImageTagInMetadata(Step):
     context: ConnectorContext
-    title = "Upgrade the dockerImageTag to the latest version in metadata.yaml"
+    title = "Upgrade the dockerImageTag to the new version in metadata.yaml"
 
     def __init__(
         self,

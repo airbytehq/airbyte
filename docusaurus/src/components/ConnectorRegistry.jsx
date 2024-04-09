@@ -2,9 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 
 import styles from "./ConnectorRegistry.module.css";
-
-const registry_url =
-  "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
+import { REGISTRY_URL } from "../connector_registry";
 
 const iconStyle = { maxWidth: 25 };
 
@@ -35,7 +33,7 @@ export default function ConnectorRegistry({ type }) {
   const [registry, setRegistry] = useState([]);
 
   useEffect(() => {
-    fetchCatalog(registry_url, setRegistry);
+    fetchCatalog(REGISTRY_URL, setRegistry);
   }, []);
 
   if (registry.length === 0) return <div>{`Loading ${type}s...`}</div>;

@@ -16,7 +16,6 @@ class HttpResponse:
 @dataclass
 class HttpRequest:
     url: str
-    parameters: Optional[Dict[str, Any]]
     headers: Optional[Dict[str, Any]]
     http_method: str
     body: Optional[str] = None
