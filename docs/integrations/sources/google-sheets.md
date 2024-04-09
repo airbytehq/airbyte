@@ -6,30 +6,35 @@ This page contains the setup guide and reference information for the Google Shee
 
 </HideInUI>
 
-:::info
-The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each sheet within a spreadsheet can be replicated. To replicate multiple spreadsheets, set up multiple Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are accessed.
-:::
+:::info The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each
+sheet within a spreadsheet can be replicated. To replicate multiple spreadsheets, set up multiple
+Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are
+accessed. :::
 
 ### Prerequisites
+
 - Spreadsheet Link - The link to the Google spreadsheet you want to sync.
 <!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
-<!-- /env:cloud -->
-<!-- env:oss -->
--  **For Airbyte Open Source:**
-  - A GCP project
-  - Enable the Google Sheets API in your GCP project
-  - Service Account Key with access to the Spreadsheet you want to replicate
+  <!-- /env:cloud -->
+  <!-- env:oss -->
+- **For Airbyte Open Source:**
+- A GCP project
+- Enable the Google Sheets API in your GCP project
+- Service Account Key with access to the Spreadsheet you want to replicate
 <!-- /env:oss -->
 
 ## Setup guide
 
-The Google Sheets source connector supports authentication via either OAuth or Service Account Key Authentication.
+The Google Sheets source connector supports authentication via either OAuth or Service Account Key
+Authentication.
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
-We highly recommend using OAuth, as it significantly simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-google-sheets-source-connector-in-airbyte).
+We highly recommend using OAuth, as it significantly simplifies the setup process and allows you to
+authenticate [directly from the Airbyte UI](#set-up-the-google-sheets-source-connector-in-airbyte).
 
 <!-- /env:cloud -->
 
@@ -37,27 +42,35 @@ We highly recommend using OAuth, as it significantly simplifies the setup proces
 
 **For Airbyte Open Source:**
 
-We recommend using Service Account Key Authentication. Follow the steps below to create a service account, generate a key, and enable the Google Sheets API.
+We recommend using Service Account Key Authentication. Follow the steps below to create a service
+account, generate a key, and enable the Google Sheets API.
 
-:::note
-If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/spreadsheets.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
-:::
+:::note If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow
+[Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an
+authentication app. Be sure to set the scopes to
+`https://www.googleapis.com/auth/spreadsheets.readonly`. You will need to obtain your client ID,
+client secret, and refresh token for the connector setup. :::
 
 ### Set up the service account key
 
 #### Create a service account
 
-1. Open the [Service Accounts page](https://console.cloud.google.com/projectselector2/iam-admin/serviceaccounts) in your Google Cloud console.
+1. Open the
+   [Service Accounts page](https://console.cloud.google.com/projectselector2/iam-admin/serviceaccounts)
+   in your Google Cloud console.
 2. Select an existing project, or create a new project.
 3. At the top of the page, click **+ Create service account**.
 4. Enter a name and description for the service account, then click **Create and Continue**.
-5. Under **Service account permissions**, select the roles to grant to the service account, then click **Continue**. We recommend the **Viewer** role.
+5. Under **Service account permissions**, select the roles to grant to the service account, then
+   click **Continue**. We recommend the **Viewer** role.
 
 #### Generate a key
 
-1. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) page and click on the email address of the service account you just created.
+1. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) page and
+   click on the email address of the service account you just created.
 2. In the **Keys** tab, click **+ Add key**, then click **Create new key**.
-3. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
+3. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll
+   use for authentication. Click **Continue**.
 
 #### Enable the Google Sheets API
 
@@ -66,13 +79,12 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 3. Find and select the **Google Sheets API**.
 4. Click **ENABLE**.
 
-If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
+If your spreadsheet is viewable by anyone with its link, no further action is needed. If not,
+[give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
 
 <!-- /env:oss -->
 
 ### Set up the Google Sheets source connector in Airbyte
-
-
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
@@ -80,33 +92,47 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 4. For **Source name**, enter a name to help you identify this source.
 5. Select your authentication method:
 <!-- env:cloud -->
-  - **For Airbyte Cloud: (Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
-<!-- /env:cloud -->
-<!-- env:oss -->
-  - **For Airbyte Open Source: (Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
 
-  ```json
-    {
-      "type": "service_account",
-      "project_id": "YOUR_PROJECT_ID",
-      "private_key_id": "YOUR_PRIVATE_KEY",
-      ...
-    }
-  ```
+- **For Airbyte Cloud: (Recommended)** Select **Authenticate via Google (OAuth)** from the
+  Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
+  <!-- /env:cloud -->
+  <!-- env:oss -->
+- **For Airbyte Open Source: (Recommended)** Select **Service Account Key Authentication** from the
+  dropdown and enter your Google Cloud service account key in JSON format:
 
-  - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
+```json
+  {
+    "type": "service_account",
+    "project_id": "YOUR_PROJECT_ID",
+    "private_key_id": "YOUR_PRIVATE_KEY",
+    ...
+  }
+```
+
+- To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the
+dropdown and enter your Google application's client ID, client secret, and refresh token.
 <!-- /env:oss -->
-6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
-7. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
+
+6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the
+   Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy
+   Link**.
+7. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**.
+   Enabling this option will allow the connector to convert column names to a standardized,
+   SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to
+   `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based
+   (ie Postgres, MySQL). Set to false by default.
 8. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
 ### Output schema
 
-Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
+Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the
+sheet is synced as a string field.
 
-Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
+Airbyte only supports replicating
+[Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType)
+sheets.
 
 ## Supported sync modes
 
@@ -137,20 +163,26 @@ The [Google API rate limits](https://developers.google.com/sheets/api/limits) ar
 - 300 read requests per minute per project
 - 60 requests per minute per user per project
 
-Airbyte batches requests to the API in order to efficiently pull data and respect these rate limits. We recommend not using the same user or service account for more than 3 instances of the Google Sheets source connector to ensure high transfer speeds.
+Airbyte batches requests to the API in order to efficiently pull data and respect these rate limits.
+We recommend not using the same user or service account for more than 3 instances of the Google
+Sheets source connector to ensure high transfer speeds.
 
 ### Troubleshooting
 
-* If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
-* Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
-* Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table
+  in the destination. If this happens, the sync logs will contain a message saying the sheet has
+  been skipped when syncing the full spreadsheet.
+- Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or
+  imported as another file type the setup could fail.
+- Check out common troubleshooting issues for the Google Sheets source connector on our
+  [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | 0.5.0   | 2024-03-26 | [36515](https://github.com/airbytehq/airbyte/pull/36515) | Resolve poetry dependency conflict, add record counts to state messages           |
 | 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                   |
 | 0.3.17  | 2024-02-29 | [35722](https://github.com/airbytehq/airbyte/pull/35722) | Add logic to emit stream statuses                                                 |

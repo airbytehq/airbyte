@@ -17,7 +17,8 @@ Several output streams are available from this source:
 - [Outbox](https://www.retently.com/api/#api-get-sent-surveys)
 - [Templates](https://www.retently.com/api/#api-get-templates-get)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
+If there are more endpoints you'd like Airbyte to support, please
+[create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ### Features
 
@@ -39,8 +40,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 Retently supports two types of authentication: by API Token or using Retently oAuth application.
 
-You can get the API Token for Retently [here](https://app.retently.com/settings/api/tokens).
-OAuth application is [here](https://app.retently.com/settings/oauth).
+You can get the API Token for Retently [here](https://app.retently.com/settings/api/tokens). OAuth
+application is [here](https://app.retently.com/settings/oauth).
 
 ## Changelog
 

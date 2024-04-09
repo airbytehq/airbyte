@@ -2,18 +2,22 @@
 
 This page contains the setup guide and reference information for the Convex destination connector.
 
-Get started with Convex at the [Convex website](https://convex.dev).
-See your data on the [Convex dashboard](https://dashboard.convex.dev/).
+Get started with Convex at the [Convex website](https://convex.dev). See your data on the
+[Convex dashboard](https://dashboard.convex.dev/).
 
 ## Overview
 
-The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Dedup. Note that for Incremental Dedup, Convex does not store a history table like some other destinations that use DBT, but Convex does store a deduped snapshot.
+The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental
+Append, and Incremental Dedup. Note that for Incremental Dedup, Convex does not store a history
+table like some other destinations that use DBT, but Convex does store a deduped snapshot.
 
 ### Output schema
 
-Each stream will be output into a table in Convex. Convex's table naming rules apply - table names can only contain letters, digits, and underscores and may not start with an underscore.
+Each stream will be output into a table in Convex. Convex's table naming rules apply - table names
+can only contain letters, digits, and underscores and may not start with an underscore.
 
-Each record is a [document](https://docs.convex.dev/using/types) in Convex and is assigned `_id` and `_creationTime` fields during sync.
+Each record is a [document](https://docs.convex.dev/using/types) in Convex and is assigned `_id` and
+`_creationTime` fields during sync.
 
 ### Features
 
@@ -28,8 +32,11 @@ Each record is a [document](https://docs.convex.dev/using/types) in Convex and i
 
 ### Performance considerations
 
-Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental modes when they are supported and especially for large tables.
-If you see performance issues, please reach via email to [Convex support](mailto:support@convex.dev) or on [Discord](https://convex.dev/community).
+Take care to use the appropriate sync method and frequency for the quantity of data streaming from
+the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental
+modes when they are supported and especially for large tables. If you see performance issues, please
+reach via email to [Convex support](mailto:support@convex.dev) or on
+[Discord](https://convex.dev/community).
 
 ## Getting started
 
@@ -43,7 +50,8 @@ If you see performance issues, please reach via email to [Convex support](mailto
 
 Airbyte integration is available to all Convex developers.
 
-On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project and deployment that you want to sync.
+On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project and deployment
+that you want to sync.
 
 1. Navigate to the Settings tab.
 2. Copy the "Deployment URL" from the settings page to the `deployment_url` field in Airbyte.

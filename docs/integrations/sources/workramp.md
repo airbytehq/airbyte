@@ -4,7 +4,8 @@
 
 The Workramp source supports both Full Refresh only.
 
-This source can sync data for the [Workramp API](https://developers.workramp.com/reference/getting-started).
+This source can sync data for the
+[Workramp API](https://developers.workramp.com/reference/getting-started).
 
 ### Output schema
 
@@ -31,7 +32,8 @@ The Workramp connector should not run into Workramp API limitations under normal
 
 ## Requirements
 
-- **Workramp API ke**. See the [Workramp docs](https://developers.workramp.com/reference/basic-auth) for information on how to obtain an API key.
+- **Workramp API ke**. See the [Workramp docs](https://developers.workramp.com/reference/basic-auth)
+  for information on how to obtain an API key.
 
 ## Changelog
 

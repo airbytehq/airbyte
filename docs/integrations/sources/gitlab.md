@@ -10,7 +10,8 @@ This page contains the setup guide and reference information for the Gitlab Sour
 
 **For Airbyte Cloud:**
 
-- Personal Access Token (see [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html))
+- Personal Access Token (see
+  [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html))
 - OAuth
 <!-- /env:cloud -->
 
@@ -18,7 +19,8 @@ This page contains the setup guide and reference information for the Gitlab Sour
 
 **For Airbyte Open Source:**
 
-- Personal Access Token (see [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html))
+- Personal Access Token (see
+[personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html))
 <!-- /env:oss -->
 
 ## Setup guide
@@ -31,7 +33,10 @@ Create a [GitLab Account](https://gitlab.com) or set up a local instance of GitL
 
 **Airbyte Open Source additional setup steps**
 
-Log into [GitLab](https://gitlab.com) and then generate a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html). Your token should have the `read_api` scope, that Grants read access to the API, including all groups and projects, the container registry, and the package registry.
+Log into [GitLab](https://gitlab.com) and then generate a
+[personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html). Your
+token should have the `read_api` scope, that Grants read access to the API, including all groups and
+projects, the container registry, and the package registry.
 
 <!-- /env:oss -->
 
@@ -43,16 +48,22 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your GitLab account` by selecting Oauth or Personal Access Token for Authentication.
+3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for
+   this connector.
+4. Click `Authenticate your GitLab account` by selecting Oauth or Personal Access Token for
+   Authentication.
 5. Log in and Authorize to the GitLab account.
-6. **API URL (Optional)** - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
+6. **API URL (Optional)** - The URL to access your self-hosted GitLab instance or `gitlab.com`
+   (default).
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams.
-8. **Groups (Optional)** - List of GitLab group IDs, e.g. `airbytehq` for single group, `airbytehq another-repo` for multiple groups.
+8. **Groups (Optional)** - List of GitLab group IDs, e.g. `airbytehq` for single group,
+   `airbytehq another-repo` for multiple groups.
 9. **Projects (Optional)** - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
 10. Click **Set up source**.
 
-**Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector will retrieve a list of all the groups that are accessible to the configured token and ingest as normal.
+**Note:** You can specify either Group IDs or Project IDs in the source configuration. If both
+fields are blank, the connector will retrieve a list of all the groups that are accessible to the
+configured token and ingest as normal.
 
 <!-- /env:cloud -->
 
@@ -65,7 +76,8 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 
 ## Supported sync modes
 
-The Gitlab Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Gitlab Source connector supports the following
+[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -94,8 +106,11 @@ This connector outputs the following streams:
 - [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
 - [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
 - [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
-- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts. Stream Epics uses iid field as primary key for more convenient search and matching with UI. Iid is the internal ID of the epic, number of Epic on UI.\)
-- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
+- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and
+  GitLab.com Gold accounts. Stream Epics uses iid field as primary key for more convenient search
+  and matching with UI. Iid is the internal ID of the epic, number of Epic on UI.\)
+- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab
+  Ultimate and GitLab.com Gold accounts\)
 
 ## Additional information
 
@@ -103,12 +118,16 @@ GitLab source works with GitLab API v4. It can also work with self-hosted GitLab
 
 ## Performance considerations
 
-Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.html#gitlabcom-specific-rate-limits), but the Gitlab connector should not run into Gitlab API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Gitlab has the
+[rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.html#gitlabcom-specific-rate-limits),
+but the Gitlab connector should not run into Gitlab API limitations under normal usage. Please
+[create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.0.0   | 2024-03-25 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code                                                                                                                                                                |
 | 3.0.0   | 2024-01-25 | [34548](https://github.com/airbytehq/airbyte/pull/34548) | Fix merge_request_commits stream to return commits for each merge request                                                                                                          |
 | 2.1.2   | 2024-02-12 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry.                                                                                                                                                   |

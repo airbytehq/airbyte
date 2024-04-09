@@ -1,6 +1,7 @@
 # Deploy Airbyte on Oracle Cloud
 
-This page guides you through deploying Airbyte Open Source on an [Oracle Cloud Infrastructure (OCI) Virtual Machine (VM) Instance](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/launchinginstance.htm#Creating_an_Instance).
+This page guides you through deploying Airbyte Open Source on an
+[Oracle Cloud Infrastructure (OCI) Virtual Machine (VM) Instance](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/launchinginstance.htm#Creating_an_Instance).
 
 :::info
 
@@ -12,13 +13,17 @@ These instructions have been tested on an Oracle Linux 7 instance.
 
 To deploy Airbyte Open Source on Oracle cloud:
 
-- Create an [OCI VM compute instance](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/launchinginstance.htm#Creating_an_Instance)
-- Allowlist a port for a CIDR range in the [security list of your OCI VM Instance subnet](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securitylists.htm)
-- Connect to the instance using a [bastion port forwarding session](https://docs.oracle.com/en-us/iaas/Content/Bastion/Tasks/connectingtosessions.htm#connect-port-forwarding)
+- Create an
+  [OCI VM compute instance](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/launchinginstance.htm#Creating_an_Instance)
+- Allowlist a port for a CIDR range in the
+  [security list of your OCI VM Instance subnet](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securitylists.htm)
+- Connect to the instance using a
+  [bastion port forwarding session](https://docs.oracle.com/en-us/iaas/Content/Bastion/Tasks/connectingtosessions.htm#connect-port-forwarding)
 
 :::caution
 
-For security reasons, we strongly recommend not having a Public IP for the Instance where you are running Airbyte.
+For security reasons, we strongly recommend not having a Public IP for the Instance where you are
+running Airbyte.
 
 :::
 
@@ -62,10 +67,11 @@ Download the Airbyte repository and deploy it on the VM:
    chmod +x run-ab-platform.sh -b
    ```
 
-2. Run the following command to get Airbyte running on your OCI VM instance using the installation script:
+2. Run the following command to get Airbyte running on your OCI VM instance using the installation
+   script:
 
    ```bash
-   ./run-ab-platform.sh -b 
+   ./run-ab-platform.sh -b
    ```
 
 3. Open up a Browser and visit port 8000 - [http://localhost:8000/](http://localhost:8000/)

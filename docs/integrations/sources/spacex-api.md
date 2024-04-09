@@ -1,10 +1,13 @@
 # SpaceX-API
 
-This page contains the setup guide and reference information for the [SpaceX-API](https://github.com/r-spacex/SpaceX-API) source connector.
+This page contains the setup guide and reference information for the
+[SpaceX-API](https://github.com/r-spacex/SpaceX-API) source connector.
 
 ## Prerequisites
 
-No prerequisites, but a dummy api_key is required as it enhances security in future build. Please check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes).
+No prerequisites, but a dummy api_key is required as it enhances security in future build. Please
+check the available routes at
+[SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes).
 
 ## Setup guide
 
@@ -19,7 +22,8 @@ No prerequisites, but a dummy api_key is required as it enhances security in fut
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the SpaceX-API connector and select **Spacex-API** from the Source type dropdown.
+3. On the Set up the source page, enter the name for the SpaceX-API connector and select
+   **Spacex-API** from the Source type dropdown.
 4. Enter your `api_key`.
 5. Enter your `id` if needed. (Optional)
 6. Click **Set up source**.
@@ -29,12 +33,13 @@ No prerequisites, but a dummy api_key is required as it enhances security in fut
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter your `id` if needed. (Optional)
-6. Click **Set up source**.
+4. Enter your `id` if needed. (Optional)
+5. Click **Set up source**.
 
 ## Supported sync modes
 
-The SpaceX-API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SpaceX-API source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -66,11 +71,13 @@ The SpaceX-API source connector supports the following [sync modes](https://docs
 
 ## Performance considerations
 
-The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/SpaceX-API/tree/master/docs/launches). The connector as default uses V4 as it has minimal bugs.
+The SpaceX API has both v4 and v5 for
+[launches](https://github.com/r-spacex/SpaceX-API/tree/master/docs/launches). The connector as
+default uses V4 as it has minimal bugs.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
+| Version | Date       | Pull Request                                             | Subject                                           |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
 | 0.1.1   | 2023-11-08 | [32202](https://github.com/airbytehq/airbyte/pull/32202) | Adjust schemas to cover all fields in the records |
-| 0.1.0   | 2022-10-22 | [Init](https://github.com/airbytehq/airbyte/pull/18311) | Initial commit |
+| 0.1.0   | 2022-10-22 | [Init](https://github.com/airbytehq/airbyte/pull/18311)  | Initial commit                                    |

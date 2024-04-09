@@ -1,74 +1,100 @@
 # Airtable
 
-This page contains the setup guide and reference information for the [Airtable](https://airtable.com/api) source connector.
+This page contains the setup guide and reference information for the
+[Airtable](https://airtable.com/api) source connector.
 
 ## Prerequisites
 
-* An active Airtable account
-* [Personal Access Token](https://airtable.com/developers/web/guides/personal-access-tokens) with the following scopes:
+- An active Airtable account
+- [Personal Access Token](https://airtable.com/developers/web/guides/personal-access-tokens) with
+  the following scopes:
   - `data.records:read`
   - `data.recordComments:read`
   - `schema.bases:read`
 
 ## Setup guide
+
 ### Step 1: Set up Airtable
 
 <!-- env:oss -->
+
 #### For Airbyte Open Source:
+
 1. Go to https://airtable.com/create/tokens to create new token.
-    ![Generate new Token](../../.gitbook/assets/source/airtable/generate_new_token.png)
+   ![Generate new Token](../../.gitbook/assets/source/airtable/generate_new_token.png)
 2. Add following scopes:
+
    - `data.records:read`
    - `data.recordComments:read`
    - `schema.bases:read`
 
-    ![Add Scopes](../../.gitbook/assets/source/airtable/add_scopes.png)
+   ![Add Scopes](../../.gitbook/assets/source/airtable/add_scopes.png)
+
 3. Select required bases or allow access to all available and press the `Create Token` button.
-    ![Add Bases](../../.gitbook/assets/source/airtable/add_bases.png)
+   ![Add Bases](../../.gitbook/assets/source/airtable/add_bases.png)
 4. Save token from the popup window.
 <!-- /env:oss -->
 
 ### Step 2: Set up Airtable connector in Airbyte
 
 <!-- env:cloud -->
+
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
-4. You can use OAuth or a Personal Access Token to authenticate your Airtable account. We recommend using OAuth for Airbyte Cloud.
-   - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account.
-   - To authenticate using a Personal Access Token, select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
-:::info
-When using OAuth, you may see a `400` or `401` error causing a failed sync. You can re-authenticate your Airtable connector to solve the issue temporarily. We are working on a permanent fix that you can follow [here](https://github.com/airbytehq/airbyte/issues/25278).
-:::
+3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable**
+   from the Source type dropdown.
+4. You can use OAuth or a Personal Access Token to authenticate your Airtable account. We recommend
+   using OAuth for Airbyte Cloud.
+
+   - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click
+     **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you
+     want to sync and authorize your account.
+   - To authenticate using a Personal Access Token, select **Personal Access Token** from the
+     Authentication dropdown and enter the Access Token for your Airtable account. :::info When
+     using OAuth, you may see a `400` or `401` error causing a failed sync. You can re-authenticate
+     your Airtable connector to solve the issue temporarily. We are working on a permanent fix that
+     you can follow [here](https://github.com/airbytehq/airbyte/issues/25278). :::
 
 5. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
-4. Select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
+3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable**
+   from the Source type dropdown.
+4. Select **Personal Access Token** from the Authentication dropdown and enter the Access Token for
+   your Airtable account.
 5. Click **Set up source**.
 <!-- /env:oss -->
 
 ### Note on changed table names and deleted tables
-Please keep in mind that if you start syncing a table via Airbyte, then rename it in your Airtable account, the connector will not continue syncing that table until you reset your connection schema and select it again. At that point, the table will begin syncing to a table with the new name in the destination. This is because there is no way for Airtable to tell Airbyte which tables have been renamed.  Similarly, if you delete a table that was previously syncing, the connector will stop syncing it. 
+
+Please keep in mind that if you start syncing a table via Airbyte, then rename it in your Airtable
+account, the connector will not continue syncing that table until you reset your connection schema
+and select it again. At that point, the table will begin syncing to a table with the new name in the
+destination. This is because there is no way for Airtable to tell Airbyte which tables have been
+renamed. Similarly, if you delete a table that was previously syncing, the connector will stop
+syncing it.
 
 ## Supported sync modes
 
-The airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The airtable source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
 ## Supported Tables
 
-This source allows you to pull all available tables and bases using `Metadata API` for a given authenticated user. In case you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog.
+This source allows you to pull all available tables and bases using `Metadata API` for a given
+authenticated user. In case you rename or add a column to any existing table, you will need to
+recreate the source to update the Airbyte catalog.
 
 ### Performance Considerations
 
@@ -77,7 +103,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 ## Data type map
 
 | Integration Type        | Airbyte Type                           | Nullable |
-|:------------------------|:---------------------------------------|----------|
+| :---------------------- | :------------------------------------- | -------- |
 | `multipleAttachments`   | `string`                               | Yes      |
 | `autoNumber`            | `string`                               | Yes      |
 | `barcode`               | `string`                               | Yes      |
@@ -110,16 +136,17 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 | `multipleLookupValues`  | `array with any`                       | Yes      |
 | `rollup`                | `array with any`                       | Yes      |
 
-* All the fields are `nullable` by default, meaning that the field could be empty.
-* The `array with any` - represents the classic array with one of the other Airtable data types inside, such as:
-    - string
-    - number/integer
-    - nested lists/objects
+- All the fields are `nullable` by default, meaning that the field could be empty.
+- The `array with any` - represents the classic array with one of the other Airtable data types
+  inside, such as:
+  - string
+  - number/integer
+  - nested lists/objects
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | 4.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                        |
 | 4.1.6   | 2024-02-12 | [35149](https://github.com/airbytehq/airbyte/pull/35149) | Manage dependencies with Poetry.                                                       |
 | 4.1.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image        |

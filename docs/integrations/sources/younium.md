@@ -16,12 +16,14 @@ This Younium source uses the [Younium API](https://developer.younium.com/).
 2. Enter a name for your source
 3. Enter your Younium `username`
 4. Enter your Younium `password`
-5. Enter your Younium `legal_entity`. You can find the legal entity name in your account setting if you log in to the [Younium web platform](https://app.younium.com/)
+5. Enter your Younium `legal_entity`. You can find the legal entity name in your account setting if
+   you log in to the [Younium web platform](https://app.younium.com/)
 6. Click **Set up source**
 
 ## Supported sync modes
 
-The Younium source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Younium source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -42,7 +44,7 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                            |
-| :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------|
-| 0.3.0   | 2023-10-25 | [31690](https://github.com/airbytehq/airbyte/pull/31690) | Migrate to low-code framework |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 0.3.0   | 2023-10-25 | [31690](https://github.com/airbytehq/airbyte/pull/31690) | Migrate to low-code framework                      |
 | 0.2.0   | 2023-03-29 | [24655](https://github.com/airbytehq/airbyte/pull/24655) | Source Younium: Adding Booking and Account streams |
 | 0.1.0   | 2022-11-09 | [18758](https://github.com/airbytehq/airbyte/pull/18758) | 🎉 New Source: Younium [python cdk]                |

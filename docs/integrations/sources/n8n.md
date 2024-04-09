@@ -2,7 +2,9 @@
 
 ## Sync overview
 
-This source can sync data from [N8n](https://docs.n8n.io/api/). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch.
+This source can sync data from [N8n](https://docs.n8n.io/api/). At present this connector only
+supports full refresh syncs meaning that each time you use the connector it will sync all available
+records from scratch.
 
 ## This Source Supports the Following Streams
 

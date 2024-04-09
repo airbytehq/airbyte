@@ -1,8 +1,11 @@
 # Connector Metadata.yaml File
 
-The `metadata.yaml` file contains crucial information about the connector, including its type, definition ID, Docker image tag, Docker repository, and much more. It plays a key role in the way Airbyte handles connector data and improves the overall organization and accessibility of this data.
+The `metadata.yaml` file contains crucial information about the connector, including its type,
+definition ID, Docker image tag, Docker repository, and much more. It plays a key role in the way
+Airbyte handles connector data and improves the overall organization and accessibility of this data.
 
-N.B. the `metadata.yaml` file replaces the previous `source_definitions.yaml` and `destinations_definitions.yaml` files.
+N.B. the `metadata.yaml` file replaces the previous `source_definitions.yaml` and
+`destinations_definitions.yaml` files.
 
 ## Structure
 
@@ -40,38 +43,50 @@ metadataSpecVersion: "1.0"
 
 ## The `registries` Section
 
-The `registries` section within the `metadata.yaml` file plays a vital role in determining the contents of the `oss_registry.json` and `cloud_registry.json` files.
+The `registries` section within the `metadata.yaml` file plays a vital role in determining the
+contents of the `oss_registry.json` and `cloud_registry.json` files.
 
-This section contains two subsections: `cloud` and `oss` (Open Source Software). Each subsection contains details about the specific registry, such as the Docker repository associated with it and whether it's enabled or not.
+This section contains two subsections: `cloud` and `oss` (Open Source Software). Each subsection
+contains details about the specific registry, such as the Docker repository associated with it and
+whether it's enabled or not.
 
 ### Structure
 
 Here's how the `registries` section is structured in our previous `metadata.yaml` example:
 
 ```yaml
-  registries:
-    cloud:
-      dockerRepository: airbyte/source-postgres-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
+registries:
+  cloud:
+    dockerRepository: airbyte/source-postgres-strict-encrypt
+    enabled: true
+  oss:
+    enabled: true
 ```
 
-In this example, both `cloud` and `oss` registries are enabled, and the Docker repository for the `cloud` registry is overrode to `airbyte/source-postgres-strict-encrypt`.
+In this example, both `cloud` and `oss` registries are enabled, and the Docker repository for the
+`cloud` registry is overrode to `airbyte/source-postgres-strict-encrypt`.
 
 ### Updating Registries
 
-When the `metadata.yaml` file is updated, this data is automatically uploaded to Airbyte's metadata service. This service then generates the publicly available `oss_registry.json` and `cloud_registry.json` registries based on the information provided in the `registries` section.
+When the `metadata.yaml` file is updated, this data is automatically uploaded to Airbyte's metadata
+service. This service then generates the publicly available `oss_registry.json` and
+`cloud_registry.json` registries based on the information provided in the `registries` section.
 
-For instance, if a connector is listed as `enabled: true` under the `oss` section, it will be included in the `oss_registry.json` file. Similarly, if it's listed as `enabled: true` under the `cloud` section, it will be included in the `cloud_registry.json` file.
+For instance, if a connector is listed as `enabled: true` under the `oss` section, it will be
+included in the `oss_registry.json` file. Similarly, if it's listed as `enabled: true` under the
+`cloud` section, it will be included in the `cloud_registry.json` file.
 
-Thus, the `registries` section in the `metadata.yaml` file provides a flexible and organized way to manage which connectors are included in each registry.
+Thus, the `registries` section in the `metadata.yaml` file provides a flexible and organized way to
+manage which connectors are included in each registry.
 
 ## The `tags` Section
 
-The `tags` field is an optional part of the `metadata.yaml` file. It is designed to provide additional context about a connector and improve the connector's discoverability. This field can contain any string, making it a flexible tool for adding additional details about a connector.
+The `tags` field is an optional part of the `metadata.yaml` file. It is designed to provide
+additional context about a connector and improve the connector's discoverability. This field can
+contain any string, making it a flexible tool for adding additional details about a connector.
 
-In the `metadata.yaml` file, `tags` is a list that may contain any number of string elements. Each element in the list is a separate tag. For instance:
+In the `metadata.yaml` file, `tags` is a list that may contain any number of string elements. Each
+element in the list is a separate tag. For instance:
 
 ```yaml
 tags:
@@ -79,53 +94,88 @@ tags:
   - "keyword:database"
   - "keyword:SQL"
 ```
-In the example above, the connector has three tags. Tags are used for two primary purposes in Airbyte:
 
-1. **Denoting the Programming Language(s)**: Tags that begin with language: are used to specify the programming languages that are utilized by the connector. This information is auto-generated by a script that scans the connector's files for recognized programming languages. In the example above, language:java means that the connector uses Java.
+In the example above, the connector has three tags. Tags are used for two primary purposes in
+Airbyte:
 
-2. **Keywords for Searching**: Tags that begin with keyword: are used to make the connector more discoverable by adding searchable terms related to it. In the example above, the tags keyword:database and keyword:SQL can be used to find this connector when searching for `database` or `SQL`.
+1. **Denoting the Programming Language(s)**: Tags that begin with language: are used to specify the
+   programming languages that are utilized by the connector. This information is auto-generated by a
+   script that scans the connector's files for recognized programming languages. In the example
+   above, language:java means that the connector uses Java.
 
-These are just examples of how tags can be used. As a free-form field, the tags list can be customized as required for each connector. This flexibility allows tags to be a powerful tool for managing and discovering connectors.
+2. **Keywords for Searching**: Tags that begin with keyword: are used to make the connector more
+   discoverable by adding searchable terms related to it. In the example above, the tags
+   keyword:database and keyword:SQL can be used to find this connector when searching for `database`
+   or `SQL`.
+
+These are just examples of how tags can be used. As a free-form field, the tags list can be
+customized as required for each connector. This flexibility allows tags to be a powerful tool for
+managing and discovering connectors.
 
 ## The `icon` Field
+
 _⚠️ This property is in the process of being refactored to be a file in the connector folder_
 
 You may notice a `icon.svg` file in the connectors folder.
 
-This is because we are transitioning away from icons being stored in the `airbyte-platform` repository. Instead, we will be storing them in the connector folder itself. This will allow us to have a single source of truth for all connector-related information.
+This is because we are transitioning away from icons being stored in the `airbyte-platform`
+repository. Instead, we will be storing them in the connector folder itself. This will allow us to
+have a single source of truth for all connector-related information.
 
-This transition is currently in progress. Once it is complete, the `icon` field in the `metadata.yaml` file will be removed, and the `icon.svg` file will be used instead.
+This transition is currently in progress. Once it is complete, the `icon` field in the
+`metadata.yaml` file will be removed, and the `icon.svg` file will be used instead.
 
 ## The `releases` Section
-The `releases` section contains extra information about certain types of releases. The current types of releases are:
-* `breakingChanges`
+
+The `releases` section contains extra information about certain types of releases. The current types
+of releases are:
+
+- `breakingChanges`
 
 ### `breakingChanges`
 
-The `breakingChanges` section of `releases` contains a dictionary of version numbers (usually major versions, i.e. `1.0.0`) and information about
-their associated breaking changes. Each entry must contain the following parameters:
-* `message`: A description of the breaking change, written in a user-friendly format. This message should briefly describe
-  * What the breaking change is, and which users it effects (e.g. all users of the source, or only those using a certain stream)
-  * Why the change is better for the user (fixed a bug, something got faster, etc)
-  * What the user should do to fix the issue (e.g. a full reset, run a SQL query in the destinaton, etc)
-* `upgradeDeadline`: (`YYYY-MM-DD`) The date by which the user should upgrade to the new version.
+The `breakingChanges` section of `releases` contains a dictionary of version numbers (usually major
+versions, i.e. `1.0.0`) and information about their associated breaking changes. Each entry must
+contain the following parameters:
 
-When considering what the `upgradeDeadline` should be, target the amount of time which would be reasonable for the user to make the required changes described in the `message` and upgrade giude.  If the required changes are _simple_ (e.g. "do a full reset"), 2 weeks is recommended.  Note that you do *not* want to link the duration of `upgradeDeadline` to an upstream API's deprecation date.  While it is true that the older version of a connector will continue to work for that period of time, it means that users who are pinned to the older version of the connector will not benefit from future updates and fixes.
+- `message`: A description of the breaking change, written in a user-friendly format. This message
+  should briefly describe
+  - What the breaking change is, and which users it effects (e.g. all users of the source, or only
+    those using a certain stream)
+  - Why the change is better for the user (fixed a bug, something got faster, etc)
+  - What the user should do to fix the issue (e.g. a full reset, run a SQL query in the destinaton,
+    etc)
+- `upgradeDeadline`: (`YYYY-MM-DD`) The date by which the user should upgrade to the new version.
 
-Without all 3 of these points, the breaking change message is not helpful to users. 
+When considering what the `upgradeDeadline` should be, target the amount of time which would be
+reasonable for the user to make the required changes described in the `message` and upgrade giude.
+If the required changes are _simple_ (e.g. "do a full reset"), 2 weeks is recommended. Note that you
+do _not_ want to link the duration of `upgradeDeadline` to an upstream API's deprecation date. While
+it is true that the older version of a connector will continue to work for that period of time, it
+means that users who are pinned to the older version of the connector will not benefit from future
+updates and fixes.
+
+Without all 3 of these points, the breaking change message is not helpful to users.
 
 Here is an example:
+
 ```yaml
 releases:
   breakingChanges:
     1.0.0:
-      message: "This version changes the connector’s authentication by removing ApiKey authentication, which is now deprecated by the [upstream source](upsteam-docs-url.com). Users currently using ApiKey auth will need to reauthenticate with OAuth after upgrading to continue syncing."
+      message:
+        "This version changes the connector’s authentication by removing ApiKey authentication,
+        which is now deprecated by the [upstream source](upsteam-docs-url.com). Users currently
+        using ApiKey auth will need to reauthenticate with OAuth after upgrading to continue
+        syncing."
       upgradeDeadline: "2023-12-31"
 ```
 
 #### `scopedImpact`
-The optional `scopedImpact` property allows you to provide a list of scopes for which the change is breaking.
-This allows you to reduce the scope of the change; it's assumed that any scopes not listed are unaffected by the breaking change.
+
+The optional `scopedImpact` property allows you to provide a list of scopes for which the change is
+breaking. This allows you to reduce the scope of the change; it's assumed that any scopes not listed
+are unaffected by the breaking change.
 
 For example, consider the following `scopedImpact` definition:
 
@@ -133,24 +183,28 @@ For example, consider the following `scopedImpact` definition:
 releases:
   breakingChanges:
     1.0.0:
-      message: "This version changes the cursor for the `Users` stream. After upgrading, please reset the stream."
+      message:
+        "This version changes the cursor for the `Users` stream. After upgrading, please reset the
+        stream."
       upgradeDeadline: "2023-12-31"
       scopedImpact:
         - scopeType: stream
           impactedScopes: ["users"]
 ```
 
-This change only breaks the `users` stream - all other streams are unaffected. A user can safely ignore the breaking change
-if they are not syncing the `users` stream.
+This change only breaks the `users` stream - all other streams are unaffected. A user can safely
+ignore the breaking change if they are not syncing the `users` stream.
 
 The supported scope types are listed below.
 
-| Scope Type | Value Type | Value Description |
-|------------|------------|------------------|
-| stream     | `list[str]`  | List of stream names |
+| Scope Type | Value Type  | Value Description    |
+| ---------- | ----------- | -------------------- |
+| stream     | `list[str]` | List of stream names |
 
 #### `remoteRegistries`
-The optional `remoteRegistries` property allows you to configure how a connector should be published to registries like Pypi.
+
+The optional `remoteRegistries` property allows you to configure how a connector should be published
+to registries like Pypi.
 
 **Important note**: Currently no automated publishing will occur.
 
@@ -161,6 +215,7 @@ remoteRegistries:
     packageName: airbyte-source-connector-name
 ```
 
-The `packageName` property of the `pypi` section is the name of the installable package in the PyPi registry.
+The `packageName` property of the `pypi` section is the name of the installable package in the PyPi
+registry.
 
 If not specified, all remote registry configurations are disabled by default.

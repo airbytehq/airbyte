@@ -4,10 +4,11 @@
 
 ### Output schema
 
-The incoming Airbyte data is structured depending on the target Redis cache/data type.
-This connector maps an incoming data from a namespace and stream to a unique Redis key.
+The incoming Airbyte data is structured depending on the target Redis cache/data type. This
+connector maps an incoming data from a namespace and stream to a unique Redis key.
 
-For the **_hash_** implementation as a Redis data type the keys and the hashes are structured in the following way:
+For the **_hash_** implementation as a Redis data type the keys and the hashes are structured in the
+following way:
 
 **_key_**:
 
@@ -32,7 +33,8 @@ For the **_hash_** implementation as a Redis data type the keys and the hashes a
 
 ### Performance considerations
 
-As long as you have the necessary memory capacity for your cache, Redis should be able to handle even millions of records without any issues since the data is stored in-memory with the option to
+As long as you have the necessary memory capacity for your cache, Redis should be able to handle
+even millions of records without any issues since the data is stored in-memory with the option to
 save snapshots periodically on disk.
 
 ## Getting started
@@ -45,7 +47,8 @@ save snapshots periodically on disk.
   - **_port_**: Port of the Redis server where to connect.
   - **_username_**: Username for authenticating with the Redis server.
   - **_password_**: Password for authenticating with the Redis server.
-  - **_cache_type_**: Redis cache/data type to use when storing the incoming messages. i.e hash,set,list,stream,etc.
+  - **_cache_type_**: Redis cache/data type to use when storing the incoming messages. i.e
+    hash,set,list,stream,etc.
 - SSL toggle the switch to connect using SSL
 - For SSL Modes, select:
   - **disable** to disable encrypted communication between Airbyte and the source

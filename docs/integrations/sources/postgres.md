@@ -1,18 +1,29 @@
 # Postgres
 
 Airbyte's certified Postgres connector offers the following features:
-* Replicate data from tables, views and materilized views. Other data objects won't be replicated to the destination like indexes, permissions.
-* Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin). 
-* All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
-* Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshooting issues with the Postgres connector.
+- Replicate data from tables, views and materilized views. Other data objects won't be replicated to
+  the destination like indexes, permissions.
+- Multiple methods of keeping your data fresh, including
+  [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication
+  using the [xmin system column](#xmin).
+- All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes),
+  providing flexibility in how data is delivered to your destination.
+- Reliable replication at any table size with
+  [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
+  and chunking of database reads.
+
+The contents below include a 'Quick Start' guide, advanced setup steps, and reference information
+(data type mapping, and changelogs). See
+[here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to
+troubleshooting issues with the Postgres connector.
 
 ![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png?raw=true)
 
 ## Quick Start
 
 Here is an outline of the minimum required steps to configure a Postgres connector:
+
 1. Create a dedicated read-only Postgres user with permissions for replicating data
 2. Create a new Postgres source in the Airbyte UI using `xmin` system column
 3. (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
@@ -21,7 +32,8 @@ Once this is complete, you will be able to select Postgres as a source for repli
 
 #### Step 1: Create a dedicated read-only Postgres user
 
-These steps create a dedicated read-only user for replicating data. Alternatively, you can use an existing Postgres user in your database.
+These steps create a dedicated read-only user for replicating data. Alternatively, you can use an
+existing Postgres user in your database.
 
 The following commands will create a new user:
 
@@ -29,7 +41,8 @@ The following commands will create a new user:
 CREATE USER <user_name> PASSWORD 'your_password_here';
 ```
 
-Now, provide this user with read-only access to relevant schemas and tables. Re-run this command for each schema you expect to replicate data from:
+Now, provide this user with read-only access to relevant schemas and tables. Re-run this command for
+each schema you expect to replicate data from:
 
 ```roomsql
 GRANT USAGE ON SCHEMA <schema_name> TO <user_name>;
@@ -39,41 +52,63 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user
 
 #### Step 2: Create a new Postgres source in Airbyte UI
 
-From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
+From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account,
+select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres
+source.
 
 ![Create an Airbyte source](https://github.com/airbytehq/airbyte/blob/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_source_selection.png?raw=true)
 
 To fill out the required information:
+
 1. Enter the hostname, port number, and name for your Postgres database.
-2. You may optionally opt to list each of the schemas you want to sync. These are case-sensitive, and multiple schemas may be entered. By default, `public` is the only selected schema.
-3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
-4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. See here to learn about other SSL modes and SSH tunneling.
-5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
-   1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
+2. You may optionally opt to list each of the schemas you want to sync. These are case-sensitive,
+   and multiple schemas may be entered. By default, `public` is the only selected schema.
+3. Enter the username and password you created in
+   [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
+4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these
+   always require encryption. `verify-ca` also requires certificates from your Postgres database.
+   See here to learn about other SSL modes and SSH tunneling.
+5. Select `Standard (xmin)` from available replication methods. This uses the
+   [xmin system column](#xmin) to reliably replicate data from your database.
+   1. If your database is particularly large (> 500 GB), you will benefit from
+      [configuring your Postgres source using logical replication (CDC)](#cdc).
 
 <!-- env:cloud -->
+
 #### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
-If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
+If you are on Airbyte Cloud, you will always need to modify your database configuration to allow
+inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in our
+[Airbyte Security docs](../../operating-airbyte/security#network-security-1).
 
-Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
+Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database.
+Once this succeeds, you've configured an Airbyte Postgres source!
+
 <!-- /env:cloud -->
 
 ## Advanced Configuration
 
 ### Setup using CDC
 
-Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
-* See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
-* See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
+Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of
+the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
+
+- See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte
+  implements CDC.
+- See
+  [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements)
+  to learn more about Postgres CDC requirements and limitations.
 
 We recommend configuring your Postgres source with CDC when:
+
 - You need a record of deletions.
 - You have a very large database (500 GB or more).
-- Your table has a primary key but doesn't have a reasonable cursor field for incremental syncing (`updated_at`).
+- Your table has a primary key but doesn't have a reasonable cursor field for incremental syncing
+  (`updated_at`).
 
-These are the additional steps required (after following the [quick start](#quick-start)) to configure your Postgres source using CDC:
+These are the additional steps required (after following the [quick start](#quick-start)) to
+configure your Postgres source using CDC:
+
 1. Provide additional `REPLICATION` permissions to read-only user
 2. Enable logical replication on your Postgres database
 3. Create a replication slot on your Postgres database
@@ -82,34 +117,47 @@ These are the additional steps required (after following the [quick start](#quic
 
 #### Step 1: Prepopulate your Postgres source configuration
 
-We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
+We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte
+can connect to your Postgres database prior to configuring CDC settings.
 
-For CDC, you must connect to primary/master databases. Pointing the connector configuration to replica database hosts for CDC will lead to failures.
+For CDC, you must connect to primary/master databases. Pointing the connector configuration to
+replica database hosts for CDC will lead to failures.
 
 #### Step 2: Provide additional permissions to read-only user
 
-To configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user created in [step 1 of the quick start](#step-1-create-a-dedicated-read-only-postgres-user):
+To configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user
+created in [step 1 of the quick start](#step-1-create-a-dedicated-read-only-postgres-user):
+
 ```
 ALTER USER <user_name> REPLICATION;
 ```
 
 #### Step 3: Enable logical replication on your Postgres database
 
-To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the <a href="https://www.postgresql.org/docs/current/config-setting.html">postgresql.conf file</a> for your Postgres database:
+To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following
+parameters in the
+<a href="https://www.postgresql.org/docs/current/config-setting.html">postgresql.conf file</a> for
+your Postgres database:
 
 | Parameter             | Description                                                                    | Set value to                                                                                                                         |
-|-----------------------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | wal_level             | Type of coding used within the Postgres write-ahead log                        | `logical `                                                                                                                           |
 | max_wal_senders       | The maximum number of processes used for handling WAL changes                  | `min: 1`                                                                                                                             |
 | max_replication_slots | The maximum number of replication slots that are allowed to stream WAL changes | `1` (if Airbyte is the only service reading subscribing to WAL changes. More than 1 if other services are also reading from the WAL) |
 
 To enable logical replication on AWS Postgres RDS or Aurora:
-* Go to the Configuration tab for your DB cluster.
-* Find your cluster parameter group. Either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy, change your cluster's parameter group before restarting.
-* Within the parameter group page, search for `rds.logical_replication`. Select this row and click Edit parameters. Set this value to 1.
-* Wait for a maintenance window to automatically restart the instance or restart it manually.
 
-To enable logical replication on Azure Database for Postgres, change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
+- Go to the Configuration tab for your DB cluster.
+- Find your cluster parameter group. Either edit the parameters for this group or create a copy of
+  this parameter group to edit. If you create a copy, change your cluster's parameter group before
+  restarting.
+- Within the parameter group page, search for `rds.logical_replication`. Select this row and click
+  Edit parameters. Set this value to 1.
+- Wait for a maintenance window to automatically restart the instance or restart it manually.
+
+To enable logical replication on Azure Database for Postgres, change the replication mode of your
+Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the
+Azure Portal. Alternatively, use the Azure CLI to run the following command:
 
 ```
 az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
@@ -118,87 +166,115 @@ az postgres server restart --resource-group group --name server
 
 #### Step 4: Create a replication slot on your Postgres database
 
-Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot.
+Airbyte requires a replication slot configured only for its use. Only one source should be
+configured that uses this replication slot.
 
-For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called `airbyte_slot` using pgoutput, run as the user with the newly granted `REPLICATION` role:
+For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called
+`airbyte_slot` using pgoutput, run as the user with the newly granted `REPLICATION` role:
 
 ```
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
-The output of this command will include the name of the replication slot to fill into the Airbyte source setup page.
+The output of this command will include the name of the replication slot to fill into the Airbyte
+source setup page.
 
 #### Step 5: Create publication and replication identities for each Postgres table
 
 For each table you want to replicate with CDC, follow the steps below:
 
-1. Add the replication identity (the method of distinguishing between rows) for each table you want to replicate:
+1. Add the replication identity (the method of distinguishing between rows) for each table you want
+   to replicate:
 
 ```
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
 
-In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
-ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.
+In rare cases, if your tables use data types that support
+[TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values,
+consider instead using replica identity type full: ` ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.
 
-2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
+2. Create the Postgres publication. You should include all tables you want to replicate as part of
+   the publication:
 
 ```
 CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`
 ```
 
-The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+The publication name is customizable. Refer to the
+[Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or
+remove tables from your publication in the future.
 
-:::note
-The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
-:::
+:::note The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is
+not part of the publication, it will not be replicated even though it is selected. If a table is
+part of the publication but does not have a replication identity, that replication identity will be
+created automatically on the first run if the Airbyte user has the necessary permissions. :::
 
 #### Step 6: Enable CDC replication in Airbyte UI
 
-In your Postgres source, change the replication mode to `Logical Replication (CDC)`, and enter the replication slot and publication you just created.
+In your Postgres source, change the replication mode to `Logical Replication (CDC)`, and enter the
+replication slot and publication you just created.
 
 ## Postgres Replication Methods
 
-The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
+The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin
+and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of
+updating your data.
 
 #### CDC
 
-Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We recommend configuring your Postgres source with CDC when:
+Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of
+the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To
+learn more how Airbyte implements CDC, refer to
+[Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We recommend
+configuring your Postgres source with CDC when:
+
 - You need a record of deletions.
 - You have a very large database (500 GB or more).
-- Your table has a primary key but doesn't have a reasonable cursor field for incremental syncing (`updated_at`).
+- Your table has a primary key but doesn't have a reasonable cursor field for incremental syncing
+  (`updated_at`).
 
-If your goal is to maintain a snapshot of your table in the destination but the limitations prevent you from using CDC, consider using the xmin replication method.
+If your goal is to maintain a snapshot of your table in the destination but the limitations prevent
+you from using CDC, consider using the xmin replication method.
 
 #### Xmin
 
-Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which (available in all Postgres databases) is used to track inserts and updates to your source data.
+Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable
+syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which
+(available in all Postgres databases) is used to track inserts and updates to your source data.
 
 This is a good solution if:
+
 - There is not a well-defined cursor candidate to use for Standard incremental mode.
 - You want to replace a previously configured full-refresh sync.
 - You are replicating Postgres tables less than 500GB.
-- You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication. 
+- You are not replicating non-materialized views. Non-materialized views are not supported by xmin
+  replication.
 
 ## Connecting with SSL or SSH Tunneling
 
 ### SSL Modes
 
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. 
+Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
 
 Here is a breakdown of available SSL connection modes:
+
 - `disable` to disable encrypted communication between Airbyte and the source
 - `allow` to enable encrypted communication only when required by the source
 - `prefer` to allow unencrypted communication only when the source doesn't support encryption
-- `require` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
+- `require` to always require encryption. Note: The connection will fail if the source doesn't
+  support encryption.
 - `verify-ca` to always require encryption and verify that the source has a valid SSL certificate
 - `verify-full` to always require encryption and verify the identity of the source
 
 ### SSH Tunneling
 
-If you are using SSH tunneling, as Airbyte Cloud requires encrypted communication, select `SSH Key Authentication` or `Password Authentication` if you selected `disable`, `allow`, or `prefer` as the SSL Mode; otherwise, the connection will fail.
+If you are using SSH tunneling, as Airbyte Cloud requires encrypted communication, select
+`SSH Key Authentication` or `Password Authentication` if you selected `disable`, `allow`, or
+`prefer` as the SSL Mode; otherwise, the connection will fail.
 
 For SSH Tunnel Method, select:
+
 - `No Tunnel` for a direct connection to the database
 - `SSH Key Authentication` to use an RSA Private as your secret for establishing the SSH tunnel
 - `Password Authentication` to use a password as your secret for establishing the SSH tunnel
@@ -207,40 +283,60 @@ For SSH Tunnel Method, select:
 
 You can connect to a Postgres instance via an SSH tunnel.
 
-When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also called a bastion or a jump server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also
+called a bastion or a jump server) that has direct access to the database. Airbyte connects to the
+bastion and then asks the bastion to connect directly to the server.
 
 To connect to a Postgres instance via an SSH tunnel:
 
-1. While [setting up](#step-2-create-a-new-postgres-source-in-airbyte-ui) the Postgres source connector, from the SSH tunnel dropdown, select:
-    - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
-    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
-2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
-3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
-4. For **SSH Login Username**, enter the username to use when connecting to the bastion server. **Note:** This is the operating system username and not the Postgres username.
+1. While [setting up](#step-2-create-a-new-postgres-source-in-airbyte-ui) the Postgres source
+   connector, from the SSH tunnel dropdown, select:
+   - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
+   - Password Authentication to use a password as your secret for establishing the SSH Tunnel
+2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate
+   (bastion) server that Airbyte will connect to.
+3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH
+   connections is 22.
+4. For **SSH Login Username**, enter the username to use when connecting to the bastion server.
+   **Note:** This is the operating system username and not the Postgres username.
 5. For authentication:
-    - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [private Key](#generating-a-private-key-for-ssh-tunneling) that you are using to create the SSH connection.
-    - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the Postgres password.
+   - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the
+     [private Key](#generating-a-private-key-for-ssh-tunneling) that you are using to create the SSH
+     connection.
+   - If you selected **Password Authentication**, enter the password for the operating system user
+     to connect to the bastion server. **Note:** This is the operating system password and not the
+     Postgres password.
 
 #### Generating a private key for SSH Tunneling
 
-The connector supports any SSH compatible key format such as RSA or Ed25519. To generate an RSA key, for example, run:
+The connector supports any SSH compatible key format such as RSA or Ed25519. To generate an RSA key,
+for example, run:
 
 ```
 ssh-keygen -t rsa -m PEM -f myuser_rsa
 ```
 
-The command produces the private key in PEM format and the public key remains in the standard format used by the `authorized_keys` file on your bastion server. Add the public key to your bastion host to the user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen to allow it to log into the bastion server.
+The command produces the private key in PEM format and the public key remains in the standard format
+used by the `authorized_keys` file on your bastion server. Add the public key to your bastion host
+to the user you want to use with Airbyte. The private key is provided via copy-and-paste to the
+Airbyte connector configuration screen to allow it to log into the bastion server.
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
+To see connector limitations, or troubleshoot your Postgres connector, see more
+[in our Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
 
 ## Data type mapping
 
-According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres
+data types are mapped to the following data types when synchronizing data. You can check the test
+values examples
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new
+test!
 
 | Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
-|---------------------------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bigint`                              | number         |                                                                                                                                                      |
 | `bigserial`, `serial8`                | number         |                                                                                                                                                      |
 | `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                                                               |
@@ -291,20 +387,20 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.23 | 2024-04-02 | [36759](https://github.com/airbytehq/airbyte/pull/36759) | Track latest CDK |
-| 3.3.22 | 2024-04-01 | [36739](https://github.com/airbytehq/airbyte/pull/36739) | Fix useLocalCdk flag. |
-| 3.3.21 | 2024-03-25 | [36584](https://github.com/airbytehq/airbyte/pull/36584) | Adopt Kotlin CDK. |
-| 3.3.20 | 2024-03-25 | [36432](https://github.com/airbytehq/airbyte/pull/36432) | Failure to serialize values from Postgres DB shouldn't fail sync. |
-| 3.3.19 | 2024-03-12 | [36333](https://github.com/airbytehq/airbyte/pull/36333) | Use newest CDK - deprecate dbz iterator |
-| 3.3.18 | 2024-03-12 | [35599](https://github.com/airbytehq/airbyte/pull/35599) | Use newest CDK |
-| 3.3.17 | 2024-03-12 | [35939](https://github.com/airbytehq/airbyte/pull/35939) | Use lsn_commit value instead of lsn_proc for CDC checkpointing logic. |
-| 3.3.16 | 2024-03-11 | [35904](https://github.com/airbytehq/airbyte/pull/35904) | Adopt Java CDK 0.23.1- debezium retries. |
-| 3.3.15 | 2024-02-29 | [34724](https://github.com/airbytehq/airbyte/pull/34724) | Add record count in state message. |
-| 3.3.14 | 2024-03-06 | [35842](https://github.com/airbytehq/airbyte/pull/35842) | Add logging to understand cases with a large number of records with the same LSN. |
-| 3.3.13 | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message. |
-| 3.3.12 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
-| 3.3.11 | 2024-02-20 | [35304](https://github.com/airbytehq/airbyte/pull/35304) | Add config to throw an error on invalid CDC position and enable it by default. |
+| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| 3.3.23  | 2024-04-02 | [36759](https://github.com/airbytehq/airbyte/pull/36759) | Track latest CDK                                                                                                                                                           |
+| 3.3.22  | 2024-04-01 | [36739](https://github.com/airbytehq/airbyte/pull/36739) | Fix useLocalCdk flag.                                                                                                                                                      |
+| 3.3.21  | 2024-03-25 | [36584](https://github.com/airbytehq/airbyte/pull/36584) | Adopt Kotlin CDK.                                                                                                                                                          |
+| 3.3.20  | 2024-03-25 | [36432](https://github.com/airbytehq/airbyte/pull/36432) | Failure to serialize values from Postgres DB shouldn't fail sync.                                                                                                          |
+| 3.3.19  | 2024-03-12 | [36333](https://github.com/airbytehq/airbyte/pull/36333) | Use newest CDK - deprecate dbz iterator                                                                                                                                    |
+| 3.3.18  | 2024-03-12 | [35599](https://github.com/airbytehq/airbyte/pull/35599) | Use newest CDK                                                                                                                                                             |
+| 3.3.17  | 2024-03-12 | [35939](https://github.com/airbytehq/airbyte/pull/35939) | Use lsn_commit value instead of lsn_proc for CDC checkpointing logic.                                                                                                      |
+| 3.3.16  | 2024-03-11 | [35904](https://github.com/airbytehq/airbyte/pull/35904) | Adopt Java CDK 0.23.1- debezium retries.                                                                                                                                   |
+| 3.3.15  | 2024-02-29 | [34724](https://github.com/airbytehq/airbyte/pull/34724) | Add record count in state message.                                                                                                                                         |
+| 3.3.14  | 2024-03-06 | [35842](https://github.com/airbytehq/airbyte/pull/35842) | Add logging to understand cases with a large number of records with the same LSN.                                                                                          |
+| 3.3.13  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message.                                                                                                                                             |
+| 3.3.12  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug.                                                                                                                                                           |
+| 3.3.11  | 2024-02-20 | [35304](https://github.com/airbytehq/airbyte/pull/35304) | Add config to throw an error on invalid CDC position and enable it by default.                                                                                             |
 | 3.3.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751) | Emit analytics message for invalid CDC cursor.                                                                                                                             |
 | 3.3.9   | 2024-02-13 | [35224](https://github.com/airbytehq/airbyte/pull/35224) | Adopt CDK 0.20.4                                                                                                                                                           |
 | 3.3.8   | 2024-02-08 | [34751](https://github.com/airbytehq/airbyte/pull/34751) | Adopt CDK 0.19.0                                                                                                                                                           |
@@ -444,13 +540,13 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226) | Make connectionTimeoutMs configurable through JDBC url parameters                                                                                                          |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273) | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                                                                              |
 | 0.4.41  | 2022-08-03 | [15077](https://github.com/airbytehq/airbyte/pull/15077) | Sync data from beginning if the LSN is no longer valid in CDC                                                                                                              |
-|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                         |
+|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                        |
 | 0.4.40  | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187) | Add support for BCE dates/timestamps                                                                                                                                       |
 |         | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534) | Align regular and CDC integration tests and data mappers                                                                                                                   |
 | 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                                                                  |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                                                                                       |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                                                                                |
-| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                              |     |
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |     |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                                                                                             |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates.                                                                                               |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586) | Validate source JDBC url parameters                                                                                                                                        |

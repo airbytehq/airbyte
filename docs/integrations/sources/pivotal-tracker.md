@@ -36,7 +36,9 @@ Output streams:
 
 ### Performance considerations
 
-The Pivotal Trakcer connector should not run into Stripe API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Pivotal Trakcer connector should not run into Stripe API limitations under normal usage. Please
+[create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that
+are not automatically retried successfully.
 
 ## Getting started
 
@@ -46,12 +48,12 @@ The Pivotal Trakcer connector should not run into Stripe API limitations under n
 
 ### Setup guide to create the API Token
 
-Access your profile [here](https://www.pivotaltracker.com/profile) go down and click in **Create New Token**.
-Use this to pull data from Pivotal Tracker.
+Access your profile [here](https://www.pivotaltracker.com/profile) go down and click in **Create New
+Token**. Use this to pull data from Pivotal Tracker.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| Version | Date       | Pull Request                                             | Subject                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------ |
 | 0.1.1   | 2023-10-25 | [11060](https://github.com/airbytehq/airbyte/pull/11060) | Fix schema and check connection |
-| 0.1.0   | 2022-04-04 | [11060](https://github.com/airbytehq/airbyte/pull/11060) | Initial Release |
+| 0.1.0   | 2022-04-04 | [11060](https://github.com/airbytehq/airbyte/pull/11060) | Initial Release                 |

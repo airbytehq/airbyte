@@ -2,15 +2,22 @@
 
 ## Overview
 
-The Redshift source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+The Redshift source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will
+copy all rows in the tables and columns you set up for replication into the destination in a new
+table.
 
-This Redshift source connector is built on top of the source-jdbc code base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in Redshift documentation [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html).
+This Redshift source connector is built on top of the source-jdbc code base and is configured to
+rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft
+[here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in
+Redshift documentation [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html).
 
 ### Sync overview
 
 #### Resulting schema
 
-The Redshift source does not alter the schema present in your warehouse. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
+The Redshift source does not alter the schema present in your warehouse. Depending on the
+destination connected to this source, however, the schema may be altered. See the destination's
+documentation for more details.
 
 ### Features
 
@@ -27,9 +34,19 @@ The Redshift source does not alter the schema present in your warehouse. Dependi
 
 #### Incremental Sync
 
-The Redshift source connector supports incremental syncs. To setup an incremental sync for a table in Redshift in the Airbyte UI, you must setup a [user-defined cursor field](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor) such as an `updated_at` column. The connector relies on this column to know which records were updated since the last sync it ran. See the [incremental sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) for more information.
+The Redshift source connector supports incremental syncs. To setup an incremental sync for a table
+in Redshift in the Airbyte UI, you must setup a
+[user-defined cursor field](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor)
+such as an `updated_at` column. The connector relies on this column to know which records were
+updated since the last sync it ran. See the
+[incremental sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+for more information.
 
-Defining a cursor field allows you to run incremental-append syncs. To run [incremental-dedupe](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) syncs, you'll need to tell the connector which column(s) to use as a primary key. See the [incremental-dedupe sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) for more information.
+Defining a cursor field allows you to run incremental-append syncs. To run
+[incremental-dedupe](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+syncs, you'll need to tell the connector which column(s) to use as a primary key. See the
+[incremental-dedupe sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+for more information.
 
 ## Getting started
 
@@ -42,11 +59,18 @@ Defining a cursor field allows you to run incremental-append syncs. To run [incr
 
 #### 1. Make sure your cluster is active and accessible from the machine running Airbyte
 
-This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your Redshift cluster is via the check connection tool in the UI. You can check AWS Redshift documentation with a tutorial on how to properly configure your cluster's access [here](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-authorize-cluster-access.html)
+This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect
+to your Redshift cluster is via the check connection tool in the UI. You can check AWS Redshift
+documentation with a tutorial on how to properly configure your cluster's access
+[here](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-authorize-cluster-access.html)
 
 #### 2. Fill up connection info
 
-Next is to provide the necessary information on how to connect to your cluster such as the `host` whcih is part of the connection string or Endpoint accessible [here](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-connect-to-cluster.html#rs-gsg-how-to-get-connection-string) without the `port` and `database` name \(it typically includes the cluster-id, region and end with `.redshift.amazonaws.com`\).
+Next is to provide the necessary information on how to connect to your cluster such as the `host`
+whcih is part of the connection string or Endpoint accessible
+[here](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-connect-to-cluster.html#rs-gsg-how-to-get-connection-string)
+without the `port` and `database` name \(it typically includes the cluster-id, region and end with
+`.redshift.amazonaws.com`\).
 
 ## Encryption
 
@@ -55,8 +79,8 @@ All Redshift connections are encrypted using SSL
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
-|:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.5.2 | 2024-02-13 | [35223](https://github.com/airbytehq/airbyte/pull/35223) | Adopt CDK 0.20.4 |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.2   | 2024-02-13 | [35223](https://github.com/airbytehq/airbyte/pull/35223) | Adopt CDK 0.20.4                                                                                                                          |
 | 0.5.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
 | 0.5.0   | 2023-12-18 | [33484](https://github.com/airbytehq/airbyte/pull/33484) | Remove LEGACY state                                                                                                                       |
 | (none)  | 2023-11-17 | [32616](https://github.com/airbytehq/airbyte/pull/32616) | Improve timestamptz handling                                                                                                              |

@@ -1,18 +1,26 @@
 # Connector Specification Reference
 
-The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.
+The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec) describes what
+inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses
+[JsonSchema](https://json-schema.org), but with some slight modifications.
 
 ## Demoing your specification
 
-While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions below.
-1. Open the `ConnectorForm` preview component in our deployed Storybook at: https://components.airbyte.dev/?path=/story/connector-connectorform--preview
-2. Press `raw` on the `connectionSpecification` property, so you will be able to paste a JSON structured string
+While iterating on your specification, you can preview what it will look like in the UI in realtime
+by following the instructions below.
+
+1. Open the `ConnectorForm` preview component in our deployed Storybook at:
+   https://components.airbyte.dev/?path=/story/connector-connectorform--preview
+2. Press `raw` on the `connectionSpecification` property, so you will be able to paste a JSON
+   structured string
 3. Set the string you want to preview the UI for
 4. When submitting the form you can see a preview of the values in the "Actions" tab
 
 ### Secret obfuscation
 
-By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API \(for example when working with a password\), add the `airbyte_secret` annotation to your connector's `spec.json` e.g:
+By default, any fields in a connector's specification are visible can be read in the UI. However, if
+you want to obfuscate fields in the UI and API \(for example when working with a password\), add the
+`airbyte_secret` annotation to your connector's `spec.json` e.g:
 
 ```text
 "password": {
@@ -22,11 +30,13 @@ By default, any fields in a connector's specification are visible can be read in
 },
 ```
 
-Here is an example of what the password field would look like: ![Screen Shot 2021-08-04 at 11 15 04 PM](https://user-images.githubusercontent.com/6246757/128300633-7f379b05-5f4a-46e8-ad88-88155e7f4260.png)
+Here is an example of what the password field would look like:
+![Screen Shot 2021-08-04 at 11 15 04 PM](https://user-images.githubusercontent.com/6246757/128300633-7f379b05-5f4a-46e8-ad88-88155e7f4260.png)
 
 ### Ordering fields in the UI
 
-Use the `order` property inside a definition to determine the order in which it will appear relative to other objects on the same level of nesting in the UI.
+Use the `order` property inside a definition to determine the order in which it will appear relative
+to other objects on the same level of nesting in the UI.
 
 For example, using the following spec:
 
@@ -51,21 +61,35 @@ will result in the following configuration on the UI:
 
 :::info
 
-Within an object definition, if some fields have the `order` property defined, and others don't, then the fields without the `order` property defined should be rendered last in the UI. Among those elements (which don't have `order` defined), required fields are ordered before optional fields, and both categories are further ordered alphabetically by their field name.
+Within an object definition, if some fields have the `order` property defined, and others don't,
+then the fields without the `order` property defined should be rendered last in the UI. Among those
+elements (which don't have `order` defined), required fields are ordered before optional fields, and
+both categories are further ordered alphabetically by their field name.
 
-Additionally, `order` values cannot be duplicated within the same object or group. See the [Grouping fields](#grouping-fields) section for more info on field groups.
+Additionally, `order` values cannot be duplicated within the same object or group. See the
+[Grouping fields](#grouping-fields) section for more info on field groups.
 
 :::
 
 ### Collapsing optional fields
 
-By default, all optional fields will be collapsed into an `Optional fields` section which can be expanded or collapsed by the user. This helps streamline the UI for setting up a connector by initially focusing attention on the required fields only. For existing connectors, if their configuration contains a non-empty and non-default value for a collapsed optional field, then that section will be automatically opened when the connector is opened in the UI.
+By default, all optional fields will be collapsed into an `Optional fields` section which can be
+expanded or collapsed by the user. This helps streamline the UI for setting up a connector by
+initially focusing attention on the required fields only. For existing connectors, if their
+configuration contains a non-empty and non-default value for a collapsed optional field, then that
+section will be automatically opened when the connector is opened in the UI.
 
-These `Optional fields` sections are placed at the bottom of a field group, meaning that all required fields in the same group will be placed above it. To interleave optional fields with required fields, set `always_show: true` on the optional field along with an `order`, which will cause the field to no longer be collapsed in an `Optional fields` section and be ordered as normal. 
+These `Optional fields` sections are placed at the bottom of a field group, meaning that all
+required fields in the same group will be placed above it. To interleave optional fields with
+required fields, set `always_show: true` on the optional field along with an `order`, which will
+cause the field to no longer be collapsed in an `Optional fields` section and be ordered as normal.
 
-**Note:** `always_show` also causes fields that are normally hidden by an OAuth button to still be shwon.
+**Note:** `always_show` also causes fields that are normally hidden by an OAuth button to still be
+shwon.
 
-Within a collapsed `Optional fields` section, the optional fields' `order` defines their position in the section; those without an `order` will be placed after fields with an `order`, and will themselves be ordered alphabetically by field name.
+Within a collapsed `Optional fields` section, the optional fields' `order` defines their position in
+the section; those without an `order` will be placed after fields with an `order`, and will
+themselves be ordered alphabetically by field name.
 
 For example, using the following spec:
 
@@ -106,25 +130,35 @@ For example, using the following spec:
 }
 ```
 
-will result in the following configuration on the UI (left side shows initial collapsed state, right side shows the optional fields section expanded):
+will result in the following configuration on the UI (left side shows initial collapsed state, right
+side shows the optional fields section expanded):
 
 ![optional fields](../.gitbook/assets/connector-form-optional-fields.png)
 
 ### Grouping fields
 
-Fields in the connector spec can be grouped into cards in the UI by utilizing the `group` property on a field. All fields that share the same `group` value will be grouped into the same card in the UI, and fields without a `group` will be placed into their own group card.
+Fields in the connector spec can be grouped into cards in the UI by utilizing the `group` property
+on a field. All fields that share the same `group` value will be grouped into the same card in the
+UI, and fields without a `group` will be placed into their own group card.
 
 :::info
 
-`group` can only be set on top-level properties in the connectionSpecification; it is not allowed on fields of objects nested inside the connectionSpecification.
+`group` can only be set on top-level properties in the connectionSpecification; it is not allowed on
+fields of objects nested inside the connectionSpecification.
 
-Additionally, within a group the `order` values set on each field determine how they are ordered in the UI, and therefore an `order` value cannot be duplicated within a group.
+Additionally, within a group the `order` values set on each field determine how they are ordered in
+the UI, and therefore an `order` value cannot be duplicated within a group.
 
 :::
 
-Groups themselves can also be ordered and titled by setting the `groups` property on the connectorSpecification. The value of this field is an array containing objects with `id` that matches the `group` values that were set on fields, and optionally a `title` which causes the Airbyte UI to render that title at the top of the group's card.
+Groups themselves can also be ordered and titled by setting the `groups` property on the
+connectorSpecification. The value of this field is an array containing objects with `id` that
+matches the `group` values that were set on fields, and optionally a `title` which causes the
+Airbyte UI to render that title at the top of the group's card.
 
-The order of entries in this `groups` array decides the order of the cards; `group` IDs that are set on fields which do not appear in this `groups` array will be ordered after those that do appear and will be ordered alphanumerically.
+The order of entries in this `groups` array decides the order of the cards; `group` IDs that are set
+on fields which do not appear in this `groups` array will be ordered after those that do appear and
+will be ordered alphanumerically.
 
 For example, using the following spec:
 
@@ -182,7 +216,8 @@ will result in the following configuration on the UI:
 
 ### Multi-line String inputs
 
-Sometimes when a user is inputting a string field into a connector, newlines need to be preserveed. For example, if we want a connector to use an RSA key which looks like this:
+Sometimes when a user is inputting a string field into a connector, newlines need to be preserveed.
+For example, if we want a connector to use an RSA key which looks like this:
 
 ```text
 ---- BEGIN PRIVATE KEY ----
@@ -192,9 +227,12 @@ Sometimes when a user is inputting a string field into a connector, newlines nee
 ---- END PRIVATE KEY ----
 ```
 
-we need to preserve the line-breaks. In other words, the string `---- BEGIN PRIVATE KEY ----123456789---- END PRIVATE KEY ----` is not equivalent to the one above since it loses linebreaks.
+we need to preserve the line-breaks. In other words, the string
+`---- BEGIN PRIVATE KEY ----123456789---- END PRIVATE KEY ----` is not equivalent to the one above
+since it loses linebreaks.
 
-By default, string inputs in the UI can lose their linebreaks. In order to accept multi-line strings in the UI, annotate your string field with `multiline: true` e.g:
+By default, string inputs in the UI can lose their linebreaks. In order to accept multi-line strings
+in the UI, annotate your string field with `multiline: true` e.g:
 
 ```text
 "private_key": {
@@ -205,11 +243,16 @@ By default, string inputs in the UI can lose their linebreaks. In order to accep
 },
 ```
 
-this will display a multi-line textbox in the UI like the following screenshot: ![Screen Shot 2021-08-04 at 11 13 09 PM](https://user-images.githubusercontent.com/6246757/128300404-1dc35323-bceb-4f93-9b81-b23cc4beb670.png)
+this will display a multi-line textbox in the UI like the following screenshot:
+![Screen Shot 2021-08-04 at 11 13 09 PM](https://user-images.githubusercontent.com/6246757/128300404-1dc35323-bceb-4f93-9b81-b23cc4beb670.png)
 
 ### Hiding inputs in the UI
 
-In some rare cases, a connector may wish to expose an input that is not available in the UI, but is still potentially configurable when running the connector outside of Airbyte, or via the UI. For example, exposing a very technical configuration like the page size of an outgoing HTTP requests may only be relevant to power users, and therefore shouldn't be available via the UI but might make sense to expose via the API.
+In some rare cases, a connector may wish to expose an input that is not available in the UI, but is
+still potentially configurable when running the connector outside of Airbyte, or via the UI. For
+example, exposing a very technical configuration like the page size of an outgoing HTTP requests may
+only be relevant to power users, and therefore shouldn't be available via the UI but might make
+sense to expose via the API.
 
 In this case, use the `"airbyte_hidden": true` keyword to hide that field from the UI. E.g:
 
@@ -233,9 +276,13 @@ Results in the following form:
 
 ## Pattern descriptors
 
-Setting a `pattern` on a field in a connector spec enforces that the value entered into that input matches the `pattern` regex value. However, this causes the regex pattern to be displayed in the input's error message, which is usually not very helpful for the end-user.
+Setting a `pattern` on a field in a connector spec enforces that the value entered into that input
+matches the `pattern` regex value. However, this causes the regex pattern to be displayed in the
+input's error message, which is usually not very helpful for the end-user.
 
-The `pattern_descriptor` property allows the connector developer to set a human-readable format that should be displayed above the field, and if set in conjunction with a `pattern`, this `pattern_descriptor` will be used in the invalid format error message instead of the raw regex.
+The `pattern_descriptor` property allows the connector developer to set a human-readable format that
+should be displayed above the field, and if set in conjunction with a `pattern`, this
+`pattern_descriptor` will be used in the invalid format error message instead of the raw regex.
 
 For example, having a field in the spec like:
 
@@ -256,23 +303,37 @@ will result in the following look in the UI (empty state, valid state, and error
 
 ### Using `oneOf`
 
-In some cases, a connector needs to accept one out of many options. For example, a connector might need to know the compression codec of the file it will read, which will render in the Airbyte UI as a list of the available codecs. In JSONSchema, this can be expressed using the [oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
+In some cases, a connector needs to accept one out of many options. For example, a connector might
+need to know the compression codec of the file it will read, which will render in the Airbyte UI as
+a list of the available codecs. In JSONSchema, this can be expressed using the
+[oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
 
 :::info
 
-Some connectors may follow an older format for dropdown lists, we are currently migrating away from that to this standard.
+Some connectors may follow an older format for dropdown lists, we are currently migrating away from
+that to this standard.
 
 :::
 
-In order for the Airbyte UI to correctly render a specification, however, a few extra rules must be followed:
+In order for the Airbyte UI to correctly render a specification, however, a few extra rules must be
+followed:
 
 1. The top-level item containing the `oneOf` must have `type: object`.
 2. Each item in the `oneOf` array must be a property with `type: object`.
-3. One `string` field with the same property name must be consistently present throughout each object inside the `oneOf` array. It is required to add a [`const`](https://json-schema.org/understanding-json-schema/reference/generic.html#constant-values) value unique to that `oneOf` option.
+3. One `string` field with the same property name must be consistently present throughout each
+   object inside the `oneOf` array. It is required to add a
+   [`const`](https://json-schema.org/understanding-json-schema/reference/generic.html#constant-values)
+   value unique to that `oneOf` option.
 
-Let's look at the [source-file](../integrations/sources/file.md) implementation as an example. In this example, we have `provider` as a dropdown list option, which allows the user to select what provider their file is being hosted on. We note that the `oneOf` keyword lives under the `provider` object as follows:
+Let's look at the [source-file](../integrations/sources/file.md) implementation as an example. In
+this example, we have `provider` as a dropdown list option, which allows the user to select what
+provider their file is being hosted on. We note that the `oneOf` keyword lives under the `provider`
+object as follows:
 
-In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. This can be displayed with adapting the file source spec to this example:
+In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned
+`const` value unique to that item. This helps the UI and the connector distinguish between the
+option that was chosen by the user. This can be displayed with adapting the file source spec to this
+example:
 
 ```javascript
 {
@@ -332,16 +393,23 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
 ```
 
 #### oneOf display type
-You can also configure the way that oneOf fields are displayed in the Airbyte UI through the `display_type` property. Valid values for this property are:
+
+You can also configure the way that oneOf fields are displayed in the Airbyte UI through the
+`display_type` property. Valid values for this property are:
+
 - `dropdown`
   - Renders a dropdown menu containing the title of each option for the user to select
   - This is a compact look that works well in most cases
   - The descriptions of the options can be found in the oneOf field's tooltip
 - `radio`
-  - Renders radio-button cards side-by-side containing the title and description of each option for the user to select
-  - This choice draws more attention to the field and shows the descriptions of each option at all times, which can be useful for important or complicated fields
+  - Renders radio-button cards side-by-side containing the title and description of each option for
+    the user to select
+  - This choice draws more attention to the field and shows the descriptions of each option at all
+    times, which can be useful for important or complicated fields
 
-Here is an example of setting the `display_type` of a oneOf field to `dropdown`, along with how it looks in the Airbyte UI:
+Here is an example of setting the `display_type` of a oneOf field to `dropdown`, along with how it
+looks in the Airbyte UI:
+
 ```
 "update_method": {
   "type": "object",
@@ -381,6 +449,7 @@ Here is an example of setting the `display_type` of a oneOf field to `dropdown`,
   ]
 }
 ```
+
 ![dropdown oneOf](../assets/docs/oneOf-dropdown.png)
 
 And here is how it looks if the `display_type` property is set to `radio` instead:
@@ -388,9 +457,11 @@ And here is how it looks if the `display_type` property is set to `radio` instea
 
 ### Using `enum`
 
-In regular `jsonschema`, some drafts enforce that `enum` lists must contain distinct values, while others do not. For consistency, Airbyte enforces this restriction.
+In regular `jsonschema`, some drafts enforce that `enum` lists must contain distinct values, while
+others do not. For consistency, Airbyte enforces this restriction.
 
-For example, this spec is invalid, since `a_format` is listed twice under the enumerated property `format`:
+For example, this spec is invalid, since `a_format` is listed twice under the enumerated property
+`format`:
 
 ```javascript
 {
@@ -414,7 +485,8 @@ For example, this spec is invalid, since `a_format` is listed twice under the en
 
 ### Forbidden keys
 
-In connector specs, the following JSON schema keys are forbidden, as Airbyte does not currently contain logic to interpret them
+In connector specs, the following JSON schema keys are forbidden, as Airbyte does not currently
+contain logic to interpret them
 
 - `not`
 - `anyOf`

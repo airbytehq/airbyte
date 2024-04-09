@@ -1,10 +1,11 @@
 # Schema Reference
 
-This document provides instructions on how to create a static schema for your Airbyte stream, which is necessary for integrating data from various sources. 
-You can check out all the supported data types and examples at [this link](../understanding-airbyte/supported-data-types.md).
-
+This document provides instructions on how to create a static schema for your Airbyte stream, which
+is necessary for integrating data from various sources. You can check out all the supported data
+types and examples at [this link](../understanding-airbyte/supported-data-types.md).
 
 For instance, the example record response for the schema is shown below:
+
 ```json
 {
   "id": "hashidstring",
@@ -20,7 +21,10 @@ For instance, the example record response for the schema is shown below:
 }
 ```
 
-The schema is then translated into the following JSON format. Please note that it's essential to include `$schema`, `type`, and `additionalProperties: true` fields in your schema. Typically, Airbyte schemas require null values for each field to make the stream more reliable if the field doesn't receive any data.
+The schema is then translated into the following JSON format. Please note that it's essential to
+include `$schema`, `type`, and `additionalProperties: true` fields in your schema. Typically,
+Airbyte schemas require null values for each field to make the stream more reliable if the field
+doesn't receive any data.
 
 ```json
 {
@@ -50,23 +54,22 @@ The schema is then translated into the following JSON format. Please note that i
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "steps": { 
-            "type": ["null", "string"] 
+        "steps": {
+          "type": ["null", "string"]
         },
         "count_steps": {
-            "type": ["null", "integer"]
+          "type": ["null", "integer"]
         }
       }
     },
     "example_string_array": {
-        "items": {
-            "type": ["null", "string"]
-        }
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }
 ```
 
-We hope this guide helps you create a successful static schema for your Airbyte stream. Please don't hesitate to reach out if you have any further questions or concerns.
-
-
+We hope this guide helps you create a successful static schema for your Airbyte stream. Please don't
+hesitate to reach out if you have any further questions or concerns.

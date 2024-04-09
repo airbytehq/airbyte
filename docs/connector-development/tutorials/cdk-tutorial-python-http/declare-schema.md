@@ -85,7 +85,64 @@ poetry run source-python-http-example discover --config secrets/config.json # th
 you should see some output like:
 
 ```json
-{"type": "CATALOG", "catalog": {"streams": [{"name": "exchange_rates", "json_schema": {"$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": {"base": {"type": "string"}, "rates": {"type": "object", "properties": {"GBP": {"type": "number"}, "HKD": {"type": "number"}, "IDR": {"type": "number"}, "PHP": {"type": "number"}, "LVL": {"type": "number"}, "INR": {"type": "number"}, "CHF": {"type": "number"}, "MXN": {"type": "number"}, "SGD": {"type": "number"}, "CZK": {"type": "number"}, "THB": {"type": "number"}, "BGN": {"type": "number"}, "EUR": {"type": "number"}, "MYR": {"type": "number"}, "NOK": {"type": "number"}, "CNY": {"type": "number"}, "HRK": {"type": "number"}, "PLN": {"type": "number"}, "LTL": {"type": "number"}, "TRY": {"type": "number"}, "ZAR": {"type": "number"}, "CAD": {"type": "number"}, "BRL": {"type": "number"}, "RON": {"type": "number"}, "DKK": {"type": "number"}, "NZD": {"type": "number"}, "EEK": {"type": "number"}, "JPY": {"type": "number"}, "RUB": {"type": "number"}, "KRW": {"type": "number"}, "USD": {"type": "number"}, "AUD": {"type": "number"}, "HUF": {"type": "number"}, "SEK": {"type": "number"}}}, "date": {"type": "string"}}}, "supported_sync_modes": ["full_refresh"]}]}}
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "name": "exchange_rates",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "base": { "type": "string" },
+            "rates": {
+              "type": "object",
+              "properties": {
+                "GBP": { "type": "number" },
+                "HKD": { "type": "number" },
+                "IDR": { "type": "number" },
+                "PHP": { "type": "number" },
+                "LVL": { "type": "number" },
+                "INR": { "type": "number" },
+                "CHF": { "type": "number" },
+                "MXN": { "type": "number" },
+                "SGD": { "type": "number" },
+                "CZK": { "type": "number" },
+                "THB": { "type": "number" },
+                "BGN": { "type": "number" },
+                "EUR": { "type": "number" },
+                "MYR": { "type": "number" },
+                "NOK": { "type": "number" },
+                "CNY": { "type": "number" },
+                "HRK": { "type": "number" },
+                "PLN": { "type": "number" },
+                "LTL": { "type": "number" },
+                "TRY": { "type": "number" },
+                "ZAR": { "type": "number" },
+                "CAD": { "type": "number" },
+                "BRL": { "type": "number" },
+                "RON": { "type": "number" },
+                "DKK": { "type": "number" },
+                "NZD": { "type": "number" },
+                "EEK": { "type": "number" },
+                "JPY": { "type": "number" },
+                "RUB": { "type": "number" },
+                "KRW": { "type": "number" },
+                "USD": { "type": "number" },
+                "AUD": { "type": "number" },
+                "HUF": { "type": "number" },
+                "SEK": { "type": "number" }
+              }
+            },
+            "date": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      }
+    ]
+  }
+}
 ```
 
 It's that simple! Now the connector knows how to declare your connector's stream's schema. We

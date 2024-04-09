@@ -4,7 +4,8 @@ This page contains the setup guide and reference information for the Harvest sou
 
 ## Prerequisites
 
-To set up the Harvest source connector, you'll need the [Harvest Account ID and API key](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+To set up the Harvest source connector, you'll need the
+[Harvest Account ID and API key](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
 
 ## Setup guide
 
@@ -16,9 +17,12 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
-5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For Authentication mechanism, select **Authenticate via Harvest (OAuth)** from the dropdown and click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
+5. Enter your
+   [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after
+   this date will be replicated.
+7. For Authentication mechanism, select **Authenticate via Harvest (OAuth)** from the dropdown and
+   click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -30,15 +34,20 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
-5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown. Enter your [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
+5. Enter your
+   [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after
+   this date will be replicated.
+7. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the
+   dropdown. Enter your
+   [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
 8. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
 
-The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Harvest source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -47,47 +56,68 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/) \(Incremental\)
+- [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/)
+  \(Incremental\)
 - [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/) \(Incremental\)
 - [Company](https://help.getharvest.com/api-v2/company-api/company/company/)
-- [Invoice Messages](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/) \(Incremental\)
-- [Invoice Payments](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/) \(Incremental\)
+- [Invoice Messages](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/)
+  \(Incremental\)
+- [Invoice Payments](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/)
+  \(Incremental\)
 - [Invoices](https://help.getharvest.com/api-v2/invoices-api/invoices/invoices/) \(Incremental\)
-- [Invoice Item Categories](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/) \(Incremental\)
-- [Estimate Messages](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/) \(Incremental\)
+- [Invoice Item Categories](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/)
+  \(Incremental\)
+- [Estimate Messages](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/)
+  \(Incremental\)
 - [Estimates](https://help.getharvest.com/api-v2/estimates-api/estimates/estimates/) \(Incremental\)
-- [Estimate Item Categories](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/) \(Incremental\)
+- [Estimate Item Categories](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/)
+  \(Incremental\)
 - [Expenses](https://help.getharvest.com/api-v2/expenses-api/expenses/expenses/) \(Incremental\)
-- [Expense Categories](https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/) \(Incremental\)
+- [Expense Categories](https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/)
+  \(Incremental\)
 - [Tasks](https://help.getharvest.com/api-v2/tasks-api/tasks/tasks/) \(Incremental\)
-- [Time Entries](https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/) \(Incremental\)
-- [Project User Assignments](https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/) \(Incremental\)
-- [Project Task Assignments](https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/) \(Incremental\)
+- [Time Entries](https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/)
+  \(Incremental\)
+- [Project User Assignments](https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/)
+  \(Incremental\)
+- [Project Task Assignments](https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/)
+  \(Incremental\)
 - [Projects](https://help.getharvest.com/api-v2/projects-api/projects/projects/) \(Incremental\)
 - [Roles](https://help.getharvest.com/api-v2/roles-api/roles/roles/) \(Incremental\)
 - [Users](https://help.getharvest.com/api-v2/users-api/users/users/) \(Incremental\)
 - [User Billable Rates](https://help.getharvest.com/api-v2/users-api/users/billable-rates/)
 - [User Cost Rates](https://help.getharvest.com/api-v2/users-api/users/cost-rates/)
-- [User Project Assignments](https://help.getharvest.com/api-v2/users-api/users/project-assignments/) \(Incremental\)
-- [Expense Clients Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#clients-report) \(Incremental\)
-- [Expense Projects Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#projects-report) \(Incremental\)
-- [Expense Categories Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#expense-categories-report) \(Incremental\)
-- [Expense Team Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#team-report) \(Incremental\)
-- [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/) \(Incremental\)
-- [Time Clients Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#clients-report) \(Incremental\)
-- [Time Projects Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#projects-report) \(Incremental\)
-- [Time Tasks Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#tasks-report) \(Incremental\)
-- [Time Team Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#team-report) \(Incremental\)
+- [User Project Assignments](https://help.getharvest.com/api-v2/users-api/users/project-assignments/)
+  \(Incremental\)
+- [Expense Clients Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#clients-report)
+  \(Incremental\)
+- [Expense Projects Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#projects-report)
+  \(Incremental\)
+- [Expense Categories Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#expense-categories-report)
+  \(Incremental\)
+- [Expense Team Report](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#team-report)
+  \(Incremental\)
+- [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/)
+  \(Incremental\)
+- [Time Clients Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#clients-report)
+  \(Incremental\)
+- [Time Projects Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#projects-report)
+  \(Incremental\)
+- [Time Tasks Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#tasks-report)
+  \(Incremental\)
+- [Time Team Report](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#team-report)
+  \(Incremental\)
 - [Project Budget Report](https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/)
 
 ## Performance considerations
 
-The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
+The connector is restricted by the
+[Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
 | 0.2.0   | 2024-04-08 | [36889](https://github.com/airbytehq/airbyte/pull/36889) | Unpin CDK version                                                                  |
 | 0.1.24  | 2024-02-26 | [35541](https://github.com/airbytehq/airbyte/pull/35541) | Improve check command to avoid missing alerts                                      |
 | 0.1.23  | 2024-02-19 | [35305](https://github.com/airbytehq/airbyte/pull/35305) | Fix pendulum parsing error                                                         |

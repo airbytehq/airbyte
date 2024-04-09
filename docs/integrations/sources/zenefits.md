@@ -15,7 +15,8 @@ To set up Zenefits as a source in Airbyte Cloud:
 1.  In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 2.  On the Set up the source page, select **Zenefits** from the **Source type** dropdown.
 3.  For Name, enter a name for the Zenefits connector.
-4.  For **Token**, enter the token you have got from [Authentication](https://developers.zenefits.com/v1.0/docs/auth)
+4.  For **Token**, enter the token you have got from
+    [Authentication](https://developers.zenefits.com/v1.0/docs/auth)
 5.  Click **Set up source**.
 
 ## Supported sync modes
@@ -52,6 +53,6 @@ You can replicate the following tables using the Zenefits connector:
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject             |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------ |
 | `0.2.0` | 2023-10-29 | [31946](https://github.com/airbytehq/airbyte/pull/31946) | Migrate to Low Code |
 | `0.1.0` | 2022-08-24 | [14809](https://github.com/airbytehq/airbyte/pull/14809) | Initial Release     |

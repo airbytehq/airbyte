@@ -1,6 +1,7 @@
 # Yandex Metrica
 
-This page contains the setup guide and reference information for the Yandex Metrica source connector.
+This page contains the setup guide and reference information for the Yandex Metrica source
+connector.
 
 ## Prerequisites
 
@@ -12,15 +13,18 @@ This page contains the setup guide and reference information for the Yandex Metr
 ### Step 1: Set up Yandex Metrica
 
 1. [Create Yandex Metrica account](https://metrica.yandex.com/) if you don't already have one.
-2. Head to [Management page](https://metrica.yandex.com/list) and add new tag or choose an existing one.
-3. At the top of the dashboard you will see 8 digit number to the right of your website name. This is your **Counter ID**.
+2. Head to [Management page](https://metrica.yandex.com/list) and add new tag or choose an existing
+   one.
+3. At the top of the dashboard you will see 8 digit number to the right of your website name. This
+   is your **Counter ID**.
 4. Create a new app or choose an existing one from [My apps page](https://oauth.yandex.com/).
    - Which platform is the app required for?: **Web services**
    - Callback URL: https://oauth.yandex.com/verification_code
    - What data do you need?: **Yandex.Metrica**. Read permission will suffice.
 5. Choose your app from [the list](https://oauth.yandex.com/).
    - To create your API key you will need to grab your **ClientID**,
-   - Now to get the API key craft a GET request to an endpoint *https://oauth.yandex.com/authorizE?response_type=token&client_id=YOUR_CLIENT_ID*
+   - Now to get the API key craft a GET request to an endpoint
+     *https://oauth.yandex.com/authorizE?response_type=token&client_id=YOUR_CLIENT_ID*
    - You will receive a response with your **API key**. Save it.
 
 ### Step 2: Set up the Yandex Metrica connector in Airbyte
@@ -47,7 +51,8 @@ This page contains the setup guide and reference information for the Yandex Metr
 
 ## Supported sync modes
 
-The Yandex Metrica source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Yandex Metrica source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)

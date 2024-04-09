@@ -10,7 +10,8 @@ This page contains the setup guide and reference information for the Tempo sourc
 
 ### Step 1: Set up Tempo
 
-Source Tempo is designed to interact with the data your permissions give you access to. To do so, you will need to generate a Tempo OAuth 2.0 token for an individual user.
+Source Tempo is designed to interact with the data your permissions give you access to. To do so,
+you will need to generate a Tempo OAuth 2.0 token for an individual user.
 
 Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API integration**.
 
@@ -18,13 +19,15 @@ Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API i
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Tempo connector and select **Tempo** from the Source type dropdown.
+3. On the Set up the source page, enter the name for the Tempo connector and select **Tempo** from
+   the Source type dropdown.
 4. Enter your API token that you obtained from Tempo.
 5. Click **Set up source**.
 
 ## Supported sync modes
 
-The Tempo source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Tempo source connector supports the following
+[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -40,7 +43,8 @@ This connector outputs the following streams:
 - [Worklogs](https://apidocs.tempo.io/#tag/Worklogs)
 - [Workload Schemes](https://apidocs.tempo.io/#tag/Workload-Schemes)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+If there are more endpoints you'd like Airbyte to support, please
+[create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ## Changelog
 

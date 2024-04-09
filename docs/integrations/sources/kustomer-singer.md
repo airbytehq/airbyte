@@ -4,19 +4,27 @@
 
 ## Deprecation Notice
 
-The Kustomer source connector is scheduled for deprecation on March 5th, 2024 due to incompatibility with upcoming platform updates as we prepare to launch Airbyte 1.0. This means it will no longer be supported or available for use in Airbyte. 
+The Kustomer source connector is scheduled for deprecation on March 5th, 2024 due to incompatibility
+with upcoming platform updates as we prepare to launch Airbyte 1.0. This means it will no longer be
+supported or available for use in Airbyte.
 
-This connector does not support new per-stream features which are vital for ensuring data integrity in Airbyte's synchronization processes. Without these capabilities, we cannot enforce our standards of reliability and correctness for data syncing operations.
+This connector does not support new per-stream features which are vital for ensuring data integrity
+in Airbyte's synchronization processes. Without these capabilities, we cannot enforce our standards
+of reliability and correctness for data syncing operations.
 
 ### Recommended Actions
 
-Users who still wish to sync data from this connector are advised to explore creating a custom connector as an alternative to continue their data synchronization needs. For guidance, please visit our [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
+Users who still wish to sync data from this connector are advised to explore creating a custom
+connector as an alternative to continue their data synchronization needs. For guidance, please visit
+our [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
 
 :::
 
 ## Sync overview
 
-The Kustomer source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Kustomer source supports both Full Refresh and Incremental syncs. You can choose if this
+connector will copy only the new or updated data, or all rows in the tables and columns you set up
+for replication, every time a sync is run.
 
 This source can sync data for the [Kustomer API](https://developer.kustomer.com/kustomer-api-docs).
 
@@ -46,11 +54,13 @@ This Source is capable of syncing the following core Streams:
 
 ### Performance considerations
 
-Kustomer has some [rate limit restrictions](https://developer.kustomer.com/kustomer-api-docs/reference/rate-limiting).
+Kustomer has some
+[rate limit restrictions](https://developer.kustomer.com/kustomer-api-docs/reference/rate-limiting).
 
 ## Requirements
 
-- **Kustomer API token**. See the [Kustomer docs](https://help.kustomer.com/api-keys-SJs5YTIWX) for information on how to obtain an API token.
+- **Kustomer API token**. See the [Kustomer docs](https://help.kustomer.com/api-keys-SJs5YTIWX) for
+  information on how to obtain an API token.
 
 ## Changelog
 

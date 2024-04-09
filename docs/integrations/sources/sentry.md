@@ -4,23 +4,32 @@ This page contains the setup guide and reference information for the Sentry sour
 
 ## Prerequisites
 
-To set up the Sentry source connector, you'll need the Sentry [project name](https://docs.sentry.io/product/projects/), [authentication token](https://docs.sentry.io/api/auth/#auth-tokens), and [organization](https://docs.sentry.io/product/accounts/membership/).
+To set up the Sentry source connector, you'll need the Sentry
+[project name](https://docs.sentry.io/product/projects/),
+[authentication token](https://docs.sentry.io/api/auth/#auth-tokens), and
+[organization](https://docs.sentry.io/product/accounts/membership/).
 
 ## Set up the Sentry connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the
+   Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Sentry** from the Source type dropdown.
 4. Enter the name for the Sentry connector.
-5. For **Project**, enter the name of the [Sentry project](https://docs.sentry.io/product/projects/) you want to sync.
-6. For **Host Name**, enter the host name of your self-hosted Sentry API Server. If your server isn't self-hosted, leave the field blank.
-7. For **Authentication Tokens**, enter the [Sentry authentication token](https://docs.sentry.io/api/auth/#auth-tokens).
-8. For **Organization**, enter the [Sentry Organization](https://docs.sentry.io/product/accounts/membership/) the groups belong to.
+5. For **Project**, enter the name of the [Sentry project](https://docs.sentry.io/product/projects/)
+   you want to sync.
+6. For **Host Name**, enter the host name of your self-hosted Sentry API Server. If your server
+   isn't self-hosted, leave the field blank.
+7. For **Authentication Tokens**, enter the
+   [Sentry authentication token](https://docs.sentry.io/api/auth/#auth-tokens).
+8. For **Organization**, enter the
+   [Sentry Organization](https://docs.sentry.io/product/accounts/membership/) the groups belong to.
 9. Click **Set up source**.
 
 ## Supported sync modes
 
-The Sentry source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Sentry source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -46,7 +55,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
 | 0.5.1   | 2024-04-01 | [36731](https://github.com/airbytehq/airbyte/pull/36731) | Add `%Y-%m-%dT%H:%M:%S%z` to date time formats.                         |
 | 0.5.0   | 2024-03-27 | [35755](https://github.com/airbytehq/airbyte/pull/35755) | Migrate to low-code.                                                    |
 | 0.4.2   | 2024-03-25 | [36448](https://github.com/airbytehq/airbyte/pull/36448) | Unpin CDK version                                                       |

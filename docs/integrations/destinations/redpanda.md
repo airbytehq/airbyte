@@ -1,6 +1,7 @@
 # Redpanda
 
-The Airbyte Redpanda destination connector allows you to sync data to [Redpada](https://redpanda.com/). Each stream is written to the corresponding Redpanda topic.
+The Airbyte Redpanda destination connector allows you to sync data to
+[Redpada](https://redpanda.com/). Each stream is written to the corresponding Redpanda topic.
 
 ## Sync overview
 
@@ -10,7 +11,8 @@ Each stream will be output into a Redpanda topic.
 
 The Redpanda topic will be created with the following format `{namespace}_{stream}`
 
-Currently, this connector only writes data with JSON format. More formats \(e.g. Apache Avro\) will be supported in the future.
+Currently, this connector only writes data with JSON format. More formats \(e.g. Apache Avro\) will
+be supported in the future.
 
 Each record will contain in its key the uuid assigned by Airbyte, and in the value these 3 fields:
 
@@ -36,13 +38,15 @@ This section should contain a table with the following format:
 
 ### Performance considerations
 
-Granted you have enough Redpanda nodes/partitions the cluster should be able to handle any type of load you throw at it from the connector.
+Granted you have enough Redpanda nodes/partitions the cluster should be able to handle any type of
+load you throw at it from the connector.
 
 ## Getting started
 
 ### Requirements
 
-- The connector should be able to create topics using the [AdminClient](https://docs.confluent.io/platform/current/installation/configuration/admin-configs.html)
+- The connector should be able to create topics using the
+  [AdminClient](https://docs.confluent.io/platform/current/installation/configuration/admin-configs.html)
 - Configuration options
   - **Bootstrap servers**
   - **Buffer Memory**
@@ -54,7 +58,8 @@ Granted you have enough Redpanda nodes/partitions the cluster should be able to 
   - **Socket Connection Setup Timeout**
   - **Socket Connection Setup Max Timeout**
 
-More info about this can be found in the [Redpanda producer configs documentation site](https://docs.confluent.io/platform/current/installation/configuration/producer-configs.html).
+More info about this can be found in the
+[Redpanda producer configs documentation site](https://docs.confluent.io/platform/current/installation/configuration/producer-configs.html).
 
 _NOTE_: Configurations for SSL are not available yet.
 

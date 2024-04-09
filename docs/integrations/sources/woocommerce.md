@@ -8,16 +8,18 @@ To set up the WooCommerce source connector with Airbyte, you must be using:
 
 - WooCommerce 3.5+
 - WordPress 4.4+
-- Pretty permalinks in `Settings > Permalinks` so that the custom endpoints are supported.
-  e.g. `/%year%/%monthnum%/%day%/%postname%/`
+- Pretty permalinks in `Settings > Permalinks` so that the custom endpoints are supported. e.g.
+  `/%year%/%monthnum%/%day%/%postname%/`
 
-You will need to generate new API key with read permissions and use `Customer key` and `Customer Secret`.
+You will need to generate new API key with read permissions and use `Customer key` and
+`Customer Secret`.
 
 ## Setup guide
 
 ### Step 1: Set up WooCommerce
 
-1. Generate new [Rest API key](https://woocommerce.github.io/woocommerce-rest-api-docs/#rest-api-keys)
+1. Generate new
+   [Rest API key](https://woocommerce.github.io/woocommerce-rest-api-docs/#rest-api-keys)
 2. Obtain `Customer key` and `Customer Secret`.
 
 ### Step 2: Set up the WooCommerce connector in Airbyte
@@ -26,8 +28,8 @@ You will need to generate new API key with read permissions and use `Customer ke
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the WooCommerce connector and select **WooCommerce** from the Source
-   type dropdown.
+3. On the Set up the source page, enter the name for the WooCommerce connector and select
+   **WooCommerce** from the Source type dropdown.
 4. Fill in `Customer key` and `Customer Secret` with data from Step 1 of this guide.
 5. Fill in `Shop Name`. For `https://EXAMPLE.com`, the shop name is 'EXAMPLE.com'.
 6. Choose start date you want to start sync from.
@@ -38,8 +40,8 @@ You will need to generate new API key with read permissions and use `Customer ke
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. On the Set up the source page, enter the name for the WooCommerce connector and select **WooCommerce** from the Source
-   type dropdown.
+3. On the Set up the source page, enter the name for the WooCommerce connector and select
+   **WooCommerce** from the Source type dropdown.
 4. Fill in `Customer key` and `Customer Secret` with data from Step 1 of this guide.
 5. Fill in `Shop Name`. For `https://EXAMPLE.com`, the shop name is 'EXAMPLE.com'.
 6. Choose start date you want to start sync from.
@@ -47,8 +49,8 @@ You will need to generate new API key with read permissions and use `Customer ke
 
 ## Supported sync modes
 
-The WooCommerce source connector supports the
-following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The WooCommerce source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -66,7 +68,8 @@ following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 - [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms)
 - [Product attributes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attributes)
 - [Product categories](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-categories)
-- [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) \(Incremental\)
+- [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews)
+  \(Incremental\)
 - [Product shipping classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-shipping-classes)
 - [Product tags](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-tags)
 - [Product variations](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations)

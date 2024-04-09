@@ -6,7 +6,10 @@ description: Web scraping and automation platform.
 
 ## Overview
 
-[Apify](https://apify.com/) is a web scraping and web automation platform providing both ready-made and custom solutions, an open-source [JavaScript SDK](https://docs.apify.com/sdk/js/) and [Python SDK](https://docs.apify.com/sdk/python/) for web scraping, proxies, and many other tools to help you build and run web automation jobs at scale.
+[Apify](https://apify.com/) is a web scraping and web automation platform providing both ready-made
+and custom solutions, an open-source [JavaScript SDK](https://docs.apify.com/sdk/js/) and
+[Python SDK](https://docs.apify.com/sdk/python/) for web scraping, proxies, and many other tools to
+help you build and run web automation jobs at scale.
 
 <FieldAnchor field="dataset_id">
 The results of a scraping job are usually stored in the [Apify Dataset](https://docs.apify.com/storage/dataset). This Airbyte connector provides streams to work with the datasets, including syncing their content to your chosen destination using Airbyte.
@@ -20,7 +23,12 @@ You can find your personal API token in the Apify Console in the [Settings -> In
 
 ### Running Airbyte sync from Apify webhook
 
-When your Apify job (aka [Actor run](https://docs.apify.com/platform/actors/running)) finishes, it can trigger an Airbyte sync by calling the Airbyte [API](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html#post-/v1/connections/sync) manual connection trigger (`POST /v1/connections/sync`). The API can be called from Apify [webhook](https://docs.apify.com/platform/integrations/webhooks) which is executed when your Apify run finishes.
+When your Apify job (aka [Actor run](https://docs.apify.com/platform/actors/running)) finishes, it
+can trigger an Airbyte sync by calling the Airbyte
+[API](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html#post-/v1/connections/sync)
+manual connection trigger (`POST /v1/connections/sync`). The API can be called from Apify
+[webhook](https://docs.apify.com/platform/integrations/webhooks) which is executed when your Apify
+run finishes.
 
 ![](../../.gitbook/assets/apify_trigger_airbyte_connection.png)
 
@@ -33,43 +41,53 @@ When your Apify job (aka [Actor run](https://docs.apify.com/platform/actors/runn
 
 ### Performance considerations
 
-The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/apify-client-python) under the hood and should handle any API limitations under normal usage.
+The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/apify-client-python)
+under the hood and should handle any API limitations under normal usage.
 
 ## Streams
 
 ### `dataset_collection`
 
-- Calls `api.apify.com/v2/datasets` ([docs](https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets))
+- Calls `api.apify.com/v2/datasets`
+  ([docs](https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets))
 - Properties:
-    - Apify Personal API token (you can find it [here](https://console.apify.com/account/integrations))
+  - Apify Personal API token (you can find it
+    [here](https://console.apify.com/account/integrations))
 
 ### `dataset`
 
-- Calls `https://api.apify.com/v2/datasets/{datasetId}` ([docs](https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset))
+- Calls `https://api.apify.com/v2/datasets/{datasetId}`
+  ([docs](https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset))
 - Properties:
-    - Apify Personal API token (you can find it [here](https://console.apify.com/account/integrations))
-    - Dataset ID (check the [docs](https://docs.apify.com/platform/storage/dataset))
+  - Apify Personal API token (you can find it
+    [here](https://console.apify.com/account/integrations))
+  - Dataset ID (check the [docs](https://docs.apify.com/platform/storage/dataset))
 
 ### `item_collection`
 
-- Calls `api.apify.com/v2/datasets/{datasetId}/items` ([docs](https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items))
+- Calls `api.apify.com/v2/datasets/{datasetId}/items`
+  ([docs](https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items))
 - Properties:
-    - Apify Personal API token (you can find it [here](https://console.apify.com/account/integrations))
-    - Dataset ID (check the [docs](https://docs.apify.com/platform/storage/dataset))
+  - Apify Personal API token (you can find it
+    [here](https://console.apify.com/account/integrations))
+  - Dataset ID (check the [docs](https://docs.apify.com/platform/storage/dataset))
 - Limitations:
-    - The stream uses a dynamic schema (all the data are stored under the `"data"` key), so it should support all the Apify Datasets (produced by whatever Actor).
+  - The stream uses a dynamic schema (all the data are stored under the `"data"` key), so it should
+    support all the Apify Datasets (produced by whatever Actor).
 
 ### `item_collection_website_content_crawler`
 
 - Calls the same endpoint and uses the same properties as the `item_collection` stream.
 - Limitations:
-    - The stream uses a static schema which corresponds to the datasets produced by [Website Content Crawler](https://apify.com/apify/website-content-crawler) Actor. So only datasets produced by this Actor are supported.
+  - The stream uses a static schema which corresponds to the datasets produced by
+    [Website Content Crawler](https://apify.com/apify/website-content-crawler) Actor. So only
+    datasets produced by this Actor are supported.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                                 | Subject                                                                     |
 | :------ | :--------- | :----------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| 2.1.1 | 2023-12-14 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
+| 2.1.1   | 2023-12-14 | [33414](https://github.com/airbytehq/airbyte/pull/33414)     | Prepare for airbyte-lib                                                     |
 | 2.1.0   | 2023-10-13 | [31333](https://github.com/airbytehq/airbyte/pull/31333)     | Add stream for arbitrary datasets                                           |
 | 2.0.0   | 2023-09-18 | [30428](https://github.com/airbytehq/airbyte/pull/30428)     | Fix broken stream, manifest refactor                                        |
 | 1.0.0   | 2023-08-25 | [29859](https://github.com/airbytehq/airbyte/pull/29859)     | Migrate to lowcode                                                          |

@@ -4,7 +4,8 @@ This page contains the setup guide and reference information for the Google Ads 
 
 ## Prerequisites
 
-- A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a Google Ads Manager account
+- A [Google Ads Account](https://support.google.com/google-ads/answer/6366720)
+[linked](https://support.google.com/google-ads/answer/7459601) to a Google Ads Manager account
 <!-- env:oss -->
 - (For Airbyte Open Source):
   - A Developer Token
@@ -17,11 +18,18 @@ This page contains the setup guide and reference information for the Google Ads 
 
 ### Step 1: (For Airbyte Open Source) Apply for a developer token
 
-To set up the Google Ads source connector with Airbyte Open Source, you will need to obtain a developer token. This token allows you to access your data from the Google Ads API. Please note that Google is selective about which software and use cases are issued this token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and ensure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information on this topic).
+To set up the Google Ads source connector with Airbyte Open Source, you will need to obtain a
+developer token. This token allows you to access your data from the Google Ads API. Please note that
+Google is selective about which software and use cases are issued this token. The Airbyte team has
+worked with the Google Ads team to allowlist Airbyte and ensure you can get a developer token (see
+[issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information on this topic).
 
-1. To proceed with obtaining a developer token, you will first need to create a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/). Standard Google Ads accounts cannot generate a developer token.
+1. To proceed with obtaining a developer token, you will first need to create a
+   [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/). Standard
+   Google Ads accounts cannot generate a developer token.
 
-2. To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
+2. To apply for the developer token, please follow
+   [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
 
 3. When you apply for the token, make sure to include the following:
    - Why you need the token (example: Want to run some internal analytics)
@@ -29,25 +37,34 @@ To set up the Google Ads source connector with Airbyte Open Source, you will nee
    - That you have full access to the code base (because we're open source)
    - That you have full access to the server running the code (because you're self-hosting Airbyte)
 
-:::note
-You will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. The approval process typically takes around 24 hours.
-:::
+:::note You will _not_ be able to access your data via the Google Ads API until this token is
+approved. You cannot use a test developer token; it has to be at least a basic developer token. The
+approval process typically takes around 24 hours. :::
 
 ### Step 2: (For Airbyte Open Source) Obtain your OAuth credentials
 
-If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to authenticate your Google Ads account:
+If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to
+authenticate your Google Ads account:
 
 - Client ID
 - Client Secret
 - Refresh Token
 
-Please refer to [Google's documentation](https://developers.google.com/identity/protocols/oauth2) for detailed instructions on how to obtain these credentials.
+Please refer to [Google's documentation](https://developers.google.com/identity/protocols/oauth2)
+for detailed instructions on how to obtain these credentials.
 
-A single access token can grant varying degrees of access to multiple APIs. A variable parameter called scope controls the set of resources and operations that an access token permits. During the access token request, your app sends one or more values in the scope parameter.
+A single access token can grant varying degrees of access to multiple APIs. A variable parameter
+called scope controls the set of resources and operations that an access token permits. During the
+access token request, your app sends one or more values in the scope parameter.
 
 The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
 
-Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
+Each Google Ads API developer token is assigned an access level and "permissible use". The access
+level determines whether you can affect production accounts and the number of operations and
+requests that you can execute daily. Permissible use determines the specific Google Ads API features
+that the developer token is allowed to use. Read more about it and apply for higher access
+[here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
+
 ### Step 3: Set up the Google Ads connector in Airbyte
 
 <!-- /env:oss -->
@@ -61,14 +78,34 @@ To set up Google Ads as a source in Airbyte Cloud:
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
-6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts. 
-7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus) for more info.
-8. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
-9. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
-10. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
-11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
-12. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the
+   appropriate Google account and click **Continue** to proceed.
+6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are
+   10-digit numbers that uniquely identify your account. To find your Customer ID, please follow
+   [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field
+   blank will replicate data from all connected accounts.
+7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate
+   data from all accounts. Check
+   [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus)
+   for more info.
+8. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering
+   the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default
+   start date is 2 years ago)
+9. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads
+   Query Language. Click **Add** and enter your query, as well as the desired name of the table for
+   this data in the destination. Multiple queries can be provided. For more information on
+   formulating these queries, refer to our
+   [guide below](#custom-query-understanding-google-ads-query-language).
+10. (Required for Manager accounts) If accessing your account through a Google Ads Manager account,
+    you must enter the
+    [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid)
+    of the Manager account.
+11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction
+    during which a conversion is recorded in Google Ads. For more information on this topic, refer
+    to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en).
+    This field defaults to 14 days.
+12. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not
+    be replicated. Leaving this field blank will replicate all data from the start date onward.
 13. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
@@ -83,21 +120,43 @@ To set up Google Ads as a source in Airbyte Open Source:
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
 5. Enter the **Developer Token** you obtained from Google.
-6. To authenticate your Google account, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
-7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts. 
-8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus) for more info.
-9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
-10. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
-11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
-12. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, see the section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
-13. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+6. To authenticate your Google account, enter your Google application's **Client ID**, **Client
+   Secret**, **Refresh Token**, and optionally, the **Access Token**.
+7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are
+   10-digit numbers that uniquely identify your account. To find your Customer ID, please follow
+   [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field
+   blank will replicate data from all connected accounts.
+8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate
+   data from all accounts. Check
+   [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus)
+   for more info.
+9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering
+   the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default
+   start date is 2 years ago)
+10. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google
+    Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table
+    for this data in the destination. Multiple queries can be provided. For more information on
+    formulating these queries, refer to our
+    [guide below](#custom-query-understanding-google-ads-query-language).
+11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account,
+    you must enter the
+    [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid)
+    of the Manager account.
+12. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction
+    during which a conversion is recorded in Google Ads. For more information on this topic, see the
+    section on [Conversion Windows](#note-on-conversion-windows) below, or refer to the
+    [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field
+    defaults to 14 days.
+13. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not
+    be replicated. Leaving this field blank will replicate all data from the start date onward.
 14. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
 ## Supported Sync Modes
 
-The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Ads source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -105,122 +164,180 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 #### Incremental Events Streams
+
 List of stream:
+
 - [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion)
 - [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion)
 - [campaign_criterion](https://developers.google.com/google-ads/api/fields/v15/campaign_criterion)
 
-These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
+These streams support incremental updates, including deletions, leveraging the Change Status stream.
+However, they only capture updates from the most recent three months.
 
-The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the Change Status stream, followed by syncing records based on their IDs.
+The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the
+Change Status stream, followed by syncing records based on their IDs.
 
-:::warning
-It's important to note that the Google Ads API resource ChangeStatus has a limit of 10,000 records per request. That's why you cannot sync stream with more than 10,000 updates in a single microsecond. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
-:::
+:::warning It's important to note that the Google Ads API resource ChangeStatus has a limit of
+10,000 records per request. That's why you cannot sync stream with more than 10,000 updates in a
+single microsecond. In such cases, it's recommended to use a full refresh sync to ensure all updates
+are captured. :::
+
 ## Supported Streams
 
-The Google Ads source connector can sync the following tables. It can also sync custom queries using GAQL.
+The Google Ads source connector can sync the following tables. It can also sync custom queries using
+GAQL.
 
 ### Main Tables
 
 - [customer](https://developers.google.com/google-ads/api/fields/v15/customer)
 
-Highlights the setup and configurations of a Google Ads account. It encompasses features like call reporting and conversion tracking, giving a clear picture of the account's operational settings and features.
+Highlights the setup and configurations of a Google Ads account. It encompasses features like call
+reporting and conversion tracking, giving a clear picture of the account's operational settings and
+features.
+
 - [customer_label](https://developers.google.com/google-ads/api/fields/v15/customer_label)
 - [campaign_criterion](https://developers.google.com/google-ads/api/fields/v15/campaign_criterion)
 
 Targeting option for a campaign, such as a keyword, placement, or audience.
+
 - [campaign_bidding_strategy](https://developers.google.com/google-ads/api/fields/v15/campaign)
 
 Represents the bidding strategy at the campaign level.
+
 - [campaign_label](https://developers.google.com/google-ads/api/fields/v15/campaign_label)
 - [label](https://developers.google.com/google-ads/api/fields/v15/label)
 
 Represents labels that can be attached to different entities such as campaigns or ads.
+
 - [ad_group_ad](https://developers.google.com/google-ads/api/fields/v15/ad_group_ad)
 
 Different attributes of ads from ad groups segmented by date.
+
 - [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v15/ad_group_ad_label)
 - [ad_group](https://developers.google.com/google-ads/api/fields/v15/ad_group)
 
-Represents an ad group within a campaign. Ad groups contain one or more ads which target a shared set of keywords.
+Represents an ad group within a campaign. Ad groups contain one or more ads which target a shared
+set of keywords.
+
 - [ad_group_label](https://developers.google.com/google-ads/api/fields/v15/ad_group_label)
 - [ad_group_bidding_strategy](https://developers.google.com/google-ads/api/fields/v15/ad_group)
 
 Represents the bidding strategy at the ad group level.
+
 - [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion)
 
 Represents criteria in an ad group, such as keywords or placements.
+
 - [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion)
 
 Represents criteria for listing group ads.
+
 - [ad_group_criterion_label](https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion_label)
 - [audience](https://developers.google.com/google-ads/api/fields/v15/audience)
 
 Represents user lists that are defined by the advertiser to target specific users.
+
 - [user_interest](https://developers.google.com/google-ads/api/fields/v15/user_interest)
 
 A particular interest-based vertical to be targeted.
+
 - [click_view](https://developers.google.com/google-ads/api/reference/rpc/v15/ClickView)
 
 A click view with metrics aggregated at each click level, including both valid and invalid clicks.
 
-Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, which should be joined against their respective `*_label` streams if you want to view the actual labels. For example, the `ad_group` stream contains an `ad_group.labels` field, which you would join against the `ad_group_label` stream's `label.resource_name` field.
+Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, which should be joined
+against their respective `*_label` streams if you want to view the actual labels. For example, the
+`ad_group` stream contains an `ad_group.labels` field, which you would join against the
+`ad_group_label` stream's `label.resource_name` field.
 
 ### Report Tables
 
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 
-Provides in-depth metrics related to ads interactions, including viewability, click-through rates, and conversions. Segments data by various factors, offering a granular look into how ads perform across different contexts.
+Provides in-depth metrics related to ads interactions, including viewability, click-through rates,
+and conversions. Segments data by various factors, offering a granular look into how ads perform
+across different contexts.
+
 - [campaign](https://developers.google.com/google-ads/api/fields/v15/campaign)
 
 Represents a campaign in Google Ads.
+
 - [campaign_budget](https://developers.google.com/google-ads/api/fields/v15/campaign_budget)
 
 Represents the budget settings of a campaign.
+
 - [geographic_view](https://developers.google.com/google-ads/api/fields/v15/geographic_view)
 
-Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest.
+Geographic View includes all metrics aggregated at the country level. It reports metrics at either
+actual physical location of the user or an area of interest.
+
 - [user_location_view](https://developers.google.com/google-ads/api/fields/v15/user_location_view)
 
-User Location View includes all metrics aggregated at the country level. It reports metrics at the actual physical location of the user by targeted or not targeted location.
+User Location View includes all metrics aggregated at the country level. It reports metrics at the
+actual physical location of the user by targeted or not targeted location.
+
 - [display_keyword_view](https://developers.google.com/google-ads/api/fields/v15/display_keyword_view)
 
 Metrics for display keywords, which are keywords that are targeted in display campaigns.
+
 - [topic_view](https://developers.google.com/google-ads/api/fields/v15/topic_view)
 
-Reporting view that shows metrics aggregated by topic, which are broad categories of interests that users have.
+Reporting view that shows metrics aggregated by topic, which are broad categories of interests that
+users have.
+
 - [shopping_performance_view](https://developers.google.com/google-ads/api/fields/v15/shopping_performance_view)
 
-Provides Shopping campaign statistics aggregated at several product dimension levels. Product dimension values from Merchant Center such as brand, category, custom attributes, product condition and product type will reflect the state of each dimension as of the date and time when the corresponding event was recorded.
+Provides Shopping campaign statistics aggregated at several product dimension levels. Product
+dimension values from Merchant Center such as brand, category, custom attributes, product condition
+and product type will reflect the state of each dimension as of the date and time when the
+corresponding event was recorded.
+
 - [keyword_view](https://developers.google.com/google-ads/api/fields/v15/keyword_view)
 
 Provides metrics related to the performance of keywords in the campaign.
+
 - [ad_group_ad_legacy](https://developers.google.com/google-ads/api/fields/v15/ad_group_ad)
 
 Metrics and attributes of legacy ads from ad groups.
 
-:::note
-Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v15/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
-:::
+:::note Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time
+and can only retrieve data newer than 90 days ago. Also,
+[metrics](https://developers.google.com/google-ads/api/fields/v15/metrics) cannot be requested for a
+Google Ads Manager account. Report streams are only available when pulling data from a non-manager
+account. :::
 
-:::warning
-Google Ads doesn't support `PERFORMANCE_MAX` campaigns on `ad_group` or `ad` stream level, only on `campaign` level. 
-If you have this type of campaign Google will remove them from the results for the `ads` reports.
-More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
-:::
+:::warning Google Ads doesn't support `PERFORMANCE_MAX` campaigns on `ad_group` or `ad` stream
+level, only on `campaign` level. If you have this type of campaign Google will remove them from the
+results for the `ads` reports. More [info](https://github.com/airbytehq/airbyte/issues/11062) and
+[Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ). :::
 
-For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v15/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+For incremental streams, data is synced up to the previous day using your Google Ads account time
+zone since Google Ads can filter data only by
+[date](https://developers.google.com/google-ads/api/fields/v15/ad_group_ad#segments.date) without
+time. Also, some reports cannot load data real-time due to Google Ads
+[limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
-### Reasoning Behind Primary Key Selection 
+### Reasoning Behind Primary Key Selection
 
-Primary keys are chosen to uniquely identify records within streams. In this selection, we considered the scope of ID uniqueness as detailed in [the Google Ads API structure documentation](https://developers.google.com/google-ads/api/docs/concepts/api-structure#object_ids). This approach guarantees that each record remains unique across various scopes and contexts. Moreover, in the Google Ads API, segmentation is crucial for dissecting performance data. As pointed out in [the Google Ads support documentation](https://developers.google.com/google-ads/api/docs/reporting/segmentation), segments offer a granular insight into data based on specific criteria, like device type or click interactions.
+Primary keys are chosen to uniquely identify records within streams. In this selection, we
+considered the scope of ID uniqueness as detailed in
+[the Google Ads API structure documentation](https://developers.google.com/google-ads/api/docs/concepts/api-structure#object_ids).
+This approach guarantees that each record remains unique across various scopes and contexts.
+Moreover, in the Google Ads API, segmentation is crucial for dissecting performance data. As pointed
+out in
+[the Google Ads support documentation](https://developers.google.com/google-ads/api/docs/reporting/segmentation),
+segments offer a granular insight into data based on specific criteria, like device type or click
+interactions.
 
 ## Custom Query: Understanding Google Ads Query Language
 
 Additional streams for Google Ads can be dynamically created using custom queries.
 
-The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v15/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
+The Google Ads Query Language queries the Google Ads API. Review the
+[Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and
+the [query builder](https://developers.google.com/google-ads/api/fields/v15/query_validator) to
+validate your query. You can then add these as custom queries when configuring the Google Ads
+source.
 
 Example GAQL Custom Query:
 
@@ -232,54 +349,102 @@ SELECT
 FROM ad_group
 ```
 
-Note that `segments.date` is automatically added to the `WHERE` clause if it is included in the `SELECT` clause. Custom reports including `segments.date` in the `SELECT` clause will be synced by day.
+Note that `segments.date` is automatically added to the `WHERE` clause if it is included in the
+`SELECT` clause. Custom reports including `segments.date` in the `SELECT` clause will be synced by
+day.
 
-Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains metrics fields in the select clause, it will not be executed against manager accounts.
+Each custom query in the input configuration must work for all the customer account IDs. Otherwise,
+the customer ID will be skipped for every query that fails the validation test. For example, if your
+query contains metrics fields in the select clause, it will not be executed against manager
+accounts.
 
-Follow Google's guidance on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords and remove any row that is not associated with a keyword. This is often unobvious and undesired behavior and can lead to missing data records. If you need this field in the stream, add a new stream instead of editing the existing ones.
+Follow Google's guidance on
+[Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics)
+when editing custom queries or default stream schemas (which will also be turned into GAQL queries
+by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`,
+`segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of
+data that have keywords and remove any row that is not associated with a keyword. This is often
+unobvious and undesired behavior and can lead to missing data records. If you need this field in the
+stream, add a new stream instead of editing the existing ones.
 
-:::info
-For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
-:::
-
+:::info For an existing Google Ads source, when you are updating or removing Custom GAQL Queries,
+you should also subsequently refresh your source schema to pull in any changes. :::
 
 ## Difference between manager and client accounts
 
-A manager account isn't an "upgrade" of your Google Ads account. Instead, it's an entirely new Google Ads account you create. Think of a manager account as an umbrella Google Ads account with several individual Google Ads accounts linked to it. You can link new and existing Google Ads accounts, as well as other manager accounts.
+A manager account isn't an "upgrade" of your Google Ads account. Instead, it's an entirely new
+Google Ads account you create. Think of a manager account as an umbrella Google Ads account with
+several individual Google Ads accounts linked to it. You can link new and existing Google Ads
+accounts, as well as other manager accounts.
 
-You can then monitor ad performance, update campaigns, and manage other account tasks for those client accounts. Your manager account can also be given ownership of a client account. This allows you to manage user access for the client account.
+You can then monitor ad performance, update campaigns, and manage other account tasks for those
+client accounts. Your manager account can also be given ownership of a client account. This allows
+you to manage user access for the client account.
 
-[Link](https://support.google.com/google-ads/answer/6139186?hl=en#) for more details on how it works and how you can create it. 
+[Link](https://support.google.com/google-ads/answer/6139186?hl=en#) for more details on how it works
+and how you can create it.
 
-**Manager Accounts (MCC)** primarily focus on account management and oversight. They can access and manage multiple client accounts, view shared resources, and handle invitations to link with client accounts.
+**Manager Accounts (MCC)** primarily focus on account management and oversight. They can access and
+manage multiple client accounts, view shared resources, and handle invitations to link with client
+accounts.
 
-**Client Accounts** are more operationally focused. They deal with campaign management, bidding, keywords, targeting, extensions, metrics, reporting, billing, and other ad-specific functionalities.
+**Client Accounts** are more operationally focused. They deal with campaign management, bidding,
+keywords, targeting, extensions, metrics, reporting, billing, and other ad-specific functionalities.
 
-While both types of accounts can access a wide range of resources in the API, the difference lies in their scope and purpose. Manager accounts have a broader oversight, while client accounts delve into the specifics of advertising operations.
+While both types of accounts can access a wide range of resources in the API, the difference lies in
+their scope and purpose. Manager accounts have a broader oversight, while client accounts delve into
+the specifics of advertising operations.
 
-For detailed information, refer to the [official documentation.](https://developers.google.com/google-ads/api/fields/v15/overview)
+For detailed information, refer to the
+[official documentation.](https://developers.google.com/google-ads/api/fields/v15/overview)
 
 ## Note on Conversion Windows
 
-In digital advertising, a 'conversion' typically refers to a user undertaking a desired action after viewing or interacting with an ad. This could be anything from clicking through to the advertiser's website, signing up for a newsletter, making a purchase, and so on. The conversion window is the period of time after a user sees or clicks on an ad during which their actions can still be credited to that ad.
+In digital advertising, a 'conversion' typically refers to a user undertaking a desired action after
+viewing or interacting with an ad. This could be anything from clicking through to the advertiser's
+website, signing up for a newsletter, making a purchase, and so on. The conversion window is the
+period of time after a user sees or clicks on an ad during which their actions can still be credited
+to that ad.
 
-For example, imagine an online shoe store runs an ad and sets a conversion window of 30 days. If you click on that ad today, any purchases you make on the shoe store's site within the next 30 days will be considered conversions resulting from that ad.
-The length of the conversion window can vary depending on the goals of the advertiser and the nature of the product or service. Some businesses might set a shorter conversion window if they're promoting a limited-time offer, while others might set a longer window if they're advertising a product that consumers typically take a while to think about before buying.
+For example, imagine an online shoe store runs an ad and sets a conversion window of 30 days. If you
+click on that ad today, any purchases you make on the shoe store's site within the next 30 days will
+be considered conversions resulting from that ad. The length of the conversion window can vary
+depending on the goals of the advertiser and the nature of the product or service. Some businesses
+might set a shorter conversion window if they're promoting a limited-time offer, while others might
+set a longer window if they're advertising a product that consumers typically take a while to think
+about before buying.
 
-In essence, the conversion window is a tool for measuring the effectiveness of an advertising campaign. By tracking the actions users take after viewing or interacting with an ad, businesses can gain insight into how well their ads are working and adjust their strategies accordingly.
+In essence, the conversion window is a tool for measuring the effectiveness of an advertising
+campaign. By tracking the actions users take after viewing or interacting with an ad, businesses can
+gain insight into how well their ads are working and adjust their strategies accordingly.
 
-In the case of configuring the Google Ads source connector, each time a sync is run the connector will retrieve all conversions that were active within the specified conversion window. For example, if you set a conversion window of 30 days, each time a sync is run, the connector will pull all conversions that were active within the past 30 days. Due to this mechanism, it may seem like the same campaigns, ad groups, or ads have different conversion numbers. However, in reality, each data record accurately reflects the number of conversions for that particular resource at the time of extracting the data from the Google Ads API.
+In the case of configuring the Google Ads source connector, each time a sync is run the connector
+will retrieve all conversions that were active within the specified conversion window. For example,
+if you set a conversion window of 30 days, each time a sync is run, the connector will pull all
+conversions that were active within the past 30 days. Due to this mechanism, it may seem like the
+same campaigns, ad groups, or ads have different conversion numbers. However, in reality, each data
+record accurately reflects the number of conversions for that particular resource at the time of
+extracting the data from the Google Ads API.
 
 ## Performance considerations
 
-This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
+This source is constrained by the
+[Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
 
-Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
+Due to a limitation in the Google Ads API which does not allow getting performance data at a
+granularity level smaller than a day, the Google Ads connector usually pulls data up until the
+previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday
+midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example,
+12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to
+resync it again once the full day's data has been recorded by Google. For example, without this
+functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday
+between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get
+all of Wednesday's data.
 
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
-|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
 | `3.4.1`  | 2024-04-08 | [36891](https://github.com/airbytehq/airbyte/pull/36891) | Optimize `check` method                                                                                                              |
 | `3.4.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                      |
 | `3.3.7`  | 2024-03-15 | [36208](https://github.com/airbytehq/airbyte/pull/36208) | Added error message when there is the `unrecognized field` inside of the `custom query`                                              |

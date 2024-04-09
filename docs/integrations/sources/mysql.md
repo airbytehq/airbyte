@@ -1,17 +1,25 @@
 # MySQL
 
 Airbyte's certified MySQL connector offers the following features:
-* Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
-* All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
-* Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping and changelogs).
+- Multiple methods of keeping your data fresh, including
+  [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the
+  [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
+- All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes),
+  providing flexibility in how data is delivered to your destination.
+- Reliable replication at any table size with
+  [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
+  and chunking of database reads.
+
+The contents below include a 'Quick Start' guide, advanced setup steps, and reference information
+(data type mapping and changelogs).
 
 ![Airbyte MySQL Connection](https://raw.githubusercontent.com/airbytehq/airbyte/3a9264666b7b9b9d10ef8d174b8454a6c7e57560/docs/integrations/sources/mysql/assets/airbyte_mysql_source.png)
 
 ## Quick Start
 
 Here is an outline of the minimum required steps to configure a MySQL connector:
+
 1. Create a dedicated read-only MySQL user with permissions for replicating data
 2. Create a new MySQL source in the Airbyte UI using CDC logical replication
 3. (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
@@ -22,7 +30,8 @@ Once this is complete, you will be able to select MySQL as a source for replicat
 
 #### Step 1: Create a dedicated read-only MySQL user
 
-These steps create a dedicated read-only user for replicating data. Alternatively, you can use an existing MySQL user in your database.
+These steps create a dedicated read-only user for replicating data. Alternatively, you can use an
+existing MySQL user in your database.
 
 The following commands will create a new user:
 
@@ -36,7 +45,8 @@ Now, provide this user with read-only access to relevant schemas and tables:
 GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO <user_name>;
 ```
 
-If choosing to run using the `STANDARD` replication method (not recommended), only the `SELECT` permission is required.
+If choosing to run using the `STANDARD` replication method (not recommended), only the `SELECT`
+permission is required.
 
 </FieldAnchor>
 
@@ -44,9 +54,11 @@ If choosing to run using the `STANDARD` replication method (not recommended), on
 
 #### Step 2: Enable binary logging on your MySQL server
 
-You must enable binary logging for MySQL replication using CDC. Most cloud providers (AWS, GCP, etc.) provide easy one-click options for enabling the binlog on your source MySQL database.
+You must enable binary logging for MySQL replication using CDC. Most cloud providers (AWS, GCP,
+etc.) provide easy one-click options for enabling the binlog on your source MySQL database.
 
-If you are self-managing your MySQL server, configure your MySQL server configuration file with the following properties:
+If you are self-managing your MySQL server, configure your MySQL server configuration file with the
+following properties:
 
 <details>
   <summary>Configuring MySQL server config files to enable binlog</summary>
@@ -59,11 +71,23 @@ binlog_row_image           = FULL
 binlog_expire_logs_seconds  = 864000
 ```
 
-- server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
-- log_bin : The value of log_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
-- binlog_format : The `binlog_format` must be set to `ROW`. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
-- binlog_row_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are written to the binary log. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
-- binlog_expire_logs_seconds : This is the number of seconds for automatic binlog file removal. We recommend 864000 seconds (10 days) so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
+- server-id : The value for the server-id must be unique for each server and replication client in
+  the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set
+  to a non-zero value, you don't need to make any change. You can set the `server-id` to any value
+  between 1 and 4294967295. For more information refer
+  [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
+- log_bin : The value of log_bin is the base name of the sequence of binlog files. If the `log_bin`
+  is already set, you don't need to make any change. For more information refer
+  [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
+- binlog_format : The `binlog_format` must be set to `ROW`. For more information refer
+  [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
+- binlog_row_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are
+  written to the binary log. For more information refer
+  [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
+- binlog_expire_logs_seconds : This is the number of seconds for automatic binlog file removal. We
+  recommend 864000 seconds (10 days) so that in case of a failure in sync or if the sync is paused,
+  we still have some bandwidth to start from the last point in incremental sync. We also recommend
+  setting frequent syncs for CDC.
 
 </details>
 
@@ -73,7 +97,8 @@ binlog_expire_logs_seconds  = 864000
 
 #### Step 3: Create a new MySQL source in Airbyte UI
 
-From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `MySQL`, then create a new MySQL source.
+From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account,
+select `Sources` from the left navigation bar, search for `MySQL`, then create a new MySQL source.
 
 <HideInUI>
 
@@ -82,18 +107,26 @@ From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open 
 </HideInUI>
 
 To fill out the required information:
+
 1. Enter the hostname, port number, and name for your MySQL database.
-2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
-3. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
+2. Enter the username and password you created in
+   [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
+3. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these
+   always require encryption. `verify-ca` also requires certificates from your MySQL database. See
+   [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
 4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
 
 <!-- env:cloud -->
+
 #### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
-If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
+If you are on Airbyte Cloud, you will always need to modify your database configuration to allow
+inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in our
+[Airbyte Security docs](../../operating-airbyte/security#network-security-1).
 
-Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
+Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database.
+Once this succeeds, you've configured an Airbyte MySQL source!
+
 <!-- /env:cloud -->
 
 </FieldAnchor>
@@ -102,16 +135,26 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ### Change Data Capture \(CDC\)
 
-Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
+Airbyte uses logical replication of the
+[MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture
+deletes. To learn more how Airbyte implements CDC, refer to
+[Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally
+recommend configure your MySQL source with CDC whenever possible, as it provides:
+
 - A record of deletions, if needed.
 - Scalable replication to large tables (1 TB and more).
-- A reliable cursor not reliant on the nature of your data. For example, if your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
+- A reliable cursor not reliant on the nature of your data. For example, if your table has a primary
+  key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC
+  allows you to sync your table incrementally.
 
 <FieldAnchor field="replication_method[STANDARD]">
 
 ### Standard
 
-Airbyte offers incremental replication using a custom cursor available in your source tables (e.g. `updated_at`). We generally recommend against this replication method, but it is well suited for the following cases:
+Airbyte offers incremental replication using a custom cursor available in your source tables (e.g.
+`updated_at`). We generally recommend against this replication method, but it is well suited for the
+following cases:
+
 - Your MySQL server does not expose the binlog.
 - Your data set is small, and you just want snapshot of your table in the destination.
 
@@ -126,10 +169,12 @@ Airbyte offers incremental replication using a custom cursor available in your s
 Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
 
 Here is a breakdown of available SSL connection modes:
+
 - `disable` to disable encrypted communication between Airbyte and the source
 - `allow` to enable encrypted communication only when required by the source
 - `prefer` to allow unencrypted communication only when the source doesn't support encryption
-- `require` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
+- `require` to always require encryption. Note: The connection will fail if the source doesn't
+  support encryption.
 - `verify-ca` to always require encryption and verify that the source has a valid SSL certificate
 - `verify-full` to always require encryption and verify the identity of the source
 
@@ -139,19 +184,28 @@ Here is a breakdown of available SSL connection modes:
 
 You can connect to a MySQL server via an SSH tunnel.
 
-When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also called a bastion or a jump server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also
+called a bastion or a jump server) that has direct access to the database. Airbyte connects to the
+bastion and then asks the bastion to connect directly to the server.
 
 To connect to a MySQL server via an SSH tunnel:
 
 1. While setting up the MySQL source connector, from the SSH tunnel dropdown, select:
-    - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
-    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
-2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
-3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
-4. For **SSH Login Username**, enter the username to use when connecting to the bastion server. **Note:** This is the operating system username and not the MySQL username.
+   - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
+   - Password Authentication to use a password as your secret for establishing the SSH Tunnel
+2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate
+   (bastion) server that Airbyte will connect to.
+3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH
+   connections is 22.
+4. For **SSH Login Username**, enter the username to use when connecting to the bastion server.
+   **Note:** This is the operating system username and not the MySQL username.
 5. For authentication:
-    - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [private Key](#generating-a-private-key-for-ssh-tunneling) that you are using to create the SSH connection.
-    - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the MySQL password.
+   - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the
+     [private Key](#generating-a-private-key-for-ssh-tunneling) that you are using to create the SSH
+     connection.
+   - If you selected **Password Authentication**, enter the password for the operating system user
+     to connect to the bastion server. **Note:** This is the operating system password and not the
+     MySQL password.
 
 #### Generating a private key for SSH Tunneling
 
@@ -161,22 +215,31 @@ The connector expects an RSA key in PEM format. To generate this key:
 ssh-keygen -t rsa -m PEM -f myuser_rsa
 ```
 
-This produces the private key in pem format, and the public key remains in the standard format used by the `authorized_keys` file on your bastion host. The public key should be added to your bastion host to whichever user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen, so it may log in to the bastion.
+This produces the private key in pem format, and the public key remains in the standard format used
+by the `authorized_keys` file on your bastion host. The public key should be added to your bastion
+host to whichever user you want to use with Airbyte. The private key is provided via copy-and-paste
+to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your MySQL connector, see more [in our MySQL troubleshooting guide](https://docs.airbyte.com/integrations/sources/mysql/mysql-troubleshooting).
+To see connector limitations, or troubleshoot your MySQL connector, see more
+[in our MySQL troubleshooting guide](https://docs.airbyte.com/integrations/sources/mysql/mysql-troubleshooting).
 
 ## Data Type Mapping
 
-MySQL data types are mapped to the following data types when synchronizing data. You can check test example values [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for, feel free to add a new test.
-If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
+MySQL data types are mapped to the following data types when synchronizing data. You can check test
+example values
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java).
+If you can't find the data type you are looking for, feel free to add a new test. If you do not see
+a type in this list, assume that it is coerced into a string. We are happy to take feedback on
+preferred mappings.
 
-Any database or table encoding combination of charset and collation is supported. Charset setting however will not be carried over to destination and data will be encoded with whatever is configured by the destination. Please note that byte arrays are not yet supported.
+Any database or table encoding combination of charset and collation is supported. Charset setting
+however will not be carried over to destination and data will be encoded with whatever is configured
+by the destination. Please note that byte arrays are not yet supported.
 
 <details>
     <summary>MySQL Data Type Mapping</summary>
-
 
 | MySQL Type                                | Resulting Type         | Notes                                                                                                          |
 | :---------------------------------------- | :--------------------- | :------------------------------------------------------------------------------------------------------------- |
@@ -215,14 +278,12 @@ Any database or table encoding combination of charset and collation is supported
 | `set`                                     | string                 | E.g. `blue,green,yellow`                                                                                       |
 | `geometry`                                | base64 binary string   |                                                                                                                |
 
-
 </details>
 
 ## Changelog
 
-
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
 | 3.3.16  | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872)   | Update to connector's metadat definition.                                                                                                       |
 | 3.3.15  | 2024-04-05 | [36577](https://github.com/airbytehq/airbyte/pull/36577)   | Config error will not send out system trace message                                                                                             |
 | 3.3.14  | 2024-04-04 | [36742](https://github.com/airbytehq/airbyte/pull/36742)   | To use new kotlin CDK                                                                                                                           |

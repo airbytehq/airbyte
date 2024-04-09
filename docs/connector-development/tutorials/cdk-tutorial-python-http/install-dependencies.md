@@ -16,7 +16,24 @@ poetry run source-<name> spec
 You should see some output:
 
 ```json
-{"type": "SPEC", "spec": {"documentationUrl": "https://docsurl.com", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "title": "Python Http Tutorial Spec", "type": "object", "required": ["TODO"], "properties": {"TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {"type": "string", "description": "describe me"}}}}}
+{
+  "type": "SPEC",
+  "spec": {
+    "documentationUrl": "https://docsurl.com",
+    "connectionSpecification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Python Http Tutorial Spec",
+      "type": "object",
+      "required": ["TODO"],
+      "properties": {
+        "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {
+          "type": "string",
+          "description": "describe me"
+        }
+      }
+    }
+  }
+}
 ```
 
 We just ran Airbyte Protocol's `spec` command! We'll talk more about this later, but this is a
@@ -84,9 +101,9 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 
 :::info
 
-Each time you make a change to your implementation you need to re-build the connector image
-via `docker build . -t airbyte/source-<name>:dev`. This ensures the new python code is added into
-the docker container.
+Each time you make a change to your implementation you need to re-build the connector image via
+`docker build . -t airbyte/source-<name>:dev`. This ensures the new python code is added into the
+docker container.
 
 :::
 

@@ -4,9 +4,13 @@ This page contains the setup guide and reference information for the Braze sourc
 
 ## Prerequisites
 
-It is required to have an account on Braze to provide us with `URL` and `Rest API Key` during set up.
-- `Rest API Key` could be found on Braze Dashboard -> Developer Console tab -> API Settings -> Rest API Keys
-- `URL` could be found on Braze Dashboard -> Manage Settings -> Settings tab -> `Your App name` -> SDK Endpoint
+It is required to have an account on Braze to provide us with `URL` and `Rest API Key` during set
+up.
+
+- `Rest API Key` could be found on Braze Dashboard -> Developer Console tab -> API Settings -> Rest
+  API Keys
+- `URL` could be found on Braze Dashboard -> Manage Settings -> Settings tab -> `Your App name` ->
+  SDK Endpoint
 
 ## Set up the Braze connector in Airbyte
 
@@ -14,12 +18,14 @@ It is required to have an account on Braze to provide us with `URL` and `Rest AP
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Braze connector and select **Braze** from the Source type dropdown.
+3. On the Set up the source page, enter the name for the Braze connector and select **Braze** from
+   the Source type dropdown.
 4. Fill in your `URL`, `Rest API Key` and `Start date` and then click **Set up source**.
 
 ## Supported sync modes
 
-The Braze source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Braze source connector supports the following
+[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Incremental Sync | Append
@@ -44,16 +50,13 @@ The Braze source connector supports the following [ sync modes](https://docs.air
 
 Rate limits differ depending on stream.
 
-Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-request-type 
-
+Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-request-type
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                            |
-|:--------|:-----------|:----------------------------------------------------------|:-----------------------------------|
-| 0.3.0   | 2023-11-04 | [31857](https://github.com/airbytehq/airbyte/pull/31857) | Add Campaigns, Canvases, Segments Details Streams |
-| 0.2.0   | 2023-10-28 | [31607](https://github.com/airbytehq/airbyte/pull/31607) | Fix CanvasAnalytics Stream Null Data for step_stats, variant_stats           |
-| 0.1.4   | 2023-11-03 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | Fix integration tests           |
-| 0.1.3   | 2022-12-15 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | The Braze connector born           |
-
-
+| Version | Date       | Pull Request                                             | Subject                                                            |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 0.3.0   | 2023-11-04 | [31857](https://github.com/airbytehq/airbyte/pull/31857) | Add Campaigns, Canvases, Segments Details Streams                  |
+| 0.2.0   | 2023-10-28 | [31607](https://github.com/airbytehq/airbyte/pull/31607) | Fix CanvasAnalytics Stream Null Data for step_stats, variant_stats |
+| 0.1.4   | 2023-11-03 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | Fix integration tests                                              |
+| 0.1.3   | 2022-12-15 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | The Braze connector born                                           |

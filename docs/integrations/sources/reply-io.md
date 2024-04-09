@@ -28,11 +28,13 @@ This Source is capable of syncing the following core Streams:
 
 - Each Reply user has a limit of 15000 API calls per month.
 - The time limit between API calls makes 10 seconds.
-- The limit for syncing contacts using native integrations is the same as the limit for the number of contacts in your Reply account.
+- The limit for syncing contacts using native integrations is the same as the limit for the number
+  of contacts in your Reply account.
 
 ## Requirements
 
-- **Reply.io API key**. See the [Reply.io docs](https://apidocs.reply.io/#authentication) for information on how to obtain an API key.
+- **Reply.io API key**. See the [Reply.io docs](https://apidocs.reply.io/#authentication) for
+  information on how to obtain an API key.
 
 ## Changelog
 

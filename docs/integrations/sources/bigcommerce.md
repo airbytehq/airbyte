@@ -2,9 +2,12 @@
 
 ## Sync overview
 
-The BigCommerce source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The BigCommerce source supports both Full Refresh and Incremental syncs. You can choose if this
+connector will copy only the new or updated data, or all rows in the tables and columns you set up
+for replication, every time a sync is run.
 
-This source can sync data for the [BigCommerce API](https://developer.bigcommerce.com/api-docs/getting-started/making-requests).
+This source can sync data for the
+[BigCommerce API](https://developer.bigcommerce.com/api-docs/getting-started/making-requests).
 
 ### Output schema
 
@@ -40,21 +43,24 @@ This Source is capable of syncing the following core Streams:
 
 ### Performance considerations
 
-BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com/api-docs/getting-started/best-practices).
+BigCommerce has some
+[rate limit restrictions](https://developer.bigcommerce.com/api-docs/getting-started/best-practices).
 
 ## Getting started
 
-1. Navigate to your store’s control panel \(Advanced Settings &gt; API Accounts &gt; Create API Account\)
+1. Navigate to your store’s control panel \(Advanced Settings &gt; API Accounts &gt; Create API
+   Account\)
 2. Create an API account.
 3. Select the resources you want to allow access to. Airbyte only needs read-level access.
-   - Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
+   - Note: The UI will show all possible data sources and will show errors when syncing if it
+     doesn't have permissions to access a resource.
 4. The generated `Access Token` is what you'll use as the `access_token` for the integration.
 5. You're ready to set up BigCommerce in Airbyte!
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
 | 0.2.0   | 2023-08-16 | [29469](https://github.com/airbytehq/airbyte/pull/29469) | Migrate Python CDK to Low Code                              |
 | 0.1.10  | 2022-12-16 | [20518](https://github.com/airbytehq/airbyte/pull/20518) | Add brands and categories streams                           |
 | 0.1.9   | 2022-12-15 | [20540](https://github.com/airbytehq/airbyte/pull/20540) | Rebuild on CDK 0.15.0                                       |

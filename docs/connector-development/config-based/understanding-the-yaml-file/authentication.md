@@ -1,43 +1,44 @@
 # Authentication
 
-The `Authenticator` defines how to configure outgoing HTTP requests to authenticate on the API source.
+The `Authenticator` defines how to configure outgoing HTTP requests to authenticate on the API
+source.
 
 Schema:
 
 ```yaml
-  Authenticator:
-    type: object
-    description: "Authenticator type"
-    anyOf:
-      - "$ref": "#/definitions/OAuth"
-      - "$ref": "#/definitions/ApiKeyAuthenticator"
-      - "$ref": "#/definitions/BearerAuthenticator"
-      - "$ref": "#/definitions/BasicHttpAuthenticator"
+Authenticator:
+  type: object
+  description: "Authenticator type"
+  anyOf:
+    - "$ref": "#/definitions/OAuth"
+    - "$ref": "#/definitions/ApiKeyAuthenticator"
+    - "$ref": "#/definitions/BearerAuthenticator"
+    - "$ref": "#/definitions/BasicHttpAuthenticator"
 ```
 
 ## Authenticators
 
 ### ApiKeyAuthenticator
 
-The `ApiKeyAuthenticator` sets an HTTP header on outgoing requests.
-The following definition will set the header "Authorization" with a value "Bearer hello":
+The `ApiKeyAuthenticator` sets an HTTP header on outgoing requests. The following definition will
+set the header "Authorization" with a value "Bearer hello":
 
 Schema:
 
 ```yaml
-  ApiKeyAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - header
-      - api_token
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      header:
-        type: string
-      api_token:
-        type: string
+ApiKeyAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - header
+    - api_token
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    header:
+      type: string
+    api_token:
+      type: string
 ```
 
 Example:
@@ -51,22 +52,23 @@ authenticator:
 
 ### BearerAuthenticator
 
-The `BearerAuthenticator` is a specialized `ApiKeyAuthenticator` that always sets the header "Authorization" with the value `Bearer {token}`.
-The following definition will set the header "Authorization" with a value "Bearer hello"
+The `BearerAuthenticator` is a specialized `ApiKeyAuthenticator` that always sets the header
+"Authorization" with the value `Bearer {token}`. The following definition will set the header
+"Authorization" with a value "Bearer hello"
 
 Schema:
 
 ```yaml
-  BearerAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - api_token
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      api_token:
-        type: string
+BearerAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - api_token
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    api_token:
+      type: string
 ```
 
 Example:
@@ -77,28 +79,32 @@ authenticator:
   api_token: "hello"
 ```
 
-More information on bearer authentication can be found [here](https://swagger.io/docs/specification/authentication/bearer-authentication/).
+More information on bearer authentication can be found
+[here](https://swagger.io/docs/specification/authentication/bearer-authentication/).
 
 ### BasicHttpAuthenticator
 
-The `BasicHttpAuthenticator` set the "Authorization" header with a (USER ID/password) pair, encoded using base64 as per [RFC 7617](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme).
-The following definition will set the header "Authorization" with a value `Basic {encoded credentials}`
+The `BasicHttpAuthenticator` set the "Authorization" header with a (USER ID/password) pair, encoded
+using base64 as per
+[RFC 7617](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme).
+The following definition will set the header "Authorization" with a value
+`Basic {encoded credentials}`
 
 Schema:
 
 ```yaml
-  BasicHttpAuthenticator:
-    type: object
-    additionalProperties: true
-    required:
-      - username
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      username:
-        type: string
-      password:
-        type: string
+BasicHttpAuthenticator:
+  type: object
+  additionalProperties: true
+  required:
+    - username
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    username:
+      type: string
+    password:
+      type: string
 ```
 
 Example:
@@ -110,7 +116,8 @@ authenticator:
   password: "world"
 ```
 
-The password is optional. Authenticating with APIs using Basic HTTP and a single API key can be done as:
+The password is optional. Authenticating with APIs using Basic HTTP and a single API key can be done
+as:
 
 Example:
 
@@ -122,61 +129,66 @@ authenticator:
 
 ### OAuth
 
-OAuth authentication is supported through the `OAuthAuthenticator`, which requires the following parameters:
+OAuth authentication is supported through the `OAuthAuthenticator`, which requires the following
+parameters:
 
 - token_refresh_endpoint: The endpoint to refresh the access token
 - client_id: The client id
 - client_secret: The client secret
 - refresh_token: The token used to refresh the access token
 - scopes (Optional): The scopes to request. Default: Empty list
-- token_expiry_date (Optional): The access token expiration date formatted as RFC-3339 ("%Y-%m-%dT%H:%M:%S.%f%z")
-- access_token_name (Optional): The field to extract access token from in the response. Default: "access_token".
-- expires_in_name (Optional): The field to extract expires_in from in the response. Default: "expires_in"
+- token_expiry_date (Optional): The access token expiration date formatted as RFC-3339
+  ("%Y-%m-%dT%H:%M:%S.%f%z")
+- access_token_name (Optional): The field to extract access token from in the response. Default:
+  "access_token".
+- expires_in_name (Optional): The field to extract expires_in from in the response. Default:
+  "expires_in"
 - refresh_request_body (Optional): The request body to send in the refresh request. Default: None
-- grant_type (Optional): The parameter specified grant_type to request access_token. Default: "refresh_token"
+- grant_type (Optional): The parameter specified grant_type to request access_token. Default:
+  "refresh_token"
 
 Schema:
 
 ```yaml
-  OAuth:
-    type: object
-    additionalProperties: true
-    required:
-      - token_refresh_endpoint
-      - client_id
-      - client_secret
-      - refresh_token
-      - access_token_name
-      - expires_in_name
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      token_refresh_endpoint:
+OAuth:
+  type: object
+  additionalProperties: true
+  required:
+    - token_refresh_endpoint
+    - client_id
+    - client_secret
+    - refresh_token
+    - access_token_name
+    - expires_in_name
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    token_refresh_endpoint:
+      type: string
+    client_id:
+      type: string
+    client_secret:
+      type: string
+    refresh_token:
+      type: string
+    scopes:
+      type: array
+      items:
         type: string
-      client_id:
-        type: string
-      client_secret:
-        type: string
-      refresh_token:
-        type: string
-      scopes:
-        type: array
-        items:
-          type: string
-        default: [ ]
-      token_expiry_date:
-        type: string
-      access_token_name:
-        type: string
-        default: "access_token"
-      expires_in_name:
-        type: string
-        default: "expires_in"
-      refresh_request_body:
-        type: object
-      grant_type:
-        type: string
-        default: "refresh_token"
+      default: []
+    token_expiry_date:
+      type: string
+    access_token_name:
+      type: string
+      default: "access_token"
+    expires_in_name:
+      type: string
+      default: "expires_in"
+    refresh_request_body:
+      type: object
+    grant_type:
+      type: string
+      default: "refresh_token"
 ```
 
 Example:

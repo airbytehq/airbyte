@@ -6,7 +6,9 @@ This page contains the setup guide and reference information for the Zendesk Cha
 
 - A Zendesk Account with permission to access data from accounts you want to sync.
 <!-- env:oss -->
-- (Airbyte Open Source) An Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
+- (Airbyte Open Source) An Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We
+recommend creating a restricted, read-only key specifically for Airbyte access to allow you to
+control which resources Airbyte should be able to access.
 <!-- /env:oss -->
 
 ## Setup guide
@@ -19,8 +21,11 @@ This page contains the setup guide and reference information for the Zendesk Cha
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
 4. Enter the name for the Zendesk Chat connector.
-5. If you access Zendesk Chat from a [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-), enter the **Subdomain**.
-6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
+5. If you access Zendesk Chat from a
+   [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-),
+   enter the **Subdomain**.
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after
+   this date will be replicated.
 7. Click **Authenticate your Zendesk Chat account**. Log in and authorize your Zendesk Chat account.
 8. Click **Set up source**.
 <!-- /env:cloud -->
@@ -33,15 +38,20 @@ This page contains the setup guide and reference information for the Zendesk Cha
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
 4. Enter the name for the Zendesk Chat connector.
-5. If you access Zendesk Chat from a [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-), enter the **Subdomain**.
-6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
-7. For Authorization Method, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/rest_api/docs/chat/auth).
+5. If you access Zendesk Chat from a
+   [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-),
+   enter the **Subdomain**.
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after
+   this date will be replicated.
+7. For Authorization Method, select **Access Token** from the dropdown and enter your Zendesk
+   [access token](https://developer.zendesk.com/rest_api/docs/chat/auth).
 8. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
 
-The Zendesk Chat source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Zendesk Chat source connector supports the following
+[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -52,7 +62,8 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 - [Accounts](https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account)
 - [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) \(Incremental\)
-- [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) \(Incremental\)
+- [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export)
+  \(Incremental\)
 - [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats)
 - [Shortcuts](https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts)
 - [Triggers](https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers)
@@ -65,7 +76,8 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 ## Performance considerations
 
-The connector is restricted by Zendesk's [requests limitation](https://developer.zendesk.com/rest_api/docs/voice-api/introduction#rate-limits).
+The connector is restricted by Zendesk's
+[requests limitation](https://developer.zendesk.com/rest_api/docs/voice-api/introduction#rate-limits).
 
 ## Data type map
 
@@ -80,8 +92,8 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
-| 0.3.0 | 2024-03-07 | [35867](https://github.com/airbytehq/airbyte/pull/35867) | Migrated to `YamlDeclarativeSource (Low-code)` Airbyte CDK |
-| 0.2.2 | 2024-02-12 | [35185](https://github.com/airbytehq/airbyte/pull/35185) | Manage dependencies with Poetry. |
+| 0.3.0   | 2024-03-07 | [35867](https://github.com/airbytehq/airbyte/pull/35867) | Migrated to `YamlDeclarativeSource (Low-code)` Airbyte CDK                                                       |
+| 0.2.2   | 2024-02-12 | [35185](https://github.com/airbytehq/airbyte/pull/35185) | Manage dependencies with Poetry.                                                                                 |
 | 0.2.1   | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0                                                        |
 | 0.2.0   | 2023-10-11 | [30526](https://github.com/airbytehq/airbyte/pull/30526) | Use the python connector base image, remove dockerfile and implement build_customization.py                      |
 | 0.1.14  | 2023-02-10 | [24190](https://github.com/airbytehq/airbyte/pull/24190) | Fix remove too high min/max from account stream                                                                  |

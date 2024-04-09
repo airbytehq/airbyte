@@ -2,22 +2,28 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Salesforce](https://www.salesforce.com/) source connector.
+This page contains the setup guide and reference information for the
+[Salesforce](https://www.salesforce.com/) source connector.
 
 </HideInUI>
 
 ## Prerequisites
 
 - [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
-- (Optional, Recommended) Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
+- (Optional, Recommended) Dedicated Salesforce
+[user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
 <!-- env:oss -->
-- (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
+- (For Airbyte Open Source) Salesforce
+[OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5)
+credentials
 <!-- /env:oss -->
-
 
 :::tip
 
-To use this connector, you'll need at least the Enterprise edition of Salesforce or the Professional Edition with API access purchased as an add-on. Reference the [Salesforce docs about API access](https://help.salesforce.com/s/articleView?id=000385436&type=1) for more information.
+To use this connector, you'll need at least the Enterprise edition of Salesforce or the Professional
+Edition with API access purchased as an add-on. Reference the
+[Salesforce docs about API access](https://help.salesforce.com/s/articleView?id=000385436&type=1)
+for more information.
 
 :::
 
@@ -25,41 +31,54 @@ To use this connector, you'll need at least the Enterprise edition of Salesforce
 
 ### Step 1: (Optional, Recommended) Create a read-only Salesforce user
 
-While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
+While you can set up the Salesforce connector using any Salesforce user with read permission, we
+recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the
+data Airbyte can read.
 
 To create a dedicated read only Salesforce user:
 
 1. [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 2. On the top right of the screen, click the gear icon and then click **Setup**.
-3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
+3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles
+   page is displayed. Click **New profile**.
 4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
 5. Click **Save**. The Profiles page is displayed. Click **Edit**.
-6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable the **Read** checkbox for objects that you want to replicate via Airbyte.
+6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable
+   the **Read** checkbox for objects that you want to replicate via Airbyte.
 7. Scroll to the top and click **Save**.
-8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
+8. On the left side, under Administration, click **Users** > **Users**. The All Users page is
+   displayed. Click **New User**.
 9. Fill out the required fields:
    1. For License, select **Salesforce**.
    2. For Profile, select **Airbyte Read Only User**.
    3. For Email, make sure to use an email address that you can access.
 10. Click **Save**.
 11. Copy the Username and keep it accessible.
-12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
+12. Log into the email you used above and verify your new Salesforce account user. You'll need to
+    set a password as part of this process. Keep this password accessible.
 
 <!-- env:oss -->
 
 ### For Airbyte Open Source: Obtain Salesforce OAuth credentials
 
-If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to authenticate:
+If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to
+authenticate:
 
 - Client ID
 - Client Secret
 - Refresh Token
 
-To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
+To obtain these credentials, follow
+[this walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b)
+with the following modifications:
 
-1.  If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
+1.  If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name.
+    For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of
+    `awesomecompany.salesforce.com`.
 2.  When running a curl command, run it with the `-L` option to follow any redirects.
-3.  If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
+3.  If you
+    [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4),
+    use the user credentials when logging in to generate OAuth tokens.
 
 <!-- /env:oss -->
 
@@ -73,11 +92,20 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
-5. To authenticate:
-   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
-6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
-7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
-8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
+5. To authenticate: **For Airbyte Cloud**: Click **Authenticate your account** to authorize your
+   Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in
+   to. Please make sure you are logged into the right account.
+6. Toggle whether your Salesforce account is a
+   [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5)
+   or a production account.
+7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in
+   either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will
+   be replicated. If this field is left blank, Airbyte will replicate the data for the last two
+   years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
+8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data
+   for replication. To do so, click **Add**, then select the relevant criteria from the **Search
+   criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add
+   multiple filters. If no filters are specified, Airbyte will replicate all data.
 9. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
@@ -90,11 +118,19 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
-5. To authenticate:
-   **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh Token.
-6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
-7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
-8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
+5. To authenticate: **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh
+   Token.
+6. Toggle whether your Salesforce account is a
+   [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5)
+   or a production account.
+7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in
+   either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will
+   be replicated. If this field is left blank, Airbyte will replicate the data for the last two
+   years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
+8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data
+   for replication. To do so, click **Add**, then select the relevant criteria from the **Search
+   criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add
+   multiple filters. If no filters are specified, Airbyte will replicate all data.
 9. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
@@ -113,13 +149,16 @@ The Salesforce source connector supports the following sync modes:
 
 ## Supported Streams
 
-The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
+The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce.
+Each object is read as a separate stream. See a list of all Salesforce Standard Objects
+[here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
 
 Airbyte allows exporting all available Salesforce objects dynamically based on:
 
 - If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
-- If the salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
-
+- If the salesforce object has the queryable property set to true. Airbyte can only fetch objects
+  which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check
+  if it is API-accessible to the Salesforce user you authenticated with.
 
 ## Limitations & Troubleshooting
 
@@ -132,71 +171,93 @@ Expand to see details about Salesforce connector limitations and troubleshooting
 
 #### Rate limiting
 
-The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) sync mode.
+The Salesforce connector is restricted by Salesforce’s
+[Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm).
+The connector syncs data until it hits the daily rate limit, then ends the sync early with success
+status, and starts the next sync from where it left off. Note that picking up from where it ends
+will work only for incremental sync, which is why we recommend using the
+[Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+sync mode.
 
 #### A note on the BULK API vs REST API and their limitations
+
 ## Syncing Formula Fields
 
-The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field changes in Salesforce and no other field on the record is updated, you will need to reset the stream and sync a historical backfill to pull in all the updated values of the field.
+The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field
+changes in Salesforce and no other field on the record is updated, you will need to reset the stream
+and sync a historical backfill to pull in all the updated values of the field.
 
 ## Syncing Deletes
 
-The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`. To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
+The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For
+the streams which support it, a deleted record will be marked with `isDeleted=true`. To find out
+more about how Salesforce manages records in the recycle bin, please visit their
+[docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
 
 ## Usage of the BULK API vs REST API
 
-Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
+Salesforce allows extracting data using either the
+[BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm)
+or
+[REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm).
+To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts
+of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by
+default to extract any Salesforce objects, unless any of the following conditions are met:
 
-- The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
-- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects:
-   - AcceptedEventRelation
-   - Attachment
-   - CaseStatus
-   - ContractStatus
-   - DeclinedEventRelation
-   - FieldSecurityClassification
-   - KnowledgeArticle
-   - KnowledgeArticleVersion
-   - KnowledgeArticleVersionHistory
-   - KnowledgeArticleViewStat
-   - KnowledgeArticleVoteStat
-   - OrderStatus
-   - PartnerRole
-   - RecentlyViewed
-   - ServiceAppointmentStatus
-   - ShiftStatus
-   - SolutionStatus
-   - TaskPriority
-   - TaskStatus
-   - UndecidedEventRelation
+- The Salesforce object has columns which are unsupported by the BULK API, like columns with a
+  `base64` or `complexvalue` type
+- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST
+  API which will occasionally cost more of your API quota. This includes the following objects:
+  - AcceptedEventRelation
+  - Attachment
+  - CaseStatus
+  - ContractStatus
+  - DeclinedEventRelation
+  - FieldSecurityClassification
+  - KnowledgeArticle
+  - KnowledgeArticleVersion
+  - KnowledgeArticleVersionHistory
+  - KnowledgeArticleViewStat
+  - KnowledgeArticleVoteStat
+  - OrderStatus
+  - PartnerRole
+  - RecentlyViewed
+  - ServiceAppointmentStatus
+  - ShiftStatus
+  - SolutionStatus
+  - TaskPriority
+  - TaskStatus
+  - UndecidedEventRelation
 
-More information on the differences between various Salesforce APIs can be found [here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
+More information on the differences between various Salesforce APIs can be found
+[here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
 
-:::info Force Using Bulk API
-If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync Stream using BULK API.
-:::
+:::info Force Using Bulk API If you set the `Force Use Bulk API` option to `true`, the connector
+will ignore unsupported properties and sync Stream using BULK API. :::
 
 ### Troubleshooting
 
 #### Tutorials
 
-Now that you have set up the Salesforce source connector, check out the following Salesforce tutorials:
+Now that you have set up the Salesforce source connector, check out the following Salesforce
+tutorials:
 
 - [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
 - [Replicate Salesforce and Zendesk data to Keen for unified analytics](https://airbyte.com/tutorials/salesforce-zendesk-analytics)
 
-* Check out common troubleshooting issues for the Salesforce source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+* Check out common troubleshooting issues for the Salesforce source connector on our
+  [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
 | 2.4.3   | 2024-04-08 | [36885](https://github.com/airbytehq/airbyte/pull/36885) | Add missing retry on REST API                                                                                                        |
 | 2.4.2   | 2024-04-05 | [36862](https://github.com/airbytehq/airbyte/pull/36862) | Upgrade CDK for updated error messaging regarding missing streams                                                                    |
 | 2.4.1   | 2024-04-03 | [36385](https://github.com/airbytehq/airbyte/pull/36385) | Retry HTTP requests and jobs on various cases                                                                                        |
-| 2.4.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978)  | Upgrade CDK to start emitting record counts with state and full refresh state                                                        |
+| 2.4.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978) | Upgrade CDK to start emitting record counts with state and full refresh state                                                        |
 | 2.3.3   | 2024-03-04 | [35791](https://github.com/airbytehq/airbyte/pull/35791) | Fix memory leak (OOM)                                                                                                                |
 | 2.3.2   | 2024-02-19 | [35421](https://github.com/airbytehq/airbyte/pull/35421) | Add Stream Slice Step option to specification                                                                                        |
 | 2.3.1   | 2024-02-12 | [35147](https://github.com/airbytehq/airbyte/pull/35147) | Manage dependencies with Poetry.                                                                                                     |
