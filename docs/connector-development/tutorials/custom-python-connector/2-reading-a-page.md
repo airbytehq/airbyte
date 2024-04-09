@@ -1,10 +1,13 @@
 # Reading a page
+
 In this section, we'll read a single page of records from the surveys endpoint.
 
 ## Write a failing test that reads a single page
+
 We'll start by writing a failing integration test.
 
 Create a file `unit_tests/integration/test_surveys.py`
+
 ```bash
 mkdir unit_tests/integration
 touch unit_tests/integration/test_surveys.py
@@ -13,6 +16,7 @@ code .
 
 Copy this template to
 `airbyte-integrations/connectors/source-survey-monkey-demo/unit_tests/integration/test_surveys.py`
+
 ```python
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
@@ -50,7 +54,7 @@ class FullRefreshTest(TestCase):
 
     def _read(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, configured_catalog=configured_catalog, expecting_exception=expecting_exception)
-  
+
 def _read(
     config: Mapping[str, Any],
     configured_catalog: ConfiguredAirbyteCatalog,
@@ -69,6 +73,7 @@ def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Op
 ```
 
 Most of this code is boilerplate. The most interesting section is the test
+
 ```python
     @HttpMocker()
     def test_read_a_single_page(self, http_mocker: HttpMocker) -> None:
@@ -82,9 +87,15 @@ Most of this code is boilerplate. The most interesting section is the test
 
         assert len(output.records) == 2
 ```
-`http_mocker.get` is used to register mocked requests and responses. You can specify the URL, query params, and request headers the connector is expected to send and mock the response that should be returned by the server to implement fast integration test that can be used to verify the connector's behavior without the need to reach the API. This allows the tests to be fast and reproducible.
 
-Now, we'll implement a first test verifying the connector will send a request to the right endpoint, with the right parameter, and verify that records are extracted from the data field of the response.
+`http_mocker.get` is used to register mocked requests and responses. You can specify the URL, query
+params, and request headers the connector is expected to send and mock the response that should be
+returned by the server to implement fast integration test that can be used to verify the connector's
+behavior without the need to reach the API. This allows the tests to be fast and reproducible.
+
+Now, we'll implement a first test verifying the connector will send a request to the right endpoint,
+with the right parameter, and verify that records are extracted from the data field of the response.
+
 ```python
 _A_CONFIG = {
 	"access_token": "access_token"
@@ -130,21 +141,29 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 2
 ```
 
-Note that the test also required adding the "access_token" field to the config. We'll use this field to store the API key obtained in the first section of the tutorial.
+Note that the test also required adding the "access_token" field to the config. We'll use this field
+to store the API key obtained in the first section of the tutorial.
 
 The test should fail because the expected request was not sent
+
 ```bash
 poetry run pytest unit_tests/integration
 ```
 
->  ValueError: Invalid number of matches for `HttpRequestMatcher(request_to_match=ParseResult(scheme='https', netloc='api.surveymonkey.com', path='/v3/surveys', params='', query='include=response_count,date_created,date_modified,language,question_count,analyze_url,preview,collect_stats', fragment='') with headers {} and body None), minimum_number_of_expected_match=1, actual_number_of_matches=0)`
+> ValueError: Invalid number of matches for
+> `HttpRequestMatcher(request_to_match=ParseResult(scheme='https', netloc='api.surveymonkey.com', path='/v3/surveys', params='', query='include=response_count,date_created,date_modified,language,question_count,analyze_url,preview,collect_stats', fragment='') with headers {} and body None), minimum_number_of_expected_match=1, actual_number_of_matches=0)`
 
+We'll now remove the unit tests files. Writing unit tests is left as an exercise for the reader, but
+it is highly recommended for any productionized connector.
 
-We'll now remove the unit tests files. Writing unit tests is left as an exercise for the reader, but it is highly recommended for any productionized connector.
 ```
-rm unit_tests/test_incremental_streams.py unit_tests/test_source.py unit_tests/test_streams.py 
+rm unit_tests/test_incremental_streams.py unit_tests/test_source.py unit_tests/test_streams.py
 ```
-Replace the content of `airbyte-integrations/connectors/source-survey-monkey-demo/source_survey_monkey_demo/source.py` with the following template:
+
+Replace the content of
+`airbyte-integrations/connectors/source-survey-monkey-demo/source_survey_monkey_demo/source.py` with
+the following template:
+
 ```python
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
@@ -214,18 +233,20 @@ class SourceSurveyMonkeyDemo(AbstractSource):
         return [SurveyMonkeyBaseStream(name=<TODO>, path=<TODO>, primary_key=<TODO>, data_field=<TODO>, authenticator=auth)]
 ```
 
-
-:::info
-This template restructures the code so its easier to extend. Specifically, it provides a base class that can be extended with composition instead of inheritance, which is generally less error prone.
+:::info This template restructures the code so its easier to extend. Specifically, it provides a
+base class that can be extended with composition instead of inheritance, which is generally less
+error prone.
 
 :::
 
 Then set the URL base
+
 ```python
 url_base = "https://api.surveymonkey.com"
 ```
 
 Set the query parameters:
+
 ```python
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -241,8 +262,12 @@ and configure the authenticator, the name, the path, and the primary key
         return [SurveyMonkeyBaseStream(name="surveys", path="v3/surveys", primary_key="id", data_field="data", authenticator=auth)]
 ```
 
+We'll now update the
+[connector specification](../../../understanding-airbyte/airbyte-protocol.md#actor-specification).
+We'll add the access_token as a required property, making sure to flag it as an `airbyte_secret` to
+ensure the value isn't accidentally leaked, and we'll specify its `order` should be 0 so it shows up
+first in the Source setup page.
 
-We'll now update the [connector specification](../../../understanding-airbyte/airbyte-protocol.md#actor-specification). We'll add the access_token as a required property, making sure to flag it as an `airbyte_secret` to ensure the value isn't accidentally leaked, and we'll specify its `order` should be 0 so it shows up first in the Source setup page.
 ```yaml
 documentationUrl: https://docsurl.com
 connectionSpecification:
@@ -259,26 +284,30 @@ connectionSpecification:
       airbyte_secret: true
 ```
 
-Let's now rename one of the mocked schema files to `surveys.json` so its used by our new stream, and remove the second one as it isn't needed.
+Let's now rename one of the mocked schema files to `surveys.json` so its used by our new stream, and
+remove the second one as it isn't needed.
+
 ```
 mv source_survey_monkey_demo/schemas/customers.json source_survey_monkey_demo/schemas/surveys.json
 rm source_survey_monkey_demo/schemas/employees.json
 ```
 
 The two tests should now pass
+
 ```
 poetry run pytest unit_tests/
 ```
 
 Now fill in the `secrets/config.json` file with your API access token
+
 ```json
 {
-  "access_token": "<TODO>",
+  "access_token": "<TODO>"
 }
-
 ```
 
 and update the configured catalog so it knows about the newly created stream:
+
 ```json
 {
   "streams": [
@@ -290,22 +319,26 @@ and update the configured catalog so it knows about the newly created stream:
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
-    }  
+    }
   ]
 }
-
 ```
 
 We can now run a read command to pull data from the endpoint:
+
 ```
 poetry run source-survey-monkey-demo read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 The connector should've successfully read records.
+
 ```json
-{"type": "LOG", "log": {"level": "INFO", "message": "Read 14 records from surveys stream"}}
+{ "type": "LOG", "log": { "level": "INFO", "message": "Read 14 records from surveys stream" } }
 ```
 
-You can also pass in the `--debug` flag to see the real requests and responses sent and received. It's also recommended to use these real requests as templates for the integration tests as they can be more accurate the examples from API documentation.
+You can also pass in the `--debug` flag to see the real requests and responses sent and received.
+It's also recommended to use these real requests as templates for the integration tests as they can
+be more accurate the examples from API documentation.
 
-In the [next section](./3-reading-multiple-pages.md), we'll implement pagination to read all surveys from the endpoint# Reading a page
+In the [next section](./3-reading-multiple-pages.md), we'll implement pagination to read all surveys
+from the endpoint# Reading a page

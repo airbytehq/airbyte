@@ -1,7 +1,12 @@
 # Concurrent
-In this section, we'll improve the connector performance by reading multiple stream slices in parallel.
 
-Let's update the source. The bulk of the change is changing its parent class to `ConcurrentSourceAdapter`, and updating its `__init__` method so it's properly initialized. This requires a little bit of boilerplate:
+In this section, we'll improve the connector performance by reading multiple stream slices in
+parallel.
+
+Let's update the source. The bulk of the change is changing its parent class to
+`ConcurrentSourceAdapter`, and updating its `__init__` method so it's properly initialized. This
+requires a little bit of boilerplate:
+
 ```python
 class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[_logger.level]))
@@ -23,7 +28,9 @@ class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
         return ("start_date", "end_date")
 ```
 
-We'll also need to update the `streams` method to wrap the streams in an adapter class to enable concurrency.
+We'll also need to update the `streams` method to wrap the streams in an adapter class to enable
+concurrency.
+
 ```python
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(config["access_token"])
@@ -64,16 +71,23 @@ We'll also need to update the `streams` method to wrap the streams in an adapter
                 )
         return configured_streams
 ```
-The most interesting piece from this block is the use of `ConcurrentCursor` to support concurrent state management.
 
-The survey responses stream does not support incremental reads, so it's using a `FinalStateCursor` instead. The rest of the code change is mostly boilerplate.
+The most interesting piece from this block is the use of `ConcurrentCursor` to support concurrent
+state management.
 
-We'll also add a state converter to the `SurveyMonkeyBaseStream` to describe how the state cursor is formatted. We'll use the `EpochValueConcurrentStreamStateConverter` since the `get_updated_state` method returns the cursor as a timestamp
+The survey responses stream does not support incremental reads, so it's using a `FinalStateCursor`
+instead. The rest of the code change is mostly boilerplate.
+
+We'll also add a state converter to the `SurveyMonkeyBaseStream` to describe how the state cursor is
+formatted. We'll use the `EpochValueConcurrentStreamStateConverter` since the `get_updated_state`
+method returns the cursor as a timestamp
+
 ```
 state_converter = EpochValueConcurrentStreamStateConverter()
 ```
 
 Next we'll add a few missing constants:
+
 ```
 _DEFAULT_CONCURRENCY = 10
 _MAX_CONCURRENCY = 10
@@ -82,9 +96,12 @@ _logger = logging.getLogger("airbyte")
 ```
 
 ---
+
 :::info
 
-The substream isn't entirely concurrent because its stream_slices definition reads records from the parent stream concurrently:
+The substream isn't entirely concurrent because its stream_slices definition reads records from the
+parent stream concurrently:
+
 ```python
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for _slice in self._parent_stream.stream_slices():
@@ -92,11 +109,15 @@ The substream isn't entirely concurrent because its stream_slices definition rea
                 yield parent_record
 ```
 
-This can be solved by implementing the connector using constructs from the concurrent CDK directly instead of wrapping synchronous streams in an adapter. This is left outside of the scope of this tutorial because no production connectors currently implement this.
+This can be solved by implementing the connector using constructs from the concurrent CDK directly
+instead of wrapping synchronous streams in an adapter. This is left outside of the scope of this
+tutorial because no production connectors currently implement this.
 
 :::
 
-We'll now enable throttling to avoid going over the API rate limit. You can do this by configuring a moving window rate limit policy for the `SurveyMonkeyBaseStream` class:
+We'll now enable throttling to avoid going over the API rate limit. You can do this by configuring a
+moving window rate limit policy for the `SurveyMonkeyBaseStream` class:
+
 ```python
 class SurveyMonkeyBaseStream(HttpStream, ABC):
     def __init__(self, name: str, path: str, primary_key: Union[str, List[str]], data_field: Optional[str], cursor_field: Optional[str],
@@ -118,7 +139,8 @@ class SurveyMonkeyBaseStream(HttpStream, ABC):
         super().__init__(api_budget=api_budget, **kwargs)
 ```
 
-Finally, update the `run.py` file to properly instantiate the class. Most of this code is boilerplate code and isn't specific to the Survey Monkey connector.
+Finally, update the `run.py` file to properly instantiate the class. Most of this code is
+boilerplate code and isn't specific to the Survey Monkey connector.
 
 ```python
 #
@@ -170,12 +192,15 @@ def run():
     launch(source, args)
 ```
 
-You can now run a read operation again. The connector will read multiple partitions concurrently instead of looping through all of them sequentially.
+You can now run a read operation again. The connector will read multiple partitions concurrently
+instead of looping through all of them sequentially.
+
 ```bash
 poetry run source-survey-monkey-demo read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 We're now done! We implemented a Python connector covering many features:
+
 - Fast and reproducible integration tests
 - Authentication errors are detected and labeled as such
 - One stream supports incremental reads
