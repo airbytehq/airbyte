@@ -113,9 +113,16 @@ class AbstractSource(Source, ABC):
                 if not stream_instance:
                     if not self.raise_exception_on_missing_stream:
                         continue
-                    raise KeyError(
-                        f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
-                        f"Refresh the schema in replication settings and remove this stream from future sync attempts."
+
+                    error_message = (
+                        f"The stream '{configured_stream.stream.name}' in your connection configuration was not found in the source. "
+                        f"Refresh the schema in your replication settings and remove this stream from future sync attempts."
+                    )
+
+                    raise AirbyteTracedException(
+                        message="A stream listed in your configuration was not found in the source. Please check the logs for more details.",
+                        internal_message=error_message,
+                        failure_type=FailureType.config_error,
                     )
 
                 try:

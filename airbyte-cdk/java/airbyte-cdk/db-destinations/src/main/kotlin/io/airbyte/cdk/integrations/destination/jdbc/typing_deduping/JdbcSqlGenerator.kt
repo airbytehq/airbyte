@@ -286,7 +286,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
 
     override fun updateTable(
         streamConfig: StreamConfig,
-        finalSuffix: String?,
+        finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
     ): Sql {
@@ -300,7 +300,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         )
     }
 
-    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String?): Sql {
+    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
         return transactionally(
             DSL.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
                 .getSQL(ParamType.INLINED),

@@ -101,7 +101,7 @@ open class JdbcSourceOperations :
     }
 
     @Throws(SQLException::class)
-    protected fun setTimestampWithTimezone(
+    protected open fun setTimestampWithTimezone(
         preparedStatement: PreparedStatement,
         parameterIndex: Int,
         value: String?

@@ -32,7 +32,7 @@ internal class MockSqlGenerator : SqlGenerator {
 
     override fun updateTable(
         stream: StreamConfig,
-        finalSuffix: String?,
+        finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
     ): Sql {
@@ -42,18 +42,18 @@ internal class MockSqlGenerator : SqlGenerator {
                 .orElse("")
         val casting = if (useExpensiveSaferCasting) " WITH" else " WITHOUT" + " SAFER CASTING"
         return of(
-            ("UPDATE TABLE " + stream!!.id.finalTableId("", finalSuffix!!)).toString() +
+            ("UPDATE TABLE " + stream.id.finalTableId("", finalSuffix)).toString() +
                 casting +
                 timestampFilter
         )
     }
 
-    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String?): Sql {
+    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
         return of(
             "OVERWRITE TABLE " +
-                stream!!.finalTableId("") +
+                stream.finalTableId("") +
                 " FROM " +
-                stream.finalTableId("", finalSuffix!!)
+                stream.finalTableId("", finalSuffix)
         )
     }
 
