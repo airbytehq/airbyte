@@ -18,7 +18,7 @@
     - /connector-development/tutorials/cdk-tutorial-python-http/read-data/
     - /connector-development/tutorials/cdk-tutorial-python-http/test-your-connector/
     - /connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte/
-  to: /connector-development/tutorials/custom-python-connector
+  to: /connector-development/tutorials/custom-python-connector/getting-started
 - from: /project-overview/changelog
   to: /category/release-notes
 - from: /connector-development/config-based/understanding-the-yaml-file/stream-slicers/
