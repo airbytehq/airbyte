@@ -100,7 +100,7 @@ class Channels(ChanneledStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["types"] = "public_channel"
+        params["types"] = "public_channel,private_channel"
         return params
 
     def parse_response(
