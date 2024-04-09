@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.81.0
+Unpin airbyte-protocol-models library
+
 ## 0.80.0
 Concurrent CDK: support partitioned states
 
