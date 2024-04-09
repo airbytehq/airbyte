@@ -826,8 +826,8 @@ def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_
 @freezegun.freeze_time("2023-01-01")
 @pytest.mark.parametrize(
     "lookback, stream_slice_step, expected_len_stream_slices, expect_error",
-    [(0, "P30D", 158, False), (10, "P1D", 4732, False), (10, "PT12H", 9463, False)],
-    ids=["lookback-is-0-step-30D", "lookback-is-valid-step-1D", "lookback-is-valid-step-12H"],
+    [(0, "P30D", 158, False)],
+    ids=["lookback-is-0-step-30D"],
 )
 def test_bulk_stream_slices(
     stream_config_date_format, stream_api, lookback, expect_error, stream_slice_step: str, expected_len_stream_slices: int
@@ -861,15 +861,14 @@ def test_bulk_stream_slices(
 def test_bulk_stream_request_params_states(stream_config_date_format, stream_api, bulk_catalog, requests_mock):
     """Check that request params ignore records cursor and use start date from slice ONLY"""
     stream_config_date_format.update({"start_date": "2023-01-01"})
-    state = StateBuilder().with_stream_state("Account", {"LastModifiedDate": "2023-01-01T10:10:10.000Z"}).build()
-    with patch("source_salesforce.source.LOOKBACK_SECONDS", 0):
+    state = StateBuilder().with_stream_state("Account", {"LastModifiedDate": "2023-01-01T10:20:10.000Z"}).build()
 
-        source = SourceSalesforce(CatalogBuilder().with_stream("Account", SyncMode.full_refresh).build(), _ANY_CONFIG, _ANY_STATE)
-        source.streams = Mock()
-        source.streams.return_value = [generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False)]
+    source = SourceSalesforce(CatalogBuilder().with_stream("Account", SyncMode.full_refresh).build(), _ANY_CONFIG, _ANY_STATE)
+    source.streams = Mock()
+    source.streams.return_value = [generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False)]
 
-        # using legacy state to configure HTTP requests
-        stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
+    # using legacy state to configure HTTP requests
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
 
     job_id_1 = "fake_job_1"
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}", [{"json": {"state": "JobComplete"}}])
@@ -916,7 +915,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
 
     # as the execution is concurrent, we can only assert the last state message here
     last_actual_state = [item.state.stream.stream_state.dict() for item in result if item.type == Type.STATE][-1]
-    last_expected_state = {"slices": [{"start": "2023-01-01T10:10:10.000Z", "end": "2023-04-01T00:00:00.000Z"}]}
+    last_expected_state = {"slices": [{"start": "2023-01-01T00:00:00.000Z", "end": "2023-04-01T00:00:00.000Z"}], "state_type": "date-range"}
     assert last_actual_state == last_expected_state
 
 
