@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-harvest
   icon: harvest.svg
   license: MIT
+  maxSecondsBetweenMessages: 15
   name: Harvest
   remoteRegistries:
     pypi:

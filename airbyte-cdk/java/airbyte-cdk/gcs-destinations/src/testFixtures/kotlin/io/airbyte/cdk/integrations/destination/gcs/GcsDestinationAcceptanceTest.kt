@@ -30,6 +30,7 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -46,9 +47,10 @@ import org.slf4j.LoggerFactory
 abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format) :
     DestinationAcceptanceTest() {
     protected var configJson: JsonNode? = null
-    protected lateinit var config: GcsDestinationConfig
-    protected lateinit var s3Client: AmazonS3
-    protected lateinit var nameTransformer: NamingConventionTransformer
+    // Not a big fan of those mocks(). Here to make spotbugs happy
+    protected var config: GcsDestinationConfig = mock()
+    protected var s3Client: AmazonS3 = mock()
+    protected var nameTransformer: NamingConventionTransformer = mock()
     protected var s3StorageOperations: S3StorageOperations? = null
 
     protected val baseConfigJson: JsonNode
@@ -96,23 +98,23 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
 
     /** Helper method to retrieve all synced objects inside the configured bucket path. */
     protected fun getAllSyncedObjects(
-        streamName: String?,
-        namespace: String?
+        streamName: String,
+        namespace: String
     ): List<S3ObjectSummary> {
-        val namespaceStr = nameTransformer!!.getNamespace(namespace!!)
-        val streamNameStr = nameTransformer!!.getIdentifier(streamName!!)
+        val namespaceStr = nameTransformer.getNamespace(namespace)
+        val streamNameStr = nameTransformer.getIdentifier(streamName)
         val outputPrefix =
             s3StorageOperations!!.getBucketObjectPath(
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                config!!.pathFormat!!
+                config.pathFormat!!
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
         val objectSummaries =
             s3Client
-                .listObjects(config!!.bucketName, parentFolder)
+                .listObjects(config.bucketName, parentFolder)
                 .objectSummaries
                 .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }

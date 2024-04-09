@@ -76,7 +76,7 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
 
   @Override
   protected DestinationHandler<PostgresState> getDestinationHandler() {
-    return new PostgresDestinationHandler(databaseName, database, namespace);
+    return new PostgresDestinationHandler(databaseName, database, getNamespace());
   }
 
   @Override
@@ -92,10 +92,10 @@ public class PostgresSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegra
   @Test
   @Override
   public void testCreateTableIncremental() throws Exception {
-    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
-    destinationHandler.execute(sql);
+    final Sql sql = getGenerator().createTable(getIncrementalDedupStream(), "", false);
+    getDestinationHandler().execute(sql);
 
-    List<DestinationInitialStatus<PostgresState>> initialStatuses = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    List<DestinationInitialStatus<PostgresState>> initialStatuses = getDestinationHandler().gatherInitialState(List.of(getIncrementalDedupStream()));
     assertEquals(1, initialStatuses.size());
     final DestinationInitialStatus<PostgresState> initialStatus = initialStatuses.getFirst();
     assertTrue(initialStatus.isFinalTablePresent());
