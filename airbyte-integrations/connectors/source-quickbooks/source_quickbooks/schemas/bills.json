@@ -135,6 +135,7 @@
                 "type": ["null", "string"]
               },
               "ClassRef": {
+                "additionalProperties": true,
                 "properties": {
                   "name": {
                     "type": ["null", "string"]

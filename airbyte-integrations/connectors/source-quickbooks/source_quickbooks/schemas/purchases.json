@@ -161,6 +161,7 @@
                 }
               },
               "ClassRef": {
+                "additionalProperties": true,
                 "properties": {
                   "name": {
                     "type": ["null", "string"]
