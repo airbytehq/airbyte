@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.80.0
+Concurrent CDK: support partitioned states
+
 ## 0.79.2
 Concurrent CDK: Print error messages properly so that they can be categorized
 
