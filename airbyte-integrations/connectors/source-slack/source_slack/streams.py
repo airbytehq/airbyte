@@ -1,14 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from pendulum import DateTime
+
+from .components.join_channels import JoinChannelsStream
+from .utils import chunk_date_range
 
 
 class SlackStream(HttpStream, ABC):
@@ -74,7 +79,75 @@ class SlackStream(HttpStream, ABC):
         return response.status_code == requests.codes.REQUEST_TIMEOUT or super().should_retry(response)
 
 
-class IncrementalMessageStream(SlackStream, ABC):
+class ChanneledStream(SlackStream, ABC):
+    """Slack stream with channel filter"""
+
+    def __init__(self, channel_filter: List[str] = [], join_channels: bool = False, **kwargs):
+        self.channel_filter = channel_filter
+        self.join_channels = join_channels
+        self.kwargs = kwargs
+        super().__init__(**kwargs)
+
+    @property
+    def join_channels_stream(self) -> JoinChannelsStream:
+        return JoinChannelsStream(authenticator=self.kwargs.get("authenticator"), channel_filter=self.channel_filter)
+
+    def should_join_to_channel(self, channel: Mapping[str, Any]) -> bool:
+        """
+        The `is_member` property indicates whether or not the API Bot is already assigned / joined to the channel.
+        https://api.slack.com/types/conversation#booleans
+        """
+        return self.join_channels and not channel.get("is_member")
+
+    def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
+        channel_id: str = channel.get("id")
+        channel_name: str = channel.get("name")
+        self.logger.info(f"Joining Slack Channel: `{channel_name}`")
+        return {"channel": channel_id, "channel_name": channel_name}
+
+
+class Channels(ChanneledStream):
+    data_field = "channels"
+
+    @property
+    def use_cache(self) -> bool:
+        return True
+
+    def path(self, **kwargs) -> str:
+        return "conversations.list"
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["types"] = "public_channel"
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
+        json_response = response.json()
+        channels = json_response.get(self.data_field, [])
+        if self.channel_filter:
+            channels = [channel for channel in channels if channel["name"] in self.channel_filter]
+        yield from channels
+
+    def read_records(self, sync_mode: SyncMode, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Override the default `read_records` method to provide the `JoinChannelsStream` functionality,
+        and be able to read all the channels, not just the ones that already has the API Bot joined.
+        """
+        for channel in super().read_records(sync_mode=sync_mode):
+            # check the channel should be joined before reading
+            if self.should_join_to_channel(channel):
+                # join the channel before reading it
+                yield from self.join_channels_stream.read_records(
+                    sync_mode=sync_mode,
+                    stream_slice=self.make_join_channel_slice(channel),
+                )
+            # reading the channel data
+            self.logger.info(f"Reading the channel: `{channel.get('name')}`")
+            yield channel
+
+
+# Incremental Streams
+class IncrementalMessageStream(ChanneledStream, ABC):
     data_field = "messages"
     cursor_field = "float_ts"
     primary_key = ["channel_id", "ts"]
@@ -111,23 +184,50 @@ class IncrementalMessageStream(SlackStream, ABC):
 
         return current_stream_state
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if not stream_slice:
+            # return an empty iterator
+            # this is done to emit at least one state message when no slices are generated
+            return iter([])
+        return super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+
+
+class ChannelMessages(HttpSubStream, IncrementalMessageStream):
+    def path(self, **kwargs) -> str:
+        return "conversations.history"
+
+    @property
+    def use_cache(self) -> bool:
+        return True
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        stream_state = stream_state or {}
+        start_date = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._start_ts))
+        end_date = self._end_ts and pendulum.from_timestamp(self._end_ts)
+        slice_yielded = False
+        for parent_slice in super().stream_slices(sync_mode=SyncMode.full_refresh):
+            channel = parent_slice["parent"]
+            for period in chunk_date_range(start_date=start_date, end_date=end_date):
+                yield {"channel": channel["id"], "oldest": period.start.timestamp(), "latest": period.end.timestamp()}
+                slice_yielded = True
+        if not slice_yielded:
+            # yield an empty slice to checkpoint state later
+            yield {}
+
 
 class Threads(IncrementalMessageStream):
-    def __init__(self, lookback_window: Mapping[str, int], parent_stream, **kwargs):
+    def __init__(self, lookback_window: Mapping[str, int], **kwargs):
         self.messages_lookback_window = lookback_window
-        self.parent_stream = parent_stream
         super().__init__(**kwargs)
 
     def path(self, **kwargs) -> str:
         return "conversations.replies"
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return self._state
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        self._state = value
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -149,7 +249,7 @@ class Threads(IncrementalMessageStream):
         """
 
         stream_state = stream_state or {}
-        # channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
+        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
 
         if self.cursor_field in stream_state:
             # Since new messages can be posted to threads continuously after the parent message has been posted,
@@ -162,15 +262,19 @@ class Threads(IncrementalMessageStream):
             # from the default start date
             messages_start_date = pendulum.from_timestamp(self._start_ts)
 
-        slice_yielded = False
+        messages_stream = ChannelMessages(
+            parent=channels_stream,
+            authenticator=self._session.auth,
+            default_start_date=messages_start_date,
+            end_date=self._end_ts and pendulum.from_timestamp(self._end_ts),
+        )
 
-        for message_chunk in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        slice_yielded = False
+        for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
             self.logger.info(f"Syncing replies {message_chunk}")
-            for message in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-                # check if parent stream record timestamp >= state
-                if pendulum.from_timestamp(float(message[self.sub_primary_key_2])) >= messages_start_date:
-                    yield {"channel": message_chunk["channel"], self.sub_primary_key_2: message[self.sub_primary_key_2]}
-                    slice_yielded = True
+            for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
+                yield {"channel": message_chunk["channel"], self.sub_primary_key_2: message[self.sub_primary_key_2]}
+                slice_yielded = True
         if not slice_yielded:
             # yield an empty slice to checkpoint state later
             yield {}

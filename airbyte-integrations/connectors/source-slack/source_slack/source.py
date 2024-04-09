@@ -30,27 +30,27 @@ class SourceSlack(YamlDeclarativeSource):
         else:
             raise Exception(f"No supported option_title: {credentials_title} specified. See spec.json for references")
 
-    def get_threads_stream(self, config: Mapping[str, Any], channel_messages: Stream) -> HttpStream:
+    def get_threads_stream(self, config: Mapping[str, Any]) -> HttpStream:
         authenticator = self._threads_authenticator(config)
         default_start_date = pendulum.parse(config["start_date"])
         # this field is not exposed to spec, used only for testing purposes
         end_date = config.get("end_date")
         end_date = end_date and pendulum.parse(end_date)
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
+        channel_filter = config.get("channel_filter", [])
         threads = Threads(
             authenticator=authenticator,
             default_start_date=default_start_date,
             end_date=end_date,
             lookback_window=threads_lookback_window,
-            parent_stream=channel_messages,
+            channel_filter=channel_filter,
         )
         return threads
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         declarative_streams = super().streams(config)
 
-        channel_messages = [stream for stream in declarative_streams if stream.name == "channel_messages"][0]
-        threads_stream = self.get_threads_stream(config, channel_messages)
+        threads_stream = self.get_threads_stream(config)
         declarative_streams.append(threads_stream)
 
         return declarative_streams
