@@ -93,7 +93,7 @@ streams:
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_token''] }}'
+          api_token: "{{ config['api_token'] }}"
           inject_into:
             type: RequestOption
             inject_into: header
@@ -116,7 +116,7 @@ streams:
             {{ response['headers',
             'X-Tracker-Pagination-Offset']+response['headers',
             'X-Tracker-Pagination-Limit' ]}}
-          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+          stop_condition: "{{ 'X-Tracker-Pagination-Total' not in response['headers'] }}"
   - type: DeclarativeStream
     name: stories
     primary_key:
@@ -191,7 +191,7 @@ streams:
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_token''] }}'
+          api_token: "{{ config['api_token'] }}"
           inject_into:
             type: RequestOption
             inject_into: header
@@ -214,7 +214,7 @@ streams:
             {{ response['headers',
             'X-Tracker-Pagination-Offset']+response['headers',
             'X-Tracker-Pagination-Limit' ]}}
-          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+          stop_condition: "{{ 'X-Tracker-Pagination-Total' not in response['headers'] }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -310,7 +310,7 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_token''] }}'
+                      api_token: "{{ config['api_token'] }}"
                       inject_into:
                         type: RequestOption
                         inject_into: header
@@ -394,7 +394,7 @@ streams:
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_token''] }}'
+          api_token: "{{ config['api_token'] }}"
           inject_into:
             type: RequestOption
             inject_into: header
@@ -417,7 +417,7 @@ streams:
             {{ response['headers',
             'X-Tracker-Pagination-Offset']+response['headers',
             'X-Tracker-Pagination-Limit' ]}}
-          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+          stop_condition: "{{ 'X-Tracker-Pagination-Total' not in response['headers'] }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -513,7 +513,7 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_token''] }}'
+                      api_token: "{{ config['api_token'] }}"
                       inject_into:
                         type: RequestOption
                         inject_into: header
@@ -572,7 +572,7 @@ streams:
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_token''] }}'
+          api_token: "{{ config['api_token'] }}"
           inject_into:
             type: RequestOption
             inject_into: header
@@ -595,7 +595,7 @@ streams:
             {{ response['headers',
             'X-Tracker-Pagination-Offset']+response['headers',
             'X-Tracker-Pagination-Limit' ]}}
-          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+          stop_condition: "{{ 'X-Tracker-Pagination-Total' not in response['headers'] }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -691,7 +691,7 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_token''] }}'
+                      api_token: "{{ config['api_token'] }}"
                       inject_into:
                         type: RequestOption
                         inject_into: header
@@ -775,7 +775,7 @@ streams:
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_token''] }}'
+          api_token: "{{ config['api_token'] }}"
           inject_into:
             type: RequestOption
             inject_into: header
@@ -798,7 +798,7 @@ streams:
             {{ response['headers',
             'X-Tracker-Pagination-Offset']+response['headers',
             'X-Tracker-Pagination-Limit' ]}}
-          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+          stop_condition: "{{ 'X-Tracker-Pagination-Total' not in response['headers'] }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -894,7 +894,7 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_token''] }}'
+                      api_token: "{{ config['api_token'] }}"
                       inject_into:
                         type: RequestOption
                         inject_into: header
@@ -972,7 +972,7 @@ streams:
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_token''] }}'
+          api_token: "{{ config['api_token'] }}"
           inject_into:
             type: RequestOption
             inject_into: header
@@ -995,7 +995,7 @@ streams:
             {{ response['headers',
             'X-Tracker-Pagination-Offset']+response['headers',
             'X-Tracker-Pagination-Limit' ]}}
-          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+          stop_condition: "{{ 'X-Tracker-Pagination-Total' not in response['headers'] }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1091,7 +1091,7 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_token''] }}'
+                      api_token: "{{ config['api_token'] }}"
                       inject_into:
                         type: RequestOption
                         inject_into: header
@@ -1151,7 +1151,7 @@ streams:
                       type: array
                     completed_at:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                     counts:
                       properties:
@@ -1286,7 +1286,7 @@ streams:
                   properties:
                     completed_at:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                     counts:
                       properties:
@@ -1436,7 +1436,7 @@ streams:
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_token''] }}'
+          api_token: "{{ config['api_token'] }}"
           inject_into:
             type: RequestOption
             inject_into: header
@@ -1459,7 +1459,7 @@ streams:
             {{ response['headers',
             'X-Tracker-Pagination-Offset']+response['headers',
             'X-Tracker-Pagination-Limit' ]}}
-          stop_condition: '{{ ''X-Tracker-Pagination-Total'' not in response[''headers''] }}'
+          stop_condition: "{{ 'X-Tracker-Pagination-Total' not in response['headers'] }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1555,7 +1555,7 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_token''] }}'
+                      api_token: "{{ config['api_token'] }}"
                       inject_into:
                         type: RequestOption
                         inject_into: header
@@ -1593,7 +1593,7 @@ spec:
         type: string
         description: Pivotal Tracker API token
         examples:
-        - 5c054d0de3440452190fdc5d5a04d871
+          - 5c054d0de3440452190fdc5d5a04d871
         airbyte_secret: true
     additionalProperties: true
   documentation_url: https://docs.airbyte.com/integrations/sources/pivotal-tracker
