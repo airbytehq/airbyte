@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Intercom
   remoteRegistries:
     pypi:

@@ -32,7 +32,7 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
         val messages = readMessagesFromFile(messagesFileName)
 
         val config = this.getConfig()
-        val defaultSchema = getDefaultSchema(config!!)
+        val defaultSchema = getDefaultSchema(config)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
 
@@ -108,6 +108,7 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
     @Throws(IOException::class)
     private fun readMessagesFromFile(messagesFilename: String): List<AirbyteMessage> {
         return MoreResources.readResource(messagesFilename)
+            .trim()
             .lines()
             .map { record -> Jsons.deserialize(record, AirbyteMessage::class.java) }
             .toList()
@@ -115,9 +116,9 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
 
     @Throws(Exception::class)
     protected abstract fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
-    ): Map<String?, Set<Schema.Type?>?>
+        streamName: String,
+        namespace: String
+    ): Map<String, Set<Schema.Type>>
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {
         val fieldList =

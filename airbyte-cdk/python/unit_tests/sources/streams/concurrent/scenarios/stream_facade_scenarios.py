@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder import StreamFacadeSourceBuilder
@@ -157,7 +158,7 @@ test_stream_facade_raises_exception = (
             ]
         }
     )
-    .set_expected_read_error(ValueError, "test exception")
+    .set_expected_read_error(StreamThreadException, "Exception while syncing stream stream1: test exception")
     .build()
 )
 

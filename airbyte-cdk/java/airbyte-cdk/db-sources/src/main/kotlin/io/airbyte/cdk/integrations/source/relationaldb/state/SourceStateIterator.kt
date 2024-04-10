@@ -54,7 +54,7 @@ open class SourceStateIterator<T>(
             try {
                 val message = messageIterator.next()
                 val processedMessage =
-                    sourceStateMessageProducer.processRecordMessage(stream!!, message)
+                    sourceStateMessageProducer.processRecordMessage(stream, message)
                 recordCount++
                 return processedMessage
             } catch (e: Exception) {
@@ -63,7 +63,7 @@ open class SourceStateIterator<T>(
         } else if (!hasEmittedFinalState) {
             hasEmittedFinalState = true
             val finalStateMessageForStream =
-                sourceStateMessageProducer.createFinalStateMessage(stream!!)
+                sourceStateMessageProducer.createFinalStateMessage(stream)
             finalStateMessageForStream!!.withSourceStats(
                 AirbyteStateStats().withRecordCount(recordCount.toDouble())
             )

@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
  * This implementation generates a state object for each stream detected in catalog/map of known
  * streams to cursor information stored in this manager.
  */
-class StreamStateManager
+open class StreamStateManager
 /**
  * Constructs a new [StreamStateManager] that is seeded with the provided [AirbyteStateMessage].
  *
