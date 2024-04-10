@@ -36,3 +36,14 @@ With the update to "camelCase", fields that may have been unrecognized or omitte
 - The `team_device_usage_report` stream contained a fatal bug that could lead to crashes during syncs. You should now be able to reliably use this stream during syncs.
 
 - `Date` and `date-time` fields have been typed as airbyte_type `date` and `timestamp_without_timezone`, respectively.
+
+## Upgrading to 2.0.0
+
+Version 2.0.0 of the Microsoft Teams source connector introduces breaking changes as it migrates to low code cdk. Oath2.0 is directly supported with client_id, client_secret and tenant_id without redirection.
+
+### Changes in 2.0.0
+
+- Spec changes - Authentication is directly done through airbyte cdk itself (no redirection needed)
+
+- Error handler changes and minor fixes - For 403 code and other permission errors, resources are restricted to specific scope or App access only, see [this page to resolve](https://learn.microsoft.com/en-us/graph/resolve-auth-errors).
+
