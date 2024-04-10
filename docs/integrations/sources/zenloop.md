@@ -71,7 +71,7 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
-| 0.1.11  | 2024-04-02 | [36592](https://github.com/airbytehq/airbyte/pull/36592) | Use python-connector-base image, poetry, and update CDK version                 |
+| 0.1.11  | 2024-04-10 | [36592](https://github.com/airbytehq/airbyte/pull/36592) | Use python-connector-base image, poetry, and update CDK version                 |
 | 0.1.10  | 2023-06-29 | [27838](https://github.com/airbytehq/airbyte/pull/27838) | Update CDK version to avoid bug introduced during data feed release             |
 | 0.1.9   | 2023-06-28 | [27761](https://github.com/airbytehq/airbyte/pull/27761) | Update following state breaking changes                                         |
 | 0.1.8   | 2023-06-22 | [27243](https://github.com/airbytehq/airbyte/pull/27243) | Improving error message on state discrepancy                                    |
