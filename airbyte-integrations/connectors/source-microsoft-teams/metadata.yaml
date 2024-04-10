@@ -36,8 +36,7 @@ data:
           For more details, see our <a href='https://docs.airbyte.io/integrations/sources/microsoft-teams-migrations'>migration guide</a>.
         upgradeDeadline: "2024-01-24"
       2.0.0:
-        message:
-          Version 2.0.0 migrates the microsoft teams python cdk to low code cdk for improved maintainability.
+        message: Version 2.0.0 migrates the microsoft teams python cdk to low code cdk for improved maintainability.
         upgradeDeadline: "2024-01-24"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-teams

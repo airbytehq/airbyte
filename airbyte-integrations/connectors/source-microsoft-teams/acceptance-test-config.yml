@@ -18,17 +18,17 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: 
+        empty_streams:
           - name: team_device_usage_report
             bypass_reason: "Could not seed this stream with sandbox credentails"
-  incremental: 
+  incremental:
     bypass_reason: "This connector does not implement incremental sync"
-# TODO uncomment this block this block if your connector implements incremental sync: 
-#    tests:
-#      - config_path: "secrets/config.json"
-#        configured_catalog_path: "integration_tests/configured_catalog.json"
-#        future_state:
-#          future_state_path: "integration_tests/abnormal_state.json"
+  # TODO uncomment this block this block if your connector implements incremental sync:
+  #    tests:
+  #      - config_path: "secrets/config.json"
+  #        configured_catalog_path: "integration_tests/configured_catalog.json"
+  #        future_state:
+  #          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
