@@ -80,7 +80,7 @@ def integration():
 
 def test_read_config(nonempty_file, integration: Connector, mock_config):
     actual = integration.read_config(nonempty_file.name)
-    assert mock_config == actual
+    assert actual == mock_config
 
 
 def test_read_non_json_config(nonjson_file, integration: Connector):
@@ -92,7 +92,7 @@ def test_write_config(integration, mock_config):
     config_path = Path(tempfile.gettempdir()) / "config.json"
     integration.write_config(mock_config, str(config_path))
     with open(config_path, "r") as actual:
-        assert mock_config == json.loads(actual.read())
+        assert json.loads(actual.read()) == mock_config
 
 
 class TestConnectorSpec:
