@@ -28,8 +28,10 @@ import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
-abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventionTransformer) :
-    SqlGenerator {
+abstract class JdbcSqlGenerator @JvmOverloads constructor(
+    protected val namingTransformer: NamingConventionTransformer,
+    private val cascadeDrop: Boolean = false
+) : SqlGenerator {
     protected val cdcDeletedAtColumn: ColumnId = buildColumnId("_ab_cdc_deleted_at")
 
     override fun buildStreamId(
@@ -86,20 +88,16 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     }
 
     protected abstract val structType: DataType<*>
-        get
 
     protected abstract val arrayType: DataType<*>?
-        get
 
     @get:VisibleForTesting
     val timestampWithTimeZoneType: DataType<*>
         get() = toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
 
     protected abstract val widestType: DataType<*>?
-        get
 
     protected abstract val dialect: SQLDialect?
-        get
 
     /**
      * @param columns from the schema to be extracted from _airbyte_data column. Use the destination
@@ -265,13 +263,18 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
                     .toList()
             )
         }
+
+        val dropTableStep = DSL.dropTableIfExists(DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier))
+        val dropTableSql = if (cascadeDrop) {
+            dropTableStep.cascade().getSQL(ParamType.INLINED)
+        } else {
+            dropTableStep.getSQL(ParamType.INLINED)
+        }
+
         return transactionally(
             Stream.concat(
                     Stream.of(
-                        DSL.dropTableIfExists(
-                                DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier)
-                            )
-                            .getSQL(ParamType.INLINED),
+                        dropTableSql,
                         createTableSql(
                             stream.id.finalNamespace,
                             finalTableIdentifier,
@@ -285,7 +288,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     }
 
     override fun updateTable(
-        streamConfig: StreamConfig,
+        stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
@@ -293,7 +296,7 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
         // TODO: Add flag to use merge vs insert/delete
 
         return insertAndDeleteTransaction(
-            streamConfig,
+            stream,
             finalSuffix,
             minRawTimestamp,
             useExpensiveSaferCasting
@@ -301,9 +304,14 @@ abstract class JdbcSqlGenerator(protected val namingTransformer: NamingConventio
     }
 
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
+        val dropTableStep = DSL.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
+        val dropTableSql = if (cascadeDrop) {
+            dropTableStep.cascade().getSQL(ParamType.INLINED)
+        } else {
+            dropTableStep.getSQL(ParamType.INLINED)
+        }
         return transactionally(
-            DSL.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
-                .getSQL(ParamType.INLINED),
+            dropTableSql,
             DSL.alterTable(DSL.name(stream.finalNamespace, stream.finalName + finalSuffix))
                 .renameTo(DSL.name(stream.finalName))
                 .sql
