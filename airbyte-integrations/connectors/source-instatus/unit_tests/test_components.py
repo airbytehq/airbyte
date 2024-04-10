@@ -64,5 +64,5 @@ def test_updates_substream_partition_router(records, stream_slices, expected):
     ],
 )
 def test_list_add_fields_transformer(input_record, field, kwargs, expected):
-    inputs = [AddedFieldDefinition(path=v[0], value=v[1], value_type=None, parameters={}) for v in field]
+    inputs = [AddedFieldDefinition(path=v[0], value=v[1], parameters={}) for v in field]
     assert ListAddFields(fields=inputs, parameters={"parameter": "test"}).transform(input_record, **kwargs) == expected
