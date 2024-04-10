@@ -1,0 +1,249 @@
+version: 0.65.0
+
+definitions:
+  requester:
+    type: HttpRequester
+    url_base: https://api.zenoti.com/v1
+    http_method: GET
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: 'apikey {{ config[''api_key''] }}'
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+    request_headers:
+      accept: application/json
+    request_body_json: {}
+    request_parameters: {}
+  centers_stream:
+    name: centers
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: centers
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - centers
+      partition_router: []
+    primary_key:
+      - id
+  appointments_stream:
+    name: appointments
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: appointments?include_no_show_cancel=true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/centers_stream"
+              parent_key: id
+              request_option:
+                type: RequestOption
+                field_name: center_id
+                inject_into: request_parameter
+              partition_field: center_id
+    primary_key:
+      - appointment_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - center_id
+            type: AddedFieldDefinition
+            value: '{{ stream_partition.center_id }}'
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_zenoti.components.AppointmentsDatetimeBasedCursor"
+      step: P1D
+      cursor_field: start_time_utc
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ day_delta(config[''appointments_lookahead_days'']) }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''appointments_start_date''] }}'
+        datetime_format: '%Y-%m-%d'
+      datetime_format: '%Y-%m-%d'
+      end_time_option:
+        type: RequestOption
+        field_name: end_date
+        inject_into: request_parameter
+      lookback_window: 'P{{config[''appointments_lookback_days'']}}D'
+      start_time_option:
+        type: RequestOption
+        field_name: start_date
+        inject_into: request_parameter
+      cursor_granularity: P0D
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S'
+  guests_stream:
+    name: guests
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: size
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        $ref: "#/definitions/requester"
+        path: guests
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - guests
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/centers_stream"
+              parent_key: id
+              request_option:
+                type: RequestOption
+                field_name: center_id
+                inject_into: request_parameter
+              partition_field: center_id
+    primary_key:
+      - id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - id
+            type: AddedFieldDefinition
+            value: "{{ record['id'] | lower }}"
+
+  invoices_stream:
+    name: invoices
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: invoices/{{ stream_partition.id }}?expand=InvoiceItems&expand=Transactions
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoice
+    primary_key:
+      - id
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_zenoti.components.IncrementalSubstreamSlicerCursor
+      cursor_field: "last_imported"
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream:
+            $ref: "#/definitions/appointments_stream"
+            $parameters:
+              record_filter:
+                condition: "{{ record['invoice_id'] != '00000000-0000-0000-0000-000000000000' }}"
+                type: RecordFilter
+          parent_key: invoice_id
+          partition_field: id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - last_imported
+            type: AddedFieldDefinition
+            value: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+
+check:
+  type: CheckStream
+  stream_names:
+    - centers
+    - appointments
+    - guests
+    - invoices
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - appointments_start_date
+      - appointments_lookback_days
+      - appointments_lookahead_days
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      appointments_start_date:
+        type: string
+        order: 2
+        title: Appointments Start Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      appointments_lookback_days:
+        type: integer
+        order: 3
+        title: Appointments Lookback Days
+      appointments_lookahead_days:
+        type: integer
+        order: 4
+        title: Appointments Lookahead Days
+
+type: DeclarativeSource
+
+streams:
+  - "#/definitions/centers_stream"
+  - "#/definitions/appointments_stream"
+  - "#/definitions/guests_stream"
+  - "#/definitions/invoices_stream"
+
+metadata:
+  autoImportSchema:
+    centers: true
+    appointments: true
+    guests: true
+    invoices: true
