@@ -1,4 +1,4 @@
-# Linkedin Ads Migration Guide
+# LinkedIn Ads Migration Guide
 
 ## Upgrading to 1.0.0
 
