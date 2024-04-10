@@ -30,16 +30,10 @@ def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     return matches_by_name[0]
 
 
-def get_records(
-    stream: Stream,
-    sync_mode: Optional[SyncMode] = SyncMode.full_refresh,
-    stream_state: Optional[Mapping[str, Any]] = None,
-) -> List[Mapping[str, Any]]:
+def get_records(stream: Stream, sync_mode: Optional[SyncMode] = SyncMode.full_refresh) -> List[Mapping[str, Any]]:
     records = []
-    for stream_slice in stream.stream_slices(sync_mode=sync_mode, stream_state=stream_state):
-        for record in stream.read_records(
-            sync_mode=sync_mode, stream_slice=stream_slice, stream_state=stream_state
-        ):
+    for stream_slice in stream.stream_slices(sync_mode=sync_mode):
+        for record in stream.read_records(sync_mode=sync_mode, stream_slice=stream_slice):
             records.append(dict(record))
     return records
 
@@ -282,8 +276,8 @@ class TestSemiIncrementalKlaviyoStream:
         requests_mock.register_uri(
             "GET", f"https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records}
         )
-        stream_state = {stream.cursor_field: stream_state if stream_state else start_date}
-        records = get_records(stream=stream, sync_mode=SyncMode.incremental, stream_state=stream_state)
+        stream.stream_state = {stream.cursor_field: stream_state if stream_state else start_date}
+        records = get_records(stream=stream, sync_mode=SyncMode.incremental)
         assert records == expected_records
 
 
