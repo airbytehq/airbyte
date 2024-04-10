@@ -14,7 +14,7 @@ def test_token_generation():
     authenticator = CustomAuthenticator(config=config, username="example@gmail.com", password="api_key", parameters=None)
     token = authenticator.token
     expected_token = "Basic ZXhhbXBsZUBnbWFpbC5jb206YXBpX2tleQ=="
-    assert token == expected_token
+    assert expected_token == token
 
 
 def test_extract_records_with_answered_questions():
@@ -27,4 +27,4 @@ def test_extract_records_with_answered_questions():
     response._content = json.dumps(response_data).encode("utf-8")
     extracted_records = CustomExtractor().extract_records(response)
     expected_records = [{"id": 1, "answered_questions": ["A1", "A2"]}, {"id": 2, "answered_questions": ["A3"]}]
-    assert extracted_records == expected_records
+    assert expected_records == extracted_records

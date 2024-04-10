@@ -52,7 +52,7 @@ def expected_transformed_record():
 
 
 def test_to_airbyte_data_type(gridly_column_type, expected_data_type):
-    assert Helpers.to_airbyte_data_type(gridly_column_type) == expected_data_type
+    assert expected_data_type == Helpers.to_airbyte_data_type(gridly_column_type)
 
 
 def test_get_json_schema(view_response, expected_json_schema):
@@ -71,4 +71,4 @@ def test_transform_record(view_response, record_response, expected_transformed_r
     json_schema = Helpers.get_json_schema(view_response)
     record1 = record_response[0]
     transformed_record = Helpers.transform_record(record1, json_schema)
-    assert transformed_record == expected_transformed_record
+    assert expected_transformed_record == transformed_record

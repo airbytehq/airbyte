@@ -165,7 +165,7 @@ class TestOrderItems:
         token = "111111111"
         expected = {"NextToken": token}
         mocker.patch.object(response, "json", return_value={"payload": expected})
-        assert order_items_stream().next_page_token(response) == expected
+        assert expected == order_items_stream().next_page_token(response)
 
         mocker.patch.object(response, "json", return_value={"payload": {}})
         if order_items_stream().next_page_token(response) is not None:

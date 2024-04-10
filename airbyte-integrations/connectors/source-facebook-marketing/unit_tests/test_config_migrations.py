@@ -119,7 +119,7 @@ class TestMigrateIncludeDeletedToStatusFilters:
         # load expected updated config
         expected_new_config = load_config(new_config_path)
         # compare expected with migrated
-        assert test_migrated_config == expected_new_config
+        assert expected_new_config == test_migrated_config
         # check migrated property
         if include_deleted:
             assert all([filter in test_migrated_config for filter in self.filter_properties])

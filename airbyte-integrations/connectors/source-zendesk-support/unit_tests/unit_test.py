@@ -419,7 +419,7 @@ class TestSourceZendeskSupportStream:
         requests_mock.get(STREAM_URL, json={stream_name: expected})
         test_response = requests.get(STREAM_URL)
         output = list(stream.parse_response(test_response, None))
-        assert output == expected
+        assert expected == output
 
     def test_attribute_definition_parse_response(self, requests_mock):
         stream = AttributeDefinitions(**STREAM_ARGS)
@@ -433,7 +433,7 @@ class TestSourceZendeskSupportStream:
             {"condition": "all", "subject": "number_of_incidents", "title": "Number of incidents"},
             {"condition": "any", "subject": "brand", "title": "Brand"},
         ]
-        assert output == expected_records
+        assert expected_records == output
 
     @pytest.mark.parametrize(
         "stream_cls",
@@ -467,7 +467,7 @@ class TestSourceZendeskSupportStream:
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.get_updated_state(current_state, last_record)
-        assert result == expected
+        assert expected == result
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -491,7 +491,7 @@ class TestSourceZendeskSupportStream:
         posts_response = mocker.Mock()
         posts_response.json.return_value = {"next_page": None}
         result = stream.next_page_token(response=posts_response)
-        assert result == expected
+        assert expected == result
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -511,7 +511,7 @@ class TestSourceZendeskSupportStream:
     def test_request_params(self, stream_cls, expected):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.request_params(stream_state={})
-        assert result == expected
+        assert expected == result
 
 
 class TestSourceZendeskSupportFullRefreshStream:
@@ -591,7 +591,7 @@ class TestSourceZendeskSupportFullRefreshStream:
     def test_request_params(self, stream_cls, expected_params):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.request_params(next_page_token=None, stream_state=None)
-        assert result == expected_params
+        assert expected_params == result
 
 
 class TestSourceZendeskSupportCursorPaginationStream:
@@ -617,7 +617,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.get_updated_state(current_state, last_record)
-        assert result == expected
+        assert expected == result
 
     @pytest.mark.parametrize(
         "stream_cls, response, expected",
@@ -732,7 +732,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
     def test_request_params(self, stream_cls, expected):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.request_params(stream_state=None, next_page_token=None)
-        assert result == expected
+        assert expected == result
 
 
 class TestSourceZendeskIncrementalExportStream:
@@ -788,7 +788,7 @@ class TestSourceZendeskIncrementalExportStream:
     def test_request_params(self, stream_cls, expected):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.request_params(next_page_token=None, stream_state=None)
-        assert result == expected
+        assert expected == result
 
     @pytest.mark.parametrize(
         "stream_cls",
@@ -808,7 +808,7 @@ class TestSourceZendeskIncrementalExportStream:
         requests_mock.get(STREAM_URL, json={stream_name: expected})
         test_response = requests.get(STREAM_URL)
         output = list(stream.parse_response(test_response))
-        assert output == expected
+        assert expected == output
 
     @pytest.mark.parametrize(
         "stream_cls, stream_slice, expected_path",

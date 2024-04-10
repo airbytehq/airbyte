@@ -203,13 +203,13 @@ def test_get_credentials(invalid_config):
         "client_secret": "fake_client_secret",
         "refresh_token": "fake_refresh_token",
     }
-    assert SourceGoogleSheets.get_credentials(invalid_config) == expected_config
+    assert expected_config == SourceGoogleSheets.get_credentials(invalid_config)
 
 
 def test_get_credentials_old_style():
     old_style_config = {"credentials_json": "some old style data"}
     expected_config = {"auth_type": "Service", "service_account_info": "some old style data"}
-    assert SourceGoogleSheets.get_credentials(old_style_config) == expected_config
+    assert expected_config == SourceGoogleSheets.get_credentials(old_style_config)
 
 
 def test_read_429_error(mocker, invalid_config, caplog):

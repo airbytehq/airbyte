@@ -712,7 +712,7 @@ def test_get_granted_scopes(requests_mock, mocker):
 
     actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
 
-    assert actual_scopes == expected_scopes
+    assert expected_scopes == actual_scopes
 
 
 def test_streams_oauth_2_auth_no_suitable_scopes(requests_mock, mocker, config):

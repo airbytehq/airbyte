@@ -321,4 +321,4 @@ def test_filter_file_by_start_date(start_date: datetime, last_modified_date: dat
         start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
     )
 
-    assert reader.is_modified_after_start_date(last_modified_date) == expected_result
+    assert expected_result == reader.is_modified_after_start_date(last_modified_date)

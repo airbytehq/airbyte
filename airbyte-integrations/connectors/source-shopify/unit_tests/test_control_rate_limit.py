@@ -41,7 +41,7 @@ def test_rest_api_with_unknown_load(requests_mock):
 
     actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
-    assert actual_sleep_time == limiter.on_unknown_load
+    assert limiter.on_unknown_load == actual_sleep_time
 
 
 def test_rest_api_with_low_load(requests_mock):
@@ -55,7 +55,7 @@ def test_rest_api_with_low_load(requests_mock):
 
     actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
-    assert actual_sleep_time == limiter.on_low_load
+    assert limiter.on_low_load == actual_sleep_time
 
 
 def test_rest_api_with_mid_load(requests_mock):
@@ -69,7 +69,7 @@ def test_rest_api_with_mid_load(requests_mock):
 
     actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
-    assert actual_sleep_time == limiter.on_mid_load
+    assert limiter.on_mid_load == actual_sleep_time
 
 
 def test_rest_api_with_high_load(requests_mock):
@@ -83,7 +83,7 @@ def test_rest_api_with_high_load(requests_mock):
 
     actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
-    assert actual_sleep_time == limiter.on_high_load
+    assert limiter.on_high_load == actual_sleep_time
 
 
 def test_graphql_api_with_unknown_load(requests_mock):
@@ -95,7 +95,7 @@ def test_graphql_api_with_unknown_load(requests_mock):
 
     actual_sleep_time = limiter.get_graphql_api_wait_time(test_response, threshold=TEST_THRESHOLD)
 
-    assert actual_sleep_time == limiter.on_unknown_load
+    assert limiter.on_unknown_load == actual_sleep_time
 
 
 def test_graphql_api_with_low_load(requests_mock):
@@ -109,7 +109,7 @@ def test_graphql_api_with_low_load(requests_mock):
 
     actual_sleep_time = limiter.get_graphql_api_wait_time(test_response, threshold=TEST_THRESHOLD)
 
-    assert actual_sleep_time == limiter.on_low_load
+    assert limiter.on_low_load == actual_sleep_time
 
 
 def test_graphql_api_with_mid_load(requests_mock):
@@ -122,7 +122,7 @@ def test_graphql_api_with_mid_load(requests_mock):
 
     actual_sleep_time = limiter.get_graphql_api_wait_time(test_response, threshold=TEST_THRESHOLD)
 
-    assert actual_sleep_time == limiter.on_mid_load
+    assert limiter.on_mid_load == actual_sleep_time
 
 
 def test_graphql_api_with_high_load(requests_mock):
@@ -135,4 +135,4 @@ def test_graphql_api_with_high_load(requests_mock):
 
     actual_sleep_time = limiter.get_graphql_api_wait_time(test_response, threshold=TEST_THRESHOLD)
 
-    assert actual_sleep_time == limiter.on_high_load
+    assert limiter.on_high_load == actual_sleep_time

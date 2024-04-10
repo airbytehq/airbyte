@@ -45,4 +45,4 @@ def test_safe_name_conversion():
     ],
 )
 def test_exception_description_by_status_code(status_code, expected_message):
-    assert exception_description_by_status_code(status_code, == expected_message "spreadsheet_id")
+    assert expected_message == exception_description_by_status_code(status_code, "spreadsheet_id")

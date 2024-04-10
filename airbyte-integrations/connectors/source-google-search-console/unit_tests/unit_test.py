@@ -75,7 +75,7 @@ def test_slice(site_urls, sync_mode, data_state):
                     "start_date": range_["start_date"],
                     "end_date": range_["end_date"],
                 }
-                assert next(stream_slice) == expected
+                assert expected == next(stream_slice)
 
 
 @pytest.mark.parametrize(

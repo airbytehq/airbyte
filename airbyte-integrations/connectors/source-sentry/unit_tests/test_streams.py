@@ -94,7 +94,7 @@ def test_project_detail_parse_response(requests_mock):
         json=expected
     )
     result = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
-    assert result.data == expected
+    assert expected == result.data
 
 
 @pytest.mark.parametrize(

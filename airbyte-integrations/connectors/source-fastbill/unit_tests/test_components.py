@@ -11,4 +11,4 @@ def test_token_generation():
     authenticator = CustomAuthenticator(config=config, username="example@gmail.com", password="api_key", parameters=None)
     token = authenticator.token
     expected_token = "Basic ZXhhbXBsZUBnbWFpbC5jb206YXBpX2tleQ=="
-    assert token == expected_token
+    assert expected_token == token

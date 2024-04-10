@@ -40,7 +40,7 @@ class TestCommon:
         ],
     )
     def test_primary_key(self, stream_cls, expected) -> None:
-        assert stream_cls.primary_key == expected
+        assert expected == stream_cls.primary_key
 
     @pytest.mark.parametrize(
         "stream_cls, stream_type, expected",
@@ -53,7 +53,7 @@ class TestCommon:
             result = stream_cls(config, authenticator=None).data_path
         else:
             result = stream_cls(config, authenticator=None).data_path
-        assert result == expected
+        assert expected == result
 
     @pytest.mark.parametrize(
         "stream_cls, stream_type, expected",
@@ -66,7 +66,7 @@ class TestCommon:
             result = stream_cls(config, authenticator=None).path()
         else:
             result = stream_cls(config, authenticator=None).path()
-        assert result == expected
+        assert expected == result
 
     @pytest.mark.parametrize(
         ("http_status", "headers", "should_retry"),

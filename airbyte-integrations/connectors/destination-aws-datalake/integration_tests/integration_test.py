@@ -148,7 +148,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
             config, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message]
         )
     )
-    assert output_states, == expected_states "Checkpoint state messages were expected from the destination"
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     # Check if table was created
     for tbl in [append_stream, overwrite_stream]:

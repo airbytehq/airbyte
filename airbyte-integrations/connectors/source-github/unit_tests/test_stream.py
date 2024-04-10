@@ -1482,7 +1482,7 @@ def test_issues_timeline_events():
 
     stream = IssueTimelineEvents(**repository_args)
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"repository": "airbytehq/airbyte", "number": 1}))
-    assert records == expected_records
+    assert expected_records == records
 
 
 @responses.activate

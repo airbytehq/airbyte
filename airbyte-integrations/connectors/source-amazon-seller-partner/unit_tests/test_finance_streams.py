@@ -135,7 +135,7 @@ def test_finance_stream_next_token(mocker, list_financial_event_groups_stream):
     token = "aabbccddeeff"
     expected = {"NextToken": token}
     mocker.patch.object(response, "json", return_value={"payload": expected})
-    assert list_financial_event_groups_stream().next_page_token(response) == expected
+    assert expected == list_financial_event_groups_stream().next_page_token(response)
 
     mocker.patch.object(response, "json", return_value={"payload": {}})
     if list_financial_event_groups_stream().next_page_token(response) is not None:
@@ -149,12 +149,12 @@ def test_financial_event_groups_stream_request_params(list_financial_event_group
         "MaxResultsPerPage": 100,
         "FinancialEventGroupStartedBefore": END_DATE_1,
     }
-    assert list_financial_event_groups_stream().request_params({}, == expected_params None)
+    assert expected_params == list_financial_event_groups_stream().request_params({}, None)
 
     # test 2
     token = "aabbccddeeff"
     expected_params = {"NextToken": token}
-    assert list_financial_event_groups_stream().request_params({}, == expected_params {"NextToken": token})
+    assert expected_params == list_financial_event_groups_stream().request_params({}, {"NextToken": token})
 
     # test 3 - for 180 days limit
     expected_params = {
@@ -162,7 +162,7 @@ def test_financial_event_groups_stream_request_params(list_financial_event_group
         "MaxResultsPerPage": 100,
         "FinancialEventGroupStartedBefore": END_DATE_2,
     }
-    assert list_financial_event_groups_stream(START_DATE_2, == expected_params END_DATE_2).request_params({}, None)
+    assert expected_params == list_financial_event_groups_stream(START_DATE_2, END_DATE_2).request_params({}, None)
 
 
 def test_financial_event_groups_stream_parse_response(mocker, list_financial_event_groups_stream):
@@ -176,12 +176,12 @@ def test_financial_event_groups_stream_parse_response(mocker, list_financial_eve
 def test_financial_events_stream_request_params(list_financial_events_stream):
     # test 1
     expected_params = {"PostedAfter": START_DATE_1, "MaxResultsPerPage": 100, "PostedBefore": END_DATE_1}
-    assert list_financial_events_stream().request_params({}, == expected_params None)
+    assert expected_params == list_financial_events_stream().request_params({}, None)
 
     # test 2
     token = "aabbccddeeff"
     expected_params = {"NextToken": token}
-    assert list_financial_events_stream().request_params({}, == expected_params {"NextToken": token})
+    assert expected_params == list_financial_events_stream().request_params({}, {"NextToken": token})
 
     # test 3 - for 180 days limit
     expected_params = {
@@ -189,7 +189,7 @@ def test_financial_events_stream_request_params(list_financial_events_stream):
         "MaxResultsPerPage": 100,
         "PostedBefore": END_DATE_2,
     }
-    assert list_financial_events_stream(START_DATE_2, == expected_params END_DATE_2).request_params({}, None)
+    assert expected_params == list_financial_events_stream(START_DATE_2, END_DATE_2).request_params({}, None)
 
 
 def test_financial_events_stream_parse_response(mocker, list_financial_events_stream):

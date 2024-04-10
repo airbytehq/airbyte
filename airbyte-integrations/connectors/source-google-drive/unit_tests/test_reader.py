@@ -635,7 +635,7 @@ def test_open_file(
         with pytest.raises(ValueError):
             create_reader().open_file(file, mode, None, MagicMock()).read()
     else:
-        assert create_reader().open_file(file, == expected_read mode, None, MagicMock()).read()
+        assert expected_read == create_reader().open_file(file, mode, None, MagicMock()).read()
         assert mock_downloader.next_chunk.call_count == 2
         if expect_export:
             files_service.export_media.assert_has_calls([call(fileId=file.id, mimeType=expected_mime_type)])

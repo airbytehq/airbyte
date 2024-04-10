@@ -166,7 +166,7 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
             # mocking the nested request call to retrieve the data from result URL
             requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
         result = stream.job_manager.job_check(test_job_status_response)
-        assert result == expected
+        assert expected == result
 
 
 @pytest.mark.parametrize(

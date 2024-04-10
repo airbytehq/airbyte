@@ -976,7 +976,7 @@ def test_bulk_stream_slices(
                     }
                 )
                 start_date += stream.stream_slice_step
-            assert stream_slices == expected_slices
+            assert expected_slices == stream_slices
             assert len(stream_slices) == expected_len_stream_slices
 
 
