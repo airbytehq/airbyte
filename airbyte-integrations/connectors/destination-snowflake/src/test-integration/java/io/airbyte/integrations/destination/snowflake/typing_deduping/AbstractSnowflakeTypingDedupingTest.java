@@ -99,6 +99,9 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
             // Raw table is still lowercase.
             StreamId.concatenateRawTableName(streamNamespace, streamName),
             streamNamespace.toUpperCase()));
+    database.execute(
+        String.format("DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"name\"='%s' AND \"namespace\"='%s'", streamName,
+            streamNamespace));
   }
 
   @Override
