@@ -32,8 +32,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          This upgrade brings changes in primary key to *-analytics streams.
+        message: This upgrade brings changes in primary key to *-analytics streams.
         upgradeDeadline: "2024-04-25"
         scopedImpact:
           - scopeType: stream
