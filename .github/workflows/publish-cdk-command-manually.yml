@@ -211,12 +211,15 @@ jobs:
         timeout-minutes: 10
         run: |
           cd airbyte-integrations/connectors/source-declarative-manifest
+          echo "Attempting to pull the newly published version of airbyte-cdk."
           while true; do
             # --no-cache to force looking for the new version
             poetry add airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}} --no-cache && break
             # Loop to wait for the new version to be available to poetry
+            echo "Couldn't add new dependency. This is normal if the dependency could not (yet) be found. Retrying in 10 seconds..."
             sleep 10
           done
+          echo "Successfully updated the CDK dependency of source-declarative-manifest to ${{needs.bump-version.outputs.new_cdk_version}}"
       - name: Bump version of source-declarative-manifest
         uses: ./.github/actions/run-airbyte-ci
         with:
