@@ -16,4 +16,5 @@ on:
         name: print variables
         run: |
           echo $PR_DESCRIPTION
+          echo OKOK
 
