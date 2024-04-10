@@ -1,0 +1,8 @@
+{
+    "properties":{
+        "campaignId":{
+            "type":"integer"
+        }
+    },
+    "type": "object"
+}
