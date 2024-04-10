@@ -3,6 +3,7 @@
 This page contains the setup guide and reference information for Shein.
 
 ## Prerequisites
+
 * Shein access account
 * openKeyId
 * secretKey

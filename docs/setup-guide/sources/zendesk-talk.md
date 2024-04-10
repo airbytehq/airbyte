@@ -20,16 +20,16 @@ This page contains the setup guide and reference information for Zendesk Talk.
 ### Step 1: Generate an API token
 
 1. Inside your Zendesk account, click the Zendesk Products icon (four squares) in the top-right corner, then select **Admin Center**.
-![Zendesk Admin Center](/assets/images/zendesk-admin-center.jpg "Zendesk Admin Center")
+![Zendesk Admin Center](/docs/setup-guide/assets/images/zendesk-admin-center.jpg "Zendesk Admin Center")
 
 2. In the left navbar, scroll down to **Apps and Integrations**, then select **APIs** > **Zendesk API**.
-![Zendesk API](/assets/images/zendesk-api.jpg "Zendesk API")
+![Zendesk API](/docs/setup-guide/assets/images/zendesk-api.jpg "Zendesk API")
 
 3. In the **Settings** tab, toggle the option to enable token access.
-![Zendesk Enable Token Access](/assets/images/zendesk-enable-token-access.jpg "Zendesk Enable Token Access")
+![Zendesk Enable Token Access](/docs/setup-guide/assets/images/zendesk-enable-token-access.jpg "Zendesk Enable Token Access")
 
 4. Click the **Add API token** button. And then click Save.
-![Zendesk API Token](/assets/images/zendesk-api-token.jpg "Zendesk API Token")
+![Zendesk API Token](/docs/setup-guide/assets/images/zendesk-api-token.jpg "Zendesk API Token")
 
   > CAUTION: Be sure to copy the token and save it in a secure location. You will not be able to access the token's value after you close the page.
 

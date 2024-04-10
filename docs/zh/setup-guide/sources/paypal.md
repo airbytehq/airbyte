@@ -24,18 +24,18 @@ Follow these [instructions](https://developer.paypal.com/docs/multiparty/get-sta
 1. Sign in to your [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/).
 
 2. Click **Apps & credentials** from the top menu.
-![Paypal Apps & Creds](/assets/images/paypal-app-creds.jpg "Paypal Apps & Creds")
+![Paypal Apps & Creds](/docs/setup-guide/assets/images/paypal-app-creds.jpg "Paypal Apps & Creds")
 
 3. Click the **Create App**.
-![Paypal Create App](/assets/images/paypal-create-app.jpg "Paypal Create App")
+![Paypal Create App](/docs/setup-guide/assets/images/paypal-create-app.jpg "Paypal Create App")
 
 4. Enter a name for your app. Under App Type, select **Platform**. Click **Create App**.
-![Paypal App Type](/assets/images/paypal-app-type.jpg "Paypal App Type")
+![Paypal App Type](/docs/setup-guide/assets/images/paypal-app-type.jpg "Paypal App Type")
 
 5. A sandbox account with the recommended platform settings will be automatically created. And you will be directed to the App's details page.
 
 6. Copy the **Client ID** and **Secret key**. You will use them to set up the source in Daspire.
-![Paypal API Creds](/assets/images/paypal-api-creds.jpg "Paypal API Creds")
+![Paypal API Creds](/docs/setup-guide/assets/images/paypal-api-creds.jpg "Paypal API Creds")
 
 ### Step 2: Set up PayPal  in Daspire
 

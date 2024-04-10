@@ -1,5 +1,5 @@
 ---
-documentationUrl: https://docs.daspire.com/zh/setup-guide/sources/amazon-ads
+documentationUrl: https://docs.daspire.com/setup-guide/sources/amazon-ads
 connectionSpecification:
   title: Amazon Ads Spec
   type: object

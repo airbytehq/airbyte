@@ -3,6 +3,7 @@
 此页面包含Shein的设置指南和参考信息。
 
 ## 前提条件
+
 * Shein的接入账号
 * openKeyId
 * secretKey
