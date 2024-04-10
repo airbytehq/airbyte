@@ -48,7 +48,7 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         headers = {}
         if self._kid:
             headers["kid"] = f"{self._kid.eval(self.config)}"
-        if self._alg:
+        if self._algorithm:
             headers["alg"] = self._get_algorithm()
         if self._typ:
             headers["typ"] = f"{self._typ.eval(self.config)}"
