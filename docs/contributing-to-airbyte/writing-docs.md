@@ -342,25 +342,26 @@ Back to ordinary markdown content.
 ```
 Eagle-eyed readers may note that _all_ markdown should support this feature since it's part of the html spec. However, it's worth special mention since these dropdowns have been styled to be a graceful visual fit within our rendered documentation in all environments.
 
-#### Documenting airbyte-lib usage
+#### Documenting PyAirbyte usage
 
-airbyte-lib is a Python library that allows to run syncs within a Python script for a subset of connectors. Documentation around airbyte-lib connectors is automatically generated from the connector's JSON schema spec.
-There are a few approaches to combine full control over the documentation with automatic generation for common cases:
-* If a connector is airbyte-lib enabled (`remoteRegistries.pypi.enabled` set in the `metadata.yaml` file of the connector) and there is no second-level heading `Usage with airbyte-lib` in the documentation, the documentation will be automatically generated and placed above the `Changelog` section.
-* By manually specifying a `Usage with airbyte-lib` section, this automatism is disabled. The following is a good starting point for this section:
+PyAirbyte is a Python library that allows to run syncs within a Python script for a subset of connectors. Documentation around PyAirbyte connectors is automatically generated from the connector's JSON schema spec. There are a few approaches to combine full control over the documentation with automatic generation for common cases:
+
+* If a connector is PyAirbyte enabled (`remoteRegistries.pypi.enabled` set in the `metadata.yaml` file of the connector) and there is no second-level heading `Usage with PyAirbyte` in the documentation, the documentation will be automatically generated and placed above the `Changelog` section.
+* By manually specifying a `Usage with PyAirbyte` section, this automatism is disabled. The following is a good starting point for this section:
+
 ```md
 <HideInUI>
 
-## Usage with airbyte-lib
+## Usage with PyAirbyte
 
-<AirbyteLibExample connector="source-google-sheets" />
+<PyAirbyteExample connector="source-google-sheets" />
 
 <SpecSchema connector="source-google-sheets" />
 
 </HideInUI>
 ```
 
-The `AirbyteLibExample` component will generate a code example that can be run with airbyte-lib, excluding an auto-generated sample configuration based on the configuration schema. The `SpecSchema` component will generate a reference table with the connector's JSON schema spec, like a non-interactive version of the connector form in the UI. It can be used on any docs page.
+The `PyAirbyteExample` component will generate a code example that can be run with PyAirbyte, excluding an auto-generated sample configuration based on the configuration schema. The `SpecSchema` component will generate a reference table with the connector's JSON schema spec, like a non-interactive version of the connector form in the UI. It can be used on any docs page.
 
 ## Additional guidelines
 

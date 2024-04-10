@@ -43,6 +43,7 @@ class DataArgumentsProvider : ArgumentsProvider {
     }
 
     companion object {
+        @JvmField
         val EXCHANGE_RATE_CONFIG: CatalogMessageTestConfigPair =
             CatalogMessageTestConfigPair("exchange_rate_catalog.json", "exchange_rate_messages.txt")
         val EDGE_CASE_CONFIG: CatalogMessageTestConfigPair =

@@ -24,14 +24,12 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.OutputStream
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 import org.apache.commons.io.FilenameUtils
-import org.apache.commons.lang3.StringUtils
-import org.apache.logging.log4j.util.Strings
 import org.joda.time.DateTime
 
 private val logger = KotlinLogging.logger {}
@@ -46,13 +44,13 @@ open class S3StorageOperations(
     private val partCounts: ConcurrentMap<String, AtomicInteger> = ConcurrentHashMap()
 
     override fun getBucketObjectPath(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         writeDatetime: DateTime,
         customFormat: String
     ): String {
         val namespaceStr: String =
-            nameTransformer.getNamespace(if (Strings.isNotBlank(namespace)) namespace else "")
+            nameTransformer.getNamespace(if (!namespace.isNullOrBlank()) namespace else "")
         val streamNameStr: String = nameTransformer.getIdentifier(streamName)
         return nameTransformer.applyDefaultCase(
             customFormat
@@ -114,7 +112,7 @@ open class S3StorageOperations(
 
     override fun uploadRecordsToBucket(
         recordsData: SerializableBuffer,
-        namespace: String,
+        namespace: String?,
         objectPath: String
     ): String {
         val exceptionsThrown: MutableList<Exception> = ArrayList()
@@ -174,7 +172,7 @@ open class S3StorageOperations(
         val partId: String = getPartId(objectPath)
         val fileExtension: String = getExtension(recordsData.filename)
         val fullObjectKey: String =
-            if (StringUtils.isNotBlank(s3Config.fileNamePattern)) {
+            if (!s3Config.fileNamePattern.isNullOrBlank()) {
                 s3FilenameTemplateManager.applyPatternToFilename(
                     S3FilenameTemplateParameterObject.builder()
                         .partId(partId)
@@ -291,7 +289,7 @@ open class S3StorageOperations(
     }
 
     override fun cleanUpBucketObject(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         objectPath: String,
         pathFormat: String
@@ -302,7 +300,7 @@ open class S3StorageOperations(
                 ListObjectsRequest()
                     .withBucketName(bucket)
                     .withPrefix(
-                        objectPath
+                        objectPath,
                     ) // pathFormat may use subdirectories under the objectPath to organize files
                     // so we need to recursively list them and filter files matching the pathFormat
                     .withDelimiter(""),
@@ -414,6 +412,10 @@ open class S3StorageOperations(
             AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR,
             "x-amz-iv",
         )
+    }
+
+    fun uploadManifest(bucketName: String, manifestFilePath: String, manifestContents: String) {
+        s3Client.putObject(s3Config.bucketName, manifestFilePath, manifestContents)
     }
 
     companion object {
