@@ -15,11 +15,11 @@ definitions:
     authenticator:
       type: CustomAuthenticator
       class_name: source_xero.components.CustomAuthenticator
-      client_id: '{{ config[''authentication''][''client_id''] }}'
-      client_secret: '{{ config[''authentication''][''client_secret''] }}'
-      refresh_token: '{{ config[''authentication''][''refresh_token''] }}'
-      access_token: '{{ config[''authentication''][''access_token''] }}'
-      scopes: '{{ config[''authentication''][''scopes''] }}'
+      client_id: "{{ config['authentication']['client_id'] }}"
+      client_secret: "{{ config['authentication']['client_secret'] }}"
+      refresh_token: "{{ config['authentication']['refresh_token'] }}"
+      access_token: "{{ config['authentication']['access_token'] }}"
+      scopes: "{{ config['authentication']['scopes'] }}"
     request_headers:
       "Xero-Tenant-Id": "{{ config['tenant_id'] }}"
     error_handler:
@@ -69,8 +69,8 @@ definitions:
       inject_into: "header"
     start_datetime:
       type: MinMaxDatetime
-      datetime: '{{ config[''start_date''] }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     cursor_granularity: "P1Y"
     lookback_window: "P31D"
     step: "P1Y"
@@ -259,8 +259,8 @@ definitions:
       cursor_field: "CreatedDateUTC"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: "P1Y"
       lookback_window: "P31D"
       step: "P1Y"
@@ -415,1405 +415,1393 @@ definitions:
 
   line_items_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Quantity:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       UnitAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AccountCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ItemCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineItemID:
         type:
-        - string
+          - string
       TaxType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TaxAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       DiscountRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Tracking:
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           additionalProperties: true
           properties:
             Status:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             TrackingCategoryID:
               type:
-              - string
+                - string
             Option:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             TrackingCategoryName:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             TrackingOptionID:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             TrackingOptionName:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             Options:
               items:
                 type:
-                - 'null'
-                - object
+                  - "null"
+                  - object
                 properties:
                   IsActive:
                     type:
-                    - 'null'
-                    - boolean
+                      - "null"
+                      - boolean
                   IsDeleted:
                     type:
-                    - 'null'
-                    - boolean
+                      - "null"
+                      - boolean
                   TrackingOptionID:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   IsArchived:
                     type:
-                    - 'null'
-                    - boolean
+                      - "null"
+                      - boolean
                   Status:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   Name:
                     type:
-                    - 'null'
-                    - string
+                      - "null"
+                      - string
                   HasValidationErrors:
                     type:
-                    - 'null'
-                    - boolean
+                      - "null"
+                      - boolean
                 additionalProperties: true
               type:
-              - 'null'
-              - array
+                - "null"
+                - array
             Name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
     additionalProperties: true
 
   bank_transactions_schema:
-    type: 
-    - "null"
-    - "object"
+    type:
+      - "null"
+      - "object"
     additionalProperties: true
-    properties: 
-      Type: 
-        type: 
-        - "null"
-        - "string"
-      Contact: 
+    properties:
+      Type:
+        type:
+          - "null"
+          - "string"
+      Contact:
         $ref: "#/definitions/contacts_schema"
-      LineItems: 
-        type: 
-        - "null"
-        - "array"
-        items: 
+      LineItems:
+        type:
+          - "null"
+          - "array"
+        items:
           $ref: "#/definitions/line_items_schema"
-      BankAccount: 
+      BankAccount:
         $ref: "#/definitions/accounts_schema"
-      IsReconciled: 
-        type: 
-        - "null"
-        - "boolean"
-      Date: 
-        type: 
-        - "null"
-        - "string"
+      IsReconciled:
+        type:
+          - "null"
+          - "boolean"
+      Date:
+        type:
+          - "null"
+          - "string"
         format: "date-time"
-      DateString: 
-        type: 
-        - "null"
-        - "string"
+      DateString:
+        type:
+          - "null"
+          - "string"
         format: "date-time"
-      Reference: 
-        type: 
-        - "null"
-        - "string"
-      CurrencyCode: 
-        type: 
-        - "null"
-        - "string"
-      CurrencyRate: 
-        type: 
-        - "null"
-        - "number"
-      Url: 
-        type: 
-        - "null"
-        - "string"
-      Status: 
-        type: 
-        - "null"
-        - "string"
-      LineAmountTypes: 
-        type: 
-        - "null"
-        - "string"
-      SubTotal: 
-        type: 
-        - "null"
-        - "number"
-      TotalTax: 
-        type: 
-        - "null"
-        - "number"
-      Total: 
-        type: 
-        - "null"
-        - "number"
-      BankTransactionID: 
-        type: 
-        - "string"
-      PrepaymentID: 
-        type: 
-        - "null"
-        - "string"
-      OverpaymentID: 
-        type: 
-        - "null"
-        - "string"
-      UpdatedDateUTC: 
-        type: 
-        - "null"
-        - "string"
+      Reference:
+        type:
+          - "null"
+          - "string"
+      CurrencyCode:
+        type:
+          - "null"
+          - "string"
+      CurrencyRate:
+        type:
+          - "null"
+          - "number"
+      Url:
+        type:
+          - "null"
+          - "string"
+      Status:
+        type:
+          - "null"
+          - "string"
+      LineAmountTypes:
+        type:
+          - "null"
+          - "string"
+      SubTotal:
+        type:
+          - "null"
+          - "number"
+      TotalTax:
+        type:
+          - "null"
+          - "number"
+      Total:
+        type:
+          - "null"
+          - "number"
+      BankTransactionID:
+        type:
+          - "string"
+      PrepaymentID:
+        type:
+          - "null"
+          - "string"
+      OverpaymentID:
+        type:
+          - "null"
+          - "string"
+      UpdatedDateUTC:
+        type:
+          - "null"
+          - "string"
         format: "date-time"
-      HasAttachments: 
-        type: 
-        - "null"
-        - "boolean"
-      ExternalLinkProviderName: 
-        type: 
-        - "null"
-        - "string"
+      HasAttachments:
+        type:
+          - "null"
+          - "boolean"
+      ExternalLinkProviderName:
+        type:
+          - "null"
+          - "string"
 
   addresses_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Region:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AddressLine1:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AddressLine2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AddressLine3:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AddressLine4:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AttentionTo:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       City:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PostalCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Country:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AddressType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
-    
 
   phones_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       PhoneNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PhoneAreaCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PhoneCountryCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PhoneType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
-    
 
   payment_terms_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Sales:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           Day:
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           Type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
         additionalProperties: true
       Bills:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           Day:
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           Type:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
         additionalProperties: true
     additionalProperties: true
-    
 
   contacts_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       ContactID:
         type:
-        - string
+          - string
       ContactNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AccountNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ContactStatus:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       FirstName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LastName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       EmailAddress:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SkypeUserName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BankAccountDetails:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       TaxNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AccountsReceivableTaxType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AccountsPayableTaxType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Addresses:
         items:
           $ref: "#/definitions/addresses_schema"
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       Phones:
         items:
           $ref: "#/definitions/phones_schema"
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       IsSupplier:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       IsCustomer:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       DefaultCurrency:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       UpdatedDateUTC:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ContactPersons:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             FirstName:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             LastName:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             EmailAddress:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             IncludeInEmails:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
           additionalProperties: true
       XeroNetworkKey:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SalesDefaultAccountCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PurchasesDefaultAccountCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SalesTrackingCategories:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/tracking_categories_schema"
       PurchasesTrackingCategories:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/tracking_categories_schema"
       TrackingCategoryName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       TrackingCategoryOption:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PaymentTerms:
         $ref: "#/definitions/payment_terms_schema"
       ContactGroups:
         items:
           $ref: "#/definitions/contact_groups_schema"
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       Website:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BrandingTheme:
         $ref: "#/definitions/branding_themes_schema"
       BatchPayments:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           Details:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           Reference:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           Code:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           BankAccountNumber:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           BankAccountName:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
         additionalProperties: true
       Discount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Balances:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           AccountsReceivable:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               Outstanding:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               Overdue:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
             additionalProperties: true
           AccountsPayable:
             type:
-            - 'null'
-            - object
+              - "null"
+              - object
             properties:
               Outstanding:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
               Overdue:
                 type:
-                - 'null'
-                - number
+                  - "null"
+                  - number
             additionalProperties: true
         additionalProperties: true
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       Attachments:
         $ref: "#/definitions/attachments_schema"
       HasValidationErrors:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       ValidationErrors:
         $ref: "#/definitions/validation_errors_schema"
     additionalProperties: true
-    
 
   attachments_schema:
     type:
-    - 'null'
-    - array
+      - "null"
+      - array
     items:
       type:
-      - 'null'
-      - object
+        - "null"
+        - object
       properties: {}
       additionalProperties: true
     additionalProperties: true
-    
 
   validation_errors_schema:
     type:
-    - 'null'
-    - array
+      - "null"
+      - array
     items:
       type:
-      - 'null'
-      - object
+        - "null"
+        - object
       properties:
         Message:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       additionalProperties: true
 
   credit_notes_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Contact:
         $ref: "#/definitions/contacts_schema"
       Date:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DueDate:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DueDateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineAmountTypes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineItems:
         items:
           $ref: "#/definitions/line_items_schema"
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       SubTotal:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AppliedAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TotalTax:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Total:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       UpdatedDateUTC:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CurrencyCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       FullyPaidOnDate:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CreditNoteID:
         type:
-        - string
+          - string
       CreditNoteNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Reference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SentToContact:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       CurrencyRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       RemainingCredit:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Allocations:
         items:
           $ref: "#/definitions/allocations_schema"
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       BrandingThemeID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       DateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
-    
+
   invoices_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Contact:
         $ref: "#/definitions/contacts_schema"
       Date:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DueDate:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineAmountTypes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineItems:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/line_items_schema"
       SubTotal:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TotalTax:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Total:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TotalDiscount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       UpdatedDateUTC:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CurrencyCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CurrencyRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       InvoiceID:
         type:
-        - string
+          - string
       InvoiceNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Reference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BrandingThemeID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SentToContact:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       ExpectedPaymentDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       ExpectedPaymentDateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PlannedPaymentDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       PlannedPaymentDateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       Payments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/payments_schema"
       CreditNotes:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/credit_notes_schema"
       Prepayments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/prepayments_schema"
       Overpayments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/overpayments_schema"
       AmountDue:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AmountPaid:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       FullyPaidOnDate:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AmountCredited:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       DueDateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       IsDiscounted:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       HasErrors:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       DateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
-    
 
   manual_journals_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       LineAmountTypes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Narration:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       JournalLines:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             LineAmount:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             Description:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             TaxAmount:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             AccountID:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             AccountCode:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             IsBlank:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             TaxType:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             Tracking:
               items:
                 $ref: "#/definitions/tracking_categories_schema"
               type:
-              - 'null'
-              - array
+                - "null"
+                - array
           additionalProperties: true
       Url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ShowOnCashBasisReports:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       UpdatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       ManualJournalID:
         type:
-        - string
+          - string
     additionalProperties: true
-    
 
   overpayments_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Contact:
         $ref: "#/definitions/contacts_schema"
       Date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AppliedAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       LineAmountTypes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineItems:
         items:
           $ref: "#/definitions/line_items_schema"
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       SubTotal:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TotalTax:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Total:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       UpdatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       CurrencyCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       OverpaymentID:
         type:
-        - string
+          - string
       CurrencyRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       RemainingCredit:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Allocations:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/allocations_schema"
       Payments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/payments_schema"
       Reference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       ID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DateString:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
     additionalProperties: true
-    
 
   prepayments_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Contact:
         $ref: "#/definitions/contacts_schema"
       Date:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineAmountTypes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineItems:
         items:
           $ref: "#/definitions/line_items_schema"
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       SubTotal:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Total:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       UpdatedDateUTC:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CurrencyCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PrepaymentID:
         type:
-        - string
+          - string
       CurrencyRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Reference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       RemainingCredit:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       AppliedAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Allocations:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/allocations_schema"
       Payments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/payments_schema"
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       TotalTax:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       DateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
-    
 
   allocations_schema:
-    type: 
-    - "null"
-    - "object"
-    properties: 
-      Date: 
-        type: 
-        - "null"
-        - "string"
+    type:
+      - "null"
+      - "object"
+    properties:
+      Date:
+        type:
+          - "null"
+          - "string"
         format: "date-time"
-      Amount: 
-        type: 
-        - "null"
-        - "number"
-      Invoice: 
+      Amount:
+        type:
+          - "null"
+          - "number"
+      Invoice:
         $ref: "#/definitions/nested_invoice_schema"
     additionalProperties: true
-    
 
   purchase_orders_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Contact:
         $ref: "#/definitions/contacts_schema"
       Date:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DeliveryDate:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineAmountTypes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PurchaseOrderNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Reference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LineItems:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/line_items_schema"
       BrandingThemeID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CurrencyCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SentToContact:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       DeliveryAddress:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AttentionTo:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Telephone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DeliveryInstructions:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ExpectedArrivalDate:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PurchaseOrderID:
         type:
-        - string
+          - string
       CurrencyRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       SubTotal:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TotalTax:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Total:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TotalDiscount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       UpdatedDateUTC:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DeliveryDateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       HasErrors:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       IsDiscounted:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       ExpectedArrivalDateString:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
-    
 
   accounts_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Code:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       UpdatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       ReportingCodeName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SystemAccount:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BankAccountType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       TaxType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Class:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       AccountID:
         type:
-        - string
+          - string
       BankAccountNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ShowInExpenseClaims:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       CurrencyCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ReportingCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       EnablePaymentsToAccount:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
     additionalProperties: true
-    
 
   bank_transfers_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       FromBankAccount:
         $ref: "#/definitions/accounts_schema"
@@ -1821,354 +1809,351 @@ definitions:
         $ref: "#/definitions/accounts_schema"
       Amount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       DateString:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       BankTransferID:
         type:
-        - string
+          - string
       CurrencyRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       FromBankTransactionID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ToBankTransactionID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       CreatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       CreatedDateUTCString:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
     additionalProperties: true
-    
+
   employees_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       FirstName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LastName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ExternalLink:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       UpdatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       EmployeeID:
         type:
-        - string
+          - string
     additionalProperties: true
-    
 
   items_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       ItemID:
         type:
-        - string
+          - string
       Code:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       IsSold:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       IsPurchased:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       Description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PurchaseDescription:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PurchaseDetails:
         properties:
           TaxType:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           COGSAccountCode:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           UnitPrice:
             type:
-            - 'null'
-            - number
+              - "null"
+              - number
           AccountCode:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         additionalProperties: true
       SalesDetails:
         properties:
           TaxType:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           UnitPrice:
             type:
-            - 'null'
-            - number
+              - "null"
+              - number
           AccountCode:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         additionalProperties: true
       IsTrackedAsInventory:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       InventoryAssetAccountCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       TotalCostPool:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       QuantityOnHand:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       UpdatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
     additionalProperties: true
-    
 
   nested_invoice_schema:
-    type: 
-    - "null"
-    - "object"
-    properties: 
-      Type: 
-        type: 
-        - "null"
-        - "string"
-      Contact: 
+    type:
+      - "null"
+      - "object"
+    properties:
+      Type:
+        type:
+          - "null"
+          - "string"
+      Contact:
         $ref: "#/definitions/contacts_schema"
-      Date: 
+      Date:
         format: "date-time"
-        type: 
-        - "null"
-        - "string"
-      DueDate: 
+        type:
+          - "null"
+          - "string"
+      DueDate:
         format: "date-time"
-        type: 
-        - "null"
-        - "string"
-      Status: 
-        type: 
-        - "null"
-        - "string"
-      LineAmountTypes: 
-        type: 
-        - "null"
-        - "string"
-      LineItems: 
-        type: 
-        - "null"
-        - "array"
-        items: 
+        type:
+          - "null"
+          - "string"
+      Status:
+        type:
+          - "null"
+          - "string"
+      LineAmountTypes:
+        type:
+          - "null"
+          - "string"
+      LineItems:
+        type:
+          - "null"
+          - "array"
+        items:
           $ref: "#/definitions/line_items_schema"
-      SubTotal: 
-        type: 
-        - "null"
-        - "number"
-      TotalTax: 
-        type: 
-        - "null"
-        - "number"
-      Total: 
-        type: 
-        - "null"
-        - "number"
-      TotalDiscount: 
-        type: 
-        - "null"
-        - "number"
-      UpdatedDateUTC: 
+      SubTotal:
+        type:
+          - "null"
+          - "number"
+      TotalTax:
+        type:
+          - "null"
+          - "number"
+      Total:
+        type:
+          - "null"
+          - "number"
+      TotalDiscount:
+        type:
+          - "null"
+          - "number"
+      UpdatedDateUTC:
         format: "date-time"
-        type: 
-        - "null"
-        - "string"
-      CurrencyCode: 
-        type: 
-        - "null"
-        - "string"
-      CurrencyRate: 
-        type: 
-        - "null"
-        - "number"
-      InvoiceID: 
-        type: 
-        - "string"
-      InvoiceNumber: 
-        type: 
-        - "null"
-        - "string"
-      Reference: 
-        type: 
-        - "null"
-        - "string"
-      BrandingThemeID: 
-        type: 
-        - "null"
-        - "string"
-      Url: 
-        type: 
-        - "null"
-        - "string"
-      SentToContact: 
-        type: 
-        - "null"
-        - "boolean"
-      ExpectedPaymentDate: 
-        type: 
-        - "null"
-        - "string"
+        type:
+          - "null"
+          - "string"
+      CurrencyCode:
+        type:
+          - "null"
+          - "string"
+      CurrencyRate:
+        type:
+          - "null"
+          - "number"
+      InvoiceID:
+        type:
+          - "string"
+      InvoiceNumber:
+        type:
+          - "null"
+          - "string"
+      Reference:
+        type:
+          - "null"
+          - "string"
+      BrandingThemeID:
+        type:
+          - "null"
+          - "string"
+      Url:
+        type:
+          - "null"
+          - "string"
+      SentToContact:
+        type:
+          - "null"
+          - "boolean"
+      ExpectedPaymentDate:
+        type:
+          - "null"
+          - "string"
         format: "date-time"
-      PlannedPaymentDate: 
-        type: 
-        - "null"
-        - "string"
+      PlannedPaymentDate:
+        type:
+          - "null"
+          - "string"
         format: "date-time"
-      HasAttachments: 
-        type: 
-        - "null"
-        - "boolean"
-      AmountDue: 
-        type: 
-        - "null"
-        - "number"
-      AmountPaid: 
-        type: 
-        - "null"
-        - "number"
-      FullyPaidOnDate: 
+      HasAttachments:
+        type:
+          - "null"
+          - "boolean"
+      AmountDue:
+        type:
+          - "null"
+          - "number"
+      AmountPaid:
+        type:
+          - "null"
+          - "number"
+      FullyPaidOnDate:
         format: "date-time"
-        type: 
-        - "null"
-        - "string"
-      AmountCredited: 
-        type: 
-        - "null"
-        - "number"
-      DueDateString: 
+        type:
+          - "null"
+          - "string"
+      AmountCredited:
+        type:
+          - "null"
+          - "number"
+      DueDateString:
         format: "date-time"
-        type: 
-        - "null"
-        - "string"
-      IsDiscounted: 
-        type: 
-        - "null"
-        - "boolean"
-      HasErrors: 
-        type: 
-        - "null"
-        - "boolean"
-      DateString: 
+        type:
+          - "null"
+          - "string"
+      IsDiscounted:
+        type:
+          - "null"
+          - "boolean"
+      HasErrors:
+        type:
+          - "null"
+          - "boolean"
+      DateString:
         format: "date-time"
-        type: 
-        - "null"
-        - "string"
+        type:
+          - "null"
+          - "string"
     additionalProperties: true
-    
 
   payments_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       CurrencyRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Amount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Reference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       IsReconciled:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PaymentType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       UpdatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       Account:
         $ref: "#/definitions/accounts_schema"
@@ -2176,559 +2161,550 @@ definitions:
         $ref: "#/definitions/nested_invoice_schema"
       CreditNote:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           CreditNoteNumber:
             type:
-            - string
+              - string
         additionalProperties: true
       Prepayments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             PrepaymentID:
               type:
-              - string
+                - string
           additionalProperties: true
       Overpayment:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             OverpaymentID:
               type:
-              - string
+                - string
           additionalProperties: true
       BankAmount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       HasValidationErrors:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       PaymentID:
         type:
-        - string
+          - string
       HasAccount:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       BatchPaymentID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
-    
 
   users_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       UserID:
         type:
-        - string
+          - string
       EmailAddress:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       FirstName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LastName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       UpdatedDateUTC:
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       IsSubscriber:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       OrganisationRole:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ValidationErrors:
         $ref: "#/definitions/validation_errors_schema"
     additionalProperties: true
-    
 
   branding_themes_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       CreatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       SortOrder:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       Name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BrandingThemeID:
         type:
-        - string
+          - string
     additionalProperties: true
-    
 
   contact_groups_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ContactGroupID:
         type:
-        - string
+          - string
       HasValidationErrors:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
     additionalProperties: true
-    
 
   currencies_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Code:
         type:
-        - string
+          - string
     additionalProperties: true
-    
 
   organisations_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       APIKey:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       LegalName:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PaysTax:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       Version:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       OrganisationType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BaseCurrency:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CountryCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       IsDemoCompany:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       OrganisationStatus:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       RegistrationNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       TaxNumber:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       FinancialYearEndDay:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       FinancialYearEndMonth:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       SalesTaxBasis:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SalesTaxPeriod:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DefaultSalesTax:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       DefaultPurchasesTax:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       PeriodLockDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       EndOfYearLockDate:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       CreatedDateUTC:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       Timezone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       OrganisationEntityType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ShortCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       OrganisationID:
         type:
-        - string
+          - string
       LineOfBusiness:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Addresses:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/addresses_schema"
       Phones:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           $ref: "#/definitions/phones_schema"
       ExternalLinks:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             LinkType:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             Url:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
           additionalProperties: true
       PaymentTerms:
         $ref: "#/definitions/payment_terms_schema"
     additionalProperties: true
-    
 
   repeating_invoices_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Contact:
         $ref: "#/definitions/contacts_schema"
       Schedule:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           Unit:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           DueDateType:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           StartDate:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
           DueDate:
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
           EndDate:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           NextScheduledDate:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
           Period:
             type:
-            - 'null'
-            - integer
+              - "null"
+              - integer
         additionalProperties: true
       LineItems:
         items:
           $ref: "#/definitions/line_items_schema"
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       LineAmountTypes:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Reference:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       BrandingThemeID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CurrencyCode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       SubTotal:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TotalTax:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       TotalDiscount:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       Total:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       RepeatingInvoiceID:
         type:
-        - string
+          - string
       HasAttachments:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       ID:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     additionalProperties: true
-    
 
   tax_rates_schema:
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       Name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       TaxType:
         type:
-        - string
+          - string
       TaxComponents:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             Name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             IsCompound:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             IsNonRecoverable:
               type:
-              - 'null'
-              - boolean
+                - "null"
+                - boolean
             Rate:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
           additionalProperties: true
       Status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       ReportTaxType:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       CanApplyToAssets:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       CanApplyToEquity:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       CanApplyToExpenses:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       CanApplyToLiabilities:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       CanApplyToRevenue:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       DisplayTaxRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       EffectiveRate:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
     additionalProperties: true
-    
 
   tracking_categories_schema:
-    type: 
-    - "null"
-    - "object"
-    properties: 
-      Status: 
-        type: 
-        - "null"
-        - "string"
-      TrackingCategoryID: 
-        type: 
-        - "string"
-      Option: 
-        type: 
-        - "null"
-        - "string"
-      TrackingCategoryName: 
-        type: 
-        - "null"
-        - "string"
-      TrackingOptionID: 
-        type: 
-        - "null"
-        - "string"
-      TrackingOptionName: 
-        type: 
-        - "null"
-        - "string"
-      Options: 
-        items: 
-          type: 
+    type:
+      - "null"
+      - "object"
+    properties:
+      Status:
+        type:
           - "null"
-          - "object"
-          properties: 
-            IsActive: 
-              type: 
-              - "null"
-              - "boolean"
-            IsDeleted: 
-              type: 
-              - "null"
-              - "boolean"
-            TrackingOptionID: 
-              type: 
-              - "null"
-              - "string"
-            IsArchived: 
-              type: 
-              - "null"
-              - "boolean"
-            Status: 
-              type: 
-              - "null"
-              - "string"
-            Name: 
-              type: 
-              - "null"
-              - "string"
-            HasValidationErrors: 
-              type: 
-              - "null"
-              - "boolean"
+          - "string"
+      TrackingCategoryID:
+        type:
+          - "string"
+      Option:
+        type:
+          - "null"
+          - "string"
+      TrackingCategoryName:
+        type:
+          - "null"
+          - "string"
+      TrackingOptionID:
+        type:
+          - "null"
+          - "string"
+      TrackingOptionName:
+        type:
+          - "null"
+          - "string"
+      Options:
+        items:
+          type:
+            - "null"
+            - "object"
+          properties:
+            IsActive:
+              type:
+                - "null"
+                - "boolean"
+            IsDeleted:
+              type:
+                - "null"
+                - "boolean"
+            TrackingOptionID:
+              type:
+                - "null"
+                - "string"
+            IsArchived:
+              type:
+                - "null"
+                - "boolean"
+            Status:
+              type:
+                - "null"
+                - "string"
+            Name:
+              type:
+                - "null"
+                - "string"
+            HasValidationErrors:
+              type:
+                - "null"
+                - "boolean"
           additionalProperties: true
-        type: 
-        - "null"
-        - "array"
-      Name: 
-        type: 
-        - "null"
-        - "string"
+        type:
+          - "null"
+          - "array"
+      Name:
+        type:
+          - "null"
+          - "string"
     additionalProperties: true
-      
 
 streams:
   - "#/definitions/bank_transactions_stream"
@@ -2752,7 +2728,7 @@ streams:
   - "#/definitions/repeating_invoices_stream"
   - "#/definitions/tax_rates_stream"
   - "#/definitions/tracking_categories_stream"
-  
+
 check:
   type: CheckStream
   stream_names:

@@ -3,26 +3,25 @@
 #
 
 import base64
-import requests
-import re
 import decimal
-import pendulum
-import dpath.util
-from requests import HTTPError
-from typing import Any, List, Mapping, Dict, Union
+import re
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, MutableMapping, Optional
-from http import HTTPStatus
 from datetime import date, datetime, time, timedelta, timezone
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from http import HTTPStatus
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Union
+
+import dpath.util
+import pendulum
+import requests
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from requests import HTTPError
+
 
 @dataclass
 class CustomExtractor(RecordExtractor):
@@ -66,8 +65,10 @@ class CustomExtractor(RecordExtractor):
                 offset_hours = 0
                 offset_minutes = 0
 
-            return datetime.fromtimestamp((int(millis_timestamp) / 1000), tz=timezone.utc) + timedelta(hours=offset_hours, minutes=offset_minutes)
-        
+            return datetime.fromtimestamp((int(millis_timestamp) / 1000), tz=timezone.utc) + timedelta(
+                hours=offset_hours, minutes=offset_minutes
+            )
+
         response_body = self.decoder.decode(response)
         if len(self.field_path) == 0:
             extracted = response_body
@@ -105,7 +106,6 @@ class CustomExtractor(RecordExtractor):
             return []
 
 
-
 @dataclass
 class CustomAuthenticator(NoAuth):
     config: Config
@@ -129,8 +129,8 @@ class CustomAuthenticator(NoAuth):
         if self._access_token is None or checker != True:
             self._access_token, self._refresh_token = self.generate_access_token()
         headers = {
-            self.auth_header: f"Bearer {self._access_token}", 
-            "Accept": "application/json", 
+            self.auth_header: f"Bearer {self._access_token}",
+            "Accept": "application/json",
         }
         request.headers.update(headers)
         # print(request.headers, request.body, request.url, checker)    # Logger statement for developing purposes
@@ -144,15 +144,12 @@ class CustomAuthenticator(NoAuth):
     def token(self) -> str:
         return self._access_token
 
-    ''' Check the connection using /connections endpoint to validate given access token, 
-        if response code not 200, new access_token needs to be retrieved '''
+    """ Check the connection using /connections endpoint to validate given access token, 
+        if response code not 200, new access_token needs to be retrieved """
+
     def check_endpoint_connection(self):
         cred = f"Bearer {self._access_token}"
-        headers = {
-            "Authorization": cred,
-            "Host": "api.xero.com",
-            "Accept": "application/json"
-        }
+        headers = {"Authorization": cred, "Host": "api.xero.com", "Accept": "application/json"}
 
         url = "https://api.xero.com/connections"
         rest = requests.get(url, headers=headers)
@@ -166,11 +163,7 @@ class CustomAuthenticator(NoAuth):
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
-        data = {
-            "refresh_token": self._refresh_token,
-            "grant_type": "refresh_token",
-            "client_id": self._client_id
-        }
+        data = {"refresh_token": self._refresh_token, "grant_type": "refresh_token", "client_id": self._client_id}
         try:
             response = requests.post(url, headers=headers, data=data)
             response.raise_for_status()
@@ -182,15 +175,9 @@ class CustomAuthenticator(NoAuth):
         try:
             encoded_credentials = base64.b64encode(f"{self._client_id}:{self._client_secret}".encode()).decode()
             cred = f"Basic {encoded_credentials}"
-            headers = {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Authorization": cred
-            }
+            headers = {"Content-Type": "application/x-www-form-urlencoded", "Authorization": cred}
 
-            data = {
-                "grant_type": "client_credentials",
-                "scope": self._scopes
-            }
+            data = {"grant_type": "client_credentials", "scope": self._scopes}
 
             url = "https://identity.xero.com/connect/token"
             rest = requests.post(url, headers=headers, data=data)
