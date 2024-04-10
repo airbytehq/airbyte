@@ -42,43 +42,40 @@ class JwtAuthenticator(DeclarativeAuthenticator):
         self._jti = InterpolatedString.create(self.jti, parameters=parameters)
 
     def _get_algorithm(self) -> str:
-        # return self._algorithm
-        return "ES256"
+        return f"{self._algorithm.eval(self.config)}"
 
     def _get_jwt_headers(self) -> Mapping[str, Any]:
-        return {
-            "kid": "H65WG9K573",
-            "alg": "ES256",
-            "typ": "JWT"
-        }
+        headers = {}
+        if self._kid:
+            headers["kid"] = f"{self._kid.eval(self.config)}"
+        if self._alg:
+            headers["alg"] = self._get_algorithm()
+        if self._typ:
+            headers["typ"] = f"{self._typ.eval(self.config)}"
+        return headers
 
     def _get_jwt_payload(self) -> Mapping[str, Any]:
         now = int(datetime.now().timestamp())
         exp = now + 1200
         payload = {}
         if self._iss:
-            payload["iss"] = "5e47079b-d162-4211-a21b-790fd74674cc"
+            payload["iss"] = f"{self._iss.eval(self.config)}"
         if self._sub:
-            payload["sub"] = str(self._sub)
+            payload["sub"] = f"{self._sub.eval(self.config)}"
         if self._aud:
-            payload["aud"] = "appstoreconnect-v1"
+            payload["aud"] = f"{self._aud.eval(self.config)}"
         if self._iat:
-            payload["iat"] = str(self._iat)
+            payload["iat"] = now
         if self._exp:
-            payload["exp"] = str(self._exp)
+            payload["exp"] = exp
         if self._nbf:
-            payload["nbf"] = str(self._nbf)
+            payload["nbf"] = self._nbf.eval(self.config)
         if self._jti:
-            payload["jti"] = str(self._jti)
-        return {
-            "iss": "5e47079b-d162-4211-a21b-790fd74674cc",
-            "aud": "appstoreconnect-v1",
-            "iat": now,
-            "exp": exp,
-        }
+            payload["jti"] = f"{self._jti.eval(self.config)}"
+        return payload
 
     def _get_secret_key(self) -> str:
-        return "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgVpC5M3YzVOusVW5c\n5G8KuORJkrauiS4ipfzskWrgxiygCgYIKoZIzj0DAQehRANCAASpA9ygPhQR3a/K\nLFPgPbFrY3VPM8RHCQGc1PMiOYm/Ebr/60MsYjAVXPOZGIpG4xbvIRdRycSLpzEO\nyPnkI1rh\n-----END PRIVATE KEY-----\n"
+        return f"{self._secret_key.eval(self.config)}"
 
     def _get_signed_token(self) -> str:
         return jwt.encode(
