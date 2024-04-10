@@ -16,7 +16,6 @@ definitions:
     type: CustomAuthenticator
     class_name: source_okta.custom_authenticators.CustomBearerAuthenticator
 
-
   selective_authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
@@ -70,15 +69,15 @@ definitions:
           $ref: "#/definitions/selective_authenticator"
         error_handler:
           $ref: "#/definitions/error_handler"
-        request_body_json: { }
+        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ ]
+          field_path: []
       paginator:
         $ref: "#/definitions/paginator"
-      partition_router: [ ]
+      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: lastUpdated
@@ -98,51 +97,51 @@ definitions:
           _links:
             type:
               - object
-              - 'null'
+              - "null"
           created:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           lastMembershipUpdated:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           lastUpdated:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           objectClass:
             items:
               type:
                 - string
-                - 'null'
+                - "null"
             type:
               - array
-              - 'null'
+              - "null"
           profile:
             properties:
               description:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               name:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           type:
             type:
               - string
-              - 'null'
+              - "null"
 
   users_stream:
     $parameters:
@@ -167,15 +166,15 @@ definitions:
           $ref: "#/definitions/selective_authenticator"
         error_handler:
           $ref: "#/definitions/error_handler"
-        request_body_json: { }
+        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ ]
+          field_path: []
       paginator:
         $ref: "#/definitions/paginator"
-      partition_router: [ ]
+      partition_router: []
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: lastUpdated
@@ -195,27 +194,27 @@ definitions:
           _links:
             type:
               - object
-              - 'null'
+              - "null"
           activated:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           created:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           credentials:
             type:
               - object
-              - 'null'
+              - "null"
             additionalProperties: true
             properties:
               password:
                 type:
                   - object
-                  - 'null'
+                  - "null"
                 additionalProperties: true
                 properties:
                   hash:
@@ -224,236 +223,236 @@ definitions:
                       algorithm:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       salt:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       saltOrder:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       value:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       workFactor:
                         type:
                           - integer
-                          - 'null'
+                          - "null"
                     type:
                       - object
-                      - 'null'
+                      - "null"
                   hook:
                     additionalProperties: true
                     properties:
                       type:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                     type:
                       - object
-                      - 'null'
+                      - "null"
                   value:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               provider:
                 additionalProperties: true
                 properties:
                   name:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   type:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                 type:
                   - object
-                  - 'null'
+                  - "null"
               recovery_question:
                 additionalProperties: true
                 properties:
                   answer:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   question:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                 type:
                   - object
-                  - 'null'
+                  - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           lastLogin:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           lastUpdated:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           passwordChanged:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           profile:
             additionalProperties: true
             properties:
               city:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               costCenter:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               countryCode:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               department:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               displayName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               division:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               email:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               employeeNumber:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               firstName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               honorificPrefix:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               honorificSuffix:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               lastName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               locale:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               login:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               manager:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               managerId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               middleName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               mobilePhone:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               nickName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               organization:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               postalAddress:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               preferredLanguage:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               primaryPhone:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               profileUrl:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               secondEmail:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               state:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               streetAddress:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               timezone:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               title:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               userType:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               zipCode:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           status:
             type:
               - string
-              - 'null'
+              - "null"
           statusChanged:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           type:
             additionalProperties: true
             properties:
               id:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
         additionalProperties: true
 
   custom_roles_stream:
@@ -468,12 +467,12 @@ definitions:
         url_base: https://{{ config['domain'] }}.okta.com
         path: /api/v1/iam/roles
         http_method: GET
-        request_parameters: { }
+        request_parameters: {}
         authenticator:
           $ref: "#/definitions/selective_authenticator"
         error_handler:
           $ref: "#/definitions/error_handler"
-        request_body_json: { }
+        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
@@ -482,7 +481,7 @@ definitions:
             - roles
       paginator:
         $ref: "#/definitions/paginator"
-      partition_router: [ ]
+      partition_router: []
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -492,56 +491,56 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           label:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           lastUpdated:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           _links:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               assignee:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   self:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       href:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   permissions:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       href:
                         type:
-                          - 'null'
+                          - "null"
                           - string
         additionalProperties: true
 
@@ -600,268 +599,267 @@ streams:
         properties:
           _links:
             type:
-              - 'null'
+              - "null"
               - object
           activated:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           created:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           credentials:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               password:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   hash:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       algorithm:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       salt:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       saltOrder:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       value:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       workFactor:
                         type:
-                          - 'null'
+                          - "null"
                           - integer
                   hook:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     properties:
                       type:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - string
               provider:
                 properties:
                   name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   type:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type:
-                  - 'null'
+                  - "null"
                   - object
               recovery_question:
                 properties:
                   answer:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   question:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type:
-                  - 'null'
+                  - "null"
                   - object
           groupId:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           lastLogin:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           lastUpdated:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           passwordChanged:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           profile:
             additionalProperties: true
             properties:
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               costCenter:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               countryCode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               department:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               displayName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               division:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               email:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               employeeNumber:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               firstName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               honorificPrefix:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               honorificSuffix:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               lastName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               locale:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               login:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               manager:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               managerId:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               middleName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               mobilePhone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               nickName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               organization:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               postalAddress:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               preferredLanguage:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               primaryPhone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               profileUrl:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               secondEmail:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               streetAddress:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               timezone:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               title:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               userType:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               zipCode:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
           status:
             type:
-              - 'null'
+              - "null"
               - string
           statusChanged:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           type:
             additionalProperties: true
             properties:
               id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type:
-              - 'null'
+              - "null"
               - object
         additionalProperties: true
-
 
   - type: DeclarativeStream
     name: group_role_assignments
@@ -908,100 +906,100 @@ streams:
         properties:
           groupId:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           label:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           lastUpdated:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           assignmentType:
             type:
-              - 'null'
+              - "null"
               - string
           resource-set:
             type:
               - string
-              - 'null'
+              - "null"
           role:
             type:
-              - 'null'
+              - "null"
               - string
           _links:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               assignee:
                 type:
                   - object
-                  - 'null'
+                  - "null"
                 properties:
                   assignee:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   role:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   resource-set:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   permissions:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   member:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
 
   - type: DeclarativeStream
@@ -1075,182 +1073,182 @@ streams:
               alternateId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               detailEntry:
                 type:
                   - object
-                  - 'null'
+                  - "null"
               displayName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               id:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           authenticationContext:
             properties:
               authenticationProvider:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               authenticationStep:
                 type:
                   - integer
               credentialProvider:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               credentialType:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               externalSessionId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               interface:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               issuer:
                 properties:
                   id:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   type:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                 type:
                   - object
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           client:
             properties:
               device:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               geographicalContext:
                 properties:
                   city:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   country:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   geolocation:
                     properties:
                       lat:
                         type:
                           - number
-                          - 'null'
+                          - "null"
                       lon:
                         type:
                           - number
-                          - 'null'
+                          - "null"
                     type:
                       - object
-                      - 'null'
+                      - "null"
                   postalCode:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   state:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                 type:
                   - object
-                  - 'null'
+                  - "null"
               id:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ipAddress:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               userAgent:
                 properties:
                   browser:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   os:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   rawUserAgent:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                 type:
                   - object
-                  - 'null'
+                  - "null"
               zone:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           debugContext:
             properties:
               debugData:
                 type:
                   - object
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           device:
             type:
               - string
-              - 'null'
+              - "null"
           displayMessage:
             type:
               - string
-              - 'null'
+              - "null"
           eventType:
             type:
               - string
-              - 'null'
+              - "null"
           legacyEventType:
             type:
               - string
-              - 'null'
+              - "null"
           outcome:
             properties:
               reason:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               result:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           published:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           request:
             properties:
               ipChain:
@@ -1261,139 +1259,139 @@ streams:
                         city:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         country:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         geolocation:
                           properties:
                             lat:
                               type:
                                 - number
-                                - 'null'
+                                - "null"
                             lon:
                               type:
                                 - number
-                                - 'null'
+                                - "null"
                           type:
                             - object
-                            - 'null'
+                            - "null"
                         postalCode:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         state:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                       type:
                         - object
-                        - 'null'
+                        - "null"
                     ip:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     source:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     version:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                   type:
                     - object
-                    - 'null'
+                    - "null"
                 type:
                   - array
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           securityContext:
             properties:
               asNumber:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               asOrg:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               domain:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               isProxy:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               isp:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           severity:
             type:
               - string
-              - 'null'
+              - "null"
           target:
             items:
               properties:
                 alternateId:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 detailEntry:
                   type:
                     - object
-                    - 'null'
+                    - "null"
                 displayName:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 id:
                   type:
                     - string
-                    - 'null'
+                    - "null"
                 type:
                   type:
                     - string
-                    - 'null'
+                    - "null"
               type:
                 - object
-                - 'null'
+                - "null"
             type:
               - array
-              - 'null'
+              - "null"
           transaction:
             properties:
               detail:
                 type:
                   - object
-                  - 'null'
+                  - "null"
               id:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           uuid:
             type:
               - string
-              - 'null'
+              - "null"
           version:
             type:
               - string
-              - 'null'
+              - "null"
 
   - type: DeclarativeStream
     name: users
@@ -1457,65 +1455,67 @@ streams:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           lastUpdated:
             format: date-time
             type:
               - string
-              - 'null'
+              - "null"
           _links:
             properties:
               assignee:
                 properties:
                   self:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       href:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                     description: gets this Resource Set
                   resources:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       href:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                     description: gets a paginable list of resources included in this set
                   bindings:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       href:
                         type:
-                          - 'null'
+                          - "null"
                           - string
-                    description: gets a paginable list of admin Role Bindings assigned to
+                    description:
+                      gets a paginable list of admin Role Bindings assigned to
                       this set
                   next:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       href:
                         type:
-                          - 'null'
+                          - "null"
                           - string
-                    description: the link for the next page, 'after' is the query string,
+                    description:
+                      the link for the next page, 'after' is the query string,
                       the cursor field is id
             type:
               - object
-              - 'null'
+              - "null"
 
   - type: DeclarativeStream
     name: custom_roles
@@ -1565,100 +1565,100 @@ streams:
         properties:
           userId:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           label:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           created:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           lastUpdated:
             format: date-time
             type:
-              - 'null'
+              - "null"
               - string
           assignmentType:
             type:
-              - 'null'
+              - "null"
               - string
           resource-set:
             type:
               - string
-              - 'null'
+              - "null"
           role:
             type:
               - string
-              - 'null'
+              - "null"
           _links:
             type:
               - object
-              - 'null'
+              - "null"
             properties:
               assignee:
                 type:
                   - object
-                  - 'null'
+                  - "null"
                 properties:
                   assignee:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   role:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   resource-set:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   permissions:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   member:
                     type:
                       - object
-                      - 'null'
+                      - "null"
                     properties:
                       herf:
                         type:
-                          - 'null'
+                          - "null"
                           - string
 
   - type: DeclarativeStream
@@ -1703,7 +1703,8 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/draft-07/schema#
-        description: Gets the list of permissions included in a Custom Role identified by
+        description:
+          Gets the list of permissions included in a Custom Role identified by
           its id
         properties:
           label:
@@ -1744,7 +1745,7 @@ streams:
             description: Type of permissions
           conditions:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               included:
@@ -1767,27 +1768,27 @@ streams:
                 properties:
                   self:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       href:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   role:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       href:
                         type:
-                          - 'null'
+                          - "null"
                           - string
             type:
               - object
-              - 'null'
+              - "null"
 
 spec:
   connection_specification:
