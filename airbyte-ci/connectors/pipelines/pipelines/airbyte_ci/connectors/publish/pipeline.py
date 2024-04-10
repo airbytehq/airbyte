@@ -84,7 +84,7 @@ class ConnectorDependenciesMetadata(BaseModel):
     connector_repository: str
     connector_version: str
     connector_definition_id: str
-    dependencies: Dict[str, str]
+    dependencies: List[Dict[str, str]]
     generation_time: datetime = datetime.utcnow()
 
 
@@ -100,7 +100,9 @@ class UploadDependenciesToMetadataService(Step):
         ], "This step can only run for Python connectors."
         built_container = built_containers_per_platform[LOCAL_BUILD_PLATFORM]
         pip_freeze_output = await built_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
-        dependencies = {line.split("==")[0]: line.split("==")[1] for line in pip_freeze_output.splitlines() if "==" in line}
+        dependencies = [
+            {"package_name": line.split("==")[0], "version": line.split("==")[1]} for line in pip_freeze_output.splitlines() if "==" in line
+        ]
         connector_technical_name = self.context.connector.technical_name
         connector_version = self.context.metadata["dockerImageTag"]
         dependencies_metadata = ConnectorDependenciesMetadata(
@@ -365,11 +367,9 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if build_connector_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            # Temporarily disabling it until we find the correct schema that the data team can ingest
-
-            # if context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
-            #     upload_dependencies_step = await UploadDependenciesToMetadataService(context).run(build_connector_results.output)
-            #     results.append(upload_dependencies_step)
+            if context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+                upload_dependencies_step = await UploadDependenciesToMetadataService(context).run(build_connector_results.output)
+                results.append(upload_dependencies_step)
 
             built_connector_platform_variants = list(build_connector_results.output.values())
             push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)
