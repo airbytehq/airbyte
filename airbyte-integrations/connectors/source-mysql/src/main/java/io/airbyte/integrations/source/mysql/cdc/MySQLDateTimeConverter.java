@@ -54,40 +54,57 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
   // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-temporal-types
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final var fieldType = field.typeName();
-
     registration.register(SchemaBuilder.string().optional(), x -> {
       if (x == null) {
+        LOGGER.info("In fieldType : {} ", fieldType.toUpperCase(Locale.ROOT));
+        LOGGER.info("Field value is null");
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
 
       switch (fieldType.toUpperCase(Locale.ROOT)) {
         case "DATETIME":
+          printDebugLogs(fieldType.toUpperCase(Locale.ROOT), x);
           if (x instanceof final Long l) {
+            LOGGER.info("1");
             if (getTimePrecision(field) <= 3) {
+              LOGGER.info("2");
               return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMillis(l));
             }
             if (getTimePrecision(field) <= 6) {
+              LOGGER.info("3");
               return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMicros(l));
             }
           }
+          LOGGER.info("4");
           return DateTimeConverter.convertToTimestamp(x);
         case "DATE":
+          printDebugLogs(fieldType.toUpperCase(Locale.ROOT), x);
           if (x instanceof final Integer i) {
             return DateTimeConverter.convertToDate(LocalDate.ofEpochDay(i));
           }
           return DateTimeConverter.convertToDate(x);
         case "TIME":
+          printDebugLogs(fieldType.toUpperCase(Locale.ROOT), x);
           if (x instanceof Long) {
             long l = Math.multiplyExact((Long) x, TimeUnit.MICROSECONDS.toNanos(1));
             return DateTimeConverter.convertToTime(LocalTime.ofNanoOfDay(l));
           }
           return DateTimeConverter.convertToTime(x);
         case "TIMESTAMP":
+          printDebugLogs(fieldType.toUpperCase(Locale.ROOT), x);
           return DateTimeConverter.convertToTimestampWithTimezone(x);
+        case "INT":
+          printDebugLogs(fieldType.toUpperCase(Locale.ROOT), x);
+          LOGGER.info(x.getClass().getName());
+          return x.toString();
         default:
           throw new IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
       }
     });
   }
 
+  private void printDebugLogs(String fieldType, Object x) {
+    LOGGER.info("In fieldType : {} ", fieldType);
+    LOGGER.info("Value to convert : " + x.toString());
+  }
 }
