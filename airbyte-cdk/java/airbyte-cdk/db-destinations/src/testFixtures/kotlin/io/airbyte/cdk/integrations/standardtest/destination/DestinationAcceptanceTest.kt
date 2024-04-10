@@ -879,7 +879,7 @@ abstract class DestinationAcceptanceTest {
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         val messages =
-            MoreResources.readResource(messagesFilename).lines().map {
+            MoreResources.readResource(messagesFilename).trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
 
@@ -1212,6 +1212,7 @@ abstract class DestinationAcceptanceTest {
                         getProtocolVersion()
                     )
                 )
+                .trim()
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
         val messagesWithNewNamespace = getRecordMessagesWithNewNamespace(messages, namespace)
@@ -1260,12 +1261,12 @@ abstract class DestinationAcceptanceTest {
         val messageFile: String =
             DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())
         val ns1Messages =
-            MoreResources.readResource(messageFile).lines().map {
+            MoreResources.readResource(messageFile).trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
         val ns1MessagesAtNamespace1 = getRecordMessagesWithNewNamespace(ns1Messages, namespace1)
         val ns2Messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
-            MoreResources.readResource(messageFile).lines().map {
+            MoreResources.readResource(messageFile).trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
         val ns2MessagesAtNamespace2 = getRecordMessagesWithNewNamespace(ns2Messages, namespace2)
