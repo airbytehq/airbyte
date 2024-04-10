@@ -7,6 +7,7 @@ from typing import Dict, Iterable, List, Optional, Set
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -17,7 +18,9 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
+from airbyte_protocol.models import StreamDescriptor
 
 
 class ConcurrentReadProcessor:
@@ -56,6 +59,7 @@ class ConcurrentReadProcessor:
         self._message_repository = message_repository
         self._partition_reader = partition_reader
         self._streams_done: Set[str] = set()
+        self._exceptions_per_stream_name: dict[str, List[Exception]] = {}
 
     def on_partition_generation_completed(self, sentinel: PartitionGenerationCompletedSentinel) -> Iterable[AirbyteMessage]:
         """
@@ -126,14 +130,16 @@ class ConcurrentReadProcessor:
         yield message
         yield from self._message_repository.consume_queue()
 
-    def on_exception(self, exception: Exception) -> Iterable[AirbyteMessage]:
+    def on_exception(self, exception: StreamThreadException) -> Iterable[AirbyteMessage]:
         """
         This method is called when an exception is raised.
         1. Stop all running streams
         2. Raise the exception
         """
-        yield from self._stop_streams()
-        raise exception
+        self._exceptions_per_stream_name.setdefault(exception.stream_name, []).append(exception.exception)
+        yield AirbyteTracedException.from_exception(exception).as_airbyte_message(
+            stream_descriptor=StreamDescriptor(name=exception.stream_name)
+        )
 
     def start_next_partition_generator(self) -> Optional[AirbyteMessage]:
         """
@@ -177,13 +183,7 @@ class ConcurrentReadProcessor:
         yield from self._message_repository.consume_queue()
         self._logger.info(f"Finished syncing {stream.name}")
         self._streams_done.add(stream_name)
-        yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.COMPLETE)
-
-    def _stop_streams(self) -> Iterable[AirbyteMessage]:
-        self._thread_pool_manager.shutdown()
-        for stream_name in self._streams_to_running_partitions.keys():
-            stream = self._stream_name_to_instance[stream_name]
-            if not self._is_stream_done(stream_name):
-                self._logger.info(f"Marking stream {stream.name} as STOPPED")
-                self._logger.info(f"Finished syncing {stream.name}")
-                yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.INCOMPLETE)
+        stream_status = (
+            AirbyteStreamStatus.INCOMPLETE if self._exceptions_per_stream_name.get(stream_name, []) else AirbyteStreamStatus.COMPLETE
+        )
+        yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), stream_status)

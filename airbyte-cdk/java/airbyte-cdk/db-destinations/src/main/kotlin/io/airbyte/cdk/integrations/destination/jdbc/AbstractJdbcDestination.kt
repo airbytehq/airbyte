@@ -56,6 +56,16 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     protected val configSchemaKey: String
         get() = "schema"
 
+    /**
+     * If the destination should always disable type dedupe, override this method to return true. We
+     * only type and dedupe if we create final tables.
+     *
+     * @return whether the destination should always disable type dedupe
+     */
+    protected open fun shouldAlwaysDisableTypeDedupe(): Boolean {
+        return false
+    }
+
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val dataSource = getDataSource(config)
 
@@ -67,7 +77,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 val v2RawSchema =
                     namingResolver.getIdentifier(
                         getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
-                            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
+                            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
                     )
                 attemptTableOperations(v2RawSchema, database, namingResolver, sqlOperations, false)
                 destinationSpecificTableOperations(database)
@@ -87,7 +97,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     """
     Could not connect with provided configuration. 
     ${e.message}
-    """.trimIndent()
+    """.trimIndent(),
                 )
         } finally {
             try {
@@ -123,7 +133,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                         jdbcConfig[JdbcUtils.PASSWORD_KEY].asText()
                     else null,
                     driverClassName,
-                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText()
+                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
                 )
                 .withConnectionProperties(connectionProperties)
                 .withConnectionTimeout(getConnectionTimeout(connectionProperties))
@@ -155,8 +165,10 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         for (key in defaultParameters.keys) {
             require(
                 !(customParameters.containsKey(key) &&
-                    customParameters[key] != defaultParameters[key])
-            ) { "Cannot overwrite default JDBC parameter $key" }
+                    customParameters[key] != defaultParameters[key]),
+            ) {
+                "Cannot overwrite default JDBC parameter $key"
+            }
         }
     }
 
@@ -191,7 +203,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
      * @param config
      * @return
      */
-    protected fun getDatabaseName(config: JsonNode): String {
+    protected open fun getDatabaseName(config: JsonNode): String {
         return config[JdbcUtils.DATABASE_KEY].asText()
     }
 
@@ -227,7 +239,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 config,
                 catalog,
                 null,
-                NoopTyperDeduper()
+                NoopTyperDeduper(),
             )
         }
 
@@ -238,8 +250,16 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             catalog,
             outputRecordCollector,
             database,
-            defaultNamespace
+            defaultNamespace,
         )
+    }
+
+    private fun isTypeDedupeDisabled(config: JsonNode): Boolean {
+        return shouldAlwaysDisableTypeDedupe() ||
+            (config.has(DISABLE_TYPE_DEDUPE) &&
+                config[DISABLE_TYPE_DEDUPE].asBoolean(
+                    false,
+                ))
     }
 
     private fun getV2MessageConsumer(
@@ -256,39 +276,12 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 .map { override: String -> CatalogParser(sqlGenerator, override) }
                 .orElse(CatalogParser(sqlGenerator))
                 .parseCatalog(catalog!!)
-        val databaseName = getDatabaseName(config)
-        val migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
-        val v2TableMigrator = NoopV2TableMigrator()
-        val destinationHandler: DestinationHandler<DestinationState> =
-            getDestinationHandler(
-                databaseName,
+        val typerDeduper: TyperDeduper =
+            buildTyperDeduper(
+                config,
                 database,
-                rawNamespaceOverride.orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
+                parsedCatalog,
             )
-        val disableTypeDedupe =
-            config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
-        val typerDeduper: TyperDeduper
-        val migrations = getMigrations(database, databaseName, sqlGenerator, destinationHandler)
-        typerDeduper =
-            if (disableTypeDedupe) {
-                NoOpTyperDeduperWithV1V2Migrations(
-                    sqlGenerator,
-                    destinationHandler,
-                    parsedCatalog,
-                    migrator,
-                    v2TableMigrator,
-                    migrations
-                )
-            } else {
-                DefaultTyperDeduper(
-                    sqlGenerator,
-                    destinationHandler,
-                    parsedCatalog,
-                    migrator,
-                    v2TableMigrator,
-                    migrations
-                )
-            }
 
         return JdbcBufferedConsumerFactory.createAsync(
             outputRecordCollector,
@@ -299,8 +292,55 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             catalog,
             defaultNamespace,
             typerDeduper,
-            getDataTransformer(parsedCatalog, defaultNamespace)
+            getDataTransformer(parsedCatalog, defaultNamespace),
         )
+    }
+
+    private fun buildTyperDeduper(
+        config: JsonNode,
+        database: JdbcDatabase,
+        parsedCatalog: ParsedCatalog,
+    ): TyperDeduper {
+        val databaseName = getDatabaseName(config)
+        val v2TableMigrator = NoopV2TableMigrator()
+        val migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
+        val destinationHandler: DestinationHandler<DestinationState> =
+            getDestinationHandler(
+                databaseName,
+                database,
+                getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
+                    .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE),
+            )
+        val disableTypeDedupe = isTypeDedupeDisabled(config)
+        val migrations = getMigrations(database, databaseName, sqlGenerator, destinationHandler)
+
+        val typerDeduper: TyperDeduper
+        if (disableTypeDedupe) {
+            typerDeduper =
+                if (migrations.isEmpty()) {
+                    NoopTyperDeduper()
+                } else {
+                    NoOpTyperDeduperWithV1V2Migrations(
+                        sqlGenerator,
+                        destinationHandler,
+                        parsedCatalog,
+                        migrator,
+                        v2TableMigrator,
+                        migrations,
+                    )
+                }
+        } else {
+            typerDeduper =
+                DefaultTyperDeduper(
+                    sqlGenerator,
+                    destinationHandler,
+                    parsedCatalog,
+                    migrator,
+                    v2TableMigrator,
+                    migrations,
+                )
+        }
+        return typerDeduper
     }
 
     companion object {
@@ -361,7 +401,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     { conn: Connection -> conn.metaData.catalogs },
                     { queryContext: ResultSet? ->
                         JdbcUtils.defaultSourceOperations.rowToJson(queryContext!!)
-                    }
+                    },
                 )
 
                 // verify we have write permissions on the target schema by creating a table with a
@@ -370,7 +410,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 val outputTableName =
                     namingResolver.getIdentifier(
                         "_airbyte_connection_test_" +
-                            UUID.randomUUID().toString().replace("-".toRegex(), "")
+                            UUID.randomUUID().toString().replace("-".toRegex(), ""),
                     )
                 sqlOps.createSchemaIfNotExists(database, outputSchema)
                 sqlOps.createTableIfNotExists(database, outputSchema, outputTableName)
@@ -381,7 +421,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                             database,
                             java.util.List.of(dummyRecord),
                             outputSchema,
-                            outputTableName
+                            outputTableName,
                         )
                     }
                 } finally {
@@ -412,7 +452,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     .withRecord(
                         PartialAirbyteRecordMessage()
                             .withStream("stream1")
-                            .withEmittedAt(1602637589000L)
+                            .withEmittedAt(1602637589000L),
                     )
                     .withSerialized(dummyDataToInsert.toString())
             }
