@@ -4,11 +4,11 @@ type: DeclarativeSource
 definitions:
   oauth_authenticator:
     type: OAuthAuthenticator
-    client_id: '{{ config[''credentials''][''client_id''] }}'
-    client_secret: '{{ config[''credentials''][''client_secret''] }}'
-    refresh_token: '{{ config[''credentials''][''refresh_token''] }}'
-    refresh_request_body: { }
-    token_refresh_endpoint: '{{ ''https://sandbox-lever.auth0.com/oauth/token'' if config[ ''environment'' ] == ''Sandbox'' else ''https://auth.lever.co/oauth/token'' }}'
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    refresh_request_body: {}
+    token_refresh_endpoint: "{{ 'https://sandbox-lever.auth0.com/oauth/token' if config[ 'environment' ] == 'Sandbox' else 'https://auth.lever.co/oauth/token' }}"
     grant_type: refresh_token
 
   basic_authenticator:
@@ -18,7 +18,7 @@ definitions:
 
   selective_authenticator:
     type: SelectiveAuthenticator
-    authenticator_selection_path: [ "credentials", "auth_type" ]
+    authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
       Client: "#/definitions/oauth_authenticator"
       Api_Key: "#/definitions/basic_authenticator"
@@ -36,8 +36,8 @@ definitions:
       {{ "https://api.sandbox.lever.co/v1" if config['environment'] ==
       "Sandbox" else "https://api.lever.co/v1" }}
     http_method: GET
-    request_headers: { }
-    request_body_json: { }
+    request_headers: {}
+    request_body_json: {}
     authenticator:
       $ref: "#/definitions/selective_authenticator"
 
@@ -54,8 +54,8 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       page_size: 50
-      cursor_value: '{{ response[''next''] }}'
-      stop_condition: '{{ response[''hasNext''] is false }}'
+      cursor_value: "{{ response['next'] }}"
+      stop_condition: "{{ response['hasNext'] is false }}"
 
   opportunities_stream:
     type: DeclarativeStream
@@ -72,7 +72,7 @@ definitions:
         path: /opportunities
       paginator:
         $ref: "#/definitions/paginator"
-      partition_router: [ ]
+      partition_router: []
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -81,142 +81,142 @@ definitions:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           contact:
             type:
-              - 'null'
+              - "null"
               - string
           headline:
             type:
-              - 'null'
+              - "null"
               - string
           stage:
             type:
-              - 'null'
+              - "null"
               - string
           confidentiality:
             type:
-              - 'null'
+              - "null"
               - string
           location:
             type:
-              - 'null'
+              - "null"
               - string
           phones:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
           emails:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           links:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           archived:
             type:
-              - 'null'
+              - "null"
               - object
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           sources:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           stageChanges:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
           origin:
             type:
-              - 'null'
+              - "null"
               - string
           sourcedBy:
             type:
-              - 'null'
+              - "null"
               - string
           owner:
             type:
-              - 'null'
+              - "null"
               - string
           followers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           applications:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - integer
           updatedAt:
             type:
-              - 'null'
+              - "null"
               - integer
           lastInteractionAt:
             type:
-              - 'null'
+              - "null"
               - integer
           lastAdvancedAt:
             type:
-              - 'null'
+              - "null"
               - integer
           snoozedUntil:
             type:
-              - 'null'
+              - "null"
               - integer
           urls:
             type:
-              - 'null'
+              - "null"
               - object
           resume:
             type:
-              - 'null'
+              - "null"
               - string
           dataProtection:
             type:
-              - 'null'
+              - "null"
               - object
           isAnonymized:
             type:
-              - 'null'
+              - "null"
               - boolean
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
       cursor_datetime_formats:
-        - '%ms'
-      datetime_format: '%ms'
+        - "%ms"
+      datetime_format: "%ms"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: updated_at_start
@@ -227,8 +227,8 @@ definitions:
         field_name: updated_at_end
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P30D
       cursor_granularity: PT1S
 
@@ -256,10 +256,10 @@ streams:
         path: /users
         http_method: GET
         request_parameters:
-          includeDeactivated: '{{ True }}'
+          includeDeactivated: "{{ True }}"
       paginator:
         $ref: "#/definitions/paginator"
-      partition_router: [ ]
+      partition_router: []
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -268,53 +268,53 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           username:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           accessRole:
             type:
-              - 'null'
+              - "null"
               - string
           photo:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - integer
           deactivatedAt:
             type:
-              - 'null'
+              - "null"
               - integer
           externalDirectoryId:
             type:
-              - 'null'
+              - "null"
               - string
           linkedContactIds:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           jobTitle:
             type:
-              - 'null'
+              - "null"
               - string
           managerId:
             type:
-              - 'null'
+              - "null"
               - string
 
   - type: DeclarativeStream
@@ -331,7 +331,7 @@ streams:
         $ref: "#/definitions/requester"
         path: /opportunities/{{ stream_partition['parent_id'] }}/applications
         http_method: GET
-        request_parameters: { }
+        request_parameters: {}
       paginator:
         $ref: "#/definitions/paginator"
       partition_router:
@@ -351,79 +351,79 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           candidateId:
             type:
-              - 'null'
+              - "null"
               - string
           opportunityId:
             type:
-              - 'null'
+              - "null"
               - string
           posting:
             type:
-              - 'null'
+              - "null"
               - string
           postingHiringManager:
             type:
-              - 'null'
+              - "null"
               - string
           postingOwner:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           company:
             type:
-              - 'null'
+              - "null"
               - string
           phone:
             type:
-              - 'null'
+              - "null"
               - object
           email:
             type:
-              - 'null'
+              - "null"
               - string
           links:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           comments:
             type:
-              - 'null'
+              - "null"
               - string
           user:
             type:
-              - 'null'
+              - "null"
               - string
           customQuestions:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
           createdAt:
             type:
-              - 'null'
+              - "null"
               - integer
           archived:
             type:
-              - 'null'
+              - "null"
               - object
           requisitionForHire:
             type:
-              - 'null'
+              - "null"
               - object
 
   - type: DeclarativeStream
@@ -440,7 +440,7 @@ streams:
         $ref: "#/definitions/requester"
         path: /opportunities/{{ stream_partition['parent_id'] }}/interviews
         http_method: GET
-        request_parameters: { }
+        request_parameters: {}
       paginator:
         $ref: "#/definitions/paginator"
       partition_router:
@@ -460,81 +460,81 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           panel:
             type:
-              - 'null'
+              - "null"
               - string
           subject:
             type:
-              - 'null'
+              - "null"
               - string
           note:
             type:
-              - 'null'
+              - "null"
               - string
           interviewers:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
           timezone:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - integer
           date:
             type:
-              - 'null'
+              - "null"
               - integer
           duration:
             type:
-              - 'null'
+              - "null"
               - integer
           location:
             type:
-              - 'null'
+              - "null"
               - string
           feedbackTemplate:
             type:
-              - 'null'
+              - "null"
               - string
           feedbackForms:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           feedbackReminder:
             type:
-              - 'null'
+              - "null"
               - string
           user:
             type:
-              - 'null'
+              - "null"
               - string
           stage:
             type:
-              - 'null'
+              - "null"
               - string
           canceledAt:
             type:
-              - 'null'
+              - "null"
               - integer
           postings:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           gcalEventUrl:
             type:
-              - 'null'
+              - "null"
               - string
 
   - type: DeclarativeStream
@@ -551,7 +551,7 @@ streams:
         $ref: "#/definitions/requester"
         path: /opportunities/{{ stream_partition['parent_id'] }}/notes
         http_method: GET
-        request_parameters: { }
+        request_parameters: {}
       paginator:
         $ref: "#/definitions/paginator"
       partition_router:
@@ -571,37 +571,37 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           text:
             type:
-              - 'null'
+              - "null"
               - string
           fields:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
           user:
             type:
-              - 'null'
+              - "null"
               - string
           secret:
             type:
-              - 'null'
+              - "null"
               - boolean
           completedAt:
             type:
-              - 'null'
+              - "null"
               - integer
           deletedAt:
             type:
-              - 'null'
+              - "null"
               - integer
           createdAt:
             type:
-              - 'null'
+              - "null"
               - integer
 
   - type: DeclarativeStream
@@ -618,7 +618,7 @@ streams:
         $ref: "#/definitions/requester"
         path: /opportunities/{{ stream_partition['parent_id'] }}/offers
         http_method: GET
-        request_parameters: { }
+        request_parameters: {}
       paginator:
         $ref: "#/definitions/paginator"
       partition_router:
@@ -638,53 +638,53 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           posting:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
           creator:
             type:
-              - 'null'
+              - "null"
               - string
           fields:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
           signatures:
             type:
-              - 'null'
+              - "null"
               - object
           approved:
             type:
-              - 'null'
+              - "null"
               - string
           approvedAt:
             type:
-              - 'null'
+              - "null"
               - integer
           sentAt:
             type:
-              - 'null'
+              - "null"
               - integer
           sentDocument:
             type:
-              - 'null'
+              - "null"
               - object
           signedDocument:
             type:
-              - 'null'
+              - "null"
               - object
 
   - type: DeclarativeStream
@@ -701,7 +701,7 @@ streams:
         $ref: "#/definitions/requester"
         path: /opportunities/{{ stream_partition['parent_id'] }}/referrals
         http_method: GET
-        request_parameters: { }
+        request_parameters: {}
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -715,8 +715,8 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 50
-          cursor_value: '{{ response[''next''] }}'
-          stop_condition: '{{ response[''hasNext''] is false }}'
+          cursor_value: "{{ response['next'] }}"
+          stop_condition: "{{ response['hasNext'] is false }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -734,49 +734,49 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           text:
             type:
-              - 'null'
+              - "null"
               - string
           instructions:
             type:
-              - 'null'
+              - "null"
               - string
           fields:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: object
           baseTemplateId:
             type:
-              - 'null'
+              - "null"
               - string
           user:
             type:
-              - 'null'
+              - "null"
               - string
           referrer:
             type:
-              - 'null'
+              - "null"
               - string
           stage:
             type:
-              - 'null'
+              - "null"
               - string
           createdAt:
             type:
-              - 'null'
+              - "null"
               - integer
           completedAt:
             type:
-              - 'null'
+              - "null"
               - integer
 
 spec:
@@ -798,7 +798,7 @@ spec:
           this date will not be replicated. Note that it will be used only in
           the following incremental streams: comments, commits, and issues.
         examples:
-          - '2021-03-01T00:00:00Z'
+          - "2021-03-01T00:00:00Z"
       environment:
         order: 1
         type: string
@@ -816,44 +816,44 @@ spec:
         description: Choose how to authenticate to Lever Hiring.
         type: object
         oneOf:
-        - type: object
-          title: Authenticate via Lever (OAuth)
-          required:
-            - refresh_token
-          properties:
-            auth_type:
-              type: string
-              const: Client
-              order: 0
-            client_id:
-              title: Client ID
-              type: string
-              description: The Client ID of your Lever Hiring developer application.
-            client_secret:
-              title: Client Secret
-              type: string
-              description: The Client Secret of your Lever Hiring developer application.
-              airbyte_secret: true
-            refresh_token:
-              type: string
-              title: Refresh Token
-              description: The token for obtaining new access token.
-              airbyte_secret: true
-        - type: object
-          title: Authenticate via Lever (Api Key)
-          required:
-            - api_key
-          properties:
-            auth_type:
-              type: string
-              const: ApiKey
-              order: 0
-            api_key:
-              title: Api key
-              type: string
-              description: The Api Key of your Lever Hiring account.
-              airbyte_secret: true
-              order: 1
+          - type: object
+            title: Authenticate via Lever (OAuth)
+            required:
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Client
+                order: 0
+              client_id:
+                title: Client ID
+                type: string
+                description: The Client ID of your Lever Hiring developer application.
+              client_secret:
+                title: Client Secret
+                type: string
+                description: The Client Secret of your Lever Hiring developer application.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: The token for obtaining new access token.
+                airbyte_secret: true
+          - type: object
+            title: Authenticate via Lever (Api Key)
+            required:
+              - api_key
+            properties:
+              auth_type:
+                type: string
+                const: ApiKey
+                order: 0
+              api_key:
+                title: Api key
+                type: string
+                description: The Api Key of your Lever Hiring account.
+                airbyte_secret: true
+                order: 1
   additionalProperties: true
   type: Spec
 metadata:

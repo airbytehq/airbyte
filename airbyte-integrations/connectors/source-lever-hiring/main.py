@@ -6,6 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
+
 from source_lever_hiring import SourceLeverHiring
 
 if __name__ == "__main__":

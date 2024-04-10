@@ -6,7 +6,9 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
+
 from .source import SourceLeverHiring
+
 
 def run():
     source = SourceLeverHiring()
