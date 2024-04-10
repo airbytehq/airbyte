@@ -1,298 +1,343 @@
-version: "0.44.0"
-
-definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["{{ parameters.extractor_path }}"]
-
-  requester:
-    type: HttpRequester
-    url_base: "https://holidayapi.com/v1/"
-    http_method: "GET"
-    authenticator:
-      type: NoAuth
-    request_parameters:
-      key: "{{ config['api_key'] }}"
-
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/retriever"
-
-  holidays_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "holidays"
-      primary_key: "uuid"
-      path: "holidays"
-      extractor_path: "holidays"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/holidays_schema"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          $ref: "#/definitions/requester/request_parameters"
-          country: "{{ config['country'] }}"
-          year: "{{ config['year'] }}"
-
-  countries_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "countries"
-      path: "countries"
-      extractor_path: "countries"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/countries_schema"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          $ref: "#/definitions/requester/request_parameters"
-          country: "{{ config['country'] }}"
-          year: "{{ config['year'] }}"
-
-  languages_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "languages"
-      path: "languages"
-      extractor_path: "languages"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/languages_schema"
-
-  holidays_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: Holidays schema
-    additionalProperties: true
-    type: object
-    properties:
-      name:
-        type:
-          - "null"
-          - string
-      date:
-        type:
-          - "null"
-          - string
-      observed:
-        type:
-          - "null"
-          - string
-      public:
-        type:
-          - "null"
-          - boolean
-      country:
-        type:
-          - "null"
-          - string
-      uuid:
-        type:
-          - "null"
-          - string
-      weekday:
-        type:
-          - "null"
-          - object
-        properties:
-          date:
-            type:
-              - "null"
-              - object
-            properties:
-              name:
-                type:
-                  - "null"
-                  - string
-              numeric:
-                type:
-                  - "null"
-                  - string
-          observed:
-            type:
-              - "null"
-              - object
-            properties:
-              name:
-                type:
-                  - "null"
-                  - string
-              numeric:
-                type:
-                  - "null"
-                  - string
-
-  countries_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: Countries Schema
-    type:
-      - "null"
-      - object
-    properties:
-      code:
-        type:
-          - "null"
-          - string
-      name:
-        type:
-          - "null"
-          - string
-      codes:
-        type:
-          - "null"
-          - object
-        properties:
-          alpha-2:
-            type:
-              - "null"
-              - string
-          alpha-3:
-            type:
-              - "null"
-              - string
-          numeric:
-            type:
-              - "null"
-              - string
-      languages:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - string
-      currencies:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            alpha:
-              type:
-                - "null"
-                - string
-      flag:
-        type:
-          - "null"
-          - string
-      subdivisions:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            code:
-              type:
-                - "null"
-                - string
-            name:
-              type:
-                - "null"
-                - string
-            languages:
-              type:
-                - "null"
-                - array
-              items:
-                type:
-                  - "null"
-                  - string
-      weekend:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            name:
-              type:
-                - "null"
-                - string
-            numeric:
-              type:
-                - "null"
-                - number
-
-  languages_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: Languages schema
-    type:
-      - "null"
-      - object
-    properties:
-      code:
-        type:
-          - "null"
-          - string
-      name:
-        type:
-          - "null"
-          - string
-
-streams:
-  - "#/definitions/holidays_stream"
-  - "#/definitions/countries_stream"
-  - "#/definitions/languages_stream"
-
+version: 0.79.0
+type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - "holidays"
-    - "countries"
-    - "languages"
-
+    - holidays
+    - countries
+    - languages
+streams:
+  - type: DeclarativeStream
+    name: holidays
+    primary_key:
+      - uuid
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $parameters:
+          extractor_path: holidays
+          name: holidays
+          path: holidays
+          primary_key: uuid
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        extractor_path: holidays
+        name: holidays
+        path: holidays
+        primary_key: uuid
+        properties:
+          country:
+            type:
+              - 'null'
+              - string
+          date:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+          observed:
+            type:
+              - 'null'
+              - string
+          public:
+            type:
+              - 'null'
+              - boolean
+          uuid:
+            type:
+              - 'null'
+              - string
+          weekday:
+            properties:
+              date:
+                properties:
+                  name:
+                    type:
+                      - 'null'
+                      - string
+                  numeric:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+              observed:
+                properties:
+                  name:
+                    type:
+                      - 'null'
+                      - string
+                  numeric:
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+            type:
+              - 'null'
+              - object
+        title: Holidays schema
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://holidayapi.com/v1/
+        path: holidays
+        http_method: GET
+        request_parameters:
+          country: '{{ config[''country''] }}'
+          year: '{{ config[''year''] }}'
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: key
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - holidays
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: countries
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $parameters:
+          extractor_path: countries
+          name: countries
+          path: countries
+        $schema: http://json-schema.org/draft-07/schema#
+        extractor_path: countries
+        name: countries
+        path: countries
+        properties:
+          code:
+            type:
+              - 'null'
+              - string
+          codes:
+            properties:
+              alpha-2:
+                type:
+                  - 'null'
+                  - string
+              alpha-3:
+                type:
+                  - 'null'
+                  - string
+              numeric:
+                type:
+                  - 'null'
+                  - string
+            type:
+              - 'null'
+              - object
+          currencies:
+            items:
+              properties:
+                alpha:
+                  type:
+                    - 'null'
+                    - string
+              type:
+                - 'null'
+                - object
+            type:
+              - 'null'
+              - array
+          flag:
+            type:
+              - 'null'
+              - string
+          languages:
+            items:
+              type:
+                - 'null'
+                - string
+            type:
+              - 'null'
+              - array
+          name:
+            type:
+              - 'null'
+              - string
+          subdivisions:
+            items:
+              properties:
+                code:
+                  type:
+                    - 'null'
+                    - string
+                languages:
+                  items:
+                    type:
+                      - 'null'
+                      - string
+                  type:
+                    - 'null'
+                    - array
+                name:
+                  type:
+                    - 'null'
+                    - string
+              type:
+                - 'null'
+                - object
+            type:
+              - 'null'
+              - array
+          weekend:
+            items:
+              properties:
+                name:
+                  type:
+                    - 'null'
+                    - string
+                numeric:
+                  type:
+                    - 'null'
+                    - number
+              type:
+                - 'null'
+                - object
+            type:
+              - 'null'
+              - array
+        title: Countries Schema
+        type:
+          - 'null'
+          - object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://holidayapi.com/v1/
+        path: countries
+        http_method: GET
+        request_parameters:
+          country: '{{ config[''country''] }}'
+          year: '{{ config[''year''] }}'
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: key
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - countries
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: languages
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $parameters:
+          extractor_path: languages
+          name: languages
+          path: languages
+        $schema: http://json-schema.org/draft-07/schema#
+        extractor_path: languages
+        name: languages
+        path: languages
+        properties:
+          code:
+            type:
+              - 'null'
+              - string
+          name:
+            type:
+              - 'null'
+              - string
+        title: Languages schema
+        type:
+          - 'null'
+          - object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://holidayapi.com/v1/
+        path: languages
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+          inject_into:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: key
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - languages
+      paginator:
+        type: NoPagination
 spec:
-  type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/holiday-api
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
-    title: Holiday Api Spec
     type: object
-    additionalProperties: true
     required:
       - api_key
     properties:
       api_key:
-        title: API Key
         type: string
-        description: API Key available at the dashboard, ref - https://holidayapi.com/dashboard
+        title: API Key
+        airbyte_secret: true
+        description: >-
+          API Key available at the dashboard, ref -
+          https://holidayapi.com/dashboard
         airbyte-secret: true
+        order: 0
       country:
         title: Country
         type: string
-        description: Country code to pass as parameter for different streams (ref - https://holidayapi.com/countries)
-        default: "US"
+        description: >-
+          Country code to pass as parameter for different streams (ref -
+          https://holidayapi.com/countries)
+        default: IN
+        order: 1
       year:
         title: Year
         type: string
-        description: Year to pass as parameter for different streams, which is 4 digit year in ISO 8601 format (ref - https://en.wikipedia.org/wiki/ISO_8601#Years).
-        default: "2023"
+        description: >-
+          Year to pass as parameter for different streams, which is 4 digit year
+          in ISO 8601 format (ref -
+          https://en.wikipedia.org/wiki/ISO_8601#Years).
+        default: '2022'
+        order: 2
+    additionalProperties: true
+  documentation_url: https://example.org
+  type: Spec
+metadata:
+  autoImportSchema:
+    holidays: false
+    countries: false
+    languages: false
