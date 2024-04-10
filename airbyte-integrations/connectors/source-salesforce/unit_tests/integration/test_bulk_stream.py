@@ -15,8 +15,8 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode
 from config_builder import ConfigBuilder
-from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from integration.utils import given_stream
+from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce import SourceSalesforce
 from source_salesforce.streams import LOOKBACK_SECONDS
 

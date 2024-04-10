@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import json
 
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
