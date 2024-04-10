@@ -43,6 +43,9 @@ CONFIG_DATE_FORMAT = "%Y-%m-%d"
 
 # Source
 class SourceYandexMetrika(AbstractSource):
+    def __init__(self):
+        self.key_map: dict[str, str] | None = None
+
     def preprocess_raw_stream_slice(
         self,
         stream_name: str,
@@ -50,27 +53,19 @@ class SourceYandexMetrika(AbstractSource):
         check_log_request_ability: bool = False,
     ) -> list[Mapping[str, any]]:
         logger.info(f"Preprocessing raw stream slice {stream_slice} for stream {stream_name}...")
-        preprocessor = getattr(
-            self, self.raw_data_stream_to_field_map[stream_name]["preprocessor_field_name"]
-        )
-        is_request_on_server, request_id = preprocessor.check_if_log_request_already_on_server(
-            stream_slice
-        )
+        preprocessor = getattr(self, self.raw_data_stream_to_field_map[stream_name]["preprocessor_field_name"])
+        is_request_on_server, request_id = preprocessor.check_if_log_request_already_on_server(stream_slice)
         if is_request_on_server:
             logger.info(f"Log request {request_id} already on server.")
         else:
             logger.info(f"Log request was not found on server, creating it.")
             if check_log_request_ability:
-                is_request_available, request_ability_msg = preprocessor.check_log_request_ability(
-                    stream_slice
-                )
+                is_request_available, request_ability_msg = preprocessor.check_log_request_ability(stream_slice)
                 if not is_request_available:
                     raise Exception(request_ability_msg)
 
             request_id = preprocessor.create_log_request(stream_slice)
-        preprocessed_slice = preprocessor.wait_for_log_request_processed(
-            log_request_id=request_id, stream_slice=stream_slice
-        )
+        preprocessed_slice = preprocessor.wait_for_log_request_processed(log_request_id=request_id, stream_slice=stream_slice)
         return [
             {
                 "date_from": preprocessed_slice["date_from"],
@@ -82,12 +77,8 @@ class SourceYandexMetrika(AbstractSource):
         ]
 
     def postprocess_raw_stream_slice(self, stream_name: str, stream_slice):
-        stream_instance_kwargs = getattr(
-            self, self.raw_data_stream_to_field_map[stream_name]["kwargs_field_name"]
-        )
-        preprocessor = getattr(
-            self, self.raw_data_stream_to_field_map[stream_name]["preprocessor_field_name"]
-        )
+        stream_instance_kwargs = getattr(self, self.raw_data_stream_to_field_map[stream_name]["kwargs_field_name"])
+        preprocessor = getattr(self, self.raw_data_stream_to_field_map[stream_name]["preprocessor_field_name"])
         if stream_instance_kwargs["clean_slice_after_successfully_loaded"]:
             logger.info(f"clean_slice_after_successfully_loaded {stream_slice}")
             preprocessor.clean_log_request(stream_slice["log_request_id"])
@@ -106,11 +97,6 @@ class SourceYandexMetrika(AbstractSource):
 
         stream_instances = {s.name: s for s in self.streams(config)}
         self._stream_to_instance_map = stream_instances
-
-        self._replace_values: dict[str, str] = {
-            replace["old_value"]: replace["new_value"]
-            for replace in config.get("replace_values", [])
-        }
 
         with create_timer(self.name) as timer:
             shutil.rmtree("output", ignore_errors=True)
@@ -133,14 +119,10 @@ class SourceYandexMetrika(AbstractSource):
                 except AirbyteTracedException as e:
                     raise e
                 except Exception as e:
-                    logger.exception(
-                        f"Encountered an exception while reading stream {configured_stream.stream.name}"
-                    )
+                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     display_message = stream_instance.get_error_display_message(e)
                     if display_message:
-                        raise AirbyteTracedException.from_exception(
-                            e, message=display_message
-                        ) from e
+                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e
                 finally:
                     timer.finish_event()
@@ -164,9 +146,7 @@ class SourceYandexMetrika(AbstractSource):
     ) -> Iterator[AirbyteMessage]:
         # self._apply_log_level_to_stream_logger(logger, stream_instance)
         if internal_config.page_size and isinstance(stream_instance, HttpStream):
-            logger.info(
-                f"Setting page size for {stream_instance.name} to {internal_config.page_size}"
-            )
+            logger.info(f"Setting page size for {stream_instance.name} to {internal_config.page_size}")
             stream_instance.page_size = internal_config.page_size
         logger.debug(
             f"Syncing configured stream: {configured_stream.stream.name}",
@@ -185,9 +165,7 @@ class SourceYandexMetrika(AbstractSource):
         )
 
         logger.info(f"Syncing stream: {configured_stream.stream.name} ")
-        yield from self._read_full_refresh(
-            logger, stream_instance, configured_stream, internal_config
-        )
+        yield from self._read_full_refresh(logger, stream_instance, configured_stream, internal_config)
         logger.info(f"End of _read_stream stream")
 
     def _read_full_refresh(
@@ -199,9 +177,7 @@ class SourceYandexMetrika(AbstractSource):
     ) -> Iterator[AirbyteMessage]:
         if stream_instance.__class__.__name__ == "YandexMetrikaRawDataStream":
             stream_instance: YandexMetrikaRawDataStream = stream_instance
-            raw_slices = stream_instance.stream_slices(
-                sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field
-            )
+            raw_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
             logger.debug(
                 f"Processing raw stream slices for {configured_stream.stream.name}",
                 extra={"stream_slices": raw_slices},
@@ -217,27 +193,21 @@ class SourceYandexMetrika(AbstractSource):
                     )
                     logger.info(f"Current preprocessed slices: {preprocessed_slices}")
                     completed_chunks_observer = YandexMetrikaRawSliceMissingChunksObserver(
-                        expected_chunks_ids=[
-                            chunk["part"]["part_number"] for chunk in preprocessed_slices
-                        ]
+                        expected_chunks_ids=[chunk["part"]["part_number"] for chunk in preprocessed_slices]
                     )
                     stream_instance_kwargs = getattr(
                         self,
-                        self.raw_data_stream_to_field_map[stream_instance.name][
-                            "kwargs_field_name"
-                        ],
+                        self.raw_data_stream_to_field_map[stream_instance.name]["kwargs_field_name"],
                     )
                     threads_controller = PreprocessedSlicePartThreadsController(
                         stream_instance=stream_instance,
                         stream_instance_kwargs=stream_instance_kwargs,
                         raw_slice=raw_slice,
                         preprocessed_slices_batch=preprocessed_slices,
-                        multithreading_threads_count=stream_instance_kwargs[
-                            "multithreading_threads_count"
-                        ],
+                        multithreading_threads_count=stream_instance_kwargs["multithreading_threads_count"],
                         timer=timer,
                         completed_chunks_observer=completed_chunks_observer,
-                        replace_values=self._replace_values,
+                        key_map=self.key_map,
                     )
                     logger.info("Threads controller created")
                     logger.info("Run threads process, get into main loop")
@@ -259,9 +229,7 @@ class SourceYandexMetrika(AbstractSource):
                     )
             yield from []
         else:
-            yield from super()._read_full_refresh(
-                logger, stream_instance, configured_stream, internal_config
-            )
+            yield from super()._read_full_refresh(logger, stream_instance, configured_stream, internal_config)
 
     def check_connection(self, logger, config) -> tuple[bool, any]:
         raw_hits_config: dict = config.get("raw_data_hits_report")
@@ -314,9 +282,7 @@ class SourceYandexMetrika(AbstractSource):
             test_response = stream.make_test_request()
             test_response_data = test_response.json()
             if test_response_data.get("errors"):
-                return False, f"Table #{stream_n} ({stream.name}) error: " + test_response_data.get(
-                    "message"
-                )
+                return False, f"Table #{stream_n} ({stream.name}) error: " + test_response_data.get("message")
 
         for stream_n, stream in enumerate(
             filter(
@@ -356,6 +322,8 @@ class SourceYandexMetrika(AbstractSource):
         }
         transformed_config.update(self.transform_date_range(raw_config))
         raw_config.update(transformed_config)
+
+        self.key_map = self.get_key_map(config=raw_config)
         return raw_config
 
     def transform_date_range(self, config: Mapping[str, any]) -> dict[str, any]:
@@ -382,14 +350,10 @@ class SourceYandexMetrika(AbstractSource):
             raise ValueError("Invalid date_range_type")
 
         if isinstance(prepared_range["date_from"], str):
-            prepared_range["date_from"] = datetime.strptime(
-                prepared_range["date_from"], CONFIG_DATE_FORMAT
-            )
+            prepared_range["date_from"] = datetime.strptime(prepared_range["date_from"], CONFIG_DATE_FORMAT)
 
         if isinstance(prepared_range["date_to"], str):
-            prepared_range["date_to"] = datetime.strptime(
-                prepared_range["date_to"], CONFIG_DATE_FORMAT
-            )
+            prepared_range["date_to"] = datetime.strptime(prepared_range["date_to"], CONFIG_DATE_FORMAT)
         config["prepared_date_range"] = prepared_range
         return config
 
@@ -405,18 +369,16 @@ class SourceYandexMetrika(AbstractSource):
                 raise_exception_on_check=True,
             )
         else:
-            raise Exception(
-                "Неверный типа авторизации. Доступные: access_token_auth и credentials_craft_auth"
-            )
+            raise Exception("Неверный типа авторизации. Доступные: access_token_auth и credentials_craft_auth")
 
     @staticmethod
-    def get_values_replace_dict(config: Mapping[str, any]) -> dict[str, str]:
+    def get_key_map(config: Mapping[str, any]) -> dict[str, str]:
         """Get values that needs to be replaced and their replacements"""
-        replace_values: list[dict[str, str]] | None
-        if not (replace_values := config.get("replace_values")):
+        key_map: list[dict[str, str]] | None
+        if not (key_map := config.get("key_map")):
             return {}
         else:
-            return {item["old_value"]: item["new_value"] for item in replace_values}
+            return {item["old_value"]: item["new_value"] for item in key_map}
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         spec = super().spec(logger)
@@ -469,9 +431,7 @@ class SourceYandexMetrika(AbstractSource):
             stream_config = config.get(source_to_stream_config["in_config_field_name"], {})
             if stream_config["is_enabled"] == "enabled":
                 if not stream_config:
-                    raise Exception(
-                        f"Конфигурация для {source_to_stream_config['in_config_field_name']} не предоставлена."
-                    )
+                    raise Exception(f"Конфигурация для {source_to_stream_config['in_config_field_name']} не предоставлена.")
                 setattr(
                     self,
                     source_to_stream_config["kwargs_field_name"],
@@ -483,18 +443,10 @@ class SourceYandexMetrika(AbstractSource):
                         split_range_days_count=stream_config.get("split_range_days_count"),
                         log_source=source_to_stream_config["source"],
                         fields=stream_config["fields"],
-                        clean_slice_after_successfully_loaded=stream_config.get(
-                            "clean_every_log_request_after_success", False
-                        ),
-                        clean_log_requests_before_replication=stream_config.get(
-                            "clean_log_requests_before_replication", False
-                        ),
-                        check_log_requests_ability=stream_config.get(
-                            "check_log_requests_ability", False
-                        ),
-                        multithreading_threads_count=stream_config.get(
-                            "multithreading_threads_count", 1
-                        ),
+                        clean_slice_after_successfully_loaded=stream_config.get("clean_every_log_request_after_success", False),
+                        clean_log_requests_before_replication=stream_config.get("clean_log_requests_before_replication", False),
+                        check_log_requests_ability=stream_config.get("check_log_requests_ability", False),
+                        multithreading_threads_count=stream_config.get("multithreading_threads_count", 1),
                         created_for_test=init_for_test,
                     ),
                 )
@@ -503,17 +455,14 @@ class SourceYandexMetrika(AbstractSource):
                     **getattr(
                         self,
                         source_to_stream_config["kwargs_field_name"],
-                    )
+                    ),
+                    key_map=self.key_map,
                 )
                 raw_data_streams.append(stream)
-                setattr(
-                    self, source_to_stream_config["preprocessor_field_name"], stream.preprocessor
-                )
+                setattr(self, source_to_stream_config["preprocessor_field_name"], stream.preprocessor)
 
         agg_data_streams = [
-            AggregateDataYandexMetrikaReport(
-                authenticator=auth, global_config=config, report_config=stream_config
-            )
+            AggregateDataYandexMetrikaReport(authenticator=auth, global_config=config, report_config=stream_config, key_map=self.key_map)
             for stream_config in config.get("aggregated_reports", [])
         ]
         return [*raw_data_streams, *agg_data_streams]

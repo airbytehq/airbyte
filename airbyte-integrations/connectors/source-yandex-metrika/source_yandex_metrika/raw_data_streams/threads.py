@@ -44,13 +44,12 @@ class YandexMetrikaRawSliceMissingChunksObserver:
 
 class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
     def __init__(
-            self,
-            name: str,
-            stream_slice: Mapping[str, any],
-            stream_instance: YandexMetrikaRawDataStream,
-            lock: Lock,
-            completed_chunks_observer: "YandexMetrikaRawSliceMissingChunksObserver",
-            replace_values: dict[str, str] | None = None,
+        self,
+        name: str,
+        stream_slice: Mapping[str, any],
+        stream_instance: YandexMetrikaRawDataStream,
+        lock: Lock,
+        completed_chunks_observer: "YandexMetrikaRawSliceMissingChunksObserver",
     ):
         Thread.__init__(self, name=name, daemon=True)
         self.stream_slice = stream_slice
@@ -59,7 +58,6 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
         self.records_count = 0
         self.lock = lock
         self.completed_chunks_observer = completed_chunks_observer
-        self.replace_values = replace_values
 
     def process_log_request(self):
         try:
@@ -76,20 +74,24 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
                     with self.lock:
                         records: list[dict] = []
                         for data in chunk.to_dict("records"):
-                            records.append({
-                                "type": "RECORD",
-                                "record": {
-                                    "stream": self.stream_instance.name,
-                                    "data": data if not self.replace_values else {self.replace_values.get(key, key): value for key, value in data.items()},
-                                    "emitted_at": now_millis,
-                                },
-                            })
+                            records.append(
+                                {
+                                    "type": "RECORD",
+                                    "record": {
+                                        "stream": self.stream_instance.name,
+                                        "data": self.stream_instance.replace_keys(data),
+                                        "emitted_at": now_millis,
+                                    },
+                                }
+                            )
                         df = pd.DataFrame(records)
                         print(df.to_json(orient="records", lines=True))
                         self.records_count += len(df.index)
-                        print('self.records_count', self.records_count, filename)
+                        print("self.records_count", self.records_count, filename)
                         del df
+
             del input_f
+
             self.completed_chunks_observer.add_actually_loaded_chunk_id(self.stream_slice["part"]["part_number"])
         except AirbyteTracedException as e:
             logger.info(self.name, "exception", e)
@@ -101,7 +103,7 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
             if display_message:
                 raise AirbyteTracedException.from_exception(e, message=display_message) from e
             raise e
-        finally:
+        else:
             logger.info(f"Remove file {filename} for slice {self.stream_slice}")
             os.remove(filename)
             logger.info(f"Finished syncing {self.stream_instance.name}")
@@ -123,15 +125,14 @@ class CustomQueue(Queue):
 
 class PreprocessedSlicePartThreadsController(LogMessagesPoolConsumer):
     def __init__(
-            self,
-            stream_instance: YandexMetrikaRawDataStream,
-            stream_instance_kwargs: Mapping[str, any],
-            preprocessed_slices_batch: list[Mapping[str, any]],
-            raw_slice: Mapping[str, any],
-            timer: EventTimer,
-            completed_chunks_observer: "YandexMetrikaRawSliceMissingChunksObserver",
-            multithreading_threads_count: int = 1,
-            replace_values: dict[str, str] | None = None,
+        self,
+        stream_instance: YandexMetrikaRawDataStream,
+        stream_instance_kwargs: Mapping[str, any],
+        preprocessed_slices_batch: list[Mapping[str, any]],
+        raw_slice: Mapping[str, any],
+        timer: EventTimer,
+        completed_chunks_observer: "YandexMetrikaRawSliceMissingChunksObserver",
+        multithreading_threads_count: int = 1,
     ):
         self.raw_slice = raw_slice
         self.current_stream_slices = CustomQueue()
@@ -149,7 +150,6 @@ class PreprocessedSlicePartThreadsController(LogMessagesPoolConsumer):
                     stream_instance=self.stream_instance,
                     lock=self.lock,
                     completed_chunks_observer=self.completed_chunks_observer,
-                    replace_values=replace_values,
                 )
             )
 

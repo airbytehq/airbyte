@@ -5,9 +5,12 @@
 import requests
 import logging
 from time import sleep
-from typing import Mapping
+from typing import Mapping, TYPE_CHECKING
 from requests.adapters import HTTPAdapter, Retry
 from urllib3.util.retry import RequestHistory
+
+if TYPE_CHECKING:
+    from .stream import YandexMetrikaStream
 
 logger = logging.getLogger("airbyte")
 

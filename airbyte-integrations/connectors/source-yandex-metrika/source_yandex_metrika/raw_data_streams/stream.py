@@ -8,22 +8,19 @@ import os
 from abc import ABC
 from datetime import datetime
 from queue import Queue
-from typing import Any, Iterable, Mapping, MutableMapping
+from typing import Iterable, Mapping, MutableMapping
 
 import requests
 from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
+from .stream_preprocessor import YandexMetrikaStreamPreprocessor
+from ..base_stream import YandexMetrikaStream
 from ..utils import (
     daterange_days_list,
     random_output_filename,
-    random_str,
-    today_minus_n_days_date,
-    yesterday_date,
 )
-from .stream_preprocessor import YandexMetrikaStreamPreprocessor
 
 logger = logging.getLogger("airbyte")
 
@@ -36,7 +33,7 @@ class LogMessagesPoolConsumer:
         self.log_messages_pool.put(f"({self.__class__.__name__}) - {message}")
 
 
-class YandexMetrikaRawDataStream(HttpStream, ABC):
+class YandexMetrikaRawDataStream(YandexMetrikaStream, ABC):
     url_base = "https://api-metrika.yandex.net/management/v1/"
 
     @property
@@ -64,9 +61,9 @@ class YandexMetrikaRawDataStream(HttpStream, ABC):
         check_log_requests_ability: bool = False,
         multithreading_threads_count: int = 1,
         created_for_test: bool = False,
-        replace_values: Mapping[str, Any] = None,
+        key_map: dict[str, any] | None = None,
     ):
-        super().__init__(authenticator=None)
+        super().__init__(key_map)
         self.counter_id = counter_id
         self._authenticator = authenticator
         self.date_from = date_from
@@ -80,7 +77,6 @@ class YandexMetrikaRawDataStream(HttpStream, ABC):
         self.clean_log_requests_before_replication = clean_log_requests_before_replication
         self.check_log_requests_ability = check_log_requests_ability
         self.created_for_test = created_for_test
-        self.replace_values = replace_values
 
         if self.clean_log_requests_before_replication and not self.created_for_test:
             logger.info("Clean all log requests before replication...")
@@ -91,19 +87,12 @@ class YandexMetrikaRawDataStream(HttpStream, ABC):
             if not can_replicate:
                 raise Exception(message)
 
-    def get_json_schema(self):
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(
-            "yandex_metrika_raw_data_stream"
-        )
+    def get_json_schema(self) -> Mapping[str, any]:
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("yandex_metrika_raw_data_stream")
         for key in self.fields:
             schema["properties"][key] = {"type": ["null", "string"]}
 
-        if self.replace_values:
-            for replace_value_config in self.replace_values:
-                if replace_value_config["old_value"] in schema["properties"].keys():
-                    schema["properties"][replace_value_config["new_values"]] = schema[
-                        "properties"
-                    ].pop(replace_value_config["old_value"])
+        super().replace_keys(schema["properties"])
 
         return schema
 
@@ -121,9 +110,7 @@ class YandexMetrikaRawDataStream(HttpStream, ABC):
     def next_page_token(self, *args, **kwargs) -> Mapping[str, any] | None:
         return None
 
-    def request_params(
-        self, stream_slice: Mapping[str, any] = None, *args, **kwargs
-    ) -> MutableMapping[str, any]:
+    def request_params(self, stream_slice: Mapping[str, any] = None, *args, **kwargs) -> MutableMapping[str, any]:
         return {
             "date1": datetime.strftime(stream_slice["date_from"], "%Y-%m-%d"),
             "date2": datetime.strftime(stream_slice["date_to"], "%Y-%m-%d"),
@@ -147,20 +134,6 @@ class YandexMetrikaRawDataStream(HttpStream, ABC):
         **kwargs,
     ) -> str:
         logger.info(f"parse_response {response.url}")
-        # raw_data_lines = response.content.split(b"\n")
-        # del response
-
-        # for line_n, line in enumerate(raw_data_lines):
-        #     if not line.strip():
-        #         continue
-        #     if line_n == 0:
-        #         continue
-
-        #     # zip values list to named dict
-        #     zipped_object = dict(zip(self.fields, line.decode().split("\t")))
-        #     yield self.add_constants_to_record(zipped_object)
-
-        # ------
         try:
             os.mkdir("output")
         except FileExistsError:

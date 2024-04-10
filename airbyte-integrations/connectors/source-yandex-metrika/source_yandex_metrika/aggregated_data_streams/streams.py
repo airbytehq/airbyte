@@ -6,7 +6,7 @@
 import logging
 from abc import ABC
 from enum import Enum
-from typing import Iterable, Mapping, MutableMapping, NamedTuple
+from typing import Iterable, Mapping, MutableMapping, NamedTuple, Any
 
 import requests
 from airbyte_cdk.sources.streams.core import package_name_from_class
@@ -17,8 +17,10 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from . import supported_fields
 from .translations import attribution_translations, currency_translations, date_group_translations, preset_name_translations
+from ..base_stream import YandexMetrikaStream
 
-logger = logging.getLogger('airbyte')
+logger = logging.getLogger("airbyte")
+
 
 class DateRangeType(Enum):
     DATE_RANGE = "date_range"
@@ -57,13 +59,19 @@ class ReportConfig(NamedTuple):
 
 
 # Full refresh stream
-class AggregateDataYandexMetrikaReport(HttpStream, ABC):
+class AggregateDataYandexMetrikaReport(YandexMetrikaStream, ABC):
     limit = 1000
     primary_key = None
     transformer: TypeTransformer = TypeTransformer(config=TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, authenticator: TokenAuthenticator, global_config: dict[str, any], report_config: ReportConfig):
-        super().__init__()
+    def __init__(
+        self,
+        authenticator: TokenAuthenticator,
+        global_config: dict[str, any],
+        report_config: ReportConfig,
+        key_map: dict[str, any] | None = None,
+    ):
+        super().__init__(key_map)
         self._authenticator = authenticator
         self.global_config = global_config
         self.report_config = report_config
@@ -87,6 +95,7 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
         schema = ResourceSchemaLoader(
             package_name_from_class(self.__class__),
         ).get_schema("yandex_metrika_agg_data_stream")
+
         test_response = self.make_test_request().json()
         if test_response.get("errors"):
             raise Exception(test_response["message"])
@@ -98,6 +107,7 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
                 raise Exception(f"Field '{metric}' is not supported in the connector")
             schema["properties"][metric] = {"type": [lookup[1][1], "null"]}
 
+        super().replace_keys(schema["properties"])
         return schema
 
     def make_test_request(self):
@@ -132,7 +142,7 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
             params["filters"] = self.report_config.get("filters")
 
         preset_name_input = preset_name_translations.get(self.report_config.get("preset_name"))
-        if preset_name_input and preset_name_input != 'custom_report':
+        if preset_name_input and preset_name_input != "custom_report":
             params["preset"] = preset_name_input
 
         date_group_input = date_group_translations.get(self.report_config.get("date_group", "день"))
@@ -176,6 +186,9 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
         data = response_data["data"]
         query = response_data["query"]
         keys = query["dimensions"] + query["metrics"]
+
+        for i in range(len(keys)):
+            keys[i] = self.key_map.get(keys[i], keys[i])
 
         for row in data:
             row_values = []
