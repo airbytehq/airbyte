@@ -81,6 +81,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
                     self._cursor_field,
                     self._cursor_boundaries,
                     None,
+                    EpochValueConcurrentStreamStateConverter.get_end_provider()
                 )
                 if self._cursor_field
                 else FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository),

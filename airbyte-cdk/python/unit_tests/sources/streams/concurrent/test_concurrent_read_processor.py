@@ -20,6 +20,7 @@ from airbyte_cdk.models import StreamDescriptor, SyncMode, TraceType
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import LogMessage, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -479,66 +480,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         assert expected_messages == messages
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
-    def test_on_exception_stops_streams_and_raises_an_exception(self):
-        stream_instances_to_read_from = [self._stream, self._another_stream]
-
-        handler = ConcurrentReadProcessor(
-            stream_instances_to_read_from,
-            self._partition_enqueuer,
-            self._thread_pool_manager,
-            self._logger,
-            self._slice_logger,
-            self._message_repository,
-            self._partition_reader,
-        )
-
-        handler.start_next_partition_generator()
-
-        another_stream = Mock(spec=AbstractStream)
-        another_stream.name = _STREAM_NAME
-        another_stream.as_airbyte_stream.return_value = AirbyteStream(
-            name=_ANOTHER_STREAM_NAME,
-            json_schema={},
-            supported_sync_modes=[SyncMode.full_refresh],
-        )
-
-        exception = RuntimeError("Something went wrong")
-
-        messages = []
-
-        with self.assertRaises(RuntimeError):
-            for m in handler.on_exception(exception):
-                messages.append(m)
-
-        expected_message = [
-            AirbyteMessage(
-                type=MessageType.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.STREAM_STATUS,
-                    emitted_at=1577836800000.0,
-                    stream_status=AirbyteStreamStatusTraceMessage(
-                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
-                    ),
-                ),
-            ),
-            AirbyteMessage(
-                type=MessageType.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.STREAM_STATUS,
-                    emitted_at=1577836800000.0,
-                    stream_status=AirbyteStreamStatusTraceMessage(
-                        stream_descriptor=StreamDescriptor(name=_ANOTHER_STREAM_NAME),
-                        status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE),
-                    ),
-                ),
-            ),
-        ]
-
-        assert messages == expected_message
-        self._thread_pool_manager.shutdown.assert_called_once()
-
-    @freezegun.freeze_time("2020-01-01T00:00:00")
-    def test_on_exception_does_not_stop_streams_that_are_already_done(self):
+    def test_on_exception_return_trace_message_and_on_stream_complete_return_stream_status(self):
         stream_instances_to_read_from = [self._stream, self._another_stream]
 
         handler = ConcurrentReadProcessor(
@@ -564,15 +506,13 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
         )
 
-        exception = RuntimeError("Something went wrong")
+        exception = StreamThreadException(RuntimeError("Something went wrong"), _STREAM_NAME)
 
-        messages = []
+        exception_messages = list(handler.on_exception(exception))
+        assert len(exception_messages) == 1
+        assert exception_messages[0].type == MessageType.TRACE
 
-        with self.assertRaises(RuntimeError):
-            for m in handler.on_exception(exception):
-                messages.append(m)
-
-        expected_message = [
+        assert list(handler.on_partition_complete_sentinel(PartitionCompleteSentinel(self._an_open_partition))) == [
             AirbyteMessage(
                 type=MessageType.TRACE,
                 trace=AirbyteTraceMessage(
@@ -584,9 +524,6 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                 ),
             )
         ]
-
-        assert messages == expected_message
-        self._thread_pool_manager.shutdown.assert_called_once()
 
     def test_is_done_is_false_if_there_are_any_instances_to_read_from(self):
         stream_instances_to_read_from = [self._stream]
