@@ -65,17 +65,13 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
         case "DATETIME":
           printDebugLogs(fieldType.toUpperCase(Locale.ROOT), x);
           if (x instanceof final Long l) {
-            LOGGER.info("1");
             if (getTimePrecision(field) <= 3) {
-              LOGGER.info("2");
               return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMillis(l));
             }
             if (getTimePrecision(field) <= 6) {
-              LOGGER.info("3");
               return DateTimeConverter.convertToTimestamp(Conversions.toInstantFromMicros(l));
             }
           }
-          LOGGER.info("4");
           return DateTimeConverter.convertToTimestamp(x);
         case "DATE":
           printDebugLogs(fieldType.toUpperCase(Locale.ROOT), x);
