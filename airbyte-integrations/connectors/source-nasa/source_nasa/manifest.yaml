@@ -15,7 +15,9 @@ definitions:
       type: NoAuth
     request_parameters:
       api_key: "{{ config['api_key'] }}"
-      start_date: "{{ stream_interval.start_time if stream_interval else config['start_date'] }}"
+      start_date:
+        "{{ stream_interval.start_time if stream_interval else config['start_date']
+        }}"
 
   retriever:
     type: SimpleRetriever
@@ -54,6 +56,84 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          resource:
+            type:
+              - "null"
+              - object
+            properties:
+              image_set:
+                type:
+                  - "null"
+                  - string
+              planet:
+                type:
+                  - "null"
+                  - string
+          concept_tags:
+            type:
+              - "null"
+              - boolean
+          title:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+            format: "%Y-%m-%d"
+          url:
+            type:
+              - "null"
+              - string
+            format: uri
+          hdurl:
+            type:
+              - "null"
+              - string
+            format: uri
+          media_type:
+            type:
+              - "null"
+              - string
+            enum:
+              - image
+              - video
+          explanation:
+            type:
+              - "null"
+              - string
+          concepts:
+            type:
+              - "null"
+              - object
+              - string
+            patternProperties:
+              ^[0-9]+$:
+                type:
+                  - "null"
+                  - string
+          thumbnail_url:
+            type:
+              - "null"
+              - string
+            format: uri
+          copyright:
+            type:
+              - "null"
+              - string
+          service_version:
+            type:
+              - "null"
+              - string
+            pattern: ^v[0-9]$
 streams:
   - "#/definitions/nasa_apod_stream"
 

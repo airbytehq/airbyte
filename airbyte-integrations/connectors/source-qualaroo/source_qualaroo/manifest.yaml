@@ -7,7 +7,9 @@ definitions:
       type: DpathExtractor
       field_path: []
     record_filter:
-      condition: "{{ record['id'] in config['survey_ids'] if config['survey_ids'] else true}}"
+      condition:
+        "{{ record['id'] in config['survey_ids'] if config['survey_ids']
+        else true}}"
   requester:
     type: HttpRequester
     url_base: "https://api.qualaroo.com/api/v1/"
@@ -49,6 +51,52 @@ definitions:
     $parameters:
       path: "nudges"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          site_id:
+            type:
+              - "null"
+              - integer
+          uuid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          kind:
+            type:
+              - "null"
+              - string
+          canonical_name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          survey_url:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
   responses_stream:
     name: "responses"
     primary_key: "id"
@@ -68,6 +116,101 @@ definitions:
             parent_key: "id"
             partition_field: "parent_id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          emitted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          identity:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
+          page:
+            type:
+              - "null"
+              - string
+          referrer:
+            type:
+              - "null"
+              - string
+          user_agent:
+            type:
+              - "null"
+              - string
+          nudge_id:
+            type:
+              - "null"
+              - integer
+          nudge_name:
+            type:
+              - "null"
+              - string
+          anon_visitor_id:
+            type:
+              - "null"
+              - string
+          ip_address:
+            type:
+              - "null"
+              - string
+          answered_questions:
+            type: array
+            items:
+              type:
+                - "null"
+                - object
+          properties:
+            type:
+              - "null"
+              - object
+          nps:
+            type:
+              - "null"
+              - object
+            properties:
+              score:
+                type:
+                  - "null"
+                  - integer
+              reason:
+                type:
+                  - "null"
+                  - string
+              respondent_id:
+                type:
+                  - "null"
+                  - integer
+              time:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              category:
+                type:
+                  - "null"
+                  - string
+              response_uri:
+                type:
+                  - "null"
+                  - string
 streams:
   - "#/definitions/surveys_stream"
   - "#/definitions/responses_stream"

@@ -62,6 +62,284 @@ definitions:
     $parameters:
       path: "clients"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          client_id:
+            type:
+              - string
+              - "null"
+          tenant:
+            type:
+              - string
+              - "null"
+          owners:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          is_token_endpoint_ip_header_trusted:
+            type:
+              - boolean
+              - "null"
+          cross_origin_auth:
+            type:
+              - boolean
+              - "null"
+          callback_url_template:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          global:
+            type:
+              - boolean
+              - "null"
+          client_secret:
+            type:
+              - string
+              - "null"
+          app_type:
+            type:
+              - string
+              - "null"
+          logo_uri:
+            type:
+              - string
+              - "null"
+          is_first_party:
+            type:
+              - boolean
+              - "null"
+          oidc_conformant:
+            type:
+              - boolean
+              - "null"
+          callbacks:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_origins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          web_origins:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          client_aliases:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_clients:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          allowed_logout_urls:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          oidc_backchannel_logout:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              backchannel_logout_urls:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - string
+                    - "null"
+          grant_types:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - string
+                - "null"
+          jwt_configuration:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              lifetime_in_seconds:
+                type:
+                  - integer
+                  - "null"
+              secret_encoded:
+                type:
+                  - boolean
+                  - "null"
+              scopes:
+                type:
+                  - object
+                  - "null"
+              alg:
+                type:
+                  - string
+                  - "null"
+          signing_keys:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+          encryption_key:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              pub:
+                type:
+                  - string
+                  - "null"
+              cert:
+                type:
+                  - string
+                  - "null"
+              subject:
+                type:
+                  - string
+                  - "null"
+          sso:
+            type:
+              - boolean
+              - "null"
+          sso_disabled:
+            type:
+              - boolean
+              - "null"
+          cross_origin_authentication:
+            type:
+              - boolean
+              - "null"
+          cross_origin_loc:
+            type:
+              - string
+              - "null"
+          custom_login_page_on:
+            type:
+              - boolean
+              - "null"
+          custom_login_page:
+            type:
+              - string
+              - "null"
+          custom_login_page_preview:
+            type:
+              - string
+              - "null"
+          form_template:
+            type:
+              - string
+              - "null"
+          addons:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          token_endpoint_auth_method:
+            type:
+              - string
+              - "null"
+          client_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          mobile:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          initiate_login_uri:
+            type:
+              - string
+              - "null"
+          native_social_login:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          refresh_token:
+            type:
+              - object
+              - "null"
+            properties:
+              rotation_type:
+                type:
+                  - string
+                  - "null"
+              expiration_type:
+                type:
+                  - string
+                  - "null"
+              leeway:
+                type:
+                  - integer
+                  - "null"
+          organization_usage:
+            type:
+              - string
+              - "null"
+          organization_require_behavior:
+            type:
+              - string
+              - "null"
+          client_authentication_methods:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
   users_stream:
     type: DeclarativeStream
     $parameters:
@@ -85,7 +363,9 @@ definitions:
         request_parameters:
           sort: "updated_at:1"
           include_totals: "false"
-          q: "updated_at:{{ '{' }}{{stream_interval.start_time ~ '  TO ' ~ stream_interval.end_time ~ ']' if stream_interval.start_time else config['start_date'] ~ ' TO *]'}}"
+          q:
+            "updated_at:{{ '{' }}{{stream_interval.start_time ~ '  TO ' ~ stream_interval.end_time
+            ~ ']' if stream_interval.start_time else config['start_date'] ~ ' TO *]'}}"
         request_headers: {}
     incremental_sync:
       type: DatetimeBasedCursor
@@ -102,6 +382,122 @@ definitions:
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
       step: "P1Y"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          email_verified:
+            type:
+              - boolean
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          phone_verified:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            format: date-time
+            type:
+              - string
+              - "null"
+          updated_at:
+            format: date-time
+            type:
+              - string
+              - "null"
+          identities:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+              properties:
+                connection:
+                  type:
+                    - string
+                    - "null"
+          app_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          user_metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          picture:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          nickname:
+            type:
+              - string
+              - "null"
+          multifactor:
+            type:
+              - "null"
+              - array
+            additionalProperties: true
+            items:
+              type:
+                - string
+                - "null"
+          last_ip:
+            type:
+              - string
+              - "null"
+          logins_count:
+            type:
+              - integer
+              - "null"
+          blocked:
+            type:
+              - boolean
+              - "null"
+          last_login:
+            type:
+              - string
+              - "null"
+          given_name:
+            type:
+              - string
+              - "null"
+          family_name:
+            type:
+              - string
+              - "null"
   organizations_stream:
     $ref: "#/definitions/base_stream"
     name: "organizations"
@@ -109,6 +505,37 @@ definitions:
     $parameters:
       path: "organizations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          display_name:
+            type:
+              - string
+              - "null"
+          branding:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          metadata:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
   organization_members_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -127,6 +554,35 @@ definitions:
       partition_router:
         $ref: "#/definitions/organization_members_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          org_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          picture:
+            type:
+              - string
+              - "null"
   organization_member_roles_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -139,12 +595,43 @@ definitions:
     $parameters:
       name: "organization_member_roles"
       primary_key: "id"
-      path: "organizations/{{ stream_partition.parent_slice.parent_id }}/members/{{ stream_partition.parent_user_id }}/roles"
+      path:
+        "organizations/{{ stream_partition.parent_slice.parent_id }}/members/{{
+        stream_partition.parent_user_id }}/roles"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
         $ref: "#/definitions/organization_member_roles_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          org_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
 streams:
   - "#/definitions/clients_stream"
   - "#/definitions/users_stream"

@@ -81,6 +81,40 @@ definitions:
       name: "people"
       path: "people.json"
       cursor_field: "created_at"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone_number:
+            type:
+              - "null"
+              - string
+          created_at:
+            type: integer
+          last_sent_at:
+            type:
+              - integer
+              - "null"
+          last_responded_at:
+            type:
+              - integer
+              - "null"
+          next_survey_scheduled_at:
+            type:
+              - integer
+              - "null"
   bounces:
     $ref: "#/definitions/base_stream"
     primary_key: "person_id"
@@ -88,6 +122,22 @@ definitions:
       cursor_field: "bounced_at"
       name: "bounces"
       path: "bounces.json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          person_id:
+            type: string
+          email:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          bounced_at:
+            type: integer
   unsubscribes:
     $ref: "#/definitions/base_stream"
     primary_key: "person_id"
@@ -95,6 +145,22 @@ definitions:
       cursor_field: "unsubscribed_at"
       name: "unsubscribes"
       path: "unsubscribes.json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          person_id:
+            type: string
+          email:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          unsubscribed_at:
+            type: integer
   survey_responses:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -112,6 +178,108 @@ definitions:
       name: "survey_responses"
       path: "survey_responses.json"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          id:
+            type: string
+          person:
+            type: string
+          survey_type:
+            type: string
+          score:
+            type: integer
+          comment:
+            type:
+              - "null"
+              - string
+          permalink:
+            type: string
+          created_at:
+            type: integer
+          updated_at:
+            type:
+              - "null"
+              - integer
+          person_properties:
+            type:
+              - object
+              - "null"
+            properties:
+              Delighted Source:
+                type:
+                  - "null"
+                  - string
+              Delighted Device Type:
+                type:
+                  - "null"
+                  - string
+              Delighted Operating System:
+                type:
+                  - "null"
+                  - string
+              Delighted Browser:
+                type:
+                  - "null"
+                  - string
+          notes:
+            type: array
+            items: {}
+          tags:
+            type: array
+            items: {}
+          additional_answers:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                value:
+                  type: object
+                  properties:
+                    free_response:
+                      type:
+                        - "null"
+                        - string
+                    scale:
+                      type:
+                        - "null"
+                        - integer
+                    select_one:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type: string
+                        text:
+                          type: string
+                    select_many:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          text:
+                            type: string
+                question:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                    text:
+                      type: string
 streams:
   - "#/definitions/people"
   - "#/definitions/unsubscribes"

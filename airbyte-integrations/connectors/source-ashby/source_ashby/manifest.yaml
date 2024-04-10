@@ -47,42 +47,278 @@ definitions:
         $ref: "#/definitions/requester"
         request_body_json:
           createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          candidate:
+            type:
+              - "null"
+              - object
+          status:
+            type:
+              - "null"
+              - string
+          creditedToUser:
+            type:
+              - "null"
+              - object
+          customFields:
+            type:
+              - "null"
+              - array
+          currentInterviewStage:
+            type:
+              - "null"
+              - object
+          archiveReason:
+            type:
+              - "null"
+              - string
+          job:
+            type:
+              - "null"
+              - object
+          hiringTeam:
+            type:
+              - "null"
+              - array
   archive_reasons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "archive_reasons"
       primary_key: "id"
       path: "/archiveReason.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          text:
+            type:
+              - "null"
+              - string
+          reasonType:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
   candidate_tags_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "candidate_tags"
       primary_key: "id"
       path: "/candidateTag.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
   candidates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "candidates"
       primary_key: "id"
       path: "/candidate.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          primaryEmailAddress:
+            type:
+              - "null"
+              - object
+          emailAddresses:
+            type:
+              - "null"
+              - array
+          phoneNumbers:
+            type:
+              - "null"
+              - array
+          socialLinks:
+            type:
+              - "null"
+              - array
+          tags:
+            type:
+              - "null"
+              - array
+          position:
+            type:
+              - "null"
+              - string
+          company:
+            type:
+              - "null"
+              - string
+          school:
+            type:
+              - "null"
+              - string
+          applicationIds:
+            type:
+              - "null"
+              - array
+          resumeFileHandle:
+            type:
+              - "null"
+              - object
+          fileHandles:
+            type:
+              - "null"
+              - array
+          customFields:
+            type:
+              - "null"
+              - array
   custom_fields_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "custom_fields"
       primary_key: "id"
       path: "/customField.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          objectType:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          fieldType:
+            type:
+              - "null"
+              - string
   departments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "departments"
       primary_key: "id"
       path: "/department.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          parentId:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
   feedback_form_definitions_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "feedback_form_definitions"
       primary_key: "id"
       path: "/feedbackFormDefinition.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          organizationId:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          isDefaultForm:
+            type:
+              - "null"
+              - boolean
+          formDefinition:
+            type:
+              - "null"
+              - object
+          interviewId:
+            type:
+              - "null"
+              - string
   interview_schedules_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -95,36 +331,238 @@ definitions:
         $ref: "#/definitions/requester"
         request_body_json:
           createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          applicationId:
+            type:
+              - "null"
+              - string
+          interviewStageId:
+            type:
+              - "null"
+              - string
   job_postings_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "job_postings"
       primary_key: "id"
       path: "/jobPosting.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          jobId:
+            type:
+              - "null"
+              - string
+          departmentName:
+            type:
+              - "null"
+              - string
+          teamName:
+            type:
+              - "null"
+              - string
+          locationName:
+            type:
+              - "null"
+              - string
+          employmentType:
+            type:
+              - "null"
+              - string
+          isListed:
+            type:
+              - "null"
+              - boolean
+          publishedDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          externalLink:
+            type:
+              - "null"
+              - string
+          locationIds:
+            type:
+              - "null"
+              - object
   jobs_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "jobs"
       primary_key: "id"
       path: "/job.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          confidential:
+            type:
+              - "null"
+              - boolean
+          status:
+            type:
+              - "null"
+              - string
+          employmentType:
+            type:
+              - "null"
+              - string
+          locationId:
+            type:
+              - "null"
+              - string
+          departmentId:
+            type:
+              - "null"
+              - string
+          defaultInterviewPlanId:
+            type:
+              - "null"
+              - string
+          interviewPlanIds:
+            type:
+              - "null"
+              - array
+          jobPostingIds:
+            type:
+              - "null"
+              - array
+          hiringTeam:
+            type:
+              - "null"
+              - array
+          customFields:
+            type:
+              - "null"
+              - array
+          customRequisitionId:
+            type:
+              - "null"
+              - string
   locations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "locations"
       primary_key: "id"
       path: "/location.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          address:
+            type:
+              - "null"
+              - object
+          isRemote:
+            type:
+              - "null"
+              - boolean
   offers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "offers"
       primary_key: "id"
       path: "/offer.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          decidedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          applicationId:
+            type:
+              - "null"
+              - string
+          acceptanceStatus:
+            type:
+              - "null"
+              - string
+          latestVersion:
+            type:
+              - "null"
+              - object
   sources_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "sources"
       primary_key: "id"
       path: "/source.list"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -132,6 +570,28 @@ definitions:
       primary_key: "id"
       path: "/user.list"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          firstName:
+            type:
+              - "null"
+              - string
+          lastName:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/applications_stream"
   - "#/definitions/archive_reasons_stream"

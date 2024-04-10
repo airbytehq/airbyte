@@ -4,10 +4,6 @@ definitions:
   page_size: 100
   step: "P100D"
 
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_callrail/schemas/{{ parameters['name'] }}.json"
-
   requester:
     type: HttpRequester
     http_method: "GET"
@@ -57,8 +53,6 @@ definitions:
       name: "calls"
       cursor_field: "start_time"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
     retriever:
@@ -69,13 +63,314 @@ definitions:
         request_parameters:
           fields: "call_type,company_id,company_name,company_time_zone,created_at,device_type,first_call,formatted_call_type,formatted_customer_location,formatted_business_phone_number,formatted_customer_name,prior_calls,formatted_customer_name_or_phone_number,formatted_customer_phone_number,formatted_duration,formatted_tracking_phone_number,formatted_tracking_source,formatted_value,good_lead_call_id,good_lead_call_time,lead_status,note,source,source_name,tags,total_calls,value,waveforms,tracker_id,speaker_percent,keywords,medium,campaign,referring_url,landing_page_url,last_requested_url,referrer_domain,utm_source,utm_medium,utm_term,utm_content,utm_campaign,utma,utmb,utmc,utmv,utmz,ga,gclid,fbclid,msclkid,milestones,timeline_url,keywords_spotted,call_highlights,agent_email,keypad_entries"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          answered:
+            type:
+              - "null"
+              - boolean
+          business_phone_number:
+            type:
+              - "null"
+              - string
+          customer_city:
+            type:
+              - "null"
+              - string
+          customer_country:
+            type:
+              - "null"
+              - string
+          customer_name:
+            type:
+              - "null"
+              - string
+          customer_phone_number:
+            type:
+              - "null"
+              - string
+          customer_state:
+            type:
+              - "null"
+              - string
+          direction:
+            type:
+              - "null"
+              - string
+          duration:
+            type:
+              - "null"
+              - integer
+          id:
+            type:
+              - "null"
+              - string
+          recording:
+            type:
+              - "null"
+              - string
+          recording_duration:
+            type:
+              - "null"
+              - integer
+          recording_player:
+            type:
+              - "null"
+              - string
+          start_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          tracking_phone_number:
+            type:
+              - "null"
+              - string
+          voicemail:
+            type:
+              - "null"
+              - boolean
+          call_type:
+            type:
+              - "null"
+              - string
+          company_id:
+            type:
+              - "null"
+              - string
+          company_name:
+            type:
+              - "null"
+              - string
+          company_time_zone:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          device_type:
+            type:
+              - "null"
+              - string
+          first_call:
+            type:
+              - "null"
+              - boolean
+          formatted_call_type:
+            type:
+              - "null"
+              - string
+          formatted_customer_location:
+            type:
+              - "null"
+              - string
+          formatted_business_phone_number:
+            type:
+              - "null"
+              - string
+          formatted_customer_name:
+            type:
+              - "null"
+              - string
+          prior_calls:
+            type:
+              - "null"
+              - integer
+          formatted_customer_name_or_phone_number:
+            type:
+              - "null"
+              - string
+          formatted_customer_phone_number:
+            type:
+              - "null"
+              - string
+          formatted_duration:
+            type:
+              - "null"
+              - string
+          formatted_tracking_phone_number:
+            type:
+              - "null"
+              - string
+          formatted_tracking_source:
+            type:
+              - "null"
+              - string
+          formatted_value:
+            type:
+              - "null"
+              - string
+          good_lead_call_id:
+            type:
+              - "null"
+              - string
+          good_lead_call_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          lead_status:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+          source_name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            items: {}
+          total_calls:
+            type:
+              - "null"
+              - integer
+          value:
+            type:
+              - "null"
+              - string
+          waveforms:
+            type:
+              - "null"
+              - array
+            items: {}
+          tracker_id:
+            type:
+              - "null"
+              - string
+          speaker_percent:
+            type:
+              - "null"
+              - array
+            items: {}
+          keywords:
+            type:
+              - "null"
+              - string
+          medium:
+            type:
+              - "null"
+              - string
+          campaign:
+            type:
+              - "null"
+              - string
+          referring_url:
+            type:
+              - "null"
+              - string
+          landing_page_url:
+            type:
+              - "null"
+              - string
+          last_requested_url:
+            type:
+              - "null"
+              - string
+          referrer_domain:
+            type:
+              - "null"
+              - string
+          utm_source:
+            type:
+              - "null"
+              - string
+          utm_medium:
+            type:
+              - "null"
+              - string
+          utm_term:
+            type:
+              - "null"
+              - string
+          utm_content:
+            type:
+              - "null"
+              - string
+          utm_campaign:
+            type:
+              - "null"
+              - string
+          utma:
+            type:
+              - "null"
+              - string
+          utmb:
+            type:
+              - "null"
+              - string
+          utmc:
+            type:
+              - "null"
+              - string
+          utmv:
+            type:
+              - "null"
+              - string
+          utmz:
+            type:
+              - "null"
+              - string
+          ga:
+            type:
+              - "null"
+              - string
+          gclid:
+            type:
+              - "null"
+              - string
+          fbclid:
+            type:
+              - "null"
+              - string
+          msclkid:
+            type:
+              - "null"
+              - string
+          timeline_url:
+            type:
+              - "null"
+              - string
+          keywords_spotted:
+            type:
+              - "null"
+              - array
+            items: {}
+            additionalProperties: true
+          call_highlights:
+            type:
+              - "null"
+              - array
+            items: {}
+            additionalProperties: true
+          agent_email:
+            type:
+              - "null"
+              - string
+          keypad_entries:
+            type:
+              - "null"
+              - string
   conversations_stream:
     $parameters:
       name: "conversations"
       cursor_field: "last_message_at"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
     retriever:
@@ -86,13 +381,107 @@ definitions:
         request_parameters:
           fields: "id,company_id,initial_tracker_id,current_tracker_id,customer_name,customer_phone_number,initial_tracking_number,current_tracking_number,last_message_at,state,company_time_zone,formatted_customer_phone_number,formatted_initial_tracking_number,formatted_current_tracking_number,formatted_customer_name,recent_messages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          initial_tracker_id:
+            type:
+              - "null"
+              - string
+          current_tracker_id:
+            type:
+              - "null"
+              - string
+          customer_name:
+            type:
+              - "null"
+              - string
+          customer_phone_number:
+            type:
+              - "null"
+              - string
+          initial_tracking_number:
+            type:
+              - "null"
+              - string
+          current_tracking_number:
+            type:
+              - "null"
+              - string
+          last_message_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          state:
+            type:
+              - "null"
+              - string
+          formatted_customer_phone_number:
+            type:
+              - "null"
+              - string
+          formatted_initial_tracking_number:
+            type:
+              - "null"
+              - string
+          formatted_current_tracking_number:
+            type:
+              - "null"
+              - string
+          formatted_customer_name:
+            type:
+              - "null"
+              - string
+          company_time_zone:
+            type:
+              - "null"
+              - string
+          tracker_name:
+            type:
+              - "null"
+              - string
+          company_name:
+            type:
+              - "null"
+              - string
+          company_id:
+            type:
+              - "null"
+              - string
+          recent_messages:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                direction:
+                  type:
+                    - "null"
+                    - string
+                content:
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
   users_stream:
     $parameters:
       name: "users"
       cursor_field: "created_at"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
     retriever:
@@ -101,13 +490,49 @@ definitions:
         $ref: "#/definitions/requester"
         path: "{{ config['account_id'] }}/users.json?"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          role:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          accepted:
+            type:
+              - "null"
+              - boolean
   companies_stream:
     $parameters:
       name: "companies"
       cursor_field: "created_at"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
     retriever:
@@ -116,6 +541,79 @@ definitions:
         $ref: "#/definitions/requester"
         path: "{{ config['account_id'] }}/companies.json?"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          time_zone:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          disabled_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          dni_active:
+            type:
+              - "null"
+              - boolean
+          script_url:
+            type:
+              - "null"
+              - string
+          callscore_enabled:
+            type:
+              - "null"
+              - boolean
+          lead_scoring_enabled:
+            type:
+              - "null"
+              - boolean
+          swap_exclude_jquery:
+            type:
+              - "null"
+              - string
+          swap_ppc_override:
+            type:
+              - "null"
+              - string
+          swap_landing_override:
+            type:
+              - "null"
+              - string
+          swap_cookie_duration:
+            type: integer
+          callscribe_enabled:
+            type:
+              - "null"
+              - boolean
+          keyword_spotting_enabled:
+            type:
+              - "null"
+              - boolean
+          form_capture:
+            type:
+              - "null"
+              - boolean
 streams:
   - "#/definitions/calls_stream"
   - "#/definitions/conversations_stream"

@@ -48,6 +48,179 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          activeWorkspace:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - array
+          defaultWorkspace:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          memberships:
+            type:
+              - "null"
+              - array
+          name:
+            type:
+              - "null"
+              - string
+          profilePicture:
+            type:
+              - "null"
+              - string
+          settings:
+            properties:
+              alerts:
+                type:
+                  - "null"
+                  - boolean
+              approval:
+                type:
+                  - "null"
+                  - boolean
+              collapseAllProjectLists:
+                type:
+                  - "null"
+                  - boolean
+              dashboardPinToTop:
+                type:
+                  - "null"
+                  - boolean
+              dashboardSelection:
+                type:
+                  - "null"
+                  - string
+              dashboardViewType:
+                type:
+                  - "null"
+                  - string
+              dateFormat:
+                type:
+                  - "null"
+                  - string
+              groupSimilarEntriesDisabled:
+                type:
+                  - "null"
+                  - boolean
+              isCompactViewOn:
+                type:
+                  - "null"
+                  - boolean
+              lang:
+                type:
+                  - "null"
+                  - string
+              longRunning:
+                type:
+                  - "null"
+                  - boolean
+              multiFactorEnabled:
+                type:
+                  - "null"
+                  - boolean
+              myStartOfDay:
+                type:
+                  - "null"
+                  - string
+              onboarding:
+                type:
+                  - "null"
+                  - boolean
+              projectListCollapse:
+                type:
+                  - "null"
+                  - integer
+              projectPickerTaskFilter:
+                type:
+                  - "null"
+                  - boolean
+              pto:
+                type:
+                  - "null"
+                  - boolean
+              reminders:
+                type:
+                  - "null"
+                  - boolean
+              scheduledReports:
+                type:
+                  - "null"
+                  - boolean
+              scheduling:
+                type:
+                  - "null"
+                  - boolean
+              sendNewsletter:
+                type:
+                  - "null"
+                  - boolean
+              showOnlyWorkingDays:
+                type:
+                  - "null"
+                  - boolean
+              summaryReportSettings:
+                properties:
+                  group:
+                    type:
+                      - "null"
+                      - string
+                  subgroup:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+              theme:
+                type:
+                  - "null"
+                  - string
+              timeFormat:
+                type:
+                  - "null"
+                  - string
+              timeTrackingManual:
+                type:
+                  - "null"
+                  - boolean
+              timeZone:
+                type:
+                  - "null"
+                  - string
+              weekStart:
+                type:
+                  - "null"
+                  - string
+              weeklyUpdates:
+                type:
+                  - "null"
+                  - boolean
+            type:
+              - "null"
+              - object
+          status:
+            type:
+              - "null"
+              - string
+        type: object
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
@@ -55,6 +228,192 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/projects"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          archived:
+            type:
+              - "null"
+              - boolean
+          billable:
+            type:
+              - "null"
+              - boolean
+          budgetEstimate:
+            anyOf:
+              - type: "null"
+              - type: integer
+              - properties:
+                  estimate:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  resetOption:
+                    type:
+                      - "null"
+                      - string
+                  active:
+                    type:
+                      - "null"
+                      - boolean
+                type:
+                  - "null"
+                  - object
+          clientId:
+            type:
+              - "null"
+              - string
+          clientName:
+            type:
+              - "null"
+              - string
+          color:
+            type:
+              - "null"
+              - string
+          costRate:
+            anyOf:
+              - type: "null"
+              - type: string
+              - properties:
+                  amount:
+                    type:
+                      - "null"
+                      - string
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          duration:
+            type:
+              - "null"
+              - string
+          estimate:
+            properties:
+              estimate:
+                type: string
+              type:
+                type: string
+            type:
+              - "null"
+              - object
+          hourlyRate:
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          id:
+            type:
+              - "null"
+              - string
+          memberships:
+            items:
+              properties:
+                costRate:
+                  type:
+                    - "null"
+                hourlyRate:
+                  anyOf:
+                    - type: "null"
+                    - properties:
+                        amount:
+                          type:
+                            - "null"
+                            - integer
+                        currency:
+                          type:
+                            - "null"
+                            - string
+                      type:
+                        - "null"
+                        - object
+                membershipStatus:
+                  type:
+                    - "null"
+                    - string
+                membershipType:
+                  type:
+                    - "null"
+                    - string
+                targetId:
+                  type:
+                    - "null"
+                    - string
+                userId:
+                  type:
+                    - "null"
+                    - string
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          name:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          public:
+            type:
+              - "null"
+              - boolean
+          template:
+            type:
+              - "null"
+              - boolean
+          timeEstimate:
+            properties:
+              active:
+                type:
+                  - "null"
+                  - boolean
+              estimate:
+                type:
+                  - "null"
+                  - string
+              includeNonBillable:
+                type:
+                  - "null"
+                  - boolean
+              resetOption:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          workspaceId:
+            type:
+              - "null"
+              - string
+        type: object
   clients_stream:
     $ref: "#/definitions/base_stream"
     name: "clients"
@@ -62,6 +421,41 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/clients"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          address:
+            type:
+              - "null"
+              - string
+          archived:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          workspaceId:
+            type:
+              - "null"
+              - string
+        type: object
   tags_stream:
     $ref: "#/definitions/base_stream"
     name: "tags"
@@ -69,6 +463,29 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/tags"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          archived:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          workspaceId:
+            type:
+              - "null"
+              - string
+        type: object
   user_groups_stream:
     $ref: "#/definitions/base_stream"
     name: "user_groups"
@@ -76,6 +493,33 @@ definitions:
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/user-groups"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          userIds:
+            items:
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+          workspaceId:
+            type:
+              - "null"
+              - string
+        type: object
   users_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -88,12 +532,92 @@ definitions:
     $parameters:
       name: "time_entries"
       primary_key: "id"
-      path: "workspaces/{{ config['workspace_id'] }}/user/{{ stream_partition.user_id }}/time-entries"
+      path:
+        "workspaces/{{ config['workspace_id'] }}/user/{{ stream_partition.user_id
+        }}/time-entries"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
         $ref: "#/definitions/users_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          billable:
+            type:
+              - "null"
+              - boolean
+          customFieldValues:
+            type:
+              - "null"
+              - array
+          description:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          isLocked:
+            type:
+              - "null"
+              - boolean
+          kioskId:
+            type:
+              - "null"
+              - string
+          projectId:
+            type:
+              - "null"
+              - string
+          tagIds:
+            anyOf:
+              - type: "null"
+              - items:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  - "null"
+                  - array
+          taskId:
+            type:
+              - "null"
+              - string
+          timeInterval:
+            properties:
+              duration:
+                type:
+                  - "null"
+                  - string
+              end:
+                type:
+                  - "null"
+                  - string
+              start:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          type:
+            type:
+              - "null"
+              - string
+          userId:
+            type:
+              - "null"
+              - string
+          workspaceId:
+            type:
+              - "null"
+              - string
+        type: object
   projects_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -106,12 +630,101 @@ definitions:
     $parameters:
       name: "tasks"
       primary_key: "id"
-      path: "workspaces/{{ config['workspace_id'] }}/projects/{{ stream_partition.project_id }}/tasks"
+      path:
+        "workspaces/{{ config['workspace_id'] }}/projects/{{ stream_partition.project_id
+        }}/tasks"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
         $ref: "#/definitions/projects_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          budgetEstimate:
+            type:
+              - "null"
+              - number
+          assigneeId:
+            type:
+              - "null"
+              - string
+          assigneeIds:
+            items:
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+          billable:
+            type:
+              - "null"
+              - boolean
+          costRate:
+            anyOf:
+              - type: "null"
+              - type: string
+              - properties:
+                  amount:
+                    type:
+                      - "null"
+                      - string
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          duration:
+            type:
+              - "null"
+              - string
+          estimate:
+            type:
+              - "null"
+              - string
+          hourlyRate:
+            anyOf:
+              - type: "null"
+              - properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  currency:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          projectId:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          userGroupIds:
+            type:
+              - "null"
+              - array
+        type: object
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/projects_stream"

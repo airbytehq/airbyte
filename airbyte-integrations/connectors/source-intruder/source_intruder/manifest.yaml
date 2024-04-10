@@ -38,6 +38,48 @@ definitions:
       name: "issues"
       primary_key: "id"
       path: "/issues"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          severity:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          remediation:
+            type:
+              - "null"
+              - string
+          snoozed:
+            type:
+              - "null"
+              - boolean
+          snooze_reason:
+            type:
+              - "null"
+              - string
+          snooze_until:
+            type:
+              - "null"
+              - string
+          occurrences:
+            type:
+              - "null"
+              - string
   issue_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -58,12 +100,68 @@ definitions:
         path: "/issues/{{ stream_slice.id }}/occurrences"
       partition_router:
         $ref: "#/definitions/issue_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          target:
+            type:
+              - "null"
+              - string
+          port:
+            type:
+              - "null"
+              - integer
+          extra_info:
+            type:
+              - "null"
+              - object
+          age:
+            type:
+              - "null"
+              - string
+          snoozed:
+            type:
+              - "null"
+              - boolean
+          snooze_reason:
+            type:
+              - "null"
+              - string
+          snooze_until:
+            type:
+              - "null"
+              - string
   scans_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "scans"
       primary_key: "id"
       path: "/scans"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
   targets_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -71,6 +169,24 @@ definitions:
       primary_key: "id"
       path: "/targets"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          address:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
 streams:
   - "#/definitions/issues_stream"
   - "#/definitions/occurrences_issue_stream"

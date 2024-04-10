@@ -47,42 +47,495 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           status: "{{ config['status'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          externalId:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          traits:
+            type:
+              - "null"
+              - object
+          organizationId:
+            type:
+              - "null"
+              - string
+          accountOwnerId:
+            type:
+              - "null"
+              - string
+          churnedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          firstSeenTimestamp:
+            type:
+              - "null"
+              - string
+            format: date-time
+          lastSeenTimestamp:
+            type:
+              - "null"
+              - string
+            format: date-time
+          lastInboundMessageTimestamp:
+            type:
+              - "null"
+              - string
+            format: date-time
+          lastOutboundMessageTimestamp:
+            type:
+              - "null"
+              - string
+            format: date-time
+          mrr:
+            type:
+              - "null"
+              - number
+          nextRenewalDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          trialEndDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          usersCount:
+            type:
+              - "null"
+              - integer
+          npsDetractorCount:
+            type:
+              - "null"
+              - integer
+          npsPassiveCount:
+            type:
+              - "null"
+              - integer
+          npsPromoterCount:
+            type:
+              - "null"
+              - integer
+          npsScore:
+            type:
+              - "null"
+              - number
+          healthScore:
+            type:
+              - "null"
+              - number
+          csmId:
+            type:
+              - "null"
+              - string
+          accountExecutiveId:
+            type:
+              - "null"
+              - string
+          segments:
+            type:
+              - "null"
+              - array
   admins_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "admins"
       primary_key: "id"
       path: "/admins"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          licenseStatus:
+            type:
+              - "null"
+              - string
   conversations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "conversations"
       primary_key: "id"
       path: "/conversations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          externalId:
+            type:
+              - "null"
+              - string
+          subject:
+            type:
+              - "null"
+              - string
   notes_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "notes"
       primary_key: "id"
       path: "/notes"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          externalId:
+            type:
+              - "null"
+              - string
+          organizationId:
+            type:
+              - "null"
+              - string
+          categoryId:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          noteDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          note:
+            type:
+              - "null"
+              - string
+          account:
+            type:
+              - "null"
+              - object
+          organization:
+            type:
+              - "null"
+              - string
+          author:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          tag:
+            type:
+              - "null"
+              - array
+          accountId:
+            type:
+              - "null"
+              - string
+          authorId:
+            type:
+              - "null"
+              - string
+          traits:
+            type:
+              - "null"
+              - object
   nps_responses_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "nps_responses"
       primary_key: "id"
       path: "/npsResponses"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          externalId:
+            type:
+              - "null"
+              - string
+          userId:
+            type:
+              - "null"
+              - string
+          user:
+            type:
+              - "null"
+              - object
+          dismissedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          respondedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          score:
+            type:
+              - "null"
+              - number
+          feedback:
+            type:
+              - "null"
+              - string
   organizations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "organizations"
       primary_key: "id"
       path: "/organizations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          externalId:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          traits:
+            type:
+              - "null"
+              - object
+          accountOwnerId:
+            type:
+              - "null"
+              - string
+          churnedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          mrr:
+            type:
+              - "null"
+              - number
+          nextRenewalDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          trialEndDate:
+            type:
+              - "null"
+              - string
+            format: date-time
+          usersCount:
+            type:
+              - "null"
+              - integer
+          csmId:
+            type:
+              - "null"
+              - string
+          keyRoles:
+            type:
+              - "null"
+              - array
+          accountExecutiveId:
+            type:
+              - "null"
+              - string
   tasks_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "tasks"
       primary_key: "id"
       path: "/tasks"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          externalId:
+            type:
+              - "null"
+              - string
+          organizationId:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          completedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          dueDate:
+            type:
+              - "null"
+              - string
+            format: date
+          account:
+            type:
+              - "null"
+              - object
+          organization:
+            type:
+              - "null"
+              - string
+          tag:
+            type:
+              - "null"
+              - array
+          accountId:
+            type:
+              - "null"
+              - string
+          categoryId:
+            type:
+              - "null"
+              - string
+          assignedToId:
+            type:
+              - "null"
+              - string
+          completedById:
+            type:
+              - "null"
+              - string
+          assignedTo:
+            type:
+              - "null"
+              - object
+          completedBy:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          projects:
+            type:
+              - "null"
+              - array
+          traits:
+            type:
+              - "null"
+              - object
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -90,6 +543,105 @@ definitions:
       primary_key: "id"
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          externalId:
+            type:
+              - "null"
+              - string
+          accounts:
+            type:
+              - "null"
+              - array
+          organizations:
+            type:
+              - "null"
+              - array
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          avatar:
+            type:
+              - "null"
+              - string
+          traits:
+            type:
+              - "null"
+              - object
+          firstKnown:
+            type:
+              - "null"
+              - string
+            format: date-time
+          lastSeenTimestamp:
+            type:
+              - "null"
+              - string
+            format: date-time
+          lastInboundMessageTimestamp:
+            type:
+              - "null"
+              - string
+            format: date-time
+          lastOutboundMessageTimestamp:
+            type:
+              - "null"
+              - string
+            format: date-time
+          npsLastScore:
+            type:
+              - "null"
+              - number
+          npsLastFeedback:
+            type:
+              - "null"
+              - string
+          npsLastRespondedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          unsubscribedFromConversations:
+            type:
+              - "null"
+              - boolean
+          deactivatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          segments:
+            type:
+              - "null"
+              - array
+          joinDate:
+            type:
+              - "null"
+              - string
+            format: date-time
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/admins_stream"

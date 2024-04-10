@@ -90,6 +90,16 @@ definitions:
       name: "deliverystats"
       primary_key: "Name"
       path: "/deliverystats"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          Name:
+            type: string
+          Count:
+            type: integer
   message-streams:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -100,6 +110,35 @@ definitions:
       name: "message-streams"
       primary_key: "ID"
       path: "/message-streams"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          ID:
+            type: string
+          ServerID:
+            type: integer
+          Name:
+            type: string
+          Description:
+            type: string
+          MessageStreamType:
+            type: string
+          CreatedAt:
+            type: string
+          UpdatedAt:
+            type: "null"
+          ArchivedAt:
+            type: "null"
+          ExpectedPurgeDate:
+            type: "null"
+          SubscriptionManagementConfiguration:
+            type: object
+            properties:
+              UnsubscribeHandlingType:
+                type: string
   bounces:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -111,6 +150,46 @@ definitions:
       primary_key: "ID"
       path: "/bounces"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          ID:
+            type: integer
+          Type:
+            type: string
+          TypeCode:
+            type: integer
+          Name:
+            type: string
+          Tag:
+            type: string
+          MessageID:
+            type: string
+          ServerID:
+            type: integer
+          MessageStream:
+            type: string
+          Description:
+            type: string
+          Details:
+            type: string
+          Email:
+            type: string
+          From:
+            type: string
+          BouncedAt:
+            type: string
+          DumpAvailable:
+            type: boolean
+          Inactive:
+            type: boolean
+          CanActivate:
+            type: boolean
+          Subject:
+            type: string
   servers:
     $ref: "#/definitions/base_stream_account"
     retriever:
@@ -121,6 +200,58 @@ definitions:
       name: "servers"
       primary_key: "ID"
       path: "/servers"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          ID:
+            type: integer
+          Name:
+            type: string
+          ApiTokens:
+            type: array
+            items:
+              type: string
+          Color:
+            type: string
+          SmtpApiActivated:
+            type: boolean
+          RawEmailEnabled:
+            type: boolean
+          DeliveryType:
+            type: string
+          ServerLink:
+            type: string
+          InboundAddress:
+            type: string
+          InboundHookUrl:
+            type: string
+          BounceHookUrl:
+            type: string
+          OpenHookUrl:
+            type: string
+          DeliveryHookUrl:
+            type: string
+          PostFirstOpenOnly:
+            type: boolean
+          InboundDomain:
+            type: string
+          InboundHash:
+            type: string
+          InboundSpamThreshold:
+            type: integer
+          TrackOpens:
+            type: boolean
+          TrackLinks:
+            type: string
+          IncludeBounceContentInHook:
+            type: boolean
+          ClickHookUrl:
+            type: string
+          EnableSmtpApiErrorHooks:
+            type: boolean
   messages:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -131,6 +262,61 @@ definitions:
       name: "messages"
       primary_key: "MessageID"
       path: "/messages/outbound"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          Tag:
+            type: string
+          MessageID:
+            type: string
+          MessageStream:
+            type: string
+          To:
+            type: array
+            items:
+              type: object
+              properties:
+                Email:
+                  type: string
+                Name:
+                  type: "null"
+          Cc:
+            type: array
+            items: {}
+          Bcc:
+            type: array
+            items: {}
+          Recipients:
+            type: array
+            items:
+              type: string
+          ReceivedAt:
+            type: string
+          From:
+            type: string
+          Subject:
+            type: string
+          Attachments:
+            type: array
+            items: {}
+          Status:
+            type: string
+          TrackOpens:
+            type: boolean
+          TrackLinks:
+            type: string
+          Metadata:
+            type: object
+            properties:
+              color:
+                type: string
+              client-id:
+                type: string
+          Sandboxed:
+            type: boolean
   domains:
     $ref: "#/definitions/base_stream_account"
     $parameters:
@@ -141,6 +327,24 @@ definitions:
       $ref: "#/definitions/retriever_account"
       record_selector:
         $ref: "#/definitions/selector_domains"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          Name:
+            type: string
+          SPFVerified:
+            type: boolean
+          DKIMVerified:
+            type: boolean
+          WeakDKIM:
+            type: boolean
+          ReturnPathDomainVerified:
+            type: boolean
+          ID:
+            type: integer
 streams:
   - "#/definitions/deliverystats"
   - "#/definitions/message-streams"

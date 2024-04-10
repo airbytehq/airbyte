@@ -51,36 +51,404 @@ definitions:
       name: "customers"
       primary_key: "key"
       path: "/customers"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created_at:
+            type:
+              - "null"
+              - integer
+          customer_key:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          field_data:
+            type:
+              - "null"
+              - object
+          fields:
+            type:
+              - "null"
+              - array
+          key:
+            type:
+              - "null"
+              - string
+          meta:
+            type:
+              - "null"
+              - object
+          name:
+            type:
+              - "null"
+              - string
+          partner_key:
+            type:
+              - "null"
+              - string
+          partnership_key:
+            type:
+              - "null"
+              - string
+          provider_key:
+            type:
+              - "null"
+              - string
+          source_key:
+            type:
+              - "null"
+              - string
+          source_type:
+            type:
+              - "null"
+              - string
+          test:
+            type:
+              - "null"
+              - boolean
+          updated_at:
+            type:
+              - "null"
+              - integer
   deals_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "deals"
       primary_key: "key"
       path: "/deals"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created_at:
+            type:
+              - "null"
+              - integer
+          key:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - integer
+          account_name:
+            type:
+              - "null"
+              - object
+          amount:
+            type:
+              - "null"
+              - integer
+          close_date:
+            type:
+              - "null"
+              - string
+          contact_first_name:
+            type:
+              - "null"
+              - string
+          contact_last_name:
+            type:
+              - "null"
+              - string
+          external_key:
+            type:
+              - "null"
+              - string
+          field_data:
+            type:
+              - "null"
+              - object
+          fields:
+            type:
+              - "null"
+              - array
+          group_key:
+            type:
+              - "null"
+              - string
+          lost_reason:
+            type:
+              - "null"
+              - string
+          meta:
+            type:
+              - "null"
+              - object
+          mold_key:
+            type:
+              - "null"
+              - string
+          partner_key:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+          stage:
+            type:
+              - "null"
+              - string
+          team:
+            type:
+              - "null"
+              - object
+          team_member:
+            type:
+              - "null"
+              - object
   groups_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "groups"
       primary_key: "key"
       path: "/groups"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          archived:
+            type:
+              - "null"
+              - boolean
+          created_at:
+            type:
+              - "null"
+              - integer
+          default:
+            type:
+              - "null"
+              - boolean
+          features:
+            type:
+              - "null"
+              - object
+          key:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          slug:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - integer
   leads_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "leads"
       primary_key: "key"
       path: "/leads"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          approved:
+            type:
+              - "null"
+              - boolean
+          created_at:
+            type:
+              - "null"
+              - integer
+          external_key:
+            type:
+              - "null"
+              - string
+          field_data:
+            type:
+              - "null"
+              - object
+          fields:
+            type:
+              - "null"
+              - array
+          group_key:
+            type:
+              - "null"
+              - string
+          key:
+            type:
+              - "null"
+              - string
+          meta:
+            type:
+              - "null"
+              - object
+          mold_key:
+            type:
+              - "null"
+              - string
+          partner_key:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - integer
   partnerships_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "partnerships"
       primary_key: "key"
       path: "/partnerships"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          created_at:
+            type:
+              - "null"
+              - integer
+          email:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          group:
+            type:
+              - "null"
+              - object
+          joined_at:
+            type:
+              - "null"
+              - integer
+          key:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          manager:
+            type:
+              - "null"
+              - object
+          m_data:
+            type:
+              - "null"
+              - object
+          partner_key:
+            type:
+              - "null"
+              - string
+          stats:
+            type:
+              - "null"
+              - object
+          tags:
+            type:
+              - "null"
+              - array
+          team:
+            type:
+              - "null"
+              - object
+          updated_at:
+            type:
+              - "null"
+              - integer
   rewards_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "rewards"
       primary_key: "key"
       path: "/rewards"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          action:
+            type:
+              - "null"
+              - object
+          amount:
+            type:
+              - "null"
+              - integer
+          created_at:
+            type:
+              - "null"
+              - integer
+          customer:
+            type:
+              - "null"
+              - object
+          description:
+            type:
+              - "null"
+              - string
+          invoice:
+            type:
+              - "null"
+              - object
+          key:
+            type:
+              - "null"
+              - string
+          offer:
+            type:
+              - "null"
+              - object
+          partnership:
+            type:
+              - "null"
+              - object
+          reward_status:
+            type:
+              - "null"
+              - string
+          transaction:
+            type:
+              - "null"
+              - object
+          trigger:
+            type:
+              - "null"
+              - object
+          updated_at:
+            type:
+              - "null"
+              - integer
   transactions_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -88,6 +456,60 @@ definitions:
       primary_key: "key"
       path: "/transactions"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          amount_usd:
+            type:
+              - "null"
+              - integer
+          approved:
+            type:
+              - "null"
+              - boolean
+          category_key:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          customer:
+            type:
+              - "null"
+              - object
+          customer_key:
+            type:
+              - "null"
+              - string
+          extension:
+            type:
+              - "null"
+              - object
+          key:
+            type:
+              - "null"
+              - string
+          product_key:
+            type:
+              - "null"
+              - object
+          updated_at:
+            type:
+              - "null"
+              - integer
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/deals_stream"

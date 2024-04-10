@@ -29,9 +29,6 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
   base_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_survey_sparrow/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "#/definitions/retriever"
   contacts_stream:
@@ -40,6 +37,52 @@ definitions:
       name: "contacts"
       primary_key: "id"
       path: "/contacts"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          email:
+            type:
+              - "null"
+              - string
+          mobile:
+            type:
+              - "null"
+              - string
+          job_title:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          unsubscribed:
+            type:
+              - "null"
+              - boolean
+          name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          createddate:
+            type:
+              - "null"
+              - string
   contact_lists_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -48,6 +91,29 @@ definitions:
       path: "/contact_lists"
     paginator:
       type: "NoPagination"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
   questions_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -63,6 +129,83 @@ definitions:
         request_option:
           field_name: "survey_id"
           inject_into: "request_parameter"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          rtxt:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          multiple_answers:
+            type:
+              - "null"
+              - boolean
+          is_required:
+            type:
+              - "null"
+              - boolean
+          properties:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - object
+              clone:
+                type:
+                  - "null"
+                  - object
+          parent_question_id:
+            type:
+              - "null"
+              - integer
+          position:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          section:
+            type:
+              - "null"
+              - object
+          tags:
+            type:
+              - "null"
+              - array
+          annotations:
+            type:
+              - "null"
+              - array
+          scale_points:
+            type:
+              - "null"
+              - array
+          choices:
+            type:
+              - "null"
+              - array
   responses_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -78,24 +221,179 @@ definitions:
         request_option:
           field_name: "survey_id"
           inject_into: "request_parameter"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          completed_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          survey_id:
+            type:
+              - "null"
+              - integer
+          state:
+            type:
+              - "null"
+              - string
+          channel_id:
+            type:
+              - "null"
+              - integer
+          language:
+            type:
+              - "null"
+              - string
+          start_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          contact:
+            type:
+              - "null"
+              - string
+          channel:
+            type:
+              - "null"
+              - object
+          answers:
+            type:
+              - "null"
+              - array
+          variables:
+            type:
+              - "null"
+              - array
+          expressions:
+            type:
+              - "null"
+              - array
   roles_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "roles"
       primary_key: "id"
       path: "/roles"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          label:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          deleted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          account_id:
+            type:
+              - "null"
+              - integer
   surveys_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "surveys"
       primary_key: "id"
       path: "/surveys"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          archived:
+            type:
+              - "null"
+              - boolean
+          survey_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
   survey_folders_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "survey_folders"
       primary_key: "id"
       path: "/survey_folders"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          auto_created:
+            type:
+              - "null"
+              - boolean
+          visibility:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -103,6 +401,53 @@ definitions:
       primary_key: "id"
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          admin:
+            type:
+              - "null"
+              - boolean
+          owner:
+            type:
+              - "null"
+              - boolean
+          agency_owner:
+            type:
+              - "null"
+              - boolean
+          verified:
+            type:
+              - "null"
+              - boolean
+          role_id:
+            type:
+              - "null"
+              - integer
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
 streams:
   - "#/definitions/contacts_stream"
   - "#/definitions/contact_lists_stream"

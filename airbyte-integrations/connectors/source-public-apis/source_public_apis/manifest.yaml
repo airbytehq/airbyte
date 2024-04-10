@@ -44,12 +44,58 @@ definitions:
       name: "categories"
       path: "/categories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          name:
+            type:
+              - "null"
+              - string
   services_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "services"
       path: "/entries"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          API:
+            type:
+              - "null"
+              - string
+          Description:
+            type:
+              - "null"
+              - string
+          Auth:
+            type:
+              - "null"
+              - string
+          HTTPS:
+            type:
+              - "null"
+              - boolean
+          Cors:
+            type:
+              - "null"
+              - string
+          Link:
+            type:
+              - "null"
+              - string
+          Category:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/categories_stream"
   - "#/definitions/services_stream"

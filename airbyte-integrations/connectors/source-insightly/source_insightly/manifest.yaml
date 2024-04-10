@@ -80,6 +80,159 @@ definitions:
     $parameters:
       path: "/ActivitySets"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          ACTIVITYSET_ID:
+            type: integer
+          NAME:
+            type:
+              - string
+              - "null"
+          FOR_CONTACTS:
+            type:
+              - boolean
+              - "null"
+          FOR_ORGANISATIONS:
+            type:
+              - boolean
+              - "null"
+          FOR_OPPORTUNITIES:
+            type:
+              - boolean
+              - "null"
+          FOR_PROJECTS:
+            type:
+              - boolean
+              - "null"
+          FOR_LEADS:
+            type:
+              - boolean
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          ACTIVITIES:
+            type: array
+            items:
+              type: object
+              properties:
+                ACTIVITY_ID:
+                  type:
+                    - integer
+                    - "null"
+                ACTIVITYSET_ID:
+                  type:
+                    - integer
+                    - "null"
+                ACTIVITY_NAME:
+                  type:
+                    - string
+                    - "null"
+                ACTIVITY_DETAILS:
+                  type:
+                    - string
+                    - "null"
+                ACTIVITY_TYPE:
+                  type:
+                    - string
+                    - "null"
+                CATEGORY_ID:
+                  type:
+                    - integer
+                    - "null"
+                REMINDER:
+                  type:
+                    - boolean
+                    - "null"
+                REMINDER_DAYS_BEFORE_DUE:
+                  type:
+                    - integer
+                    - "null"
+                REMINDER_TIME:
+                  type:
+                    - string
+                    - "null"
+                PUBLICLY_VISIBLE:
+                  type:
+                    - boolean
+                    - "null"
+                OWNER_VISIBLE:
+                  type:
+                    - boolean
+                    - "null"
+                OWNER_USER_ID:
+                  type:
+                    - integer
+                    - "null"
+                RESPONSIBLE_USER_ID:
+                  type:
+                    - integer
+                    - "null"
+                ASSIGNED_TEAM_ID:
+                  type:
+                    - integer
+                    - "null"
+                SKIP_SUN:
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_MON:
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_TUE:
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_WED:
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_THU:
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_FRI:
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_SAT:
+                  type:
+                    - boolean
+                    - "null"
+                DUE_DAYS_AFTER_START:
+                  type:
+                    - integer
+                    - "null"
+                DUE_DAYS_BEFORE_END:
+                  type:
+                    - integer
+                    - "null"
+                EVENT_DAYS_AFTER_START:
+                  type:
+                    - integer
+                    - "null"
+                EVENT_DAYS_BEFORE_END:
+                  type:
+                    - integer
+                    - "null"
+                EVENT_TIME:
+                  type:
+                    - string
+                    - "null"
+                ALL_DAY:
+                  type:
+                    - boolean
+                    - "null"
+                DURATION:
+                  type:
+                    - integer
+                    - "null"
   contacts_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "contacts"
@@ -87,6 +240,257 @@ definitions:
     $parameters:
       path: "/Contacts/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          CONTACT_ID:
+            type: integer
+          SALUTATION:
+            type:
+              - string
+              - "null"
+          FIRST_NAME:
+            type:
+              - string
+              - "null"
+          LAST_NAME:
+            type:
+              - string
+              - "null"
+          IMAGE_URL:
+            type:
+              - string
+              - "null"
+          BACKGROUND:
+            type:
+              - string
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          SOCIAL_LINKEDIN:
+            type:
+              - string
+              - "null"
+          SOCIAL_FACEBOOK:
+            type:
+              - string
+              - "null"
+          SOCIAL_TWITTER:
+            type:
+              - string
+              - "null"
+          DATE_OF_BIRTH:
+            type:
+              - string
+              - "null"
+          PHONE:
+            type:
+              - string
+              - "null"
+          PHONE_HOME:
+            type:
+              - string
+              - "null"
+          PHONE_MOBILE:
+            type:
+              - string
+              - "null"
+          PHONE_OTHER:
+            type:
+              - string
+              - "null"
+          PHONE_ASSISTANT:
+            type:
+              - string
+              - "null"
+          PHONE_FAX:
+            type:
+              - string
+              - "null"
+          EMAIL_ADDRESS:
+            type:
+              - string
+              - "null"
+          ASSISTANT_NAME:
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_STREET:
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_CITY:
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_STATE:
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_POSTCODE:
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_COUNTRY:
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_STREET:
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_CITY:
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_STATE:
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_POSTCODE:
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_COUNTRY:
+            type:
+              - string
+              - "null"
+          LAST_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          NEXT_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          ORGANISATION_ID:
+            type:
+              - integer
+              - "null"
+          TITLE:
+            type:
+              - string
+              - "null"
+          VISIBLE_TEAM_ID:
+            type:
+              - integer
+              - "null"
+          VISIBLE_TO:
+            type:
+              - string
+              - "null"
+          EMAIL_OPTED_OUT:
+            type:
+              - boolean
+              - "null"
+          CUSTOMFIELDS:
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  type: object
+          TAGS:
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  type:
+                    - string
+                    - "null"
+          DATES:
+            type: array
+            items:
+              type: object
+              properties:
+                DATE_ID:
+                  type:
+                    - integer
+                    - "null"
+                OCCASION_NAME:
+                  type:
+                    - string
+                    - "null"
+                OCCASION_DATE:
+                  type:
+                    - string
+                    - "null"
+                REPEAT_YEARLY:
+                  type:
+                    - boolean
+                    - "null"
+                CREATE_TASK_YEARLY:
+                  type:
+                    - boolean
+                    - "null"
+          LINKS:
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  type:
+                    - boolean
+                    - "null"
   countries_stream:
     $ref: "#/definitions/base_stream"
     name: "countries"
@@ -94,6 +498,14 @@ definitions:
     $parameters:
       path: "/Countries"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          COUNTRY_NAME:
+            type: string
   currencies_stream:
     $ref: "#/definitions/base_stream"
     name: "currencies"
@@ -101,6 +513,18 @@ definitions:
     $parameters:
       path: "/Currencies"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          CURRENCY_CODE:
+            type: string
+          CURRENCY_SYMBOL:
+            type:
+              - string
+              - "null"
   emails_stream:
     $ref: "#/definitions/base_stream"
     name: "emails"
@@ -108,6 +532,103 @@ definitions:
     $parameters:
       path: "/Emails/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          EMAIL_ID:
+            type: integer
+          EMAIL_FROM:
+            type:
+              - string
+              - "null"
+          SUBJECT:
+            type:
+              - string
+              - "null"
+          EMAIL_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          FORMAT:
+            type:
+              - string
+              - "null"
+          SIZE:
+            type:
+              - integer
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          QUEUED_SEND_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          TAGS:
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  type:
+                    - string
+                    - "null"
+          LINKS:
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  type:
+                    - boolean
+                    - "null"
   events_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "events"
@@ -115,6 +636,115 @@ definitions:
     $parameters:
       path: "/Events/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          EVENT_ID:
+            type: integer
+          TITLE:
+            type:
+              - string
+              - "null"
+          LOCATION:
+            type:
+              - string
+              - "null"
+          START_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          END_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          ALL_DAY:
+            type:
+              - boolean
+              - "null"
+          DETAILS:
+            type:
+              - string
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          REMINDER_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          REMINDER_SENT:
+            type:
+              - boolean
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          CUSTOMFIELDS:
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  type: object
+          LINKS:
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  type:
+                    - boolean
+                    - "null"
   knowledge_article_categories_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "knowledge_article_categories"
@@ -122,6 +752,36 @@ definitions:
     $parameters:
       path: "/KnowledgeArticleCategory/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CATEGORY_ID:
+            type: integer
+          CATEGORY_NAME:
+            type:
+              - string
+              - "null"
+          DESCRIPTION:
+            type:
+              - string
+              - "null"
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
   knowledge_article_folders_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "knowledge_article_folders"
@@ -129,6 +789,44 @@ definitions:
     $parameters:
       path: "/KnowledgeArticleFolder/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          FOLDER_ID:
+            type: integer
+          FOLDER_NAME:
+            type:
+              - string
+              - "null"
+          CATEGORY_ID:
+            type:
+              - string
+              - "null"
+          VISIBILITY:
+            type:
+              - string
+              - "null"
+          ORDER_ARTICLES:
+            type:
+              - string
+              - "null"
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
   knowledge_articles_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "knowledge_articles"
@@ -136,6 +834,119 @@ definitions:
     $parameters:
       path: "/KnowledgeArticle/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          ARTICLE_ID:
+            type: integer
+          CATEGORY_ID:
+            type:
+              - integer
+              - "null"
+          FOLDER_ID:
+            type:
+              - integer
+              - "null"
+          ARTICLE_NO:
+            type:
+              - integer
+              - "null"
+          ArticleVersion:
+            type:
+              - string
+              - "null"
+          Status:
+            type:
+              - string
+              - "null"
+          Language:
+            type:
+              - string
+              - "null"
+          Title:
+            type:
+              - string
+              - "null"
+          Body:
+            type:
+              - string
+              - "null"
+          URL_SLUG:
+            type:
+              - string
+              - "null"
+          DOWNVOTE_COUNT:
+            type:
+              - integer
+              - "null"
+          UPVOTE_COUNT:
+            type:
+              - integer
+              - "null"
+          PROMOTED:
+            type:
+              - boolean
+              - "null"
+          FIRST_PUBLISHED_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          LAST_PUBLISHED_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          ARCHIVED_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          ExternalLinkCount:
+            type:
+              - string
+              - "null"
+          CUSTOMFIELDS:
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  type: object
+          TAGS:
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  type:
+                    - string
+                    - "null"
   leads_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "leads"
@@ -150,6 +961,26 @@ definitions:
     $parameters:
       path: "/LeadSources"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          LEAD_SOURCE_ID:
+            type: integer
+          LEAD_SOURCE:
+            type:
+              - string
+              - "null"
+          DEFAULT_VALUE:
+            type:
+              - boolean
+              - "null"
+          FIELD_ORDER:
+            type:
+              - integer
+              - "null"
   lead_statuses_stream:
     $ref: "#/definitions/base_stream"
     name: "lead_statuses"
@@ -157,6 +988,30 @@ definitions:
     $parameters:
       path: "/LeadStatuses"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          LEAD_STATUS_ID:
+            type: integer
+          LEAD_STATUS:
+            type:
+              - string
+              - "null"
+          DEFAULT_STATUS:
+            type:
+              - boolean
+              - "null"
+          STATUS_TYPE:
+            type:
+              - integer
+              - "null"
+          FIELD_ORDER:
+            type:
+              - integer
+              - "null"
   milestones_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "milestones"
@@ -164,6 +1019,53 @@ definitions:
     $parameters:
       path: "/Milestones/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          MILESTONE_ID:
+            type: integer
+          TITLE:
+            type:
+              - string
+              - "null"
+          COMPLETED:
+            type:
+              - boolean
+              - "null"
+          DUE_DATE:
+            type:
+              - string
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          COMPLETED_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          PROJECT_ID:
+            type:
+              - integer
+              - "null"
+          RESPONSIBLE_USER:
+            type:
+              - integer
+              - "null"
   notes_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "notes"
@@ -171,6 +1073,77 @@ definitions:
     $parameters:
       path: "/Notes/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          NOTE_ID:
+            type: integer
+          TITLE:
+            type:
+              - string
+              - "null"
+          BODY:
+            type:
+              - string
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          LINKS:
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  type:
+                    - boolean
+                    - "null"
   opportunities_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "opportunities"
@@ -178,6 +1151,188 @@ definitions:
     $parameters:
       path: "/Opportunities/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          OPPORTUNITY_ID:
+            type: integer
+          OPPORTUNITY_NAME:
+            type:
+              - string
+              - "null"
+          OPPORTUNITY_DETAILS:
+            type:
+              - string
+              - "null"
+          OPPORTUNITY_STATE:
+            type:
+              - string
+              - "null"
+          RESPONSIBLE_USER_ID:
+            type:
+              - integer
+              - "null"
+          CATEGORY_ID:
+            type:
+              - integer
+              - "null"
+          IMAGE_URL:
+            type:
+              - string
+              - "null"
+          BID_CURRENCY:
+            type:
+              - string
+              - "null"
+          BID_AMOUNT:
+            type:
+              - number
+              - "null"
+          BID_TYPE:
+            type:
+              - string
+              - "null"
+          BID_DURATION:
+            type:
+              - integer
+              - "null"
+          ACTUAL_CLOSE_DATE:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          OPPORTUNITY_VALUE:
+            type:
+              - number
+              - "null"
+          PROBABILITY:
+            type:
+              - integer
+              - "null"
+          FORECAST_CLOSE_DATE:
+            type:
+              - string
+              - "null"
+            format: date-time
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          LAST_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          NEXT_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          PIPELINE_ID:
+            type:
+              - integer
+              - "null"
+          STAGE_ID:
+            type:
+              - integer
+              - "null"
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          ORGANISATION_ID:
+            type:
+              - integer
+              - "null"
+          PRICEBOOK_ID:
+            type:
+              - integer
+              - "null"
+          VISIBLE_TEAM_ID:
+            type:
+              - integer
+              - "null"
+          VISIBLE_TO:
+            type:
+              - string
+              - "null"
+          CUSTOMFIELDS:
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  type: object
+          TAGS:
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  type:
+                    - string
+                    - "null"
+              required:
+                - TAG_NAME
+          LINKS:
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  type:
+                    - boolean
+                    - "null"
   opportunity_categories_stream:
     $ref: "#/definitions/base_stream"
     name: "opportunity_categories"
@@ -185,6 +1340,26 @@ definitions:
     $parameters:
       path: "/OpportunityCategories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CATEGORY_ID:
+            type: integer
+          CATEGORY_NAME:
+            type:
+              - string
+              - "null"
+          ACTIVE:
+            type:
+              - boolean
+              - "null"
+          BACKGROUND_COLOR:
+            type:
+              - string
+              - "null"
   opportunity_products_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "opportunity_products"
@@ -199,6 +1374,22 @@ definitions:
     $parameters:
       path: "/OpportunityStateReasons"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          STATE_REASON_ID:
+            type: integer
+          STATE_REASON:
+            type:
+              - string
+              - "null"
+          FOR_OPPORTUNITY_STATE:
+            type:
+              - string
+              - "null"
   organisations_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "organisations"
@@ -206,6 +1397,226 @@ definitions:
     $parameters:
       path: "/Organisations/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          ORGANISATION_ID:
+            type: integer
+          ORGANISATION_NAME:
+            type:
+              - string
+              - "null"
+          BACKGROUND:
+            type:
+              - string
+              - "null"
+          IMAGE_URL:
+            type:
+              - string
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          LAST_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          NEXT_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          PHONE:
+            type:
+              - string
+              - "null"
+          PHONE_FAX:
+            type:
+              - string
+              - "null"
+          WEBSITE:
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_STREET:
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_CITY:
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_STATE:
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_COUNTRY:
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_POSTCODE:
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_STREET:
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_CITY:
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_STATE:
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_POSTCODE:
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_COUNTRY:
+            type:
+              - string
+              - "null"
+          SOCIAL_LINKEDIN:
+            type:
+              - string
+              - "null"
+          SOCIAL_FACEBOOK:
+            type:
+              - string
+              - "null"
+          SOCIAL_TWITTER:
+            type:
+              - string
+              - "null"
+          VISIBLE_TEAM_ID:
+            type:
+              - integer
+              - "null"
+          VISIBLE_TO:
+            type:
+              - string
+              - "null"
+          CUSTOMFIELDS:
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  type: object
+          TAGS:
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  type:
+                    - string
+                    - "null"
+          DATES:
+            type: array
+            items:
+              type: object
+              properties:
+                DATE_ID:
+                  type:
+                    - integer
+                    - "null"
+                OCCASION_NAME:
+                  type:
+                    - string
+                    - "null"
+                OCCASION_DATE:
+                  type:
+                    - string
+                    - "null"
+                REPEAT_YEARLY:
+                  type:
+                    - boolean
+                    - "null"
+                CREATE_TASK_YEARLY:
+                  type:
+                    - boolean
+                    - "null"
+          EMAILDOMAINS:
+            type: array
+            items:
+              type: object
+              properties:
+                EMAIL_DOMAIN_ID:
+                  type:
+                    - integer
+                    - "null"
+                EMAIL_DOMAIN:
+                  type:
+                    - string
+                    - "null"
+          LINKS:
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  type:
+                    - boolean
+                    - "null"
   pipelines_stream:
     $ref: "#/definitions/base_stream"
     name: "pipelines"
@@ -213,6 +1624,30 @@ definitions:
     $parameters:
       path: "/Pipelines"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          PIPELINE_ID:
+            type: integer
+          PIPELINE_NAME:
+            type:
+              - string
+              - "null"
+          FOR_OPPORTUNITIES:
+            type:
+              - boolean
+              - "null"
+          FOR_PROJECTS:
+            type:
+              - boolean
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
   pipeline_stages_stream:
     $ref: "#/definitions/base_stream"
     name: "pipeline_stages"
@@ -220,6 +1655,34 @@ definitions:
     $parameters:
       path: "/PipelineStages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          STAGE_ID:
+            type: integer
+          PIPELINE_ID:
+            type:
+              - integer
+              - "null"
+          STAGE_NAME:
+            type:
+              - string
+              - "null"
+          STAGE_ORDER:
+            type:
+              - integer
+              - "null"
+          ACTIVITYSET_ID:
+            type:
+              - integer
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
   pricebook_entries_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "price_book_entries"
@@ -248,6 +1711,26 @@ definitions:
     $parameters:
       path: "/ProjectCategories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CATEGORY_ID:
+            type: integer
+          CATEGORY_NAME:
+            type:
+              - string
+              - "null"
+          ACTIVE:
+            type:
+              - boolean
+              - "null"
+          BACKGROUND_COLOR:
+            type:
+              - string
+              - "null"
   projects_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "projects"
@@ -255,6 +1738,156 @@ definitions:
     $parameters:
       path: "/Projects/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          PROJECT_ID:
+            type: integer
+          PROJECT_NAME:
+            type:
+              - string
+              - "null"
+          STATUS:
+            type:
+              - string
+              - "null"
+          PROJECT_DETAILS:
+            type:
+              - string
+              - "null"
+          STARTED_DATE:
+            type:
+              - string
+              - "null"
+            format: date-time
+          COMPLETED_DATE:
+            type:
+              - string
+              - "null"
+            format: date-time
+          OPPORTUNITY_ID:
+            type:
+              - integer
+              - "null"
+          CATEGORY_ID:
+            type:
+              - integer
+              - "null"
+          PIPELINE_ID:
+            type:
+              - integer
+              - "null"
+          STAGE_ID:
+            type:
+              - integer
+              - "null"
+          IMAGE_URL:
+            type:
+              - string
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          LAST_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+          NEXT_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          RESPONSIBLE_USER_ID:
+            type:
+              - integer
+              - "null"
+          VISIBLE_TEAM_ID:
+            type:
+              - integer
+              - "null"
+          VISIBLE_TO:
+            type:
+              - string
+              - "null"
+          CUSTOMFIELDS:
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  type: object
+          TAGS:
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  type:
+                    - string
+                    - "null"
+          LINKS:
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  type:
+                    - boolean
+                    - "null"
   prospects_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "prospects"
@@ -262,6 +1895,174 @@ definitions:
     $parameters:
       path: "/Prospect/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          PROSPECT_ID:
+            type: integer
+          LEAD_ID:
+            type:
+              - integer
+              - "null"
+          CONTACT_ID:
+            type:
+              - integer
+              - "null"
+          ORGANISATION_ID:
+            type:
+              - integer
+              - "null"
+          SALUTATION:
+            type:
+              - string
+              - "null"
+          FIRST_NAME:
+            type:
+              - string
+              - "null"
+          LAST_NAME:
+            type:
+              - string
+              - "null"
+          ORGANISATION_NAME:
+            type:
+              - string
+              - "null"
+          TITLE:
+            type:
+              - string
+              - "null"
+          EMAIL_ADDRESS:
+            type:
+              - string
+              - "null"
+          PHONE:
+            type:
+              - string
+              - "null"
+          MOBILE:
+            type:
+              - string
+              - "null"
+          FAX:
+            type:
+              - string
+              - "null"
+          WEBSITE:
+            type:
+              - string
+              - "null"
+          ADDRESS_STREET:
+            type:
+              - string
+              - "null"
+          ADDRESS_CITY:
+            type:
+              - string
+              - "null"
+          ADDRESS_STATE:
+            type:
+              - string
+              - "null"
+          ADDRESS_POSTCODE:
+            type:
+              - string
+              - "null"
+          ADDRESS_COUNTRY:
+            type:
+              - string
+              - "null"
+          INDUSTRY:
+            type:
+              - string
+              - "null"
+          EMPLOYEE_COUNT:
+            type:
+              - integer
+              - "null"
+          SCORE:
+            type:
+              - integer
+              - "null"
+          GRADE:
+            type:
+              - string
+              - "null"
+          DESCRIPTION:
+            type:
+              - string
+              - "null"
+          DO_NOT_EMAIL:
+            type:
+              - boolean
+              - "null"
+          DO_NOT_CALL:
+            type:
+              - boolean
+              - "null"
+          OPTED_OUT:
+            type:
+              - boolean
+              - "null"
+          LAST_ACTIVITY_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DO_NOT_SYNC:
+            type:
+              - boolean
+              - "null"
+          LEAD_CONVERSION_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          GRADE_PROFILE_ID:
+            type:
+              - integer
+              - "null"
+          CUSTOMFIELDS:
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  type: object
+          TAGS:
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  type:
+                    - string
+                    - "null"
   quote_products_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "quote_products"
@@ -283,6 +2084,38 @@ definitions:
     $parameters:
       path: "/Relationships"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          RELATIONSHIP_ID:
+            type: integer
+          FORWARD_TITLE:
+            type:
+              - string
+              - "null"
+          FORWARD:
+            type:
+              - string
+              - "null"
+          REVERSE_TITLE:
+            type:
+              - string
+              - "null"
+          REVERSE:
+            type:
+              - string
+              - "null"
+          FOR_CONTACTS:
+            type:
+              - boolean
+              - "null"
+          FOR_ORGANISATIONS:
+            type:
+              - boolean
+              - "null"
   tags_stream:
     $ref: "#/definitions/base_stream"
     name: "tags"
@@ -297,6 +2130,26 @@ definitions:
     $parameters:
       path: "/TaskCategories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CATEGORY_ID:
+            type: integer
+          CATEGORY_NAME:
+            type:
+              - string
+              - "null"
+          ACTIVE:
+            type:
+              - boolean
+              - "null"
+          BACKGROUND_COLOR:
+            type:
+              - string
+              - "null"
   tasks_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "tasks"
@@ -304,6 +2157,190 @@ definitions:
     $parameters:
       path: "/Tasks/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          TASK_ID:
+            type: integer
+          TITLE:
+            type:
+              - string
+              - "null"
+          CATEGORY_ID:
+            type:
+              - integer
+              - "null"
+          DUE_DATE:
+            type:
+              - string
+              - "null"
+            format: date-time
+          COMPLETED_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          COMPLETED:
+            type:
+              - boolean
+              - "null"
+          DETAILS:
+            type:
+              - string
+              - "null"
+          STATUS:
+            type:
+              - string
+              - "null"
+          PRIORITY:
+            type:
+              - integer
+              - "null"
+          PERCENT_COMPLETE:
+            type:
+              - integer
+              - "null"
+          PUBLICLY_VISIBLE:
+            type:
+              - "null"
+              - boolean
+          START_DATE:
+            type:
+              - string
+              - "null"
+            format: date-time
+          MILESTONE_ID:
+            type:
+              - integer
+              - "null"
+          RESPONSIBLE_USER_ID:
+            type:
+              - integer
+              - "null"
+          OWNER_USER_ID:
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          EMAIL_ID:
+            type:
+              - integer
+              - "null"
+          PROJECT_ID:
+            type:
+              - integer
+              - "null"
+          REMINDER_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          REMINDER_SENT:
+            type:
+              - boolean
+              - "null"
+          OWNER_VISIBLE:
+            type:
+              - boolean
+              - "null"
+          STAGE_ID:
+            type:
+              - integer
+              - "null"
+          ASSIGNED_BY_USER_ID:
+            type:
+              - integer
+              - "null"
+          PARENT_TASK_ID:
+            type:
+              - integer
+              - "null"
+          RECURRENCE:
+            type:
+              - string
+              - "null"
+          OPPORTUNITY_ID:
+            type:
+              - integer
+              - "null"
+          ASSIGNED_TEAM_ID:
+            type:
+              - integer
+              - "null"
+          ASSIGNED_DATE_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            type:
+              - integer
+              - "null"
+          CUSTOMFIELDS:
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  type: object
+          LINKS:
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  type:
+                    - boolean
+                    - "null"
   team_members_stream:
     $ref: "#/definitions/base_stream"
     name: "team_members"
@@ -311,6 +2348,22 @@ definitions:
     $parameters:
       path: "/TeamMembers"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          PERMISSION_ID:
+            type:
+              - integer
+              - "null"
+          TEAM_ID:
+            type:
+              - integer
+              - "null"
+          MEMBER_USER_ID:
+            type: integer
   teams_stream:
     $ref: "#/definitions/base_stream"
     name: "teams"
@@ -318,6 +2371,35 @@ definitions:
     $parameters:
       path: "/Teams"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          TEAM_ID:
+            type: integer
+          TEAM_NAME:
+            type:
+              - string
+              - "null"
+          ANONYMOUS_TEAM:
+            type:
+              - boolean
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          TEAMMEMBERS:
+            type: array
   tickets_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "tickets"
@@ -332,6 +2414,92 @@ definitions:
     $parameters:
       path: "/Users/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          USER_ID:
+            type: integer
+          CONTACT_ID:
+            type:
+              - integer
+              - "null"
+          FIRST_NAME:
+            type:
+              - string
+              - "null"
+          LAST_NAME:
+            type:
+              - string
+              - "null"
+          TIMEZONE_ID:
+            type:
+              - string
+              - "null"
+          EMAIL_ADDRESS:
+            type:
+              - string
+              - "null"
+          EMAIL_DROPBOX_IDENTIFIER:
+            type:
+              - string
+              - "null"
+          EMAIL_DROPBOX_ADDRESS:
+            type:
+              - string
+              - "null"
+          ADMINISTRATOR:
+            type:
+              - boolean
+              - "null"
+          ACCOUNT_OWNER:
+            type:
+              - boolean
+              - "null"
+          ACTIVE:
+            type:
+              - boolean
+              - "null"
+          DATE_CREATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            type:
+              - string
+              - "null"
+            format: date-time
+          USER_CURRENCY:
+            type:
+              - string
+              - "null"
+          CONTACT_DISPLAY:
+            type:
+              - string
+              - "null"
+          CONTACT_ORDER:
+            type:
+              - string
+              - "null"
+          TASK_WEEK_START:
+            type:
+              - integer
+              - "null"
+          INSTANCE_ID:
+            type:
+              - integer
+              - "null"
+          PROFILE_ID:
+            type:
+              - integer
+              - "null"
+          ROLE_ID:
+            type:
+              - integer
+              - "null"
 streams:
   - "#/definitions/activity_sets_stream"
   - "#/definitions/contacts_stream"
@@ -342,33 +2510,33 @@ streams:
   - "#/definitions/knowledge_article_categories_stream"
   - "#/definitions/knowledge_article_folders_stream"
   - "#/definitions/knowledge_articles_stream"
-  # - "#/definitions/leads_stream"
+    # - "#/definitions/leads_stream"
   - "#/definitions/lead_sources_stream"
   - "#/definitions/lead_statuses_stream"
   - "#/definitions/milestones_stream"
   - "#/definitions/notes_stream"
   - "#/definitions/opportunities_stream"
   - "#/definitions/opportunity_categories_stream"
-  # - "#/definitions/opportunity_products_stream"
+    # - "#/definitions/opportunity_products_stream"
   - "#/definitions/opportunity_state_reasons_stream"
   - "#/definitions/organisations_stream"
   - "#/definitions/pipelines_stream"
   - "#/definitions/pipeline_stages_stream"
-  # - "#/definitions/pricebook_entries_stream"
-  # - "#/definitions/pricebooks_stream"
-  # - "#/definitions/products_stream"
+    # - "#/definitions/pricebook_entries_stream"
+    # - "#/definitions/pricebooks_stream"
+    # - "#/definitions/products_stream"
   - "#/definitions/project_categories_stream"
   - "#/definitions/projects_stream"
   - "#/definitions/prospects_stream"
-  # - "#/definitions/quote_products_stream"
-  # - "#/definitions/quotes_stream"
+    # - "#/definitions/quote_products_stream"
+    # - "#/definitions/quotes_stream"
   - "#/definitions/relationships_stream"
-  # - "#/definitions/tags_stream"
+    # - "#/definitions/tags_stream"
   - "#/definitions/task_categories_stream"
   - "#/definitions/tasks_stream"
   - "#/definitions/team_members_stream"
   - "#/definitions/teams_stream"
-  # - "#/definitions/tickets_stream"
+    # - "#/definitions/tickets_stream"
   - "#/definitions/users_stream"
 
 check:
@@ -376,20 +2544,20 @@ check:
   stream_names:
     - "activity_sets"
     - "contacts"
-    # - "countries"
-    # - "currencies"
-    # - "opportunities"
-    # - "opportunity_state_reasons"
-    # - "organizations"
-    # - "pipelines"
-    # - "pipeline_stages"
-    # - "projects"
-    # - "relationships"
-    # - "task_categories"
-    # - "tasks"
-    # - "team_members"
-    # - "teams"
-    # - "users"
+      # - "countries"
+      # - "currencies"
+      # - "opportunities"
+      # - "opportunity_state_reasons"
+      # - "organizations"
+      # - "pipelines"
+      # - "pipeline_stages"
+      # - "projects"
+      # - "relationships"
+      # - "task_categories"
+      # - "tasks"
+      # - "team_members"
+      # - "teams"
+      # - "users"
 
 spec:
   type: Spec

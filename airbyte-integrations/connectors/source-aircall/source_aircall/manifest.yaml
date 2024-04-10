@@ -41,6 +41,398 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Calls Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the call.
+            type:
+              - "null"
+              - number
+          country_code_a2:
+            description: Country code (2-letter) associated with the call.
+            type:
+              - "null"
+              - string
+          pricing_type:
+            description: Type of pricing for the call.
+            type:
+              - "null"
+              - string
+          direct_link:
+            description: Direct link to the call.
+            type:
+              - "null"
+              - string
+          direction:
+            description: Direction of the call (inbound/outbound).
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the call.
+            type:
+              - "null"
+              - string
+          missed_call_reason:
+            description: Reason for a missed call.
+            type:
+              - "null"
+              - string
+          started_at:
+            description: Timestamp when the call started.
+            type:
+              - "null"
+              - number
+          answered_at:
+            description: Timestamp when the call was answered.
+            type:
+              - "null"
+              - number
+          ended_at:
+            description: Timestamp when the call ended.
+            type:
+              - "null"
+              - number
+          duration:
+            description: Duration of the call in seconds.
+            type:
+              - "null"
+              - number
+          voicemail:
+            description: Information related to voicemail for the call.
+            type:
+              - "null"
+              - string
+          recording:
+            description: Information about call recording.
+            type:
+              - "null"
+              - string
+          asset:
+            description: An asset associated with the call.
+            type:
+              - "null"
+              - string
+          raw_digits:
+            description: Raw digits associated with the call.
+            type:
+              - "null"
+              - string
+          user:
+            description: User associated with the call.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the user.
+                type:
+                  - "null"
+                  - number
+              direct_link:
+                description: Direct link to the user profile.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the user.
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email address of the user.
+                type:
+                  - "null"
+                  - string
+              available:
+                description: Availability status of the user.
+                type:
+                  - "null"
+                  - boolean
+              availability_status:
+                description: Availability status of the user.
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: Timestamp when the user was created.
+                type:
+                  - "null"
+                  - string
+              time_zone:
+                description: Time zone associated with the user.
+                type:
+                  - "null"
+                  - string
+              language:
+                description: Language preference of the user.
+                type:
+                  - "null"
+                  - string
+          contact:
+            description: Contact information related to the call.
+            type:
+              - "null"
+              - string
+          archived:
+            description: Indicates if the call is archived or not.
+            type:
+              - "null"
+              - boolean
+          assigned_to:
+            description: User assigned to handle the call.
+            type:
+              - "null"
+              - string
+          transferred_by:
+            description: User who transferred the call.
+            type:
+              - "null"
+              - string
+          transferred_to:
+            description: User to whom the call was transferred.
+            type:
+              - "null"
+              - string
+          cost:
+            description: Cost associated with the call.
+            type:
+              - "null"
+              - string
+          number:
+            description: Number related to the call.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier of the number.
+                type:
+                  - "null"
+                  - number
+              direct_link:
+                description: Direct link to the number details.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the number.
+                type:
+                  - "null"
+                  - string
+              digits:
+                description: Digits of the number.
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: Timestamp when the number was created.
+                type:
+                  - "null"
+                  - string
+              country:
+                description: Country associated with the number.
+                type:
+                  - "null"
+                  - string
+              time_zone:
+                description: Time zone associated with the number.
+                type:
+                  - "null"
+                  - string
+              open:
+                description: Indicates if the number is open.
+                type:
+                  - "null"
+                  - boolean
+              availability_status:
+                description: Availability status of the number.
+                type:
+                  - "null"
+                  - string
+              is_ivr:
+                description: Indicates if the number is for IVR purposes.
+                type:
+                  - "null"
+                  - boolean
+              live_recording_activated:
+                description: Indicates if live recording is activated for the number.
+                type:
+                  - "null"
+                  - boolean
+              priority:
+                description: Priority level assigned to the number.
+                type:
+                  - "null"
+                  - string
+          comments:
+            description: Comments related to the call.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier of the comment.
+                  type:
+                    - "null"
+                    - number
+                content:
+                  description: Content of the comment.
+                  type:
+                    - "null"
+                    - string
+                posted_at:
+                  description: Timestamp when the comment was posted.
+                  type:
+                    - "null"
+                    - number
+                posted_by:
+                  description: User who posted the comment.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: Unique identifier of the user.
+                      type:
+                        - "null"
+                        - number
+                    direct_link:
+                      description: Direct link to the user profile.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the user.
+                      type:
+                        - "null"
+                        - string
+                    email:
+                      description: Email address of the user.
+                      type:
+                        - "null"
+                        - string
+                    available:
+                      description: Availability status of the user.
+                      type:
+                        - "null"
+                        - boolean
+                    availability_status:
+                      description: Availability status of the user.
+                      type:
+                        - "null"
+                        - string
+                    created_at:
+                      description: Timestamp when the user was created.
+                      type:
+                        - "null"
+                        - string
+          tags:
+            description: Tags associated with the call.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier of the tag.
+                  type:
+                    - "null"
+                    - number
+                name:
+                  description: Name of the tag.
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  description: Timestamp when the tag was created.
+                  type:
+                    - "null"
+                    - number
+                tagged_by:
+                  description: User who tagged the call.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: Unique identifier of the user.
+                      type:
+                        - "null"
+                        - number
+                    direct_link:
+                      description: Direct link to the user profile.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the user.
+                      type:
+                        - "null"
+                        - string
+                    email:
+                      description: Email address of the user.
+                      type:
+                        - "null"
+                        - string
+                    available:
+                      description: Availability status of the user.
+                      type:
+                        - "null"
+                        - boolean
+                    availability_status:
+                      description: Availability status of the user.
+                      type:
+                        - "null"
+                        - string
+                    created_at:
+                      description: Timestamp when the user was created.
+                      type:
+                        - "null"
+                        - string
+          teams:
+            description: Teams associated with the call.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier of the team.
+                  type:
+                    - "null"
+                    - number
+                name:
+                  description: Name of the team.
+                  type:
+                    - "null"
+                    - string
+                direct_link:
+                  description: Direct link to the team details.
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  description: Timestamp when the team was created.
+                  type:
+                    - "null"
+                    - string
   company_stream:
     type: DeclarativeStream
     $parameters:
@@ -51,6 +443,29 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Company schema
+        additionalProperties: true
+        type: object
+        properties:
+          name:
+            description: The name of the company.
+            type:
+              - "null"
+              - string
+          users_count:
+            description: The count of users or employees within the company.
+            type:
+              - "null"
+              - number
+          numbers_count:
+            description: The count of phone numbers associated with the company.
+            type:
+              - "null"
+              - number
   contacts_stream:
     type: DeclarativeStream
     $parameters:
@@ -61,6 +476,113 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Contacts Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the contact.
+            type:
+              - "null"
+              - number
+          first_name:
+            description: The first name of the contact.
+            type:
+              - "null"
+              - string
+          last_name:
+            description: The last name of the contact.
+            type:
+              - "null"
+              - string
+          company_name:
+            description: The name of the company associated with the contact.
+            type:
+              - "null"
+              - string
+          information:
+            description: Additional information or notes about the contact.
+            type:
+              - "null"
+              - string
+          is_shared:
+            description: Indicates whether the contact is shared among multiple users.
+            type:
+              - "null"
+              - boolean
+          direct_link:
+            description: A direct link to access detailed information about the contact.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the contact was created.
+            type:
+              - "null"
+              - number
+          updated_at:
+            description: The date and time when the contact was last updated.
+            type:
+              - "null"
+              - number
+          phone_numbers:
+            description: An array of phone numbers associated with the contact.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier for the phone number entry.
+                  type:
+                    - "null"
+                    - number
+                label:
+                  description:
+                    The label or type of the phone number (e.g., mobile,
+                    office).
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: The phone number value.
+                  type:
+                    - "null"
+                    - string
+          emails:
+            description: An array of email addresses associated with the contact.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier for the email entry.
+                  type:
+                    - "null"
+                    - number
+                label:
+                  description:
+                    The label or type of the email address (e.g., work,
+                    personal).
+                  type:
+                    - "null"
+                    - string
+                value:
+                  description: The actual email address value.
+                  type:
+                    - "null"
+                    - string
   numbers_stream:
     type: DeclarativeStream
     $parameters:
@@ -85,6 +607,147 @@ definitions:
       step: "P1M"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Numbers Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the number
+            type:
+              - "null"
+              - number
+          direct_link:
+            description: Direct link associated with the number
+            type:
+              - "null"
+              - string
+          name:
+            description: Name associated with the number
+            type:
+              - "null"
+              - string
+          digits:
+            description: The digits of the phone number
+            type:
+              - "null"
+              - string
+          country:
+            description: The country associated with the number
+            type:
+              - "null"
+              - string
+          time_zone:
+            description: The time zone configured for the number
+            type:
+              - "null"
+              - string
+          open:
+            description: Indicates if the number is open for use
+            type:
+              - "null"
+              - boolean
+          availability_status:
+            description: The availability status of the number
+            type:
+              - "null"
+              - string
+          is_ivr:
+            description:
+              Indicates if the number is an IVR (Interactive Voice Response)
+              number
+            type:
+              - "null"
+              - boolean
+          live_recording_activated:
+            description: Indicates if live recording is activated for the number
+            type:
+              - "null"
+              - boolean
+          priority:
+            description: Priority level of the number
+            type:
+              - "null"
+              - string
+          messages:
+            type:
+              - "null"
+              - object
+            properties:
+              welcome:
+                description: Welcome message played when the call is answered
+                type:
+                  - "null"
+                  - string
+              waiting:
+                description: Message played while waiting for an answer
+                type:
+                  - "null"
+                  - string
+              ivr:
+                description: Message for Interactive Voice Response system
+                type:
+                  - "null"
+                  - string
+              voicemail:
+                description: Voicemail message configuration
+                type:
+                  - "null"
+                  - string
+              closed:
+                description: Message played when the number is closed
+                type:
+                  - "null"
+                  - string
+              callback_later:
+                description: Message prompting caller to callback later
+                type:
+                  - "null"
+                  - string
+              unanswered_call:
+                description: Message played for unanswered calls
+                type:
+                  - "null"
+                  - string
+              after_hours:
+                description: Message played after working hours
+                type:
+                  - "null"
+                  - string
+              ringing_tone:
+                description: Ringing tone or message played while waiting
+                type:
+                  - "null"
+                  - string
+          wrap_up_time:
+            description: Wrap-up time configured for the number
+            type:
+              - "null"
+              - number
+          available:
+            description: Indicates if the number is available for use
+            type:
+              - "null"
+              - boolean
+          language:
+            description: The language set for the number
+            type:
+              - "null"
+              - string
+          email:
+            description: Email associated with the number
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the number was created
+            type:
+              - "null"
+              - string
+            format: date-time
   tags_stream:
     type: DeclarativeStream
     $parameters:
@@ -96,6 +759,34 @@ definitions:
         $ref: "#/definitions/requester"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Tags Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the tag.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the tag.
+            type:
+              - "null"
+              - string
+          color:
+            description: The color associated with the tag.
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description of the tag.
+            type:
+              - "null"
+              - string
   user_retriever:
     type: SimpleRetriever
     record_selector:
@@ -115,6 +806,68 @@ definitions:
     $parameters:
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Users
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the user
+            type:
+              - "null"
+              - number
+          direct_link:
+            description: Direct link to the user's profile or account
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the user
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address associated with the user
+            type:
+              - "null"
+              - string
+          available:
+            description: Flag indicating if the user is currently available
+            type:
+              - "null"
+              - boolean
+          availability_status:
+            description:
+              The current availability status of the user (e.g., 'Available',
+              'Away', 'Offline')
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the user account was created
+            type:
+              - "null"
+              - string
+          time_zone:
+            description: Time zone setting for the user
+            type:
+              - "null"
+              - string
+          language:
+            description: Preferred language of the user for communication
+            type:
+              - "null"
+              - string
+          wrap_up_time:
+            description:
+              Amount of time the user needs to wrap up a call before being
+              available for another
+            type:
+              - "null"
+              - number
   user_availability_stream:
     type: DeclarativeStream
     retriever:
@@ -124,6 +877,7 @@ definitions:
     $parameters:
       path: "/users/availabilities"
 
+    schema_loader: {}
   teams_stream:
     type: DeclarativeStream
     $parameters:
@@ -148,6 +902,77 @@ definitions:
       step: "P1M"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Teams
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: The unique identification number assigned to the team.
+            type:
+              - "null"
+              - number
+          name:
+            description: The name of the team.
+            type:
+              - "null"
+              - string
+          direct_link:
+            description: A direct link to access more information about the team.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp indicating when the team was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          users:
+            description: A list of users belonging to the team.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identification number assigned to the user.
+                  type:
+                    - "null"
+                    - number
+                direct_link:
+                  description:
+                    A direct link to access more information about the
+                    user.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The name of the user.
+                  type:
+                    - "null"
+                    - string
+                email:
+                  description: The email address of the user.
+                  type:
+                    - "null"
+                    - string
+                created_at:
+                  description: The timestamp indicating when the user was created.
+                  type:
+                    - "null"
+                    - string
+                time_zone:
+                  description: The time zone setting of the user.
+                  type:
+                    - "null"
+                    - string
   webhooks_stream:
     type: DeclarativeStream
     $parameters:
@@ -159,6 +984,54 @@ definitions:
         $ref: "#/definitions/requester"
     primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Webhooks Schema
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the webhook
+            type:
+              - "null"
+              - number
+          direct_link:
+            description: A direct link to access detailed information about the webhook
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the webhook was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          url:
+            description: The URL where the webhook sends its payload upon triggering
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates whether the webhook is currently active or not
+            type:
+              - "null"
+              - boolean
+          token:
+            description: A security token used to authenticate requests to the webhook
+            type:
+              - "null"
+              - string
+          events:
+            description: An array of events that the webhook is listening to
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
 streams:
   - "#/definitions/calls_stream"
   - "#/definitions/company_stream"

@@ -1,9 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_alpha_vantage/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -42,6 +39,41 @@ definitions:
       function: "TIME_SERIES_INTRADAY"
       path: "/query"
       key_field: "timestamp"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          1. open:
+            description: The opening price of the stock at the specified time interval.
+            type:
+              - string
+              - "null"
+          2. high:
+            description:
+              The highest price reached by the stock during the specified
+              time interval.
+            type:
+              - string
+              - "null"
+          3. low:
+            description:
+              The lowest price reached by the stock during the specified
+              time interval.
+            type:
+              - string
+              - "null"
+          4. close:
+            description: The closing price of the stock at the specified time interval.
+            type:
+              - string
+              - "null"
+          5. volume:
+            description: The trading volume of the stock at the specified time interval.
+            type:
+              - string
+              - "null"
   time_series_daily_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -50,6 +82,43 @@ definitions:
       function: "TIME_SERIES_DAILY"
       path: "/query"
       key_field: "date"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          1. open:
+            description: The opening price of the stock on a particular trading day.
+            type:
+              - string
+              - "null"
+          2. high:
+            description:
+              The highest price of the stock reached during the trading
+              day.
+            type:
+              - string
+              - "null"
+          3. low:
+            description:
+              The lowest price of the stock reached during the trading
+              day.
+            type:
+              - string
+              - "null"
+          4. close:
+            description: The closing price of the stock on a particular trading day.
+            type:
+              - string
+              - "null"
+          5. volume:
+            description:
+              The total number of shares traded on a particular trading
+              day.
+            type:
+              - string
+              - "null"
   time_series_daily_adjusted_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -58,6 +127,38 @@ definitions:
       function: "TIME_SERIES_DAILY_ADJUSTED"
       path: "/query"
       key_field: "date"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          1. open:
+            description: The opening price of the stock on the given day
+            type: string
+          2. high:
+            description: The highest price reached by the stock during the day
+            type: string
+          3. low:
+            description: The lowest price reached by the stock during the day
+            type: string
+          4. close:
+            description: The closing price of the stock on the given day
+            type: string
+          5. adjusted close:
+            description:
+              The adjusted closing price which accounts for any corporate
+              actions such as dividends and splits
+            type: string
+          6. volume:
+            description: The trading volume of the stock on the given day
+            type: string
+          7. dividend amount:
+            description: The dividend amount distributed on the given day
+            type: string
+          8. split coefficient:
+            description: The factor by which the stock has been split, if applicable
+            type: string
   time_series_weekly_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -66,6 +167,37 @@ definitions:
       function: "TIME_SERIES_WEEKLY"
       path: "/query"
       key_field: "date"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          1. open:
+            description: The opening price of the stock for the week.
+            type:
+              - string
+              - "null"
+          2. high:
+            description: The highest price reached by the stock during the week.
+            type:
+              - string
+              - "null"
+          3. low:
+            description: The lowest price reached by the stock during the week.
+            type:
+              - string
+              - "null"
+          4. close:
+            description: The closing price of the stock for the week.
+            type:
+              - string
+              - "null"
+          5. volume:
+            description: The trading volume of the stock for the week.
+            type:
+              - string
+              - "null"
   time_series_weekly_adjusted_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -74,6 +206,35 @@ definitions:
       function: "TIME_SERIES_WEEKLY_ADJUSTED"
       path: "/query"
       key_field: "date"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          1. open:
+            description: The opening price of the stock for the week
+            type: string
+          2. high:
+            description: The highest price the stock reached during the week
+            type: string
+          3. low:
+            description: The lowest price the stock reached during the week
+            type: string
+          4. close:
+            description: The closing price of the stock for the week
+            type: string
+          5. adjusted close:
+            description:
+              The adjusted closing price that accounts for any corporate
+              actions like stock splits
+            type: string
+          6. volume:
+            description: The trading volume of the stock for the week
+            type: string
+          7. dividend amount:
+            description: The amount of dividend paid per share during the week
+            type: string
   time_series_monthly_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -82,6 +243,37 @@ definitions:
       function: "TIME_SERIES_MONTHLY"
       path: "/query"
       key_field: "date"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          1. open:
+            description: The opening price of the stock for the month.
+            type:
+              - string
+              - "null"
+          2. high:
+            description: The highest price of the stock reached during the month.
+            type:
+              - string
+              - "null"
+          3. low:
+            description: The lowest price of the stock reached during the month.
+            type:
+              - string
+              - "null"
+          4. close:
+            description: The closing price of the stock for the month.
+            type:
+              - string
+              - "null"
+          5. volume:
+            description: The trading volume of the stock for the month.
+            type:
+              - string
+              - "null"
   time_series_monthly_adjusted_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -90,6 +282,41 @@ definitions:
       function: "TIME_SERIES_MONTHLY_ADJUSTED"
       path: "/query"
       key_field: "date"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          1. open:
+            description: The opening price of the stock for the corresponding month.
+            type: string
+          2. high:
+            description:
+              The highest price of the stock reached during the corresponding
+              month.
+            type: string
+          3. low:
+            description:
+              The lowest price of the stock reached during the corresponding
+              month.
+            type: string
+          4. close:
+            description: The closing price of the stock for the corresponding month.
+            type: string
+          5. adjusted close:
+            description:
+              The adjusted closing price of the stock for the corresponding
+              month, accounting for any corporate actions.
+            type: string
+          6. volume:
+            description: The volume of stock traded during the corresponding month.
+            type: string
+          7. dividend amount:
+            description:
+              The amount of dividend paid per share during the corresponding
+              month.
+            type: string
   quote_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -97,6 +324,79 @@ definitions:
       function: "GLOBAL_QUOTE"
       path: "/query"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          Global Quote:
+            01. symbol:
+              description:
+                The symbol/ticker representing the equity on the stock
+                market.
+              type:
+                - string
+                - "null"
+            02. open:
+              description: The opening price of the stock for the latest trading day.
+              type:
+                - string
+                - "null"
+            03. high:
+              description:
+                The highest price reached by the stock during the latest
+                trading day.
+              type:
+                - string
+                - "null"
+            04. low:
+              description:
+                The lowest price reached by the stock during the latest
+                trading day.
+              type:
+                - string
+                - "null"
+            05. price:
+              description: The current price of the stock.
+              type:
+                - string
+                - "null"
+            06. volume:
+              description:
+                The total trading volume of the stock for the latest trading
+                day.
+              type:
+                - string
+                - "null"
+            07. latest trading day:
+              description:
+                The date of the latest trading day for which the data is
+                provided.
+              type:
+                - string
+                - "null"
+            08. previous close:
+              description:
+                The closing price of the stock for the previous trading
+                day.
+              type:
+                - string
+                - "null"
+            09. change:
+              description:
+                The difference between the current price and the previous
+                close price.
+              type:
+                - string
+                - "null"
+            10. change percent:
+              description:
+                The percentage change in the stock price from the previous
+                close.
+              type:
+                - string
+                - "null"
 streams:
   - "#/definitions/time_series_intraday_stream"
   - "#/definitions/time_series_daily_stream"

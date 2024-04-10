@@ -53,8 +53,12 @@ definitions:
         request_parameters:
           $ref: "#/definitions/requester/request_parameters"
           date: "1"
-          sort: "[{{ parameters['cursor_field'] }}_ASC,{{ parameters['primary_key'] }}_ASC]"
-          "filter[{{ parameters['cursor_field'] }}]": "[{{ stream_slice['start_time'] }},{{ stream_slice['end_time'] }}]"
+          sort:
+            "[{{ parameters['cursor_field'] }}_ASC,{{ parameters['primary_key']
+            }}_ASC]"
+          "filter[{{ parameters['cursor_field'] }}]":
+            "[{{ stream_slice['start_time']
+            }},{{ stream_slice['end_time'] }}]"
   addresses_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -63,6 +67,106 @@ definitions:
       data_key: "addresses"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_customer:
+            type:
+              - "null"
+              - string
+          id_manufacturer:
+            type:
+              - "null"
+              - string
+          id_supplier:
+            type:
+              - "null"
+              - string
+          id_warehouse:
+            type:
+              - "null"
+              - string
+          id_country:
+            type:
+              - "null"
+              - string
+          id_state:
+            type:
+              - "null"
+              - string
+          alias:
+            type:
+              - "null"
+              - string
+          company:
+            type:
+              - "null"
+              - string
+          lastname:
+            type:
+              - "null"
+              - string
+          firstname:
+            type:
+              - "null"
+              - string
+          vat_number:
+            type:
+              - "null"
+              - string
+          address1:
+            type:
+              - "null"
+              - string
+          address2:
+            type:
+              - "null"
+              - string
+          postcode:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          other:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          phone_mobile:
+            type:
+              - "null"
+              - string
+          dni:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
   carriers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -70,6 +174,100 @@ definitions:
       path: "/carriers"
       data_key: "carriers"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          deleted:
+            type:
+              - "null"
+              - string
+          is_module:
+            type:
+              - "null"
+              - string
+          id_tax_rules_group:
+            type:
+              - "null"
+              - string
+          id_reference:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          is_free:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          shipping_handling:
+            type:
+              - "null"
+              - string
+          shipping_external:
+            type:
+              - "null"
+              - string
+          range_behavior:
+            type:
+              - "null"
+              - string
+          shipping_method:
+            type:
+              - string
+              - integer
+          max_width:
+            type:
+              - "null"
+              - string
+          max_height:
+            type:
+              - "null"
+              - string
+          max_depth:
+            type:
+              - "null"
+              - string
+          max_weight:
+            type:
+              - "null"
+              - string
+          grade:
+            type:
+              - "null"
+              - string
+          external_module_name:
+            type:
+              - "null"
+              - string
+          need_range:
+            type:
+              - "null"
+              - string
+          position:
+            type:
+              - "null"
+              - string
+          delay:
+            type:
+              - "null"
+              - string
   cart_rules_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -78,6 +276,152 @@ definitions:
       data_key: "cart_rules"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_customer:
+            type:
+              - "null"
+              - string
+          date_from:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_to:
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            type:
+              - "null"
+              - string
+          quantity:
+            type:
+              - "null"
+              - string
+          quantity_per_user:
+            type:
+              - "null"
+              - string
+          priority:
+            type:
+              - "null"
+              - string
+          partial_use:
+            type:
+              - "null"
+              - string
+          code:
+            type:
+              - "null"
+              - string
+          minimum_amount:
+            type:
+              - "null"
+              - string
+          minimum_amount_tax:
+            type:
+              - "null"
+              - string
+          minimum_amount_currency:
+            type:
+              - "null"
+              - string
+          minimum_amount_shipping:
+            type:
+              - "null"
+              - string
+          country_restriction:
+            type:
+              - "null"
+              - string
+          carrier_restriction:
+            type:
+              - "null"
+              - string
+          group_restriction:
+            type:
+              - "null"
+              - string
+          cart_rule_restriction:
+            type:
+              - "null"
+              - string
+          product_restriction:
+            type:
+              - "null"
+              - string
+          shop_restriction:
+            type:
+              - "null"
+              - string
+          free_shipping:
+            type:
+              - "null"
+              - string
+          reduction_percent:
+            type:
+              - "null"
+              - string
+          reduction_amount:
+            type:
+              - "null"
+              - string
+          reduction_tax:
+            type:
+              - "null"
+              - string
+          reduction_currency:
+            type:
+              - "null"
+              - string
+          reduction_product:
+            type:
+              - "null"
+              - string
+          reduction_exclude_special:
+            type:
+              - "null"
+              - string
+          gift_product:
+            type:
+              - "null"
+              - string
+          gift_product_attribute:
+            type:
+              - "null"
+              - string
+          highlight:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
   carts_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -86,6 +430,118 @@ definitions:
       data_key: "carts"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_address_delivery:
+            type:
+              - "null"
+              - string
+          id_address_invoice:
+            type:
+              - "null"
+              - string
+          id_currency:
+            type:
+              - "null"
+              - string
+          id_customer:
+            type:
+              - "null"
+              - string
+          id_guest:
+            type:
+              - "null"
+              - string
+          id_lang:
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          id_carrier:
+            type:
+              - "null"
+              - string
+          recyclable:
+            type:
+              - "null"
+              - string
+          gift:
+            type:
+              - "null"
+              - string
+          gift_message:
+            type:
+              - "null"
+              - string
+          mobile_theme:
+            type:
+              - "null"
+              - string
+          delivery_option:
+            type:
+              - "null"
+              - string
+          secure_key:
+            type:
+              - "null"
+              - string
+          allow_seperated_package:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          associations:
+            type: object
+            properties:
+              cart_rows:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id_product:
+                      type:
+                        - "null"
+                        - string
+                    id_product_attribute:
+                      type:
+                        - "null"
+                        - string
+                    id_address_delivery:
+                      type:
+                        - "null"
+                        - string
+                    id_customization:
+                      type:
+                        - "null"
+                        - string
+                    quantity:
+                      type:
+                        - "null"
+                        - string
   categories_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -94,6 +550,90 @@ definitions:
       data_key: "categories"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_parent:
+            type:
+              - "null"
+              - string
+          level_depth:
+            type:
+              - "null"
+              - string
+          nb_products_recursive:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          id_shop_default:
+            type:
+              - "null"
+              - string
+          is_root_category:
+            type:
+              - "null"
+              - string
+          position:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
+          link_rewrite:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          meta_title:
+            type:
+              - "null"
+              - string
+          meta_description:
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            type:
+              - "null"
+              - string
+          associations:
+            type: object
+            properties:
+              categories:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
   combinations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -101,6 +641,114 @@ definitions:
       path: "/combinations"
       data_key: "combinations"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_product:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
+          ean13:
+            type:
+              - "null"
+              - string
+          isbn:
+            type:
+              - "null"
+              - string
+          upc:
+            type:
+              - "null"
+              - string
+          mpn:
+            type:
+              - "null"
+              - string
+          quantity:
+            type:
+              - "null"
+              - integer
+          reference:
+            type:
+              - "null"
+              - string
+          supplier_reference:
+            type:
+              - "null"
+              - string
+          wholesale_price:
+            type:
+              - "null"
+              - string
+          price:
+            type:
+              - "null"
+              - string
+          ecotax:
+            type:
+              - "null"
+              - string
+          weight:
+            type:
+              - "null"
+              - string
+          unit_price_impact:
+            type:
+              - "null"
+              - string
+          minimal_quantity:
+            type:
+              - "null"
+              - string
+          low_stock_threshold:
+            type:
+              - "null"
+              - string
+          low_stock_alert:
+            type:
+              - "null"
+              - string
+          default_on:
+            type:
+              - "null"
+              - string
+          available_date:
+            type:
+              - "null"
+              - string
+            format: date
+          associations:
+            type: object
+            properties:
+              product_option_values:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+              images:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
   configurations_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -109,6 +757,42 @@ definitions:
       data_key: "configurations"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          value:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
   contacts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -116,6 +800,32 @@ definitions:
       path: "/contacts"
       data_key: "contacts"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          email:
+            type:
+              - "null"
+              - string
+          customer_service:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
   content_management_system_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -123,6 +833,56 @@ definitions:
       path: "/content_management_system"
       data_key: "content_management_system"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_cms_category:
+            type:
+              - "null"
+              - string
+          position:
+            type:
+              - "null"
+              - string
+          indexation:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          meta_description:
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            type:
+              - "null"
+              - string
+          meta_title:
+            type:
+              - "null"
+              - string
+          head_seo_title:
+            type:
+              - "null"
+              - string
+          link_rewrite:
+            type:
+              - "null"
+              - string
+          content:
+            type:
+              - "null"
+              - string
   countries_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -130,6 +890,60 @@ definitions:
       path: "/countries"
       data_key: "countries"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_zone:
+            type:
+              - "null"
+              - string
+          id_currency:
+            type:
+              - "null"
+              - string
+          call_prefix:
+            type:
+              - "null"
+              - string
+          iso_code:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          contains_states:
+            type:
+              - "null"
+              - string
+          need_identification_number:
+            type:
+              - "null"
+              - string
+          need_zip_code:
+            type:
+              - "null"
+              - string
+          zip_code_format:
+            type:
+              - "null"
+              - string
+          display_tax_label:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
   currencies_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -137,6 +951,64 @@ definitions:
       path: "/currencies"
       data_key: "currencies"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          names:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          symbol:
+            type:
+              - "null"
+              - string
+          iso_code:
+            type:
+              - "null"
+              - string
+          numeric_iso_code:
+            type:
+              - "null"
+              - string
+          precision:
+            type:
+              - "null"
+              - string
+          conversion_rate:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          unofficial:
+            type:
+              - "null"
+              - string
+          modified:
+            type:
+              - "null"
+              - string
+          pattern:
+            type:
+              - "null"
+              - string
   customer_messages_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -145,6 +1017,58 @@ definitions:
       data_key: "customer_messages"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_employee:
+            type:
+              - "null"
+              - string
+          id_customer_thread:
+            type:
+              - "null"
+              - string
+          ip_address:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+          file_name:
+            type:
+              - "null"
+              - string
+          user_agent:
+            type:
+              - "null"
+              - string
+          private:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          read:
+            type:
+              - "null"
+              - string
   customers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -153,6 +1077,159 @@ definitions:
       data_key: "customers"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_default_group:
+            type:
+              - "null"
+              - string
+          id_lang:
+            type:
+              - "null"
+              - string
+          newsletter_date_add:
+            type:
+              - "null"
+              - string
+          ip_registration_newsletter:
+            type:
+              - "null"
+              - string
+          last_passwd_gen:
+            type:
+              - "null"
+              - string
+          secure_key:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
+          passwd:
+            type:
+              - "null"
+              - string
+          lastname:
+            type:
+              - "null"
+              - string
+          firstname:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          id_gender:
+            type:
+              - "null"
+              - string
+          birthday:
+            type:
+              - "null"
+              - string
+          newsletter:
+            type:
+              - "null"
+              - string
+          optin:
+            type:
+              - "null"
+              - string
+          website:
+            type:
+              - "null"
+              - string
+          company:
+            type:
+              - "null"
+              - string
+          siret:
+            type:
+              - "null"
+              - string
+          ape:
+            type:
+              - "null"
+              - string
+          outstanding_allow_amount:
+            type:
+              - "null"
+              - string
+          show_public_prices:
+            type:
+              - "null"
+              - string
+          id_risk:
+            type:
+              - "null"
+              - string
+          max_payment_days:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          is_guest:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          reset_password_token:
+            type:
+              - "null"
+              - string
+          reset_password_validity:
+            type:
+              - "null"
+              - string
+            format: date-time
+          associations:
+            type: object
+            properties:
+              groups:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
   customer_threads_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -161,6 +1238,74 @@ definitions:
       data_key: "customer_threads"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_lang:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          id_customer:
+            type:
+              - "null"
+              - string
+          id_order:
+            type:
+              - "null"
+              - string
+          id_product:
+            type:
+              - "null"
+              - string
+          id_contact:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          token:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          associations:
+            type: object
+            properties:
+              customer_messages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
   deliveries_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -168,6 +1313,44 @@ definitions:
       path: "/deliveries"
       data_key: "deliveries"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_carrier:
+            type:
+              - "null"
+              - string
+          id_range_price:
+            type:
+              - "null"
+              - string
+          id_range_weight:
+            type:
+              - "null"
+              - string
+          id_zone:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          price:
+            type:
+              - "null"
+              - string
   employees_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -175,6 +1358,121 @@ definitions:
       path: "/employees"
       data_key: "employees"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_lang:
+            type:
+              - "null"
+              - string
+          last_passwd_gen:
+            type:
+              - "null"
+              - string
+          stats_date_from:
+            type:
+              - "null"
+              - string
+            format: date
+          stats_date_to:
+            type:
+              - "null"
+              - string
+            format: date
+          stats_compare_from:
+            type:
+              - "null"
+              - string
+            format: date
+          stats_compare_to:
+            type:
+              - "null"
+              - string
+            format: date
+          passwd:
+            type:
+              - "null"
+              - string
+          lastname:
+            type:
+              - "null"
+              - string
+          firstname:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          id_profile:
+            type:
+              - "null"
+              - string
+          bo_color:
+            type:
+              - "null"
+              - string
+          default_tab:
+            type:
+              - "null"
+              - string
+          bo_theme:
+            type:
+              - "null"
+              - string
+          bo_css:
+            type:
+              - "null"
+              - string
+          bo_width:
+            type:
+              - "null"
+              - string
+          bo_menu:
+            type:
+              - "null"
+              - string
+          stats_compare_option:
+            type:
+              - "null"
+              - string
+          preselect_date_range:
+            type:
+              - "null"
+              - string
+          id_last_order:
+            type:
+              - "null"
+              - string
+          id_last_customer_message:
+            type:
+              - "null"
+              - string
+          id_last_customer:
+            type:
+              - "null"
+              - string
+          reset_password_token:
+            type:
+              - "null"
+              - string
+          reset_password_validity:
+            type:
+              - "null"
+              - string
+            format: date-time
   groups_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -183,6 +1481,42 @@ definitions:
       data_key: "groups"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          reduction:
+            type:
+              - "null"
+              - string
+          price_display_method:
+            type:
+              - "null"
+              - string
+          show_prices:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
   guests_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -190,6 +1524,76 @@ definitions:
       path: "/guests"
       data_key: "guests"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_customer:
+            type:
+              - "null"
+              - string
+          id_operating_system:
+            type:
+              - "null"
+              - string
+          id_web_browser:
+            type:
+              - "null"
+              - string
+          javascript:
+            type:
+              - "null"
+              - string
+          screen_resolution_x:
+            type:
+              - "null"
+              - string
+          screen_resolution_y:
+            type:
+              - "null"
+              - string
+          screen_color:
+            type:
+              - "null"
+              - string
+          sun_java:
+            type:
+              - "null"
+              - string
+          adobe_flash:
+            type:
+              - "null"
+              - string
+          adobe_director:
+            type:
+              - "null"
+              - string
+          apple_quicktime:
+            type:
+              - "null"
+              - string
+          real_player:
+            type:
+              - "null"
+              - string
+          windows_media:
+            type:
+              - "null"
+              - string
+          accept_language:
+            type:
+              - "null"
+              - string
+          mobile_theme:
+            type:
+              - "null"
+              - string
   image_types_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -197,6 +1601,48 @@ definitions:
       path: "/image_types"
       data_key: "image_types"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          width:
+            type:
+              - "null"
+              - string
+          height:
+            type:
+              - "null"
+              - string
+          categories:
+            type:
+              - "null"
+              - string
+          products:
+            type:
+              - "null"
+              - string
+          manufacturers:
+            type:
+              - "null"
+              - string
+          suppliers:
+            type:
+              - "null"
+              - string
+          stores:
+            type:
+              - "null"
+              - string
   languages_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -204,6 +1650,48 @@ definitions:
       path: "/languages"
       data_key: "languages"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          iso_code:
+            type:
+              - "null"
+              - string
+          locale:
+            type:
+              - "null"
+              - string
+          language_code:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          is_rtl:
+            type:
+              - "null"
+              - string
+          date_format_lite:
+            type:
+              - "null"
+              - string
+          date_format_full:
+            type:
+              - "null"
+              - string
   manufacturers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -212,6 +1700,70 @@ definitions:
       data_key: "manufacturers"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          active:
+            type:
+              - "null"
+              - string
+          link_rewrite:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            type:
+              - "null"
+              - string
+          short_description:
+            type:
+              - "null"
+              - string
+          meta_title:
+            type:
+              - "null"
+              - string
+          meta_description:
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            type:
+              - "null"
+              - string
+          associations:
+            type: object
+            properties:
+              addresses:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
   messages_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -220,6 +1772,45 @@ definitions:
       data_key: "messages"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_cart:
+            type:
+              - "null"
+              - string
+          id_order:
+            type:
+              - "null"
+              - string
+          id_customer:
+            type:
+              - "null"
+              - string
+          id_employee:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - string
+          private:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
   order_carriers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -228,6 +1819,49 @@ definitions:
       data_key: "order_carriers"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_order:
+            type:
+              - "null"
+              - string
+          id_carrier:
+            type:
+              - "null"
+              - string
+          id_order_invoice:
+            type:
+              - "null"
+              - string
+          weight:
+            type:
+              - "null"
+              - string
+          shipping_cost_tax_excl:
+            type:
+              - "null"
+              - string
+          shipping_cost_tax_incl:
+            type:
+              - "null"
+              - string
+          tracking_number:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
   order_details_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -235,6 +1869,200 @@ definitions:
       path: "/order_details"
       data_key: "order_details"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_order:
+            type:
+              - "null"
+              - string
+          product_id:
+            type:
+              - "null"
+              - string
+          product_attribute_id:
+            type:
+              - "null"
+              - string
+          product_quantity_reinjected:
+            type:
+              - "null"
+              - string
+          group_reduction:
+            type:
+              - "null"
+              - string
+          discount_quantity_applied:
+            type:
+              - "null"
+              - string
+          download_hash:
+            type:
+              - "null"
+              - string
+          download_deadline:
+            type:
+              - "null"
+              - string
+          id_order_invoice:
+            type:
+              - "null"
+              - string
+          id_warehouse:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          id_customization:
+            type:
+              - "null"
+              - string
+          product_name:
+            type:
+              - "null"
+              - string
+          product_quantity:
+            type:
+              - "null"
+              - string
+          product_quantity_in_stock:
+            type:
+              - "null"
+              - string
+          product_quantity_return:
+            type:
+              - "null"
+              - string
+          product_quantity_refunded:
+            type:
+              - "null"
+              - string
+          product_price:
+            type:
+              - "null"
+              - string
+          reduction_percent:
+            type:
+              - "null"
+              - string
+          reduction_amount:
+            type:
+              - "null"
+              - string
+          reduction_amount_tax_incl:
+            type:
+              - "null"
+              - string
+          reduction_amount_tax_excl:
+            type:
+              - "null"
+              - string
+          product_quantity_discount:
+            type:
+              - "null"
+              - string
+          product_ean13:
+            type:
+              - "null"
+              - string
+          product_isbn:
+            type:
+              - "null"
+              - string
+          product_upc:
+            type:
+              - "null"
+              - string
+          product_mpn:
+            type:
+              - "null"
+              - string
+          product_reference:
+            type:
+              - "null"
+              - string
+          product_supplier_reference:
+            type:
+              - "null"
+              - string
+          product_weight:
+            type:
+              - "null"
+              - string
+          tax_computation_method:
+            type:
+              - "null"
+              - string
+          id_tax_rules_group:
+            type:
+              - "null"
+              - string
+          ecotax:
+            type:
+              - "null"
+              - string
+          ecotax_tax_rate:
+            type:
+              - "null"
+              - string
+          download_nb:
+            type:
+              - "null"
+              - string
+          unit_price_tax_incl:
+            type:
+              - "null"
+              - string
+          unit_price_tax_excl:
+            type:
+              - "null"
+              - string
+          total_price_tax_incl:
+            type:
+              - "null"
+              - string
+          total_price_tax_excl:
+            type:
+              - "null"
+              - string
+          total_shipping_price_tax_excl:
+            type:
+              - "null"
+              - string
+          total_shipping_price_tax_incl:
+            type:
+              - "null"
+              - string
+          purchase_supplier_price:
+            type:
+              - "null"
+              - string
+          original_product_price:
+            type:
+              - "null"
+              - string
+          original_wholesale_price:
+            type:
+              - "null"
+              - string
+          total_refunded_tax_excl:
+            type:
+              - "null"
+              - string
+          total_refunded_tax_incl:
+            type:
+              - "null"
+              - string
   order_histories_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -243,6 +2071,33 @@ definitions:
       data_key: "order_histories"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_employee:
+            type:
+              - "null"
+              - string
+          id_order_state:
+            type:
+              - "null"
+              - string
+          id_order:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
   order_invoices_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -251,6 +2106,89 @@ definitions:
       data_key: "order_invoices"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_order:
+            type:
+              - "null"
+              - string
+          number:
+            type:
+              - "null"
+              - string
+          delivery_number:
+            type:
+              - "null"
+              - string
+          delivery_date:
+            type:
+              - "null"
+              - string
+          total_discount_tax_excl:
+            type:
+              - "null"
+              - string
+          total_discount_tax_incl:
+            type:
+              - "null"
+              - string
+          total_paid_tax_excl:
+            type:
+              - "null"
+              - string
+          total_paid_tax_incl:
+            type:
+              - "null"
+              - string
+          total_products:
+            type:
+              - "null"
+              - string
+          total_products_wt:
+            type:
+              - "null"
+              - string
+          total_shipping_tax_excl:
+            type:
+              - "null"
+              - string
+          total_shipping_tax_incl:
+            type:
+              - "null"
+              - string
+          shipping_tax_computation_method:
+            type:
+              - "null"
+              - string
+          total_wrapping_tax_excl:
+            type:
+              - "null"
+              - string
+          total_wrapping_tax_incl:
+            type:
+              - "null"
+              - string
+          shop_address:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
   order_payments_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -259,6 +2197,61 @@ definitions:
       data_key: "order_payments"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          order_reference:
+            type:
+              - "null"
+              - string
+          id_currency:
+            type:
+              - "null"
+              - string
+          amount:
+            type:
+              - "null"
+              - string
+          payment_method:
+            type:
+              - "null"
+              - string
+          conversion_rate:
+            type:
+              - "null"
+              - string
+          transaction_id:
+            type:
+              - "null"
+              - string
+          card_number:
+            type:
+              - "null"
+              - string
+          card_brand:
+            type:
+              - "null"
+              - string
+          card_expiration:
+            type:
+              - "null"
+              - string
+          card_holder:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
   orders_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -267,6 +2260,258 @@ definitions:
       data_key: "orders"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_address_delivery:
+            type:
+              - "null"
+              - string
+          id_address_invoice:
+            type:
+              - "null"
+              - string
+          id_cart:
+            type:
+              - "null"
+              - string
+          id_currency:
+            type:
+              - "null"
+              - string
+          id_lang:
+            type:
+              - "null"
+              - string
+          id_customer:
+            type:
+              - "null"
+              - string
+          id_carrier:
+            type:
+              - "null"
+              - string
+          current_state:
+            type:
+              - "null"
+              - string
+          module:
+            type:
+              - "null"
+              - string
+          invoice_number:
+            type:
+              - "null"
+              - string
+          invoice_date:
+            type:
+              - "null"
+              - string
+          delivery_number:
+            type:
+              - "null"
+              - string
+          delivery_date:
+            type:
+              - "null"
+              - string
+          valid:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          shipping_number:
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          secure_key:
+            type:
+              - "null"
+              - string
+          payment:
+            type:
+              - "null"
+              - string
+          recyclable:
+            type:
+              - "null"
+              - string
+          gift:
+            type:
+              - "null"
+              - string
+          gift_message:
+            type:
+              - "null"
+              - string
+          mobile_theme:
+            type:
+              - "null"
+              - string
+          total_discounts:
+            type:
+              - "null"
+              - string
+          total_discounts_tax_incl:
+            type:
+              - "null"
+              - string
+          total_discounts_tax_excl:
+            type:
+              - "null"
+              - string
+          total_paid:
+            type:
+              - "null"
+              - string
+          total_paid_tax_incl:
+            type:
+              - "null"
+              - string
+          total_paid_tax_excl:
+            type:
+              - "null"
+              - string
+          total_paid_real:
+            type:
+              - "null"
+              - string
+          total_products:
+            type:
+              - "null"
+              - string
+          total_products_wt:
+            type:
+              - "null"
+              - string
+          total_shipping:
+            type:
+              - "null"
+              - string
+          total_shipping_tax_incl:
+            type:
+              - "null"
+              - string
+          total_shipping_tax_excl:
+            type:
+              - "null"
+              - string
+          carrier_tax_rate:
+            type:
+              - "null"
+              - string
+          total_wrapping:
+            type:
+              - "null"
+              - string
+          total_wrapping_tax_incl:
+            type:
+              - "null"
+              - string
+          total_wrapping_tax_excl:
+            type:
+              - "null"
+              - string
+          round_mode:
+            type:
+              - "null"
+              - string
+          round_type:
+            type:
+              - "null"
+              - string
+          conversion_rate:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          associations:
+            type: object
+            properties:
+              order_rows:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    product_id:
+                      type:
+                        - "null"
+                        - string
+                    product_attribute_id:
+                      type:
+                        - "null"
+                        - string
+                    product_quantity:
+                      type:
+                        - "null"
+                        - string
+                    product_name:
+                      type:
+                        - "null"
+                        - string
+                    product_reference:
+                      type:
+                        - "null"
+                        - string
+                    product_ean13:
+                      type:
+                        - "null"
+                        - string
+                    product_isbn:
+                      type:
+                        - "null"
+                        - string
+                    product_upc:
+                      type:
+                        - "null"
+                        - string
+                    product_price:
+                      type:
+                        - "null"
+                        - string
+                    id_customization:
+                      type:
+                        - "null"
+                        - string
+                    unit_price_tax_incl:
+                      type:
+                        - "null"
+                        - string
+                    unit_price_tax_excl:
+                      type:
+                        - "null"
+                        - string
   order_slip_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -275,6 +2520,74 @@ definitions:
       data_key: "order_slips"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_customer:
+            type:
+              - "null"
+              - string
+          id_order:
+            type:
+              - "null"
+              - string
+          conversion_rate:
+            type:
+              - "null"
+              - string
+          total_products_tax_excl:
+            type:
+              - "null"
+              - string
+          total_products_tax_incl:
+            type:
+              - "null"
+              - string
+          total_shipping_tax_excl:
+            type:
+              - "null"
+              - string
+          total_shipping_tax_incl:
+            type:
+              - "null"
+              - string
+          amount:
+            type:
+              - "null"
+              - string
+          shipping_cost:
+            type:
+              - "null"
+              - string
+          shipping_cost_amount:
+            type:
+              - "null"
+              - string
+          partial:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          order_slip_type:
+            type:
+              - "null"
+              - string
   order_states_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -282,6 +2595,76 @@ definitions:
       path: "/order_states"
       data_key: "order_states"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          unremovable:
+            type:
+              - "null"
+              - string
+          delivery:
+            type:
+              - "null"
+              - string
+          hidden:
+            type:
+              - "null"
+              - string
+          send_email:
+            type:
+              - "null"
+              - string
+          module_name:
+            type:
+              - "null"
+              - string
+          invoice:
+            type:
+              - "null"
+              - string
+          color:
+            type:
+              - "null"
+              - string
+          logable:
+            type:
+              - "null"
+              - string
+          shipped:
+            type:
+              - "null"
+              - string
+          paid:
+            type:
+              - "null"
+              - string
+          pdf_delivery:
+            type:
+              - "null"
+              - string
+          pdf_invoice:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          template:
+            type:
+              - "null"
+              - string
   price_ranges_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -289,6 +2672,28 @@ definitions:
       path: "/price_ranges"
       data_key: "price_ranges"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_carrier:
+            type:
+              - "null"
+              - string
+          delimiter1:
+            type:
+              - "null"
+              - string
+          delimiter2:
+            type:
+              - "null"
+              - string
   product_customization_fields_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -296,6 +2701,40 @@ definitions:
       path: "/product_customization_fields"
       data_key: "customization_fields"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_product:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          required:
+            type:
+              - "null"
+              - string
+          is_module:
+            type:
+              - "null"
+              - string
+          is_deleted:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
   product_features_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -303,6 +2742,24 @@ definitions:
       path: "/product_features"
       data_key: "product_features"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          position:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
   product_feature_values_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -310,6 +2767,28 @@ definitions:
       path: "/product_feature_values"
       data_key: "product_feature_values"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_feature:
+            type:
+              - "null"
+              - string
+          custom:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - string
   product_options_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -317,6 +2796,48 @@ definitions:
       path: "/product_options"
       data_key: "product_options"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          is_color_group:
+            type:
+              - "null"
+              - string
+          group_type:
+            type:
+              - "null"
+              - string
+          position:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          public_name:
+            type:
+              - "null"
+              - string
+          associations:
+            type: object
+            properties:
+              product_option_values:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
   product_option_values_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -324,6 +2845,32 @@ definitions:
       path: "/product_option_values"
       data_key: "product_option_values"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_attribute_group:
+            type:
+              - "null"
+              - string
+          color:
+            type:
+              - "null"
+              - string
+          position:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
   products_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -332,6 +2879,328 @@ definitions:
       data_key: "products"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_manufacturer:
+            type:
+              - "null"
+              - string
+          id_supplier:
+            type:
+              - "null"
+              - string
+          id_category_default:
+            type:
+              - "null"
+              - string
+          new:
+            type:
+              - "null"
+              - string
+          cache_default_attribute:
+            type:
+              - "null"
+              - string
+          id_default_image:
+            type:
+              - "null"
+              - string
+          id_default_combination:
+            type:
+              - integer
+              - string
+          id_tax_rules_group:
+            type:
+              - "null"
+              - string
+          position_in_category:
+            type:
+              - "null"
+              - string
+          manufacturer_name:
+            type:
+              - string
+              - boolean
+          quantity:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          id_shop_default:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          supplier_reference:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
+          width:
+            type:
+              - "null"
+              - string
+          height:
+            type:
+              - "null"
+              - string
+          depth:
+            type:
+              - "null"
+              - string
+          weight:
+            type:
+              - "null"
+              - string
+          quantity_discount:
+            type:
+              - "null"
+              - string
+          ean13:
+            type:
+              - "null"
+              - string
+          isbn:
+            type:
+              - "null"
+              - string
+          upc:
+            type:
+              - "null"
+              - string
+          mpn:
+            type:
+              - "null"
+              - string
+          cache_is_pack:
+            type:
+              - "null"
+              - string
+          cache_has_attachments:
+            type:
+              - "null"
+              - string
+          is_virtual:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          additional_delivery_times:
+            type:
+              - "null"
+              - string
+          delivery_in_stock:
+            type:
+              - "null"
+              - string
+          delivery_out_stock:
+            type:
+              - "null"
+              - string
+          on_sale:
+            type:
+              - "null"
+              - string
+          online_only:
+            type:
+              - "null"
+              - string
+          ecotax:
+            type:
+              - "null"
+              - string
+          minimal_quantity:
+            type:
+              - "null"
+              - string
+          low_stock_threshold:
+            type:
+              - "null"
+              - string
+          low_stock_alert:
+            type:
+              - "null"
+              - string
+          price:
+            type:
+              - "null"
+              - string
+          wholesale_price:
+            type:
+              - "null"
+              - string
+          unity:
+            type:
+              - "null"
+              - string
+          unit_price_ratio:
+            type:
+              - "null"
+              - string
+          additional_shipping_cost:
+            type:
+              - "null"
+              - string
+          customizable:
+            type:
+              - "null"
+              - string
+          text_fields:
+            type:
+              - "null"
+              - string
+          uploadable_files:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          redirect_type:
+            type:
+              - "null"
+              - string
+          id_type_redirected:
+            type:
+              - "null"
+              - string
+          available_for_order:
+            type:
+              - "null"
+              - string
+          available_date:
+            type:
+              - "null"
+              - string
+          show_condition:
+            type:
+              - "null"
+              - string
+          condition:
+            type:
+              - "null"
+              - string
+          show_price:
+            type:
+              - "null"
+              - string
+          indexed:
+            type:
+              - "null"
+              - string
+          visibility:
+            type:
+              - "null"
+              - string
+          advanced_stock_management:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          pack_stock_type:
+            type:
+              - "null"
+              - string
+          meta_description:
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            type:
+              - "null"
+              - string
+          meta_title:
+            type:
+              - "null"
+              - string
+          link_rewrite:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          description_short:
+            type:
+              - "null"
+              - string
+          available_now:
+            type:
+              - "null"
+              - string
+          available_later:
+            type:
+              - "null"
+              - string
+          associations:
+            type: object
+            properties:
+              categories:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+              images:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+              stock_availables:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    id_product_attribute:
+                      type:
+                        - "null"
+                        - string
   product_suppliers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -339,6 +3208,40 @@ definitions:
       path: "/product_suppliers"
       data_key: "product_suppliers"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_product:
+            type:
+              - "null"
+              - string
+          id_product_attribute:
+            type:
+              - "null"
+              - string
+          id_supplier:
+            type:
+              - "null"
+              - string
+          id_currency:
+            type:
+              - "null"
+              - string
+          product_supplier_reference:
+            type:
+              - "null"
+              - string
+          product_supplier_price_te:
+            type:
+              - "null"
+              - string
   shop_groups_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -346,6 +3249,40 @@ definitions:
       path: "/shop_groups"
       data_key: "shop_groups"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          share_customer:
+            type:
+              - "null"
+              - string
+          share_order:
+            type:
+              - "null"
+              - string
+          share_stock:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
   shops_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -353,6 +3290,40 @@ definitions:
       path: "/shops"
       data_key: "shops"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          id_category:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          theme_name:
+            type:
+              - "null"
+              - string
   shop_urls_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -360,6 +3331,44 @@ definitions:
       path: "/shop_urls"
       data_key: "shop_urls"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_shop:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          main:
+            type:
+              - "null"
+              - string
+          domain:
+            type:
+              - "null"
+              - string
+          domain_ssl:
+            type:
+              - "null"
+              - string
+          physical_uri:
+            type:
+              - "null"
+              - string
+          virtual_uri:
+            type:
+              - "null"
+              - string
   specific_price_rules_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -367,6 +3376,64 @@ definitions:
       path: "/specific_price_rules"
       data_key: "specific_price_rules"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_shop:
+            type:
+              - "null"
+              - string
+          id_country:
+            type:
+              - "null"
+              - string
+          id_currency:
+            type:
+              - "null"
+              - string
+          id_group:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          from_quantity:
+            type:
+              - "null"
+              - string
+          price:
+            type:
+              - "null"
+              - string
+          reduction:
+            type:
+              - "null"
+              - string
+          reduction_tax:
+            type:
+              - "null"
+              - string
+          reduction_type:
+            type:
+              - "null"
+              - string
+          from:
+            type:
+              - "null"
+              - string
+          to:
+            type:
+              - "null"
+              - string
   specific_prices_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -374,6 +3441,84 @@ definitions:
       path: "/specific_prices"
       data_key: "specific_prices"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          id_cart:
+            type:
+              - "null"
+              - string
+          id_product:
+            type:
+              - "null"
+              - string
+          id_product_attribute:
+            type:
+              - "null"
+              - string
+          id_currency:
+            type:
+              - "null"
+              - string
+          id_country:
+            type:
+              - "null"
+              - string
+          id_group:
+            type:
+              - "null"
+              - string
+          id_customer:
+            type:
+              - "null"
+              - string
+          id_specific_price_rule:
+            type:
+              - "null"
+              - string
+          price:
+            type:
+              - "null"
+              - string
+          from_quantity:
+            type:
+              - "null"
+              - string
+          reduction:
+            type:
+              - "null"
+              - string
+          reduction_tax:
+            type:
+              - "null"
+              - string
+          reduction_type:
+            type:
+              - "null"
+              - string
+          from:
+            type:
+              - "null"
+              - string
+          to:
+            type:
+              - "null"
+              - string
   states_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -381,6 +3526,36 @@ definitions:
       path: "/states"
       data_key: "states"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_zone:
+            type:
+              - "null"
+              - string
+          id_country:
+            type:
+              - "null"
+              - string
+          iso_code:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
   stock_availables_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -388,6 +3563,48 @@ definitions:
       path: "/stock_availables"
       data_key: "stock_availables"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_product:
+            type:
+              - "null"
+              - string
+          id_product_attribute:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          quantity:
+            type:
+              - "null"
+              - string
+          depends_on_stock:
+            type:
+              - "null"
+              - string
+          out_of_stock:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
   stock_movement_reasons_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -396,6 +3613,38 @@ definitions:
       data_key: "stock_movement_reasons"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          sign:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
   stock_movements_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -404,6 +3653,101 @@ definitions:
       data_key: "stock_mvts"
       primary_key: "id"
       cursor_field: "date_add"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_product:
+            type:
+              - "null"
+              - string
+          id_product_attribute:
+            type:
+              - "null"
+              - string
+          id_warehouse:
+            type:
+              - "null"
+              - string
+          id_currency:
+            type:
+              - "null"
+              - string
+          management_type:
+            type:
+              - "null"
+              - string
+          id_employee:
+            type:
+              - "null"
+              - string
+          id_stock:
+            type:
+              - "null"
+              - string
+          id_stock_mvt_reason:
+            type:
+              - "null"
+              - string
+          id_order:
+            type:
+              - "null"
+              - string
+          id_supply_order:
+            type:
+              - "null"
+              - string
+          product_name:
+            type:
+              - "null"
+              - boolean
+          ean13:
+            type:
+              - "null"
+              - string
+          upc:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          mpn:
+            type:
+              - "null"
+              - string
+          physical_quantity:
+            type:
+              - "null"
+              - string
+          sign:
+            type:
+              - "null"
+              - string
+          last_wa:
+            type:
+              - "null"
+              - string
+          current_wa:
+            type:
+              - "null"
+              - string
+          price_te:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
   stores_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -412,6 +3756,86 @@ definitions:
       data_key: "stores"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_country:
+            type:
+              - "null"
+              - string
+          id_state:
+            type:
+              - "null"
+              - string
+          hours:
+            type:
+              - "null"
+              - string
+          postcode:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          latitude:
+            type:
+              - "null"
+              - string
+          longitude:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          fax:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
+          address1:
+            type:
+              - "null"
+              - string
+          address2:
+            type:
+              - "null"
+              - string
+          note:
+            type:
+              - "null"
+              - string
   suppliers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -420,6 +3844,54 @@ definitions:
       data_key: "suppliers"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          link_rewrite:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          description:
+            type:
+              - "null"
+              - string
+          meta_title:
+            type:
+              - "null"
+              - string
+          meta_description:
+            type:
+              - "null"
+              - string
+          meta_keywords:
+            type:
+              - "null"
+              - string
   tags_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -427,6 +3899,24 @@ definitions:
       path: "/tags"
       data_key: "tags"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_lang:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
   taxes_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -434,6 +3924,32 @@ definitions:
       path: "/taxes"
       data_key: "taxes"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          rate:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
   tax_rule_groups_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -442,6 +3958,38 @@ definitions:
       data_key: "tax_rule_groups"
       primary_key: "id"
       cursor_field: "date_upd"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
+          deleted:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
   tax_rules_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -449,6 +3997,48 @@ definitions:
       path: "/tax_rules"
       data_key: "tax_rules"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_tax_rules_group:
+            type:
+              - "null"
+              - string
+          id_state:
+            type:
+              - "null"
+              - string
+          id_country:
+            type:
+              - "null"
+              - string
+          zipcode_from:
+            type:
+              - "null"
+              - string
+          zipcode_to:
+            type:
+              - "null"
+              - string
+          id_tax:
+            type:
+              - "null"
+              - string
+          behavior:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
   translated_configurations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -456,6 +4046,42 @@ definitions:
       path: "/translated_configurations"
       data_key: "translated_configurations"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          value:
+            type:
+              - "null"
+              - string
+          date_add:
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_upd:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type:
+              - "null"
+              - string
+          id_shop_group:
+            type:
+              - "null"
+              - string
+          id_shop:
+            type:
+              - "null"
+              - string
   weight_ranges_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -463,6 +4089,28 @@ definitions:
       path: "/weight_ranges"
       data_key: "weight_ranges"
       primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          id_carrier:
+            type:
+              - "null"
+              - string
+          delimiter1:
+            type:
+              - "null"
+              - string
+          delimiter2:
+            type:
+              - "null"
+              - string
   zones_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -471,6 +4119,24 @@ definitions:
       data_key: "zones"
       primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/addresses_stream"
   - "#/definitions/carriers_stream"

@@ -52,7 +52,9 @@ definitions:
     cursor_granularity: "PT0.000001S"
     lookback_window: "P31D"
     start_datetime:
-      datetime: "{{ config.get('start_date', day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ')) }}"
+      datetime:
+        "{{ config.get('start_date', day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ'))
+        }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_datetime:
       datetime: "{{ today_utc() }}"
@@ -70,6 +72,89 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          dkim_key_size:
+            type:
+              - "null"
+              - integer
+          force_dkim_authority:
+            type:
+              - "null"
+              - boolean
+          ips:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          name:
+            type:
+              - "null"
+              - string
+          pool:
+            type:
+              - "null"
+              - string
+          smtp_password:
+            type:
+              - "null"
+              - string
+          spam_action:
+            type:
+              - "null"
+              - string
+          web_scheme:
+            type:
+              - "null"
+              - string
+          wildcard:
+            type:
+              - "null"
+              - boolean
+          state:
+            type:
+              - "null"
+              - string
+          skip_verification:
+            type:
+              - "null"
+              - boolean
+          type:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+          require_tls:
+            type:
+              - "null"
+              - boolean
+          is_disabled:
+            type:
+              - "null"
+              - boolean
+          smtp_login:
+            type:
+              - "null"
+              - string
+          web_prefix:
+            type:
+              - "null"
+              - string
   events_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -84,6 +169,291 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          campaigns:
+            type:
+              - "null"
+              - array
+          client-info:
+            type:
+              - "null"
+              - object
+            properties:
+              client-name:
+                type:
+                  - "null"
+                  - string
+              client-os:
+                type:
+                  - "null"
+                  - string
+              client-type:
+                type:
+                  - "null"
+                  - string
+              device-type:
+                type:
+                  - "null"
+                  - string
+              user-agent:
+                type:
+                  - "null"
+                  - string
+          delivery-status:
+            type:
+              - "null"
+              - object
+            properties:
+              attempt-no:
+                type:
+                  - "null"
+                  - number
+              certificate-verified:
+                type:
+                  - "null"
+                  - boolean
+              code:
+                type:
+                  - "null"
+                  - number
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              message:
+                type:
+                  - "null"
+                  - string
+              mx-host:
+                type:
+                  - "null"
+                  - string
+              retry-seconds:
+                type:
+                  - "null"
+                  - number
+              session-seconds:
+                type:
+                  - "null"
+                  - number
+              tls:
+                type:
+                  - "null"
+                  - boolean
+              utf8:
+                type:
+                  - "null"
+                  - boolean
+          envelop:
+            type:
+              - "null"
+              - object
+            properties:
+              sender:
+                type:
+                  - "null"
+                  - string
+              sending-ip:
+                type:
+                  - "null"
+                  - string
+              targets:
+                type:
+                  - "null"
+                  - string
+              transport:
+                type:
+                  - "null"
+                  - string
+          event:
+            type: string
+          flags:
+            type:
+              - "null"
+              - object
+            properties:
+              is-authenticated:
+                type:
+                  - "null"
+                  - boolean
+              is-delayed-bounce:
+                type:
+                  - "null"
+                  - boolean
+              is-routed:
+                type:
+                  - "null"
+                  - boolean
+              is-system-test:
+                type:
+                  - "null"
+                  - boolean
+              is-test-mode:
+                type:
+                  - "null"
+                  - boolean
+          geolocation:
+            type:
+              - "null"
+              - object
+            properties:
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              region:
+                type:
+                  - "null"
+                  - string
+          id:
+            type: string
+          ip:
+            type:
+              - "null"
+              - string
+          log-level:
+            type:
+              - "null"
+              - string
+          message:
+            type:
+              - "null"
+              - object
+            properties:
+              attachments:
+                type:
+                  - "null"
+                  - array
+              headers:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  from:
+                    type:
+                      - "null"
+                      - string
+                  message-id:
+                    type:
+                      - "null"
+                      - string
+                  subject:
+                    type:
+                      - "null"
+                      - string
+                  to:
+                    type:
+                      - "null"
+                      - string
+              recipients:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              size:
+                type:
+                  - "null"
+                  - number
+          method:
+            type:
+              - "null"
+              - string
+          routes:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                expression:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                match:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    recipient:
+                      type:
+                        - "null"
+                        - string
+          storage:
+            type:
+              - "null"
+              - object
+            properties:
+              key:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+          reason:
+            type:
+              - "null"
+              - string
+          reject:
+            type:
+              - "null"
+              - object
+            properties:
+              description:
+                type:
+                  - "null"
+                  - string
+              reason:
+                type:
+                  - "null"
+                  - string
+          recipient:
+            type:
+              - "null"
+              - string
+          recipient-domain:
+            type:
+              - "null"
+              - string
+          severity:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          timestamp:
+            type: number
+          user-variables:
+            type:
+              - "null"
+              - object
 streams:
   - "#/definitions/domains_stream"
   - "#/definitions/events_stream"

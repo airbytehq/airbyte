@@ -48,6 +48,239 @@ definitions:
       name: "pages"
       primary_key: "id"
       path: "/pages"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            example: j7m9j8brdt3h
+            description: Page identifier
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description: Timestamp the record was created
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description: Timestamp the record was last updated
+          name:
+            type:
+              - "null"
+              - string
+            example: My Company Status
+            description: Name of your page to be displayed
+          page_description:
+            type:
+              - "null"
+              - string
+          headline:
+            type:
+              - "null"
+              - string
+          branding:
+            type:
+              - "null"
+              - string
+            description: The main template your statuspage will use
+          subdomain:
+            type:
+              - "null"
+              - string
+            example: your-subdomain.statuspage.io
+            description: Subdomain at which to access your status page
+          domain:
+            type:
+              - "null"
+              - string
+            example: status.mycompany.com
+            description: CNAME alias for your status page
+          url:
+            type:
+              - "null"
+              - string
+            example: https://www.mycompany.com
+            description:
+              Website of your page.  Clicking on your statuspage image
+              will link here.
+          support_url:
+            type:
+              - "null"
+              - string
+          hidden_from_search:
+            type:
+              - "null"
+              - boolean
+            description: Should your page hide itself from search engines
+          allow_page_subscribers:
+            type:
+              - "null"
+              - boolean
+            description: Can your users subscribe to all notifications on the page
+          allow_incident_subscribers:
+            type:
+              - "null"
+              - boolean
+            description: Can your users subscribe to notifications for a single incident
+          allow_email_subscribers:
+            type:
+              - "null"
+              - boolean
+            description: Can your users choose to receive notifications via email
+          allow_sms_subscribers:
+            type:
+              - "null"
+              - boolean
+            description: Can your users choose to receive notifications via SMS
+          allow_rss_atom_feeds:
+            type:
+              - "null"
+              - boolean
+            description:
+              Can your users choose to access incident feeds via RSS/Atom
+              (not functional on Audience-Specific pages)
+          allow_webhook_subscribers:
+            type:
+              - "null"
+              - boolean
+            description: Can your users choose to receive notifications via Webhooks
+          notifications_from_email:
+            type:
+              - "null"
+              - string
+            example: no-reply@status.mycompany.com
+            description:
+              Allows you to customize the email address your page notifications
+              come from
+          notifications_email_footer:
+            type:
+              - "null"
+              - string
+            description:
+              Allows you to customize the footer appearing on your notification
+              emails.  Accepts Markdown for formatting
+          activity_score:
+            type: number
+            format: float
+          twitter_username:
+            type:
+              - "null"
+              - string
+          viewers_must_be_team_members:
+            type:
+              - "null"
+              - boolean
+          ip_restrictions:
+            type:
+              - "null"
+              - string
+          city:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          time_zone:
+            type:
+              - "null"
+              - string
+            example: UTC
+            description: Timezone configured for your page
+          css_body_background_color:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_font_color:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_light_font_color:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_greens:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_yellows:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_oranges:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_blues:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_reds:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_border_color:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_graph_color:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_link_color:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          css_no_data:
+            type:
+              - "null"
+              - string
+            description: CSS Color
+          favicon_logo:
+            type:
+              - "null"
+              - object
+          transactional_logo:
+            type:
+              - "null"
+              - object
+          hero_cover:
+            type:
+              - "null"
+              - object
+          email_logo:
+            type:
+              - "null"
+              - object
+          twitter_logo:
+            type:
+              - "null"
+              - object
+        description: Get a page
+        $schema: http://json-schema.org/schema#
   page_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -68,6 +301,118 @@ definitions:
         $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            example: x2wy916b0s4l
+            description: Subscriber Identifier
+          skip_confirmation_notification:
+            type:
+              - "null"
+              - boolean
+            description:
+              If this is true, do not notify the user with changes to their
+              subscription.
+          mode:
+            type:
+              - "null"
+              - string
+            example: email
+            description: The communication mode of the subscriber.
+          email:
+            type:
+              - "null"
+              - string
+            example: foo@example2.com
+            description:
+              The email address to use to contact the subscriber. Used
+              for Email and Webhook subscribers.
+          endpoint:
+            type:
+              - "null"
+              - string
+            example: http://example.com/
+            description: The URL where a webhook subscriber elects to receive updates.
+          phone_number:
+            type:
+              - "null"
+              - string
+            example: 202-555-0105
+            description: The phone number used to contact an SMS subscriber
+          phone_country:
+            type:
+              - "null"
+              - string
+            example: US
+            description:
+              The two-character country code representing the country of
+              which the phone_number is a part.
+          display_phone_number:
+            type:
+              - "null"
+              - string
+            example: +1 (202) 555-0105
+            description:
+              A formatted version of the phone_number and phone_country
+              pair, nicely formatted for display.
+          obfuscated_channel_name:
+            type:
+              - "null"
+              - string
+            example: "#*******an"
+            description: Obfuscated slack channel name
+          workspace_name:
+            type:
+              - "null"
+              - string
+            example: Atlassian
+            description: The workspace name of the slack subscriber.
+          quarantined_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description:
+              The timestamp when the subscriber was quarantined due to
+              an issue reaching them.
+          purge_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description:
+              The timestamp when a quarantined subscriber will be purged
+              (unsubscribed).
+          components:
+            type:
+              - "null"
+              - string
+            example:
+              - vp5sp4b1rl2l
+            description:
+              The components for which the subscriber has elected to receive
+              updates.
+          page_access_user_id:
+            type:
+              - "null"
+              - string
+            example: pwq31gns60j3
+            description:
+              The Page Access user this subscriber belongs to (only for
+              audience-specific pages).
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+        description: Get an incident subscriber
+        $schema: http://json-schema.org/schema#
   subscribers_histogram_by_state_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -81,6 +426,113 @@ definitions:
         $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          email:
+            type: object
+            properties:
+              active:
+                type: integer
+                format: int32
+                description: The number of active subscribers found by the query.
+              unconfirmed:
+                type: integer
+                format: int32
+                description: The number of unconfirmed subscribers found by the query.
+              quarantined:
+                type: integer
+                format: int32
+                description: The number of quarantined subscribers found by the query.
+              total:
+                type: integer
+                format: int32
+                description: The total number of subscribers found by the query.
+            $schema: http://json-schema.org/schema#
+          sms:
+            type: object
+            properties:
+              active:
+                type: integer
+                format: int32
+                description: The number of active subscribers found by the query.
+              unconfirmed:
+                type: integer
+                format: int32
+                description: The number of unconfirmed subscribers found by the query.
+              quarantined:
+                type: integer
+                format: int32
+                description: The number of quarantined subscribers found by the query.
+              total:
+                type: integer
+                format: int32
+                description: The total number of subscribers found by the query.
+            $schema: http://json-schema.org/schema#
+          webhook:
+            type: object
+            properties:
+              active:
+                type: integer
+                format: int32
+                description: The number of active subscribers found by the query.
+              unconfirmed:
+                type: integer
+                format: int32
+                description: The number of unconfirmed subscribers found by the query.
+              quarantined:
+                type: integer
+                format: int32
+                description: The number of quarantined subscribers found by the query.
+              total:
+                type: integer
+                format: int32
+                description: The total number of subscribers found by the query.
+            $schema: http://json-schema.org/schema#
+          integration_partner:
+            type: object
+            properties:
+              active:
+                type: integer
+                format: int32
+                description: The number of active subscribers found by the query.
+              unconfirmed:
+                type: integer
+                format: int32
+                description: The number of unconfirmed subscribers found by the query.
+              quarantined:
+                type: integer
+                format: int32
+                description: The number of quarantined subscribers found by the query.
+              total:
+                type: integer
+                format: int32
+                description: The total number of subscribers found by the query.
+            $schema: http://json-schema.org/schema#
+          slack:
+            type: object
+            properties:
+              active:
+                type: integer
+                format: int32
+                description: The number of active subscribers found by the query.
+              unconfirmed:
+                type: integer
+                format: int32
+                description: The number of unconfirmed subscribers found by the query.
+              quarantined:
+                type: integer
+                format: int32
+                description: The number of quarantined subscribers found by the query.
+              total:
+                type: integer
+                format: int32
+                description: The total number of subscribers found by the query.
+            $schema: http://json-schema.org/schema#
+        description: Get a histogram of subscribers by type and then state
+        $schema: http://json-schema.org/schema#
   incident_templates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -95,6 +547,152 @@ definitions:
         $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            example: p08qyqtz4fnq
+            description: Incident Template Identifier
+          components:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                  description: Identifier for component
+                page_id:
+                  type:
+                    - "null"
+                    - string
+                  description: Page identifier
+                group_id:
+                  type:
+                    - "null"
+                    - string
+                  description: Component Group identifier
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                group:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Is this component a group
+                name:
+                  type:
+                    - "null"
+                    - string
+                  description: Display name for component
+                description:
+                  type:
+                    - "null"
+                    - string
+                  description: More detailed description for component
+                position:
+                  type: integer
+                  format: int32
+                  description: Order the component will appear on the page
+                status:
+                  type:
+                    - "null"
+                    - string
+                  enum:
+                    - operational
+                    - under_maintenance
+                    - degraded_performance
+                    - partial_outage
+                    - major_outage
+                    - ""
+                  description: Status of component
+                showcase:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Should this component be showcased
+                only_show_if_degraded:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Requires a special feature flag to be enabled
+                automation_email:
+                  type:
+                    - "null"
+                    - string
+                  description: Requires a special feature flag to be enabled
+                start_date:
+                  type:
+                    - "null"
+                    - string
+                  format: date
+                  description: The date this component started being used
+              description: Add page access groups to a component
+              $schema: http://json-schema.org/schema#
+            description: Affected components
+          name:
+            type:
+              - "null"
+              - string
+            description:
+              Name of the template, as shown in the list on the "Templates"
+              tab of the "Incidents" page
+          title:
+            type:
+              - "null"
+              - string
+            description:
+              Title to be applied to the incident or maintenance when selecting
+              this template
+          body:
+            type:
+              - "null"
+              - string
+            description:
+              Body of the incident or maintenance update to be applied
+              when selecting this template
+          group_id:
+            type:
+              - "null"
+              - string
+            example: mntdyll6bk4c
+            description: Identifier of Template Group this template belongs to
+          update_status:
+            type:
+              - "null"
+              - string
+            description:
+              The status the incident or maintenance should transition
+              to when selecting this template
+          should_tweet:
+            type:
+              - "null"
+              - boolean
+            description:
+              Whether the "tweet update" checkbox should be selected when
+              selecting this template
+          should_send_notifications:
+            type:
+              - "null"
+              - boolean
+            description:
+              Whether the "deliver notifications" checkbox should be selected
+              when selecting this template
+        description: Get a list of templates
+        $schema: http://json-schema.org/schema#
   incidents_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -109,6 +707,405 @@ definitions:
         $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            example: p31zjtct2jer
+            description: Incident Identifier
+          components:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                  description: Identifier for component
+                page_id:
+                  type:
+                    - "null"
+                    - string
+                  description: Page identifier
+                group_id:
+                  type:
+                    - "null"
+                    - string
+                  description: Component Group identifier
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                group:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Is this component a group
+                name:
+                  type:
+                    - "null"
+                    - string
+                  description: Display name for component
+                description:
+                  type:
+                    - "null"
+                    - string
+                  description: More detailed description for component
+                position:
+                  type: integer
+                  format: int32
+                  description: Order the component will appear on the page
+                status:
+                  type:
+                    - "null"
+                    - string
+                  enum:
+                    - operational
+                    - under_maintenance
+                    - degraded_performance
+                    - partial_outage
+                    - major_outage
+                    - ""
+                  description: Status of component
+                showcase:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Should this component be showcased
+                only_show_if_degraded:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Requires a special feature flag to be enabled
+                automation_email:
+                  type:
+                    - "null"
+                    - string
+                  description: Requires a special feature flag to be enabled
+                start_date:
+                  type:
+                    - "null"
+                    - string
+                  format: date
+                  description: The date this component started being used
+              description: Add page access groups to a component
+              $schema: http://json-schema.org/schema#
+            description: Incident components
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description: The timestamp when the incident was created at.
+          impact:
+            type:
+              - "null"
+              - string
+            example: critical
+            enum:
+              - none
+              - maintenance
+              - minor
+              - major
+              - critical
+            description: The impact of the incident.
+          impact_override:
+            type:
+              - "null"
+              - object
+            example: minor
+            description: value to override calculated impact value
+          incident_updates:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                  description: Incident Update Identifier.
+                incident_id:
+                  type:
+                    - "null"
+                    - string
+                  description: Incident Identifier.
+                affected_components:
+                  type:
+                    - "null"
+                    - array
+                  description: Affected components associated with the incident update.
+                body:
+                  type:
+                    - "null"
+                    - string
+                  description: Incident update body.
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  description:
+                    The timestamp when the incident update was created
+                    at.
+                custom_tweet:
+                  type:
+                    - "null"
+                    - string
+                  description: An optional customized tweet message for incident postmortem.
+                deliver_notifications:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Controls whether to delivery notifications.
+                display_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  description: Timestamp when incident update is happened.
+                status:
+                  type:
+                    - "null"
+                    - string
+                  enum:
+                    - investigating
+                    - identified
+                    - monitoring
+                    - resolved
+                    - scheduled
+                    - in_progress
+                    - verifying
+                    - completed
+                  description:
+                    The incident status. For realtime incidents, valid
+                    values are investigating, identified, monitoring, and resolved.
+                    For scheduled incidents, valid values are scheduled, in_progress,
+                    verifying, and completed.
+                tweet_id:
+                  type:
+                    - "null"
+                    - string
+                  description: Tweet identifier associated to this incident update.
+                twitter_updated_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  description: The timestamp when twitter updated at.
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  description: The timestamp when the incident update is updated.
+                wants_twitter_update:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Controls whether to create twitter update.
+              description: Update a previous incident update
+              $schema: http://json-schema.org/schema#
+            description: The incident updates for incident.
+          metadata:
+            type: object
+            example:
+              jira:
+                issue_id: value
+            description:
+              Metadata attached to the incident. Top level values must
+              be objects.
+          monitoring_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description: The timestamp when incident entered monitoring state.
+          name:
+            type:
+              - "null"
+              - string
+            example: Data Layer Migration
+            description: Incident Name
+          page_id:
+            type:
+              - "null"
+              - string
+            description: Incident Page Identifier
+          postmortem_body:
+            type:
+              - "null"
+              - string
+            example:
+              "##### Issue\nAt approximately 17:02 UTC on 2013-04-21, our master
+              database server unexpectedly went unresponsive to all network.\nA reboot
+              of the machine at 17:05 UTC resulted in a failed mount of a corrupted
+              EBS volume, and we made the decision\nat that time to fail over the
+              slave database.\n\n##### Resolution\nAt 17:12 UTC, the slave database
+              had been successfully promoted to master and the application recovered
+              enough to\naccept web traffic again. A new slave database node was created
+              and placed into the rotation to guard against future\nmaster failures.
+              The promoted slave database performed slowly for the next couple of
+              hours as the query cache began\nto warm up, and eventually settled into
+              a reasonable performance profile around 20:00 UTC.\n\n##### Future Mitigation
+              Plans\nOver the past few months, we have been working on an overhaul
+              to our data storage layer with a migration from a Postgres\nsetup to
+              a distributed, fault-tolerant, multi-region data layer using Riak. This
+              initiative has been prioritized, and\nthe migration will be performed
+              in the coming weeks. We will notify our clients of the scheduled downtime
+              via an\nincident on this status site, and via a blog post.\n"
+            description: Body of the Postmortem.
+          postmortem_body_last_updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description:
+              The timestamp when the incident postmortem body was last
+              updated at.
+          postmortem_ignored:
+            type:
+              - "null"
+              - boolean
+            description: Controls whether the incident will have postmortem.
+          postmortem_notified_subscribers:
+            type:
+              - "null"
+              - boolean
+            description:
+              Indicates whether subscribers are already notificed about
+              postmortem.
+          postmortem_notified_twitter:
+            type:
+              - "null"
+              - boolean
+            description: Controls whether to decide if notify postmortem on twitter.
+          postmortem_published_at:
+            type:
+              - "null"
+              - boolean
+            description: The timestamp when the postmortem was published.
+          resolved_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description: The timestamp when incident was resolved.
+          scheduled_auto_completed:
+            type:
+              - "null"
+              - boolean
+            description:
+              Controls whether the incident is scheduled to automatically
+              change to complete.
+          scheduled_auto_in_progress:
+            type:
+              - "null"
+              - boolean
+            description:
+              Controls whether the incident is scheduled to automatically
+              change to in progress.
+          scheduled_for:
+            type:
+              - "null"
+              - string
+            format: date-time
+            example: "2013-05-07T03:00:00.007Z"
+            description: The timestamp the incident is scheduled for.
+          auto_transition_deliver_notifications_at_end:
+            type:
+              - "null"
+              - boolean
+            description:
+              Controls whether send notification when scheduled maintenances
+              auto transition to completed.
+          auto_transition_deliver_notifications_at_start:
+            type:
+              - "null"
+              - boolean
+            description:
+              Controls whether send notification when scheduled maintenances
+              auto transition to started.
+          auto_transition_to_maintenance_state:
+            type:
+              - "null"
+              - boolean
+            description:
+              Controls whether change components status to under_maintenance
+              once scheduled maintenance is in progress.
+          auto_transition_to_operational_state:
+            type:
+              - "null"
+              - boolean
+            description:
+              Controls whether change components status to operational
+              once scheduled maintenance completes.
+          scheduled_remind_prior:
+            type:
+              - "null"
+              - boolean
+            description:
+              Controls whether to remind subscribers prior to scheduled
+              incidents.
+          scheduled_reminded_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description:
+              The timestamp when the scheduled incident reminder was sent
+              at.
+          scheduled_until:
+            type:
+              - "null"
+              - string
+            format: date-time
+            example: "2013-05-07T06:00:00.007Z"
+            description: The timestamp the incident is scheduled until.
+          shortlink:
+            type:
+              - "null"
+              - string
+            example: http://stspg.io/803310a12
+            description: Incident Shortlink.
+          status:
+            type:
+              - "null"
+              - string
+            example: scheduled
+            enum:
+              - investigating
+              - identified
+              - monitoring
+              - resolved
+              - scheduled
+              - in_progress
+              - verifying
+              - completed
+            description:
+              The incident status. For realtime incidents, valid values
+              are investigating, identified, monitoring, and resolved. For scheduled
+              incidents, valid values are scheduled, in_progress, verifying, and completed.
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            description: The timestamp when the incident was updated at.
+        description: Get an incident
+        $schema: http://json-schema.org/schema#
   components_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -123,6 +1120,90 @@ definitions:
         $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            description: Identifier for component
+          page_id:
+            type:
+              - "null"
+              - string
+            description: Page identifier
+          group_id:
+            type:
+              - "null"
+              - string
+            description: Component Group identifier
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          group:
+            type:
+              - "null"
+              - boolean
+            description: Is this component a group
+          name:
+            type:
+              - "null"
+              - string
+            description: Display name for component
+          description:
+            type:
+              - "null"
+              - string
+            description: More detailed description for component
+          position:
+            type: integer
+            format: int32
+            description: Order the component will appear on the page
+          status:
+            type:
+              - "null"
+              - string
+            enum:
+              - operational
+              - under_maintenance
+              - degraded_performance
+              - partial_outage
+              - major_outage
+              - ""
+            description: Status of component
+          showcase:
+            type:
+              - "null"
+              - boolean
+            description: Should this component be showcased
+          only_show_if_degraded:
+            type:
+              - "null"
+              - boolean
+            description: Requires a special feature flag to be enabled
+          automation_email:
+            type:
+              - "null"
+              - string
+            description: Requires a special feature flag to be enabled
+          start_date:
+            type:
+              - "null"
+              - string
+            format: date
+            description: The date this component started being used
+        description: Add page access groups to a component
+        $schema: http://json-schema.org/schema#
   metrics_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -137,6 +1218,94 @@ definitions:
         $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            description: Metric identifier
+          metrics_provider_id:
+            type:
+              - "null"
+              - string
+            description: Metric Provider identifier
+          metric_identifier:
+            type:
+              - "null"
+              - string
+            description:
+              Metric Display identifier used to look up the metric data
+              from the provider
+          name:
+            type:
+              - "null"
+              - string
+            description: Name of metric
+          display:
+            type:
+              - "null"
+              - boolean
+            description: Should the metric be displayed
+          tooltip_description:
+            type:
+              - "null"
+              - string
+          backfilled:
+            type:
+              - "null"
+              - boolean
+          y_axis_min:
+            type: number
+            format: float
+          y_axis_max:
+            type: number
+            format: float
+          y_axis_hidden:
+            type:
+              - "null"
+              - boolean
+            description: Should the values on the y axis be hidden on render
+          suffix:
+            type:
+              - "null"
+              - string
+            description: Suffix to describe the units on the graph
+          decimal_places:
+            type: integer
+            format: int32
+          most_recent_data_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_fetched_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          backfill_percentage:
+            type: integer
+            format: int32
+          reference_name:
+            type:
+              - "null"
+              - string
+        description: Create a metric for a metric provider
+        $schema: http://json-schema.org/schema#
 streams:
   - "#/definitions/pages_stream"
   - "#/definitions/subscribers_stream"

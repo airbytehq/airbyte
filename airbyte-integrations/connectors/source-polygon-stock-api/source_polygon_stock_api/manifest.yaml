@@ -32,7 +32,52 @@ definitions:
     $parameters:
       name: "stock_api"
       primary_key: "t"
-      path: "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ config['start_date'] }}/{{ config['end_date'] }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{ config['apiKey'] }}"
+      path:
+        "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier']
+        }}/{{ config['timespan'] }}/{{ config['start_date'] }}/{{ config['end_date']
+        }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{
+        config['apiKey'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          v:
+            type:
+              - "null"
+              - number
+          vw:
+            type:
+              - "null"
+              - number
+          otc:
+            type:
+              - "null"
+              - boolean
+          o:
+            type:
+              - "null"
+              - number
+          c:
+            type:
+              - "null"
+              - number
+          h:
+            type:
+              - "null"
+              - number
+          l:
+            type:
+              - "null"
+              - number
+          t:
+            type:
+              - "null"
+              - integer
+          n:
+            type:
+              - "null"
+              - number
 streams:
   - "#/definitions/stock_api_stream"
 

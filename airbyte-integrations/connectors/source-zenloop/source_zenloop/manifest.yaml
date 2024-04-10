@@ -53,6 +53,31 @@ definitions:
       name: "surveys"
       path: "surveys"
       data_field: "surveys"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          title:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          public_hash_id:
+            type:
+              - "null"
+              - string
+          inserted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
   surveys_slicer:
     class_name: source_zenloop.components.ZenloopPartitionRouter
     $parameters:
@@ -67,6 +92,50 @@ definitions:
       name: "survey_groups"
       path: "survey_groups"
       data_field: "survey_groups"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          surveys:
+            type:
+              - "null"
+              - array
+            items:
+              properties:
+                title:
+                  type:
+                    - "null"
+                    - string
+                status:
+                  type:
+                    - "null"
+                    - string
+                public_hash_id:
+                  type:
+                    - "null"
+                    - string
+                inserted_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          name:
+            type:
+              - "null"
+              - string
+          public_hash_id:
+            type:
+              - "null"
+              - string
+          inserted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
   survey_groups_slicer:
     class_name: source_zenloop.components.ZenloopPartitionRouter
     $parameters:
@@ -102,9 +171,31 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id'] else 'surveys/' + stream_slice.id + '/properties' }}"
+        path:
+          "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id']
+          else 'surveys/' + stream_slice.id + '/properties' }}"
       partition_router:
         $ref: "#/definitions/surveys_slicer"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - string
   answers:
     $ref: "#/definitions/incremental_base_stream"
     $parameters:
@@ -117,6 +208,106 @@ definitions:
         path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
       partition_router:
         $ref: "#/definitions/surveys_slicer"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          score_type:
+            type:
+              - "null"
+              - string
+          score:
+            type:
+              - "null"
+              - number
+          sentiment:
+            type:
+              - "null"
+              - string
+          sentiment_per_label_name:
+            type:
+              - "null"
+              - object
+          name:
+            type:
+              - "null"
+              - string
+          recipient_id:
+            type:
+              - "null"
+              - string
+          property_ids:
+            type:
+              - "null"
+              - array
+          metatags:
+            type:
+              - "null"
+              - object
+          labels:
+            type:
+              - "null"
+              - array
+          labels_with_keywords:
+            type:
+              - "null"
+              - object
+          inserted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          email:
+            type:
+              - "null"
+              - string
+          identity:
+            type:
+              - "null"
+              - string
+          identity_type:
+            type:
+              - "null"
+              - string
+          comment:
+            type:
+              - "null"
+              - string
+          translated_comment:
+            type:
+              - "null"
+              - string
+          additional_answers:
+            type:
+              - "null"
+              - array
+            items:
+              properties:
+                additional_question_id:
+                  type:
+                    - "null"
+                    - string
+                answer:
+                  type:
+                    - "null"
+                    - string
+                inserted_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          additional_questions:
+            type:
+              - "null"
+              - object
   answers_survey_group:
     $ref: "#/definitions/incremental_base_stream"
     $parameters:
@@ -130,6 +321,91 @@ definitions:
       partition_router:
         $ref: "#/definitions/survey_groups_slicer"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          survey_public_hash_id:
+            type:
+              - "null"
+              - string
+          score_type:
+            type:
+              - "null"
+              - string
+          score:
+            type:
+              - "null"
+              - number
+          sentiment:
+            type:
+              - "null"
+              - string
+          sentiment_per_label_name:
+            type:
+              - "null"
+              - object
+          name:
+            type:
+              - "null"
+              - string
+          recipient_id:
+            type:
+              - "null"
+              - string
+          property_ids:
+            type:
+              - "null"
+              - array
+          metatags:
+            type:
+              - "null"
+              - object
+          labels:
+            type:
+              - "null"
+              - array
+          labels_with_keywords:
+            type:
+              - "null"
+              - object
+          inserted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          email:
+            type:
+              - "null"
+              - string
+          identity:
+            type:
+              - "null"
+              - string
+          identity_type:
+            type:
+              - "null"
+              - string
+          comment:
+            type:
+              - "null"
+              - string
+          translated_comment:
+            type:
+              - "null"
+              - string
+          additional_questions:
+            type:
+              - "null"
+              - object
 streams:
   - "#/definitions/surveys"
   - "#/definitions/survey_groups"

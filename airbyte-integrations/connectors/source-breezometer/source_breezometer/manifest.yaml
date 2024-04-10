@@ -23,6 +23,54 @@ definitions:
       primary_key: "datetime"
       path: "/air-quality/v2/current-conditions"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          datetime:
+            type:
+              - "null"
+              - string
+          data_available:
+            type:
+              - "null"
+              - boolean
+          indexes:
+            type:
+              - "null"
+              - object
+            properties:
+              baqi:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    type:
+                      - "null"
+                      - string
+                  aqi:
+                    type:
+                      - "null"
+                      - integer
+                  aqi_display:
+                    type:
+                      - "null"
+                      - string
+                  color:
+                    type:
+                      - "null"
+                      - string
+                  category:
+                    type:
+                      - "null"
+                      - string
+                  dominant_pollutant:
+                    type:
+                      - "null"
+                      - string
   air_quality_forecast_stream:
     retriever:
       record_selector:
@@ -42,6 +90,54 @@ definitions:
       primary_key: "datetime"
       path: "/air-quality/v2/forecast/hourly"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          datetime:
+            type:
+              - "null"
+              - string
+          data_available:
+            type:
+              - "null"
+              - boolean
+          indexes:
+            type:
+              - "null"
+              - object
+            properties:
+              baqi:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    type:
+                      - "null"
+                      - string
+                  aqi:
+                    type:
+                      - "null"
+                      - integer
+                  aqi_display:
+                    type:
+                      - "null"
+                      - string
+                  color:
+                    type:
+                      - "null"
+                      - string
+                  category:
+                    type:
+                      - "null"
+                      - string
+                  dominant_pollutant:
+                    type:
+                      - "null"
+                      - string
   air_quality_historical_stream:
     retriever:
       record_selector:
@@ -61,6 +157,54 @@ definitions:
       primary_key: "datetime"
       path: "/air-quality/v2/historical/hourly"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          datetime:
+            type:
+              - "null"
+              - string
+          data_available:
+            type:
+              - "null"
+              - boolean
+          indexes:
+            type:
+              - "null"
+              - object
+            properties:
+              baqi:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    type:
+                      - "null"
+                      - string
+                  aqi:
+                    type:
+                      - "null"
+                      - integer
+                  aqi_display:
+                    type:
+                      - "null"
+                      - string
+                  color:
+                    type:
+                      - "null"
+                      - string
+                  category:
+                    type:
+                      - "null"
+                      - string
+                  dominant_pollutant:
+                    type:
+                      - "null"
+                      - string
   pollen_forecast_stream:
     retriever:
       record_selector:
@@ -80,6 +224,131 @@ definitions:
       primary_key: "index_id"
       path: "/pollen/v2/forecast/daily"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          date:
+            type:
+              - "null"
+              - string
+          index_id:
+            type:
+              - "null"
+              - string
+          index_display_name:
+            type:
+              - "null"
+              - string
+          types:
+            type:
+              - "null"
+              - object
+            properties:
+              grass:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    type:
+                      - "null"
+                      - string
+                  in_season:
+                    type:
+                      - "null"
+                      - boolean
+                  data_available:
+                    type:
+                      - "null"
+                      - boolean
+                  index:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      value:
+                        type:
+                          - "null"
+                          - integer
+                      category:
+                        type:
+                          - "null"
+                          - string
+                      color:
+                        type:
+                          - "null"
+                          - string
+              tree:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    type:
+                      - "null"
+                      - string
+                  in_season:
+                    type:
+                      - "null"
+                      - boolean
+                  data_available:
+                    type:
+                      - "null"
+                      - boolean
+                  index:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      value:
+                        type:
+                          - "null"
+                          - integer
+                      category:
+                        type:
+                          - "null"
+                          - string
+                      color:
+                        type:
+                          - "null"
+                          - string
+              weed:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  display_name:
+                    type:
+                      - "null"
+                      - string
+                  in_season:
+                    type:
+                      - "null"
+                      - boolean
+                  data_available:
+                    type:
+                      - "null"
+                      - boolean
+                  index:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      value:
+                        type:
+                          - "null"
+                          - integer
+                      category:
+                        type:
+                          - "null"
+                          - string
+                      color:
+                        type:
+                          - "null"
+                          - string
   weather_current_stream:
     retriever:
       record_selector:
@@ -98,6 +367,158 @@ definitions:
       primary_key: "datetime"
       path: "/weather/v1/current-conditions"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          datetime:
+            type:
+              - "null"
+              - string
+          is_day_time:
+            type:
+              - "null"
+              - boolean
+          icon_code:
+            type:
+              - "null"
+              - integer
+          weather_text:
+            type:
+              - "null"
+              - string
+          temperature:
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                type:
+                  - "null"
+                  - number
+              units:
+                type:
+                  - "null"
+                  - string
+          feels_like_temperature:
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                type:
+                  - "null"
+                  - number
+              units:
+                type:
+                  - "null"
+                  - string
+          relative_humidity:
+            type:
+              - "null"
+              - integer
+          precipitation:
+            type:
+              - "null"
+              - object
+            properties:
+              precipitation_probability:
+                type:
+                  - "null"
+                  - integer
+              total_precipitation:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  units:
+                    type:
+                      - "null"
+                      - string
+          wind:
+            type:
+              - "null"
+              - object
+            properties:
+              speed:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  value:
+                    type:
+                      - "null"
+                      - number
+                  units:
+                    type:
+                      - "null"
+                      - string
+              direction:
+                type:
+                  - "null"
+                  - integer
+          wind_gust:
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                type:
+                  - "null"
+                  - number
+              units:
+                type:
+                  - "null"
+                  - string
+          pressure:
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                type:
+                  - "null"
+                  - number
+              units:
+                type:
+                  - "null"
+                  - string
+          visibility:
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                type:
+                  - "null"
+                  - integer
+              units:
+                type:
+                  - "null"
+                  - string
+          dew_point:
+            type:
+              - "null"
+              - object
+            properties:
+              value:
+                type:
+                  - "null"
+                  - number
+              units:
+                type:
+                  - "null"
+                  - string
+          cloud_cover:
+            type:
+              - "null"
+              - integer
   weather_forecast_stream:
     retriever:
       record_selector:
@@ -116,6 +537,54 @@ definitions:
       name: "weather_forecast"
       path: "/weather/v1/forecast/daily"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          start_date:
+            type:
+              - "null"
+              - string
+          sun:
+            type:
+              - "null"
+              - object
+            properties:
+              sunrise_time:
+                type:
+                  - "null"
+                  - string
+              sunset_time:
+                type:
+                  - "null"
+                  - string
+          moon:
+            type:
+              - "null"
+              - object
+            properties:
+              moonrise_time:
+                type:
+                  - "null"
+                  - string
+              moonset_time:
+                type:
+                  - "null"
+                  - string
+              moon_phase:
+                type:
+                  - "null"
+                  - string
+              moon_age:
+                type:
+                  - "null"
+                  - number
+          max_uv_index:
+            type:
+              - "null"
+              - integer
   wildfire_burnt_area_stream:
     retriever:
       record_selector:
@@ -134,6 +603,87 @@ definitions:
       name: "wildfire_burnt_area"
       path: "/fires/v1/burnt-area"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          features:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                properties:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    CurrentLat:
+                      type:
+                        - "null"
+                        - number
+                    CurrentLon:
+                      type:
+                        - "null"
+                        - number
+                    DiscoveryDateTime:
+                      type:
+                        - "null"
+                        - string
+                    EventDescription:
+                      type:
+                        - "null"
+                        - string
+                    LastUpdated:
+                      type:
+                        - "null"
+                        - string
+                geometry:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    coordinates:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - array
+                            items:
+                              type:
+                                - "null"
+                                - number
   wildfire_locate_stream:
     retriever:
       record_selector:
@@ -152,6 +702,87 @@ definitions:
       name: "wildfire_locate"
       path: "/fires/v1/locate-and-track"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          features:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                properties:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    CurrentLat:
+                      type:
+                        - "null"
+                        - number
+                    CurrentLon:
+                      type:
+                        - "null"
+                        - number
+                    DiscoveryDateTime:
+                      type:
+                        - "null"
+                        - string
+                    EventDescription:
+                      type:
+                        - "null"
+                        - string
+                    LastUpdated:
+                      type:
+                        - "null"
+                        - string
+                geometry:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    coordinates:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - array
+                            items:
+                              type:
+                                - "null"
+                                - number
 streams:
   - "#/definitions/air_quality_current_stream"
   - "#/definitions/air_quality_forecast_stream"

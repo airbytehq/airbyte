@@ -41,10 +41,14 @@ definitions:
       type: DatetimeBasedCursor
       datetime_format: "%Y-%m-%dT%H:%M:%S.000Z"
       start_datetime:
-        datetime: "{{ config.start_date or (now_utc() - duration('P6DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime:
+          "{{ config.start_date or (now_utc() - duration('P6DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ')
+          }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       end_datetime:
-        datetime: "{{ config.end_date or (now_utc() - duration('PT10S')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime:
+          "{{ config.end_date or (now_utc() - duration('PT10S')).strftime('%Y-%m-%dT%H:%M:%SZ')
+          }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: "PT0S"
       step: "P7D"
@@ -63,6 +67,47 @@ definitions:
       cursor_field: "created_at"
       primary_key: "id"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          edit_history_tweet_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          id:
+            type:
+              - "null"
+              - string
+          text:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          lang:
+            type:
+              - "null"
+              - string
+          author_id:
+            type:
+              - "null"
+              - string
+          conversation_id:
+            type:
+              - "null"
+              - string
+          in_reply_to_user_id:
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/tweets_stream"
 

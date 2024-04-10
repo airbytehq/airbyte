@@ -53,6 +53,49 @@ definitions:
           - path: ["project_uid"]
             value: "{{ config['project_uid'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          project_uid:
+            type:
+              - "null"
+              - string
+          current_month_end:
+            type:
+              - "null"
+              - string
+          current_month_start:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          plan_name:
+            type:
+              - "null"
+              - string
+          tasks_left:
+            type:
+              - "null"
+              - integer
+          tasks_max:
+            type:
+              - "null"
+              - integer
+          tasks_used:
+            type:
+              - "null"
+              - integer
   workflows_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -60,7 +103,51 @@ definitions:
       primary_key: "uid"
       path: "/workflows"
 
-  # Sliced streams
+    # Sliced streams
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          created_at:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          project_id:
+            type:
+              - "null"
+              - integer
+          steps:
+            items:
+              properties:
+                name:
+                  type:
+                    - "null"
+                    - string
+                step_uid:
+                  type:
+                    - "null"
+                    - string
+                uid:
+                  type:
+                    - "null"
+                    - string
+              type: object
+            type: array
+          template_uid:
+            type:
+              - "null"
+              - string
+          uid:
+            type:
+              - "null"
+              - string
   jobs_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -79,6 +166,83 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          accounts:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          configuration:
+            type:
+              - "null"
+              - object
+          error_message:
+            type:
+              - "null"
+              - string
+          finish_time:
+            type:
+              - "null"
+              - string
+          main_job_uid:
+            type:
+              - "null"
+              - string
+          main_job_name:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          number_inputs:
+            type:
+              - "null"
+              - integer
+          row_count:
+            type:
+              - "null"
+              - integer
+          scheduled_time:
+            type:
+              - "null"
+              - string
+          start_time:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          step_uid:
+            type:
+              - "null"
+              - string
+          total_row_count:
+            type:
+              - "null"
+              - integer
+          uid:
+            type:
+              - "null"
+              - string
+          workflow_name:
+            type:
+              - "null"
+              - string
+          workflow_uid:
+            type:
+              - "null"
+              - string
   successful_jobs_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -100,7 +264,9 @@ definitions:
           type: DpathExtractor
           field_path: []
         record_filter:
-          condition: "{{ record['total_row_count'] > 0 and record['status'] == 'finished' }}"
+          condition:
+            "{{ record['total_row_count'] > 0 and record['status'] == 'finished'
+            }}"
 
   job_results_stream:
     $ref: "#/definitions/base_stream"
@@ -137,6 +303,30 @@ definitions:
           - path: ["extracted_at"]
             value: "{{ now_utc() }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          job_uid:
+            type:
+              - "null"
+              - string
+          job_result_id:
+            type:
+              - "null"
+              - string
+          results:
+            type:
+              - "null"
+              - object
+          extracted_at:
+            type:
+              - "null"
+              - string
+            format: datetime
 streams:
   - "#/definitions/workspace_stream"
   - "#/definitions/workflows_stream"

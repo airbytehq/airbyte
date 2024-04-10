@@ -27,12 +27,40 @@ definitions:
       name: "organizations"
       primary_key: "organizationId"
       path: "/organizations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          organizationId:
+            type: string
+          name:
+            type: string
   products_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "products"
       primary_key: "productId"
       path: "/products"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          organizationId:
+            type: object
+          name:
+            type: string
+          productId:
+            type: string
+          description:
+            type: string
+          order:
+            type: integer
+          reasonRequired:
+            type: boolean
   product_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -53,6 +81,20 @@ definitions:
         $ref: "#/definitions/product_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          product:
+            type: object
+          name:
+            type: string
+          tagId:
+            type: integer
+          color:
+            type: string
   environments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -67,6 +109,38 @@ definitions:
         $ref: "#/definitions/product_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          product:
+            type: object
+          environmentId:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          color:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          order:
+            type:
+              - "null"
+              - integer
+          reasonRequired:
+            type:
+              - "null"
+              - boolean
   organization_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -88,6 +162,18 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          userId:
+            type: string
+          fullName:
+            type: string
+          email:
+            type: string
 streams:
   - "#/definitions/organizations_stream"
   - "#/definitions/organization_members_stream"

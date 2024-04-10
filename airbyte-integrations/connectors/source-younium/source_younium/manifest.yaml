@@ -9,7 +9,9 @@ definitions:
         - data
   requester:
     type: HttpRequester
-    url_base: "{{ 'https://apisandbox.younium.com' if config['playground'] else 'https://api.younium.com' }}"
+    url_base:
+      "{{ 'https://apisandbox.younium.com' if config['playground'] else 'https://api.younium.com'
+      }}"
     http_method: "GET"
 
     authenticator:
@@ -52,30 +54,2315 @@ definitions:
     $parameters:
       path: Accounts
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          accountNumber:
+            type:
+              - "null"
+              - string
+          accountType:
+            type:
+              - "null"
+              - string
+          accountsReceivable:
+            type:
+              - "null"
+              - string
+          acv:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+            type: object
+          addresses:
+            items:
+              additionalProperties: true
+              properties:
+                city:
+                  type:
+                    - "null"
+                    - string
+                country:
+                  type:
+                    - "null"
+                    - string
+                description:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                street:
+                  type:
+                    - "null"
+                    - string
+                zip:
+                  type:
+                    - "null"
+                    - string
+              type: object
+            type: array
+          cmrr:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+            type: object
+          created:
+            type:
+              - "null"
+              - string
+          currencyCode:
+            type:
+              - "null"
+              - string
+          customFields:
+            additionalProperties: true
+            type: object
+          defaultDeliveryAddress:
+            additionalProperties: true
+            properties:
+              country:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+            type: object
+          defaultInvoiceAddress:
+            additionalProperties: true
+            properties:
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              street:
+                type:
+                  - "null"
+                  - string
+              zip:
+                type:
+                  - "null"
+                  - string
+            type: object
+          defaultPaymentTerm:
+            type:
+              - "null"
+              - string
+          emrr:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+            type: object
+          id:
+            type:
+              - "null"
+              - string
+          inactive:
+            type:
+              - "null"
+              - boolean
+          invoiceDeliveryMethod:
+            type:
+              - "null"
+              - string
+          invoiceTemplateId:
+            type:
+              - "null"
+              - string
+          modified:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          oneTimeFees:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+            type: object
+          organizationNumber:
+            type:
+              - "null"
+              - string
+          ourReference:
+            type:
+              - "null"
+              - string
+          taxRegistrationNumber:
+            type:
+              - "null"
+              - string
+          taxTemplate:
+            type:
+              - "null"
+              - string
+          tcv:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+            type: object
+        type: object
   booking_stream:
     $ref: "#/definitions/base_stream"
     name: booking
     $parameters:
       path: Bookings
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          accountCategory:
+            type:
+              - "null"
+              - string
+          acv:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                type:
+                  - "null"
+                  - number
+            type: object
+          bookingLines:
+            items:
+              additionalProperties: true
+              properties:
+                acv:
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                charge:
+                  additionalProperties: true
+                  properties:
+                    chargeNumber:
+                      type:
+                        - "null"
+                        - string
+                    description:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                cmrr:
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                created:
+                  type:
+                    - "null"
+                    - string
+                emrr:
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                fmrr:
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                modified:
+                  type:
+                    - "null"
+                    - string
+                oneTimeFees:
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                tcv:
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                  type: object
+              type: object
+            type: array
+          bookingType:
+            type:
+              - "null"
+              - string
+          changeType:
+            type:
+              - "null"
+              - string
+          classification:
+            additionalProperties: true
+            properties:
+              chartColor:
+                type:
+                  - "null"
+                  - string
+              classificationType:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              isSystemClassification:
+                type:
+                  - "null"
+                  - boolean
+              name:
+                type:
+                  - "null"
+                  - string
+            type: object
+          cmrr:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                type:
+                  - "null"
+                  - number
+            type: object
+          created:
+            type:
+              - "null"
+              - string
+          effectiveDate:
+            type:
+              - "null"
+              - string
+          emrr:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                type:
+                  - "null"
+                  - number
+            type: object
+          fmrr:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                type:
+                  - "null"
+                  - number
+            type: object
+          id:
+            type:
+              - "null"
+              - string
+          modified:
+            type:
+              - "null"
+              - string
+          oneTimeFees:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                type:
+                  - "null"
+                  - number
+            type: object
+          order:
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              orderNumber:
+                type:
+                  - "null"
+                  - string
+            type: object
+          tcv:
+            additionalProperties: true
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                type:
+                  - "null"
+                  - number
+            type: object
+        type: object
   invoice_stream:
     $ref: "#/definitions/base_stream"
     name: invoice
     $parameters:
       path: Invoices
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          invoiceNumber:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+          invoiceDeliveryMethod:
+            type:
+              - "null"
+              - string
+          modified:
+            type:
+              - "null"
+              - string
+          account:
+            type: object
+            properties:
+              name:
+                type:
+                  - "null"
+                  - string
+              accountNumber:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              externalERPId:
+                type:
+                  - "null"
+                  - string
+              externalCRMId:
+                type:
+                  - "null"
+                  - string
+          notes:
+            type:
+              - "null"
+              - string
+          invoiceDate:
+            type:
+              - "null"
+              - string
+          dueDate:
+            type:
+              - "null"
+              - string
+          daysPastDue:
+            type:
+              - "null"
+              - number
+          nrOfReminders:
+            type:
+              - "null"
+              - number
+          paymentTerm:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              days:
+                type:
+                  - "null"
+                  - number
+              name:
+                type:
+                  - "null"
+                  - string
+          currency:
+            type:
+              - "null"
+              - string
+          subtotal:
+            type:
+              - "null"
+              - number
+          tax:
+            type:
+              - "null"
+              - number
+          totalAmount:
+            type:
+              - "null"
+              - number
+          totalRoundingAmount:
+            type:
+              - "null"
+              - number
+          settledAmount:
+            type:
+              - "null"
+              - number
+          balancedAmount:
+            type:
+              - "null"
+              - number
+          taxIncluded:
+            type:
+              - "null"
+              - boolean
+          invoiceAddress:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              street:
+                type:
+                  - "null"
+                  - string
+              street2:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              county:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+              zip:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+          deliveryAddress:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              street:
+                type:
+                  - "null"
+                  - string
+              street2:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              county:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+              zip:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+          invoiceBatchId:
+            type:
+              - "null"
+              - string
+          invoiceLines:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                invoiceLineNumber:
+                  type:
+                    - "null"
+                    - number
+                productNumber:
+                  type:
+                    - "null"
+                    - string
+                productName:
+                  type:
+                    - "null"
+                    - string
+                chargeDescription:
+                  type:
+                    - "null"
+                    - string
+                chargeNumber:
+                  type:
+                    - "null"
+                    - string
+                quantity:
+                  type:
+                    - "null"
+                    - number
+                unitOfMeasure:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    unitCode:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    displayName:
+                      type:
+                        - "null"
+                        - string
+                price:
+                  type:
+                    - "null"
+                    - number
+                subtotal:
+                  type:
+                    - "null"
+                    - number
+                total:
+                  type:
+                    - "null"
+                    - number
+                tax:
+                  type:
+                    - "null"
+                    - number
+                servicePeriodStartDate:
+                  type:
+                    - "null"
+                    - string
+                servicePeriodEndDate:
+                  type:
+                    - "null"
+                    - string
+                notes:
+                  type:
+                    - "null"
+                    - string
+                orderChargeId:
+                  type:
+                    - "null"
+                    - string
+                orderId:
+                  type:
+                    - "null"
+                    - string
+                accountId:
+                  type:
+                    - "null"
+                    - string
+                customFields:
+                  type:
+                    - "null"
+                    - object
+                accountsReceivable:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    code:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    description:
+                      type:
+                        - "null"
+                        - string
+                    externalERPId:
+                      type:
+                        - "null"
+                        - string
+                    externalCRMId:
+                      type:
+                        - "null"
+                        - string
+                deferredRevenue:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    code:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    description:
+                      type:
+                        - "null"
+                        - string
+                    externalERPId:
+                      type:
+                        - "null"
+                        - string
+                    externalCRMId:
+                      type:
+                        - "null"
+                        - string
+                recognizedRevenue:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    code:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    description:
+                      type:
+                        - "null"
+                        - string
+                    externalERPId:
+                      type:
+                        - "null"
+                        - string
+                    externalCRMId:
+                      type:
+                        - "null"
+                        - string
+                externalERPId:
+                  type:
+                    - "null"
+                    - string
+                externalCRMId:
+                  type:
+                    - "null"
+                    - string
+                taxCategoryName:
+                  type:
+                    - "null"
+                    - string
+                taxRate:
+                  type:
+                    - "null"
+                    - number
+          yourReference:
+            type:
+              - "null"
+              - string
+          ourReference:
+            type:
+              - "null"
+              - string
+          yourOrderNumber:
+            type:
+              - "null"
+              - string
+          buyerReference:
+            type:
+              - "null"
+              - string
+          invoiceType:
+            type:
+              - "null"
+              - string
+          sendMethod:
+            type:
+              - "null"
+              - string
+          exchangeRate:
+            type:
+              - "null"
+              - number
+          settledNotes:
+            type:
+              - "null"
+              - string
+          invoiceTemplateId:
+            type:
+              - "null"
+              - string
+          disableAutomaticInvoiceReminder:
+            type:
+              - "null"
+              - boolean
+          onlinePaymentLink:
+            type:
+              - "null"
+              - string
+          accountsReceivable:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              code:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              externalERPId:
+                type:
+                  - "null"
+                  - string
+              externalCRMId:
+                type:
+                  - "null"
+                  - string
+          customFields:
+            type:
+              - "null"
+              - object
+          externalERPId:
+            type:
+              - "null"
+              - string
+          externalCRMId:
+            type:
+              - "null"
+              - string
   product_stream:
     $ref: "#/definitions/base_stream"
     name: product
     $parameters:
       path: Products
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          productNumber:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+          modified:
+            type:
+              - "null"
+              - string
+          productType:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          activationDate:
+            type:
+              - "null"
+              - string
+          endOfNewSalesDate:
+            type:
+              - "null"
+              - string
+          endOfRenewalDate:
+            type:
+              - "null"
+              - string
+          endOfLifeDate:
+            type:
+              - "null"
+              - string
+          isFrameworkProduct:
+            type:
+              - "null"
+              - boolean
+          chargePlans:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                chargePlanNumber:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                effectiveStartDate:
+                  type:
+                    - "null"
+                    - string
+                endOfNewSalesDate:
+                  type:
+                    - "null"
+                    - string
+                effectiveEndDate:
+                  type:
+                    - "null"
+                    - string
+                charges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      chargeNumber:
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      model:
+                        type:
+                          - "null"
+                          - string
+                      chargeType:
+                        type:
+                          - "null"
+                          - string
+                      unitCode:
+                        type:
+                          - "null"
+                          - string
+                      defaultQuantity:
+                        type:
+                          - "null"
+                          - number
+                      pricePeriod:
+                        type:
+                          - "null"
+                          - string
+                      usageRating:
+                        type:
+                          - "null"
+                          - string
+                      createInvoiceLinesPerTier:
+                        type:
+                          - "null"
+                          - boolean
+                      billingDay:
+                        type:
+                          - "null"
+                          - string
+                      specificBillingDay:
+                        type:
+                          - "null"
+                          - number
+                      billingPeriod:
+                        type:
+                          - "null"
+                          - string
+                      periodAlignment:
+                        type:
+                          - "null"
+                          - string
+                      billingTiming:
+                        type:
+                          - "null"
+                          - string
+                      taxTemplate:
+                        type:
+                          - "null"
+                          - string
+                      taxIncluded:
+                        type:
+                          - "null"
+                          - boolean
+                      externalERPId:
+                        type:
+                          - "null"
+                          - string
+                      externalCRMId:
+                        type:
+                          - "null"
+                          - string
+                      deferredRevenueAccount:
+                        type:
+                          - "null"
+                          - string
+                      recognizedRevenueAccount:
+                        type:
+                          - "null"
+                          - string
+                      customFields:
+                        type:
+                          - "null"
+                          - object
+                      priceDetails:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            currency:
+                              type:
+                                - "null"
+                                - string
+                            price:
+                              type:
+                                - "null"
+                                - number
+                            tier:
+                              type:
+                                - "null"
+                                - number
+                            description:
+                              type:
+                                - "null"
+                                - string
+                            fromQuantity:
+                              type:
+                                - "null"
+                                - number
+                            toQuantity:
+                              type:
+                                - "null"
+                                - number
+                            priceBase:
+                              type:
+                                - "null"
+                                - string
+          externalERPId:
+            type:
+              - "null"
+              - string
+          externalCRMId:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - object
   subscription_stream:
     $ref: "#/definitions/base_stream"
     name: subscription
     $parameters:
       path: Subscriptions
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          orderNumber:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+          modified:
+            type:
+              - "null"
+              - string
+          orderBillingPeriod:
+            type:
+              - "null"
+              - string
+          setOrderBillingPeriod:
+            type:
+              - "null"
+              - boolean
+          version:
+            type:
+              - "null"
+              - number
+          isLastVersion:
+            type:
+              - "null"
+              - boolean
+          status:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          remarks:
+            type:
+              - "null"
+              - string
+          effectiveStartDate:
+            type:
+              - "null"
+              - string
+          effectiveEndDate:
+            type:
+              - "null"
+              - string
+          cancellationDate:
+            type:
+              - "null"
+              - string
+          effectiveChangeDate:
+            type:
+              - "null"
+              - string
+          orderDate:
+            type:
+              - "null"
+              - string
+          noticePeriodDate:
+            type:
+              - "null"
+              - string
+          lastRenewalDate:
+            type:
+              - "null"
+              - string
+          noticePeriod:
+            type:
+              - "null"
+              - number
+          term:
+            type:
+              - "null"
+              - number
+          renewalTerm:
+            type:
+              - "null"
+              - number
+          isAutoRenewed:
+            type:
+              - "null"
+              - boolean
+          orderType:
+            type:
+              - "null"
+              - string
+          termType:
+            type:
+              - "null"
+              - string
+          orderPaymentMethod:
+            type:
+              - "null"
+              - string
+          invoiceSeparatly:
+            type:
+              - "null"
+              - boolean
+          yourReference:
+            type:
+              - "null"
+              - string
+          ourReference:
+            type:
+              - "null"
+              - string
+          yourOrderNumber:
+            type:
+              - "null"
+              - string
+          invoiceAddress:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              street:
+                type:
+                  - "null"
+                  - string
+              street2:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              county:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+              zip:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+          deliveryAddress:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              street:
+                type:
+                  - "null"
+                  - string
+              street2:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              county:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+              zip:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+          invoiceBatchGroup:
+            type: object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              code:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+          paymentTerm:
+            type:
+              - "null"
+              - string
+          useAccountInvoiceBatchGroup:
+            type:
+              - "null"
+              - boolean
+          account:
+            type: object
+            properties:
+              name:
+                type:
+                  - "null"
+                  - string
+              accountNumber:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              externalERPId:
+                type:
+                  - "null"
+                  - string
+              externalCRMId:
+                type:
+                  - "null"
+                  - string
+          invoiceAccount:
+            type: object
+            properties:
+              name:
+                type:
+                  - "null"
+                  - string
+              accountNumber:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              externalERPId:
+                type:
+                  - "null"
+                  - string
+              externalCRMId:
+                type:
+                  - "null"
+                  - string
+          products:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                productNumber:
+                  type:
+                    - "null"
+                    - string
+                chargePlanId:
+                  type:
+                    - "null"
+                    - string
+                chargePlanName:
+                  type:
+                    - "null"
+                    - string
+                chargePlanNumber:
+                  type:
+                    - "null"
+                    - string
+                productLineNumber:
+                  type:
+                    - "null"
+                    - number
+                name:
+                  type:
+                    - "null"
+                    - string
+                charges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - string
+                      chargeNumber:
+                        type:
+                          - "null"
+                          - string
+                      version:
+                        type:
+                          - "null"
+                          - number
+                      isLastVersion:
+                        type:
+                          - "null"
+                          - boolean
+                      name:
+                        type:
+                          - "null"
+                          - string
+                      chargeType:
+                        type:
+                          - "null"
+                          - string
+                      priceModel:
+                        type:
+                          - "null"
+                          - string
+                      effectiveStartDate:
+                        type:
+                          - "null"
+                          - string
+                      effectiveEndDate:
+                        type:
+                          - "null"
+                          - string
+                      quantity:
+                        type:
+                          - "null"
+                          - number
+                      unitCode:
+                        type:
+                          - "null"
+                          - string
+                      startOn:
+                        type:
+                          - "null"
+                          - string
+                      endOn:
+                        type:
+                          - "null"
+                          - string
+                      chargedThroughDate:
+                        type:
+                          - "null"
+                          - string
+                      lastRenewalDate:
+                        type:
+                          - "null"
+                          - string
+                      lastPriceAdjustmentDate:
+                        type:
+                          - "null"
+                          - string
+                      pricePeriod:
+                        type:
+                          - "null"
+                          - string
+                      usageRating:
+                        type:
+                          - "null"
+                          - string
+                      revenueRecognitionRule:
+                        type:
+                          - "null"
+                          - string
+                      billingDay:
+                        type:
+                          - "null"
+                          - string
+                      specificBillingDay:
+                        type:
+                          - "null"
+                          - number
+                      billingPeriod:
+                        type:
+                          - "null"
+                          - string
+                      billingTiming:
+                        type:
+                          - "null"
+                          - string
+                      periodAlignment:
+                        type:
+                          - "null"
+                          - string
+                      taxTemplate:
+                        type:
+                          - "null"
+                          - string
+                      taxIncluded:
+                        type:
+                          - "null"
+                          - boolean
+                      createInvoiceLinesPerTier:
+                        type:
+                          - "null"
+                          - boolean
+                      estimatedUsage:
+                        type:
+                          - "null"
+                          - number
+                      estimatedQuantity:
+                        type:
+                          - "null"
+                          - number
+                      remarks:
+                        type:
+                          - "null"
+                          - string
+                      accountsReceivableAccount:
+                        type:
+                          - "null"
+                          - string
+                      deferredRevenueAccount:
+                        type:
+                          - "null"
+                          - string
+                      recognizedRevenueAccount:
+                        type:
+                          - "null"
+                          - string
+                      changeState:
+                        type:
+                          - "null"
+                          - string
+                      displayPrice:
+                        type:
+                          - "null"
+                          - number
+                      customFields:
+                        type:
+                          - "null"
+                          - object
+                      priceDetails:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            tier:
+                              type:
+                                - "null"
+                                - number
+                            price:
+                              type:
+                                - "null"
+                                - number
+                            listPrice:
+                              type:
+                                - "null"
+                                - number
+                            description:
+                              type:
+                                - "null"
+                                - string
+                            fromQuantity:
+                              type:
+                                - "null"
+                                - number
+                            toQuantity:
+                              type:
+                                - "null"
+                                - number
+                            priceBase:
+                              type:
+                                - "null"
+                                - string
+                            lineDiscountPercent:
+                              type:
+                                - "null"
+                                - number
+                            lineDiscountAmount:
+                              type:
+                                - "null"
+                                - number
+                      recurringMonthlyAmount:
+                        type:
+                          - "null"
+                          - number
+                      recurringMonthlyAmountBase:
+                        type:
+                          - "null"
+                          - number
+                      features:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type:
+                                - "null"
+                                - string
+                            description:
+                              type:
+                                - "null"
+                                - string
+                      orderDiscounts:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            orderDiscountId:
+                              type:
+                                - "null"
+                                - string
+                            chargeId:
+                              type:
+                                - "null"
+                                - string
+                      externalERPId:
+                        type:
+                          - "null"
+                          - string
+                      externalCRMId:
+                        type:
+                          - "null"
+                          - string
+                      cmrr:
+                        type: object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            type:
+                              - "null"
+                              - string
+                      acv:
+                        type: object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            type:
+                              - "null"
+                              - string
+                      tcv:
+                        type: object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            type:
+                              - "null"
+                              - string
+                      emrr:
+                        type: object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            type:
+                              - "null"
+                              - string
+                      oneTimeFees:
+                        type: object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            type:
+                              - "null"
+                              - string
+                      orderProductId:
+                        type:
+                          - "null"
+                          - string
+                      orderId:
+                        type:
+                          - "null"
+                          - string
+                customFields:
+                  type:
+                    - "null"
+                    - object
+                externalERPId:
+                  type:
+                    - "null"
+                    - string
+                externalCRMId:
+                  type:
+                    - "null"
+                    - string
+                cmrr:
+                  type: object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                acv:
+                  type: object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                emrr:
+                  type: object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                oneTimeFees:
+                  type: object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+                tcv:
+                  type: object
+                  properties:
+                    amount:
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      type:
+                        - "null"
+                        - string
+          milestones:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                orderId:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                description:
+                  type:
+                    - "null"
+                    - string
+                milestoneDate:
+                  type:
+                    - "null"
+                    - string
+                plannedDate:
+                  type:
+                    - "null"
+                    - string
+          orderDiscounts:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                orderId:
+                  type:
+                    - "null"
+                    - string
+                startOn:
+                  type:
+                    - "null"
+                    - string
+                endOn:
+                  type:
+                    - "null"
+                    - string
+                startDate:
+                  type:
+                    - "null"
+                    - string
+                endDate:
+                  type:
+                    - "null"
+                    - string
+                percent:
+                  type:
+                    - "null"
+                    - number
+                discountType:
+                  type:
+                    - "null"
+                    - string
+                orderProductCharges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      orderDiscountId:
+                        type:
+                          - "null"
+                          - string
+                      chargeId:
+                        type:
+                          - "null"
+                          - string
+                onSpecificCharges:
+                  type:
+                    - "null"
+                    - boolean
+          currency:
+            type:
+              - "null"
+              - string
+          externalERPId:
+            type:
+              - "null"
+              - string
+          externalCRMId:
+            type:
+              - "null"
+              - string
+          currencyCodeToUseWhenInvoice:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - object
+          cmrr:
+            type: object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+          acv:
+            type: object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+          emrr:
+            type: object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+          oneTimeFees:
+            type: object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
+          tcv:
+            type: object
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                type:
+                  - "null"
+                  - string
 streams:
   - "#/definitions/account_stream"
   - "#/definitions/booking_stream"
@@ -120,5 +2407,7 @@ spec:
       playground:
         title: Playground environment
         type: boolean
-        description: Property defining if connector is used against playground or production environment
+        description:
+          Property defining if connector is used against playground or
+          production environment
         default: false

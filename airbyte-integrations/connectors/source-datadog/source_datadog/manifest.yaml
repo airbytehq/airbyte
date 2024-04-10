@@ -100,6 +100,81 @@ definitions:
       primary_key: "id"
       path: "dashboard"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          author_handle:
+            type:
+              - string
+              - "null"
+            description: Identifier of the dashboard author.
+            readOnly: true
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: Creation date of the dashboard.
+            readOnly: true
+          deleted_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: Deletion date of the dashboard.
+            readOnly: true
+          description:
+            type:
+              - string
+              - "null"
+            description: Description of the dashboard.
+            readOnly: true
+          id:
+            type:
+              - string
+              - "null"
+            description: Dashboard identifier.
+            readOnly: true
+          is_read_only:
+            type:
+              - boolean
+              - "null"
+            description:
+              Whether this dashboard is read-only. If True, only the author
+              and admins can make changes to it.
+            readOnly: true
+          layout_type:
+            type:
+              - string
+              - "null"
+            enum:
+              - ordered
+              - free
+            description: Layout type of the dashboard
+            readOnly: true
+          modified_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: Modification date of the dashboard.
+            readOnly: true
+          title:
+            type:
+              - string
+              - "null"
+            description: Title of the dashboard.
+            readOnly: true
+          url:
+            type:
+              - string
+              - "null"
+            description: URL of the dashboard.
+            readOnly: true
+        additionalProperties: true
   downtimes_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -114,6 +189,176 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          active:
+            type:
+              - boolean
+              - "null"
+            description: If a scheduled downtime currently exists.
+            readOnly: true
+          active_child:
+            type:
+              - object
+              - "null"
+            description:
+              The downtime object definition of the active child for the
+              original parent recurring downtime.
+            additionalProperties: true
+          canceled:
+            type:
+              - integer
+              - "null"
+            description: If a scheduled downtime is canceled.
+            readOnly: true
+          child_id:
+            type:
+              - integer
+              - "null"
+          created:
+            type:
+              - integer
+              - "null"
+          creator_id:
+            type:
+              - integer
+              - "null"
+            description: User ID of the downtime creator.
+            readOnly: true
+          disabled:
+            type:
+              - boolean
+              - "null"
+            description: If a downtime has been disabled.
+            readOnly: true
+          downtime_type:
+            type:
+              - integer
+              - "null"
+            description:
+              0 for a downtime applied on * or all, 1 when the downtime
+              is only scoped to hosts, or 2 when the downtime is scoped to anything
+              but hosts.
+            readOnly: true
+          end:
+            type:
+              - integer
+              - "null"
+            description:
+              POSIX timestamp to end the downtime. If not provided, the
+              downtime is in effect indefinitely until you cancel it.
+            readOnly: true
+          id:
+            type:
+              - integer
+              - "null"
+            description: The downtime ID.
+            readOnly: true
+          message:
+            type:
+              - string
+              - "null"
+            description: A message to include with notifications for this downtime.
+            readOnly: true
+          modified:
+            type:
+              - integer
+              - "null"
+          monitor_id:
+            type:
+              - integer
+              - "null"
+            description:
+              A single monitor to which the downtime applies. If not provided,
+              the downtime applies to all monitors.
+            readOnly: true
+          monitor_tags:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: A comma-separated list of monitor tags.
+            readOnly: true
+          mute_first_recovery_notification:
+            type:
+              - boolean
+              - "null"
+            description:
+              If the first recovery notification during a downtime should
+              be muted.
+            readOnly: true
+          notify_end_states:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          notify_end_types:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          org_id:
+            type:
+              - integer
+              - "null"
+          parent_id:
+            type:
+              - integer
+              - "null"
+            description: ID of the parent Downtime.
+            readOnly: true
+          recurrence:
+            type:
+              - object
+              - "null"
+            description: An object defining the recurrence of the downtime.
+            additionalProperties: true
+          scope:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: The scope(s) to which the downtime applies.
+            readOnly: true
+          start:
+            type:
+              - integer
+              - "null"
+            description:
+              POSIX timestamp to start the downtime. If not provided, the
+              downtime starts the moment it is created.
+            readOnly: true
+          status:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+            description:
+              The timezone in which to display the downtime's start and
+              end times in Datadog applications.
+            readOnly: true
+          updater_id:
+            type:
+              - integer
+              - "null"
+            description: ID of the last user that updated the downtime.
+            readOnly: true
+          uuid:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
 
   synthetic_tests_stream:
     $ref: "#/definitions/base_stream"
@@ -128,6 +373,147 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["tests"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          config:
+            type:
+              - object
+              - "null"
+            description: Configuration object for a Synthetic test.
+            additionalProperties: true
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: Creation date of the Synthetic test.
+            readOnly: true
+          creator:
+            type:
+              - object
+              - "null"
+            description: Object describing the creator of the shared element.
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+                description: Email of the creator.
+              handle:
+                type:
+                  - string
+                  - "null"
+                description: Handle of the creator.
+              name:
+                type:
+                  - string
+                  - "null"
+                description: Name of the creator.
+            additionalProperties: true
+          locations:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: Array of locations used to run the test.
+            readOnly: true
+          message:
+            type:
+              - string
+              - "null"
+            description: Notification message associated with the test.
+            readOnly: true
+          modified_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: Creation date of the Synthetic test.
+            readOnly: true
+          monitor_id:
+            type:
+              - integer
+              - "null"
+            description: The associated monitor ID.
+            readOnly: true
+          name:
+            type:
+              - string
+              - "null"
+            description: Name of the test.
+            readOnly: true
+          options:
+            type:
+              - object
+              - "null"
+            description: Object describing the extra options for a Synthetic test.
+            additionalProperties: true
+          public_id:
+            type:
+              - string
+              - "null"
+            description: The test public ID.
+            readOnly: true
+          status:
+            type:
+              - string
+              - "null"
+            enum:
+              - live
+              - paused
+            description:
+              "Define whether you want to start (live) or pause (paused)
+              a Synthetic test. Allowed enum values: live,paused"
+            readOnly: true
+          steps:
+            type:
+              - object
+              - "null"
+            description: For browser test, the steps of the test.
+            additionalProperties: true
+          subtype:
+            type:
+              - string
+              - "null"
+            enum:
+              - http
+              - ssl
+              - tcp
+              - dns
+              - multi
+              - icmp
+              - udp
+              - websocket
+              - grpc
+            description:
+              "The subtype of the Synthetic API test, http, ssl, tcp, dns,
+              icmp, udp, websocket, grpc or multi. Allowed enum values: http,ssl,tcp,dns,multi,icmp,udp,websocket,grpc"
+            readOnly: true
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+            description: Array of tags attached to the test.
+            readOnly: true
+          type:
+            type:
+              - string
+              - "null"
+            enum:
+              - api
+              - browser
+            description:
+              "Type of the Synthetic test, either api or browser. Allowed
+              enum values: api,browser"
+            readOnly: true
+        additionalProperties: true
 
   monitors_stream:
     $ref: "#/definitions/base_stream"
@@ -143,6 +529,470 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          created:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - integer
+              - "null"
+          org_id:
+            type:
+              - integer
+              - "null"
+          overall_state_modified:
+            type:
+              - string
+              - "null"
+          creator:
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              handle:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          deleted:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - integer
+              - "null"
+          matching_downtimes:
+            items:
+              additionalProperties: true
+              properties:
+                end:
+                  type:
+                    - integer
+                    - "null"
+                id:
+                  type:
+                    - integer
+                    - "null"
+                scope:
+                  items:
+                    type:
+                      - string
+                      - "null"
+                  type:
+                    - array
+                    - "null"
+                start:
+                  type:
+                    - integer
+                    - "null"
+              type:
+                - object
+                - "null"
+            type:
+              - array
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+          modified:
+            type:
+              - string
+              - "null"
+          multi:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          options:
+            additionalProperties: true
+            properties:
+              aggregation:
+                additionalProperties: true
+                properties:
+                  groupBy:
+                    items:
+                      type:
+                        - string
+                        - "null"
+                    type:
+                      - array
+                      - "null"
+                  metric:
+                    type:
+                      - string
+                      - "null"
+                  type:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+              device_ids:
+                items:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  - array
+                  - "null"
+              enable_logs_sample:
+                type:
+                  - boolean
+                  - "null"
+              enable_samples:
+                type:
+                  - boolean
+                  - "null"
+              escalation_message:
+                type:
+                  - string
+                  - "null"
+              evaluation_delay:
+                type:
+                  - integer
+                  - "null"
+              group_retention_duration:
+                type:
+                  - string
+                  - "null"
+              groupby_simple_monitor:
+                type:
+                  - boolean
+                  - "null"
+              include_tags:
+                type:
+                  - boolean
+                  - "null"
+              locked:
+                type:
+                  - boolean
+                  - "null"
+              new_group_delay:
+                type:
+                  - integer
+                  - "null"
+              new_host_delay:
+                type:
+                  - integer
+                  - "null"
+              no_data_timeframe:
+                type:
+                  - integer
+                  - "null"
+              notification_preset_name:
+                type:
+                  - string
+                  - "null"
+              notify_audit:
+                type:
+                  - boolean
+                  - "null"
+              notify_by:
+                items:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  - array
+                  - "null"
+              notify_no_data:
+                type:
+                  - boolean
+                  - "null"
+              on_missing_data:
+                type:
+                  - string
+                  - "null"
+              renotify_interval:
+                type:
+                  - integer
+                  - "null"
+              renotify_occurrences:
+                type:
+                  - integer
+                  - "null"
+              renotify_statuses:
+                items:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  - array
+                  - "null"
+              require_full_window:
+                type:
+                  - boolean
+                  - "null"
+              scheduling_options:
+                additionalProperties: true
+                properties:
+                  evaluation_window:
+                    additionalProperties: true
+                    properties:
+                      day_starts:
+                        type:
+                          - string
+                          - "null"
+                      hour_starts:
+                        type:
+                          - string
+                          - "null"
+                      month_starts:
+                        type:
+                          - integer
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                type:
+                  - object
+                  - "null"
+              silenced:
+                patternProperties:
+                  .+:
+                    type:
+                      - integer
+                      - "null"
+              synthetics_check_id:
+                type:
+                  - string
+                  - "null"
+              threshold_windows:
+                additionalProperties: true
+                properties:
+                  recovery_window:
+                    type:
+                      - string
+                      - "null"
+                  trigger_window:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+              thresholds:
+                additionalProperties: true
+                properties:
+                  critical:
+                    type:
+                      - number
+                      - "null"
+                  critical_recovery:
+                    type:
+                      - number
+                      - "null"
+                  ok:
+                    type:
+                      - number
+                      - "null"
+                  unknown:
+                    type:
+                      - number
+                      - "null"
+                  warning:
+                    type:
+                      - number
+                      - "null"
+                  warning_recovery:
+                    type:
+                      - number
+                      - "null"
+                type:
+                  - object
+                  - "null"
+              timeout_h:
+                type:
+                  - integer
+                  - "null"
+              variables:
+                items:
+                  additionalProperties: true
+                  properties:
+                    compute:
+                      additionalProperties: true
+                      properties:
+                        aggregation:
+                          type:
+                            - string
+                            - "null"
+                        interval:
+                          type:
+                            - integer
+                            - "null"
+                        metric:
+                          type:
+                            - string
+                            - "null"
+                      type:
+                        - object
+                        - "null"
+                    data_source:
+                      type:
+                        - string
+                        - "null"
+                    group_by:
+                      items:
+                        additionalProperties: true
+                        properties:
+                          facet:
+                            type:
+                              - string
+                              - "null"
+                          limit:
+                            type:
+                              - integer
+                              - "null"
+                          sort:
+                            additionalProperties: true
+                            properties:
+                              aggregation:
+                                type:
+                                  - string
+                                  - "null"
+                              metric:
+                                type:
+                                  - string
+                                  - "null"
+                              order:
+                                type:
+                                  - string
+                                  - "null"
+                            type:
+                              - object
+                              - "null"
+                        type:
+                          - object
+                          - "null"
+                      type:
+                        - array
+                        - "null"
+                    indexes:
+                      items:
+                        type:
+                          - string
+                          - "null"
+                      type:
+                        - array
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    search:
+                      additionalProperties: true
+                      properties:
+                        query:
+                          type:
+                            - string
+                            - "null"
+                      type:
+                        - object
+                        - "null"
+                  type:
+                    - object
+                    - "null"
+                type:
+                  - array
+                  - "null"
+            type:
+              - object
+              - "null"
+          overall_state:
+            type:
+              - string
+              - "null"
+          priority:
+            type:
+              - integer
+              - "null"
+          query:
+            type:
+              - string
+              - "null"
+          restricted_roles:
+            items:
+              type:
+                - string
+                - "null"
+            type:
+              - array
+              - "null"
+          state:
+            properties:
+              groups:
+                patternProperties:
+                  .+:
+                    properties:
+                      last_nodata_ts:
+                        type:
+                          - integer
+                          - "null"
+                      last_notified_ts:
+                        type:
+                          - integer
+                          - "null"
+                      last_resolved_ts:
+                        type:
+                          - integer
+                          - "null"
+                      last_triggered_ts:
+                        type:
+                          - integer
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                type:
+                  - object
+                  - "null"
+            type:
+              - object
+              - "null"
+          tags:
+            items:
+              type:
+                - string
+                - "null"
+            type:
+              - array
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+        type:
+          - object
+          - "null"
 
   service_level_objectives_stream:
     $ref: "#/definitions/base_stream"
@@ -158,6 +1008,149 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["data"]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          created_at:
+            type:
+              - integer
+              - "null"
+          creator:
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              handle:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          groups:
+            items:
+              type:
+                - string
+                - "null"
+            type:
+              - array
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          modified_at:
+            type:
+              - integer
+              - "null"
+          monitor_ids:
+            items:
+              type:
+                - integer
+                - "null"
+            type:
+              - array
+              - "null"
+          monitor_tags:
+            items:
+              type:
+                - string
+                - "null"
+            type:
+              - array
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          query:
+            additionalProperties: true
+            properties:
+              denominator:
+                type:
+                  - string
+                  - "null"
+              numerator:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          tags:
+            items:
+              type:
+                - string
+                - "null"
+            type:
+              - array
+              - "null"
+          target_threshold:
+            type:
+              - number
+              - "null"
+          thresholds:
+            items:
+              additionalProperties: true
+              properties:
+                target:
+                  type:
+                    - number
+                    - "null"
+                target_display:
+                  type:
+                    - string
+                    - "null"
+                timeframe:
+                  type:
+                    - string
+                    - "null"
+                warning:
+                  type:
+                    - number
+                    - "null"
+                warning_display:
+                  type:
+                    - string
+                    - "null"
+              type:
+                - object
+                - "null"
+            type:
+              - array
+              - "null"
+          timeframe:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          type_id:
+            type:
+              - integer
+              - "null"
+          warning_threshold:
+            type:
+              - number
+              - "null"
+        type:
+          - object
+          - "null"
 
   audit_logs_stream:
     $ref: "#/definitions/base_stream"
@@ -171,6 +1164,66 @@ definitions:
       paginator:
         $ref: "#/definitions/base_after_paginator"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description:
+              JSON object containing all event attributes and their associated
+              values.
+            properties:
+              attributes:
+                type:
+                  - object
+                  - "null"
+                description: JSON object of attributes from Audit Logs events.
+                additionalProperties: true
+              service:
+                type:
+                  - string
+                  - "null"
+                description:
+                  Name of the application or service generating Audit Logs
+                  events.
+              tags:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type: string
+                description: Array of tags associated with your event.
+              timestamp:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Timestamp of your event.
+            additionalProperties: true
+          id:
+            type:
+              - string
+              - "null"
+            description: Unique ID of the event.
+            readOnly: true
+          sync_date:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - string
+              - "null"
+            enum:
+              - audit
+            description: "Type of the event. Allowed enum values: audit"
+            readOnly: true
+        additionalProperties: true
   logs_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -189,6 +1242,81 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description:
+              JSON object containing all log attributes and their associated
+              values.
+            properties:
+              attributes:
+                type:
+                  - object
+                  - "null"
+                description: JSON object of attributes from your log.
+                additionalProperties: true
+              host:
+                type:
+                  - string
+                  - "null"
+                description: Name of the machine from where the logs are being sent.
+              message:
+                type:
+                  - string
+                  - "null"
+                description: The message reserved attribute of your log.
+              service:
+                type:
+                  - string
+                  - "null"
+                description:
+                  The name of the application or service generating the
+                  log events.
+              status:
+                type:
+                  - string
+                  - "null"
+                description: Status of the message associated with your log.
+              tags:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type: string
+                description: Array of tags associated with your log.
+              timestamp:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Timestamp of your log.
+            additionalProperties: true
+          id:
+            type:
+              - string
+              - "null"
+            description: Unique ID of the Log.
+            readOnly: true
+          sync_date:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - string
+              - "null"
+            enum:
+              - log
+            description: "Type of the event. Allowed enum values: log"
+            readOnly: true
+        additionalProperties: true
   metrics_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -200,6 +1328,23 @@ definitions:
       paginator:
         type: NoPagination
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            description: The metric name for this resource.
+          type:
+            type:
+              - "null"
+              - string
+            description: The metric resource type.
   incidents_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -211,6 +1356,190 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: The incident's attributes from a response.
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Timestamp when the incident was created.
+              customer_impact_duration:
+                type:
+                  - integer
+                  - "null"
+                description:
+                  Length of the incident's customer impact in seconds.
+                  Equals the difference between customer_impact_start and customer_impact_end.
+              customer_impact_end:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description:
+                  Timestamp when customers were no longer impacted by the
+                  incident.
+              customer_impact_scope:
+                type:
+                  - string
+                  - "null"
+                description:
+                  A summary of the impact customers experienced during
+                  the incident.
+              customer_impact_start:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description:
+                  Timestamp when customers began being impacted by the
+                  incident.
+              customer_impacted:
+                type:
+                  - boolean
+                  - "null"
+                description:
+                  A flag indicating whether the incident caused customer
+                  impact.
+              detected:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Timestamp when the incident was detected.
+              fields:
+                type:
+                  - object
+                  - "null"
+                description:
+                  A condensed view of the user-defined fields attached
+                  to incidents.
+                additionalProperties: true
+              modified:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Timestamp when the incident was last modified.
+              notification_handles:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type: object
+                description:
+                  Notification handles that will be notified of the incident
+                  during update.
+              public_id:
+                type:
+                  - integer
+                  - "null"
+                description: The monotonically increasing integer ID for the incident.
+              resolved:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description:
+                  Timestamp when the incident's state was last changed
+                  from active or stable to resolved or completed.
+              time_to_detect:
+                type:
+                  - integer
+                  - "null"
+                description:
+                  The amount of time in seconds to detect the incident.
+                  Equals the difference between customer_impact_start and detected.
+              time_to_internal_response:
+                type:
+                  - integer
+                  - "null"
+                description:
+                  The amount of time in seconds to call incident after
+                  detection. Equals the difference of detected and created.
+              time_to_repair:
+                type:
+                  - integer
+                  - "null"
+                description:
+                  The amount of time in seconds to resolve customer impact
+                  after detecting the issue. Equals the difference between customer_impact_end
+                  and detected.
+              time_to_resolve:
+                type:
+                  - integer
+                  - "null"
+                description:
+                  The amount of time in seconds to resolve the incident
+                  after it was created. Equals the difference between created and
+                  resolved.
+              title:
+                type:
+                  - string
+                description: The title of the incident, which summarizes what happened.
+            additionalProperties: true
+          id:
+            type:
+              - string
+            description: The incident's ID.
+            readOnly: true
+          relationships:
+            type:
+              - object
+              - "null"
+            description: The incident's relationships from a response.
+            properties:
+              attachments:
+                type:
+                  - object
+                  - "null"
+                description: A relationship reference for attachments.
+                additionalProperties: true
+              commander_user:
+                type:
+                  - object
+                  - "null"
+                description: Relationship to user.
+                additionalProperties: true
+              created_by_user:
+                type:
+                  - object
+                  - "null"
+                description: Relationship to user.
+                additionalProperties: true
+              integrations:
+                type:
+                  - object
+                  - "null"
+                description:
+                  A relationship reference for multiple integration metadata
+                  objects.
+                additionalProperties: true
+              last_modified_by_user:
+                type:
+                  - object
+                  - "null"
+                description: Relationship to user.
+                additionalProperties: true
+            additionalProperties: true
+          type:
+            type:
+              - string
+            enum:
+              - incidents
+            description: "Incident resource type. Allowed enum values: incidents"
+            readOnly: true
+        additionalProperties: true
   incident_teams_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -222,6 +1551,104 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: The incident team's attributes from a response.
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Timestamp of when the incident team was created.
+              modified:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Timestamp of when the incident team was modified.
+              name:
+                type:
+                  - string
+                  - "null"
+                description: Name of the incident team.
+            additionalProperties: true
+          id:
+            type:
+              - string
+              - "null"
+            description: The incident team's ID.
+            readOnly: true
+          relationships:
+            type:
+              - object
+              - "null"
+            description: The incident team's relationships.
+            properties:
+              created_by:
+                type:
+                  - object
+                  - "null"
+                description: Relationship to user.
+                properties:
+                  data:
+                    type:
+                      - object
+                    description: Relationship to user object.
+                    properties:
+                      id:
+                        type:
+                          - string
+                        description: A unique identifier that represents the user.
+                      type:
+                        type:
+                          - string
+                        enum:
+                          - users
+                        description: "Users resource type. Allowed enum values: users"
+                    additionalProperties: true
+                additionalProperties: true
+              last_modified_by:
+                type:
+                  - object
+                  - "null"
+                description: Relationship to user.
+                properties:
+                  data:
+                    type:
+                      - object
+                    description: Relationship to user object.
+                    properties:
+                      id:
+                        type:
+                          - string
+                        description: A unique identifier that represents the user.
+                      type:
+                        type:
+                          - string
+                        enum:
+                          - users
+                        description: "Users resource type. Allowed enum values: users"
+                    additionalProperties: true
+                additionalProperties: true
+            additionalProperties: true
+          type:
+            type:
+              - string
+              - "null"
+            enum:
+              - teams
+            description: "Incident Team resource type. Allowed enum values: teams"
+            readOnly: true
+        additionalProperties: true
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -233,6 +1660,97 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: Attributes of user object returned by the API.
+            properties:
+              created_at:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Creation time of the user.
+              disabled:
+                type:
+                  - boolean
+                  - "null"
+                description: Whether the user is disabled.
+              email:
+                type:
+                  - string
+                  - "null"
+                description: Email of the user.
+              handle:
+                type:
+                  - string
+                  - "null"
+                description: Handle of the user.
+              icon:
+                type:
+                  - string
+                  - "null"
+                description: URL of the user's icon.
+              modified_at:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+                description: Time that the user was last modified.
+              name:
+                type:
+                  - string
+                  - "null"
+                description: Name of the user.
+              service_account:
+                type:
+                  - boolean
+                  - "null"
+                description: Whether the user is a service account.
+              status:
+                type:
+                  - string
+                  - "null"
+                description: Status of the user.
+              title:
+                type:
+                  - string
+                  - "null"
+                description: Title of the user.
+              verified:
+                type:
+                  - boolean
+                  - "null"
+                description: Whether the user is verified.
+            additionalProperties: true
+          id:
+            type:
+              - string
+              - "null"
+            description: ID of the user.
+            readOnly: true
+          relationships:
+            type:
+              - object
+              - "null"
+            description: Relationships of the user object returned by the API.
+            readOnly: true
+          type:
+            type:
+              - string
+              - "null"
+            enum:
+              - users
+            description: "Users resource type. Allowed enum values: users"
+            readOnly: true
+        additionalProperties: true
 streams:
   - "#/definitions/audit_logs_stream"
   - "#/definitions/dashboards_stream"

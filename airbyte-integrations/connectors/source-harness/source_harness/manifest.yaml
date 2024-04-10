@@ -37,6 +37,54 @@ definitions:
     $parameters:
       path: "/ng/api/organizations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Organizations schema
+        additionalProperties: true
+        type:
+          - object
+          - "null"
+        properties:
+          organization:
+            type:
+              - object
+              - "null"
+            properties:
+              identifier:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+              tags:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  identifier:
+                    type:
+                      - string
+                      - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          lastModifiedAt:
+            type:
+              - number
+              - "null"
+          harnessManaged:
+            type:
+              - boolean
+              - "null"
 streams:
   - "#/definitions/organizations_stream"
 
