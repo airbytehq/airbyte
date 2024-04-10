@@ -224,7 +224,7 @@ def test_write_append(
         for i in range(1, 5)
     ]
 
-    assert expected_records == records_in_destination
+    assert records_in_destination == expected_records
 
 
 def test_write_overwrite(
@@ -273,4 +273,4 @@ def test_write_overwrite(
         for i in range(1, 3)
     ]
 
-    assert expected_records == records_in_destination
+    assert records_in_destination == expected_records

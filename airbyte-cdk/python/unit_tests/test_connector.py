@@ -40,7 +40,7 @@ class TestAirbyteSpec:
             f.write(json.dumps(self.VALID_SPEC))
             f.flush()
             actual = AirbyteSpec.from_file(f.name)
-            assert expected == json.loads(actual.spec_string)
+            assert json.loads(actual.spec_string) == expected
 
     def test_from_file_nonexistent(self):
         with pytest.raises(OSError):

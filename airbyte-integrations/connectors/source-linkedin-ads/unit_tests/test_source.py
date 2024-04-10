@@ -169,12 +169,12 @@ class TestLinkedinAdsStream:
         test_response = requests.get(self.url)
 
         result = self.stream.next_page_token(test_response)
-        assert expected == result
+        assert result == expected
 
     def test_request_params(self):
         expected = "count=500&q=search&search=(id:(values:List(1,2)))"
         result = self.stream.request_params(stream_state={}, stream_slice={"account_id": 123})
-        assert expected == result
+        assert result == expected
 
     def test_parse_response(self, requests_mock):
         requests_mock.get(self.url, json={"elements": [{"test": "test"}]})
@@ -239,7 +239,7 @@ class TestLinkedInAdsStreamSlicing:
     def test_request_params(self, stream_cls, slice, expected):
         stream = stream_cls(TEST_CONFIG)
         result = stream.request_params(stream_state={}, stream_slice=slice)
-        assert expected == result
+        assert result == expected
 
     @pytest.mark.parametrize(
         "stream_cls, state, records_slice, expected",
@@ -318,7 +318,7 @@ class TestLinkedInAdsAnalyticsStream:
     def test_request_params(self, stream_cls, slice, expected):
         stream = stream_cls(config=TEST_CONFIG)
         result = stream.request_params(stream_state={}, stream_slice=slice)
-        assert expected == result
+        assert result == expected
 
 
 def test_retry_get_access_token(requests_mock):

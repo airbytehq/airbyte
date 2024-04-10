@@ -230,7 +230,7 @@ def test_get_object_strucutre(object, pathes):
     ],
 )
 def test_get_expected_schema_structure(schema, pathes):
-    assert get_expected_schema_structure(schema) == pathes
+    assert pathes == get_expected_schema_structure(schema)
 
 
 @pytest.mark.parametrize(

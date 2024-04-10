@@ -16,7 +16,7 @@ def load_file(file_name: str) -> Mapping[str, Any]:
 
 
 def test_clean_name(field_name_to_cleaned, expected_clean_name):
-    assert expected_clean_name == SchemaHelpers.clean_name(field_name_to_cleaned)
+    assert SchemaHelpers.clean_name(field_name_to_cleaned) == expected_clean_name
 
 
 def test_get_json_schema(json_response, expected_json_schema):

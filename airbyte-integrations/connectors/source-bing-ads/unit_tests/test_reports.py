@@ -208,7 +208,7 @@ def test_report_get_start_date_wo_stream_state():
     test_report.client.reports_start_date = "2020-01-01"
     stream_state = {}
     account_id = "123"
-    assert expected_start_date == test_report.get_start_date(stream_state, account_id)
+    assert test_report.get_start_date(stream_state, == expected_start_date account_id)
 
 
 def test_report_get_start_date_with_stream_state():
@@ -217,7 +217,7 @@ def test_report_get_start_date_with_stream_state():
     test_report.client.reports_start_date = "2020-01-01"
     stream_state = {"123": {"TimePeriod": "2023-04-17T21:29:57+00:00"}}
     account_id = "123"
-    assert expected_start_date == test_report.get_start_date(stream_state, account_id)
+    assert test_report.get_start_date(stream_state, == expected_start_date account_id)
 
 
 def test_report_get_start_date_performance_report_with_stream_state():
@@ -226,7 +226,7 @@ def test_report_get_start_date_performance_report_with_stream_state():
     test_report.config = {"lookback_window": 10}
     stream_state = {"123": {"TimePeriod": "2023-04-17T21:29:57+00:00"}}
     account_id = "123"
-    assert expected_start_date == test_report.get_start_date(stream_state, account_id)
+    assert test_report.get_start_date(stream_state, == expected_start_date account_id)
 
 
 def test_report_get_start_date_performance_report_wo_stream_state():

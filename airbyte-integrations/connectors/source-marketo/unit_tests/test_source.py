@@ -395,7 +395,7 @@ def test_filter_null_bytes(config):
     ]
     filtered_lines = stream.filter_null_bytes(test_lines)
     for expected_line, filtered_line in zip(expected_lines, filtered_lines):
-        assert expected_line == filtered_line
+        assert filtered_line == expected_line
 
 
 def test_csv_rows(config):
@@ -412,7 +412,7 @@ def test_csv_rows(config):
     ]
     records = stream.csv_rows(test_lines)
     for expected_record, record in zip(expected_records, records):
-        assert expected_record == record
+        assert record == expected_record
 
 def test_availablity_strategy(config):
     stream = Leads(config)

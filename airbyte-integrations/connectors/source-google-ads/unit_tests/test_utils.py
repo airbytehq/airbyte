@@ -200,4 +200,4 @@ def test_generator_backoff_retries_until_success():
 
     # Compare each expected call with the actual call
     for expected, actual in zip(expected_calls, actual_calls):
-        assert expected == actual
+        assert actual == expected

@@ -98,7 +98,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
     builder = ShopifyBulkQuery(shop_id=0)
     filter_query = f"{filter_field}:>'{start}' AND {filter_field}:<='{end}'"
     built_query = builder.build(query_name, fields, filter_query)
-    assert expected.render() == built_query.render()
+    assert built_query.render() == expected.render()
 
 
 @pytest.mark.parametrize(

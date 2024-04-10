@@ -128,7 +128,7 @@ class TestKlaviyoStream:
         )
         reasons_for_unavailable_status_codes = stream.availability_strategy.reasons_for_unavailable_status_codes(stream, None, None, None)
         assert expected_status_code in reasons_for_unavailable_status_codes
-        assert reasons_for_unavailable_status_codes[expected_status_code] == expected_message
+        assert expected_message == reasons_for_unavailable_status_codes[expected_status_code]
 
     @pytest.mark.parametrize(
         ("status_code", "retry_after", "expected_time"),

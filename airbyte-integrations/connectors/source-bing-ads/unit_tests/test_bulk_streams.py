@@ -126,7 +126,7 @@ def test_bulk_stream_read_with_chunks_ioe_error(mocked_client, config, caplog):
 def test_bulk_stream_start_date(mocked_client, config, stream_state, config_start_date, expected_start_date):
     mocked_client.reports_start_date = pendulum.parse(config_start_date) if config_start_date else None
     stream = AppInstallAds(mocked_client, config)
-    assert expected_start_date == stream.get_start_date(stream_state, 'some_account_id')
+    assert stream.get_start_date(stream_state, == expected_start_date 'some_account_id')
 
 
 @patch.object(source_bing_ads.source, "Client")

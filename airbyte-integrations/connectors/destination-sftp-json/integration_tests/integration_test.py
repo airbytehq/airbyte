@@ -157,11 +157,11 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
             ],
         )
     )
-    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+    assert output_states, == expected_states "Checkpoint state messages were expected from the destination"
 
     expected_records = [_record(append_stream, str(i), i) for i in range(10)] + [_record(overwrite_stream, str(i), i) for i in range(10)]
     records_in_destination = retrieve_all_records(client, streams)
-    assert _sort(expected_records) == records_in_destination, "Records in destination should match records expected"
+    assert records_in_destination, == _sort(expected_records) "Records in destination should match records expected"
 
     # After this sync we expect the append stream to have 15 messages and the overwrite stream to have 5
     third_state_message = _state({"state": "3"})
@@ -176,4 +176,4 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
     expected_records = [_record(append_stream, str(i), i) for i in range(15)] + [
         _record(overwrite_stream, str(i), i) for i in range(10, 15)
     ]
-    assert _sort(expected_records) == records_in_destination
+    assert records_in_destination == _sort(expected_records)

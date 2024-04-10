@@ -108,7 +108,7 @@ def test_write_append(config: Mapping, configured_catalog: ConfiguredAirbyteCata
     records_in_destination = retrieve_all_records(writer.client)
 
     expected_records = [_record(stream, str(i), i) for i in range(1, 3)]
-    assert expected_records == records_in_destination
+    assert records_in_destination == expected_records
 
 
 def test_write_overwrite(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, writer: FirestoreWriter):
@@ -128,4 +128,4 @@ def test_write_overwrite(config: Mapping, configured_catalog: ConfiguredAirbyteC
     records_in_destination = retrieve_all_records(writer.client)
 
     expected_records = [_record(stream, str(i), i) for i in range(5, 10)]
-    assert expected_records == records_in_destination
+    assert records_in_destination == expected_records
