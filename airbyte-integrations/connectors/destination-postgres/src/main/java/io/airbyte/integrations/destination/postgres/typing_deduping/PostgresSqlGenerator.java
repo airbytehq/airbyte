@@ -71,12 +71,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     // To keep it consistent when querying raw table in T+D query, convert it to lowercase.
     // TODO: This logic should be unified across Raw and final table operations in a single class
     // operating on a StreamId.
-    final String streamName = getNamingTransformer().convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase();
+    final String streamName = getNamingTransformer().getIdentifier(StreamId.concatenateRawTableName(namespace, name)).toLowerCase();
     return new StreamId(
         getNamingTransformer().getNamespace(namespace),
         getNamingTransformer().convertStreamName(name),
         getNamingTransformer().getNamespace(rawNamespaceOverride).toLowerCase(),
-        streamName.length() > 63 ? streamName.substring(0, 63) : streamName,
+        streamName,
         namespace,
         name);
   }
