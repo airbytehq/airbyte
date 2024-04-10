@@ -7,7 +7,7 @@ import logging
 import re
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, Callable
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -647,6 +647,41 @@ class TicketAudits(IncrementalZendeskSupportStream):
                 self.logger.error(f"Skipping stream `{self.name}`. Timed out waiting for response: {e.response.text}...")
             else:
                 raise e
+
+    def _validate_response(self, response: requests.Response, stream_state: Mapping[str, Any]) -> bool:
+        """
+        Ticket Audits endpoint doesn't allow filtering by date, but all data sorted by descending.
+        This method used to stop making requests once we receive a response with cursor value greater than actual cursor.
+        This action decreases sync time as we don't filter extra records in parse response.
+        """
+        data = response.json().get(self.response_list_name)
+        created_at = data[0].get(self.cursor_field)
+        cursor_date = (stream_state or {}).get(self.cursor_field) or self._start_date
+        return created_at > cursor_date
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+        while not pagination_complete:
+            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
+            yield from records_generator_fn(request, response, stream_state, stream_slice)
+
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+            if not self._validate_response(response, stream_state):
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
 
 class Tags(FullRefreshZendeskSupportStream):
